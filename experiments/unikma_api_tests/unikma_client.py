@@ -22,7 +22,8 @@ class UnikmaClient:
             "/GetNomenclatures/",
             params={"Offset": offset, "Limit": limit},
         )
-        data = response.json()
+        raw_data = response.json()
+        data = extract_array_ref(raw_data)
         file_path = self._save_json("nomenclature", data)
         return data, file_path
 
@@ -72,7 +73,7 @@ class UnikmaClient:
 
         self.logger.info("Request %s %s", method, url)
         if request_params:
-            self.logger.info("Params: %s", request_params)
+            self.logger.info("Params: %s", mask_sensitive_params(request_params))
         if json_body:
             self.logger.info("JSON body: %s", json_body)
 
@@ -102,3 +103,18 @@ class UnikmaClient:
     def _build_file_path(self, prefix: str, suffix: str) -> Path:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return REFERENCE_UNIKMA_DIR / f"{prefix}_{timestamp}.{suffix}"
+
+
+def mask_sensitive_params(params: dict[str, Any]) -> dict[str, Any]:
+    safe_params = dict(params)
+    if "api_key" in safe_params:
+        safe_params["api_key"] = "***"
+    return safe_params
+
+
+def extract_array_ref(data: Any) -> list[dict[str, Any]]:
+    if isinstance(data, dict) and isinstance(data.get("ArrayRef"), list):
+        return data["ArrayRef"]
+    if isinstance(data, list):
+        return data
+    return []

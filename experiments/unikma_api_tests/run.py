@@ -127,9 +127,14 @@ def load_latest_json(prefix: str) -> list[dict] | None:
 
     latest_file = files[-1]
     with latest_file.open("r", encoding="utf-8") as file_obj:
-        return json.load(file_obj)
+        data = json.load(file_obj)
+
+    if isinstance(data, dict) and isinstance(data.get("ArrayRef"), list):
+        return data["ArrayRef"]
+    if isinstance(data, list):
+        return data
+    return None
 
 
 if __name__ == "__main__":
     main()
-
