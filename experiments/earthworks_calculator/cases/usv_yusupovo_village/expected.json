@@ -1,0 +1,130 @@
+{
+  "volumes": {
+    "manual_pit_volume_m3": 26.4,
+    "trench_volume_m3": 18.29,
+    "manual_excavation_total_m3": 44.69,
+    "compacted_sand_base_m3": 125.58,
+    "compacted_sand_trenches_m3": 23.777,
+    "sand_total_m3": 149.357,
+    "sand_order_volume_m3": 160,
+    "geotextile_with_overlap_m2": 363.0,
+    "geotextile_rolls": 4
+  },
+  "estimate_lines": {
+    "axis_marking": {
+      "name": "Вынос осей фундамента, котлована на участок",
+      "unit": "смена",
+      "quantity": 1,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 20000,
+      "work_total": 20000,
+      "line_total": 20000
+    },
+    "excavator_jcb": {
+      "name": "Механизированная разработка грунта, Экскаватор JCB",
+      "unit": "смена",
+      "quantity": 3,
+      "material_unit_price": 26000,
+      "material_total": 78000,
+      "work_unit_price": 3500,
+      "work_total": 10500,
+      "line_total": 88500
+    },
+    "manual_excavation": {
+      "name": "Разработка грунта вручную",
+      "unit": "м3",
+      "quantity": 44.695,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 1400,
+      "work_total": 62573,
+      "line_total": 62573
+    },
+    "geotextile_laying": {
+      "name": "Укладка геотекстиля",
+      "unit": "м2",
+      "quantity": 340,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 35,
+      "work_total": 11900,
+      "line_total": 11900
+    },
+    "geotextile_material": {
+      "name": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+      "unit": "м2",
+      "quantity": 400,
+      "material_unit_price": 109,
+      "material_total": 43600,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 43600
+    },
+    "sand_filling": {
+      "name": "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+      "unit": "м3",
+      "quantity": 160,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 1200,
+      "work_total": 192000,
+      "line_total": 192000
+    },
+    "sand_material": {
+      "name": "Песок строительный",
+      "unit": "м3",
+      "quantity": 160,
+      "material_unit_price": 1550,
+      "material_total": 248000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 248000
+    },
+    "sand_manual_moving": {
+      "name": "Перемещение песка вручную",
+      "unit": "м3",
+      "quantity": 160,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    "communications_work": {
+      "name": "Закладка технологических входов коммуникаций до границы дома",
+      "unit": "мп",
+      "quantity": 115,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 350,
+      "work_total": 40250,
+      "line_total": 40250
+    },
+    "communications_material": {
+      "name": "Материалы для устройства входов коммуникаций",
+      "unit": "мп",
+      "quantity": 115,
+      "material_unit_price": 650,
+      "material_total": 74750,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 74750
+    },
+    "consumables": {
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "quantity": 1,
+      "material_unit_price": 23447.18,
+      "material_total": 23447,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 23447
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 467797,
+    "internal_works_total": 337223,
+    "internal_section_total": 805020
+  }
+}

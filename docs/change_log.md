@@ -43,6 +43,136 @@ git status
 
 ## Контрольные точки
 
+### 2026-05-15 — Калькуляторы фундаментной плиты, гидроизоляции и handoff-документация
+
+- Ветка: текущая рабочая ветка
+- Коммит: ещё не зафиксирован
+- Рекомендуемое сообщение будущего коммита: `Add experimental estimate calculators and project handoff docs`
+
+Что добавлено:
+
+- создан `README.md` проекта с краткой картой текущего состояния;
+- создан handoff для нового чата/агента:
+  - `docs/assistant_handoff.md`;
+- добавлены отчёты для руководства:
+  - `docs/report_pdf_parser.md`;
+  - `docs/report_earthworks_calculator.md`;
+  - `docs/report_foundation_slab_calculator.md`;
+  - `docs/report_waterproofing_calculator.md`;
+- создан экспериментальный калькулятор фундаментной плиты:
+  - `experiments/foundation_slab_calculator/`;
+- создан экспериментальный калькулятор гидроизоляции фундаментной плиты:
+  - `experiments/waterproofing_calculator/`.
+
+Фундаментная плита:
+
+```text
+test_foundation_slab -> ok (205/205)
+internal_materials_total = 1454675
+internal_works_total = 1083650
+internal_section_total = 2538325
+```
+
+Ключевые правила:
+
+- PLANTERBAND = рулоны мембраны * 4;
+- пиломатериал = площадь опалубки * 0.05, без коэффициента 1.5;
+- фанера по текущему кейсу считается через рабочую площадь 2.25 м2, альтернативный метод через фактический лист и запас добавлен опционально;
+- арматура считается по схеме вес -> м.п. -> запас -> прутки -> закупочные м.п.;
+- доставка металла остаётся manual/fixed, но добавлен suggested trucks по правилу 10 тонн;
+- клиентская часть не считается.
+
+Гидроизоляция фундаментной плиты:
+
+```text
+test_waterproofing_foundation_slab -> ok (54/54)
+waterproofing_base_subtotal = 48777
+internal_materials_total = 33961
+internal_works_total = 17255
+internal_section_total = 51216
+```
+
+Ключевые правила:
+
+- площадь гидроизоляции = внешний периметр плиты * высота борта;
+- праймер и мастика округляются вверх до целых упаковок;
+- площадь утепления ЭППС 100 мм берётся из спецификации, геометрия выводится как контроль;
+- Пеноплэкс округляется до пачек;
+- клей-пена = 1 баллон на 10 м2, минимум 1;
+- логистика = 2% от базы;
+- расходники = 3% от базы.
+
+Что проверено:
+
+- фундаментная плита сверена со скрином Excel; построчные суммы совпали, отличие Excel на 1 рубль в итогах признано округлением;
+- гидроизоляция сверена со скрином Excel; все видимые строки и итоги совпали;
+- existing `earthworks_calculator` не переписывался;
+- existing `foundation_slab_calculator` не ломался при добавлении safe improvements;
+- новые калькуляторы работают без AI и без клиентской части.
+
+Важно:
+
+- эта контрольная точка пока не закоммичена;
+- перед продолжением следующего крупного раздела желательно сделать commit.
+
+### 2026-05-06 — Проектные папки PDF/AI и калькулятор земляных работ
+
+- Ветка: `feature/ai-project-card`
+- Коммит: ещё не зафиксирован
+- Сообщение будущего коммита: рекомендуется что-то вроде `Add earthworks calculator cases and project-based experiment structure`
+
+Что добавлено и изменено:
+
+- PDF-эксперименты переведены на проектную структуру:
+  - `experiments/pdf_tests/projects/<project_name>/input/`
+  - `experiments/pdf_tests/projects/<project_name>/output/`
+- Для Хорошевки 14 создана понятная структура:
+  - `kr1_below_floor` — ниже пола, фундаментная часть;
+  - `kr2_above_floor` — выше пола, стены/кровля/надземная часть.
+- AI-эксперименты переведены на проектную структуру:
+  - `experiments/ai_tests/projects/<project_name>/input/`
+  - `experiments/ai_tests/projects/<project_name>/output/`
+- AI-карточка Хорошевки 14 перенесена в:
+  - `experiments/ai_tests/projects/horoshevka_14/`
+- Создан экспериментальный калькулятор земляных работ:
+  - `experiments/earthworks_calculator/`
+- В калькуляторе заведены два кейса:
+  - `usv_yusupovo_village`;
+  - `horoshevka_14`.
+- Добавлен индекс кейсов:
+  - `experiments/earthworks_calculator/cases/index.md`.
+- Добавлен агрегированный запуск:
+  - `experiments/earthworks_calculator/run_all_cases.py`.
+
+Что проверено:
+
+```text
+horoshevka_14 -> ok (76/76)
+usv_yusupovo_village -> ok (100/100)
+```
+
+Итоги серой внутренней части земляных работ:
+
+```text
+usv_yusupovo_village:
+  internal_materials_total = 467797
+  internal_works_total = 337223
+  internal_section_total = 805020
+
+horoshevka_14:
+  internal_materials_total = 304992
+  internal_works_total = 254372
+  internal_section_total = 559364
+```
+
+Ключевые решения:
+
+- новые PDF/AI эксперименты группировать по домам внутри `experiments/.../projects/`;
+- расчётные кейсы хранить как `input.json`, `expected.json`, `notes.md`;
+- для каждого кейса фиксировать `case_meta` и `assumptions`;
+- сметные расхождения с формульным расчётом задавать явно через `quantity_overrides`, а не прятать в коде;
+- пока считать только внутреннюю себестоимость раздела, без клиентских коэффициентов, рентабельности, НР/СП/ТН.
+
 ### 2026-05-05 — Meeting Analysis и первый реальный тест УНИКМА
 
 - Ветка: `feature/ai-project-card`

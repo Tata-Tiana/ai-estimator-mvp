@@ -11,8 +11,9 @@ from project_card_ai import MODEL_NAME, generate_project_card, normalize_project
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+EXPERIMENT_ROOT = Path(__file__).resolve().parent
 LOG_DIR = PROJECT_ROOT / "data" / "output" / "logs"
-OUTPUT_ROOT = PROJECT_ROOT / "data" / "output" / "ai_project_cards"
+OUTPUT_ROOT = EXPERIMENT_ROOT / "projects"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 LOG_FILE = LOG_DIR / "ai_project_card_experiment.log"
@@ -46,9 +47,16 @@ def main() -> None:
     choice = input("Выберите действие:\n").strip()
 
     try:
+        project_name = input("Введите имя проекта (например horoshevka_14):\n").strip()
+        if not project_name:
+            raise ValueError("Project name is required.")
+
         input_files = collect_input_files(choice)
         combined_text = build_combined_text(input_files)
-        output_dir = OUTPUT_ROOT / datetime.now().strftime("%Y-%m-%d_%H%M")
+        project_dir = OUTPUT_ROOT / project_name
+        input_dir = project_dir / "input"
+        output_dir = project_dir / "output"
+        input_dir.mkdir(parents=True, exist_ok=True)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info("Input files count: %s", len(input_files))
@@ -56,7 +64,7 @@ def main() -> None:
         logger.info("Total text size: %s characters", len(combined_text))
         logger.info("Model: %s", MODEL_NAME)
 
-        save_input_bundle(output_dir, input_files, combined_text)
+        save_input_bundle(input_dir, output_dir, input_files, combined_text, project_name)
         project_card = normalize_project_card(generate_project_card(combined_text))
         save_results(output_dir, project_card, input_files, combined_text)
 
@@ -120,20 +128,23 @@ def save_results(output_dir: Path, project_card: dict, input_files: list[Path], 
     save_estimate_scope_excel(output_dir / "estimate_scope_mapping.xlsx", project_card.get("estimate_scope_mapping", []))
 
 
-def save_input_bundle(output_dir: Path, input_files: list[Path], combined_text: str) -> None:
+def save_input_bundle(
+    input_dir: Path,
+    output_dir: Path,
+    input_files: list[Path],
+    combined_text: str,
+    project_name: str,
+) -> None:
     (output_dir / "full_text_combined.txt").write_text(combined_text, encoding="utf-8")
-    (output_dir / "sources.json").write_text(
-        json.dumps(
-            {
-                "input_files": [str(path) for path in input_files],
-                "combined_text_file": str(output_dir / "full_text_combined.txt"),
-                "combined_text_size": len(combined_text),
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    sources = {
+        "project_name": project_name,
+        "input_files": [str(path) for path in input_files],
+        "combined_text_file": str(output_dir / "full_text_combined.txt"),
+        "combined_text_size": len(combined_text),
+    }
+    sources_text = json.dumps(sources, ensure_ascii=False, indent=2)
+    (input_dir / "sources.json").write_text(sources_text + "\n", encoding="utf-8")
+    (output_dir / "sources.json").write_text(sources_text + "\n", encoding="utf-8")
 
 
 def save_materials_excel(path: Path, materials: list[dict]) -> None:

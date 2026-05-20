@@ -9,10 +9,14 @@ from logger import get_logger
 
 
 class PDFParser:
-    def __init__(self) -> None:
+    def __init__(self, project_name: str | None = None) -> None:
         self.logger = get_logger()
         self.project_root = Path(__file__).resolve().parents[2]
-        self.output_root = self.project_root / "data" / "output" / "pdf_experiments"
+        self.experiment_root = Path(__file__).resolve().parent
+        if project_name:
+            self.output_root = self.experiment_root / "projects" / project_name / "output"
+        else:
+            self.output_root = self.project_root / "data" / "output" / "pdf_experiments"
         self.output_root.mkdir(parents=True, exist_ok=True)
 
     def extract_text_pymupdf(self, pdf_path: str | Path) -> list[dict]:
@@ -95,11 +99,14 @@ class PDFParser:
         text_pages: list[dict] | None = None,
         blocks: list[dict] | None = None,
         tables: list[dict] | None = None,
+        run_name: str | None = None,
     ) -> tuple[Path, dict]:
         pdf_file = Path(pdf_path)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M")
-        safe_name = self._slugify(pdf_file.stem)
-        result_dir = self.output_root / f"{safe_name}_{timestamp}"
+        safe_name = self._slugify(run_name or pdf_file.stem)
+        result_dir = self.output_root / safe_name
+        if result_dir.exists():
+            result_dir = self.output_root / f"{safe_name}_{timestamp}"
         result_dir.mkdir(parents=True, exist_ok=True)
 
         if text_pages is not None:

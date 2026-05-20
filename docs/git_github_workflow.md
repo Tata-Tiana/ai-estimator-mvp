@@ -157,12 +157,15 @@ git push -u origin feature/estimate-roof
 - `.DS_Store`
 - `__pycache__/`
 - `*.pyc`
+- локальные PDF внутри `experiments/pdf_tests/projects/*/input/`
+- результаты PDF-парсинга внутри `experiments/pdf_tests/projects/*/output/`
+- результаты AI-карточек внутри `experiments/ai_tests/projects/*/output/`
 
 То есть:
 
 - ключи API не коммитим
 - локальные PDF и результаты прогонов не коммитим
-- в git попадает код, структура, промпты, тестовые скрипты, документация и шаблоны
+- в git попадает код, структура, промпты, тестовые скрипты, документация, notes, inputs/expected для расчётных кейсов и README
 
 ## Практический ритуал на будущее
 

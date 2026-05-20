@@ -1,0 +1,199 @@
+{
+  "calculation_blocks": {
+    "cutoff_waterproofing": {
+      "cutoff_waterproofing_area_m2": 40.59
+    },
+    "main_walls": {
+      "main_masonry_volume_m3": 109.35
+    },
+    "main_gas_blocks": {
+      "d400.pallets": 39,
+      "d400.order_volume_m3": 83.85,
+      "d500_250.pallets": 18,
+      "d500_250.order_volume_m3": 32.4
+    },
+    "adhesive_and_sand_concrete": {
+      "main_adhesive_bags": 138,
+      "sand_concrete_bags": 39
+    },
+    "lintels": {
+      "lintel_total_length_m": 23.4,
+      "u_block_quantity": 39,
+      "lintel_rebar_frame_assembly_quantity_m": 230.7,
+      "rebar.lintel_rebar_a500_d12.order_length_m": 128.7,
+      "rebar.lintel_rebar_a240_d6.order_length_m": 102,
+      "lintel_concrete_order_volume_m3": 1
+    },
+    "main_wall_reinforcement": {
+      "main_wall_chasing_quantity_m": 1070,
+      "main_wall_rebar_a500_d10.order_length_m": 1134.9
+    },
+    "deliveries_and_cranes": {
+      "gas_block_delivery_total_volume_m3": 158.55,
+      "gas_block_delivery_trucks": 5
+    },
+    "parapet": {
+      "parapet_upper_level_total_volume_m3": 36.24,
+      "parapet_and_upper_level_d400.order_volume_m3": 38.7,
+      "parapet_rebar_order_length_m": 245.7
+    },
+    "second_light_addon": {
+      "second_light_masonry_case_specific": true,
+      "second_light_masonry_volume_m3": 13.5,
+      "second_light_rebar_order_length_m": 163.8
+    },
+    "vent_chimney_cladding": {
+      "vent_chimney_cladding_area_m2": 11.4666666667,
+      "vent_chimney_d500_150.order_volume_m3": 3.6
+    },
+    "overheads": {
+      "parapet_upper_level_adhesive_bags": 49,
+      "parapet_and_second_light_rebar_order_length_m": 409.5,
+      "walls_consumables_tool_amortization_amount_raw": 100521.7
+    }
+  },
+  "estimate_lines": {
+    "cutoff_waterproofing_under_first_row_blocks": {
+      "quantity": 40.59,
+      "material_total_raw": 10147.5,
+      "material_total": 10148,
+      "work_total_raw": 4059,
+      "work_total": 4059,
+      "line_total_raw": 14206.5,
+      "line_total": 14207
+    },
+    "main_load_bearing_wall_masonry_work": {
+      "quantity": 109.35,
+      "work_total": 765450,
+      "line_total": 765450
+    },
+    "main_gas_block_d400_600x400x250_material": {
+      "quantity": 83.85,
+      "material_total": 503100,
+      "line_total": 503100
+    },
+    "main_gas_block_d500_600x250x250_material": {
+      "quantity": 32.4,
+      "material_total": 178200,
+      "line_total": 178200
+    },
+    "main_gas_block_adhesive": {
+      "quantity": 138,
+      "material_total": 46920,
+      "line_total": 46920
+    },
+    "sand_concrete_m300_first_row": {
+      "quantity": 39,
+      "material_total": 14625,
+      "line_total": 14625
+    },
+    "u_block_lintel_cutting": {
+      "quantity": 39,
+      "work_total": 15600,
+      "line_total": 15600
+    },
+    "main_wall_chasing_for_d10_reinforcement": {
+      "quantity": 1070,
+      "line_total": 0
+    },
+    "main_wall_rebar_a500_d10": {
+      "quantity": 1134.9,
+      "material_total_raw": 37133.928,
+      "material_total": 37134,
+      "line_total": 37134
+    },
+    "gas_blocks_and_mix_delivery": {
+      "quantity": 5,
+      "material_total": 140000,
+      "line_total": 140000
+    },
+    "gas_blocks_unloading_manipulator": {
+      "quantity": 5,
+      "material_total": 75000,
+      "line_total": 75000
+    },
+    "lintel_rebar_frame_assembly": {
+      "quantity": 230.7,
+      "line_total": 0
+    },
+    "lintel_rebar_a500_d12": {
+      "quantity": 128.7,
+      "material_total_raw": 5828.823,
+      "material_total": 5829
+    },
+    "lintel_rebar_a240_d6": {
+      "quantity": 102,
+      "material_total_raw": 1358.64,
+      "material_total": 1359
+    },
+    "lintel_concrete_b22_5_m300_material": {
+      "quantity": 1,
+      "material_total": 6400
+    },
+    "parapet_and_upper_level_masonry_work": {
+      "quantity": 36.24,
+      "work_total": 253680,
+      "is_case_specific": true
+    },
+    "parapet_and_upper_level_gas_block_d400_material": {
+      "quantity": 38.7,
+      "material_total": 232200,
+      "is_case_specific": true
+    },
+    "vent_chimney_gas_block_cladding_work": {
+      "quantity": 11.4667,
+      "display_quantity": 11.47,
+      "work_total_raw": 13760,
+      "work_total": 13760
+    },
+    "vent_chimney_gas_block_d500_600x150x250_material": {
+      "quantity": 3.6,
+      "material_total": 20160
+    },
+    "parapet_upper_level_adhesive": {
+      "quantity": 49,
+      "material_total": 16660,
+      "is_case_specific": true
+    },
+    "parapet_and_second_light_chasing_for_d10_reinforcement": {
+      "quantity": 384.76,
+      "line_total": 0,
+      "is_case_specific": true
+    },
+    "parapet_and_second_light_rebar_a500_d10": {
+      "quantity": 409.5,
+      "material_total_raw": 13398.84,
+      "material_total": 13399,
+      "is_case_specific": true
+    },
+    "walls_consumables_tool_amortization": {
+      "quantity": 1,
+      "material_unit_price": 100522,
+      "material_total_raw": 100521.7,
+      "material_total": 100522,
+      "line_total": 100522
+    },
+    "construction_waste_removal": {
+      "quantity": 3,
+      "material_total": 30000,
+      "work_total": 10500,
+      "line_total": 40500
+    },
+    "walls_technical_supervision": {
+      "quantity": 1,
+      "work_total": 10000,
+      "line_total": 10000
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 1550654.431,
+    "internal_materials_total": 1550654,
+    "internal_works_total_raw": 1121449,
+    "internal_works_total": 1121449,
+    "internal_section_total_raw": 2672103.431,
+    "internal_section_total": 2672103,
+    "sum_of_displayed_line_material_totals": 1550656,
+    "sum_of_displayed_line_work_totals": 1121449,
+    "sum_of_displayed_line_totals": 2672105
+  }
+}

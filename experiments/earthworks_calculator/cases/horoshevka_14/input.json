@@ -1,0 +1,59 @@
+{
+  "project_name": "horoshevka_14",
+  "case_meta": {
+    "validated_with_elena": false,
+    "confidence": "medium"
+  },
+  "assumptions": {
+    "manual_excavation_override": true,
+    "sand_override": true,
+    "geotextile_override": true
+  },
+  "pit_area_m2": 262,
+  "manual_refinement_depth_m": 0.08,
+  "trench_volume_m3": 11.43,
+  "sand_base_volume_m3": 165.7,
+  "sand_compaction_coeff": 1.3,
+  "sand_truck_step_m3": 10,
+  "geotextile_area_m2": 257.4,
+  "geotextile_overlap_coeff": 1.0,
+  "geotextile_roll_area_m2": 100,
+  "communications_length_m": 0,
+  "axis_marking_shifts": 1,
+  "excavator_shifts": 3,
+  "geotextile_laying_area_m2": 0,
+  "manual_excavation_quantity_for_estimate_m3": 32.393,
+  "consumables_amount": 16292.16,
+  "enabled_lines": [
+    "axis_marking",
+    "excavator_jcb",
+    "manual_excavation",
+    "geotextile_material",
+    "sand_filling",
+    "sand_material",
+    "sand_manual_moving",
+    "consumables"
+  ],
+  "quantity_overrides": {
+    "sand_order_volume_m3": 190,
+    "geotextile_material_quantity_m2": 300
+  },
+  "line_name_overrides": {
+    "manual_excavation": "Доработка грунта вручную",
+    "sand_filling": "Отсыпка дна под плиту и под ростверк песком с трамбованием"
+  },
+  "internal_prices": {
+    "axis_marking_work_unit_price": 15000,
+    "excavator_material_unit_price": 22000,
+    "excavator_work_unit_price": 0,
+    "manual_excavation_work_unit_price": 1200,
+    "geotextile_laying_work_unit_price": 0,
+    "geotextile_material_unit_price": 109,
+    "geotextile_material_work_unit_price": 35,
+    "sand_filling_work_unit_price": 1000,
+    "sand_material_unit_price": 1000,
+    "sand_manual_moving_work_unit_price": 0,
+    "communications_work_unit_price": 0,
+    "communications_material_unit_price": 0
+  }
+}

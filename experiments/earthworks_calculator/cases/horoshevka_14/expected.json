@@ -1,0 +1,100 @@
+{
+  "volumes": {
+    "manual_pit_volume_m3": 20.96,
+    "trench_volume_m3": 11.43,
+    "manual_excavation_total_m3": 32.39,
+    "compacted_sand_base_m3": 215.41,
+    "compacted_sand_trenches_m3": 14.859,
+    "sand_total_m3": 230.269,
+    "sand_order_volume_m3": 240,
+    "geotextile_with_overlap_m2": 257.4,
+    "geotextile_rolls": 3
+  },
+  "estimate_lines": {
+    "axis_marking": {
+      "name": "Вынос осей фундамента, котлована на участок",
+      "unit": "смена",
+      "quantity": 1,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 15000,
+      "work_total": 15000,
+      "line_total": 15000
+    },
+    "excavator_jcb": {
+      "name": "Механизированная разработка грунта, Экскаватор JCB",
+      "unit": "смена",
+      "quantity": 3,
+      "material_unit_price": 22000,
+      "material_total": 66000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 66000
+    },
+    "manual_excavation": {
+      "name": "Доработка грунта вручную",
+      "unit": "м3",
+      "quantity": 32.393,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 1200,
+      "work_total": 38872,
+      "line_total": 38872
+    },
+    "geotextile_material": {
+      "name": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+      "unit": "м2",
+      "quantity": 300,
+      "material_unit_price": 109,
+      "material_total": 32700,
+      "work_unit_price": 35,
+      "work_total": 10500,
+      "line_total": 43200
+    },
+    "sand_filling": {
+      "name": "Отсыпка дна под плиту и под ростверк песком с трамбованием",
+      "unit": "м3",
+      "quantity": 190,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 1000,
+      "work_total": 190000,
+      "line_total": 190000
+    },
+    "sand_material": {
+      "name": "Песок строительный",
+      "unit": "м3",
+      "quantity": 190,
+      "material_unit_price": 1000,
+      "material_total": 190000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 190000
+    },
+    "sand_manual_moving": {
+      "name": "Перемещение песка вручную",
+      "unit": "м3",
+      "quantity": 190,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    "consumables": {
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "quantity": 1,
+      "material_unit_price": 16292.16,
+      "material_total": 16292,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 16292
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 304992,
+    "internal_works_total": 254372,
+    "internal_section_total": 559364
+  }
+}

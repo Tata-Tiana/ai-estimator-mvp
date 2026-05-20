@@ -1,0 +1,9 @@
+{
+  "project_name": "horoshevka_14",
+  "input_files": [
+    "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_tests/projects/horoshevka_14/output/kr1_below_floor/full_text.txt",
+    "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_tests/projects/horoshevka_14/output/kr2_above_floor/full_text.txt"
+  ],
+  "combined_text_file": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/ai_tests/projects/horoshevka_14/output/full_text_combined.txt",
+  "combined_text_size": 46109
+}

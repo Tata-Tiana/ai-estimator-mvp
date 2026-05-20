@@ -8,6 +8,11 @@ data/output/
 data/reference/unikma/*.json
 data/reference/unikma/*.xlsx
 
+# Local project PDF inputs and generated experiment outputs
+experiments/pdf_tests/projects/*/input/*.pdf
+experiments/pdf_tests/projects/*/output/**/*
+experiments/ai_tests/projects/*/output/**/*
+
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*
 !experiments/meeting_analysis/input/README.md

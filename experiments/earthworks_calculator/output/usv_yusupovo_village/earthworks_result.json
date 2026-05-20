@@ -1,0 +1,1022 @@
+{
+  "case_name": "usv_yusupovo_village",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/expected.json",
+  "inputs": {
+    "project_name": "usv_yusupovo_village",
+    "pit_area_m2": 330,
+    "case_meta": {
+      "validated_with_elena": true,
+      "confidence": "high"
+    },
+    "assumptions": {
+      "manual_excavation_override": true,
+      "sand_override": false,
+      "geotextile_override": false
+    },
+    "manual_refinement_depth_m": 0.08,
+    "trench_volume_m3": 18.29,
+    "trench_length_m": null,
+    "trench_depth_m": null,
+    "trench_width_m": null,
+    "sand_base_volume_m3": 96.6,
+    "sand_compaction_coeff": 1.3,
+    "sand_truck_step_m3": 20,
+    "geotextile_area_m2": 330,
+    "geotextile_overlap_coeff": 1.1,
+    "geotextile_roll_area_m2": 100,
+    "communications_length_m": 115,
+    "axis_marking_shifts": 1,
+    "excavator_shifts": 3,
+    "geotextile_laying_area_m2": 340,
+    "manual_excavation_quantity_for_estimate_m3": 44.695,
+    "consumables_amount": 23447.18,
+    "enabled_lines": null,
+    "quantity_overrides": {},
+    "line_name_overrides": {},
+    "internal_prices": {
+      "axis_marking_work_unit_price": 20000,
+      "excavator_material_unit_price": 26000,
+      "excavator_work_unit_price": 3500,
+      "manual_excavation_work_unit_price": 1400,
+      "geotextile_laying_work_unit_price": 35,
+      "geotextile_material_unit_price": 109,
+      "sand_filling_work_unit_price": 1200,
+      "sand_material_unit_price": 1550,
+      "sand_manual_moving_work_unit_price": 0,
+      "communications_work_unit_price": 350,
+      "communications_material_unit_price": 650
+    }
+  },
+  "volume_result": {
+    "manual_pit_volume_m3": 26.4,
+    "trench_volume_m3": 18.29,
+    "manual_excavation_total_m3": 44.69,
+    "compacted_sand_base_m3": 125.58,
+    "compacted_sand_trenches_m3": 23.777,
+    "sand_total_m3": 149.357,
+    "sand_order_volume_m3": 160,
+    "geotextile_with_overlap_m2": 363.0,
+    "geotextile_rolls": 4
+  },
+  "estimate_lines": [
+    {
+      "code": "axis_marking",
+      "name": "Вынос осей фундамента, котлована на участок",
+      "unit": "смена",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 20000,
+      "work_total": 20000,
+      "line_total": 20000
+    },
+    {
+      "code": "excavator_jcb",
+      "name": "Механизированная разработка грунта, Экскаватор JCB",
+      "unit": "смена",
+      "quantity": 3.0,
+      "material_unit_price": 26000,
+      "material_total": 78000,
+      "work_unit_price": 3500,
+      "work_total": 10500,
+      "line_total": 88500
+    },
+    {
+      "code": "manual_excavation",
+      "name": "Разработка грунта вручную",
+      "unit": "м3",
+      "quantity": 44.695,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 1400,
+      "work_total": 62573,
+      "line_total": 62573
+    },
+    {
+      "code": "geotextile_laying",
+      "name": "Укладка геотекстиля",
+      "unit": "м2",
+      "quantity": 340.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 35,
+      "work_total": 11900,
+      "line_total": 11900
+    },
+    {
+      "code": "geotextile_material",
+      "name": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+      "unit": "м2",
+      "quantity": 400.0,
+      "material_unit_price": 109,
+      "material_total": 43600,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 43600
+    },
+    {
+      "code": "sand_filling",
+      "name": "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+      "unit": "м3",
+      "quantity": 160.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 1200,
+      "work_total": 192000,
+      "line_total": 192000
+    },
+    {
+      "code": "sand_material",
+      "name": "Песок строительный",
+      "unit": "м3",
+      "quantity": 160.0,
+      "material_unit_price": 1550,
+      "material_total": 248000,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 248000
+    },
+    {
+      "code": "sand_manual_moving",
+      "name": "Перемещение песка вручную",
+      "unit": "м3",
+      "quantity": 160.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "communications_work",
+      "name": "Закладка технологических входов коммуникаций до границы дома",
+      "unit": "мп",
+      "quantity": 115.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 350,
+      "work_total": 40250,
+      "line_total": 40250
+    },
+    {
+      "code": "communications_material",
+      "name": "Материалы для устройства входов коммуникаций",
+      "unit": "мп",
+      "quantity": 115.0,
+      "material_unit_price": 650,
+      "material_total": 74750,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 74750
+    },
+    {
+      "code": "consumables",
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "quantity": 1.0,
+      "material_unit_price": 23447.18,
+      "material_total": 23447,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 23447
+    }
+  ],
+  "internal_totals": {
+    "internal_materials_total": 467797,
+    "internal_works_total": 337223,
+    "internal_section_total": 805020
+  },
+  "expected": {
+    "volumes": {
+      "manual_pit_volume_m3": 26.4,
+      "trench_volume_m3": 18.29,
+      "manual_excavation_total_m3": 44.69,
+      "compacted_sand_base_m3": 125.58,
+      "compacted_sand_trenches_m3": 23.777,
+      "sand_total_m3": 149.357,
+      "sand_order_volume_m3": 160,
+      "geotextile_with_overlap_m2": 363.0,
+      "geotextile_rolls": 4
+    },
+    "estimate_lines": {
+      "axis_marking": {
+        "name": "Вынос осей фундамента, котлована на участок",
+        "unit": "смена",
+        "quantity": 1,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 20000,
+        "work_total": 20000,
+        "line_total": 20000
+      },
+      "excavator_jcb": {
+        "name": "Механизированная разработка грунта, Экскаватор JCB",
+        "unit": "смена",
+        "quantity": 3,
+        "material_unit_price": 26000,
+        "material_total": 78000,
+        "work_unit_price": 3500,
+        "work_total": 10500,
+        "line_total": 88500
+      },
+      "manual_excavation": {
+        "name": "Разработка грунта вручную",
+        "unit": "м3",
+        "quantity": 44.695,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 1400,
+        "work_total": 62573,
+        "line_total": 62573
+      },
+      "geotextile_laying": {
+        "name": "Укладка геотекстиля",
+        "unit": "м2",
+        "quantity": 340,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 35,
+        "work_total": 11900,
+        "line_total": 11900
+      },
+      "geotextile_material": {
+        "name": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+        "unit": "м2",
+        "quantity": 400,
+        "material_unit_price": 109,
+        "material_total": 43600,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 43600
+      },
+      "sand_filling": {
+        "name": "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+        "unit": "м3",
+        "quantity": 160,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 1200,
+        "work_total": 192000,
+        "line_total": 192000
+      },
+      "sand_material": {
+        "name": "Песок строительный",
+        "unit": "м3",
+        "quantity": 160,
+        "material_unit_price": 1550,
+        "material_total": 248000,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 248000
+      },
+      "sand_manual_moving": {
+        "name": "Перемещение песка вручную",
+        "unit": "м3",
+        "quantity": 160,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 0
+      },
+      "communications_work": {
+        "name": "Закладка технологических входов коммуникаций до границы дома",
+        "unit": "мп",
+        "quantity": 115,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 350,
+        "work_total": 40250,
+        "line_total": 40250
+      },
+      "communications_material": {
+        "name": "Материалы для устройства входов коммуникаций",
+        "unit": "мп",
+        "quantity": 115,
+        "material_unit_price": 650,
+        "material_total": 74750,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 74750
+      },
+      "consumables": {
+        "name": "Расходные материалы, амортизация инструмента",
+        "unit": "комплект",
+        "quantity": 1,
+        "material_unit_price": 23447.18,
+        "material_total": 23447,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 23447
+      }
+    },
+    "internal_totals": {
+      "internal_materials_total": 467797,
+      "internal_works_total": 337223,
+      "internal_section_total": 805020
+    }
+  },
+  "comparison": [
+    {
+      "key": "volumes.manual_pit_volume_m3",
+      "expected": 26.4,
+      "actual": 26.4,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.trench_volume_m3",
+      "expected": 18.29,
+      "actual": 18.29,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.manual_excavation_total_m3",
+      "expected": 44.69,
+      "actual": 44.69,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.compacted_sand_base_m3",
+      "expected": 125.58,
+      "actual": 125.58,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.compacted_sand_trenches_m3",
+      "expected": 23.777,
+      "actual": 23.777,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.sand_total_m3",
+      "expected": 149.357,
+      "actual": 149.357,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.sand_order_volume_m3",
+      "expected": 160,
+      "actual": 160,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.geotextile_with_overlap_m2",
+      "expected": 363.0,
+      "actual": 363.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.geotextile_rolls",
+      "expected": 4,
+      "actual": 4,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.name",
+      "expected": "Вынос осей фундамента, котлована на участок",
+      "actual": "Вынос осей фундамента, котлована на участок",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.unit",
+      "expected": "смена",
+      "actual": "смена",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.quantity",
+      "expected": 1,
+      "actual": 1.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.work_unit_price",
+      "expected": 20000,
+      "actual": 20000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.work_total",
+      "expected": 20000,
+      "actual": 20000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.axis_marking.line_total",
+      "expected": 20000,
+      "actual": 20000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.name",
+      "expected": "Механизированная разработка грунта, Экскаватор JCB",
+      "actual": "Механизированная разработка грунта, Экскаватор JCB",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.unit",
+      "expected": "смена",
+      "actual": "смена",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.quantity",
+      "expected": 3,
+      "actual": 3.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.material_unit_price",
+      "expected": 26000,
+      "actual": 26000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.material_total",
+      "expected": 78000,
+      "actual": 78000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.work_unit_price",
+      "expected": 3500,
+      "actual": 3500,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.work_total",
+      "expected": 10500,
+      "actual": 10500,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.excavator_jcb.line_total",
+      "expected": 88500,
+      "actual": 88500,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.name",
+      "expected": "Разработка грунта вручную",
+      "actual": "Разработка грунта вручную",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.quantity",
+      "expected": 44.695,
+      "actual": 44.695,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.work_unit_price",
+      "expected": 1400,
+      "actual": 1400,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.work_total",
+      "expected": 62573,
+      "actual": 62573,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.line_total",
+      "expected": 62573,
+      "actual": 62573,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.name",
+      "expected": "Укладка геотекстиля",
+      "actual": "Укладка геотекстиля",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.unit",
+      "expected": "м2",
+      "actual": "м2",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.quantity",
+      "expected": 340,
+      "actual": 340.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.work_unit_price",
+      "expected": 35,
+      "actual": 35,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.work_total",
+      "expected": 11900,
+      "actual": 11900,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_laying.line_total",
+      "expected": 11900,
+      "actual": 11900,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.name",
+      "expected": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+      "actual": "Геотекстиль Дорнит 300 г.м2 (100м2)",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.unit",
+      "expected": "м2",
+      "actual": "м2",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.quantity",
+      "expected": 400,
+      "actual": 400.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.material_unit_price",
+      "expected": 109,
+      "actual": 109,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.material_total",
+      "expected": 43600,
+      "actual": 43600,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.geotextile_material.line_total",
+      "expected": 43600,
+      "actual": 43600,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.name",
+      "expected": "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+      "actual": "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.quantity",
+      "expected": 160,
+      "actual": 160.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.work_unit_price",
+      "expected": 1200,
+      "actual": 1200,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.work_total",
+      "expected": 192000,
+      "actual": 192000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_filling.line_total",
+      "expected": 192000,
+      "actual": 192000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.name",
+      "expected": "Песок строительный",
+      "actual": "Песок строительный",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.quantity",
+      "expected": 160,
+      "actual": 160.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.material_unit_price",
+      "expected": 1550,
+      "actual": 1550,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.material_total",
+      "expected": 248000,
+      "actual": 248000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_material.line_total",
+      "expected": 248000,
+      "actual": 248000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.name",
+      "expected": "Перемещение песка вручную",
+      "actual": "Перемещение песка вручную",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.quantity",
+      "expected": 160,
+      "actual": 160.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.work_unit_price",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.sand_manual_moving.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.name",
+      "expected": "Закладка технологических входов коммуникаций до границы дома",
+      "actual": "Закладка технологических входов коммуникаций до границы дома",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.unit",
+      "expected": "мп",
+      "actual": "мп",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.quantity",
+      "expected": 115,
+      "actual": 115.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.work_unit_price",
+      "expected": 350,
+      "actual": 350,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.work_total",
+      "expected": 40250,
+      "actual": 40250,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_work.line_total",
+      "expected": 40250,
+      "actual": 40250,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.name",
+      "expected": "Материалы для устройства входов коммуникаций",
+      "actual": "Материалы для устройства входов коммуникаций",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.unit",
+      "expected": "мп",
+      "actual": "мп",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.quantity",
+      "expected": 115,
+      "actual": 115.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.material_unit_price",
+      "expected": 650,
+      "actual": 650,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.material_total",
+      "expected": 74750,
+      "actual": 74750,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.communications_material.line_total",
+      "expected": 74750,
+      "actual": 74750,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.name",
+      "expected": "Расходные материалы, амортизация инструмента",
+      "actual": "Расходные материалы, амортизация инструмента",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.unit",
+      "expected": "комплект",
+      "actual": "комплект",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.quantity",
+      "expected": 1,
+      "actual": 1.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.material_unit_price",
+      "expected": 23447.18,
+      "actual": 23447.18,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.material_total",
+      "expected": 23447,
+      "actual": 23447,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.consumables.line_total",
+      "expected": 23447,
+      "actual": 23447,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_materials_total",
+      "expected": 467797,
+      "actual": 467797,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_works_total",
+      "expected": 337223,
+      "actual": 337223,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_section_total",
+      "expected": 805020,
+      "actual": 805020,
+      "diff": 0,
+      "status": "ok"
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+{
+  "calculation_blocks": {
+    "membrane": {
+      "membrane_rolls": 9,
+      "planterband_quantity": 36
+    },
+    "formwork": {
+      "formwork_area_m2": 24.3,
+      "plywood_calc_method": "working_area",
+      "plywood_sheet_working_area_m2": 2.25,
+      "plywood_sheets": 11,
+      "timber_raw_volume_m3": 1.215
+    },
+    "eps": {
+      "eps50_laying_area_m2": 270,
+      "eps50_order_volume_m3": 14.4352,
+      "eps100_order_volume_m3": 0.5552
+    },
+    "thermal_insert": {
+      "thermal_insert_pieces": 36
+    },
+    "rebar": {
+      "items.rebar_a500_d16.order_length_m": 222.3,
+      "items.rebar_a500_d12.order_length_m": 6388.2,
+      "items.rebar_a500_d10.order_length_m": 1836.9,
+      "items.rebar_a240_d6.order_length_m": 168,
+      "rebar_frame_assembly_quantity_m": 8615.4,
+      "foundation_slab_rebar_control_weight_kg": 7180.9498,
+      "box_total_metal_weight_kg": 8263,
+      "box_metal_delivery_capacity_kg": 10000,
+      "suggested_box_metal_delivery_trucks": 1,
+      "actual_rebar_metal_delivery_trucks": 1
+    },
+    "concrete": {
+      "concrete_order_volume_m3": 85.5,
+      "concrete_delivery_trips": 10,
+      "reinforcement_density_kg_per_m3_rounded": 89
+    }
+  },
+  "estimate_lines": {
+    "planter_membrane_installation": {
+      "unit": "м2",
+      "quantity": 320,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 32000,
+      "line_total": 32000
+    },
+    "planter_standard_material": {
+      "unit": "рул",
+      "quantity": 9,
+      "material_unit_price": 5166,
+      "material_total": 46494,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 46494
+    },
+    "planterband_material": {
+      "unit": "шт",
+      "quantity": 36,
+      "material_unit_price": 790,
+      "material_total": 28440,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 28440
+    },
+    "formwork_installation": {
+      "unit": "м2",
+      "quantity": 24.3,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    "formwork_plywood": {
+      "unit": "шт",
+      "quantity": 11,
+      "material_unit_price": 1450,
+      "material_total": 15950,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 15950
+    },
+    "formwork_timber": {
+      "unit": "м3",
+      "quantity": 1.215,
+      "display_quantity": 1.2,
+      "material_unit_price": 21500,
+      "material_total": 26123,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 26123
+    },
+    "eps50_laying_under_slab": {
+      "unit": "м2",
+      "quantity": 270,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 250,
+      "work_total": 67500,
+      "line_total": 67500
+    },
+    "thermal_insert_installation": {
+      "unit": "мп",
+      "quantity": 21.5,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 2150,
+      "line_total": 2150
+    },
+    "eps50_penoplex_geo_material": {
+      "unit": "м3",
+      "quantity": 14.4352,
+      "display_quantity": 14.44,
+      "material_unit_price": 9800,
+      "material_total": 141465,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 141465
+    },
+    "eps100_penoplex_geo_material": {
+      "unit": "м3",
+      "quantity": 0.5552,
+      "display_quantity": 0.56,
+      "material_unit_price": 10000,
+      "material_total": 5552,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 5552
+    },
+    "rebar_crane_supply": {
+      "unit": "смена",
+      "quantity": 1,
+      "material_unit_price": 30000,
+      "material_total": 30000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 30000
+    },
+    "rebar_frame_assembly": {
+      "unit": "мп",
+      "quantity": 8615.4,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    "rebar_a500_d16": {
+      "unit": "мп",
+      "quantity": 222.3,
+      "material_unit_price": 80.58,
+      "material_total": 17913,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 17913
+    },
+    "rebar_a500_d12": {
+      "unit": "мп",
+      "quantity": 6388.2,
+      "material_unit_price": 45.29,
+      "material_total": 289322,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 289322
+    },
+    "rebar_a500_d10": {
+      "unit": "мп",
+      "quantity": 1836.9,
+      "material_unit_price": 32.72,
+      "material_total": 60103,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 60103
+    },
+    "rebar_a240_d6": {
+      "unit": "мп",
+      "quantity": 168,
+      "material_unit_price": 13.32,
+      "material_total": 2238,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 2238
+    },
+    "rebar_metal_delivery": {
+      "unit": "маш",
+      "quantity": 1,
+      "material_unit_price": 22000,
+      "material_total": 22000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 22000
+    },
+    "foundation_slab_concreting_work": {
+      "unit": "м3",
+      "quantity": 81,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 12000,
+      "work_total": 972000,
+      "line_total": 972000
+    },
+    "concrete_b22_5_m300_material": {
+      "unit": "м3",
+      "quantity": 85.5,
+      "material_unit_price": 6400,
+      "material_total": 547200,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 547200
+    },
+    "concrete_delivery": {
+      "unit": "рейс",
+      "quantity": 10,
+      "material_unit_price": 7500,
+      "material_total": 75000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 75000
+    },
+    "concrete_pump_32m": {
+      "unit": "смена",
+      "quantity": 1,
+      "material_unit_price": 38000,
+      "material_total": 38000,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 38000
+    },
+    "formwork_dismantling": {
+      "unit": "м2",
+      "quantity": 24.3,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    "logistics_and_supply": {
+      "unit": "-",
+      "quantity": 1,
+      "material_unit_price": 36291.7,
+      "material_total": 36292,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 36292
+    },
+    "consumables_tool_amortization": {
+      "unit": "комплект",
+      "quantity": 1,
+      "material_unit_price": 72583,
+      "material_total": 72583,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 72583
+    },
+    "technical_supervision": {
+      "unit": "-",
+      "quantity": 1,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 10000,
+      "work_total": 10000,
+      "line_total": 10000
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1454675,
+    "internal_works_total": 1083650,
+    "internal_section_total": 2538325
+  }
+}

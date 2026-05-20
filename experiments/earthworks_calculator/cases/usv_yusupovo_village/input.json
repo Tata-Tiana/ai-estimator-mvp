@@ -1,0 +1,40 @@
+{
+  "project_name": "usv_yusupovo_village",
+  "case_meta": {
+    "validated_with_elena": true,
+    "confidence": "high"
+  },
+  "assumptions": {
+    "manual_excavation_override": true,
+    "sand_override": false,
+    "geotextile_override": false
+  },
+  "pit_area_m2": 330,
+  "manual_refinement_depth_m": 0.08,
+  "trench_volume_m3": 18.29,
+  "sand_base_volume_m3": 96.6,
+  "sand_compaction_coeff": 1.3,
+  "sand_truck_step_m3": 20,
+  "geotextile_area_m2": 330,
+  "geotextile_overlap_coeff": 1.10,
+  "geotextile_roll_area_m2": 100,
+  "communications_length_m": 115,
+  "axis_marking_shifts": 1,
+  "excavator_shifts": 3,
+  "geotextile_laying_area_m2": 340,
+  "manual_excavation_quantity_for_estimate_m3": 44.695,
+  "consumables_amount": 23447.18,
+  "internal_prices": {
+    "axis_marking_work_unit_price": 20000,
+    "excavator_material_unit_price": 26000,
+    "excavator_work_unit_price": 3500,
+    "manual_excavation_work_unit_price": 1400,
+    "geotextile_laying_work_unit_price": 35,
+    "geotextile_material_unit_price": 109,
+    "sand_filling_work_unit_price": 1200,
+    "sand_material_unit_price": 1550,
+    "sand_manual_moving_work_unit_price": 0,
+    "communications_work_unit_price": 350,
+    "communications_material_unit_price": 650
+  }
+}

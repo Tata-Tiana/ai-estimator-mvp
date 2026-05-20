@@ -1,5 +1,16 @@
-Эта папка служит только как локальная точка для заметок по экспериментам.
+Эта папка оставлена как локальная точка для заметок по старому формату эксперимента.
 
-Основные результаты CLI-парсера сохраняются в:
-`data/output/pdf_experiments/`
+Новый формат для серии домов:
 
+```text
+experiments/pdf_tests/projects/<project_name>/
+├── input/
+├── output/
+└── notes.md
+```
+
+Пример:
+
+```text
+experiments/pdf_tests/projects/horoshevka_14/
+```
