@@ -1,6 +1,15 @@
 # Project Notes
 
-Дата актуализации: `2026-05-15`.
+Дата актуализации: `2026-05-20`.
+
+## Последняя расчётная контрольная точка
+
+```text
+branch: feature/ai-project-card
+commit: 20c9d05 Add experimental estimate calculators and project handoff docs
+```
+
+Это последняя зафиксированная точка проекта. В неё вошли проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация.
 
 ## Главные договорённости
 
@@ -49,6 +58,7 @@ experiments/meeting_analysis/input/2026-05-08_foundation_slab/
 data/output/meeting_analysis/2026-05-08_1125_foundation_slab/
 experiments/foundation_slab_calculator/
 experiments/waterproofing_calculator/
+experiments/load_bearing_walls_lintels_calculator/
 ```
 
 ## Где искать ЮСВ
@@ -135,6 +145,31 @@ internal_section_total = 51216
 
 Блок сверен со скрином Excel: все видимые строки и итоги совпали.
 
+## Текущие результаты несущих стен и перемычек
+
+```text
+test_load_bearing_walls_lintels -> ok
+internal_materials_total_raw = 1550654.431
+internal_materials_total = 1550654
+internal_works_total_raw = 1121449.0
+internal_works_total = 1121449
+internal_section_total_raw = 2672103.431
+internal_section_total = 2672103
+```
+
+Команда:
+
+```bash
+../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+```
+
+Важное:
+
+- клиентская часть не считается;
+- Excel отображает строки округлёнными, но итог считает от raw-значений;
+- результат хранит raw totals и display totals;
+- второй свет / кладка над кухней помечены как case-specific addon.
+
 ## Отчёты для руководства
 
 ```text
@@ -142,6 +177,7 @@ docs/report_pdf_parser.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_waterproofing_calculator.md
+docs/report_load_bearing_walls_lintels_calculator.md
 ```
 
 ## Handoff для нового чата
@@ -162,4 +198,4 @@ docs/project_notes.md
 - При добавлении нового расчёта сразу делать `cases/index.md` или обновлять существующий индекс.
 - Внутреннюю себестоимость не смешивать с клиентской частью сметы.
 - Если итог Excel отличается на округление, не подгонять молча: фиксировать причину в notes/result.
-- Перед новым большим этапом желательно сделать git commit текущей контрольной точки.
+- Перед новым большим этапом проверять, что handoff/current state/changelog отражают последнюю контрольную точку.

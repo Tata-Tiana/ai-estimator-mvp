@@ -29,7 +29,18 @@ docs/report_pdf_parser.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_waterproofing_calculator.md
+docs/report_load_bearing_walls_lintels_calculator.md
 ```
+
+## Последняя расчётная контрольная точка
+
+```text
+branch: feature/ai-project-card
+commit: 20c9d05 Add experimental estimate calculators and project handoff docs
+date: 2026-05-20
+```
+
+Это актуальная зафиксированная расчётная база проекта: проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация сохранены в git.
 
 ## Что сейчас работает
 
@@ -102,6 +113,24 @@ test_waterproofing_foundation_slab -> ok (54/54), итог 51216
 
 Считает блок "Гидроизоляция, утепление бортов плит".
 
+### Калькулятор несущих стен и перемычек
+
+Папка:
+
+```text
+experiments/load_bearing_walls_lintels_calculator/
+```
+
+Проверенный кейс:
+
+```text
+test_load_bearing_walls_lintels -> ok, итог 2672103
+```
+
+Считает серую внутреннюю себестоимость раздела "Внешние и внутренние несущие стены, перемычки".
+
+Важно: в этом разделе Excel показывает округлённые строки, но итог считает от raw-значений. Поэтому результат хранит raw totals и display totals.
+
 ## Команды проверки
 
 Земляные работы:
@@ -122,6 +151,31 @@ test_waterproofing_foundation_slab -> ok (54/54), итог 51216
 ../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
 ```
 
+Несущие стены и перемычки:
+
+```bash
+../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+```
+
 ## Текущий git-статус по смыслу
 
-Последние коммиты в истории пока фиксируют базовую структуру, meeting analysis, УНИКМА и changelog. Большая работа по проектным папкам, калькуляторам, отчётам и документации находится в рабочем дереве и требует отдельного коммита, когда пользователь решит зафиксировать текущую контрольную точку.
+Текущая расчётная контрольная точка зафиксирована коммитом `20c9d05`.
+
+Перед этим были проверены:
+
+```text
+earthworks:
+  horoshevka_14 -> ok (76/76)
+  usv_yusupovo_village -> ok (100/100)
+
+foundation_slab:
+  internal_section_total = 2538325
+
+waterproofing:
+  internal_section_total = 51216
+
+load_bearing_walls_lintels:
+  internal_section_total = 2672103
+```
+
+`pytest` на текущий момент собирает `0` тестов; рабочие проверки идут через CLI калькуляторов.

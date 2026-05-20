@@ -43,11 +43,53 @@ git status
 
 ## Контрольные точки
 
+### 2026-05-20 — Зафиксирована контрольная точка экспериментальных калькуляторов и документации
+
+- Ветка: `feature/ai-project-card`
+- Коммит: `20c9d05`
+- Сообщение: `Add experimental estimate calculators and project handoff docs`
+
+Что зафиксировано:
+
+- проектные папки PDF/AI экспериментов;
+- калькулятор земляных работ;
+- калькулятор фундаментной плиты;
+- калькулятор гидроизоляции фундаментной плиты;
+- калькулятор несущих стен и перемычек;
+- отчёты для руководства;
+- README, handoff, current state, project notes и changelog.
+
+Проверки перед коммитом:
+
+```text
+earthworks:
+  horoshevka_14 -> ok (76/76)
+  usv_yusupovo_village -> ok (100/100)
+
+foundation_slab:
+  internal_section_total = 2538325
+
+waterproofing:
+  internal_section_total = 51216
+
+load_bearing_walls_lintels:
+  internal_section_total = 2672103
+
+pytest:
+  collected 0 items
+```
+
+Значение контрольной точки:
+
+- это актуальная база для продолжения следующего раздела сметы;
+- новый чат должен начинать с `docs/assistant_handoff.md`;
+- подробная карта проекта находится в `docs/current_project_state.md`;
+- рабочие правила и статусы кейсов находятся в `docs/project_notes.md`.
+
 ### 2026-05-15 — Калькуляторы фундаментной плиты, гидроизоляции и handoff-документация
 
 - Ветка: текущая рабочая ветка
-- Коммит: ещё не зафиксирован
-- Рекомендуемое сообщение будущего коммита: `Add experimental estimate calculators and project handoff docs`
+- Коммит: вошло в `20c9d05` от 2026-05-20
 
 Что добавлено:
 
@@ -112,14 +154,13 @@ internal_section_total = 51216
 
 Важно:
 
-- эта контрольная точка пока не закоммичена;
-- перед продолжением следующего крупного раздела желательно сделать commit.
+- эта работа позже вошла в общий коммит `20c9d05`;
+- перед продолжением следующего крупного раздела важно обновлять handoff/current state/changelog.
 
 ### 2026-05-06 — Проектные папки PDF/AI и калькулятор земляных работ
 
 - Ветка: `feature/ai-project-card`
-- Коммит: ещё не зафиксирован
-- Сообщение будущего коммита: рекомендуется что-то вроде `Add earthworks calculator cases and project-based experiment structure`
+- Коммит: вошло в `20c9d05` от 2026-05-20
 
 Что добавлено и изменено:
 
