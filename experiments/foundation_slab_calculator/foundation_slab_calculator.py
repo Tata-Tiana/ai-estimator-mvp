@@ -246,11 +246,14 @@ class EstimateLineResult:
     work_total: int
     line_total: int
     display_quantity: float | None = None
+    line_type: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
         if self.display_quantity is None:
             result.pop("display_quantity")
+        if self.line_type is None:
+            result.pop("line_type")
         return result
 
 
@@ -262,6 +265,7 @@ def calculate_line(
     material_unit_price: float = 0.0,
     work_unit_price: float = 0.0,
     display_quantity: float | None = None,
+    line_type: str | None = None,
 ) -> EstimateLineResult:
     quantity_rounded = _round_decimal(quantity, "0.0001")
     material_total = _round_money(
@@ -280,6 +284,7 @@ def calculate_line(
         work_unit_price=work_unit_price,
         work_total=work_total,
         line_total=material_total + work_total,
+        line_type=line_type,
     )
 
 
@@ -775,6 +780,27 @@ def calculate_internal_estimate_lines(
             unit="-",
             quantity=1,
             work_unit_price=data.technical_supervision_amount,
+        ),
+        calculate_line(
+            code="procurement_warehouse_costs_excel_structure",
+            name="Заготовительно-складские расходы",
+            unit="-",
+            quantity=1,
+            line_type="zero_excel_structure_line",
+        ),
+        calculate_line(
+            code="overhead_general_business_costs_excel_structure",
+            name="Накладные и общехозяйственные расходы",
+            unit="-",
+            quantity=1,
+            line_type="zero_excel_structure_line",
+        ),
+        calculate_line(
+            code="estimated_profit_excel_structure",
+            name="Сметная прибыль",
+            unit="-",
+            quantity=1,
+            line_type="zero_excel_structure_line",
         ),
     ]
 

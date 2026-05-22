@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-05-20`.
+Дата актуализации: `2026-05-21`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -251,7 +251,49 @@ internal_section_total = 2672103
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
 
-### 8. УНИКМА
+### 8. Калькулятор плиты перекрытия 2-го этажа
+
+Папка:
+
+```text
+experiments/floor_slab_2_calculator/
+```
+
+Кейс:
+
+```text
+test_floor_slab_2 -> ok (222/222)
+```
+
+Итоги:
+
+```text
+internal_materials_total_raw = 502761.38648
+internal_materials_total = 502761
+internal_works_total_raw = 214290
+internal_works_total = 214290
+internal_section_total_raw = 717051.38648
+internal_section_total = 717051
+sum_of_displayed_line_totals = 717052
+```
+
+Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 2-го этажа на отм. +4.680 (200мм)".
+
+Важно:
+
+- балок нет, логика балок из 1-го этажа не переносилась;
+- объём бетонирования `16.5 м3` — manual/project quantity;
+- высота утепления торца `0.18 м` оставлена для совпадения с текущей сметой и вынесена в warning;
+- клиентская часть и Excel export для этого раздела пока не сделаны;
+- raw итог и сумма округлённых строк отличаются на 1 рубль, оба значения сохраняются.
+
+Отчёт:
+
+```text
+docs/report_floor_slab_2_calculator.md
+```
+
+### 9. УНИКМА
 
 Папка:
 
@@ -293,6 +335,12 @@ experiments/unikma_api_tests/
 
 ```bash
 ../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+```
+
+Плита перекрытия 2-го этажа:
+
+```bash
+../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
 ```
 
 Общий pytest:

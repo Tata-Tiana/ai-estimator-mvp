@@ -28,6 +28,7 @@ docs/change_log.md
 docs/report_pdf_parser.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
+docs/report_floor_slab_2_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
@@ -97,6 +98,30 @@ test_foundation_slab -> ok (205/205), итог 2538325
 
 Считает серую внутреннюю себестоимость раздела "Устройство фундаментной плиты дома, террасы, крыльца (250мм, 300мм)".
 
+### Калькулятор плиты перекрытия 2-го этажа
+
+Папка:
+
+```text
+experiments/floor_slab_2_calculator/
+```
+
+Проверенный кейс:
+
+```text
+test_floor_slab_2 -> ok (222/222), итог 717051
+```
+
+Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 2-го этажа на отм. +4.680 (200мм)".
+
+Важно:
+
+- балок в расчёте нет;
+- объём бетонирования `16.5 м3` пока manual/project quantity;
+- клиентская/белая часть не считается;
+- Excel export для этого раздела пока не сделан;
+- raw итог `717051.38648`, итог после ROUND_HALF_UP `717051`, сумма округлённых строк `717052`.
+
 ### Калькулятор гидроизоляции фундаментной плиты
 
 Папка:
@@ -143,6 +168,12 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ```bash
 ../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+```
+
+Плита перекрытия 2-го этажа:
+
+```bash
+../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
 ```
 
 Гидроизоляция:

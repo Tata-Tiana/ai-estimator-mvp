@@ -1,0 +1,508 @@
+from __future__ import annotations
+
+from decimal import Decimal, ROUND_CEILING, ROUND_HALF_UP
+from typing import Any
+
+
+D0 = Decimal("0")
+D1 = Decimal("1")
+
+
+def d(value: Any) -> Decimal:
+    return value if isinstance(value, Decimal) else Decimal(str(value))
+
+
+def round_money_half_up(value: Any) -> int:
+    return int(d(value).quantize(D1, rounding=ROUND_HALF_UP))
+
+
+def ceil_decimal(value: Any) -> int:
+    return int(d(value).to_integral_value(rounding=ROUND_CEILING))
+
+
+def round_decimal(value: Any, places: str = "0.000001") -> float:
+    return float(d(value).quantize(Decimal(places), rounding=ROUND_HALF_UP))
+
+
+def display_decimal(value: Any, places: str = "0.01") -> float:
+    return float(d(value).quantize(Decimal(places), rounding=ROUND_HALF_UP))
+
+
+def ceil_to_step(value: Any, step: Any) -> Decimal:
+    value_dec = d(value)
+    step_dec = d(step)
+    return d(ceil_decimal(value_dec / step_dec)) * step_dec
+
+
+def calculate_rebar_item(item: dict[str, Any], default_waste_coeff: Any) -> dict[str, Any]:
+    source_weight = d(item["source_weight_kg"])
+    kg_per_meter = d(item["kg_per_meter"])
+    waste_coeff = d(item.get("waste_coeff", default_waste_coeff))
+    rod_length = d(item["rod_length_m"])
+    unit_price = d(item["unit_price_per_m"])
+
+    raw_length = source_weight / kg_per_meter
+    length_with_waste = raw_length * waste_coeff
+    raw_rods = length_with_waste / rod_length
+    rods = ceil_decimal(raw_rods)
+    order_length = d(rods) * rod_length
+    material_total_raw = order_length * unit_price
+
+    return {
+        "code": item["code"],
+        "name": item["name"],
+        "steel_class": item["steel_class"],
+        "diameter_mm": item["diameter_mm"],
+        "source_weight_kg": round_decimal(source_weight),
+        "kg_per_meter": round_decimal(kg_per_meter),
+        "raw_length_m": round_decimal(raw_length),
+        "waste_coeff": round_decimal(waste_coeff),
+        "length_with_waste_m": round_decimal(length_with_waste),
+        "weight_with_waste_kg": round_decimal(source_weight * waste_coeff),
+        "rod_length_m": round_decimal(rod_length),
+        "raw_rods": round_decimal(raw_rods),
+        "rods": rods,
+        "order_length_m": round_decimal(order_length),
+        "unit_price_per_m": round_decimal(unit_price),
+        "material_total_raw": round_decimal(material_total_raw),
+        "material_total": round_money_half_up(material_total_raw),
+    }
+
+
+def estimate_line(
+    code: str,
+    name: str,
+    unit: str,
+    line_type: str,
+    quantity_raw: Any,
+    quantity_display: Any | None = None,
+    material_unit_price: Any = 0,
+    work_unit_price: Any = 0,
+    material_total_raw: Any = 0,
+    work_total_raw: Any = 0,
+    notes: list[str] | None = None,
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    material_raw = d(material_total_raw)
+    work_raw = d(work_total_raw)
+    line_raw = material_raw + work_raw
+    display = quantity_raw if quantity_display is None else quantity_display
+    payload = {
+        "code": code,
+        "name": name,
+        "unit": unit,
+        "line_type": line_type,
+        "quantity_raw": round_decimal(quantity_raw),
+        "quantity_display": round_decimal(display),
+        "material_unit_price": round_decimal(material_unit_price),
+        "material_total_raw": round_decimal(material_raw),
+        "material_total": round_money_half_up(material_raw),
+        "work_unit_price": round_decimal(work_unit_price),
+        "work_total_raw": round_decimal(work_raw),
+        "work_total": round_money_half_up(work_raw),
+        "line_total_raw": round_decimal(line_raw),
+        "line_total": round_money_half_up(line_raw),
+        "notes": notes or [],
+    }
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
+    warnings: list[str] = []
+
+    slab_length = d(input_data["slab_length_m"])
+    slab_width = d(input_data["slab_width_m"])
+    slab_area = slab_length * slab_width
+    slab_edge_perimeter = slab_length * d(2) + slab_width * d(2)
+    main_formwork_area = d(input_data["main_formwork_area_m2"])
+
+    supplier_quote = d(input_data["formwork_rental_supplier_quote_total"])
+    raw_supplier_rate = supplier_quote / main_formwork_area
+    formwork_rate = d(input_data["formwork_rental_used_rate_per_m2"])
+    formwork_rental_total_raw = main_formwork_area * formwork_rate
+
+    formwork_delivery_total_raw = (
+        d(input_data["formwork_delivery_trips"]) * d(input_data["formwork_delivery_unit_price"])
+    )
+    crane_total_raw = d(input_data["crane_shifts"]) * d(input_data["crane_unit_price"])
+    formwork_consumables_total_raw = main_formwork_area * d(input_data["formwork_consumables_rate_per_m2"])
+
+    edge_formwork_area = slab_edge_perimeter * d(input_data["edge_formwork_height_m"])
+    plywood_working_area = d(input_data["plywood_sheet_working_area_m2"])
+    edge_plywood_sheets_raw = edge_formwork_area / plywood_working_area
+    non_multiple_places_area = main_formwork_area * d(input_data["non_multiple_places_coeff"])
+    non_multiple_plywood_sheets_raw = non_multiple_places_area / plywood_working_area
+    base_plywood_sheets_raw = edge_plywood_sheets_raw + non_multiple_plywood_sheets_raw
+    order_plywood_sheets_raw = base_plywood_sheets_raw + d(input_data["plywood_reserve_sheets"])
+    plywood_sheets = ceil_decimal(order_plywood_sheets_raw)
+    plywood_total_raw = d(plywood_sheets) * d(input_data["plywood_unit_price"])
+
+    timber_volume = edge_formwork_area * d(input_data["timber_thickness_m"])
+    timber_total_raw = timber_volume * d(input_data["timber_unit_price"])
+
+    rebar_items = [
+        calculate_rebar_item(item, input_data["rebar_waste_coeff"])
+        for item in input_data["rebar_items"]
+    ]
+    total_rebar_order_length = sum((d(item["order_length_m"]) for item in rebar_items), D0)
+    total_rebar_weight_with_waste = sum((d(item["weight_with_waste_kg"]) for item in rebar_items), D0)
+
+    concrete_placing_volume = d(input_data["concrete_placing_volume_m3"])
+    warnings.append(
+        "concrete_placing_volume_m3 is a manual/project quantity for this case; "
+        "it is not derived from slab_area_m2 * slab thickness."
+    )
+    concrete_work_total_raw = concrete_placing_volume * d(input_data["concrete_placing_work_unit_price"])
+    concrete_volume_with_waste = concrete_placing_volume * d(input_data["concrete_waste_coeff"])
+    concrete_order_volume = ceil_to_step(concrete_volume_with_waste, input_data["concrete_round_step_m3"])
+    concrete_material_total_raw = concrete_order_volume * d(input_data["concrete_unit_price"])
+    concrete_delivery_trips_raw = concrete_order_volume / d(input_data["concrete_mixer_volume_m3"])
+    concrete_delivery_trips = ceil_decimal(concrete_delivery_trips_raw)
+    concrete_delivery_total_raw = d(concrete_delivery_trips) * d(input_data["concrete_delivery_unit_price"])
+    concrete_pump_total_raw = d(input_data["concrete_pump_shifts"]) * d(input_data["concrete_pump_unit_price"])
+
+    edge_insulation_height = d(input_data["edge_insulation_height_m"])
+    warnings.append(
+        "edge_insulation_height_m is 0.18 m although the section title says 200 mm; "
+        "0.18 m is kept for the current Excel match."
+    )
+    edge_insulation_area = slab_edge_perimeter * edge_insulation_height
+    eps100_required_without_waste = edge_insulation_area * d(input_data["eps100_thickness_m"])
+    eps100_required_with_waste = eps100_required_without_waste * d(input_data["eps_waste_coeff"])
+    eps100_packs_raw = eps100_required_with_waste / d(input_data["eps100_pack_volume_m3"])
+    eps100_packs = ceil_decimal(eps100_packs_raw)
+    eps100_order_volume = d(eps100_packs) * d(input_data["eps100_pack_volume_m3"])
+    eps100_total_raw = eps100_order_volume * d(input_data["eps100_unit_price"])
+    edge_insulation_work_total_raw = slab_edge_perimeter * d(input_data["edge_insulation_work_unit_price_per_m"])
+
+    foam_cans_raw = edge_insulation_area / d(input_data["foam_coverage_area_per_can_m2"])
+    foam_cans_ordered = max(int(input_data["foam_min_cans"]), ceil_decimal(foam_cans_raw))
+    foam_total_raw = d(foam_cans_ordered) * d(input_data["foam_can_unit_price"])
+
+    direct_cost_base_before_addons_raw = (
+        formwork_rental_total_raw
+        + formwork_delivery_total_raw
+        + crane_total_raw
+        + formwork_consumables_total_raw
+        + plywood_total_raw
+        + timber_total_raw
+        + sum((d(item["material_total_raw"]) for item in rebar_items), D0)
+        + concrete_work_total_raw
+        + concrete_material_total_raw
+        + concrete_delivery_total_raw
+        + concrete_pump_total_raw
+        + edge_insulation_work_total_raw
+        + eps100_total_raw
+        + foam_total_raw
+    )
+    logistics_total_raw = direct_cost_base_before_addons_raw * d(input_data["logistics_rate"])
+    consumables_total_raw = direct_cost_base_before_addons_raw * d(input_data["consumables_rate"])
+
+    rebar_by_code = {item["code"]: item for item in rebar_items}
+
+    lines = [
+        estimate_line(
+            "floor_slab_2_formwork_installation_control",
+            "Монтаж опалубки под монолитное перекрытие 2-го этажа",
+            "м2",
+            "zero_excel_structure_line",
+            main_formwork_area,
+        ),
+        estimate_line(
+            "formwork_rental_set",
+            "Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые)",
+            "м2",
+            "materials",
+            main_formwork_area,
+            material_unit_price=formwork_rate,
+            material_total_raw=formwork_rental_total_raw,
+        ),
+        estimate_line(
+            "formwork_delivery_manipulator",
+            "Доставка, вывоз опалубки манипулятором",
+            "маш",
+            "logistics_machinery",
+            input_data["formwork_delivery_trips"],
+            material_unit_price=input_data["formwork_delivery_unit_price"],
+            material_total_raw=formwork_delivery_total_raw,
+        ),
+        estimate_line(
+            "crane_supply_formwork_rebar",
+            "Подача опалубки, арматуры автокраном",
+            "смена",
+            "machinery",
+            input_data["crane_shifts"],
+            material_unit_price=input_data["crane_unit_price"],
+            material_total_raw=crane_total_raw,
+        ),
+        estimate_line(
+            "formwork_consumables",
+            "Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки)",
+            "-",
+            "materials_consumables",
+            1,
+            material_total_raw=formwork_consumables_total_raw,
+        ),
+        estimate_line(
+            "edge_formwork_installation_control",
+            "Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты",
+            "м2",
+            "zero_excel_structure_line",
+            edge_formwork_area,
+            notes=[
+                "For floor slab 2 this control line is used for slab edge formwork only; no beams are calculated."
+            ],
+        ),
+        estimate_line(
+            "plywood_for_edges",
+            "Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов",
+            "шт",
+            "materials",
+            plywood_sheets,
+            material_unit_price=input_data["plywood_unit_price"],
+            material_total_raw=plywood_total_raw,
+        ),
+        estimate_line(
+            "timber_for_formwork",
+            "Пиломатериал обрезной для устройства опалубки ГОСТ",
+            "м3",
+            "materials",
+            timber_volume,
+            quantity_display=display_decimal(timber_volume, "0.01"),
+            material_unit_price=input_data["timber_unit_price"],
+            material_total_raw=timber_total_raw,
+            notes=["Money is calculated from raw quantity 0.362, not displayed quantity 0.36."],
+        ),
+        estimate_line(
+            "rebar_frame_assembly_control",
+            "Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры",
+            "мп",
+            "zero_excel_structure_line",
+            total_rebar_order_length,
+        ),
+        estimate_line(
+            "rebar_a500_d16",
+            rebar_by_code["rebar_a500_d16"]["name"],
+            "мп",
+            "materials",
+            rebar_by_code["rebar_a500_d16"]["order_length_m"],
+            material_unit_price=rebar_by_code["rebar_a500_d16"]["unit_price_per_m"],
+            material_total_raw=rebar_by_code["rebar_a500_d16"]["material_total_raw"],
+        ),
+        estimate_line(
+            "rebar_a500_d12",
+            rebar_by_code["rebar_a500_d12"]["name"],
+            "мп",
+            "materials",
+            rebar_by_code["rebar_a500_d12"]["order_length_m"],
+            material_unit_price=rebar_by_code["rebar_a500_d12"]["unit_price_per_m"],
+            material_total_raw=rebar_by_code["rebar_a500_d12"]["material_total_raw"],
+        ),
+        estimate_line(
+            "rebar_a500_d10",
+            rebar_by_code["rebar_a500_d10"]["name"],
+            "мп",
+            "materials",
+            rebar_by_code["rebar_a500_d10"]["order_length_m"],
+            material_unit_price=rebar_by_code["rebar_a500_d10"]["unit_price_per_m"],
+            material_total_raw=rebar_by_code["rebar_a500_d10"]["material_total_raw"],
+        ),
+        estimate_line(
+            "concrete_placing_work",
+            "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",
+            "м3",
+            "work",
+            concrete_placing_volume,
+            work_unit_price=input_data["concrete_placing_work_unit_price"],
+            work_total_raw=concrete_work_total_raw,
+        ),
+        estimate_line(
+            "concrete_b22_5_m300_material",
+            "Бетон марки В22,5 (М300)",
+            "м3",
+            "materials",
+            concrete_order_volume,
+            material_unit_price=input_data["concrete_unit_price"],
+            material_total_raw=concrete_material_total_raw,
+            extra={
+                "quantity_raw_before_order_rounding": round_decimal(concrete_volume_with_waste),
+                "quantity_display_control": display_decimal(concrete_volume_with_waste),
+            },
+        ),
+        estimate_line(
+            "concrete_delivery",
+            "Доставка бетона до объекта",
+            "рейс",
+            "logistics_machinery",
+            concrete_delivery_trips,
+            material_unit_price=input_data["concrete_delivery_unit_price"],
+            material_total_raw=concrete_delivery_total_raw,
+        ),
+        estimate_line(
+            "concrete_pump_32m",
+            "Работа бетононасоса 32м + гаситель",
+            "смена",
+            "machinery_fixed",
+            input_data["concrete_pump_shifts"],
+            material_unit_price=input_data["concrete_pump_unit_price"],
+            material_total_raw=concrete_pump_total_raw,
+        ),
+        estimate_line(
+            "formwork_dismantling_control",
+            "Демонтаж опалубки после завершения бетонирования",
+            "м2",
+            "zero_excel_structure_line",
+            main_formwork_area,
+        ),
+        estimate_line(
+            "edge_insulation_work",
+            "Устройство утепления по наружной стороне торцов плиты, балок",
+            "мп",
+            "work",
+            slab_edge_perimeter,
+            work_unit_price=input_data["edge_insulation_work_unit_price_per_m"],
+            work_total_raw=edge_insulation_work_total_raw,
+            notes=[
+                "Line name keeps the source wording; for floor slab 2 the calculation covers slab edges only, without beams."
+            ],
+        ),
+        estimate_line(
+            "eps100_penoplex_material",
+            "Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм",
+            "м3",
+            "materials",
+            eps100_order_volume,
+            quantity_display=display_decimal(eps100_order_volume, "0.01"),
+            material_unit_price=input_data["eps100_unit_price"],
+            material_total_raw=eps100_total_raw,
+        ),
+        estimate_line(
+            "eps_foam_glue",
+            "Клей-пена для ЭППС",
+            "баллон",
+            "materials_consumables",
+            foam_cans_ordered,
+            material_unit_price=input_data["foam_can_unit_price"],
+            material_total_raw=foam_total_raw,
+        ),
+        estimate_line(
+            "logistics_and_supply",
+            "Логистика, и снабжение",
+            "-",
+            "materials_overhead_percent",
+            1,
+            material_total_raw=logistics_total_raw,
+        ),
+        estimate_line(
+            "consumables_tool_depreciation",
+            "Расходные материалы, амортизация инструмента",
+            "комплект",
+            "materials_overhead_percent",
+            1,
+            material_total_raw=consumables_total_raw,
+        ),
+        estimate_line("technical_supervision", "Технический надзор", "-", "zero_excel_structure_line", 1),
+        estimate_line(
+            "procurement_storage_costs",
+            "Заготовительно-складские расходы",
+            "-",
+            "zero_excel_structure_line",
+            1,
+        ),
+        estimate_line(
+            "overhead_general_business_costs",
+            "Накладные и общехозяйственные расходы",
+            "-",
+            "zero_excel_structure_line",
+            1,
+        ),
+        estimate_line("estimated_profit", "Сметная прибыль", "-", "zero_excel_structure_line", 1),
+    ]
+
+    internal_materials_total_raw = sum((d(line["material_total_raw"]) for line in lines), D0)
+    internal_works_total_raw = sum((d(line["work_total_raw"]) for line in lines), D0)
+    internal_section_total_raw = internal_materials_total_raw + internal_works_total_raw
+
+    totals = {
+        "internal_materials_total_raw": round_decimal(internal_materials_total_raw),
+        "internal_materials_total": round_money_half_up(internal_materials_total_raw),
+        "internal_works_total_raw": round_decimal(internal_works_total_raw),
+        "internal_works_total": round_money_half_up(internal_works_total_raw),
+        "internal_section_total_raw": round_decimal(internal_section_total_raw),
+        "internal_section_total": round_money_half_up(internal_section_total_raw),
+        "sum_of_displayed_line_material_totals": sum(line["material_total"] for line in lines),
+        "sum_of_displayed_line_work_totals": sum(line["work_total"] for line in lines),
+        "sum_of_displayed_line_totals": sum(line["line_total"] for line in lines),
+    }
+
+    calculation_blocks = {
+        "geometry": {
+            "slab_length_m": round_decimal(slab_length),
+            "slab_width_m": round_decimal(slab_width),
+            "slab_area_m2": round_decimal(slab_area),
+            "slab_edge_perimeter_m": round_decimal(slab_edge_perimeter),
+        },
+        "formwork": {
+            "main_formwork_area_m2": round_decimal(main_formwork_area),
+            "raw_supplier_rate": round_decimal(raw_supplier_rate),
+            "used_rate_per_m2": round_decimal(formwork_rate),
+            "edge_formwork_area_m2": round_decimal(edge_formwork_area),
+        },
+        "plywood_and_timber": {
+            "edge_plywood_sheets_raw": round_decimal(edge_plywood_sheets_raw),
+            "non_multiple_places_area_m2": round_decimal(non_multiple_places_area),
+            "non_multiple_places_plywood_sheets_raw": round_decimal(non_multiple_plywood_sheets_raw),
+            "base_plywood_sheets_raw": round_decimal(base_plywood_sheets_raw),
+            "order_plywood_sheets_raw": round_decimal(order_plywood_sheets_raw),
+            "plywood_sheets": plywood_sheets,
+            "timber_volume_m3_raw": round_decimal(timber_volume),
+            "timber_volume_m3_display": display_decimal(timber_volume, "0.01"),
+        },
+        "rebar": {
+            "items": rebar_items,
+            "total_rebar_order_length_m": round_decimal(total_rebar_order_length),
+            "total_rebar_weight_with_waste_kg": round_decimal(total_rebar_weight_with_waste, "0.01"),
+        },
+        "concrete": {
+            "concrete_placing_volume_m3": round_decimal(concrete_placing_volume),
+            "concrete_volume_with_waste_raw_m3": round_decimal(concrete_volume_with_waste),
+            "concrete_volume_with_waste_display_m3": display_decimal(concrete_volume_with_waste),
+            "concrete_order_volume_m3": round_decimal(concrete_order_volume),
+            "delivery_trips_raw": round_decimal(concrete_delivery_trips_raw),
+            "delivery_trips": concrete_delivery_trips,
+            "reinforcement_density_kg_per_m3": round_decimal(
+                total_rebar_weight_with_waste / concrete_volume_with_waste, "0.01"
+            ),
+        },
+        "insulation": {
+            "edge_insulation_area_m2": round_decimal(edge_insulation_area),
+            "eps100_required_volume_without_waste_m3": round_decimal(eps100_required_without_waste),
+            "eps100_required_volume_with_waste_m3": round_decimal(eps100_required_with_waste),
+            "eps100_packs_raw": round_decimal(eps100_packs_raw),
+            "eps100_packs_ordered": eps100_packs,
+            "eps100_order_volume_m3": round_decimal(eps100_order_volume),
+            "foam_cans_raw": round_decimal(foam_cans_raw),
+            "foam_cans_display_control": display_decimal(foam_cans_raw),
+            "foam_cans_ordered": foam_cans_ordered,
+        },
+        "addons": {
+            "direct_cost_base_before_addons_raw": round_decimal(direct_cost_base_before_addons_raw),
+            "logistics_rate": round_decimal(input_data["logistics_rate"]),
+            "logistics_total_raw": round_decimal(logistics_total_raw),
+            "consumables_rate": round_decimal(input_data["consumables_rate"]),
+            "consumables_total_raw": round_decimal(consumables_total_raw),
+        },
+    }
+
+    return {
+        "project_name": input_data["project_name"],
+        "section": "floor_slab_2",
+        "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа на отм. +4.680 (200мм)",
+        "inputs": input_data,
+        "calculation_blocks": calculation_blocks,
+        "estimate_lines": lines,
+        "totals": totals,
+        "warnings": warnings,
+    }

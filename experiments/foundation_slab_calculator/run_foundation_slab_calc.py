@@ -175,15 +175,17 @@ def flatten_block(prefix: str, value: Any) -> dict[str, Any]:
 
 def format_estimate_lines_markdown(lines_data: list[dict[str, Any]]) -> list[str]:
     lines = [
-        "| code | name | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |",
-        "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |",
+        "| code | name | line_type | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |",
+        "| --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for line in lines_data:
         display_quantity = line.get("display_quantity", "")
+        line_type = line.get("line_type", "")
         lines.append(
             "| "
             f"`{line['code']}` | "
             f"{line['name']} | "
+            f"`{line_type}` | "
             f"`{line['quantity']}` | "
             f"`{display_quantity}` | "
             f"`{line['unit']}` | "

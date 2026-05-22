@@ -43,6 +43,47 @@ git status
 
 ## Контрольные точки
 
+### 2026-05-21 — Добавлен калькулятор плиты перекрытия 2-го этажа
+
+- Ветка: `feature/ai-project-card`
+- Коммит: пока не зафиксирован
+
+Что добавлено:
+
+- создан отдельный экспериментальный калькулятор:
+  - `experiments/floor_slab_2_calculator/`;
+- добавлен тестовый кейс:
+  - `cases/test_floor_slab_2/input.json`;
+  - `cases/test_floor_slab_2/expected.json`;
+  - `cases/test_floor_slab_2/result.json`;
+  - `cases/test_floor_slab_2/result.md`;
+- добавлены:
+  - `README.md`;
+  - `notes.md`;
+  - `docs/report_floor_slab_2_calculator.md`.
+
+Проверка:
+
+```text
+test_floor_slab_2 -> ok (222/222)
+internal_materials_total_raw = 502761.38648
+internal_materials_total = 502761
+internal_works_total_raw = 214290
+internal_works_total = 214290
+internal_section_total_raw = 717051.38648
+internal_section_total = 717051
+sum_of_displayed_line_totals = 717052
+```
+
+Ключевые решения:
+
+- калькулятор считает только серую внутреннюю себестоимость;
+- клиентская/белая часть и Excel export для этого раздела пока не делаются;
+- балок в плите 2-го этажа нет;
+- объём бетонирования `16.5 м3` оставлен как manual/project quantity;
+- высота утепления торца `0.18 м` оставлена для совпадения с текущей сметой и вынесена в warning;
+- raw totals и сумма отображаемых округлённых строк сохраняются отдельно, потому что отличаются на 1 рубль.
+
 ### 2026-05-20 — Зафиксирована контрольная точка экспериментальных калькуляторов и документации
 
 - Ветка: `feature/ai-project-card`

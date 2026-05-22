@@ -554,6 +554,42 @@
       "work_unit_price": 10000,
       "work_total": 10000,
       "line_total": 10000
+    },
+    {
+      "code": "procurement_warehouse_costs_excel_structure",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
+    },
+    {
+      "code": "overhead_general_business_costs_excel_structure",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
+    },
+    {
+      "code": "estimated_profit_excel_structure",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
     }
   ],
   "internal_totals": {
@@ -828,6 +864,36 @@
         "work_unit_price": 10000,
         "work_total": 10000,
         "line_total": 10000
+      },
+      "procurement_warehouse_costs_excel_structure": {
+        "unit": "-",
+        "quantity": 1,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 0,
+        "line_type": "zero_excel_structure_line"
+      },
+      "overhead_general_business_costs_excel_structure": {
+        "unit": "-",
+        "quantity": 1,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 0,
+        "line_type": "zero_excel_structure_line"
+      },
+      "estimated_profit_excel_structure": {
+        "unit": "-",
+        "quantity": 1,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 0,
+        "work_total": 0,
+        "line_total": 0,
+        "line_type": "zero_excel_structure_line"
       }
     },
     "internal_totals": {
@@ -2249,6 +2315,174 @@
       "expected": 10000,
       "actual": 10000,
       "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.unit",
+      "expected": "-",
+      "actual": "-",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.quantity",
+      "expected": 1,
+      "actual": 1.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.line_type",
+      "expected": "zero_excel_structure_line",
+      "actual": "zero_excel_structure_line",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.unit",
+      "expected": "-",
+      "actual": "-",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.quantity",
+      "expected": 1,
+      "actual": 1.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.overhead_general_business_costs_excel_structure.line_type",
+      "expected": "zero_excel_structure_line",
+      "actual": "zero_excel_structure_line",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.unit",
+      "expected": "-",
+      "actual": "-",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.quantity",
+      "expected": 1,
+      "actual": 1.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.work_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.work_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.estimated_profit_excel_structure.line_type",
+      "expected": "zero_excel_structure_line",
+      "actual": "zero_excel_structure_line",
+      "diff": null,
       "status": "ok"
     },
     {

@@ -11,7 +11,12 @@ data/reference/unikma/*.xlsx
 # Local project PDF inputs and generated experiment outputs
 experiments/pdf_tests/projects/*/input/*.pdf
 experiments/pdf_tests/projects/*/output/**/*
+experiments/pdf_tests/projects/*/parsed/**/*
+experiments/pdf_tests/projects/*/merged/**/*
 experiments/ai_tests/projects/*/output/**/*
+experiments/demo_usv_app/output/*
+!experiments/demo_usv_app/output/.gitkeep
+experiments/demo_usv_app/assets/brick_house_logo_raw.png
 
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*

@@ -196,33 +196,36 @@
 - thermal_insert: thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку.
 
 ## Строки серой внутренней сметы
-| code | name | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
-| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
-| `planter_standard_material` | Planter Standard Технониколь | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
-| `planterband_material` | PLANTERBAND 10м х 10см | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
-| `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
-| `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `11.0` | `` | `шт` | `1450` | `15950` | `0.0` | `0` | `15950` |
-| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `1.215` | `1.2` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
-| `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
-| `thermal_insert_installation` | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `21.5` | `` | `мп` | `0.0` | `0` | `100` | `2150` | `2150` |
-| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм | `14.4352` | `14.44` | `м3` | `9800` | `141465` | `0.0` | `0` | `141465` |
-| `eps100_penoplex_geo_material` | Пеноплэкс ГЕО 100 мм | `0.5552` | `0.56` | `м3` | `10000` | `5552` | `0.0` | `0` | `5552` |
-| `rebar_crane_supply` | Подача арматуры автокраном | `1.0` | `` | `смена` | `30000` | `30000` | `0.0` | `0` | `30000` |
-| `rebar_frame_assembly` | Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры | `8615.4` | `` | `мп` | `0.0` | `0` | `0.0` | `0` | `0` |
-| `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | `222.3` | `` | `мп` | `80.58` | `17913` | `0.0` | `0` | `17913` |
-| `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | `6388.2` | `` | `мп` | `45.29` | `289322` | `0.0` | `0` | `289322` |
-| `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | `1836.9` | `` | `мп` | `32.72` | `60103` | `0.0` | `0` | `60103` |
-| `rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `168.0` | `` | `мп` | `13.32` | `2238` | `0.0` | `0` | `2238` |
-| `rebar_metal_delivery` | Доставка арматуры, металла | `1.0` | `` | `маш` | `22000` | `22000` | `0.0` | `0` | `22000` |
-| `foundation_slab_concreting_work` | Бетонирование фундаментной плиты в опалубке бетоном В22,5 (М300) | `81.0` | `` | `м3` | `0.0` | `0` | `12000` | `972000` | `972000` |
-| `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | `85.5` | `` | `м3` | `6400` | `547200` | `0.0` | `0` | `547200` |
-| `concrete_delivery` | Доставка бетона до объекта | `10.0` | `` | `рейс` | `7500` | `75000` | `0.0` | `0` | `75000` |
-| `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | `1.0` | `` | `смена` | `38000` | `38000` | `0.0` | `0` | `38000` |
-| `formwork_dismantling` | Демонтаж опалубки после завершения бетонирования | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
-| `logistics_and_supply` | Логистика и снабжение | `1.0` | `` | `-` | `36291.7` | `36292` | `0.0` | `0` | `36292` |
-| `consumables_tool_amortization` | Расходные материалы, амортизация инструмента | `1.0` | `` | `комплект` | `72583` | `72583` | `0.0` | `0` | `72583` |
-| `technical_supervision` | Технический надзор | `1.0` | `` | `-` | `0.0` | `0` | `10000` | `10000` | `10000` |
+| code | name | line_type | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
+| --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
+| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
+| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
+| `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
+| `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1450` | `15950` | `0.0` | `0` | `15950` |
+| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.2` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
+| `thermal_insert_installation` | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `` | `21.5` | `` | `мп` | `0.0` | `0` | `100` | `2150` | `2150` |
+| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм | `` | `14.4352` | `14.44` | `м3` | `9800` | `141465` | `0.0` | `0` | `141465` |
+| `eps100_penoplex_geo_material` | Пеноплэкс ГЕО 100 мм | `` | `0.5552` | `0.56` | `м3` | `10000` | `5552` | `0.0` | `0` | `5552` |
+| `rebar_crane_supply` | Подача арматуры автокраном | `` | `1.0` | `` | `смена` | `30000` | `30000` | `0.0` | `0` | `30000` |
+| `rebar_frame_assembly` | Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры | `` | `8615.4` | `` | `мп` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | `` | `222.3` | `` | `мп` | `80.58` | `17913` | `0.0` | `0` | `17913` |
+| `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | `` | `6388.2` | `` | `мп` | `45.29` | `289322` | `0.0` | `0` | `289322` |
+| `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | `` | `1836.9` | `` | `мп` | `32.72` | `60103` | `0.0` | `0` | `60103` |
+| `rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `` | `168.0` | `` | `мп` | `13.32` | `2238` | `0.0` | `0` | `2238` |
+| `rebar_metal_delivery` | Доставка арматуры, металла | `` | `1.0` | `` | `маш` | `22000` | `22000` | `0.0` | `0` | `22000` |
+| `foundation_slab_concreting_work` | Бетонирование фундаментной плиты в опалубке бетоном В22,5 (М300) | `` | `81.0` | `` | `м3` | `0.0` | `0` | `12000` | `972000` | `972000` |
+| `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | `` | `85.5` | `` | `м3` | `6400` | `547200` | `0.0` | `0` | `547200` |
+| `concrete_delivery` | Доставка бетона до объекта | `` | `10.0` | `` | `рейс` | `7500` | `75000` | `0.0` | `0` | `75000` |
+| `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | `` | `1.0` | `` | `смена` | `38000` | `38000` | `0.0` | `0` | `38000` |
+| `formwork_dismantling` | Демонтаж опалубки после завершения бетонирования | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
+| `logistics_and_supply` | Логистика и снабжение | `` | `1.0` | `` | `-` | `36291.7` | `36292` | `0.0` | `0` | `36292` |
+| `consumables_tool_amortization` | Расходные материалы, амортизация инструмента | `` | `1.0` | `` | `комплект` | `72583` | `72583` | `0.0` | `0` | `72583` |
+| `technical_supervision` | Технический надзор | `` | `1.0` | `` | `-` | `0.0` | `0` | `10000` | `10000` | `10000` |
+| `procurement_warehouse_costs_excel_structure` | Заготовительно-складские расходы | `zero_excel_structure_line` | `1.0` | `` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `overhead_general_business_costs_excel_structure` | Накладные и общехозяйственные расходы | `zero_excel_structure_line` | `1.0` | `` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `estimated_profit_excel_structure` | Сметная прибыль | `zero_excel_structure_line` | `1.0` | `` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
 
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
@@ -436,6 +439,30 @@
 | `estimate_lines.technical_supervision.work_unit_price` | `10000` | `10000` | `0` | `ok` |
 | `estimate_lines.technical_supervision.work_total` | `10000` | `10000` | `0` | `ok` |
 | `estimate_lines.technical_supervision.line_total` | `10000` | `10000` | `0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.unit` | `-` | `-` | `` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.procurement_warehouse_costs_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.unit` | `-` | `-` | `` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.overhead_general_business_costs_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.unit` | `-` | `-` | `` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.estimated_profit_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
 | `internal_totals.internal_materials_total` | `1454675` | `1454675` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `1083650` | `1083650` | `0` | `ok` |
 | `internal_totals.internal_section_total` | `2538325` | `2538325` | `0` | `ok` |
