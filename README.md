@@ -28,6 +28,7 @@ docs/change_log.md
 docs/report_pdf_parser.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
+docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
@@ -97,6 +98,29 @@ test_foundation_slab -> ok (205/205), итог 2538325
 ```
 
 Считает серую внутреннюю себестоимость раздела "Устройство фундаментной плиты дома, террасы, крыльца (250мм, 300мм)".
+
+### Калькулятор плиты перекрытия 1-го этажа
+
+Папка:
+
+```text
+experiments/floor_slab_1_calculator/
+```
+
+Проверенный кейс:
+
+```text
+test_floor_slab_1 -> ok (194/194), итог 1787527
+```
+
+Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 1-го этажа на отм. +3.480 (180 мм) с балками".
+
+Важно:
+
+- балки Б-1, Б-2, Б-3 считаются внутри раздела;
+- клиентская/белая часть не считается;
+- Excel export для этого раздела пока не сделан;
+- raw/display значения хранятся отдельно для строк, где Excel показывает округлённое количество.
 
 ### Калькулятор плиты перекрытия 2-го этажа
 
@@ -168,6 +192,12 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ```bash
 ../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+```
+
+Плита перекрытия 1-го этажа:
+
+```bash
+../.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
 ```
 
 Плита перекрытия 2-го этажа:

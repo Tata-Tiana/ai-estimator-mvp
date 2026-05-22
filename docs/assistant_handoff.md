@@ -251,7 +251,44 @@ internal_section_total = 2672103
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
 
-### 8. Калькулятор плиты перекрытия 2-го этажа
+### 8. Калькулятор плиты перекрытия 1-го этажа
+
+Папка:
+
+```text
+experiments/floor_slab_1_calculator/
+```
+
+Кейс:
+
+```text
+test_floor_slab_1 -> ok (194/194)
+```
+
+Итоги:
+
+```text
+internal_materials_total = 1175601
+internal_works_total = 611926
+internal_section_total = 1787527
+```
+
+Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 1-го этажа на отм. +3.480 (180 мм) с балками".
+
+Важно:
+
+- балки Б-1, Б-2, Б-3 считаются внутри раздела;
+- raw/display значения хранятся отдельно;
+- клиентская часть и Excel export для этого раздела пока не сделаны;
+- доставка металла позже должна считаться один раз в общем `box_calculator`.
+
+Отчёт:
+
+```text
+docs/report_floor_slab_1_calculator.md
+```
+
+### 9. Калькулятор плиты перекрытия 2-го этажа
 
 Папка:
 
@@ -293,7 +330,7 @@ sum_of_displayed_line_totals = 717052
 docs/report_floor_slab_2_calculator.md
 ```
 
-### 9. УНИКМА
+### 10. УНИКМА
 
 Папка:
 
@@ -335,6 +372,12 @@ experiments/unikma_api_tests/
 
 ```bash
 ../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+```
+
+Плита перекрытия 1-го этажа:
+
+```bash
+../.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
 ```
 
 Плита перекрытия 2-го этажа:
