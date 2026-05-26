@@ -40,7 +40,7 @@ docs/report_load_bearing_walls_lintels_calculator.md
 
 ```text
 branch: feature/ai-project-card
-commit: 454c132 Add flat roof calculator
+commit: 86795ea Add Schiedel vent channels calculator
 date: 2026-05-26
 ```
 
@@ -283,7 +283,7 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ## Текущий git-статус по смыслу
 
-Текущая расчётная контрольная точка зафиксирована коммитом `454c132`.
+Текущая расчётная контрольная точка зафиксирована коммитом `86795ea`.
 
 Перед этим были проверены:
 

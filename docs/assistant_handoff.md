@@ -15,7 +15,7 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-454c132 Add flat roof calculator
+86795ea Add Schiedel vent channels calculator
 ```
 
 Смысл коммита:
@@ -487,7 +487,7 @@ experiments/unikma_api_tests/
 
 На момент фиксации `pytest` собирает `0` тестов; основные проверки сейчас идут через CLI калькуляторов.
 
-## Что было проверено перед коммитом `454c132`
+## Что было проверено перед коммитом `86795ea`
 
 ```text
 earthworks:

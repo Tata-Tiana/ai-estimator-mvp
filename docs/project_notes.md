@@ -6,7 +6,7 @@
 
 ```text
 branch: feature/ai-project-card
-commit: 454c132 Add flat roof calculator
+commit: 86795ea Add Schiedel vent channels calculator
 ```
 
 Это последняя зафиксированная точка проекта. В неё вошли проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация.

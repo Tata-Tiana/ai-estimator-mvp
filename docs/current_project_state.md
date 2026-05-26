@@ -15,7 +15,7 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-454c132 Add flat roof calculator
+86795ea Add Schiedel vent channels calculator
 ```
 
 Это актуальная расчётная контрольная точка проекта. В неё вошли:
