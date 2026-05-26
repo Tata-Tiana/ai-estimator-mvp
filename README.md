@@ -39,8 +39,8 @@ docs/report_load_bearing_walls_lintels_calculator.md
 
 ```text
 branch: feature/ai-project-card
-commit: 20c9d05 Add experimental estimate calculators and project handoff docs
-date: 2026-05-20
+commit: 454c132 Add flat roof calculator
+date: 2026-05-26
 ```
 
 Это актуальная зафиксированная расчётная база проекта: проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация сохранены в git.
@@ -251,7 +251,7 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ## Текущий git-статус по смыслу
 
-Текущая расчётная контрольная точка зафиксирована коммитом `20c9d05`.
+Текущая расчётная контрольная точка зафиксирована коммитом `454c132`.
 
 Перед этим были проверены:
 

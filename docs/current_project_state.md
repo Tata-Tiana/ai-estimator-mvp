@@ -15,7 +15,7 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-20c9d05 Add experimental estimate calculators and project handoff docs
+454c132 Add flat roof calculator
 ```
 
 Это актуальная расчётная контрольная точка проекта. В неё вошли:

@@ -6,7 +6,7 @@
 
 ```text
 branch: feature/ai-project-card
-commit: 20c9d05 Add experimental estimate calculators and project handoff docs
+commit: 454c132 Add flat roof calculator
 ```
 
 Это последняя зафиксированная точка проекта. В неё вошли проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация.

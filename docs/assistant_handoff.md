@@ -15,7 +15,7 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-20c9d05 Add experimental estimate calculators and project handoff docs
+454c132 Add flat roof calculator
 ```
 
 Смысл коммита:
@@ -443,7 +443,7 @@ experiments/unikma_api_tests/
 
 На момент фиксации `pytest` собирает `0` тестов; основные проверки сейчас идут через CLI калькуляторов.
 
-## Что было проверено перед коммитом `20c9d05`
+## Что было проверено перед коммитом `454c132`
 
 ```text
 earthworks:
