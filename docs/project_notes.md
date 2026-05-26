@@ -61,6 +61,7 @@ experiments/waterproofing_calculator/
 experiments/load_bearing_walls_lintels_calculator/
 experiments/floor_slab_1_calculator/
 experiments/floor_slab_2_calculator/
+experiments/flat_roof_calculator/
 ```
 
 PDF/AI и материалы по плоской кровле:
@@ -68,10 +69,10 @@ PDF/AI и материалы по плоской кровле:
 ```text
 experiments/meeting_analysis/input/2026-05-22_flat_roof/
 data/output/meeting_analysis/2026-05-22_1103_flat_roof/
-docs/report_flat_roof_meeting_analysis.md
+docs/report_flat_roof_calculator.md
 ```
 
-Калькулятор плоской кровли пока не создан.
+Калькулятор плоской кровли создан как экспериментальный deterministic calculator. Итог сходится с серой зоной Excel за минусом временной двери ДН-1.
 
 ## Где искать ЮСВ
 
@@ -190,7 +191,7 @@ docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
-docs/report_flat_roof_meeting_analysis.md
+docs/report_flat_roof_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```

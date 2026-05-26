@@ -30,7 +30,7 @@ docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
-docs/report_flat_roof_meeting_analysis.md
+docs/report_flat_roof_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
@@ -147,6 +147,30 @@ test_floor_slab_2 -> ok (222/222), итог 717051
 - Excel export для этого раздела пока не сделан;
 - raw итог `717051.38648`, итог после ROUND_HALF_UP `717051`, сумма округлённых строк `717052`.
 
+### Калькулятор плоской кровли
+
+Папка:
+
+```text
+experiments/flat_roof_calculator/
+```
+
+Проверенный кейс:
+
+```text
+test_flat_roof_usv -> ok (460/460), итог 2038872
+```
+
+Считает серую внутреннюю себестоимость раздела "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА / плоская кровля".
+
+Важно:
+
+- итог сходится с серой зоной Excel за минусом временной двери ДН-1;
+- временная дверь не входит в универсальный калькулятор;
+- логистика, технадзор и заготовительно-складские расходы включены как manual fixed строки текущего scope;
+- клиентская/белая часть не считается;
+- уклонные плиты берутся ручным объёмом от поставщика / Технониколь.
+
 ### Калькулятор гидроизоляции фундаментной плиты
 
 Папка:
@@ -205,6 +229,12 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ```bash
 ../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
+```
+
+Плоская кровля:
+
+```bash
+../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Гидроизоляция:

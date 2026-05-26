@@ -339,8 +339,7 @@ usv_yusupovo_village -> ok (100/100)
 - тема: `flat_roof`;
   - входы: `experiments/meeting_analysis/input/2026-05-22_flat_roof/`;
   - результаты: `data/output/meeting_analysis/2026-05-22_1103_flat_roof/`;
-  - отчёт: `docs/report_flat_roof_meeting_analysis.md`;
-  - материалы подготовлены для будущего калькулятора плоской кровли.
+  - материалы использовались для расчёта плоской кровли.
 
 ### 6.5. Калькулятор фундаментной плиты: `experiments/foundation_slab_calculator/`
 
@@ -568,7 +567,57 @@ sum_of_displayed_line_totals = 717052
 
 - `docs/report_floor_slab_2_calculator.md`.
 
-### 6.10. УНИКМА: `experiments/unikma_api_tests/`
+### 6.10. Калькулятор плоской кровли: `experiments/flat_roof_calculator/`
+
+Назначение:
+
+- считать серую внутреннюю себестоимость раздела "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА / плоская кровля";
+- хранить raw и display значения отдельно;
+- сверять строки и итоги с `expected.json`;
+- не считать клиентскую часть.
+
+Кейс:
+
+- `test_flat_roof_usv`.
+
+Текущий результат:
+
+```text
+test_flat_roof_usv -> ok (460/460)
+internal_materials_total_raw = 1420802
+internal_materials_total = 1420802
+internal_works_total_raw = 618070
+internal_works_total = 618070
+internal_section_total_raw = 2038872
+internal_section_total = 2038872
+sum_of_displayed_line_totals = 2038872
+```
+
+Что считается:
+
+- пароизоляция;
+- ЭППС 100 мм, 50 мм и SLOPE плиты;
+- геотекстиль;
+- ПВХ мембрана и примыкания;
+- рейки;
+- аэраторы, воронки, отверстия, внутренний водосток;
+- кран, расходники, вывоз мусора;
+- логистика и снабжение, технадзор, заготовительно-складские расходы;
+- нулевые строки структуры: накладные и общехозяйственные расходы, сметная прибыль.
+
+Важное:
+
+- итог сходится с серой зоной Excel за минусом временной двери ДН-1;
+- временная дверь не включена в универсальный калькулятор;
+- уклонные плиты берутся ручным объёмом от поставщика / Технониколь;
+- базы логистики, расходников и заготовительно-складских расходов пока не автоматизированы;
+- Excel export и клиентская/белая зона для этого раздела пока не сделаны.
+
+Отчёт для руководства:
+
+- `docs/report_flat_roof_calculator.md`.
+
+### 6.11. УНИКМА: `experiments/unikma_api_tests/`
 
 Назначение:
 
@@ -607,7 +656,7 @@ sum_of_displayed_line_totals = 717052
 - `docs/report_foundation_slab_calculator.md` — отчёт по калькулятору фундаментной плиты.
 - `docs/report_floor_slab_1_calculator.md` — отчёт по калькулятору плиты перекрытия 1-го этажа.
 - `docs/report_floor_slab_2_calculator.md` — отчёт по калькулятору плиты перекрытия 2-го этажа.
-- `docs/report_flat_roof_meeting_analysis.md` — отчёт по анализу созвона по плоской кровле.
+- `docs/report_flat_roof_calculator.md` — отчёт по калькулятору плоской кровли.
 - `docs/report_waterproofing_calculator.md` — отчёт по калькулятору гидроизоляции.
 - `docs/report_load_bearing_walls_lintels_calculator.md` — отчёт по калькулятору несущих стен и перемычек.
 

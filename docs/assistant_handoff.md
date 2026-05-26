@@ -125,15 +125,7 @@ experiments/meeting_analysis/
 - `2026-05-18_monolithic_floor_slab_1f_beams`;
 - `2026-05-22_flat_roof`.
 
-Последний прогон по плоской кровле:
-
-```text
-input:  experiments/meeting_analysis/input/2026-05-22_flat_roof/
-output: data/output/meeting_analysis/2026-05-22_1103_flat_roof/
-report: docs/report_flat_roof_meeting_analysis.md
-```
-
-Смысл: извлечены правила по площади кровли, мембранам/плёнкам, утеплителю, геотекстилю, воронкам, рейкам и ручным местам. Калькулятор плоской кровли пока не создан.
+По созвонам хранятся входные материалы и локальные результаты анализа, но отдельные docs-отчёты по созвонам для работодателя не делаем. В docs фиксируем готовые расчётные артефакты и калькуляторы.
 
 ### 4. Калькулятор земляных работ
 
@@ -343,7 +335,45 @@ sum_of_displayed_line_totals = 717052
 docs/report_floor_slab_2_calculator.md
 ```
 
-### 10. УНИКМА
+### 10. Калькулятор плоской кровли
+
+Папка:
+
+```text
+experiments/flat_roof_calculator/
+```
+
+Кейс:
+
+```text
+test_flat_roof_usv -> ok (460/460)
+```
+
+Итоги:
+
+```text
+internal_materials_total = 1420802
+internal_works_total = 618070
+internal_section_total = 2038872
+```
+
+Считает серую внутреннюю себестоимость раздела "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА / плоская кровля".
+
+Важно:
+
+- итог сходится с серой зоной Excel за минусом временной двери ДН-1;
+- временная дверь не включена, потому что это case-specific строка;
+- логистика и снабжение, технический надзор и заготовительно-складские расходы включены как manual fixed строки текущего scope;
+- уклонные плиты берутся ручным объёмом от поставщика / Технониколь;
+- клиентская часть и Excel export для этого раздела пока не сделаны.
+
+Отчёт:
+
+```text
+docs/report_flat_roof_calculator.md
+```
+
+### 11. УНИКМА
 
 Папка:
 
@@ -397,6 +427,12 @@ experiments/unikma_api_tests/
 
 ```bash
 ../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
+```
+
+Плоская кровля:
+
+```bash
+../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Общий pytest:
