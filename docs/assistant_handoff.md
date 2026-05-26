@@ -121,6 +121,19 @@ experiments/meeting_analysis/
 
 - `2026-04-30_earthworks`;
 - `2026-05-08_foundation_slab`.
+- `2026-05-15_load_bearing_walls_lintels`;
+- `2026-05-18_monolithic_floor_slab_1f_beams`;
+- `2026-05-22_flat_roof`.
+
+Последний прогон по плоской кровле:
+
+```text
+input:  experiments/meeting_analysis/input/2026-05-22_flat_roof/
+output: data/output/meeting_analysis/2026-05-22_1103_flat_roof/
+report: docs/report_flat_roof_meeting_analysis.md
+```
+
+Смысл: извлечены правила по площади кровли, мембранам/плёнкам, утеплителю, геотекстилю, воронкам, рейкам и ручным местам. Калькулятор плоской кровли пока не создан.
 
 ### 4. Калькулятор земляных работ
 

@@ -30,6 +30,7 @@ docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
+docs/report_flat_roof_meeting_analysis.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```

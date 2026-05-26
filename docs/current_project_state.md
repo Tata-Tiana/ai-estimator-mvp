@@ -328,6 +328,19 @@ usv_yusupovo_village -> ok (100/100)
   - входы: `experiments/meeting_analysis/input/2026-05-08_foundation_slab/`;
   - результаты: `data/output/meeting_analysis/2026-05-08_1125_foundation_slab/`;
   - материалы использовались для расчёта раздела фундаментной плиты и последующих уточнений с Еленой.
+- тема: `load_bearing_walls_lintels`;
+  - входы: `experiments/meeting_analysis/input/2026-05-15_load_bearing_walls_lintels/`;
+  - результаты: `data/output/meeting_analysis/2026-05-15_1635_load_bearing_walls_lintels/`;
+  - материалы использовались для расчёта несущих стен и перемычек.
+- тема: `monolithic_floor_slab_1f_beams`;
+  - входы: `experiments/meeting_analysis/input/2026-05-18_monolithic_floor_slab_1f_beams/`;
+  - результаты: `data/output/meeting_analysis/2026-05-18_1839_monolithic_floor_slab_1f_beams/`;
+  - материалы использовались для расчёта плиты перекрытия 1-го этажа.
+- тема: `flat_roof`;
+  - входы: `experiments/meeting_analysis/input/2026-05-22_flat_roof/`;
+  - результаты: `data/output/meeting_analysis/2026-05-22_1103_flat_roof/`;
+  - отчёт: `docs/report_flat_roof_meeting_analysis.md`;
+  - материалы подготовлены для будущего калькулятора плоской кровли.
 
 ### 6.5. Калькулятор фундаментной плиты: `experiments/foundation_slab_calculator/`
 
@@ -594,6 +607,7 @@ sum_of_displayed_line_totals = 717052
 - `docs/report_foundation_slab_calculator.md` — отчёт по калькулятору фундаментной плиты.
 - `docs/report_floor_slab_1_calculator.md` — отчёт по калькулятору плиты перекрытия 1-го этажа.
 - `docs/report_floor_slab_2_calculator.md` — отчёт по калькулятору плиты перекрытия 2-го этажа.
+- `docs/report_flat_roof_meeting_analysis.md` — отчёт по анализу созвона по плоской кровле.
 - `docs/report_waterproofing_calculator.md` — отчёт по калькулятору гидроизоляции.
 - `docs/report_load_bearing_walls_lintels_calculator.md` — отчёт по калькулятору несущих стен и перемычек.
 

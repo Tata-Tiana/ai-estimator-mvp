@@ -22,4 +22,5 @@ experiments/demo_usv_app/assets/brick_house_logo_raw.png
 experiments/meeting_analysis/input/**/*
 !experiments/meeting_analysis/input/README.md
 !experiments/meeting_analysis/input/**/
+!experiments/meeting_analysis/input/**/README.md
 !experiments/meeting_analysis/input/**/.gitkeep

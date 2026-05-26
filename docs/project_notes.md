@@ -1,6 +1,6 @@
 # Project Notes
 
-Дата актуализации: `2026-05-20`.
+Дата актуализации: `2026-05-26`.
 
 ## Последняя расчётная контрольная точка
 
@@ -59,7 +59,19 @@ data/output/meeting_analysis/2026-05-08_1125_foundation_slab/
 experiments/foundation_slab_calculator/
 experiments/waterproofing_calculator/
 experiments/load_bearing_walls_lintels_calculator/
+experiments/floor_slab_1_calculator/
+experiments/floor_slab_2_calculator/
 ```
+
+PDF/AI и материалы по плоской кровле:
+
+```text
+experiments/meeting_analysis/input/2026-05-22_flat_roof/
+data/output/meeting_analysis/2026-05-22_1103_flat_roof/
+docs/report_flat_roof_meeting_analysis.md
+```
+
+Калькулятор плоской кровли пока не создан.
 
 ## Где искать ЮСВ
 
@@ -176,6 +188,9 @@ internal_section_total = 2672103
 docs/report_pdf_parser.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
+docs/report_floor_slab_1_calculator.md
+docs/report_floor_slab_2_calculator.md
+docs/report_flat_roof_meeting_analysis.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
