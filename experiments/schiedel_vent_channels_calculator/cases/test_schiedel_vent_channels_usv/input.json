@@ -1,0 +1,16 @@
+{
+  "project_name": "test_schiedel_vent_channels_usv",
+  "vent_channel_1_height_m": 6.2,
+  "vent_channel_2_height_m": 4.81,
+  "vent_channel_2_count": 2,
+  "schiedel_masonry_total_length_m": 15.82,
+  "schiedel_masonry_work_rate_per_m": 5000,
+  "schiedel_vent_channel_2x_count": 24,
+  "schiedel_vent_channel_2x_unit_price": 504,
+  "schiedel_vent_channel_3x_count": 8,
+  "schiedel_vent_channel_3x_unit_price": 720,
+  "schiedel_delivery_trips": 1,
+  "schiedel_delivery_truck_price": 15000,
+  "schiedel_delivery_work_price": 2500,
+  "consumables_rate": 0.03
+}

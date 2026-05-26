@@ -62,6 +62,7 @@ experiments/load_bearing_walls_lintels_calculator/
 experiments/floor_slab_1_calculator/
 experiments/floor_slab_2_calculator/
 experiments/flat_roof_calculator/
+experiments/schiedel_vent_channels_calculator/
 ```
 
 PDF/AI и материалы по плоской кровле:
@@ -192,6 +193,7 @@ docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
 docs/report_flat_roof_calculator.md
+docs/report_schiedel_vent_channels_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```

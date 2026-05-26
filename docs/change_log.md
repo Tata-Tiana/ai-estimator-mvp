@@ -43,6 +43,43 @@ git status
 
 ## Контрольные точки
 
+### 2026-05-26 — Добавлен калькулятор вентиляционных каналов Schiedel
+
+- Ветка: `feature/ai-project-card`
+- Коммит: пока не зафиксирован
+
+Что добавлено:
+
+- создан отдельный экспериментальный калькулятор:
+  - `experiments/schiedel_vent_channels_calculator/`;
+- добавлен тестовый кейс:
+  - `cases/test_schiedel_vent_channels_usv/input.json`;
+  - `cases/test_schiedel_vent_channels_usv/expected.json`;
+  - `cases/test_schiedel_vent_channels_usv/result.json`;
+  - `cases/test_schiedel_vent_channels_usv/result.md`;
+- добавлены:
+  - `README.md`;
+  - `notes.md`;
+  - `docs/report_schiedel_vent_channels_calculator.md`.
+
+Проверка:
+
+```text
+test_schiedel_vent_channels_usv -> ok (138/138)
+internal_materials_total = 36290
+internal_works_total = 81600
+internal_section_total = 117890
+```
+
+Ключевые решения:
+
+- калькулятор считает только серую внутреннюю себестоимость;
+- кладка считается от raw `15.82 мп`, не от отображаемых `16 мп`;
+- количества материалов Schiedel `24` и `8` являются ручными/specification inputs;
+- контрольные правые числа сохранены справочно и не участвуют в quantity;
+- 4 последние строки добавлены как нулевые строки структуры Excel;
+- клиентская/белая часть и Excel export для этого раздела пока не делаются.
+
 ### 2026-05-26 — Добавлен калькулятор плоской кровли
 
 - Ветка: `feature/ai-project-card`

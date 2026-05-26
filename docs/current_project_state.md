@@ -617,7 +617,53 @@ sum_of_displayed_line_totals = 2038872
 
 - `docs/report_flat_roof_calculator.md`.
 
-### 6.11. УНИКМА: `experiments/unikma_api_tests/`
+### 6.11. Калькулятор вентиляционных каналов Schiedel: `experiments/schiedel_vent_channels_calculator/`
+
+Назначение:
+
+- считать серую внутреннюю себестоимость раздела "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel";
+- хранить raw и display значения отдельно;
+- сверять строки и итоги с `expected.json`;
+- не считать клиентскую часть.
+
+Кейс:
+
+- `test_schiedel_vent_channels_usv`.
+
+Текущий результат:
+
+```text
+test_schiedel_vent_channels_usv -> ok (138/138)
+internal_materials_total_raw = 36289.68
+internal_materials_total = 36290
+internal_works_total_raw = 81600
+internal_works_total = 81600
+internal_section_total_raw = 117889.68
+internal_section_total = 117890
+sum_of_displayed_line_totals = 117890
+```
+
+Что считается:
+
+- кладка вентканалов Schiedel;
+- вентиляционный канал 2х;
+- вентиляционный канал 3х;
+- доставка вентканалов;
+- расходные материалы 3%;
+- нулевые строки структуры: технадзор, заготовительно-складские, накладные, сметная прибыль.
+
+Важное:
+
+- кладка считается от raw `15.82 мп`;
+- количества `24` и `8` по Schiedel являются ручными/specification inputs;
+- контрольные правые числа не участвуют в расчёте quantity;
+- Excel export и клиентская/белая зона для этого раздела пока не сделаны.
+
+Отчёт для руководства:
+
+- `docs/report_schiedel_vent_channels_calculator.md`.
+
+### 6.12. УНИКМА: `experiments/unikma_api_tests/`
 
 Назначение:
 
@@ -657,6 +703,7 @@ sum_of_displayed_line_totals = 2038872
 - `docs/report_floor_slab_1_calculator.md` — отчёт по калькулятору плиты перекрытия 1-го этажа.
 - `docs/report_floor_slab_2_calculator.md` — отчёт по калькулятору плиты перекрытия 2-го этажа.
 - `docs/report_flat_roof_calculator.md` — отчёт по калькулятору плоской кровли.
+- `docs/report_schiedel_vent_channels_calculator.md` — отчёт по калькулятору вентиляционных каналов Schiedel.
 - `docs/report_waterproofing_calculator.md` — отчёт по калькулятору гидроизоляции.
 - `docs/report_load_bearing_walls_lintels_calculator.md` — отчёт по калькулятору несущих стен и перемычек.
 

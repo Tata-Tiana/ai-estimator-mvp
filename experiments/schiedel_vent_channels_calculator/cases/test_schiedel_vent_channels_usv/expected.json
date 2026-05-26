@@ -1,0 +1,189 @@
+{
+  "totals": {
+    "internal_materials_total_raw": "36289.68",
+    "internal_materials_total": 36290,
+    "internal_works_total_raw": "81600",
+    "internal_works_total": 81600,
+    "internal_section_total_raw": "117889.68",
+    "internal_section_total": 117890,
+    "sum_of_displayed_line_material_totals": 36290,
+    "sum_of_displayed_line_work_totals": 81600,
+    "sum_of_displayed_line_totals": 117890
+  },
+  "estimate_lines": [
+    {
+      "code": "schiedel_masonry_work",
+      "name": "Кладка вентканалов Schiedel",
+      "unit": "мп",
+      "line_type": "work",
+      "quantity_raw": "15.82",
+      "quantity_display": "15.82",
+      "quantity_source": "schiedel_masonry_total_length_m",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "5000",
+        "work_total_raw": "79100",
+        "work_total": 79100,
+        "line_total_raw": "79100",
+        "line_total": 79100
+      }
+    },
+    {
+      "code": "schiedel_vent_channel_2x_36_25",
+      "name": "Вентиляционный канал 2х,36/25 см Schiedel",
+      "unit": "шт",
+      "line_type": "materials",
+      "quantity_raw": "24",
+      "quantity_display": "24",
+      "quantity_source": "manual_from_schiedel_specification_or_elena_table",
+      "price_code": "schiedel_vent_channel_2x_36_25_item",
+      "internal_cost": {
+        "material_unit_price": "504",
+        "material_total_raw": "12096",
+        "material_total": 12096,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "12096",
+        "line_total": 12096
+      }
+    },
+    {
+      "code": "schiedel_vent_channel_3x_52_25",
+      "name": "Вентиляционный канал 3х,52/25 см Schiedel",
+      "unit": "шт",
+      "line_type": "materials",
+      "quantity_raw": "8",
+      "quantity_display": "8",
+      "quantity_source": "manual_from_schiedel_specification_or_elena_table",
+      "price_code": "schiedel_vent_channel_3x_52_25_item",
+      "internal_cost": {
+        "material_unit_price": "720",
+        "material_total_raw": "5760",
+        "material_total": 5760,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "5760",
+        "line_total": 5760
+      }
+    },
+    {
+      "code": "schiedel_delivery",
+      "name": "Доставка вентканалов",
+      "unit": "маш",
+      "line_type": "material_and_work",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "manual_input",
+      "price_code": "schiedel_delivery_truck",
+      "internal_cost": {
+        "material_unit_price": "15000",
+        "material_total_raw": "15000",
+        "material_total": 15000,
+        "work_unit_price": "2500",
+        "work_total_raw": "2500",
+        "work_total": 2500,
+        "line_total_raw": "17500",
+        "line_total": 17500
+      }
+    },
+    {
+      "code": "schiedel_consumables_tool_depreciation",
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "line_type": "percentage_addon",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "direct_cost_base_before_consumables * consumables_rate",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "3433.68",
+        "material_total": 3434,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "3433.68",
+        "line_total": 3434
+      }
+    },
+    {
+      "code": "technical_supervision_zero",
+      "name": "Технический надзор",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel_structure_line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      }
+    },
+    {
+      "code": "procurement_storage_zero",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel_structure_line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      }
+    },
+    {
+      "code": "overhead_zero",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel_structure_line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      }
+    },
+    {
+      "code": "profit_zero",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel_structure_line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      }
+    }
+  ]
+}

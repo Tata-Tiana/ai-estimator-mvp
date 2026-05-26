@@ -31,6 +31,7 @@ docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
 docs/report_flat_roof_calculator.md
+docs/report_schiedel_vent_channels_calculator.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
@@ -173,6 +174,31 @@ test_flat_roof_usv -> ok (460/460), итог 2038872
 
 ### Калькулятор гидроизоляции фундаментной плиты
 
+### Калькулятор вентиляционных каналов Schiedel
+
+Папка:
+
+```text
+experiments/schiedel_vent_channels_calculator/
+```
+
+Проверенный кейс:
+
+```text
+test_schiedel_vent_channels_usv -> ok (138/138), итог 117890
+```
+
+Считает серую внутреннюю себестоимость раздела "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel".
+
+Важно:
+
+- кладка считается от raw `15.82 мп`, не от отображаемых `16 мп`;
+- количества материалов `24` и `8` являются manual/specification input;
+- 4 последние строки добавлены как нулевые строки структуры Excel;
+- клиентская/белая часть не считается.
+
+### Калькулятор гидроизоляции фундаментной плиты
+
 Папка:
 
 ```text
@@ -235,6 +261,12 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ```bash
 ../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+```
+
+Вентиляционные каналы Schiedel:
+
+```bash
+../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
 Гидроизоляция:

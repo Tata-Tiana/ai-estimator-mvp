@@ -373,7 +373,45 @@ internal_section_total = 2038872
 docs/report_flat_roof_calculator.md
 ```
 
-### 11. УНИКМА
+### 11. Калькулятор вентиляционных каналов Schiedel
+
+Папка:
+
+```text
+experiments/schiedel_vent_channels_calculator/
+```
+
+Кейс:
+
+```text
+test_schiedel_vent_channels_usv -> ok (138/138)
+```
+
+Итоги:
+
+```text
+internal_materials_total = 36290
+internal_works_total = 81600
+internal_section_total = 117890
+```
+
+Считает серую внутреннюю себестоимость раздела "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel".
+
+Важно:
+
+- кладка считается от raw `15.82 мп`, не от отображаемых `16 мп`;
+- количества материалов `24` и `8` являются manual/specification input;
+- контрольные правые числа сохранены справочно и не участвуют в quantity;
+- 4 последние строки добавлены как нулевые строки структуры Excel;
+- клиентская часть и Excel export для этого раздела пока не сделаны.
+
+Отчёт:
+
+```text
+docs/report_schiedel_vent_channels_calculator.md
+```
+
+### 12. УНИКМА
 
 Папка:
 
@@ -433,6 +471,12 @@ experiments/unikma_api_tests/
 
 ```bash
 ../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+```
+
+Вентиляционные каналы Schiedel:
+
+```bash
+../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
 Общий pytest:
