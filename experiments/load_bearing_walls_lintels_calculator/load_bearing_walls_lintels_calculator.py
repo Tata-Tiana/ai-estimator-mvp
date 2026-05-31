@@ -203,11 +203,14 @@ class EstimateLineResult:
     display_quantity: float | None = None
     is_case_specific: bool = False
     notes: str = ""
+    price_code: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
         if self.display_quantity is None:
             result.pop("display_quantity")
+        if self.price_code is None:
+            result.pop("price_code")
         return result
 
 
@@ -223,6 +226,7 @@ def line(
     notes: str = "",
     material_total_raw_override: float | None = None,
     work_total_raw_override: float | None = None,
+    price_code: str | None = None,
 ) -> EstimateLineResult:
     quantity_value = q(quantity)
     material_raw = (
@@ -252,7 +256,12 @@ def line(
         line_total=money(total_raw),
         is_case_specific=is_case_specific,
         notes=notes,
+        price_code=price_code,
     )
+
+
+def rebar_price_code(steel_class: str, diameter_mm: int) -> str:
+    return f"rebar_{steel_class.lower()}_d{diameter_mm}_m"
 
 
 def gas_block_order(spec_volume: float, waste_coeff: float, pallet_volume: float) -> dict[str, Any]:
@@ -289,6 +298,7 @@ def rebar_from_weight(item: RebarItem, waste_coeff: float) -> tuple[dict[str, An
         unit="мп",
         quantity=q(order_length),
         material_unit_price=item.unit_price_per_m,
+        price_code=rebar_price_code(item.steel_class, item.diameter_mm),
     )
 
 
@@ -457,28 +467,28 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         lintel_rebar_lines.append(rebar_line)
 
     return [
-        line("scaffolding_setup_dismantling", "Устройство лесов, подмостей для кладки, демонтаж лесов", "компл", data.scaffolding_setup_quantity, work_unit_price=data.scaffolding_setup_work_unit_price, notes="standard/fixed work line"),
-        line("scaffolding_timber_material", "Пиломатериал для устройства лесов", "м3", data.scaffolding_timber_quantity_m3, material_unit_price=data.scaffolding_timber_unit_price, notes="standard/fixed material line"),
-        line("cutoff_waterproofing_under_first_row_blocks", "Гидроизоляция поверхности под первый ряд блоков", "м2", cutoff["cutoff_waterproofing_area_m2"], material_unit_price=data.cutoff_waterproofing_material_unit_price, work_unit_price=data.cutoff_waterproofing_work_unit_price, notes="Не включает перегородки 150 мм"),
-        line("main_load_bearing_wall_masonry_work", "Кладка внешних, внутренних стен из газобетонных блоков", "м3", main["main_masonry_volume_m3"], work_unit_price=data.main_wall_masonry_work_unit_price, notes="Работа по проектному объёму без запаса"),
-        line("main_gas_block_d400_600x400x250_material", "Газобетонный блок D400 600x400x250 мм", "м3", gas["d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price),
-        line("main_gas_block_d500_600x250x250_material", "Газобетонный блок D500 600x250x250 мм", "м3", gas["d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price),
-        line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price),
-        line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price),
-        line("u_block_lintel_cutting", "Резка блока под перемычку (U-блок)", "шт", lintels["u_block_quantity"], work_unit_price=data.u_block_cutting_work_unit_price),
+        line("scaffolding_setup_dismantling", "Устройство лесов, подмостей для кладки, демонтаж лесов", "компл", data.scaffolding_setup_quantity, work_unit_price=data.scaffolding_setup_work_unit_price, notes="standard/fixed work line", price_code="scaffolding_setup_dismantling_work_set"),
+        line("scaffolding_timber_material", "Пиломатериал для устройства лесов", "м3", data.scaffolding_timber_quantity_m3, material_unit_price=data.scaffolding_timber_unit_price, notes="standard/fixed material line", price_code="timber_m3"),
+        line("cutoff_waterproofing_under_first_row_blocks", "Гидроизоляция поверхности под первый ряд блоков", "м2", cutoff["cutoff_waterproofing_area_m2"], material_unit_price=data.cutoff_waterproofing_material_unit_price, work_unit_price=data.cutoff_waterproofing_work_unit_price, notes="Не включает перегородки 150 мм", price_code="cutoff_waterproofing_under_blocks_m2"),
+        line("main_load_bearing_wall_masonry_work", "Кладка внешних, внутренних стен из газобетонных блоков", "м3", main["main_masonry_volume_m3"], work_unit_price=data.main_wall_masonry_work_unit_price, notes="Работа по проектному объёму без запаса", price_code="gas_block_masonry_work_m3"),
+        line("main_gas_block_d400_600x400x250_material", "Газобетонный блок D400 600x400x250 мм", "м3", gas["d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, price_code="gas_block_d400_m3"),
+        line("main_gas_block_d500_600x250x250_material", "Газобетонный блок D500 600x250x250 мм", "м3", gas["d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, price_code="gas_block_d500_m3"),
+        line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
+        line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
+        line("u_block_lintel_cutting", "Резка блока под перемычку (U-блок)", "шт", lintels["u_block_quantity"], work_unit_price=data.u_block_cutting_work_unit_price, price_code="u_block_lintel_cutting_item"),
         line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под армирование Ø10", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка серой части, база для арматуры Ø10"),
-        line("main_wall_rebar_a500_d10", "Арматура A500 Ø10 для несущих стен", "мп", reinf["main_wall_rebar_a500_d10"]["order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m),
-        line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов"),
-        line("gas_blocks_unloading_manipulator", "Разгрузка блоков, смеси манипулятором", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_unloading_manipulator_unit_price),
-        line("main_walls_blocks_crane_moving_25t", "Перемещение блоков, смеси автокраном 25 т", "смена", data.main_walls_crane_shifts, material_unit_price=data.crane_25t_unit_price, notes="manual/fixed по сменам"),
+        line("main_wall_rebar_a500_d10", "Арматура A500 Ø10 для несущих стен", "мп", reinf["main_wall_rebar_a500_d10"]["order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, price_code="rebar_a500_d10_m"),
+        line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов", price_code="block_delivery_truck"),
+        line("gas_blocks_unloading_manipulator", "Разгрузка блоков, смеси манипулятором", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_unloading_manipulator_unit_price, price_code="block_unloading_manipulator_truck"),
+        line("main_walls_blocks_crane_moving_25t", "Перемещение блоков, смеси автокраном 25 т", "смена", data.main_walls_crane_shifts, material_unit_price=data.crane_25t_unit_price, notes="manual/fixed по сменам", price_code="crane_shift"),
         line("lintel_rebar_frame_assembly", "Изготовление и монтаж каркаса армирования перемычек", "мп", lintels["lintel_rebar_frame_assembly_quantity_m"], notes="Нулевая агрегирующая строка"),
         *lintel_rebar_lines,
-        line("lintel_concreting_work", "Бетонирование перемычек", "мп", lintels["lintel_total_length_m"], work_unit_price=data.lintel_concreting_work_unit_price),
-        line("lintel_concrete_b22_5_m300_material", "Бетон В22,5 М300 для перемычек", "м3", lintels["lintel_concrete_order_volume_m3"], material_unit_price=data.concrete_m300_unit_price, notes="Минимум 1 м3"),
-        line("lintel_concrete_delivery", "Доставка бетона до объекта", "рейс", data.concrete_delivery_trips, material_unit_price=data.concrete_delivery_unit_price),
-        line("manual_concrete_lifting", "Перенос, подъём бетона вручную", "м3", lintels["lintel_concrete_order_volume_m3"], work_unit_price=data.manual_concrete_lifting_work_unit_price),
-        line("parapet_and_upper_level_masonry_work", "Кладка парапета и верхнего уровня", "м3", parapet["parapet_upper_level_total_volume_m3"], work_unit_price=data.parapet_masonry_work_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Парапет постоянный; второй свет case_specific addon"),
-        line("parapet_and_upper_level_gas_block_d400_material", "Газобетонный блок D400 для парапета и верхнего уровня", "м3", parapet["parapet_and_upper_level_d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Объединено, чтобы не перезакладывать лишний поддон"),
+        line("lintel_concreting_work", "Бетонирование перемычек", "мп", lintels["lintel_total_length_m"], work_unit_price=data.lintel_concreting_work_unit_price, price_code="lintel_concreting_work_m"),
+        line("lintel_concrete_b22_5_m300_material", "Бетон В22,5 М300 для перемычек", "м3", lintels["lintel_concrete_order_volume_m3"], material_unit_price=data.concrete_m300_unit_price, notes="Минимум 1 м3", price_code="concrete_b22_5_m3"),
+        line("lintel_concrete_delivery", "Доставка бетона до объекта", "рейс", data.concrete_delivery_trips, material_unit_price=data.concrete_delivery_unit_price, price_code="concrete_delivery_trip"),
+        line("manual_concrete_lifting", "Перенос, подъём бетона вручную", "м3", lintels["lintel_concrete_order_volume_m3"], work_unit_price=data.manual_concrete_lifting_work_unit_price, price_code="manual_concrete_lifting_m3"),
+        line("parapet_and_upper_level_masonry_work", "Кладка парапета и верхнего уровня", "м3", parapet["parapet_upper_level_total_volume_m3"], work_unit_price=data.parapet_masonry_work_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Парапет постоянный; второй свет case_specific addon", price_code="gas_block_masonry_work_m3"),
+        line("parapet_and_upper_level_gas_block_d400_material", "Газобетонный блок D400 для парапета и верхнего уровня", "м3", parapet["parapet_and_upper_level_d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Объединено, чтобы не перезакладывать лишний поддон", price_code="gas_block_d400_m3"),
         line(
             "vent_chimney_gas_block_cladding_work",
             "Обкладка дымохода и вентканалов 150 мм",
@@ -487,15 +497,16 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
             display_quantity=vent["vent_chimney_display_area_m2"],
             work_unit_price=data.vent_chimney_cladding_work_unit_price,
             work_total_raw_override=d(data.vent_chimney_gas_block_spec_volume_m3) / d(data.vent_chimney_block_thickness_m) * d(data.vent_chimney_cladding_work_unit_price),
+            price_code="gas_block_cladding_work_m2",
         ),
-        line("vent_chimney_gas_block_d500_600x150x250_material", "Газобетонный блок D500 600x150x250 мм", "м3", vent["vent_chimney_d500_150"]["order_volume_m3"], material_unit_price=data.gas_block_d500_150_unit_price),
-        line("parapet_upper_level_adhesive", "Монтажный клей для парапета и верхнего уровня", "мешок", overheads["parapet_upper_level_adhesive_bags"], material_unit_price=data.adhesive_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Две группы округления: second_light отдельно; parapet + vent/chimney вместе"),
-        line("parapet_blocks_crane_moving", "Перемещение блоков, смеси автокраном для парапета", "смена", data.parapet_crane_shifts, material_unit_price=data.crane_25t_unit_price),
+        line("vent_chimney_gas_block_d500_600x150x250_material", "Газобетонный блок D500 600x150x250 мм", "м3", vent["vent_chimney_d500_150"]["order_volume_m3"], material_unit_price=data.gas_block_d500_150_unit_price, price_code="gas_block_d500_150_m3"),
+        line("parapet_upper_level_adhesive", "Монтажный клей для парапета и верхнего уровня", "мешок", overheads["parapet_upper_level_adhesive_bags"], material_unit_price=data.adhesive_unit_price, is_case_specific=data.second_light_masonry_case_specific, notes="Две группы округления: second_light отдельно; parapet + vent/chimney вместе", price_code="block_adhesive_bag"),
+        line("parapet_blocks_crane_moving", "Перемещение блоков, смеси автокраном для парапета", "смена", data.parapet_crane_shifts, material_unit_price=data.crane_25t_unit_price, price_code="crane_shift"),
         line("parapet_and_second_light_chasing_for_d10_reinforcement", "Штробление парапета и второго света", "мп", d(data.parapet_chasing_base_length_m) + d(data.second_light_chasing_base_length_m), is_case_specific=data.second_light_masonry_case_specific, notes="Нулевая строка серой части"),
-        line("parapet_and_second_light_rebar_a500_d10", "Арматура A500 Ø10 для парапета и второго света", "мп", overheads["parapet_and_second_light_rebar_order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"] + overheads["second_light_rebar"]["material_total_raw"], is_case_specific=data.second_light_masonry_case_specific, notes="Две группы округления и закупки прутков"),
+        line("parapet_and_second_light_rebar_a500_d10", "Арматура A500 Ø10 для парапета и второго света", "мп", overheads["parapet_and_second_light_rebar_order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"] + overheads["second_light_rebar"]["material_total_raw"], is_case_specific=data.second_light_masonry_case_specific, notes="Две группы округления и закупки прутков", price_code="rebar_a500_d10_m"),
         line("walls_consumables_tool_amortization", "Расходные материалы, амортизация инструмента", "комплект", 1, material_unit_price=money(data.walls_consumables_tool_amortization_amount_raw), material_total_raw_override=data.walls_consumables_tool_amortization_amount_raw, notes="manual/fixed amount, формула требует подтверждения"),
-        line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line"),
-        line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount),
+        line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line", price_code="waste_removal_truck"),
+        line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_fixed"),
     ]
 
 

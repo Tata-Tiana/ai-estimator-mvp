@@ -340,6 +340,10 @@ usv_yusupovo_village -> ok (100/100)
   - входы: `experiments/meeting_analysis/input/2026-05-22_flat_roof/`;
   - результаты: `data/output/meeting_analysis/2026-05-22_1103_flat_roof/`;
   - материалы использовались для расчёта плоской кровли.
+- тема: `grillage_foundation`;
+  - входы: `experiments/meeting_analysis/input/2026-05-26_grillage_foundation/`;
+  - это raw input для будущего раздела "Устройство ростверкового фундамента";
+  - отдельный docs-отчёт по созвону не делаем.
 
 ### 6.5. Калькулятор фундаментной плиты: `experiments/foundation_slab_calculator/`
 
@@ -686,6 +690,86 @@ sum_of_displayed_line_totals = 117890
 - УНИКМА закрывает слой товаров, цен, складов и остатков;
 - УНИКМА не заменяет расчётную логику сметы.
 
+### 6.13. Price registry и pricing-layer: `experiments/pricing/`
+
+Назначение:
+
+- подготовить единый источник цен для MVP;
+- не ломать старые сверенные калькуляторы;
+- дать безопасный fallback на цены из `input.json`.
+
+Подготовленные файлы:
+
+```text
+output/required_price_codes_v2.json
+output/required_price_codes_v2.csv
+output/price_registry_filled_v2.xlsx
+output/price_registry_mapping_report_v2.md
+output/price_registry_missing_codes_v2.csv
+output/price_registry_ambiguous_matches_v2.csv
+output/price_registry_unused_rows_v2.csv
+output/price_registry_filled_v3.xlsx
+output/price_registry_mapping_report_v3.md
+```
+
+Что сделано:
+
+- в старые калькуляторы добавлено единое поле `price_code` для строк с ценой или ставкой;
+- `material_price_code` и `work_rate_code` не добавлялись;
+- формулы и expected не менялись;
+- текущий режим расчётов остаётся `locked_case_prices`;
+- новый слой цен живёт отдельно и пока не подключён к калькуляторам.
+
+Папка pricing-layer:
+
+```text
+experiments/pricing/
+├── price_reader.py
+├── validate_price_registry.py
+├── check_required_codes_against_registry.py
+├── test_price_reader_demo.py
+├── README.md
+└── output/
+```
+
+Режимы:
+
+- `locked_case_prices` — цены берутся из входов кейса, старое поведение;
+- `price_registry_with_fallback` — будущий режим с приоритетом:
+
+```text
+project_price_overrides
+↓
+price_registry
+↓
+input.json fallback
+```
+
+Состояние покрытия `price_registry_v3`:
+
+```text
+required unique price_code = 81
+found in price_registry = 18
+found in rows_to_add = 63
+missing completely = 0
+fallback needed = 63
+```
+
+Отчёты:
+
+```text
+experiments/pricing/output/price_registry_validation_report.md
+experiments/pricing/output/required_codes_coverage_report.md
+docs/report_pricing_layer.md
+```
+
+Важные решения:
+
+- исходный прайс не перезаписывается;
+- спорные единицы измерения вынесены в report как `requires_decision`;
+- если `price_code` не найден в `price_registry`, resolver возвращает fallback-цену и warning;
+- клиентская часть сметы не считается.
+
 ## 7. Документация
 
 Файлы:
@@ -704,6 +788,7 @@ sum_of_displayed_line_totals = 117890
 - `docs/report_floor_slab_2_calculator.md` — отчёт по калькулятору плиты перекрытия 2-го этажа.
 - `docs/report_flat_roof_calculator.md` — отчёт по калькулятору плоской кровли.
 - `docs/report_schiedel_vent_channels_calculator.md` — отчёт по калькулятору вентиляционных каналов Schiedel.
+- `docs/report_pricing_layer.md` — отчёт по `price_code`, `price_registry_v3` и pricing-layer.
 - `docs/report_waterproofing_calculator.md` — отчёт по калькулятору гидроизоляции.
 - `docs/report_load_bearing_walls_lintels_calculator.md` — отчёт по калькулятору несущих стен и перемычек.
 
@@ -722,6 +807,10 @@ sum_of_displayed_line_totals = 117890
 - считать раздел "Внешние и внутренние несущие стены, перемычки" на тестовом кейсе.
 - считать раздел "Ж/Б монолитная плита перекрытия 1-го этажа" на тестовом кейсе.
 - считать раздел "Ж/Б монолитная плита перекрытия 2-го этажа" на тестовом кейсе.
+- считать раздел "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА / плоская кровля" на тестовом кейсе.
+- считать раздел "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel" на тестовом кейсе.
+- хранить единый `price_code` в строках готовых калькуляторов.
+- проверять покрытие `price_code` через `experiments/pricing/`.
 
 При этом:
 
@@ -729,6 +818,7 @@ sum_of_displayed_line_totals = 117890
 - расчётные калькуляторы пока живут в `experiments/`, не в `app/`;
 - клиентская цена, рентабельность, НР/СП/ТН пока не считаются;
 - УНИКМА пока не подключён к расчётному модулю.
+- `price_registry_with_fallback` пока не подключён к калькуляторам как основной режим.
 
 ## 9. Что считать стабильной базой
 
@@ -741,7 +831,12 @@ sum_of_displayed_line_totals = 117890
 - детерминированный калькулятор фундаментной плиты;
 - детерминированный калькулятор гидроизоляции фундаментной плиты;
 - детерминированный калькулятор несущих стен и перемычек;
+- детерминированный калькулятор плиты перекрытия 1-го этажа;
 - детерминированный калькулятор плиты перекрытия 2-го этажа;
+- детерминированный калькулятор плоской кровли;
+- детерминированный калькулятор вентиляционных каналов Schiedel;
+- единый `price_code` в готовых калькуляторах;
+- `price_registry_v3` и отдельный pricing-layer с fallback;
 - формат кейсов `input.json`, `expected.json`, `notes.md`;
 - агрегированный запуск `run_all_cases.py`.
 

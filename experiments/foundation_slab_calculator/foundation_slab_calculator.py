@@ -247,6 +247,7 @@ class EstimateLineResult:
     line_total: int
     display_quantity: float | None = None
     line_type: str | None = None
+    price_code: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
@@ -254,6 +255,8 @@ class EstimateLineResult:
             result.pop("display_quantity")
         if self.line_type is None:
             result.pop("line_type")
+        if self.price_code is None:
+            result.pop("price_code")
         return result
 
 
@@ -266,6 +269,7 @@ def calculate_line(
     work_unit_price: float = 0.0,
     display_quantity: float | None = None,
     line_type: str | None = None,
+    price_code: str | None = None,
 ) -> EstimateLineResult:
     quantity_rounded = _round_decimal(quantity, "0.0001")
     material_total = _round_money(
@@ -285,7 +289,12 @@ def calculate_line(
         work_total=work_total,
         line_total=material_total + work_total,
         line_type=line_type,
+        price_code=price_code,
     )
+
+
+def rebar_price_code(steel_class: str, diameter_mm: int) -> str:
+    return f"rebar_{steel_class.lower()}_d{diameter_mm}_m"
 
 
 def calculate_membrane_block(data: FoundationSlabInput) -> dict[str, Any]:
@@ -490,6 +499,7 @@ def calculate_rebar_line(
         unit="мп",
         quantity=rebar_order_length_m,
         material_unit_price=item.unit_price_per_m,
+        price_code=rebar_price_code(item.steel_class, item.diameter_mm),
     )
     control = {
         "name": item.name,
@@ -637,6 +647,7 @@ def calculate_internal_estimate_lines(
             unit="м2",
             quantity=data.membrane_area_m2,
             work_unit_price=data.membrane_installation_work_unit_price,
+            price_code="planter_membrane_installation_work_m2",
         ),
         calculate_line(
             code="planter_standard_material",
@@ -644,6 +655,7 @@ def calculate_internal_estimate_lines(
             unit="рул",
             quantity=membrane["membrane_rolls"],
             material_unit_price=data.planter_standard_roll_unit_price,
+            price_code="planter_standard_roll",
         ),
         calculate_line(
             code="planterband_material",
@@ -651,6 +663,7 @@ def calculate_internal_estimate_lines(
             unit="шт",
             quantity=membrane["planterband_quantity"],
             material_unit_price=data.planterband_unit_price,
+            price_code="planterband_item",
         ),
         calculate_line(
             code="formwork_installation",
@@ -658,6 +671,7 @@ def calculate_internal_estimate_lines(
             unit="м2",
             quantity=formwork["formwork_area_m2"],
             work_unit_price=data.formwork_installation_work_unit_price,
+            price_code="timber_formwork_installation_work_m2",
         ),
         calculate_line(
             code="formwork_plywood",
@@ -665,6 +679,7 @@ def calculate_internal_estimate_lines(
             unit="шт",
             quantity=formwork["plywood_sheets"],
             material_unit_price=data.plywood_unit_price,
+            price_code="plywood_1520x1520_18mm_sheet",
         ),
         calculate_line(
             code="formwork_timber",
@@ -673,6 +688,7 @@ def calculate_internal_estimate_lines(
             quantity=formwork["timber_raw_volume_m3"],
             display_quantity=1.2,
             material_unit_price=data.timber_unit_price,
+            price_code="timber_m3",
         ),
         calculate_line(
             code="eps50_laying_under_slab",
@@ -680,6 +696,7 @@ def calculate_internal_estimate_lines(
             unit="м2",
             quantity=eps["eps50_laying_area_m2"],
             work_unit_price=data.eps50_laying_work_unit_price,
+            price_code="eps_laying_work_m2",
         ),
         calculate_line(
             code="thermal_insert_installation",
@@ -687,6 +704,7 @@ def calculate_internal_estimate_lines(
             unit="мп",
             quantity=data.thermal_insert_length_m,
             work_unit_price=data.thermal_insert_installation_work_unit_price,
+            price_code="thermal_insert_installation_work_m",
         ),
         calculate_line(
             code="eps50_penoplex_geo_material",
@@ -695,6 +713,7 @@ def calculate_internal_estimate_lines(
             quantity=eps["eps50_order_volume_m3"],
             display_quantity=14.44,
             material_unit_price=data.eps50_unit_price,
+            price_code="eps_geo_50_m3",
         ),
         calculate_line(
             code="eps100_penoplex_geo_material",
@@ -703,6 +722,7 @@ def calculate_internal_estimate_lines(
             quantity=eps["eps100_order_volume_m3"],
             display_quantity=0.56,
             material_unit_price=data.eps100_unit_price,
+            price_code="eps_geo_100_m3",
         ),
         calculate_line(
             code="rebar_crane_supply",
@@ -710,6 +730,7 @@ def calculate_internal_estimate_lines(
             unit="смена",
             quantity=data.rebar_crane_shifts,
             material_unit_price=data.rebar_crane_unit_price,
+            price_code="crane_shift",
         ),
         calculate_line(
             code="rebar_frame_assembly",
@@ -724,6 +745,7 @@ def calculate_internal_estimate_lines(
             unit="маш",
             quantity=data.rebar_metal_delivery_trucks,
             material_unit_price=data.rebar_metal_delivery_unit_price,
+            price_code="metal_delivery_truck",
         ),
         calculate_line(
             code="foundation_slab_concreting_work",
@@ -731,6 +753,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=data.concrete_project_volume_m3,
             work_unit_price=data.concreting_work_unit_price,
+            price_code="concrete_placing_work_m3",
         ),
         calculate_line(
             code="concrete_b22_5_m300_material",
@@ -738,6 +761,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=concrete["concrete_order_volume_m3"],
             material_unit_price=data.concrete_unit_price,
+            price_code="concrete_b22_5_m3",
         ),
         calculate_line(
             code="concrete_delivery",
@@ -745,6 +769,7 @@ def calculate_internal_estimate_lines(
             unit="рейс",
             quantity=concrete["concrete_delivery_trips"],
             material_unit_price=data.concrete_delivery_unit_price,
+            price_code="concrete_delivery_trip",
         ),
         calculate_line(
             code="concrete_pump_32m",
@@ -752,6 +777,7 @@ def calculate_internal_estimate_lines(
             unit="смена",
             quantity=data.concrete_pump_shifts,
             material_unit_price=data.concrete_pump_unit_price,
+            price_code="concrete_pump_32m_shift",
         ),
         calculate_line(
             code="formwork_dismantling",
@@ -759,6 +785,7 @@ def calculate_internal_estimate_lines(
             unit="м2",
             quantity=formwork["formwork_area_m2"],
             work_unit_price=data.formwork_dismantling_work_unit_price,
+            price_code="formwork_dismantling_work_m2",
         ),
         calculate_line(
             code="logistics_and_supply",
@@ -780,6 +807,7 @@ def calculate_internal_estimate_lines(
             unit="-",
             quantity=1,
             work_unit_price=data.technical_supervision_amount,
+            price_code="technical_supervision_fixed",
         ),
         calculate_line(
             code="procurement_warehouse_costs_excel_structure",

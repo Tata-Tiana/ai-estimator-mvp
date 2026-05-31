@@ -1,15 +1,15 @@
 # Project Notes
 
-Дата актуализации: `2026-05-26`.
+Дата актуализации: `2026-05-31`.
 
 ## Последняя расчётная контрольная точка
 
 ```text
 branch: feature/ai-project-card
-commit: 86795ea Add Schiedel vent channels calculator
+commit: см. последний коммит pricing-layer в `git log`
 ```
 
-Это последняя зафиксированная точка проекта. В неё вошли проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация.
+Это последняя зафиксированная точка проекта. В неё вошли экспериментальные калькуляторы, единые `price_code`, `price_registry_v3`, отдельный pricing-layer с fallback, отчёты и handoff-документация.
 
 ## Главные договорённости
 
@@ -17,6 +17,9 @@ commit: 86795ea Add Schiedel vent channels calculator
 - Расчёты делаются детерминированным Python-кодом.
 - Любое отличие сметного количества от формульного расчёта фиксируется явно через overrides и notes.
 - Для каждого дома должны быть отдельные проектные папки.
+- В готовых калькуляторах используется один идентификатор цены: `price_code`.
+- Старый режим расчёта остаётся `locked_case_prices`; цены берутся из inputs кейса.
+- Будущий режим цен: `project_price_overrides -> price_registry -> input fallback`.
 - `data/output` больше не считается удобной основной структурой для новых PDF/AI экспериментов.
 
 ## Имена проектных папок
@@ -63,6 +66,7 @@ experiments/floor_slab_1_calculator/
 experiments/floor_slab_2_calculator/
 experiments/flat_roof_calculator/
 experiments/schiedel_vent_channels_calculator/
+experiments/pricing/
 ```
 
 PDF/AI и материалы по плоской кровле:
@@ -74,6 +78,34 @@ docs/report_flat_roof_calculator.md
 ```
 
 Калькулятор плоской кровли создан как экспериментальный deterministic calculator. Итог сходится с серой зоной Excel за минусом временной двери ДН-1.
+
+Материалы для будущего раздела ростверкового фундамента:
+
+```text
+experiments/meeting_analysis/input/2026-05-26_grillage_foundation/
+```
+
+Это raw input по разделу "Устройство ростверкового фундамента"; отдельный docs-отчёт по созвону не создаётся.
+
+## Где искать price_registry и pricing-layer
+
+```text
+output/price_registry_filled_v3.xlsx
+output/price_registry_mapping_report_v3.md
+experiments/pricing/
+experiments/pricing/output/price_registry_validation_report.md
+experiments/pricing/output/required_codes_coverage_report.md
+docs/report_pricing_layer.md
+```
+
+Состояние покрытия:
+
+```text
+required unique price_code = 81
+found in price_registry = 18
+found in rows_to_add = 63
+missing completely = 0
+```
 
 ## Где искать ЮСВ
 

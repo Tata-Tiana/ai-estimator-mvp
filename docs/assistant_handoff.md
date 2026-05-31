@@ -479,6 +479,14 @@ experiments/unikma_api_tests/
 ../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
+Pricing-layer:
+
+```bash
+../.venv/bin/python3 experiments/pricing/validate_price_registry.py
+../.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
+../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
+```
+
 Общий pytest:
 
 ```bash
@@ -487,7 +495,7 @@ experiments/unikma_api_tests/
 
 На момент фиксации `pytest` собирает `0` тестов; основные проверки сейчас идут через CLI калькуляторов.
 
-## Что было проверено перед коммитом `86795ea`
+## Что было проверено перед последней pricing-контрольной точкой
 
 ```text
 earthworks:
@@ -503,9 +511,46 @@ waterproofing:
 load_bearing_walls_lintels:
   internal_section_total = 2672103
 
+floor_slab_1:
+  ok (194/194)
+
+floor_slab_2:
+  ok (222/222)
+
+flat_roof:
+  ok (460/460)
+
+schiedel_vent_channels:
+  ok (138/138)
+
+pricing:
+  price_registry validation -> rows=131 filled=18 empty=113 duplicates=0
+  required code coverage -> required=81 registry=18 rows_to_add=63 missing=0
+  demo -> price_registry source and fallback warnings checked
+
 pytest:
   collected 0 items
 ```
+
+## Price registry / pricing-layer
+
+После Schiedel добавлен переходный слой цен:
+
+```text
+experiments/pricing/
+output/price_registry_filled_v3.xlsx
+output/price_registry_mapping_report_v3.md
+```
+
+Что важно:
+
+- в готовые калькуляторы добавлено поле `price_code` для строк с ценой/ставкой;
+- `material_price_code` и `work_rate_code` не вводились;
+- формулы и `expected.json` не менялись;
+- старый режим расчётов остаётся `locked_case_prices`;
+- будущий режим `price_registry_with_fallback` должен идти через `project_price_overrides -> price_registry -> input fallback`;
+- если цена не найдена в основном листе прайса, resolver возвращает fallback и warning;
+- `price_registry_v3`: `81` required-код, `18` в основном листе, `63` в `rows_to_add`, `0` потерянных.
 
 ## Важные запреты
 

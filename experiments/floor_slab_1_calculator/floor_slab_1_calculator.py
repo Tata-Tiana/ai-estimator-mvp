@@ -80,11 +80,12 @@ def estimate_line(
     material_total_raw: Any = 0,
     work_total_raw: Any = 0,
     notes: list[str] | None = None,
+    price_code: str | None = None,
 ) -> dict[str, Any]:
     material_raw = d(material_total_raw)
     work_raw = d(work_total_raw)
     line_raw = material_raw + work_raw
-    return {
+    payload = {
         "code": code,
         "name": name,
         "unit": unit,
@@ -99,6 +100,9 @@ def estimate_line(
         "line_total": round_money_half_up(line_raw),
         "notes": notes or [],
     }
+    if price_code:
+        payload["price_code"] = price_code
+    return payload
 
 
 def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
@@ -229,6 +233,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             slab_formwork_area,
             slab_formwork_area,
             slab_formwork_area * d(rates["formwork_rate_per_m2"]),
+            price_code="formwork_rental_m2",
         ),
         estimate_line(
             "formwork_delivery_return_manipulator",
@@ -239,6 +244,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             formwork_delivery_trucks,
             formwork_delivery_trucks * d(rates["formwork_delivery_rate_per_trip"]),
             notes=["<=150 м2: 1 привоз + 1 вывоз; >180 м2: 2 привоз + 2 вывоз; 150-180 м2: manual_review."],
+            price_code="formwork_delivery_truck",
         ),
         estimate_line(
             "formwork_rebar_crane_supply",
@@ -249,6 +255,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             d(manual_lines["formwork_rebar_crane_shifts"]),
             d(manual_lines["formwork_rebar_crane_shifts"]) * d(rates["crane_shift_rate"]),
             notes=["3-я смена пока только manual_review / override."],
+            price_code="crane_shift",
         ),
         estimate_line(
             "formwork_consumables",
@@ -258,6 +265,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             1,
             1,
             slab_formwork_area * d(rates["formwork_consumables_rate_per_m2"]),
+            price_code="formwork_consumables_m2",
         ),
         estimate_line(
             "edge_beam_formwork_installation_control",
@@ -275,6 +283,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             order_plywood_sheets,
             order_plywood_sheets,
             d(order_plywood_sheets) * d(rates["plywood_unit_price"]),
+            price_code="plywood_1520x1520_18mm_sheet",
         ),
         estimate_line(
             "formwork_timber_gost",
@@ -285,6 +294,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             display_decimal(timber_volume),
             timber_volume * d(rates["timber_unit_price"]),
             notes=["Сумма считается от quantity_raw, не от отображаемого количества."],
+            price_code="timber_m3",
         ),
         estimate_line(
             "floor_slab_rebar_frame_assembly_control",
@@ -306,6 +316,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 item["order_length_m"],
                 item["order_length_m"],
                 item["material_total_raw"],
+                price_code=f"rebar_{item['steel_class'].lower()}_d{item['diameter_mm']}_m",
             )
         )
 
@@ -320,6 +331,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 rebar_delivery_trucks,
                 d(rebar_delivery_trucks) * d(rates["rebar_delivery_rate_per_truck"]),
                 notes=["В будущем box_calculator доставка металла должна считаться один раз по общему весу металла коробки."],
+                price_code="metal_delivery_truck",
             ),
             estimate_line(
                 "floor_slab_concreting_work",
@@ -331,6 +343,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 0,
                 slab_concrete_volume * d(rates["slab_concreting_work_rate_per_m3"]),
                 notes=["Стоимость считается от raw 37.3752, не от display 37.38."],
+                price_code="concrete_placing_work_m3",
             ),
             estimate_line(
                 "beam_concreting_work",
@@ -341,6 +354,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 display_decimal(beams_concrete_volume),
                 0,
                 beams_concrete_volume * d(rates["beam_concreting_work_rate_per_m3"]),
+                price_code="beam_concrete_placing_work_m3",
             ),
             estimate_line(
                 "concrete_b22_5_m300_material",
@@ -350,6 +364,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 order_concrete_volume,
                 order_concrete_volume,
                 d(order_concrete_volume) * d(rates["concrete_unit_price_per_m3"]),
+                price_code="concrete_b22_5_m3",
             ),
             estimate_line(
                 "concrete_delivery",
@@ -359,6 +374,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 concrete_delivery_trips,
                 concrete_delivery_trips,
                 d(concrete_delivery_trips) * d(rates["concrete_delivery_rate_per_trip"]),
+                price_code="concrete_delivery_trip",
             ),
             estimate_line(
                 "concrete_pump_32m",
@@ -369,6 +385,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 d(manual_lines["concrete_pump_shifts"]),
                 d(manual_lines["concrete_pump_shifts"]) * d(rates["concrete_pump_rate"]),
                 notes=["Fixed/manual line; не вычислять от объёма бетона."],
+                price_code="concrete_pump_32m_shift",
             ),
             estimate_line(
                 "formwork_dismantling_zero_internal",
@@ -387,6 +404,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 total_insulation_length,
                 0,
                 total_insulation_length * d(rates["edge_beam_insulation_work_rate_per_m"]),
+                price_code="edge_insulation_work_m",
             ),
             estimate_line(
                 "bottom_slab_insulation_work",
@@ -398,6 +416,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 0,
                 bottom_slab_insulation_area * d(rates["bottom_slab_insulation_work_rate_per_m2"]),
                 notes=["Стоимость считается от raw 51.92, не от display 51.9."],
+                price_code="eps_bottom_slab_insulation_work_m2",
             ),
             estimate_line(
                 "eps_penoplex_osnova_100mm",
@@ -408,6 +427,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 display_decimal(order_eps_volume),
                 order_eps_volume * d(insulation_in["eps_unit_price_per_m3"]),
                 notes=["Стоимость считается от закупочного raw-объёма 8.319, не от display 8.32."],
+                price_code="eps_penoplex_osnova_100_m3",
             ),
             estimate_line(
                 "eps_glue_foam",
@@ -417,6 +437,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 foam_cans_ordered,
                 foam_cans_ordered,
                 d(foam_cans_ordered) * d(insulation_in["foam_unit_price_per_can"]),
+                price_code="eps_foam_glue_can",
             ),
         ]
     )
@@ -453,6 +474,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 1,
                 0,
                 d(manual_lines["technical_supervision_amount"]),
+                price_code="technical_supervision_fixed",
             ),
         ]
     )

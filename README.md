@@ -32,6 +32,7 @@ docs/report_floor_slab_1_calculator.md
 docs/report_floor_slab_2_calculator.md
 docs/report_flat_roof_calculator.md
 docs/report_schiedel_vent_channels_calculator.md
+docs/report_pricing_layer.md
 docs/report_waterproofing_calculator.md
 docs/report_load_bearing_walls_lintels_calculator.md
 ```
@@ -40,11 +41,11 @@ docs/report_load_bearing_walls_lintels_calculator.md
 
 ```text
 branch: feature/ai-project-card
-commit: 86795ea Add Schiedel vent channels calculator
-date: 2026-05-26
+commit: see latest git log entry after pricing-layer commit
+date: 2026-05-31
 ```
 
-Это актуальная зафиксированная расчётная база проекта: проектные папки PDF/AI, экспериментальные калькуляторы, отчёты и handoff-документация сохранены в git.
+Это актуальная зафиксированная расчётная база проекта: экспериментальные калькуляторы, единые `price_code`, подготовленный `price_registry_v3`, pricing-layer с fallback и handoff-документация сохранены в git.
 
 ## Что сейчас работает
 
@@ -231,6 +232,39 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 Важно: в этом разделе Excel показывает округлённые строки, но итог считает от raw-значений. Поэтому результат хранит raw totals и display totals.
 
+### Price registry и слой цен MVP
+
+Папка:
+
+```text
+experiments/pricing/
+```
+
+Подготовленные файлы:
+
+```text
+output/price_registry_filled_v3.xlsx
+output/price_registry_mapping_report_v3.md
+output/required_price_codes_v2.csv
+```
+
+Что сделано:
+
+- в старые калькуляторы добавлено единое поле `price_code` для строк с ценой/ставкой;
+- `material_price_code` и `work_rate_code` не вводились;
+- создан `price_registry_v3` с листом `rows_to_add`;
+- создан безопасный читатель цен с приоритетом `project_price_overrides -> price_registry -> input fallback`;
+- старые калькуляторы пока не переключены на прайс и продолжают работать как раньше.
+
+Покрытие:
+
+```text
+required unique price_code = 81
+found in price_registry = 18
+found in rows_to_add = 63
+missing completely = 0
+```
+
 ## Команды проверки
 
 Земляные работы:
@@ -269,6 +303,14 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 ../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
+Pricing-layer:
+
+```bash
+../.venv/bin/python3 experiments/pricing/validate_price_registry.py
+../.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
+../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
+```
+
 Гидроизоляция:
 
 ```bash
@@ -283,7 +325,7 @@ test_load_bearing_walls_lintels -> ok, итог 2672103
 
 ## Текущий git-статус по смыслу
 
-Текущая расчётная контрольная точка зафиксирована коммитом `86795ea`.
+Текущая расчётная контрольная точка обновлена после добавления `price_code` и pricing-layer.
 
 Перед этим были проверены:
 
@@ -300,6 +342,22 @@ waterproofing:
 
 load_bearing_walls_lintels:
   internal_section_total = 2672103
+
+floor_slab_1:
+  ok (194/194)
+
+floor_slab_2:
+  ok (222/222)
+
+flat_roof:
+  ok (460/460)
+
+schiedel_vent_channels:
+  ok (138/138)
+
+pricing:
+  price_registry validation -> rows=131 filled=18 empty=113 duplicates=0
+  required code coverage -> required=81 registry=18 rows_to_add=63 missing=0
 ```
 
 `pytest` на текущий момент собирает `0` тестов; рабочие проверки идут через CLI калькуляторов.

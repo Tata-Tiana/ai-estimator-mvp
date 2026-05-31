@@ -77,6 +77,22 @@ internal_section_total
   - `test_waterproofing_foundation_slab` — гидроизоляция и утепление бортов плит, сверено со скрином Excel.
 - `experiments/load_bearing_walls_lintels_calculator/`
   - `test_load_bearing_walls_lintels` — несущие стены и перемычки, с raw/display итогами из-за округлений Excel.
+- `experiments/floor_slab_1_calculator/`
+  - `test_floor_slab_1` — плита перекрытия 1-го этажа с балками.
+- `experiments/floor_slab_2_calculator/`
+  - `test_floor_slab_2` — плита перекрытия 2-го этажа без балок.
+- `experiments/flat_roof_calculator/`
+  - `test_flat_roof_usv` — плоская кровля, без временной двери как case-specific строки.
+- `experiments/schiedel_vent_channels_calculator/`
+  - `test_schiedel_vent_channels_usv` — вентиляционные каналы Schiedel.
+
+Слой цен для MVP:
+
+- `experiments/pricing/`;
+- `output/price_registry_filled_v3.xlsx`;
+- единый `price_code` в готовых калькуляторах;
+- текущий расчётный режим — `locked_case_prices`;
+- будущий режим — `price_registry_with_fallback`, с приоритетом `project_price_overrides -> price_registry -> input fallback`.
 
 ## Принцип развития
 

@@ -286,7 +286,8 @@
       "material_total": 0,
       "work_unit_price": 100,
       "work_total": 32000,
-      "line_total": 32000
+      "line_total": 32000,
+      "price_code": "planter_membrane_installation_work_m2"
     },
     {
       "code": "planter_standard_material",
@@ -297,7 +298,8 @@
       "material_total": 46494,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 46494
+      "line_total": 46494,
+      "price_code": "planter_standard_roll"
     },
     {
       "code": "planterband_material",
@@ -308,7 +310,8 @@
       "material_total": 28440,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 28440
+      "line_total": 28440,
+      "price_code": "planterband_item"
     },
     {
       "code": "formwork_installation",
@@ -319,7 +322,8 @@
       "material_total": 0,
       "work_unit_price": 0,
       "work_total": 0,
-      "line_total": 0
+      "line_total": 0,
+      "price_code": "timber_formwork_installation_work_m2"
     },
     {
       "code": "formwork_plywood",
@@ -330,7 +334,8 @@
       "material_total": 15950,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 15950
+      "line_total": 15950,
+      "price_code": "plywood_1520x1520_18mm_sheet"
     },
     {
       "code": "formwork_timber",
@@ -342,7 +347,8 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 26123,
-      "display_quantity": 1.2
+      "display_quantity": 1.2,
+      "price_code": "timber_m3"
     },
     {
       "code": "eps50_laying_under_slab",
@@ -353,7 +359,8 @@
       "material_total": 0,
       "work_unit_price": 250,
       "work_total": 67500,
-      "line_total": 67500
+      "line_total": 67500,
+      "price_code": "eps_laying_work_m2"
     },
     {
       "code": "thermal_insert_installation",
@@ -364,7 +371,8 @@
       "material_total": 0,
       "work_unit_price": 100,
       "work_total": 2150,
-      "line_total": 2150
+      "line_total": 2150,
+      "price_code": "thermal_insert_installation_work_m"
     },
     {
       "code": "eps50_penoplex_geo_material",
@@ -376,7 +384,8 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 141465,
-      "display_quantity": 14.44
+      "display_quantity": 14.44,
+      "price_code": "eps_geo_50_m3"
     },
     {
       "code": "eps100_penoplex_geo_material",
@@ -388,7 +397,8 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 5552,
-      "display_quantity": 0.56
+      "display_quantity": 0.56,
+      "price_code": "eps_geo_100_m3"
     },
     {
       "code": "rebar_crane_supply",
@@ -399,7 +409,8 @@
       "material_total": 30000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 30000
+      "line_total": 30000,
+      "price_code": "crane_shift"
     },
     {
       "code": "rebar_frame_assembly",
@@ -421,7 +432,8 @@
       "material_total": 17913,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 17913
+      "line_total": 17913,
+      "price_code": "rebar_a500_d16_m"
     },
     {
       "code": "rebar_a500_d12",
@@ -432,7 +444,8 @@
       "material_total": 289322,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 289322
+      "line_total": 289322,
+      "price_code": "rebar_a500_d12_m"
     },
     {
       "code": "rebar_a500_d10",
@@ -443,7 +456,8 @@
       "material_total": 60103,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 60103
+      "line_total": 60103,
+      "price_code": "rebar_a500_d10_m"
     },
     {
       "code": "rebar_a240_d6",
@@ -454,7 +468,8 @@
       "material_total": 2238,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 2238
+      "line_total": 2238,
+      "price_code": "rebar_a240_d6_m"
     },
     {
       "code": "rebar_metal_delivery",
@@ -465,7 +480,8 @@
       "material_total": 22000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 22000
+      "line_total": 22000,
+      "price_code": "metal_delivery_truck"
     },
     {
       "code": "foundation_slab_concreting_work",
@@ -476,7 +492,8 @@
       "material_total": 0,
       "work_unit_price": 12000,
       "work_total": 972000,
-      "line_total": 972000
+      "line_total": 972000,
+      "price_code": "concrete_placing_work_m3"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -487,7 +504,8 @@
       "material_total": 547200,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 547200
+      "line_total": 547200,
+      "price_code": "concrete_b22_5_m3"
     },
     {
       "code": "concrete_delivery",
@@ -498,7 +516,8 @@
       "material_total": 75000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 75000
+      "line_total": 75000,
+      "price_code": "concrete_delivery_trip"
     },
     {
       "code": "concrete_pump_32m",
@@ -509,7 +528,8 @@
       "material_total": 38000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 38000
+      "line_total": 38000,
+      "price_code": "concrete_pump_32m_shift"
     },
     {
       "code": "formwork_dismantling",
@@ -520,7 +540,8 @@
       "material_total": 0,
       "work_unit_price": 0,
       "work_total": 0,
-      "line_total": 0
+      "line_total": 0,
+      "price_code": "formwork_dismantling_work_m2"
     },
     {
       "code": "logistics_and_supply",
@@ -553,7 +574,8 @@
       "material_total": 0,
       "work_unit_price": 10000,
       "work_total": 10000,
-      "line_total": 10000
+      "line_total": 10000,
+      "price_code": "technical_supervision_fixed"
     },
     {
       "code": "procurement_warehouse_costs_excel_structure",

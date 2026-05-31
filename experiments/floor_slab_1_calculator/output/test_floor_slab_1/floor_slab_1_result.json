@@ -434,7 +434,8 @@
       "work_total": 0,
       "line_total_raw": 124584.0,
       "line_total": 124584,
-      "notes": []
+      "notes": [],
+      "price_code": "formwork_rental_m2"
     },
     {
       "code": "formwork_delivery_return_manipulator",
@@ -451,7 +452,8 @@
       "line_total": 80000,
       "notes": [
         "<=150 м2: 1 привоз + 1 вывоз; >180 м2: 2 привоз + 2 вывоз; 150-180 м2: manual_review."
-      ]
+      ],
+      "price_code": "formwork_delivery_truck"
     },
     {
       "code": "formwork_rebar_crane_supply",
@@ -468,7 +470,8 @@
       "line_total": 60000,
       "notes": [
         "3-я смена пока только manual_review / override."
-      ]
+      ],
+      "price_code": "crane_shift"
     },
     {
       "code": "formwork_consumables",
@@ -483,7 +486,8 @@
       "work_total": 0,
       "line_total_raw": 9759.08,
       "line_total": 9759,
-      "notes": []
+      "notes": [],
+      "price_code": "formwork_consumables_m2"
     },
     {
       "code": "edge_beam_formwork_installation_control",
@@ -513,7 +517,8 @@
       "work_total": 0,
       "line_total_raw": 73950.0,
       "line_total": 73950,
-      "notes": []
+      "notes": [],
+      "price_code": "plywood_1520x1520_18mm_sheet"
     },
     {
       "code": "formwork_timber_gost",
@@ -530,7 +535,8 @@
       "line_total": 60003,
       "notes": [
         "Сумма считается от quantity_raw, не от отображаемого количества."
-      ]
+      ],
+      "price_code": "timber_m3"
     },
     {
       "code": "floor_slab_rebar_frame_assembly_control",
@@ -560,7 +566,8 @@
       "work_total": 0,
       "line_total_raw": 9189.18,
       "line_total": 9189,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d25_m"
     },
     {
       "code": "rebar_a500_d16",
@@ -575,7 +582,8 @@
       "work_total": 0,
       "line_total_raw": 6599.502,
       "line_total": 6600,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d16_m"
     },
     {
       "code": "rebar_a500_d12",
@@ -590,7 +598,8 @@
       "work_total": 0,
       "line_total_raw": 2649.465,
       "line_total": 2649,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d12_m"
     },
     {
       "code": "rebar_a500_d10",
@@ -605,7 +614,8 @@
       "work_total": 0,
       "line_total_raw": 225100.512,
       "line_total": 225101,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d10_m"
     },
     {
       "code": "rebar_a240_d8",
@@ -620,7 +630,8 @@
       "work_total": 0,
       "line_total_raw": 1152.0,
       "line_total": 1152,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a240_d8_m"
     },
     {
       "code": "rebar_a240_d6",
@@ -635,7 +646,8 @@
       "work_total": 0,
       "line_total_raw": 2397.6,
       "line_total": 2398,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a240_d6_m"
     },
     {
       "code": "rebar_metal_delivery",
@@ -652,7 +664,8 @@
       "line_total": 22000,
       "notes": [
         "В будущем box_calculator доставка металла должна считаться один раз по общему весу металла коробки."
-      ]
+      ],
+      "price_code": "metal_delivery_truck"
     },
     {
       "code": "floor_slab_concreting_work",
@@ -669,7 +682,8 @@
       "line_total": 448502,
       "notes": [
         "Стоимость считается от raw 37.3752, не от display 37.38."
-      ]
+      ],
+      "price_code": "concrete_placing_work_m3"
     },
     {
       "code": "beam_concreting_work",
@@ -684,7 +698,8 @@
       "work_total": 63096,
       "line_total_raw": 63096.0,
       "line_total": 63096,
-      "notes": []
+      "notes": [],
+      "price_code": "beam_concrete_placing_work_m3"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -699,7 +714,8 @@
       "work_total": 0,
       "line_total_raw": 275200.0,
       "line_total": 275200,
-      "notes": []
+      "notes": [],
+      "price_code": "concrete_b22_5_m3"
     },
     {
       "code": "concrete_delivery",
@@ -714,7 +730,8 @@
       "work_total": 0,
       "line_total_raw": 37500.0,
       "line_total": 37500,
-      "notes": []
+      "notes": [],
+      "price_code": "concrete_delivery_trip"
     },
     {
       "code": "concrete_pump_32m",
@@ -731,7 +748,8 @@
       "line_total": 38000,
       "notes": [
         "Fixed/manual line; не вычислять от объёма бетона."
-      ]
+      ],
+      "price_code": "concrete_pump_32m_shift"
     },
     {
       "code": "formwork_dismantling_zero_internal",
@@ -761,7 +779,8 @@
       "work_total": 48600,
       "line_total_raw": 48600.0,
       "line_total": 48600,
-      "notes": []
+      "notes": [],
+      "price_code": "edge_insulation_work_m"
     },
     {
       "code": "bottom_slab_insulation_work",
@@ -778,7 +797,8 @@
       "line_total": 46728,
       "notes": [
         "Стоимость считается от raw 51.92, не от display 51.9."
-      ]
+      ],
+      "price_code": "eps_bottom_slab_insulation_work_m2"
     },
     {
       "code": "eps_penoplex_osnova_100mm",
@@ -795,7 +815,8 @@
       "line_total": 75037,
       "notes": [
         "Стоимость считается от закупочного raw-объёма 8.319, не от display 8.32."
-      ]
+      ],
+      "price_code": "eps_penoplex_osnova_100_m3"
     },
     {
       "code": "eps_glue_foam",
@@ -810,7 +831,8 @@
       "work_total": 0,
       "line_total_raw": 3920.0,
       "line_total": 3920,
-      "notes": []
+      "notes": [],
+      "price_code": "eps_foam_glue_can"
     },
     {
       "code": "logistics_and_supply",
@@ -855,7 +877,8 @@
       "work_total": 5000,
       "line_total_raw": 5000.0,
       "line_total": 5000,
-      "notes": []
+      "notes": [],
+      "price_code": "technical_supervision_fixed"
     }
   ],
   "totals": {

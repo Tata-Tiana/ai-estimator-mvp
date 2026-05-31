@@ -65,7 +65,8 @@
       "material_total": 0,
       "work_unit_price": 350,
       "work_total": 8505,
-      "line_total": 8505
+      "line_total": 8505,
+      "price_code": "bitumen_waterproofing_work_m2"
     },
     {
       "code": "bitumen_primer_aquamast_18l",
@@ -76,7 +77,8 @@
       "material_total": 2770,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 2770
+      "line_total": 2770,
+      "price_code": "bitumen_primer_aquamast_18l_item"
     },
     {
       "code": "bitumen_mastic_aquamast_18kg",
@@ -87,7 +89,8 @@
       "material_total": 8340,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 8340
+      "line_total": 8340,
+      "price_code": "bitumen_mastic_aquamast_18kg_item"
     },
     {
       "code": "eps100_wall_insulation_work",
@@ -98,7 +101,8 @@
       "material_total": 0,
       "work_unit_price": 500,
       "work_total": 8750,
-      "line_total": 8750
+      "line_total": 8750,
+      "price_code": "eps_wall_insulation_work_m2"
     },
     {
       "code": "eps100_wall_penoplex_geo_material",
@@ -110,7 +114,8 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 19432,
-      "display_quantity": 1.94
+      "display_quantity": 1.94,
+      "price_code": "eps_geo_100_m3"
     },
     {
       "code": "eps_glue_foam",
@@ -121,7 +126,8 @@
       "material_total": 980,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 980
+      "line_total": 980,
+      "price_code": "eps_foam_glue_can"
     },
     {
       "code": "waterproofing_logistics_and_supply",

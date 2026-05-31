@@ -43,6 +43,68 @@ git status
 
 ## Контрольные точки
 
+### 2026-05-31 — Добавлены единые price_code и pricing-layer MVP
+
+- Ветка: `feature/ai-project-card`
+- Коммит: см. последний коммит после этой записи
+
+Что добавлено:
+
+- в готовые старые калькуляторы добавлено единое поле `price_code` для строк с ценой/ставкой;
+- отдельные `material_price_code` и `work_rate_code` не вводились;
+- формулы калькуляторов и `expected.json` не менялись;
+- создана версия прайса:
+  - `output/price_registry_filled_v3.xlsx`;
+  - `output/price_registry_mapping_report_v3.md`;
+- создан отдельный слой цен:
+  - `experiments/pricing/price_reader.py`;
+  - `experiments/pricing/validate_price_registry.py`;
+  - `experiments/pricing/check_required_codes_against_registry.py`;
+  - `experiments/pricing/test_price_reader_demo.py`;
+  - `experiments/pricing/README.md`;
+- добавлен отчёт:
+  - `docs/report_pricing_layer.md`.
+
+Ключевые решения:
+
+- старый режим расчёта остаётся `locked_case_prices`;
+- новый режим `price_registry_with_fallback` пока существует как отдельный слой и не подключён к калькуляторам автоматически;
+- приоритет будущего режима:
+
+```text
+project_price_overrides
+↓
+price_registry
+↓
+input.json fallback
+```
+
+Проверки:
+
+```text
+earthworks:
+  horoshevka_14 -> ok (76/76)
+  usv_yusupovo_village -> ok (100/100)
+
+floor_slab_1 -> ok (194/194)
+floor_slab_2 -> ok (222/222)
+flat_roof -> ok (460/460)
+schiedel_vent_channels -> ok (138/138)
+
+price_registry validation:
+  rows=131 filled=18 empty=113 duplicates=0
+
+required code coverage:
+  required=81 registry=18 rows_to_add=63 missing=0
+```
+
+Состояние `price_registry_v3`:
+
+- `18` required-кодов уже есть в основном листе `price_registry`;
+- `63` required-кода вынесены в лист `rows_to_add`;
+- полностью потерянных required-кодов нет;
+- спорные единицы измерения оставлены на ручное решение.
+
 ### 2026-05-26 — Добавлен калькулятор вентиляционных каналов Schiedel
 
 - Ветка: `feature/ai-project-card`

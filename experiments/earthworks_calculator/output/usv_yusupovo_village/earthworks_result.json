@@ -69,7 +69,8 @@
       "material_total": 0,
       "work_unit_price": 20000,
       "work_total": 20000,
-      "line_total": 20000
+      "line_total": 20000,
+      "price_code": "axis_marking_shift"
     },
     {
       "code": "excavator_jcb",
@@ -80,7 +81,8 @@
       "material_total": 78000,
       "work_unit_price": 3500,
       "work_total": 10500,
-      "line_total": 88500
+      "line_total": 88500,
+      "price_code": "excavator_jcb_shift"
     },
     {
       "code": "manual_excavation",
@@ -91,7 +93,8 @@
       "material_total": 0,
       "work_unit_price": 1400,
       "work_total": 62573,
-      "line_total": 62573
+      "line_total": 62573,
+      "price_code": "manual_excavation_m3"
     },
     {
       "code": "geotextile_laying",
@@ -102,7 +105,8 @@
       "material_total": 0,
       "work_unit_price": 35,
       "work_total": 11900,
-      "line_total": 11900
+      "line_total": 11900,
+      "price_code": "geotextile_laying_m2"
     },
     {
       "code": "geotextile_material",
@@ -113,7 +117,8 @@
       "material_total": 43600,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 43600
+      "line_total": 43600,
+      "price_code": "geotextile_dornit_300_m2"
     },
     {
       "code": "sand_filling",
@@ -124,7 +129,8 @@
       "material_total": 0,
       "work_unit_price": 1200,
       "work_total": 192000,
-      "line_total": 192000
+      "line_total": 192000,
+      "price_code": "sand_filling_work_m3"
     },
     {
       "code": "sand_material",
@@ -135,7 +141,8 @@
       "material_total": 248000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 248000
+      "line_total": 248000,
+      "price_code": "sand_m3"
     },
     {
       "code": "sand_manual_moving",
@@ -146,7 +153,8 @@
       "material_total": 0,
       "work_unit_price": 0,
       "work_total": 0,
-      "line_total": 0
+      "line_total": 0,
+      "price_code": "sand_manual_moving_m3"
     },
     {
       "code": "communications_work",
@@ -157,7 +165,8 @@
       "material_total": 0,
       "work_unit_price": 350,
       "work_total": 40250,
-      "line_total": 40250
+      "line_total": 40250,
+      "price_code": "communications_installation_m"
     },
     {
       "code": "communications_material",
@@ -168,7 +177,8 @@
       "material_total": 74750,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 74750
+      "line_total": 74750,
+      "price_code": "communications_material_m"
     },
     {
       "code": "consumables",

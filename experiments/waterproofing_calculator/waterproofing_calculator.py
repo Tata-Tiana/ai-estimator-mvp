@@ -123,11 +123,14 @@ class EstimateLineResult:
     work_total: int
     line_total: int
     display_quantity: float | None = None
+    price_code: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
         if self.display_quantity is None:
             result.pop("display_quantity")
+        if self.price_code is None:
+            result.pop("price_code")
         return result
 
 
@@ -139,6 +142,7 @@ def calculate_line(
     material_unit_price: float = 0.0,
     work_unit_price: float = 0.0,
     display_quantity: float | None = None,
+    price_code: str | None = None,
 ) -> EstimateLineResult:
     quantity_rounded = _round_decimal(quantity, "0.0001")
     material_total = _round_money(
@@ -157,6 +161,7 @@ def calculate_line(
         work_unit_price=work_unit_price,
         work_total=work_total,
         line_total=material_total + work_total,
+        price_code=price_code,
     )
 
 
@@ -254,6 +259,7 @@ def calculate_primary_estimate_lines(
             unit="м2",
             quantity=waterproofing["waterproofing_area_m2"],
             work_unit_price=data.waterproofing_work_unit_price,
+            price_code="bitumen_waterproofing_work_m2",
         ),
         calculate_line(
             code="bitumen_primer_aquamast_18l",
@@ -261,6 +267,7 @@ def calculate_primary_estimate_lines(
             unit="шт",
             quantity=waterproofing["primer_units"],
             material_unit_price=data.primer_unit_price,
+            price_code="bitumen_primer_aquamast_18l_item",
         ),
         calculate_line(
             code="bitumen_mastic_aquamast_18kg",
@@ -268,6 +275,7 @@ def calculate_primary_estimate_lines(
             unit="шт",
             quantity=waterproofing["mastic_units"],
             material_unit_price=data.mastic_unit_price,
+            price_code="bitumen_mastic_aquamast_18kg_item",
         ),
         calculate_line(
             code="eps100_wall_insulation_work",
@@ -275,6 +283,7 @@ def calculate_primary_estimate_lines(
             unit="м2",
             quantity=waterproofing["eps100_wall_insulation_area_m2"],
             work_unit_price=data.eps100_wall_insulation_work_unit_price,
+            price_code="eps_wall_insulation_work_m2",
         ),
         calculate_line(
             code="eps100_wall_penoplex_geo_material",
@@ -283,6 +292,7 @@ def calculate_primary_estimate_lines(
             quantity=waterproofing["eps100_wall_order_volume_m3"],
             display_quantity=1.94,
             material_unit_price=data.eps100_unit_price,
+            price_code="eps_geo_100_m3",
         ),
         calculate_line(
             code="eps_glue_foam",
@@ -290,6 +300,7 @@ def calculate_primary_estimate_lines(
             unit="баллон",
             quantity=waterproofing["glue_foam_units"],
             material_unit_price=data.glue_foam_unit_price,
+            price_code="eps_foam_glue_can",
         ),
     ]
 

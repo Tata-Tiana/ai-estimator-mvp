@@ -122,9 +122,13 @@ class EstimateLineResult:
     work_unit_price: float
     work_total: int
     line_total: int
+    price_code: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        if self.price_code is None:
+            result.pop("price_code")
+        return result
 
 
 def _round_money(value: Decimal | float | int) -> int:
@@ -213,6 +217,7 @@ def calculate_line(
     quantity: float,
     material_unit_price: float = 0.0,
     work_unit_price: float = 0.0,
+    price_code: str | None = None,
 ) -> EstimateLineResult:
     quantity_rounded = _round_decimal(_to_decimal(quantity))
     material_total = _round_money(
@@ -230,6 +235,7 @@ def calculate_line(
         work_unit_price=work_unit_price,
         work_total=work_total,
         line_total=material_total + work_total,
+        price_code=price_code,
     )
 
 
@@ -264,6 +270,7 @@ def calculate_internal_estimate_lines(
             unit="смена",
             quantity=data.axis_marking_shifts,
             work_unit_price=_price(data, "axis_marking_work_unit_price"),
+            price_code="axis_marking_shift",
         ),
         calculate_line(
             code="excavator_jcb",
@@ -276,6 +283,7 @@ def calculate_internal_estimate_lines(
             quantity=data.excavator_shifts,
             material_unit_price=_price(data, "excavator_material_unit_price"),
             work_unit_price=_price(data, "excavator_work_unit_price"),
+            price_code="excavator_jcb_shift",
         ),
         calculate_line(
             code="manual_excavation",
@@ -283,6 +291,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=manual_excavation_quantity,
             work_unit_price=_price(data, "manual_excavation_work_unit_price"),
+            price_code="manual_excavation_m3",
         ),
         calculate_line(
             code="geotextile_laying",
@@ -290,6 +299,7 @@ def calculate_internal_estimate_lines(
             unit="м2",
             quantity=data.geotextile_laying_area_m2,
             work_unit_price=_price(data, "geotextile_laying_work_unit_price"),
+            price_code="geotextile_laying_m2",
         ),
         calculate_line(
             code="geotextile_material",
@@ -302,6 +312,7 @@ def calculate_internal_estimate_lines(
             quantity=geotextile_material_quantity_m2,
             material_unit_price=_price(data, "geotextile_material_unit_price"),
             work_unit_price=_price(data, "geotextile_material_work_unit_price"),
+            price_code="geotextile_dornit_300_m2",
         ),
         calculate_line(
             code="sand_filling",
@@ -313,6 +324,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=sand_order_volume_m3,
             work_unit_price=_price(data, "sand_filling_work_unit_price"),
+            price_code="sand_filling_work_m3",
         ),
         calculate_line(
             code="sand_material",
@@ -320,6 +332,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=sand_order_volume_m3,
             material_unit_price=_price(data, "sand_material_unit_price"),
+            price_code="sand_m3",
         ),
         calculate_line(
             code="sand_manual_moving",
@@ -327,6 +340,7 @@ def calculate_internal_estimate_lines(
             unit="м3",
             quantity=sand_order_volume_m3,
             work_unit_price=_price(data, "sand_manual_moving_work_unit_price"),
+            price_code="sand_manual_moving_m3",
         ),
         calculate_line(
             code="communications_work",
@@ -338,6 +352,7 @@ def calculate_internal_estimate_lines(
             unit="мп",
             quantity=data.communications_length_m,
             work_unit_price=_price(data, "communications_work_unit_price"),
+            price_code="communications_installation_m",
         ),
         calculate_line(
             code="communications_material",
@@ -349,6 +364,7 @@ def calculate_internal_estimate_lines(
             unit="мп",
             quantity=data.communications_length_m,
             material_unit_price=_price(data, "communications_material_unit_price"),
+            price_code="communications_material_m",
         ),
         calculate_line(
             code="consumables",

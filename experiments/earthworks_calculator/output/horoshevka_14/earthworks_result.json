@@ -85,7 +85,8 @@
       "material_total": 0,
       "work_unit_price": 15000,
       "work_total": 15000,
-      "line_total": 15000
+      "line_total": 15000,
+      "price_code": "axis_marking_shift"
     },
     {
       "code": "excavator_jcb",
@@ -96,7 +97,8 @@
       "material_total": 66000,
       "work_unit_price": 0,
       "work_total": 0,
-      "line_total": 66000
+      "line_total": 66000,
+      "price_code": "excavator_jcb_shift"
     },
     {
       "code": "manual_excavation",
@@ -107,7 +109,8 @@
       "material_total": 0,
       "work_unit_price": 1200,
       "work_total": 38872,
-      "line_total": 38872
+      "line_total": 38872,
+      "price_code": "manual_excavation_m3"
     },
     {
       "code": "geotextile_material",
@@ -118,7 +121,8 @@
       "material_total": 32700,
       "work_unit_price": 35,
       "work_total": 10500,
-      "line_total": 43200
+      "line_total": 43200,
+      "price_code": "geotextile_dornit_300_m2"
     },
     {
       "code": "sand_filling",
@@ -129,7 +133,8 @@
       "material_total": 0,
       "work_unit_price": 1000,
       "work_total": 190000,
-      "line_total": 190000
+      "line_total": 190000,
+      "price_code": "sand_filling_work_m3"
     },
     {
       "code": "sand_material",
@@ -140,7 +145,8 @@
       "material_total": 190000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 190000
+      "line_total": 190000,
+      "price_code": "sand_m3"
     },
     {
       "code": "sand_manual_moving",
@@ -151,7 +157,8 @@
       "material_total": 0,
       "work_unit_price": 0,
       "work_total": 0,
-      "line_total": 0
+      "line_total": 0,
+      "price_code": "sand_manual_moving_m3"
     },
     {
       "code": "consumables",

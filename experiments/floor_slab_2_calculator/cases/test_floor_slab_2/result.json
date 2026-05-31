@@ -225,7 +225,8 @@
       "work_total": 0,
       "line_total_raw": 69615.0,
       "line_total": 69615,
-      "notes": []
+      "notes": [],
+      "price_code": "formwork_rental_m2"
     },
     {
       "code": "formwork_delivery_manipulator",
@@ -242,7 +243,8 @@
       "work_total": 0,
       "line_total_raw": 40000.0,
       "line_total": 40000,
-      "notes": []
+      "notes": [],
+      "price_code": "formwork_delivery_truck"
     },
     {
       "code": "crane_supply_formwork_rebar",
@@ -259,7 +261,8 @@
       "work_total": 0,
       "line_total_raw": 60000.0,
       "line_total": 60000,
-      "notes": []
+      "notes": [],
+      "price_code": "crane_shift"
     },
     {
       "code": "formwork_consumables",
@@ -276,7 +279,8 @@
       "work_total": 0,
       "line_total_raw": 3849.3,
       "line_total": 3849,
-      "notes": []
+      "notes": [],
+      "price_code": "formwork_consumables_m2"
     },
     {
       "code": "edge_formwork_installation_control",
@@ -312,7 +316,8 @@
       "work_total": 0,
       "line_total_raw": 23200.0,
       "line_total": 23200,
-      "notes": []
+      "notes": [],
+      "price_code": "plywood_1520x1520_18mm_sheet"
     },
     {
       "code": "timber_for_formwork",
@@ -331,7 +336,8 @@
       "line_total": 7783,
       "notes": [
         "Money is calculated from raw quantity 0.362, not displayed quantity 0.36."
-      ]
+      ],
+      "price_code": "timber_m3"
     },
     {
       "code": "rebar_frame_assembly_control",
@@ -365,7 +371,8 @@
       "work_total": 0,
       "line_total_raw": 8485.074,
       "line_total": 8485,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d16_m"
     },
     {
       "code": "rebar_a500_d12",
@@ -382,7 +389,8 @@
       "work_total": 0,
       "line_total_raw": 1589.679,
       "line_total": 1590,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d12_m"
     },
     {
       "code": "rebar_a500_d10",
@@ -399,7 +407,8 @@
       "work_total": 0,
       "line_total_raw": 87666.696,
       "line_total": 87667,
-      "notes": []
+      "notes": [],
+      "price_code": "rebar_a500_d10_m"
     },
     {
       "code": "concrete_placing_work",
@@ -416,7 +425,8 @@
       "work_total": 198000,
       "line_total_raw": 198000.0,
       "line_total": 198000,
-      "notes": []
+      "notes": [],
+      "price_code": "concrete_placing_work_m3"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -435,7 +445,8 @@
       "line_total": 112000,
       "notes": [],
       "quantity_raw_before_order_rounding": 17.325,
-      "quantity_display_control": 17.33
+      "quantity_display_control": 17.33,
+      "price_code": "concrete_b22_5_m3"
     },
     {
       "code": "concrete_delivery",
@@ -452,7 +463,8 @@
       "work_total": 0,
       "line_total_raw": 15000.0,
       "line_total": 15000,
-      "notes": []
+      "notes": [],
+      "price_code": "concrete_delivery_trip"
     },
     {
       "code": "concrete_pump_32m",
@@ -469,7 +481,8 @@
       "work_total": 0,
       "line_total_raw": 38000.0,
       "line_total": 38000,
-      "notes": []
+      "notes": [],
+      "price_code": "concrete_pump_32m_shift"
     },
     {
       "code": "formwork_dismantling_control",
@@ -505,7 +518,8 @@
       "line_total": 16290,
       "notes": [
         "Line name keeps the source wording; for floor slab 2 the calculation covers slab edges only, without beams."
-      ]
+      ],
+      "price_code": "edge_insulation_work_m"
     },
     {
       "code": "eps100_penoplex_material",
@@ -522,7 +536,8 @@
       "work_total": 0,
       "line_total_raw": 7503.738,
       "line_total": 7504,
-      "notes": []
+      "notes": [],
+      "price_code": "eps_penoplex_osnova_100_m3"
     },
     {
       "code": "eps_foam_glue",
@@ -539,7 +554,8 @@
       "work_total": 0,
       "line_total_raw": 490.0,
       "line_total": 490,
-      "notes": []
+      "notes": [],
+      "price_code": "eps_foam_glue_can"
     },
     {
       "code": "logistics_and_supply",
