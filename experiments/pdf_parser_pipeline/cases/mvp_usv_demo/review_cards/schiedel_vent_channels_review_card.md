@@ -40,7 +40,7 @@
 | schiedel_vent_channels_schiedel_masonry_work_rate_per_m | schiedel masonry work rate per m | missing |
 | schiedel_vent_channels_schiedel_vent_channel_2x_unit_price | schiedel vent channel 2x unit price | missing |
 | schiedel_vent_channels_schiedel_vent_channel_3x_unit_price | schiedel vent channel 3x unit price | missing |
-| schiedel_vent_channels_schiedel_delivery_trips | schiedel delivery trips | manual_required |
+| schiedel_vent_channels_schiedel_delivery_trips | Количество доставок вентканалов Schiedel | manual_required |
 | schiedel_vent_channels_schiedel_delivery_truck_price | schiedel delivery truck price | missing |
 | schiedel_vent_channels_schiedel_delivery_work_price | schiedel delivery work price | missing |
-| schiedel_vent_channels_consumables_rate | consumables rate | manual_required |
+| schiedel_vent_channels_consumables_rate | Процент расходных материалов | manual_required |

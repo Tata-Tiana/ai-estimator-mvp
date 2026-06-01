@@ -92,61 +92,61 @@
 | floor_slab_2_slab_length_m | slab length m | missing |
 | floor_slab_2_slab_width_m | slab width m | missing |
 | floor_slab_2_slab_area_m2 | slab area m2 | missing |
-| floor_slab_2_slab_edge_perimeter_m | slab edge perimeter m | missing |
-| floor_slab_2_main_formwork_area_m2 | main formwork area m2 | missing |
-| floor_slab_2_formwork_rental_supplier_quote_total | formwork rental supplier quote total | manual_required |
+| floor_slab_2_slab_edge_perimeter_m | Периметр торца плиты | missing |
+| floor_slab_2_main_formwork_area_m2 | Основная площадь опалубки | missing |
+| floor_slab_2_formwork_rental_supplier_quote_total | Сумма предложения поставщика по аренде опалубки | manual_required |
 | floor_slab_2_formwork_rental_used_rate_per_m2 | formwork rental used rate per m2 | missing |
-| floor_slab_2_formwork_delivery_trips | formwork delivery trips | manual_required |
+| floor_slab_2_formwork_delivery_trips | Количество рейсов доставки/вывоза опалубки | manual_required |
 | floor_slab_2_formwork_delivery_unit_price | formwork delivery unit price | missing |
-| floor_slab_2_crane_shifts | crane shifts | manual_required |
+| floor_slab_2_crane_shifts | Количество смен автокрана | manual_required |
 | floor_slab_2_crane_unit_price | crane unit price | missing |
 | floor_slab_2_formwork_consumables_rate_per_m2 | formwork consumables rate per m2 | missing |
-| floor_slab_2_edge_formwork_height_m | edge formwork height m | missing |
-| floor_slab_2_plywood_sheet_working_area_m2 | plywood sheet working area m2 | missing |
+| floor_slab_2_edge_formwork_height_m | Высота торцевой опалубки | missing |
+| floor_slab_2_plywood_sheet_working_area_m2 | Рабочая площадь листа фанеры | missing |
 | floor_slab_2_non_multiple_places_coeff | non multiple places coeff | missing |
-| floor_slab_2_plywood_reserve_sheets | plywood reserve sheets | manual_required |
+| floor_slab_2_plywood_reserve_sheets | Резерв фанеры | manual_required |
 | floor_slab_2_plywood_unit_price | plywood unit price | missing |
 | floor_slab_2_timber_thickness_m | timber thickness m | missing |
 | floor_slab_2_timber_unit_price | timber unit price | missing |
 | floor_slab_2_rebar_waste_coeff | rebar waste coeff | missing |
 | floor_slab_2_rebar_rod_length_m | rebar rod length m | missing |
-| floor_slab_2_rebar_items_0_code | code | missing |
-| floor_slab_2_rebar_items_0_name | name | missing |
-| floor_slab_2_rebar_items_0_steel_class | steel class | missing |
-| floor_slab_2_rebar_items_0_diameter_mm | diameter mm | missing |
-| floor_slab_2_rebar_items_0_kg_per_meter | kg per meter | missing |
-| floor_slab_2_rebar_items_0_rod_length_m | rod length m | missing |
-| floor_slab_2_rebar_items_0_unit_price_per_m | unit price per m | missing |
-| floor_slab_2_rebar_items_1_code | code | missing |
-| floor_slab_2_rebar_items_1_name | name | missing |
-| floor_slab_2_rebar_items_1_steel_class | steel class | missing |
-| floor_slab_2_rebar_items_1_diameter_mm | diameter mm | missing |
-| floor_slab_2_rebar_items_1_kg_per_meter | kg per meter | missing |
-| floor_slab_2_rebar_items_1_rod_length_m | rod length m | missing |
-| floor_slab_2_rebar_items_1_unit_price_per_m | unit price per m | missing |
-| floor_slab_2_rebar_items_2_code | code | missing |
-| floor_slab_2_rebar_items_2_name | name | missing |
-| floor_slab_2_rebar_items_2_steel_class | steel class | missing |
-| floor_slab_2_rebar_items_2_diameter_mm | diameter mm | missing |
-| floor_slab_2_rebar_items_2_kg_per_meter | kg per meter | missing |
-| floor_slab_2_rebar_items_2_rod_length_m | rod length m | missing |
-| floor_slab_2_rebar_items_2_unit_price_per_m | unit price per m | missing |
+| floor_slab_2_rebar_items_0_code | Арматура 1: код позиции | missing |
+| floor_slab_2_rebar_items_0_name | Арматура 1: наименование позиции | missing |
+| floor_slab_2_rebar_items_0_steel_class | Арматура 1: класс стали | missing |
+| floor_slab_2_rebar_items_0_diameter_mm | Арматура 1: диаметр | missing |
+| floor_slab_2_rebar_items_0_kg_per_meter | Арматура 1: вес 1 погонного метра | missing |
+| floor_slab_2_rebar_items_0_rod_length_m | Арматура 1: длина одного хлыста арматуры | missing |
+| floor_slab_2_rebar_items_0_unit_price_per_m | Арматура 1: цена за погонный метр | missing |
+| floor_slab_2_rebar_items_1_code | Арматура 2: код позиции | missing |
+| floor_slab_2_rebar_items_1_name | Арматура 2: наименование позиции | missing |
+| floor_slab_2_rebar_items_1_steel_class | Арматура 2: класс стали | missing |
+| floor_slab_2_rebar_items_1_diameter_mm | Арматура 2: диаметр | missing |
+| floor_slab_2_rebar_items_1_kg_per_meter | Арматура 2: вес 1 погонного метра | missing |
+| floor_slab_2_rebar_items_1_rod_length_m | Арматура 2: длина одного хлыста арматуры | missing |
+| floor_slab_2_rebar_items_1_unit_price_per_m | Арматура 2: цена за погонный метр | missing |
+| floor_slab_2_rebar_items_2_code | Арматура 3: код позиции | missing |
+| floor_slab_2_rebar_items_2_name | Арматура 3: наименование позиции | missing |
+| floor_slab_2_rebar_items_2_steel_class | Арматура 3: класс стали | missing |
+| floor_slab_2_rebar_items_2_diameter_mm | Арматура 3: диаметр | missing |
+| floor_slab_2_rebar_items_2_kg_per_meter | Арматура 3: вес 1 погонного метра | missing |
+| floor_slab_2_rebar_items_2_rod_length_m | Арматура 3: длина одного хлыста арматуры | missing |
+| floor_slab_2_rebar_items_2_unit_price_per_m | Арматура 3: цена за погонный метр | missing |
 | floor_slab_2_concrete_placing_work_unit_price | concrete placing work unit price | missing |
 | floor_slab_2_concrete_waste_coeff | concrete waste coeff | missing |
 | floor_slab_2_concrete_round_step_m3 | concrete round step m3 | missing |
 | floor_slab_2_concrete_unit_price | concrete unit price | missing |
-| floor_slab_2_concrete_mixer_volume_m3 | concrete mixer volume m3 | missing |
+| floor_slab_2_concrete_mixer_volume_m3 | Объем одного автобетоносмесителя | missing |
 | floor_slab_2_concrete_delivery_unit_price | concrete delivery unit price | missing |
-| floor_slab_2_concrete_pump_shifts | concrete pump shifts | manual_required |
+| floor_slab_2_concrete_pump_shifts | Количество смен бетононасоса | manual_required |
 | floor_slab_2_concrete_pump_unit_price | concrete pump unit price | missing |
 | floor_slab_2_edge_insulation_work_unit_price_per_m | edge insulation work unit price per m | missing |
-| floor_slab_2_edge_insulation_height_m | edge insulation height m | missing |
+| floor_slab_2_edge_insulation_height_m | Высота утепления торца | missing |
 | floor_slab_2_eps100_thickness_m | eps100 thickness m | missing |
 | floor_slab_2_eps_waste_coeff | eps waste coeff | missing |
 | floor_slab_2_eps100_pack_volume_m3 | eps100 pack volume m3 | missing |
 | floor_slab_2_eps100_unit_price | eps100 unit price | missing |
 | floor_slab_2_foam_coverage_area_per_can_m2 | foam coverage area per can m2 | missing |
-| floor_slab_2_foam_min_cans | foam min cans | manual_required |
+| floor_slab_2_foam_min_cans | Минимальное количество баллонов клей-пены | manual_required |
 | floor_slab_2_foam_can_unit_price | foam can unit price | missing |
-| floor_slab_2_logistics_rate | logistics rate | manual_required |
-| floor_slab_2_consumables_rate | consumables rate | manual_required |
+| floor_slab_2_logistics_rate | Процент логистики | manual_required |
+| floor_slab_2_consumables_rate | Процент расходных материалов | manual_required |

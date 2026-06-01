@@ -244,16 +244,206 @@ def infer_unit(key: str, value: Any) -> str:
     ]:
         if leaf.endswith(suffix):
             return unit
-    if "price" in leaf or "rate" in leaf or "amount" in leaf:
+    if "price" in leaf or "amount" in leaf or re.search(r"(^|_)rate($|_)", leaf):
         return "руб."
     if isinstance(value, bool):
         return "bool"
     return "-"
 
 
+LEAF_LABELS: dict[str, str] = {
+    "code": "код позиции",
+    "name": "наименование позиции",
+    "steel_class": "класс стали",
+    "diameter_mm": "диаметр",
+    "source_weight_kg": "вес по спецификации",
+    "source_weight_parts_kg": "вес по спецификации",
+    "weight_parts_kg": "вес по спецификации",
+    "weight_kg": "вес по спецификации",
+    "length_m": "длина",
+    "width_m": "ширина",
+    "height_m": "высота",
+    "count": "количество",
+    "quantity": "количество",
+    "area_m2": "площадь",
+    "volume_m3": "объем",
+    "perimeter_m": "периметр",
+    "unit_price": "цена за единицу",
+    "unit_price_per_m": "цена за погонный метр",
+    "unit_price_per_m2": "цена за м2",
+    "unit_price_per_m3": "цена за м3",
+    "unit_price_per_can": "цена за баллон",
+    "work_unit_price": "ставка работы",
+    "material_unit_price": "цена материала",
+    "kg_per_meter": "вес 1 погонного метра",
+    "rod_length_m": "длина одного хлыста арматуры",
+    "waste_coeff": "коэффициент запаса/отходов",
+    "pack_volume_m3": "объем одной упаковки",
+    "roll_area_m2": "площадь одного рулона",
+    "roll_width_m": "ширина рулона",
+    "roll_length_m": "длина рулона",
+    "coverage_area_per_can_m2": "площадь покрытия одним баллоном",
+    "coverage_m2_per_can": "площадь покрытия одним баллоном",
+    "trips": "количество рейсов",
+    "shifts": "количество смен",
+}
+
+
+KEY_LABELS: dict[str, str] = {
+    "adhesive_consumption_bag_per_m3": "Расход клея для блоков на 1 м3 кладки",
+    "axis_marking_shifts": "Количество смен для разбивки осей",
+    "block_height_m": "Высота блока",
+    "box_total_metal_weight_kg": "Общий вес металла коробки для доставки",
+    "concrete_delivery_trips": "Количество рейсов доставки бетона",
+    "concrete_mixer_volume_m3": "Объем одного автобетоносмесителя",
+    "concrete_pump_rate": "Стоимость смены бетононасоса",
+    "concrete_pump_shifts": "Количество смен бетононасоса",
+    "consumables_and_tool_percent": "Процент расходных материалов и амортизации инструмента",
+    "consumables_rate": "Процент расходных материалов",
+    "crane_shift_rate": "Стоимость смены автокрана",
+    "crane_shifts": "Количество смен автокрана",
+    "excavator_shifts": "Количество смен экскаватора",
+    "floor_slab_2_rebar_weight_for_delivery_context_kg": "Вес арматуры плиты 2-го этажа для расчета доставки",
+    "foam_min_cans": "Минимальное количество баллонов клей-пены",
+    "formwork_delivery_trips": "Количество рейсов доставки/вывоза опалубки",
+    "formwork_delivery_trucks_override": "Ручное количество машин доставки опалубки",
+    "formwork_rebar_crane_shifts": "Количество смен крана для подачи опалубки и арматуры",
+    "formwork_rental_supplier_quote_total": "Сумма предложения поставщика по аренде опалубки",
+    "formwork_supplier_quote_total": "Сумма предложения поставщика по опалубке",
+    "gas_block_wall_holes_count": "Количество отверстий в стенах из газоблока",
+    "gas_block_d400_pallet_volume_m3": "Объем газобетона D400 в одном поддоне",
+    "gas_block_d500_150_pallet_volume_m3": "Объем газобетона D500 150 мм в одном поддоне",
+    "gas_block_d500_250_pallet_volume_m3": "Объем газобетона D500 250 мм в одном поддоне",
+    "gas_block_length_m": "Длина газобетонного блока",
+    "gas_block_wall_hole_drilling_rate": "Ставка пробивки отверстия в стене из газоблока",
+    "geotextile_flat_roll_area_m2": "Площадь рулона геотекстиля для плоской части кровли",
+    "geotextile_override": "Ручное количество геотекстиля",
+    "geotextile_parapet_roll_area_m2": "Площадь рулона геотекстиля для парапетов",
+    "geotextile_roll_area_m2": "Площадь одного рулона геотекстиля",
+    "glue_foam_min_units": "Минимальное количество клей-пены",
+    "internal_roof_drain_installation_rate": "Ставка установки внутренней кровельной воронки",
+    "lintel_concrete_min_order_volume_m3": "Минимальный заказ бетона для перемычек",
+    "logistics_and_supply_percent": "Процент логистики и снабжения",
+    "logistics_rate": "Процент логистики",
+    "main_walls_crane_shifts": "Количество смен крана для несущих стен",
+    "manual_excavation_override": "Ручной объем доработки котлована",
+    "manual_excavation_quantity_for_estimate_m3": "Объем ручной доработки котлована для сметы",
+    "mastic_bucket_weight_kg": "Вес одного ведра битумной мастики",
+    "mastic_layers": "Количество слоев битумной мастики",
+    "max_rebar_delivery_weight_per_truck_kg": "Максимальный вес арматуры на одну машину доставки",
+    "membrane_roll_area_m2": "Площадь одного рулона мембраны",
+    "overhang_sheet_equivalent": "Эквивалент листов для свесов и доборов",
+    "parapet_crane_shifts": "Количество смен крана для парапета",
+    "parapet_enabled": "Учитывать парапет в расчете",
+    "parapet_roof_drain_installation_rate": "Ставка установки парапетной кровельной воронки",
+    "planterband_per_membrane_roll": "Количество PLANTERBAND на один рулон мембраны",
+    "plywood_calc_method": "Метод расчета фанеры",
+    "plywood_reserve_sheets": "Резерв фанеры",
+    "plywood_sheet_height_m": "Высота листа фанеры",
+    "plywood_sheet_width_m": "Ширина листа фанеры",
+    "plywood_sheet_working_area_m2": "Рабочая площадь листа фанеры",
+    "primer_canister_volume_l": "Объем одной канистры праймера",
+    "primer_consumption_l_per_m2": "Расход праймера на 1 м2",
+    "procurement_storage_work_total": "Заготовительно-складские расходы",
+    "pvc_membrane_roll_length_m": "Длина рулона ПВХ мембраны",
+    "pvc_membrane_roll_width_m": "Ширина рулона ПВХ мембраны",
+    "pvc_membrane_expected_material_total": "Ожидаемая сумма материала ПВХ мембраны",
+    "rail_piece_length_m": "Длина одной алюминиевой рейки",
+    "rebar_crane_shifts": "Количество смен крана для подачи арматуры",
+    "rebar_metal_delivery_trucks": "Количество машин доставки арматуры/металла",
+    "reserve_plywood_sheets": "Резерв фанеры",
+    "roof_aerators_count": "Количество кровельных аэраторов",
+    "roof_aerator_installation_rate": "Ставка установки кровельного аэратора",
+    "roof_consumables_total": "Сумма расходных материалов по кровле",
+    "roof_crane_lifting_shifts": "Количество смен автокрана для подъема кровельных материалов",
+    "roof_logistics_and_supply_total": "Сумма логистики и снабжения по кровле",
+    "sand_concrete_bag_weight_kg": "Вес одного мешка пескобетона",
+    "sand_override": "Ручной объем песка",
+    "scaffolding_setup_quantity": "Количество для устройства лесов/подмостей",
+    "scaffolding_timber_quantity_m3": "Объем пиломатериала для подмостей",
+    "second_light_masonry_case_specific": "Кладка второго света: учитывать проектную особенность",
+    "second_light_masonry_enabled": "Учитывать кладку второго света",
+    "schiedel_delivery_trips": "Количество доставок вентканалов Schiedel",
+    "slab_2_formwork_area_for_rate_context_m2": "Площадь опалубки плиты 2-го этажа для справочной ставки",
+    "slab_concrete_volume_m3_display": "Объем бетона плиты, отображаемое значение",
+    "slab_concrete_volume_m3_raw": "Объем бетона плиты, расчетное значение без округления",
+    "slab_edge_height_strategy": "Правило выбора высоты торца плиты",
+    "technical_supervision_work_total": "Сумма технического надзора",
+    "thermal_insert_piece_depth_for_eps_m": "Глубина элемента термовставки для расчета ЭППС",
+    "thermal_insert_piece_depth_for_work_m": "Глубина элемента термовставки для расчета работ",
+    "vapor_barrier_film_roll_area_m2": "Площадь рулона пароизоляционной пленки",
+    "vent_chimney_cladding_enabled": "Учитывать обкладку вентканалов",
+    "vent_chimney_rows": "Количество рядов обкладки вентканалов",
+    "internal_roof_drains_count": "Количество внутренних кровельных воронок",
+    "parapet_roof_drains_count": "Количество парапетных кровельных воронок",
+    "vent_shaft_abutment_count": "Количество примыканий к вентшахтам",
+    "internal_drain_height_per_drain_m": "Высота внутреннего водостока на одну воронку",
+    "parapet_and_abutment_total_length_m": "Суммарная длина парапетов и примыканий",
+    "roof_area_total_m2": "Общая площадь кровли",
+    "roof_area_level_1_m2": "Площадь кровли уровня 1",
+    "roof_area_level_2_m2": "Площадь кровли уровня 2",
+    "slab_edge_perimeter_m": "Периметр торца плиты",
+    "main_formwork_area_m2": "Основная площадь опалубки",
+    "edge_formwork_height_m": "Высота торцевой опалубки",
+    "edge_insulation_height_m": "Высота утепления торца",
+}
+
+
+def _array_index(key: str, array_name: str) -> int | None:
+    match = re.search(rf"{re.escape(array_name)}\[(\d+)\]", key)
+    return int(match.group(1)) + 1 if match else None
+
+
+def _source_weight_part(key: str) -> int | None:
+    match = re.search(r"source_weight_parts_kg\[(\d+)\]", key)
+    return int(match.group(1)) + 1 if match else None
+
+
+def context_from_key(key: str) -> str:
+    if "beams.items" in key:
+        index = _array_index(key, "items")
+        return f"Балка Б-{index}" if index else "Балка"
+    if "lintel_lengths_m" in key:
+        index = _array_index(key, "lintel_lengths_m")
+        return f"Перемычка {index}" if index else "Перемычка"
+    if "lintel_rebar_items" in key:
+        index = _array_index(key, "lintel_rebar_items")
+        return f"Арматура перемычек {index}" if index else "Арматура перемычек"
+    if "rebar_items" in key:
+        index = _array_index(key, "rebar_items")
+        return f"Арматура {index}" if index else "Арматура"
+    if "vent_chimney_segment_lengths_m" in key:
+        index = _array_index(key, "vent_chimney_segment_lengths_m")
+        return f"Сегмент обкладки вентканалов {index}" if index else "Сегмент обкладки вентканалов"
+    if "non_insulated_edge_lengths_m" in key:
+        index = _array_index(key, "non_insulated_edge_lengths_m")
+        return f"Участок без утепления {index}" if index else "Участок без утепления"
+    if "cutoff_waterproofing_wall_400_lengths_m" in key:
+        index = _array_index(key, "cutoff_waterproofing_wall_400_lengths_m")
+        return f"Отсечная гидроизоляция стены 400 мм, участок {index}" if index else "Отсечная гидроизоляция стены 400 мм"
+    if "cutoff_waterproofing_wall_250_lengths_m" in key:
+        index = _array_index(key, "cutoff_waterproofing_wall_250_lengths_m")
+        return f"Отсечная гидроизоляция стены 250 мм, участок {index}" if index else "Отсечная гидроизоляция стены 250 мм"
+    return ""
+
+
 def label_from_key(key: str) -> str:
     leaf = re.sub(r"\[\d+\]", "", key.split(".")[-1])
-    return leaf.replace("_", " ")
+    if key in KEY_LABELS:
+        return KEY_LABELS[key]
+    if leaf in KEY_LABELS:
+        return KEY_LABELS[leaf]
+
+    context = context_from_key(key)
+    if leaf in LEAF_LABELS:
+        label = LEAF_LABELS[leaf]
+        part = _source_weight_part(key)
+        if part:
+            label = f"{label}, часть {part}"
+        return f"{context}: {label}" if context else label.capitalize()
+
+    readable = leaf.replace("_", " ")
+    return f"{context}: {readable}" if context else readable
 
 
 def get_section_schema(repo_root: Path | None = None) -> list[dict[str, Any]]:

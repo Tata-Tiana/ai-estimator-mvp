@@ -144,7 +144,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_scaffolding_setup_quantity",
       "calculator_input_key": "scaffolding_setup_quantity",
-      "label": "scaffolding setup quantity",
+      "label": "Количество для устройства лесов/подмостей",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -172,7 +172,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_scaffolding_timber_quantity_m3",
       "calculator_input_key": "scaffolding_timber_quantity_m3",
-      "label": "scaffolding timber quantity m3",
+      "label": "Объем пиломатериала для подмостей",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -200,7 +200,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_0",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[0]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 1: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -214,7 +214,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_1",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[1]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 2: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -228,7 +228,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_2",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[2]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 3: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -242,7 +242,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_3",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[3]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 4: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -256,7 +256,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_4",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[4]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 5: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -270,7 +270,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_5",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[5]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 6: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -284,7 +284,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_6",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[6]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 7: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -298,7 +298,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_7",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[7]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 8: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -312,7 +312,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_8",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[8]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 9: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -326,7 +326,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_9",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[9]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 10: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -340,7 +340,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_10",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[10]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 11: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -354,7 +354,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_11",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[11]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 12: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -368,7 +368,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_12",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[12]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 13: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -382,7 +382,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_13",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[13]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 14: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -396,7 +396,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_14",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[14]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 15: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -410,7 +410,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_15",
       "calculator_input_key": "cutoff_waterproofing_wall_400_lengths_m[15]",
-      "label": "cutoff waterproofing wall 400 lengths m",
+      "label": "Отсечная гидроизоляция стены 400 мм, участок 16: cutoff waterproofing wall 400 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -424,7 +424,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_0",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[0]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 1: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -438,7 +438,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_1",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[1]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 2: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -452,7 +452,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_2",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[2]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 3: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -466,7 +466,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_3",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[3]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 4: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -480,7 +480,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_4",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[4]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 5: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -494,7 +494,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_5",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[5]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 6: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -508,7 +508,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_6",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[6]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 7: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -522,7 +522,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_7",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[7]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 8: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -536,7 +536,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_8",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[8]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 9: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -550,7 +550,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_9",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[9]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 10: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -564,7 +564,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_10",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[10]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 11: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -578,7 +578,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_11",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[11]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 12: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -592,7 +592,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_12",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[12]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 13: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -606,7 +606,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_13",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[13]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 14: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -620,7 +620,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_14",
       "calculator_input_key": "cutoff_waterproofing_wall_250_lengths_m[14]",
-      "label": "cutoff waterproofing wall 250 lengths m",
+      "label": "Отсечная гидроизоляция стены 250 мм, участок 15: cutoff waterproofing wall 250 lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -718,7 +718,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_gas_block_d400_pallet_volume_m3",
       "calculator_input_key": "gas_block_d400_pallet_volume_m3",
-      "label": "gas block d400 pallet volume m3",
+      "label": "Объем газобетона D400 в одном поддоне",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -746,7 +746,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_gas_block_d500_250_pallet_volume_m3",
       "calculator_input_key": "gas_block_d500_250_pallet_volume_m3",
-      "label": "gas block d500 250 pallet volume m3",
+      "label": "Объем газобетона D500 250 мм в одном поддоне",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -774,7 +774,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_adhesive_consumption_bag_per_m3",
       "calculator_input_key": "adhesive_consumption_bag_per_m3",
-      "label": "adhesive consumption bag per m3",
+      "label": "Расход клея для блоков на 1 м3 кладки",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -844,7 +844,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_sand_concrete_bag_weight_kg",
       "calculator_input_key": "sand_concrete_bag_weight_kg",
-      "label": "sand concrete bag weight kg",
+      "label": "Вес одного мешка пескобетона",
       "value": null,
       "unit": "кг",
       "source_file": "",
@@ -872,7 +872,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_0_length_m",
       "calculator_input_key": "lintel_lengths_m[0].length_m",
-      "label": "length m",
+      "label": "Перемычка 1: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -886,7 +886,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_0_count",
       "calculator_input_key": "lintel_lengths_m[0].count",
-      "label": "count",
+      "label": "Перемычка 1: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -900,7 +900,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_1_length_m",
       "calculator_input_key": "lintel_lengths_m[1].length_m",
-      "label": "length m",
+      "label": "Перемычка 2: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -914,7 +914,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_1_count",
       "calculator_input_key": "lintel_lengths_m[1].count",
-      "label": "count",
+      "label": "Перемычка 2: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -928,7 +928,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_2_length_m",
       "calculator_input_key": "lintel_lengths_m[2].length_m",
-      "label": "length m",
+      "label": "Перемычка 3: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -942,7 +942,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_2_count",
       "calculator_input_key": "lintel_lengths_m[2].count",
-      "label": "count",
+      "label": "Перемычка 3: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -956,7 +956,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_3_length_m",
       "calculator_input_key": "lintel_lengths_m[3].length_m",
-      "label": "length m",
+      "label": "Перемычка 4: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -970,7 +970,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_3_count",
       "calculator_input_key": "lintel_lengths_m[3].count",
-      "label": "count",
+      "label": "Перемычка 4: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -984,7 +984,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_4_length_m",
       "calculator_input_key": "lintel_lengths_m[4].length_m",
-      "label": "length m",
+      "label": "Перемычка 5: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -998,7 +998,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_4_count",
       "calculator_input_key": "lintel_lengths_m[4].count",
-      "label": "count",
+      "label": "Перемычка 5: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1012,7 +1012,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_5_length_m",
       "calculator_input_key": "lintel_lengths_m[5].length_m",
-      "label": "length m",
+      "label": "Перемычка 6: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1026,7 +1026,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_lengths_m_5_count",
       "calculator_input_key": "lintel_lengths_m[5].count",
-      "label": "count",
+      "label": "Перемычка 6: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1040,7 +1040,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_gas_block_length_m",
       "calculator_input_key": "gas_block_length_m",
-      "label": "gas block length m",
+      "label": "Длина газобетонного блока",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1250,7 +1250,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_main_walls_crane_shifts",
       "calculator_input_key": "main_walls_crane_shifts",
-      "label": "main walls crane shifts",
+      "label": "Количество смен крана для несущих стен",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -1278,7 +1278,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_code",
       "calculator_input_key": "lintel_rebar_items[0].code",
-      "label": "code",
+      "label": "Арматура перемычек 1: код позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1292,7 +1292,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_name",
       "calculator_input_key": "lintel_rebar_items[0].name",
-      "label": "name",
+      "label": "Арматура перемычек 1: наименование позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1306,7 +1306,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_steel_class",
       "calculator_input_key": "lintel_rebar_items[0].steel_class",
-      "label": "steel class",
+      "label": "Арматура перемычек 1: класс стали",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1320,7 +1320,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_diameter_mm",
       "calculator_input_key": "lintel_rebar_items[0].diameter_mm",
-      "label": "diameter mm",
+      "label": "Арматура перемычек 1: диаметр",
       "value": null,
       "unit": "мм",
       "source_file": "",
@@ -1334,7 +1334,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_kg_per_meter",
       "calculator_input_key": "lintel_rebar_items[0].kg_per_meter",
-      "label": "kg per meter",
+      "label": "Арматура перемычек 1: вес 1 погонного метра",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1348,7 +1348,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_rod_length_m",
       "calculator_input_key": "lintel_rebar_items[0].rod_length_m",
-      "label": "rod length m",
+      "label": "Арматура перемычек 1: длина одного хлыста арматуры",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1362,7 +1362,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_0_unit_price_per_m",
       "calculator_input_key": "lintel_rebar_items[0].unit_price_per_m",
-      "label": "unit price per m",
+      "label": "Арматура перемычек 1: цена за погонный метр",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1376,7 +1376,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_code",
       "calculator_input_key": "lintel_rebar_items[1].code",
-      "label": "code",
+      "label": "Арматура перемычек 2: код позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1390,7 +1390,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_name",
       "calculator_input_key": "lintel_rebar_items[1].name",
-      "label": "name",
+      "label": "Арматура перемычек 2: наименование позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1404,7 +1404,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_steel_class",
       "calculator_input_key": "lintel_rebar_items[1].steel_class",
-      "label": "steel class",
+      "label": "Арматура перемычек 2: класс стали",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1418,7 +1418,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_diameter_mm",
       "calculator_input_key": "lintel_rebar_items[1].diameter_mm",
-      "label": "diameter mm",
+      "label": "Арматура перемычек 2: диаметр",
       "value": null,
       "unit": "мм",
       "source_file": "",
@@ -1432,7 +1432,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_kg_per_meter",
       "calculator_input_key": "lintel_rebar_items[1].kg_per_meter",
-      "label": "kg per meter",
+      "label": "Арматура перемычек 2: вес 1 погонного метра",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1446,7 +1446,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_rod_length_m",
       "calculator_input_key": "lintel_rebar_items[1].rod_length_m",
-      "label": "rod length m",
+      "label": "Арматура перемычек 2: длина одного хлыста арматуры",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1460,7 +1460,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_rebar_items_1_unit_price_per_m",
       "calculator_input_key": "lintel_rebar_items[1].unit_price_per_m",
-      "label": "unit price per m",
+      "label": "Арматура перемычек 2: цена за погонный метр",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1530,7 +1530,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_lintel_concrete_min_order_volume_m3",
       "calculator_input_key": "lintel_concrete_min_order_volume_m3",
-      "label": "lintel concrete min order volume m3",
+      "label": "Минимальный заказ бетона для перемычек",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -1558,7 +1558,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_concrete_delivery_trips",
       "calculator_input_key": "concrete_delivery_trips",
-      "label": "concrete delivery trips",
+      "label": "Количество рейсов доставки бетона",
       "value": null,
       "unit": "рейс",
       "source_file": "",
@@ -1600,7 +1600,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_parapet_enabled",
       "calculator_input_key": "parapet_enabled",
-      "label": "parapet enabled",
+      "label": "Учитывать парапет в расчете",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -1642,7 +1642,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_second_light_masonry_enabled",
       "calculator_input_key": "second_light_masonry_enabled",
-      "label": "second light masonry enabled",
+      "label": "Учитывать кладку второго света",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -1656,7 +1656,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_second_light_masonry_case_specific",
       "calculator_input_key": "second_light_masonry_case_specific",
-      "label": "second light masonry case specific",
+      "label": "Кладка второго света: учитывать проектную особенность",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -1684,7 +1684,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_cladding_enabled",
       "calculator_input_key": "vent_chimney_cladding_enabled",
-      "label": "vent chimney cladding enabled",
+      "label": "Учитывать обкладку вентканалов",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -1726,7 +1726,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_gas_block_d500_150_pallet_volume_m3",
       "calculator_input_key": "gas_block_d500_150_pallet_volume_m3",
-      "label": "gas block d500 150 pallet volume m3",
+      "label": "Объем газобетона D500 150 мм в одном поддоне",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -1754,7 +1754,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_length_m",
       "calculator_input_key": "vent_chimney_segment_lengths_m[0].length_m",
-      "label": "length m",
+      "label": "Сегмент обкладки вентканалов 1: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1768,7 +1768,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_count",
       "calculator_input_key": "vent_chimney_segment_lengths_m[0].count",
-      "label": "count",
+      "label": "Сегмент обкладки вентканалов 1: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1782,7 +1782,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_length_m",
       "calculator_input_key": "vent_chimney_segment_lengths_m[1].length_m",
-      "label": "length m",
+      "label": "Сегмент обкладки вентканалов 2: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1796,7 +1796,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_count",
       "calculator_input_key": "vent_chimney_segment_lengths_m[1].count",
-      "label": "count",
+      "label": "Сегмент обкладки вентканалов 2: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1810,7 +1810,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_length_m",
       "calculator_input_key": "vent_chimney_segment_lengths_m[2].length_m",
-      "label": "length m",
+      "label": "Сегмент обкладки вентканалов 3: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1824,7 +1824,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_count",
       "calculator_input_key": "vent_chimney_segment_lengths_m[2].count",
-      "label": "count",
+      "label": "Сегмент обкладки вентканалов 3: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1838,7 +1838,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_length_m",
       "calculator_input_key": "vent_chimney_segment_lengths_m[3].length_m",
-      "label": "length m",
+      "label": "Сегмент обкладки вентканалов 4: длина",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1852,7 +1852,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_count",
       "calculator_input_key": "vent_chimney_segment_lengths_m[3].count",
-      "label": "count",
+      "label": "Сегмент обкладки вентканалов 4: количество",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1866,7 +1866,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_vent_chimney_rows",
       "calculator_input_key": "vent_chimney_rows",
-      "label": "vent chimney rows",
+      "label": "Количество рядов обкладки вентканалов",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1880,7 +1880,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_block_height_m",
       "calculator_input_key": "block_height_m",
-      "label": "block height m",
+      "label": "Высота блока",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1894,7 +1894,7 @@
     {
       "parameter_code": "load_bearing_walls_lintels_parapet_crane_shifts",
       "calculator_input_key": "parapet_crane_shifts",
-      "label": "parapet crane shifts",
+      "label": "Количество смен крана для парапета",
       "value": null,
       "unit": "смена",
       "source_file": "",

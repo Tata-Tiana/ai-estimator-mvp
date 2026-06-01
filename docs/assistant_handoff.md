@@ -126,6 +126,8 @@ experiments/pdf_parser_pipeline/cases/mvp_usv_demo/
 ```text
 experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/
 experiments/pdf_parser_pipeline/cases/mvp_usv_demo/reviewed_parameters.xlsx
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.xlsx
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.md
 experiments/pdf_parser_pipeline/cases/mvp_usv_demo/result.json
 experiments/pdf_parser_pipeline/cases/mvp_usv_demo/result.md
 experiments/pdf_parser_pipeline/output/mvp_usv_demo/
@@ -146,6 +148,15 @@ manual_required_total = 69
 py_compile -> ok
 expected.json не изменялись
 ```
+
+Файл `elena_missing_parameters_by_section.xlsx` показывает, какие параметры parser не нашёл:
+
+- `summary` — сводка по разделам;
+- `for_designers` — вопросы к проектировщикам/по проекту;
+- `estimator_manual` — ручные сметные и технические параметры;
+- `all_missing_raw` — полный список.
+
+Labels для авто-параметров в `section_schema.py` переведены на русские человекочитаемые названия, чтобы в таблицах не было строк вида `code`, `name`, `diameter mm` без контекста.
 
 Отчёт:
 

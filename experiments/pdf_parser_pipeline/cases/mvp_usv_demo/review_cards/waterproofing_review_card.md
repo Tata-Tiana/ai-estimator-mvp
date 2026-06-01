@@ -43,23 +43,23 @@
 | waterproofing_slab_formwork_perimeter_m | slab formwork perimeter m | missing |
 | waterproofing_slab_edge_height_m | slab edge height m | missing |
 | waterproofing_waterproofing_work_unit_price | waterproofing work unit price | missing |
-| waterproofing_primer_consumption_l_per_m2 | primer consumption l per m2 | manual_required |
-| waterproofing_primer_canister_volume_l | primer canister volume l | missing |
+| waterproofing_primer_consumption_l_per_m2 | Расход праймера на 1 м2 | manual_required |
+| waterproofing_primer_canister_volume_l | Объем одной канистры праймера | missing |
 | waterproofing_primer_unit_price | primer unit price | missing |
 | waterproofing_mastic_consumption_kg_per_m2_per_layer | mastic consumption kg per m2 per layer | missing |
-| waterproofing_mastic_layers | mastic layers | manual_required |
-| waterproofing_mastic_bucket_weight_kg | mastic bucket weight kg | missing |
+| waterproofing_mastic_layers | Количество слоев битумной мастики | manual_required |
+| waterproofing_mastic_bucket_weight_kg | Вес одного ведра битумной мастики | missing |
 | waterproofing_mastic_unit_price | mastic unit price | missing |
 | waterproofing_eps100_wall_thickness_m | eps100 wall thickness m | missing |
 | waterproofing_eps100_wall_insulation_work_unit_price | eps100 wall insulation work unit price | missing |
-| waterproofing_non_insulated_edge_lengths_m_0 | non insulated edge lengths m | missing |
-| waterproofing_non_insulated_edge_lengths_m_1 | non insulated edge lengths m | missing |
-| waterproofing_non_insulated_edge_lengths_m_2 | non insulated edge lengths m | missing |
+| waterproofing_non_insulated_edge_lengths_m_0 | Участок без утепления 1: non insulated edge lengths m | missing |
+| waterproofing_non_insulated_edge_lengths_m_1 | Участок без утепления 2: non insulated edge lengths m | missing |
+| waterproofing_non_insulated_edge_lengths_m_2 | Участок без утепления 3: non insulated edge lengths m | missing |
 | waterproofing_eps_waste_coeff | eps waste coeff | missing |
 | waterproofing_eps100_pack_volume_m3 | eps100 pack volume m3 | missing |
 | waterproofing_eps100_unit_price | eps100 unit price | missing |
 | waterproofing_glue_foam_coverage_m2_per_can | glue foam coverage m2 per can | missing |
-| waterproofing_glue_foam_min_units | glue foam min units | manual_required |
+| waterproofing_glue_foam_min_units | Минимальное количество клей-пены | manual_required |
 | waterproofing_glue_foam_unit_price | glue foam unit price | missing |
 | waterproofing_waterproofing_logistics_coeff | waterproofing logistics coeff | missing |
 | waterproofing_waterproofing_consumables_coeff | waterproofing consumables coeff | missing |

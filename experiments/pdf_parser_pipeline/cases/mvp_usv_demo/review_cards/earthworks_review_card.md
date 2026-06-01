@@ -47,21 +47,21 @@
 ## Missing / manual_required
 | parameter_code | label | status |
 |---|---|---|
-| earthworks_assumptions_manual_excavation_override | manual excavation override | manual_required |
-| earthworks_assumptions_sand_override | sand override | manual_required |
-| earthworks_assumptions_geotextile_override | geotextile override | manual_required |
+| earthworks_assumptions_manual_excavation_override | Ручной объем доработки котлована | manual_required |
+| earthworks_assumptions_sand_override | Ручной объем песка | manual_required |
+| earthworks_assumptions_geotextile_override | Ручное количество геотекстиля | manual_required |
 | earthworks_pit_area_m2 | pit area m2 | missing |
 | earthworks_manual_refinement_depth_m | manual refinement depth m | manual_required |
 | earthworks_trench_volume_m3 | trench volume m3 | missing |
 | earthworks_sand_compaction_coeff | sand compaction coeff | missing |
 | earthworks_sand_truck_step_m3 | sand truck step m3 | missing |
 | earthworks_geotextile_overlap_coeff | geotextile overlap coeff | missing |
-| earthworks_geotextile_roll_area_m2 | geotextile roll area m2 | missing |
+| earthworks_geotextile_roll_area_m2 | Площадь одного рулона геотекстиля | missing |
 | earthworks_communications_length_m | communications length m | missing |
-| earthworks_axis_marking_shifts | axis marking shifts | manual_required |
-| earthworks_excavator_shifts | excavator shifts | manual_required |
+| earthworks_axis_marking_shifts | Количество смен для разбивки осей | manual_required |
+| earthworks_excavator_shifts | Количество смен экскаватора | manual_required |
 | earthworks_geotextile_laying_area_m2 | geotextile laying area m2 | missing |
-| earthworks_manual_excavation_quantity_for_estimate_m3 | manual excavation quantity for estimate m3 | manual_required |
+| earthworks_manual_excavation_quantity_for_estimate_m3 | Объем ручной доработки котлована для сметы | manual_required |
 | earthworks_consumables_amount | consumables amount | missing |
 | earthworks_internal_prices_axis_marking_work_unit_price | axis marking work unit price | missing |
 | earthworks_internal_prices_excavator_material_unit_price | excavator material unit price | missing |

@@ -116,7 +116,7 @@
     {
       "parameter_code": "waterproofing_primer_consumption_l_per_m2",
       "calculator_input_key": "primer_consumption_l_per_m2",
-      "label": "primer consumption l per m2",
+      "label": "Расход праймера на 1 м2",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -130,7 +130,7 @@
     {
       "parameter_code": "waterproofing_primer_canister_volume_l",
       "calculator_input_key": "primer_canister_volume_l",
-      "label": "primer canister volume l",
+      "label": "Объем одной канистры праймера",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -172,7 +172,7 @@
     {
       "parameter_code": "waterproofing_mastic_layers",
       "calculator_input_key": "mastic_layers",
-      "label": "mastic layers",
+      "label": "Количество слоев битумной мастики",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -186,7 +186,7 @@
     {
       "parameter_code": "waterproofing_mastic_bucket_weight_kg",
       "calculator_input_key": "mastic_bucket_weight_kg",
-      "label": "mastic bucket weight kg",
+      "label": "Вес одного ведра битумной мастики",
       "value": null,
       "unit": "кг",
       "source_file": "",
@@ -242,7 +242,7 @@
     {
       "parameter_code": "waterproofing_non_insulated_edge_lengths_m_0",
       "calculator_input_key": "non_insulated_edge_lengths_m[0]",
-      "label": "non insulated edge lengths m",
+      "label": "Участок без утепления 1: non insulated edge lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -256,7 +256,7 @@
     {
       "parameter_code": "waterproofing_non_insulated_edge_lengths_m_1",
       "calculator_input_key": "non_insulated_edge_lengths_m[1]",
-      "label": "non insulated edge lengths m",
+      "label": "Участок без утепления 2: non insulated edge lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -270,7 +270,7 @@
     {
       "parameter_code": "waterproofing_non_insulated_edge_lengths_m_2",
       "calculator_input_key": "non_insulated_edge_lengths_m[2]",
-      "label": "non insulated edge lengths m",
+      "label": "Участок без утепления 3: non insulated edge lengths m",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -340,7 +340,7 @@
     {
       "parameter_code": "waterproofing_glue_foam_min_units",
       "calculator_input_key": "glue_foam_min_units",
-      "label": "glue foam min units",
+      "label": "Минимальное количество клей-пены",
       "value": null,
       "unit": "-",
       "source_file": "",

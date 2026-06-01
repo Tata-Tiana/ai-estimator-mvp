@@ -130,6 +130,33 @@ Excel строится от `section_schema.py`, а не от случайных
 - статусы `needs_review`, `manual_required`, `missing`, `control_only`;
 - признак `use_for_calculation`.
 
+## Файл для Елены по missing-параметрам
+
+Дополнительно создан отдельный отчёт:
+
+```text
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.xlsx
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.md
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_section.xlsx
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_section.md
+```
+
+Он нужен, чтобы быстро понять, каких данных parser не нашёл по 8 разделам сметы.
+
+Листы Excel:
+
+- `summary` — краткая сводка по разделам;
+- `for_designers` — параметры, которые лучше уточнять у проектировщиков или по проекту;
+- `estimator_manual` — сметные, ценовые, технические и ручные параметры для Елены/сметчика;
+- `all_missing_raw` — полный список missing/manual без фильтрации.
+
+В `section_schema.py` улучшены русские labels для авто-параметров из `input.json`. Например:
+
+- `rebar_items[0].code` -> `Арматура 1: код позиции`;
+- `rebar_items[0].diameter_mm` -> `Арматура 1: диаметр`;
+- `beams.items[0].name` -> `Балка Б-1: наименование позиции`;
+- `gas_block_wall_holes_count` -> `Количество отверстий в стенах из газоблока`.
+
 ## Текущий результат прогона
 
 Команда:

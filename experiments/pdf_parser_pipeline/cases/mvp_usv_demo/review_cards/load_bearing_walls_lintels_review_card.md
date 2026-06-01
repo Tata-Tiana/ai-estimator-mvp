@@ -162,71 +162,71 @@
 ## Missing / manual_required
 | parameter_code | label | status |
 |---|---|---|
-| load_bearing_walls_lintels_scaffolding_setup_quantity | scaffolding setup quantity | manual_required |
+| load_bearing_walls_lintels_scaffolding_setup_quantity | Количество для устройства лесов/подмостей | manual_required |
 | load_bearing_walls_lintels_scaffolding_setup_work_unit_price | scaffolding setup work unit price | missing |
-| load_bearing_walls_lintels_scaffolding_timber_quantity_m3 | scaffolding timber quantity m3 | manual_required |
+| load_bearing_walls_lintels_scaffolding_timber_quantity_m3 | Объем пиломатериала для подмостей | manual_required |
 | load_bearing_walls_lintels_scaffolding_timber_unit_price | scaffolding timber unit price | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_0 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_1 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_2 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_3 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_4 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_5 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_6 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_7 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_8 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_9 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_10 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_11 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_12 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_13 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_14 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_15 | cutoff waterproofing wall 400 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_0 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_1 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_2 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_3 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_4 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_5 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_6 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_7 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_8 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_9 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_10 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_11 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_12 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_13 | cutoff waterproofing wall 250 lengths m | missing |
-| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_14 | cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_0 | Отсечная гидроизоляция стены 400 мм, участок 1: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_1 | Отсечная гидроизоляция стены 400 мм, участок 2: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_2 | Отсечная гидроизоляция стены 400 мм, участок 3: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_3 | Отсечная гидроизоляция стены 400 мм, участок 4: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_4 | Отсечная гидроизоляция стены 400 мм, участок 5: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_5 | Отсечная гидроизоляция стены 400 мм, участок 6: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_6 | Отсечная гидроизоляция стены 400 мм, участок 7: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_7 | Отсечная гидроизоляция стены 400 мм, участок 8: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_8 | Отсечная гидроизоляция стены 400 мм, участок 9: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_9 | Отсечная гидроизоляция стены 400 мм, участок 10: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_10 | Отсечная гидроизоляция стены 400 мм, участок 11: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_11 | Отсечная гидроизоляция стены 400 мм, участок 12: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_12 | Отсечная гидроизоляция стены 400 мм, участок 13: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_13 | Отсечная гидроизоляция стены 400 мм, участок 14: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_14 | Отсечная гидроизоляция стены 400 мм, участок 15: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_400_lengths_m_15 | Отсечная гидроизоляция стены 400 мм, участок 16: cutoff waterproofing wall 400 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_0 | Отсечная гидроизоляция стены 250 мм, участок 1: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_1 | Отсечная гидроизоляция стены 250 мм, участок 2: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_2 | Отсечная гидроизоляция стены 250 мм, участок 3: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_3 | Отсечная гидроизоляция стены 250 мм, участок 4: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_4 | Отсечная гидроизоляция стены 250 мм, участок 5: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_5 | Отсечная гидроизоляция стены 250 мм, участок 6: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_6 | Отсечная гидроизоляция стены 250 мм, участок 7: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_7 | Отсечная гидроизоляция стены 250 мм, участок 8: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_8 | Отсечная гидроизоляция стены 250 мм, участок 9: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_9 | Отсечная гидроизоляция стены 250 мм, участок 10: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_10 | Отсечная гидроизоляция стены 250 мм, участок 11: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_11 | Отсечная гидроизоляция стены 250 мм, участок 12: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_12 | Отсечная гидроизоляция стены 250 мм, участок 13: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_13 | Отсечная гидроизоляция стены 250 мм, участок 14: cutoff waterproofing wall 250 lengths m | missing |
+| load_bearing_walls_lintels_cutoff_waterproofing_wall_250_lengths_m_14 | Отсечная гидроизоляция стены 250 мм, участок 15: cutoff waterproofing wall 250 lengths m | missing |
 | load_bearing_walls_lintels_wall_400_thickness_m | wall 400 thickness m | missing |
 | load_bearing_walls_lintels_wall_250_thickness_m | wall 250 thickness m | missing |
 | load_bearing_walls_lintels_cutoff_waterproofing_material_unit_price | cutoff waterproofing material unit price | missing |
 | load_bearing_walls_lintels_cutoff_waterproofing_work_unit_price | cutoff waterproofing work unit price | missing |
 | load_bearing_walls_lintels_main_wall_masonry_work_unit_price | main wall masonry work unit price | missing |
 | load_bearing_walls_lintels_gas_block_waste_coeff | gas block waste coeff | missing |
-| load_bearing_walls_lintels_gas_block_d400_pallet_volume_m3 | gas block d400 pallet volume m3 | missing |
+| load_bearing_walls_lintels_gas_block_d400_pallet_volume_m3 | Объем газобетона D400 в одном поддоне | missing |
 | load_bearing_walls_lintels_gas_block_d400_unit_price | gas block d400 unit price | missing |
-| load_bearing_walls_lintels_gas_block_d500_250_pallet_volume_m3 | gas block d500 250 pallet volume m3 | missing |
+| load_bearing_walls_lintels_gas_block_d500_250_pallet_volume_m3 | Объем газобетона D500 250 мм в одном поддоне | missing |
 | load_bearing_walls_lintels_gas_block_d500_250_unit_price | gas block d500 250 unit price | missing |
-| load_bearing_walls_lintels_adhesive_consumption_bag_per_m3 | adhesive consumption bag per m3 | manual_required |
+| load_bearing_walls_lintels_adhesive_consumption_bag_per_m3 | Расход клея для блоков на 1 м3 кладки | manual_required |
 | load_bearing_walls_lintels_adhesive_waste_coeff | adhesive waste coeff | missing |
 | load_bearing_walls_lintels_adhesive_unit_price | adhesive unit price | missing |
 | load_bearing_walls_lintels_sand_concrete_consumption_kg_per_m2_per_10mm | sand concrete consumption kg per m2 per 10mm | missing |
 | load_bearing_walls_lintels_sand_concrete_thickness_factor | sand concrete thickness factor | missing |
-| load_bearing_walls_lintels_sand_concrete_bag_weight_kg | sand concrete bag weight kg | missing |
+| load_bearing_walls_lintels_sand_concrete_bag_weight_kg | Вес одного мешка пескобетона | missing |
 | load_bearing_walls_lintels_sand_concrete_unit_price | sand concrete unit price | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_0_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_0_count | count | manual_required |
-| load_bearing_walls_lintels_lintel_lengths_m_1_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_1_count | count | manual_required |
-| load_bearing_walls_lintels_lintel_lengths_m_2_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_2_count | count | manual_required |
-| load_bearing_walls_lintels_lintel_lengths_m_3_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_3_count | count | manual_required |
-| load_bearing_walls_lintels_lintel_lengths_m_4_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_4_count | count | manual_required |
-| load_bearing_walls_lintels_lintel_lengths_m_5_length_m | length m | missing |
-| load_bearing_walls_lintels_lintel_lengths_m_5_count | count | manual_required |
-| load_bearing_walls_lintels_gas_block_length_m | gas block length m | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_0_length_m | Перемычка 1: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_0_count | Перемычка 1: количество | manual_required |
+| load_bearing_walls_lintels_lintel_lengths_m_1_length_m | Перемычка 2: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_1_count | Перемычка 2: количество | manual_required |
+| load_bearing_walls_lintels_lintel_lengths_m_2_length_m | Перемычка 3: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_2_count | Перемычка 3: количество | manual_required |
+| load_bearing_walls_lintels_lintel_lengths_m_3_length_m | Перемычка 4: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_3_count | Перемычка 4: количество | manual_required |
+| load_bearing_walls_lintels_lintel_lengths_m_4_length_m | Перемычка 5: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_4_count | Перемычка 5: количество | manual_required |
+| load_bearing_walls_lintels_lintel_lengths_m_5_length_m | Перемычка 6: длина | missing |
+| load_bearing_walls_lintels_lintel_lengths_m_5_count | Перемычка 6: количество | manual_required |
+| load_bearing_walls_lintels_gas_block_length_m | Длина газобетонного блока | missing |
 | load_bearing_walls_lintels_u_block_cutting_work_unit_price | u block cutting work unit price | missing |
 | load_bearing_walls_lintels_main_wall_external_length_m | main wall external length m | missing |
 | load_bearing_walls_lintels_main_wall_reinforcement_rows | main wall reinforcement rows | missing |
@@ -240,53 +240,53 @@
 | load_bearing_walls_lintels_gas_block_delivery_truck_capacity_m3 | gas block delivery truck capacity m3 | missing |
 | load_bearing_walls_lintels_gas_block_delivery_unit_price | gas block delivery unit price | missing |
 | load_bearing_walls_lintels_gas_block_unloading_manipulator_unit_price | gas block unloading manipulator unit price | missing |
-| load_bearing_walls_lintels_main_walls_crane_shifts | main walls crane shifts | manual_required |
+| load_bearing_walls_lintels_main_walls_crane_shifts | Количество смен крана для несущих стен | manual_required |
 | load_bearing_walls_lintels_crane_25t_unit_price | crane 25t unit price | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_code | code | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_name | name | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_steel_class | steel class | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_diameter_mm | diameter mm | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_kg_per_meter | kg per meter | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_rod_length_m | rod length m | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_0_unit_price_per_m | unit price per m | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_code | code | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_name | name | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_steel_class | steel class | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_diameter_mm | diameter mm | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_kg_per_meter | kg per meter | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_rod_length_m | rod length m | missing |
-| load_bearing_walls_lintels_lintel_rebar_items_1_unit_price_per_m | unit price per m | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_code | Арматура перемычек 1: код позиции | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_name | Арматура перемычек 1: наименование позиции | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_steel_class | Арматура перемычек 1: класс стали | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_diameter_mm | Арматура перемычек 1: диаметр | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_kg_per_meter | Арматура перемычек 1: вес 1 погонного метра | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_rod_length_m | Арматура перемычек 1: длина одного хлыста арматуры | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_0_unit_price_per_m | Арматура перемычек 1: цена за погонный метр | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_code | Арматура перемычек 2: код позиции | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_name | Арматура перемычек 2: наименование позиции | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_steel_class | Арматура перемычек 2: класс стали | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_diameter_mm | Арматура перемычек 2: диаметр | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_kg_per_meter | Арматура перемычек 2: вес 1 погонного метра | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_rod_length_m | Арматура перемычек 2: длина одного хлыста арматуры | missing |
+| load_bearing_walls_lintels_lintel_rebar_items_1_unit_price_per_m | Арматура перемычек 2: цена за погонный метр | missing |
 | load_bearing_walls_lintels_lintel_concreting_work_unit_price | lintel concreting work unit price | missing |
 | load_bearing_walls_lintels_lintel_section_width_m | lintel section width m | missing |
 | load_bearing_walls_lintels_lintel_section_height_m | lintel section height m | missing |
 | load_bearing_walls_lintels_concrete_waste_coeff | concrete waste coeff | missing |
-| load_bearing_walls_lintels_lintel_concrete_min_order_volume_m3 | lintel concrete min order volume m3 | missing |
+| load_bearing_walls_lintels_lintel_concrete_min_order_volume_m3 | Минимальный заказ бетона для перемычек | missing |
 | load_bearing_walls_lintels_concrete_m300_unit_price | concrete m300 unit price | missing |
-| load_bearing_walls_lintels_concrete_delivery_trips | concrete delivery trips | manual_required |
+| load_bearing_walls_lintels_concrete_delivery_trips | Количество рейсов доставки бетона | manual_required |
 | load_bearing_walls_lintels_concrete_delivery_unit_price | concrete delivery unit price | missing |
 | load_bearing_walls_lintels_manual_concrete_lifting_work_unit_price | manual concrete lifting work unit price | missing |
-| load_bearing_walls_lintels_parapet_enabled | parapet enabled | manual_required |
+| load_bearing_walls_lintels_parapet_enabled | Учитывать парапет в расчете | manual_required |
 | load_bearing_walls_lintels_parapet_masonry_volume_m3 | parapet masonry volume m3 | missing |
 | load_bearing_walls_lintels_parapet_masonry_work_unit_price | parapet masonry work unit price | missing |
-| load_bearing_walls_lintels_second_light_masonry_enabled | second light masonry enabled | manual_required |
-| load_bearing_walls_lintels_second_light_masonry_case_specific | second light masonry case specific | manual_required |
+| load_bearing_walls_lintels_second_light_masonry_enabled | Учитывать кладку второго света | manual_required |
+| load_bearing_walls_lintels_second_light_masonry_case_specific | Кладка второго света: учитывать проектную особенность | manual_required |
 | load_bearing_walls_lintels_second_light_masonry_volume_m3 | second light masonry volume m3 | missing |
-| load_bearing_walls_lintels_vent_chimney_cladding_enabled | vent chimney cladding enabled | manual_required |
+| load_bearing_walls_lintels_vent_chimney_cladding_enabled | Учитывать обкладку вентканалов | manual_required |
 | load_bearing_walls_lintels_vent_chimney_block_thickness_m | vent chimney block thickness m | missing |
 | load_bearing_walls_lintels_vent_chimney_cladding_work_unit_price | vent chimney cladding work unit price | missing |
-| load_bearing_walls_lintels_gas_block_d500_150_pallet_volume_m3 | gas block d500 150 pallet volume m3 | missing |
+| load_bearing_walls_lintels_gas_block_d500_150_pallet_volume_m3 | Объем газобетона D500 150 мм в одном поддоне | missing |
 | load_bearing_walls_lintels_gas_block_d500_150_unit_price | gas block d500 150 unit price | missing |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_length_m | length m | missing |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_count | count | manual_required |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_length_m | length m | missing |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_count | count | manual_required |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_length_m | length m | missing |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_count | count | manual_required |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_length_m | length m | missing |
-| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_count | count | manual_required |
-| load_bearing_walls_lintels_vent_chimney_rows | vent chimney rows | manual_required |
-| load_bearing_walls_lintels_block_height_m | block height m | missing |
-| load_bearing_walls_lintels_parapet_crane_shifts | parapet crane shifts | manual_required |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_length_m | Сегмент обкладки вентканалов 1: длина | missing |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_0_count | Сегмент обкладки вентканалов 1: количество | manual_required |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_length_m | Сегмент обкладки вентканалов 2: длина | missing |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_1_count | Сегмент обкладки вентканалов 2: количество | manual_required |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_length_m | Сегмент обкладки вентканалов 3: длина | missing |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_2_count | Сегмент обкладки вентканалов 3: количество | manual_required |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_length_m | Сегмент обкладки вентканалов 4: длина | missing |
+| load_bearing_walls_lintels_vent_chimney_segment_lengths_m_3_count | Сегмент обкладки вентканалов 4: количество | manual_required |
+| load_bearing_walls_lintels_vent_chimney_rows | Количество рядов обкладки вентканалов | manual_required |
+| load_bearing_walls_lintels_block_height_m | Высота блока | missing |
+| load_bearing_walls_lintels_parapet_crane_shifts | Количество смен крана для парапета | manual_required |
 | load_bearing_walls_lintels_parapet_chasing_base_length_m | parapet chasing base length m | missing |
 | load_bearing_walls_lintels_second_light_chasing_base_length_m | second light chasing base length m | missing |
 | load_bearing_walls_lintels_parapet_rebar_base_length_m | parapet rebar base length m | missing |

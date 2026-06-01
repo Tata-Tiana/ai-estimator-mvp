@@ -137,7 +137,7 @@
     {
       "parameter_code": "flat_roof_roof_area_level_1_m2",
       "calculator_input_key": "roof_area_level_1_m2",
-      "label": "roof area level 1 m2",
+      "label": "Площадь кровли уровня 1",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -151,7 +151,7 @@
     {
       "parameter_code": "flat_roof_roof_area_level_2_m2",
       "calculator_input_key": "roof_area_level_2_m2",
-      "label": "roof area level 2 m2",
+      "label": "Площадь кровли уровня 2",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -165,7 +165,7 @@
     {
       "parameter_code": "flat_roof_roof_area_total_m2",
       "calculator_input_key": "roof_area_total_m2",
-      "label": "roof area total m2",
+      "label": "Общая площадь кровли",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -235,7 +235,7 @@
     {
       "parameter_code": "flat_roof_parapet_and_abutment_total_length_m",
       "calculator_input_key": "parapet_and_abutment_total_length_m",
-      "label": "parapet and abutment total length m",
+      "label": "Суммарная длина парапетов и примыканий",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -291,7 +291,7 @@
     {
       "parameter_code": "flat_roof_vapor_barrier_film_roll_area_m2",
       "calculator_input_key": "vapor_barrier_film_roll_area_m2",
-      "label": "vapor barrier film roll area m2",
+      "label": "Площадь рулона пароизоляционной пленки",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -627,7 +627,7 @@
     {
       "parameter_code": "flat_roof_geotextile_flat_roll_area_m2",
       "calculator_input_key": "geotextile_flat_roll_area_m2",
-      "label": "geotextile flat roll area m2",
+      "label": "Площадь рулона геотекстиля для плоской части кровли",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -669,7 +669,7 @@
     {
       "parameter_code": "flat_roof_geotextile_parapet_roll_area_m2",
       "calculator_input_key": "geotextile_parapet_roll_area_m2",
-      "label": "geotextile parapet roll area m2",
+      "label": "Площадь рулона геотекстиля для парапетов",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -725,7 +725,7 @@
     {
       "parameter_code": "flat_roof_vent_shaft_abutment_count",
       "calculator_input_key": "vent_shaft_abutment_count",
-      "label": "vent shaft abutment count",
+      "label": "Количество примыканий к вентшахтам",
       "value": null,
       "unit": "шт",
       "source_file": "",
@@ -753,7 +753,7 @@
     {
       "parameter_code": "flat_roof_rail_piece_length_m",
       "calculator_input_key": "rail_piece_length_m",
-      "label": "rail piece length m",
+      "label": "Длина одной алюминиевой рейки",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -823,7 +823,7 @@
     {
       "parameter_code": "flat_roof_pvc_membrane_roll_width_m",
       "calculator_input_key": "pvc_membrane_roll_width_m",
-      "label": "pvc membrane roll width m",
+      "label": "Ширина рулона ПВХ мембраны",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -837,7 +837,7 @@
     {
       "parameter_code": "flat_roof_pvc_membrane_roll_length_m",
       "calculator_input_key": "pvc_membrane_roll_length_m",
-      "label": "pvc membrane roll length m",
+      "label": "Длина рулона ПВХ мембраны",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -865,7 +865,7 @@
     {
       "parameter_code": "flat_roof_pvc_membrane_expected_material_total",
       "calculator_input_key": "pvc_membrane_expected_material_total",
-      "label": "pvc membrane expected material total",
+      "label": "Ожидаемая сумма материала ПВХ мембраны",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -879,7 +879,7 @@
     {
       "parameter_code": "flat_roof_roof_aerators_count",
       "calculator_input_key": "roof_aerators_count",
-      "label": "roof aerators count",
+      "label": "Количество кровельных аэраторов",
       "value": null,
       "unit": "шт",
       "source_file": "",
@@ -907,7 +907,7 @@
     {
       "parameter_code": "flat_roof_roof_aerator_installation_rate",
       "calculator_input_key": "roof_aerator_installation_rate",
-      "label": "roof aerator installation rate",
+      "label": "Ставка установки кровельного аэратора",
       "value": null,
       "unit": "руб.",
       "source_file": "",
@@ -935,7 +935,7 @@
     {
       "parameter_code": "flat_roof_parapet_roof_drain_installation_rate",
       "calculator_input_key": "parapet_roof_drain_installation_rate",
-      "label": "parapet roof drain installation rate",
+      "label": "Ставка установки парапетной кровельной воронки",
       "value": null,
       "unit": "руб.",
       "source_file": "",
@@ -949,7 +949,7 @@
     {
       "parameter_code": "flat_roof_gas_block_wall_holes_count",
       "calculator_input_key": "gas_block_wall_holes_count",
-      "label": "gas block wall holes count",
+      "label": "Количество отверстий в стенах из газоблока",
       "value": null,
       "unit": "шт",
       "source_file": "",
@@ -963,7 +963,7 @@
     {
       "parameter_code": "flat_roof_gas_block_wall_hole_drilling_rate",
       "calculator_input_key": "gas_block_wall_hole_drilling_rate",
-      "label": "gas block wall hole drilling rate",
+      "label": "Ставка пробивки отверстия в стене из газоблока",
       "value": null,
       "unit": "руб.",
       "source_file": "",
@@ -991,7 +991,7 @@
     {
       "parameter_code": "flat_roof_internal_roof_drain_installation_rate",
       "calculator_input_key": "internal_roof_drain_installation_rate",
-      "label": "internal roof drain installation rate",
+      "label": "Ставка установки внутренней кровельной воронки",
       "value": null,
       "unit": "руб.",
       "source_file": "",
@@ -1005,7 +1005,7 @@
     {
       "parameter_code": "flat_roof_internal_drain_height_per_drain_m",
       "calculator_input_key": "internal_drain_height_per_drain_m",
-      "label": "internal drain height per drain m",
+      "label": "Высота внутреннего водостока на одну воронку",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -1047,7 +1047,7 @@
     {
       "parameter_code": "flat_roof_roof_crane_lifting_shifts",
       "calculator_input_key": "roof_crane_lifting_shifts",
-      "label": "roof crane lifting shifts",
+      "label": "Количество смен автокрана для подъема кровельных материалов",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -1089,7 +1089,7 @@
     {
       "parameter_code": "flat_roof_roof_consumables_total",
       "calculator_input_key": "roof_consumables_total",
-      "label": "roof consumables total",
+      "label": "Сумма расходных материалов по кровле",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1159,7 +1159,7 @@
     {
       "parameter_code": "flat_roof_roof_logistics_and_supply_total",
       "calculator_input_key": "roof_logistics_and_supply_total",
-      "label": "roof logistics and supply total",
+      "label": "Сумма логистики и снабжения по кровле",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1173,7 +1173,7 @@
     {
       "parameter_code": "flat_roof_technical_supervision_work_total",
       "calculator_input_key": "technical_supervision_work_total",
-      "label": "technical supervision work total",
+      "label": "Сумма технического надзора",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -1187,7 +1187,7 @@
     {
       "parameter_code": "flat_roof_procurement_storage_work_total",
       "calculator_input_key": "procurement_storage_work_total",
-      "label": "procurement storage work total",
+      "label": "Заготовительно-складские расходы",
       "value": null,
       "unit": "-",
       "source_file": "",

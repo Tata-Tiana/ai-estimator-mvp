@@ -130,14 +130,14 @@
 |---|---|---|
 | foundation_slab_membrane_installation_work_unit_price | membrane installation work unit price | missing |
 | foundation_slab_membrane_overlap_coeff | membrane overlap coeff | missing |
-| foundation_slab_membrane_roll_area_m2 | membrane roll area m2 | missing |
+| foundation_slab_membrane_roll_area_m2 | Площадь одного рулона мембраны | missing |
 | foundation_slab_planter_standard_roll_unit_price | planter standard roll unit price | missing |
-| foundation_slab_planterband_per_membrane_roll | planterband per membrane roll | missing |
+| foundation_slab_planterband_per_membrane_roll | Количество PLANTERBAND на один рулон мембраны | missing |
 | foundation_slab_planterband_unit_price | planterband unit price | missing |
 | foundation_slab_slab_formwork_perimeter_m | slab formwork perimeter m | missing |
 | foundation_slab_slab_edge_height_m | slab edge height m | missing |
 | foundation_slab_formwork_installation_work_unit_price | formwork installation work unit price | missing |
-| foundation_slab_plywood_sheet_working_area_m2 | plywood sheet working area m2 | missing |
+| foundation_slab_plywood_sheet_working_area_m2 | Рабочая площадь листа фанеры | missing |
 | foundation_slab_plywood_unit_price | plywood unit price | missing |
 | foundation_slab_timber_thickness_m | timber thickness m | missing |
 | foundation_slab_timber_unit_price | timber unit price | missing |
@@ -148,68 +148,68 @@
 | foundation_slab_thermal_insert_piece_length_m | thermal insert piece length m | missing |
 | foundation_slab_thermal_insert_piece_width_m | thermal insert piece width m | missing |
 | foundation_slab_thermal_insert_piece_height_m | thermal insert piece height m | missing |
-| foundation_slab_thermal_insert_piece_depth_for_work_m | thermal insert piece depth for work m | manual_required |
-| foundation_slab_thermal_insert_piece_depth_for_eps_m | thermal insert piece depth for eps m | manual_required |
+| foundation_slab_thermal_insert_piece_depth_for_work_m | Глубина элемента термовставки для расчета работ | manual_required |
+| foundation_slab_thermal_insert_piece_depth_for_eps_m | Глубина элемента термовставки для расчета ЭППС | manual_required |
 | foundation_slab_thermal_insert_installation_work_unit_price | thermal insert installation work unit price | missing |
 | foundation_slab_eps50_pack_volume_m3 | eps50 pack volume m3 | missing |
 | foundation_slab_eps50_unit_price | eps50 unit price | missing |
 | foundation_slab_eps100_thickness_m | eps100 thickness m | missing |
 | foundation_slab_eps100_pack_volume_m3 | eps100 pack volume m3 | missing |
 | foundation_slab_eps100_unit_price | eps100 unit price | missing |
-| foundation_slab_rebar_crane_shifts | rebar crane shifts | manual_required |
+| foundation_slab_rebar_crane_shifts | Количество смен крана для подачи арматуры | manual_required |
 | foundation_slab_rebar_crane_unit_price | rebar crane unit price | missing |
 | foundation_slab_rebar_waste_coeff | rebar waste coeff | missing |
-| foundation_slab_rebar_items_0_code | code | missing |
-| foundation_slab_rebar_items_0_name | name | missing |
-| foundation_slab_rebar_items_0_steel_class | steel class | missing |
-| foundation_slab_rebar_items_0_diameter_mm | diameter mm | missing |
-| foundation_slab_rebar_items_0_weight_parts_kg_0 | weight parts kg | missing |
-| foundation_slab_rebar_items_0_kg_per_meter | kg per meter | missing |
-| foundation_slab_rebar_items_0_rod_length_m | rod length m | missing |
-| foundation_slab_rebar_items_0_unit_price_per_m | unit price per m | missing |
-| foundation_slab_rebar_items_1_code | code | missing |
-| foundation_slab_rebar_items_1_name | name | missing |
-| foundation_slab_rebar_items_1_steel_class | steel class | missing |
-| foundation_slab_rebar_items_1_diameter_mm | diameter mm | missing |
-| foundation_slab_rebar_items_1_weight_parts_kg_0 | weight parts kg | missing |
-| foundation_slab_rebar_items_1_weight_parts_kg_1 | weight parts kg | missing |
-| foundation_slab_rebar_items_1_kg_per_meter | kg per meter | missing |
-| foundation_slab_rebar_items_1_rod_length_m | rod length m | missing |
-| foundation_slab_rebar_items_1_unit_price_per_m | unit price per m | missing |
-| foundation_slab_rebar_items_2_code | code | missing |
-| foundation_slab_rebar_items_2_name | name | missing |
-| foundation_slab_rebar_items_2_steel_class | steel class | missing |
-| foundation_slab_rebar_items_2_diameter_mm | diameter mm | missing |
-| foundation_slab_rebar_items_2_weight_parts_kg_0 | weight parts kg | missing |
-| foundation_slab_rebar_items_2_kg_per_meter | kg per meter | missing |
-| foundation_slab_rebar_items_2_rod_length_m | rod length m | missing |
-| foundation_slab_rebar_items_2_unit_price_per_m | unit price per m | missing |
-| foundation_slab_rebar_items_3_code | code | missing |
-| foundation_slab_rebar_items_3_name | name | missing |
-| foundation_slab_rebar_items_3_steel_class | steel class | missing |
-| foundation_slab_rebar_items_3_diameter_mm | diameter mm | missing |
-| foundation_slab_rebar_items_3_weight_parts_kg_0 | weight parts kg | missing |
-| foundation_slab_rebar_items_3_kg_per_meter | kg per meter | missing |
-| foundation_slab_rebar_items_3_rod_length_m | rod length m | missing |
-| foundation_slab_rebar_items_3_unit_price_per_m | unit price per m | missing |
-| foundation_slab_rebar_metal_delivery_trucks | rebar metal delivery trucks | missing |
+| foundation_slab_rebar_items_0_code | Арматура 1: код позиции | missing |
+| foundation_slab_rebar_items_0_name | Арматура 1: наименование позиции | missing |
+| foundation_slab_rebar_items_0_steel_class | Арматура 1: класс стали | missing |
+| foundation_slab_rebar_items_0_diameter_mm | Арматура 1: диаметр | missing |
+| foundation_slab_rebar_items_0_weight_parts_kg_0 | Арматура 1: вес по спецификации | missing |
+| foundation_slab_rebar_items_0_kg_per_meter | Арматура 1: вес 1 погонного метра | missing |
+| foundation_slab_rebar_items_0_rod_length_m | Арматура 1: длина одного хлыста арматуры | missing |
+| foundation_slab_rebar_items_0_unit_price_per_m | Арматура 1: цена за погонный метр | missing |
+| foundation_slab_rebar_items_1_code | Арматура 2: код позиции | missing |
+| foundation_slab_rebar_items_1_name | Арматура 2: наименование позиции | missing |
+| foundation_slab_rebar_items_1_steel_class | Арматура 2: класс стали | missing |
+| foundation_slab_rebar_items_1_diameter_mm | Арматура 2: диаметр | missing |
+| foundation_slab_rebar_items_1_weight_parts_kg_0 | Арматура 2: вес по спецификации | missing |
+| foundation_slab_rebar_items_1_weight_parts_kg_1 | Арматура 2: вес по спецификации | missing |
+| foundation_slab_rebar_items_1_kg_per_meter | Арматура 2: вес 1 погонного метра | missing |
+| foundation_slab_rebar_items_1_rod_length_m | Арматура 2: длина одного хлыста арматуры | missing |
+| foundation_slab_rebar_items_1_unit_price_per_m | Арматура 2: цена за погонный метр | missing |
+| foundation_slab_rebar_items_2_code | Арматура 3: код позиции | missing |
+| foundation_slab_rebar_items_2_name | Арматура 3: наименование позиции | missing |
+| foundation_slab_rebar_items_2_steel_class | Арматура 3: класс стали | missing |
+| foundation_slab_rebar_items_2_diameter_mm | Арматура 3: диаметр | missing |
+| foundation_slab_rebar_items_2_weight_parts_kg_0 | Арматура 3: вес по спецификации | missing |
+| foundation_slab_rebar_items_2_kg_per_meter | Арматура 3: вес 1 погонного метра | missing |
+| foundation_slab_rebar_items_2_rod_length_m | Арматура 3: длина одного хлыста арматуры | missing |
+| foundation_slab_rebar_items_2_unit_price_per_m | Арматура 3: цена за погонный метр | missing |
+| foundation_slab_rebar_items_3_code | Арматура 4: код позиции | missing |
+| foundation_slab_rebar_items_3_name | Арматура 4: наименование позиции | missing |
+| foundation_slab_rebar_items_3_steel_class | Арматура 4: класс стали | missing |
+| foundation_slab_rebar_items_3_diameter_mm | Арматура 4: диаметр | missing |
+| foundation_slab_rebar_items_3_weight_parts_kg_0 | Арматура 4: вес по спецификации | missing |
+| foundation_slab_rebar_items_3_kg_per_meter | Арматура 4: вес 1 погонного метра | missing |
+| foundation_slab_rebar_items_3_rod_length_m | Арматура 4: длина одного хлыста арматуры | missing |
+| foundation_slab_rebar_items_3_unit_price_per_m | Арматура 4: цена за погонный метр | missing |
+| foundation_slab_rebar_metal_delivery_trucks | Количество машин доставки арматуры/металла | missing |
 | foundation_slab_rebar_metal_delivery_unit_price | rebar metal delivery unit price | missing |
-| foundation_slab_box_total_metal_weight_kg | box total metal weight kg | missing |
+| foundation_slab_box_total_metal_weight_kg | Общий вес металла коробки для доставки | missing |
 | foundation_slab_concreting_work_unit_price | concreting work unit price | missing |
 | foundation_slab_concrete_waste_coeff | concrete waste coeff | missing |
 | foundation_slab_concrete_round_step_m3 | concrete round step m3 | missing |
 | foundation_slab_concrete_unit_price | concrete unit price | missing |
-| foundation_slab_concrete_mixer_volume_m3 | concrete mixer volume m3 | missing |
+| foundation_slab_concrete_mixer_volume_m3 | Объем одного автобетоносмесителя | missing |
 | foundation_slab_concrete_delivery_unit_price | concrete delivery unit price | missing |
-| foundation_slab_concrete_pump_shifts | concrete pump shifts | manual_required |
+| foundation_slab_concrete_pump_shifts | Количество смен бетононасоса | manual_required |
 | foundation_slab_concrete_pump_unit_price | concrete pump unit price | missing |
 | foundation_slab_formwork_dismantling_work_unit_price | formwork dismantling work unit price | missing |
 | foundation_slab_logistics_and_supply_amount | logistics and supply amount | missing |
 | foundation_slab_consumables_tool_amortization_amount | consumables tool amortization amount | missing |
 | foundation_slab_technical_supervision_amount | technical supervision amount | missing |
-| foundation_slab_plywood_calc_method | plywood calc method | manual_required |
-| foundation_slab_plywood_sheet_width_m | plywood sheet width m | missing |
-| foundation_slab_plywood_sheet_height_m | plywood sheet height m | missing |
+| foundation_slab_plywood_calc_method | Метод расчета фанеры | manual_required |
+| foundation_slab_plywood_sheet_width_m | Ширина листа фанеры | missing |
+| foundation_slab_plywood_sheet_height_m | Высота листа фанеры | missing |
 | foundation_slab_plywood_waste_coeff | plywood waste coeff | missing |
-| foundation_slab_slab_edge_height_strategy | slab edge height strategy | manual_required |
+| foundation_slab_slab_edge_height_strategy | Правило выбора высоты торца плиты | manual_required |
 | foundation_slab_box_metal_delivery_capacity_kg | box metal delivery capacity kg | missing |

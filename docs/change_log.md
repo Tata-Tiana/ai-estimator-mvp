@@ -43,6 +43,35 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-01 — Улучшены русские labels и файл missing-параметров для Елены
+
+- Ветка: `feature/ai-project-card`
+- Коммит: будет создан текущей фиксацией
+
+Что изменено:
+
+- в `experiments/pdf_parser_pipeline/section_schema.py` улучшены человекочитаемые русские названия параметров;
+- авто-параметры из `input.json` теперь получают контекст: арматура, балки, перемычки, кровля, Schiedel и т.п.;
+- добавлен генератор `build_elena_missing_parameters_report.py`;
+- создан файл для Елены:
+  - `experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.xlsx`;
+  - `experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.md`;
+  - дубль в `experiments/pdf_parser_pipeline/output/mvp_usv_demo/`;
+- файл показывает, какие параметры parser не нашёл, с разделением на вопросы к проектировщикам и ручные сметные/технические параметры.
+
+Проверки:
+
+```text
+pdf_parser_pipeline -> ok
+review_cards = 8
+missing_total = 287
+manual_required_total = 69
+py_compile -> ok
+голые labels code/name/diameter mm/source weight parts kg -> не найдены
+```
+
+Калькуляторы и `expected.json` не изменялись.
+
 ### 2026-06-01 — Удалён устаревший review_sheet_builder после перехода на pdf_parser_pipeline
 
 - Ветка: `feature/ai-project-card`

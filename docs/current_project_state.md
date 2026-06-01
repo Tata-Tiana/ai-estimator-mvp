@@ -98,6 +98,24 @@ experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx
 docs/report_pdf_parser_pipeline.md
 ```
 
+Дополнительно создан отдельный файл для Елены по незаполненным параметрам:
+
+```text
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.xlsx
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/elena_missing_parameters_by_section.md
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_section.xlsx
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_section.md
+```
+
+Он строится из `reviewed_parameters.xlsx` и показывает, какие данные parser не нашёл. Внутри есть листы:
+
+- `summary` — сводка по разделам;
+- `for_designers` — проектные вопросы для проектировщиков;
+- `estimator_manual` — сметные/технические параметры для ручного заполнения Еленой;
+- `all_missing_raw` — полный raw-список missing/manual.
+
+Labels в `section_schema.py` переведены на понятные русские названия, чтобы в таблицах не было голых технических строк вроде `code`, `name`, `diameter mm`.
+
 ## 1. Цель проекта
 
 `ai-estimator-mvp` — MVP AI-сметчика для частных домов.

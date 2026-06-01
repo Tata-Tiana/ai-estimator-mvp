@@ -188,7 +188,7 @@
     {
       "parameter_code": "schiedel_vent_channels_schiedel_delivery_trips",
       "calculator_input_key": "schiedel_delivery_trips",
-      "label": "schiedel delivery trips",
+      "label": "Количество доставок вентканалов Schiedel",
       "value": null,
       "unit": "рейс",
       "source_file": "",
@@ -230,7 +230,7 @@
     {
       "parameter_code": "schiedel_vent_channels_consumables_rate",
       "calculator_input_key": "consumables_rate",
-      "label": "consumables rate",
+      "label": "Процент расходных материалов",
       "value": null,
       "unit": "руб.",
       "source_file": "",

@@ -101,18 +101,18 @@
 ## Missing / manual_required
 | parameter_code | label | status |
 |---|---|---|
-| flat_roof_roof_area_level_1_m2 | roof area level 1 m2 | missing |
-| flat_roof_roof_area_level_2_m2 | roof area level 2 m2 | missing |
-| flat_roof_roof_area_total_m2 | roof area total m2 | missing |
+| flat_roof_roof_area_level_1_m2 | Площадь кровли уровня 1 | missing |
+| flat_roof_roof_area_level_2_m2 | Площадь кровли уровня 2 | missing |
+| flat_roof_roof_area_total_m2 | Общая площадь кровли | missing |
 | flat_roof_parapet_length_level_1_m | parapet length level 1 m | missing |
 | flat_roof_parapet_length_level_2_m | parapet length level 2 m | missing |
 | flat_roof_vent_wall_abutment_level_1_m | vent wall abutment level 1 m | missing |
 | flat_roof_vent_wall_abutment_level_2_m | vent wall abutment level 2 m | missing |
-| flat_roof_parapet_and_abutment_total_length_m | parapet and abutment total length m | missing |
+| flat_roof_parapet_and_abutment_total_length_m | Суммарная длина парапетов и примыканий | missing |
 | flat_roof_roof_work_coeff | roof work coeff | missing |
 | flat_roof_vapor_barrier_work_rate_per_m2 | vapor barrier work rate per m2 | missing |
 | flat_roof_vapor_barrier_film_overlap_coeff | vapor barrier film overlap coeff | missing |
-| flat_roof_vapor_barrier_film_roll_area_m2 | vapor barrier film roll area m2 | missing |
+| flat_roof_vapor_barrier_film_roll_area_m2 | Площадь рулона пароизоляционной пленки | missing |
 | flat_roof_vapor_barrier_film_unit_price_per_m2 | vapor barrier film unit price per m2 | missing |
 | flat_roof_eps_insulation_base_work_rate_per_m2 | eps insulation base work rate per m2 | missing |
 | flat_roof_eps_insulation_work_rate_per_m2 | eps insulation work rate per m2 | missing |
@@ -136,44 +136,44 @@
 | flat_roof_slope_plate_k_pack_volume_m3 | slope plate k pack volume m3 | missing |
 | flat_roof_slope_plate_k_unit_price_per_m3 | slope plate k unit price per m3 | missing |
 | flat_roof_geotextile_flat_coeff | geotextile flat coeff | missing |
-| flat_roof_geotextile_flat_roll_area_m2 | geotextile flat roll area m2 | missing |
+| flat_roof_geotextile_flat_roll_area_m2 | Площадь рулона геотекстиля для плоской части кровли | missing |
 | flat_roof_geotextile_flat_unit_price_per_m2 | geotextile flat unit price per m2 | missing |
 | flat_roof_geotextile_parapet_coeff | geotextile parapet coeff | missing |
-| flat_roof_geotextile_parapet_roll_area_m2 | geotextile parapet roll area m2 | missing |
+| flat_roof_geotextile_parapet_roll_area_m2 | Площадь рулона геотекстиля для парапетов | missing |
 | flat_roof_geotextile_parapet_unit_price_per_m2 | geotextile parapet unit price per m2 | missing |
 | flat_roof_pvc_membrane_installation_work_rate_per_m2 | pvc membrane installation work rate per m2 | missing |
 | flat_roof_pvc_membrane_abutment_work_rate_per_m | pvc membrane abutment work rate per m | missing |
-| flat_roof_vent_shaft_abutment_count | vent shaft abutment count | manual_required |
+| flat_roof_vent_shaft_abutment_count | Количество примыканий к вентшахтам | manual_required |
 | flat_roof_vent_shaft_abutment_work_rate_per_item | vent shaft abutment work rate per item | missing |
-| flat_roof_rail_piece_length_m | rail piece length m | missing |
+| flat_roof_rail_piece_length_m | Длина одной алюминиевой рейки | missing |
 | flat_roof_pressure_rail_unit_price_per_m | pressure rail unit price per m | missing |
 | flat_roof_edge_rail_unit_price_per_m | edge rail unit price per m | missing |
 | flat_roof_pvc_membrane_flat_coeff | pvc membrane flat coeff | missing |
 | flat_roof_pvc_membrane_parapet_coeff | pvc membrane parapet coeff | missing |
-| flat_roof_pvc_membrane_roll_width_m | pvc membrane roll width m | missing |
-| flat_roof_pvc_membrane_roll_length_m | pvc membrane roll length m | missing |
+| flat_roof_pvc_membrane_roll_width_m | Ширина рулона ПВХ мембраны | missing |
+| flat_roof_pvc_membrane_roll_length_m | Длина рулона ПВХ мембраны | missing |
 | flat_roof_pvc_membrane_unit_price_per_roll_display | pvc membrane unit price per roll display | missing |
-| flat_roof_pvc_membrane_expected_material_total | pvc membrane expected material total | missing |
-| flat_roof_roof_aerators_count | roof aerators count | manual_required |
+| flat_roof_pvc_membrane_expected_material_total | Ожидаемая сумма материала ПВХ мембраны | missing |
+| flat_roof_roof_aerators_count | Количество кровельных аэраторов | manual_required |
 | flat_roof_roof_aerator_unit_price | roof aerator unit price | missing |
-| flat_roof_roof_aerator_installation_rate | roof aerator installation rate | missing |
+| flat_roof_roof_aerator_installation_rate | Ставка установки кровельного аэратора | missing |
 | flat_roof_parapet_roof_drain_unit_price | parapet roof drain unit price | missing |
-| flat_roof_parapet_roof_drain_installation_rate | parapet roof drain installation rate | missing |
-| flat_roof_gas_block_wall_holes_count | gas block wall holes count | manual_required |
-| flat_roof_gas_block_wall_hole_drilling_rate | gas block wall hole drilling rate | missing |
+| flat_roof_parapet_roof_drain_installation_rate | Ставка установки парапетной кровельной воронки | missing |
+| flat_roof_gas_block_wall_holes_count | Количество отверстий в стенах из газоблока | manual_required |
+| flat_roof_gas_block_wall_hole_drilling_rate | Ставка пробивки отверстия в стене из газоблока | missing |
 | flat_roof_internal_roof_drain_unit_price | internal roof drain unit price | missing |
-| flat_roof_internal_roof_drain_installation_rate | internal roof drain installation rate | missing |
-| flat_roof_internal_drain_height_per_drain_m | internal drain height per drain m | missing |
+| flat_roof_internal_roof_drain_installation_rate | Ставка установки внутренней кровельной воронки | missing |
+| flat_roof_internal_drain_height_per_drain_m | Высота внутреннего водостока на одну воронку | missing |
 | flat_roof_internal_drain_pvc_110_unit_price_per_m | internal drain pvc 110 unit price per m | missing |
 | flat_roof_internal_drain_pvc_110_work_rate_per_m | internal drain pvc 110 work rate per m | missing |
-| flat_roof_roof_crane_lifting_shifts | roof crane lifting shifts | manual_required |
+| flat_roof_roof_crane_lifting_shifts | Количество смен автокрана для подъема кровельных материалов | manual_required |
 | flat_roof_roof_crane_lifting_unit_price_per_shift | roof crane lifting unit price per shift | missing |
 | flat_roof_roof_consumables_total_raw | roof consumables total raw | missing |
-| flat_roof_roof_consumables_total | roof consumables total | missing |
+| flat_roof_roof_consumables_total | Сумма расходных материалов по кровле | missing |
 | flat_roof_roof_waste_removal_trucks | roof waste removal trucks | missing |
 | flat_roof_roof_waste_removal_truck_unit_price | roof waste removal truck unit price | missing |
 | flat_roof_roof_waste_removal_work_rate_per_truck | roof waste removal work rate per truck | missing |
 | flat_roof_roof_logistics_and_supply_total_raw | roof logistics and supply total raw | missing |
-| flat_roof_roof_logistics_and_supply_total | roof logistics and supply total | missing |
-| flat_roof_technical_supervision_work_total | technical supervision work total | manual_required |
-| flat_roof_procurement_storage_work_total | procurement storage work total | manual_required |
+| flat_roof_roof_logistics_and_supply_total | Сумма логистики и снабжения по кровле | missing |
+| flat_roof_technical_supervision_work_total | Сумма технического надзора | manual_required |
+| flat_roof_procurement_storage_work_total | Заготовительно-складские расходы | manual_required |

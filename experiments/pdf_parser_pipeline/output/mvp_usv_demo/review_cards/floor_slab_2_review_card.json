@@ -186,7 +186,7 @@
     {
       "parameter_code": "floor_slab_2_slab_edge_perimeter_m",
       "calculator_input_key": "slab_edge_perimeter_m",
-      "label": "slab edge perimeter m",
+      "label": "Периметр торца плиты",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -200,7 +200,7 @@
     {
       "parameter_code": "floor_slab_2_main_formwork_area_m2",
       "calculator_input_key": "main_formwork_area_m2",
-      "label": "main formwork area m2",
+      "label": "Основная площадь опалубки",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -214,7 +214,7 @@
     {
       "parameter_code": "floor_slab_2_formwork_rental_supplier_quote_total",
       "calculator_input_key": "formwork_rental_supplier_quote_total",
-      "label": "formwork rental supplier quote total",
+      "label": "Сумма предложения поставщика по аренде опалубки",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -242,7 +242,7 @@
     {
       "parameter_code": "floor_slab_2_formwork_delivery_trips",
       "calculator_input_key": "formwork_delivery_trips",
-      "label": "formwork delivery trips",
+      "label": "Количество рейсов доставки/вывоза опалубки",
       "value": null,
       "unit": "рейс",
       "source_file": "",
@@ -270,7 +270,7 @@
     {
       "parameter_code": "floor_slab_2_crane_shifts",
       "calculator_input_key": "crane_shifts",
-      "label": "crane shifts",
+      "label": "Количество смен автокрана",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -312,7 +312,7 @@
     {
       "parameter_code": "floor_slab_2_edge_formwork_height_m",
       "calculator_input_key": "edge_formwork_height_m",
-      "label": "edge formwork height m",
+      "label": "Высота торцевой опалубки",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -326,7 +326,7 @@
     {
       "parameter_code": "floor_slab_2_plywood_sheet_working_area_m2",
       "calculator_input_key": "plywood_sheet_working_area_m2",
-      "label": "plywood sheet working area m2",
+      "label": "Рабочая площадь листа фанеры",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -354,7 +354,7 @@
     {
       "parameter_code": "floor_slab_2_plywood_reserve_sheets",
       "calculator_input_key": "plywood_reserve_sheets",
-      "label": "plywood reserve sheets",
+      "label": "Резерв фанеры",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -438,7 +438,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_code",
       "calculator_input_key": "rebar_items[0].code",
-      "label": "code",
+      "label": "Арматура 1: код позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -452,7 +452,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_name",
       "calculator_input_key": "rebar_items[0].name",
-      "label": "name",
+      "label": "Арматура 1: наименование позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -466,7 +466,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_steel_class",
       "calculator_input_key": "rebar_items[0].steel_class",
-      "label": "steel class",
+      "label": "Арматура 1: класс стали",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -480,7 +480,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_diameter_mm",
       "calculator_input_key": "rebar_items[0].diameter_mm",
-      "label": "diameter mm",
+      "label": "Арматура 1: диаметр",
       "value": null,
       "unit": "мм",
       "source_file": "",
@@ -494,7 +494,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_kg_per_meter",
       "calculator_input_key": "rebar_items[0].kg_per_meter",
-      "label": "kg per meter",
+      "label": "Арматура 1: вес 1 погонного метра",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -508,7 +508,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_rod_length_m",
       "calculator_input_key": "rebar_items[0].rod_length_m",
-      "label": "rod length m",
+      "label": "Арматура 1: длина одного хлыста арматуры",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -522,7 +522,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_0_unit_price_per_m",
       "calculator_input_key": "rebar_items[0].unit_price_per_m",
-      "label": "unit price per m",
+      "label": "Арматура 1: цена за погонный метр",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -536,7 +536,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_code",
       "calculator_input_key": "rebar_items[1].code",
-      "label": "code",
+      "label": "Арматура 2: код позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -550,7 +550,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_name",
       "calculator_input_key": "rebar_items[1].name",
-      "label": "name",
+      "label": "Арматура 2: наименование позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -564,7 +564,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_steel_class",
       "calculator_input_key": "rebar_items[1].steel_class",
-      "label": "steel class",
+      "label": "Арматура 2: класс стали",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -578,7 +578,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_diameter_mm",
       "calculator_input_key": "rebar_items[1].diameter_mm",
-      "label": "diameter mm",
+      "label": "Арматура 2: диаметр",
       "value": null,
       "unit": "мм",
       "source_file": "",
@@ -592,7 +592,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_kg_per_meter",
       "calculator_input_key": "rebar_items[1].kg_per_meter",
-      "label": "kg per meter",
+      "label": "Арматура 2: вес 1 погонного метра",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -606,7 +606,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_rod_length_m",
       "calculator_input_key": "rebar_items[1].rod_length_m",
-      "label": "rod length m",
+      "label": "Арматура 2: длина одного хлыста арматуры",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -620,7 +620,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_1_unit_price_per_m",
       "calculator_input_key": "rebar_items[1].unit_price_per_m",
-      "label": "unit price per m",
+      "label": "Арматура 2: цена за погонный метр",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -634,7 +634,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_code",
       "calculator_input_key": "rebar_items[2].code",
-      "label": "code",
+      "label": "Арматура 3: код позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -648,7 +648,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_name",
       "calculator_input_key": "rebar_items[2].name",
-      "label": "name",
+      "label": "Арматура 3: наименование позиции",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -662,7 +662,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_steel_class",
       "calculator_input_key": "rebar_items[2].steel_class",
-      "label": "steel class",
+      "label": "Арматура 3: класс стали",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -676,7 +676,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_diameter_mm",
       "calculator_input_key": "rebar_items[2].diameter_mm",
-      "label": "diameter mm",
+      "label": "Арматура 3: диаметр",
       "value": null,
       "unit": "мм",
       "source_file": "",
@@ -690,7 +690,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_kg_per_meter",
       "calculator_input_key": "rebar_items[2].kg_per_meter",
-      "label": "kg per meter",
+      "label": "Арматура 3: вес 1 погонного метра",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -704,7 +704,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_rod_length_m",
       "calculator_input_key": "rebar_items[2].rod_length_m",
-      "label": "rod length m",
+      "label": "Арматура 3: длина одного хлыста арматуры",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -718,7 +718,7 @@
     {
       "parameter_code": "floor_slab_2_rebar_items_2_unit_price_per_m",
       "calculator_input_key": "rebar_items[2].unit_price_per_m",
-      "label": "unit price per m",
+      "label": "Арматура 3: цена за погонный метр",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -788,7 +788,7 @@
     {
       "parameter_code": "floor_slab_2_concrete_mixer_volume_m3",
       "calculator_input_key": "concrete_mixer_volume_m3",
-      "label": "concrete mixer volume m3",
+      "label": "Объем одного автобетоносмесителя",
       "value": null,
       "unit": "м3",
       "source_file": "",
@@ -816,7 +816,7 @@
     {
       "parameter_code": "floor_slab_2_concrete_pump_shifts",
       "calculator_input_key": "concrete_pump_shifts",
-      "label": "concrete pump shifts",
+      "label": "Количество смен бетононасоса",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -858,7 +858,7 @@
     {
       "parameter_code": "floor_slab_2_edge_insulation_height_m",
       "calculator_input_key": "edge_insulation_height_m",
-      "label": "edge insulation height m",
+      "label": "Высота утепления торца",
       "value": null,
       "unit": "м",
       "source_file": "",
@@ -942,7 +942,7 @@
     {
       "parameter_code": "floor_slab_2_foam_min_cans",
       "calculator_input_key": "foam_min_cans",
-      "label": "foam min cans",
+      "label": "Минимальное количество баллонов клей-пены",
       "value": null,
       "unit": "-",
       "source_file": "",
@@ -970,7 +970,7 @@
     {
       "parameter_code": "floor_slab_2_logistics_rate",
       "calculator_input_key": "logistics_rate",
-      "label": "logistics rate",
+      "label": "Процент логистики",
       "value": null,
       "unit": "руб.",
       "source_file": "",
@@ -984,7 +984,7 @@
     {
       "parameter_code": "floor_slab_2_consumables_rate",
       "calculator_input_key": "consumables_rate",
-      "label": "consumables rate",
+      "label": "Процент расходных материалов",
       "value": null,
       "unit": "руб.",
       "source_file": "",

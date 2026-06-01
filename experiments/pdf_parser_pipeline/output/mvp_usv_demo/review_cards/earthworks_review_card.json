@@ -104,7 +104,7 @@
     {
       "parameter_code": "earthworks_assumptions_manual_excavation_override",
       "calculator_input_key": "assumptions.manual_excavation_override",
-      "label": "manual excavation override",
+      "label": "Ручной объем доработки котлована",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -118,7 +118,7 @@
     {
       "parameter_code": "earthworks_assumptions_sand_override",
       "calculator_input_key": "assumptions.sand_override",
-      "label": "sand override",
+      "label": "Ручной объем песка",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -132,7 +132,7 @@
     {
       "parameter_code": "earthworks_assumptions_geotextile_override",
       "calculator_input_key": "assumptions.geotextile_override",
-      "label": "geotextile override",
+      "label": "Ручное количество геотекстиля",
       "value": null,
       "unit": "bool",
       "source_file": "",
@@ -230,7 +230,7 @@
     {
       "parameter_code": "earthworks_geotextile_roll_area_m2",
       "calculator_input_key": "geotextile_roll_area_m2",
-      "label": "geotextile roll area m2",
+      "label": "Площадь одного рулона геотекстиля",
       "value": null,
       "unit": "м2",
       "source_file": "",
@@ -258,7 +258,7 @@
     {
       "parameter_code": "earthworks_axis_marking_shifts",
       "calculator_input_key": "axis_marking_shifts",
-      "label": "axis marking shifts",
+      "label": "Количество смен для разбивки осей",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -272,7 +272,7 @@
     {
       "parameter_code": "earthworks_excavator_shifts",
       "calculator_input_key": "excavator_shifts",
-      "label": "excavator shifts",
+      "label": "Количество смен экскаватора",
       "value": null,
       "unit": "смена",
       "source_file": "",
@@ -300,7 +300,7 @@
     {
       "parameter_code": "earthworks_manual_excavation_quantity_for_estimate_m3",
       "calculator_input_key": "manual_excavation_quantity_for_estimate_m3",
-      "label": "manual excavation quantity for estimate m3",
+      "label": "Объем ручной доработки котлована для сметы",
       "value": null,
       "unit": "м3",
       "source_file": "",
