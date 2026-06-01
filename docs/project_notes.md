@@ -95,7 +95,6 @@ output/price_registry_mapping_report_v3.md
 experiments/pricing/
 experiments/pricing/output/price_registry_validation_report.md
 experiments/pricing/output/required_codes_coverage_report.md
-docs/report_pricing_layer.md
 ```
 
 Состояние покрытия:

@@ -8,6 +8,15 @@ from typing import Any
 from calculator import calculate_flat_roof
 
 
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parents[1]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from live_pricing import apply_live_pricing, price_sources_markdown, pricing_mode  # noqa: E402
+
+
 COMPARE_LINE_FIELDS = [
     "name",
     "unit",
@@ -32,6 +41,10 @@ COMPARE_COST_FIELDS = [
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_expected(path: Path) -> dict[str, Any]:
+    return load_json(path) if path.exists() else {}
 
 
 def dump_json(path: Path, payload: dict[str, Any]) -> None:
@@ -192,6 +205,10 @@ def build_markdown(result: dict[str, Any]) -> str:
         ]
     )
     lines.extend([f"- {warning}" for warning in result.get("warnings", [])] or ["- Нет предупреждений."])
+    if result.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
+        lines.extend(["", *price_sources_markdown(result.get("estimate_lines", [])), "", "## Pricing summary", ""])
+        for key, value in result.get("pricing_summary", {}).items():
+            lines.append(f"- {key}: `{value}`")
     lines.extend(
         [
             "",
@@ -227,9 +244,14 @@ def main() -> int:
         return 2
 
     case_dir = Path(sys.argv[1]).resolve()
-    result = calculate_flat_roof(load_json(case_dir / "input.json"))
-    expected = load_json(case_dir / "expected.json")
+    input_data = load_json(case_dir / "input.json")
+    result = calculate_flat_roof(input_data)
+    result = apply_live_pricing(result, input_data, REPO_ROOT, totals_key="totals")
+    expected = load_expected(case_dir / "expected.json")
     comparison = compare_result(result, expected)
+    is_live_pricing = pricing_mode(input_data) == "price_registry_with_fallback"
+    if not is_live_pricing:
+        result.pop("pricing_summary", None)
     result["expected"] = expected
     result["comparison"] = comparison
 

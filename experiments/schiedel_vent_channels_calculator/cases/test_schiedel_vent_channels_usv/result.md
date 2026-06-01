@@ -28,6 +28,7 @@ AI не используется для расчёта. Калькулятор �
 - Ед. изм.: `мп`
 - Количество raw/display: `15.82` / `15.82`
 - Источник количества: `schiedel_masonry_total_length_m`
+- price_code: `schiedel_masonry_work_m`
 
 Формула и контроль:
 - control_length_m: `15.82`

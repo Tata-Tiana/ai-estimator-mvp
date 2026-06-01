@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-05-21`.
+Дата актуализации: `2026-06-01`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -15,7 +15,7 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-86795ea Add Schiedel vent channels calculator
+Add live pricing mode for all calculators
 ```
 
 Это актуальная расчётная контрольная точка проекта. В неё вошли:
@@ -25,10 +25,49 @@ feature/ai-project-card
 - калькулятор фундаментной плиты;
 - калькулятор гидроизоляции фундаментной плиты;
 - калькулятор несущих стен и перемычек;
-- отчёты для руководства;
+- калькулятор плиты перекрытия 1-го этажа;
+- калькулятор плиты перекрытия 2-го этажа;
+- калькулятор плоской кровли;
+- калькулятор вентиляционных каналов Schiedel;
+- единый `price_code` для готовых калькуляторов;
+- `price_registry_filled_v3.xlsx`;
+- live-pricing режим для всех готовых калькуляторов;
 - README, handoff, changelog и проектная документация.
 
 Перед фиксацией проверены CLI-прогоны всех текущих экспериментальных калькуляторов. `pytest` собирает `0` тестов, поэтому рабочая проверка сейчас идёт через команды калькуляторов.
+
+## 0.1. Live-Pricing Контрольная Точка
+
+Реализован безопасный слой live-pricing:
+
+```text
+experiments/pricing/live_pricing.py
+```
+
+Поддерживаются режимы:
+
+- `locked_case_prices` — дефолтный режим, цены берутся из `input.json`, старые `expected.json` остаются эталоном;
+- `price_registry_with_fallback` — live-режим, цена берётся из `project_price_overrides`, затем из `price_registry`, затем fallback из `input.json` с warning.
+
+Live-кейсы созданы для всех готовых разделов:
+
+- earthworks;
+- foundation_slab;
+- waterproofing;
+- load_bearing_walls_lintels;
+- floor_slab_1;
+- floor_slab_2;
+- flat_roof;
+- schiedel_vent_channels.
+
+Сводный отчёт:
+
+```text
+experiments/pricing/output/live_pricing_sections_report.md
+docs/report_live_pricing_layer.md
+```
+
+Live `expected.json` не создавались, потому что live-итоги могут отличаться от locked-итогов из-за актуальных цен.
 
 ## 1. Цель проекта
 
@@ -760,7 +799,6 @@ fallback needed = 63
 ```text
 experiments/pricing/output/price_registry_validation_report.md
 experiments/pricing/output/required_codes_coverage_report.md
-docs/report_pricing_layer.md
 ```
 
 Важные решения:
@@ -788,7 +826,6 @@ docs/report_pricing_layer.md
 - `docs/report_floor_slab_2_calculator.md` — отчёт по калькулятору плиты перекрытия 2-го этажа.
 - `docs/report_flat_roof_calculator.md` — отчёт по калькулятору плоской кровли.
 - `docs/report_schiedel_vent_channels_calculator.md` — отчёт по калькулятору вентиляционных каналов Schiedel.
-- `docs/report_pricing_layer.md` — отчёт по `price_code`, `price_registry_v3` и pricing-layer.
 - `docs/report_waterproofing_calculator.md` — отчёт по калькулятору гидроизоляции.
 - `docs/report_load_bearing_walls_lintels_calculator.md` — отчёт по калькулятору несущих стен и перемычек.
 

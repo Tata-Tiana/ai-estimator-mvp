@@ -9,6 +9,13 @@ from floor_slab_1_calculator import calculate_floor_slab_1
 
 
 BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parents[1]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from live_pricing import apply_live_pricing, price_sources_markdown, pricing_mode  # noqa: E402
+
 CASES_DIR = BASE_DIR / "cases"
 DEFAULT_CASE_DIR = CASES_DIR / "test_floor_slab_1"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -154,6 +161,15 @@ def collect_notes(calculation: dict[str, Any]) -> list[str]:
 def format_markdown(case_name: str, calculation: dict[str, Any], comparison: dict[str, Any]) -> str:
     notes = collect_notes(calculation)
     warnings = calculation.get("warnings", [])
+    pricing_sections = []
+    if calculation.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
+        pricing_sections = [
+            "",
+            *price_sources_markdown(calculation["estimate_lines"]),
+            "",
+            "## Pricing summary",
+            *dict_table(calculation["pricing_summary"]),
+        ]
     return "\n".join(
         [
             f"# Расчёт монолитной плиты перекрытия 1-го этажа: {case_name}",
@@ -173,6 +189,7 @@ def format_markdown(case_name: str, calculation: dict[str, Any], comparison: dic
             "",
             "## Строки серой внутренней сметы",
             *lines_table(calculation["estimate_lines"]),
+            *pricing_sections,
             "",
             "## Warnings / Notes",
             *(f"- {warning}" for warning in warnings),
@@ -193,7 +210,9 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
     input_data = load_json(input_path)
     expected = load_json(expected_path)
     calculation = calculate_floor_slab_1(input_data)
+    calculation = apply_live_pricing(calculation, input_data, REPO_ROOT, totals_key="totals")
     comparison = compare_with_expected(calculation, expected)
+    is_live_pricing = pricing_mode(input_data) == "price_registry_with_fallback"
     payload = {
         **calculation,
         "case_name": case_name,
@@ -202,11 +221,19 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
         "expected": expected,
         "comparison": comparison,
     }
+    if not is_live_pricing:
+        payload.pop("pricing_summary", None)
     save_json(output_dir / "floor_slab_1_result.json", payload)
     (output_dir / "floor_slab_1_result.md").write_text(
         format_markdown(case_name, payload, comparison),
         encoding="utf-8",
     )
+    if expected_path is None:
+        save_json(input_path.parent / "result.json", payload)
+        (input_path.parent / "result.md").write_text(
+            format_markdown(case_name, payload, comparison),
+            encoding="utf-8",
+        )
     return payload
 
 

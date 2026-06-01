@@ -1,7 +1,21 @@
 from __future__ import annotations
 
 from decimal import Decimal, ROUND_HALF_UP
+from pathlib import Path
+import sys
 from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from price_reader import (  # noqa: E402
+    load_price_registry,
+    load_project_price_overrides,
+    resolve_price,
+)
 
 
 D0 = Decimal("0")
@@ -84,11 +98,130 @@ def zero_structure_line(code: str, name: str) -> dict[str, Any]:
     )
 
 
+PRICE_FIELD_BY_CODE = {
+    "schiedel_masonry_work": "schiedel_masonry_work_rate_per_m",
+    "schiedel_vent_channel_2x_36_25": "schiedel_vent_channel_2x_unit_price",
+    "schiedel_vent_channel_3x_52_25": "schiedel_vent_channel_3x_unit_price",
+    "schiedel_delivery": "schiedel_delivery_truck_price",
+}
+
+PRICE_CODE_BY_FIELD = {
+    "schiedel_masonry_work_rate_per_m": "schiedel_masonry_work_m",
+    "schiedel_vent_channel_2x_unit_price": "schiedel_vent_channel_2x_36_25_item",
+    "schiedel_vent_channel_3x_unit_price": "schiedel_vent_channel_3x_52_25_item",
+    "schiedel_delivery_truck_price": "schiedel_delivery_truck",
+}
+
+
+def pricing_mode(input_data: dict[str, Any]) -> str:
+    return (input_data.get("pricing") or {}).get("mode", "locked_case_prices")
+
+
+def resolve_registry_path(input_data: dict[str, Any]) -> Path:
+    raw_path = (input_data.get("pricing") or {}).get(
+        "registry_path",
+        "output/price_registry_filled_v3.xlsx",
+    )
+    path = Path(raw_path)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
+def build_effective_pricing(
+    input_data: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    mode = pricing_mode(input_data)
+    if mode == "locked_case_prices":
+        return dict(input_data), {
+            "mode": mode,
+            "prices_from_price_registry": 0,
+            "prices_from_project_overrides": 0,
+            "prices_from_fallback_input": 0,
+            "warnings_count": 0,
+            "price_resolutions_by_code": {},
+        }, []
+
+    if mode != "price_registry_with_fallback":
+        raise ValueError(f"Unsupported pricing mode: {mode}")
+
+    registry_path = resolve_registry_path(input_data)
+    registry = load_price_registry(registry_path)
+    overrides = load_project_price_overrides(registry_path)
+
+    effective_data = dict(input_data)
+    resolutions_by_code: dict[str, dict[str, Any]] = {}
+    warnings: list[str] = []
+    summary = {
+        "mode": mode,
+        "registry_path": str(registry_path),
+        "prices_from_price_registry": 0,
+        "prices_from_project_overrides": 0,
+        "prices_from_fallback_input": 0,
+        "warnings_count": 0,
+        "price_resolutions_by_code": resolutions_by_code,
+    }
+
+    for field_name, price_code in PRICE_CODE_BY_FIELD.items():
+        original_price = input_data.get(field_name)
+        resolved = resolve_price(price_code, original_price, registry, overrides)
+        source = resolved["source"]
+        if source == "price_registry":
+            summary["prices_from_price_registry"] += 1
+        elif source == "project_price_overrides":
+            summary["prices_from_project_overrides"] += 1
+        else:
+            summary["prices_from_fallback_input"] += 1
+
+        if resolved["warning"]:
+            warnings.append(f"{price_code}: {resolved['warning']}")
+
+        used_price = resolved["price"]
+        effective_data[field_name] = float(used_price) if used_price is not None else original_price
+        resolutions_by_code[price_code] = {
+            "price_code": price_code,
+            "unit_price_source": source,
+            "unit_price_original": decimal_str(original_price),
+            "unit_price_used": decimal_str(used_price) if used_price is not None else None,
+            "price_warning": resolved["warning"],
+        }
+
+    summary["warnings_count"] = len(warnings)
+    return effective_data, summary, warnings
+
+
+def enrich_lines_with_pricing(
+    lines: list[dict[str, Any]],
+    pricing_summary: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if pricing_summary["mode"] == "locked_case_prices":
+        return lines
+
+    resolutions = pricing_summary.get("price_resolutions_by_code", {})
+    enriched = []
+    for line in lines:
+        item = dict(line)
+        price_code = item.get("price_code")
+        if price_code in resolutions:
+            item.update(resolutions[price_code])
+        else:
+            cost = item["internal_cost"]
+            original_price = cost.get("material_unit_price") or cost.get("work_unit_price")
+            item.setdefault("price_code", price_code)
+            item["unit_price_source"] = "locked_case_prices"
+            item["unit_price_original"] = str(original_price)
+            item["unit_price_used"] = str(original_price)
+            item["price_warning"] = None
+        enriched.append(item)
+    return enriched
+
+
 def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, Any]:
+    original_input_data = dict(input_data)
+    input_data, pricing_summary, pricing_warnings = build_effective_pricing(input_data)
     warnings = [
         "Количество материалов Schiedel 24 и 8 требует подтверждения у Елены/по спецификации.",
         "Количество доставки является ручным параметром.",
         "Клиентская часть не считается.",
+        *pricing_warnings,
     ]
 
     masonry_length = d(input_data["schiedel_masonry_total_length_m"])
@@ -125,6 +258,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             line_type="work",
             quantity_raw=masonry_length,
             quantity_source="schiedel_masonry_total_length_m",
+            price_code="schiedel_masonry_work_m",
             work_unit_price=input_data["schiedel_masonry_work_rate_per_m"],
             work_total_raw=masonry_work_raw,
             formula={
@@ -216,17 +350,22 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
         zero_structure_line("overhead_zero", "Накладные и общехозяйственные расходы"),
         zero_structure_line("profit_zero", "Сметная прибыль"),
     ]
+    lines = enrich_lines_with_pricing(lines, pricing_summary)
 
     materials_raw = sum((d(line["internal_cost"]["material_total_raw"]) for line in lines), D0)
     works_raw = sum((d(line["internal_cost"]["work_total_raw"]) for line in lines), D0)
     displayed_materials = sum((int(line["internal_cost"]["material_total"]) for line in lines), 0)
     displayed_works = sum((int(line["internal_cost"]["work_total"]) for line in lines), 0)
 
+    inputs = dict(original_input_data)
+    if inputs.get("pricing") is None:
+        inputs.pop("pricing", None)
+
     return {
         "section_code": "schiedel_vent_channels",
         "section_name": "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel",
         "project_name": input_data["project_name"],
-        "inputs": input_data,
+        "inputs": inputs,
         "calculation_blocks": {
             "masonry": {
                 "schiedel_masonry_total_length_m": decimal_str(masonry_length),
@@ -264,6 +403,11 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             "sum_of_displayed_line_material_totals": displayed_materials,
             "sum_of_displayed_line_work_totals": displayed_works,
             "sum_of_displayed_line_totals": displayed_materials + displayed_works,
+        },
+        "pricing_summary": {
+            key: value
+            for key, value in pricing_summary.items()
+            if key != "price_resolutions_by_code"
         },
         "warnings": warnings,
     }

@@ -9,3 +9,7 @@
 - No Excel cell references.
 - Деньги считаются через Decimal и ROUND_HALF_UP.
 - Raw и display значения хранятся отдельно.
+- `locked_case_prices` — режим для проверки старой эталонной сметы.
+- `price_registry_with_fallback` — live-режим для будущего MVP с актуальными ценами.
+- Live-суммы могут отличаться от старого expected, потому что часть цен берётся из `price_registry`.
+- Для кладки используется `price_code = schiedel_masonry_work_m`; если его нет в прайсе, live-режим должен уходить во fallback input.

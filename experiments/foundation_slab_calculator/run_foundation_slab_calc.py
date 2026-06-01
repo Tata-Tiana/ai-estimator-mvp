@@ -12,6 +12,13 @@ from foundation_slab_calculator import (
 
 
 BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parents[1]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from live_pricing import apply_live_pricing, price_sources_markdown, pricing_mode  # noqa: E402
+
 CASES_DIR = BASE_DIR / "cases"
 DEFAULT_CASE_DIR = CASES_DIR / "test_foundation_slab"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -40,7 +47,13 @@ def resolve_case_path(raw_path: str | None = None) -> tuple[str, Path, Path | No
 def load_input(path: Path) -> FoundationSlabInput:
     with path.open("r", encoding="utf-8") as file:
         raw_data = json.load(file)
+    raw_data.pop("pricing", None)
     return FoundationSlabInput.from_dict(raw_data)
+
+
+def load_raw_input(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 def load_expected(path: Path | None) -> dict[str, Any]:
@@ -221,6 +234,15 @@ def format_markdown(
         f"- `{key}`: `{value}`" for key, value in inputs.items() if value is not None
     ]
     block_rows = flatten_block("", calculation["calculation_blocks"])
+    pricing_sections = []
+    if calculation.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
+        pricing_sections = [
+            "",
+            *price_sources_markdown(calculation["estimate_lines"]),
+            "",
+            "## Pricing summary",
+            *format_dict_table(calculation["pricing_summary"]),
+        ]
 
     return "\n".join(
         [
@@ -258,6 +280,7 @@ def format_markdown(
             "",
             "## Итоги серой внутренней сметы",
             *format_dict_table(calculation["internal_totals"]),
+            *pricing_sections,
             "",
             "## Проверка с расчётом Елены",
             *format_comparison_markdown(comparison),
@@ -284,26 +307,30 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
     case_output_dir = OUTPUT_DIR / case_name
     case_output_dir.mkdir(parents=True, exist_ok=True)
 
-    input_data = load_input(input_path)
+    raw_input = load_raw_input(input_path)
+    input_data = FoundationSlabInput.from_dict({k: v for k, v in raw_input.items() if k != "pricing"})
     expected = load_expected(expected_path)
     calculation = calculate_foundation_slab(input_data)
+    calculation = apply_live_pricing(calculation, raw_input, REPO_ROOT, totals_key="internal_totals")
     comparison = compare_with_expected(calculation, expected)
+    is_live_pricing = pricing_mode(raw_input) == "price_registry_with_fallback"
 
-    save_json(
-        case_output_dir / "foundation_slab_result.json",
-        {
-            "case_name": case_name,
-            "input_path": str(input_path),
-            "expected_path": str(expected_path) if expected_path else None,
-            "inputs": calculation["inputs"],
-            "calculation_blocks": calculation["calculation_blocks"],
-            "warnings": calculation["warnings"],
-            "estimate_lines": calculation["estimate_lines"],
-            "internal_totals": calculation["internal_totals"],
-            "expected": expected,
-            "comparison": comparison,
-        },
-    )
+    result_payload = {
+        "case_name": case_name,
+        "input_path": str(input_path),
+        "expected_path": str(expected_path) if expected_path else None,
+        "inputs": calculation["inputs"],
+        "calculation_blocks": calculation["calculation_blocks"],
+        "warnings": calculation["warnings"],
+        "estimate_lines": calculation["estimate_lines"],
+        "internal_totals": calculation["internal_totals"],
+        "expected": expected,
+        "comparison": comparison,
+    }
+    if is_live_pricing:
+        result_payload["pricing_summary"] = calculation.get("pricing_summary", {})
+
+    save_json(case_output_dir / "foundation_slab_result.json", result_payload)
     save_markdown(
         case_output_dir / "foundation_slab_result.md",
         case_name,
@@ -311,6 +338,9 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
         calculation,
         comparison,
     )
+    if expected_path is None:
+        save_json(input_path.parent / "result.json", result_payload)
+        save_markdown(input_path.parent / "result.md", case_name, input_data, calculation, comparison)
 
     return calculation
 

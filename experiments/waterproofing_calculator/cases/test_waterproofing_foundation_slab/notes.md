@@ -51,3 +51,15 @@
 1. Коэффициенты 2% логистики и 3% расходников подтвердить для других разделов отдельно.
 2. Если нет спецификации по ЭППС 100 мм торец, можно ли брать геометрический расчёт как fallback.
 3. Цены материалов должны потом уйти в price_profile.
+
+## Режим цен
+
+Эталонный кейс работает в режиме `locked_case_prices`: цены берутся из `input.json`.
+
+Отдельный live-кейс с `price_registry_with_fallback` лежит в:
+
+```text
+experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab_live_prices/
+```
+
+Live-суммы могут отличаться от этого expected, потому что часть цен берётся из `price_registry`.

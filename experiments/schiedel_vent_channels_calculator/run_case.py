@@ -34,6 +34,10 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_expected(path: Path) -> dict[str, Any]:
+    return load_json(path) if path.exists() else {}
+
+
 def dump_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -124,6 +128,9 @@ def money(value: Any) -> str:
 def build_markdown(result: dict[str, Any]) -> str:
     comparison = result.get("comparison", {})
     totals = result["totals"]
+    is_live_pricing = (
+        result.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback"
+    )
     lines = [
         "# Расчётный отчёт: ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel",
         "",
@@ -189,6 +196,37 @@ def build_markdown(result: dict[str, Any]) -> str:
         ]
     )
     lines.extend([f"- {warning}" for warning in result.get("warnings", [])] or ["- Нет предупреждений."])
+    if is_live_pricing:
+        lines.extend(
+            [
+                "",
+                "## Источники цен",
+                "",
+                "| Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |",
+                "| --- | --- | ---: | ---: | --- | --- |",
+            ]
+        )
+        for line in result.get("estimate_lines", []):
+            lines.append(
+                "| "
+                f"{line['name']} | "
+                f"`{line.get('price_code', '')}` | "
+                f"`{line.get('unit_price_original', '')}` | "
+                f"`{line.get('unit_price_used', '')}` | "
+                f"`{line.get('unit_price_source', '')}` | "
+                f"{line.get('price_warning') or ''} |"
+            )
+        lines.extend(
+            [
+                "",
+                "## Pricing summary",
+                "",
+                "| Показатель | Значение |",
+                "| --- | ---: |",
+            ]
+        )
+        for key, value in result.get("pricing_summary", {}).items():
+            lines.append(f"| `{key}` | `{value}` |")
     lines.extend(
         [
             "",
@@ -225,8 +263,13 @@ def main() -> int:
 
     case_dir = Path(sys.argv[1]).resolve()
     result = calculate_schiedel_vent_channels(load_json(case_dir / "input.json"))
-    expected = load_json(case_dir / "expected.json")
+    expected = load_expected(case_dir / "expected.json")
     comparison = compare_result(result, expected)
+    is_live_pricing = (
+        result.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback"
+    )
+    if not is_live_pricing:
+        result.pop("pricing_summary", None)
     result["expected"] = expected
     result["comparison"] = comparison
 

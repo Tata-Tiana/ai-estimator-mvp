@@ -147,6 +147,28 @@ def format_estimate_lines_markdown(lines_data: list[dict[str, Any]]) -> list[str
     return lines
 
 
+def format_price_sources_markdown(lines_data: list[dict[str, Any]]) -> list[str]:
+    has_live_sources = any("unit_price_source" in line for line in lines_data)
+    if not has_live_sources:
+        return ["Price source details are only shown for `price_registry_with_fallback` mode."]
+
+    lines = [
+        "| Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |",
+        "| --- | --- | ---: | ---: | --- | --- |",
+    ]
+    for line in lines_data:
+        lines.append(
+            "| "
+            f"{line['name']} | "
+            f"`{line.get('price_code', '')}` | "
+            f"`{line.get('unit_price_original', '')}` | "
+            f"`{line.get('unit_price_used', '')}` | "
+            f"`{line.get('unit_price_source', '')}` | "
+            f"{line.get('price_warning') or ''} |"
+        )
+    return lines
+
+
 def format_comparison_markdown(comparison: list[dict[str, Any]]) -> list[str]:
     if not comparison:
         return ["Expected values are not provided for this case."]
@@ -174,6 +196,23 @@ def format_markdown(
         f"- `{key}`: `{value}`" for key, value in inputs.items() if value is not None
     ]
     waterproofing_block = calculation["calculation_blocks"]["waterproofing"]
+    is_live_pricing = (
+        calculation.get("pricing_summary", {}).get("mode")
+        == "price_registry_with_fallback"
+    )
+    pricing_sections = []
+    if is_live_pricing:
+        pricing_sections = [
+            "## Источники цен",
+            *format_price_sources_markdown(calculation["estimate_lines"]),
+            "",
+            "## Pricing summary",
+            *format_dict_table(calculation.get("pricing_summary", {})),
+            "",
+            "## Warnings",
+            *(f"- {warning}" for warning in calculation.get("warnings", [])),
+            "",
+        ]
 
     return "\n".join(
         [
@@ -193,6 +232,7 @@ def format_markdown(
             "## Итоги серой внутренней себестоимости",
             *format_dict_table(calculation["internal_totals"]),
             "",
+            *pricing_sections,
             "## Comparison",
             *format_comparison_markdown(comparison),
             "",
@@ -222,21 +262,29 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
     expected = load_expected(expected_path)
     calculation = calculate_waterproofing(input_data)
     comparison = compare_with_expected(calculation, expected)
+    is_live_pricing = (
+        calculation.get("pricing_summary", {}).get("mode")
+        == "price_registry_with_fallback"
+    )
+
+    result_payload = {
+        "case_name": case_name,
+        "input_path": str(input_path),
+        "expected_path": str(expected_path) if expected_path else None,
+        "inputs": calculation["inputs"],
+        "calculation_blocks": calculation["calculation_blocks"],
+        "estimate_lines": calculation["estimate_lines"],
+        "internal_totals": calculation["internal_totals"],
+        "expected": expected,
+        "comparison": comparison,
+        "warnings": calculation["warnings"],
+    }
+    if is_live_pricing:
+        result_payload["pricing_summary"] = calculation.get("pricing_summary", {})
 
     save_json(
         case_output_dir / "waterproofing_result.json",
-        {
-            "case_name": case_name,
-            "input_path": str(input_path),
-            "expected_path": str(expected_path) if expected_path else None,
-            "inputs": calculation["inputs"],
-            "calculation_blocks": calculation["calculation_blocks"],
-            "estimate_lines": calculation["estimate_lines"],
-            "internal_totals": calculation["internal_totals"],
-            "expected": expected,
-            "comparison": comparison,
-            "warnings": calculation["warnings"],
-        },
+        result_payload,
     )
     save_markdown(
         case_output_dir / "waterproofing_result.md",
@@ -245,6 +293,19 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
         calculation,
         comparison,
     )
+
+    if expected_path is None:
+        save_json(
+            input_path.parent / "result.json",
+            result_payload,
+        )
+        save_markdown(
+            input_path.parent / "result.md",
+            case_name,
+            input_data,
+            calculation,
+            comparison,
+        )
 
     return calculation
 

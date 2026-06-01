@@ -12,6 +12,13 @@ from load_bearing_walls_lintels_calculator import (
 
 
 BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parents[1]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from live_pricing import apply_live_pricing, price_sources_markdown, pricing_mode  # noqa: E402
+
 CASES_DIR = BASE_DIR / "cases"
 DEFAULT_CASE_DIR = CASES_DIR / "test_load_bearing_walls_lintels"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -32,7 +39,13 @@ def resolve_case_path(raw_path: str | None = None) -> tuple[str, Path, Path | No
 
 
 def load_input(path: Path) -> LoadBearingWallsLintelsInput:
-    return LoadBearingWallsLintelsInput.from_dict(json.loads(path.read_text(encoding="utf-8")))
+    raw_data = json.loads(path.read_text(encoding="utf-8"))
+    raw_data.pop("pricing", None)
+    return LoadBearingWallsLintelsInput.from_dict(raw_data)
+
+
+def load_raw_input(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def load_expected(path: Path | None) -> dict[str, Any]:
@@ -148,6 +161,15 @@ def format_markdown(case_name: str, input_data: LoadBearingWallsLintelsInput, ca
     input_lines = [f"- `{key}`: `{value}`" for key, value in input_data.to_dict().items()]
     block_rows = flatten("", calculation["calculation_blocks"])
     warning_lines = [f"- {warning}" for warning in calculation.get("warnings", [])] or ["Предупреждений нет."]
+    pricing_sections = []
+    if calculation.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
+        pricing_sections = [
+            "",
+            *price_sources_markdown(calculation["estimate_lines"]),
+            "",
+            "## Pricing summary",
+            *dict_table(calculation["pricing_summary"]),
+        ]
     return "\n".join(
         [
             f"# Расчёт несущих стен и перемычек: {case_name}",
@@ -165,6 +187,7 @@ def format_markdown(case_name: str, input_data: LoadBearingWallsLintelsInput, ca
             "",
             "## Итоги raw/rounded",
             *dict_table(calculation["internal_totals"]),
+            *pricing_sections,
             "",
             "## Warnings",
             *warning_lines,
@@ -180,10 +203,13 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
     case_name, input_path, expected_path = resolve_case_path(raw_case_path)
     output_dir = OUTPUT_DIR / case_name
     output_dir.mkdir(parents=True, exist_ok=True)
-    input_data = load_input(input_path)
+    raw_input = load_raw_input(input_path)
+    input_data = LoadBearingWallsLintelsInput.from_dict({k: v for k, v in raw_input.items() if k != "pricing"})
     expected = load_expected(expected_path)
     calculation = calculate_load_bearing_walls_lintels(input_data)
+    calculation = apply_live_pricing(calculation, raw_input, REPO_ROOT, totals_key="internal_totals")
     comparison = compare_with_expected(calculation, expected)
+    is_live_pricing = pricing_mode(raw_input) == "price_registry_with_fallback"
     payload = {
         "case_name": case_name,
         "input_path": str(input_path),
@@ -196,11 +222,19 @@ def run(raw_case_path: str | None = None) -> dict[str, Any]:
         "comparison": comparison,
         "warnings": calculation["warnings"],
     }
+    if is_live_pricing:
+        payload["pricing_summary"] = calculation.get("pricing_summary", {})
     save_json(output_dir / "load_bearing_walls_lintels_result.json", payload)
     (output_dir / "load_bearing_walls_lintels_result.md").write_text(
         format_markdown(case_name, input_data, calculation, comparison),
         encoding="utf-8",
     )
+    if expected_path is None:
+        save_json(input_path.parent / "result.json", payload)
+        (input_path.parent / "result.md").write_text(
+            format_markdown(case_name, input_data, calculation, comparison),
+            encoding="utf-8",
+        )
     return calculation
 
 

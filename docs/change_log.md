@@ -43,6 +43,57 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-01 — Добавлен live-pricing режим для всех готовых калькуляторов
+
+- Ветка: `feature/ai-project-card`
+- Коммит: см. коммит `Add live pricing mode for all calculators`
+
+Что добавлено:
+
+- добавлен общий helper `experiments/pricing/live_pricing.py`;
+- созданы live-кейсы для всех готовых разделов:
+  - earthworks;
+  - foundation_slab;
+  - waterproofing;
+  - load_bearing_walls_lintels;
+  - floor_slab_1;
+  - floor_slab_2;
+  - flat_roof;
+  - schiedel_vent_channels;
+- во всех live `result.json` есть `pricing_summary`;
+- во всех live `result.md` есть блок `Источники цен`;
+- создан общий отчёт `experiments/pricing/output/live_pricing_sections_report.md`;
+- создан docs-отчёт `docs/report_live_pricing_layer.md`.
+
+Ключевые решения:
+
+- `locked_case_prices` остаётся дефолтным эталонным режимом;
+- `price_registry_with_fallback` используется только в отдельных live-кейсах;
+- если `price_code` найден в `price_registry`, берётся цена из прайса;
+- если `price_code` не найден, берётся fallback из `input.json` и сохраняется warning;
+- старые `expected.json` не изменены;
+- live `expected.json` не создавались.
+
+Проверки:
+
+```text
+earthworks:
+  horoshevka_14 -> ok (76/76)
+  usv_yusupovo_village -> ok (100/100)
+
+foundation_slab -> ok
+waterproofing -> ok
+load_bearing_walls_lintels -> ok
+floor_slab_1 -> ok (194/194)
+floor_slab_2 -> ok (222/222)
+flat_roof -> ok (460/460)
+schiedel_vent_channels -> ok (138/138)
+```
+
+Следующий шаг:
+
+- `box_calculator`.
+
 ### 2026-05-31 — Добавлены единые price_code и pricing-layer MVP
 
 - Ветка: `feature/ai-project-card`
@@ -61,9 +112,7 @@ git status
   - `experiments/pricing/validate_price_registry.py`;
   - `experiments/pricing/check_required_codes_against_registry.py`;
   - `experiments/pricing/test_price_reader_demo.py`;
-  - `experiments/pricing/README.md`;
-- добавлен отчёт:
-  - `docs/report_pricing_layer.md`.
+  - `experiments/pricing/README.md`.
 
 Ключевые решения:
 

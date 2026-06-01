@@ -71,7 +71,8 @@
       "notes": [
         "Серая сумма считается от raw 15.82 мп.",
         "Не считать от старого отображаемого количества 16 мп."
-      ]
+      ],
+      "price_code": "schiedel_masonry_work_m"
     },
     {
       "code": "schiedel_vent_channel_2x_36_25",

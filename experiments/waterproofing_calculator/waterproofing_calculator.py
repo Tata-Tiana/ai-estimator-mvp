@@ -3,7 +3,21 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from math import ceil
+from pathlib import Path
+import sys
 from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PRICING_DIR = REPO_ROOT / "experiments" / "pricing"
+if str(PRICING_DIR) not in sys.path:
+    sys.path.insert(0, str(PRICING_DIR))
+
+from price_reader import (  # noqa: E402
+    load_price_registry,
+    load_project_price_overrides,
+    resolve_price,
+)
 
 
 def _to_decimal(value: float | int | None) -> Decimal | None:
@@ -61,6 +75,7 @@ class WaterproofingInput:
     glue_foam_unit_price: float
     waterproofing_logistics_coeff: float
     waterproofing_consumables_coeff: float
+    pricing: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         self.validate()
@@ -163,6 +178,125 @@ def calculate_line(
         line_total=material_total + work_total,
         price_code=price_code,
     )
+
+
+PRICE_FIELD_BY_CODE = {
+    "waterproofing_bitumen_mastic_work": "waterproofing_work_unit_price",
+    "bitumen_primer_aquamast_18l": "primer_unit_price",
+    "bitumen_mastic_aquamast_18kg": "mastic_unit_price",
+    "eps100_wall_insulation_work": "eps100_wall_insulation_work_unit_price",
+    "eps100_wall_penoplex_geo_material": "eps100_unit_price",
+    "eps_glue_foam": "glue_foam_unit_price",
+}
+
+PRICE_CODE_BY_FIELD = {
+    "waterproofing_work_unit_price": "bitumen_waterproofing_work_m2",
+    "primer_unit_price": "bitumen_primer_aquamast_18l_item",
+    "mastic_unit_price": "bitumen_mastic_aquamast_18kg_item",
+    "eps100_wall_insulation_work_unit_price": "eps_wall_insulation_work_m2",
+    "eps100_unit_price": "eps_geo_100_m3",
+    "glue_foam_unit_price": "eps_foam_glue_can",
+}
+
+
+def pricing_mode(data: WaterproofingInput) -> str:
+    return (data.pricing or {}).get("mode", "locked_case_prices")
+
+
+def resolve_registry_path(data: WaterproofingInput) -> Path:
+    raw_path = (data.pricing or {}).get(
+        "registry_path",
+        "output/price_registry_filled_v3.xlsx",
+    )
+    path = Path(raw_path)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
+def build_effective_pricing(
+    data: WaterproofingInput,
+) -> tuple[WaterproofingInput, dict[str, Any], list[str]]:
+    mode = pricing_mode(data)
+    if mode == "locked_case_prices":
+        return data, {
+            "mode": mode,
+            "prices_from_price_registry": 0,
+            "prices_from_project_overrides": 0,
+            "prices_from_fallback_input": 0,
+            "warnings_count": 0,
+            "price_resolutions_by_code": {},
+        }, []
+
+    if mode != "price_registry_with_fallback":
+        raise ValueError(f"Unsupported pricing mode: {mode}")
+
+    registry_path = resolve_registry_path(data)
+    registry = load_price_registry(registry_path)
+    overrides = load_project_price_overrides(registry_path)
+
+    raw_data = data.to_dict()
+    resolutions_by_code: dict[str, dict[str, Any]] = {}
+    warnings: list[str] = []
+    summary = {
+        "mode": mode,
+        "registry_path": str(registry_path),
+        "prices_from_price_registry": 0,
+        "prices_from_project_overrides": 0,
+        "prices_from_fallback_input": 0,
+        "warnings_count": 0,
+        "price_resolutions_by_code": resolutions_by_code,
+    }
+
+    for field_name, price_code in PRICE_CODE_BY_FIELD.items():
+        original_price = getattr(data, field_name)
+        resolved = resolve_price(price_code, original_price, registry, overrides)
+        source = resolved["source"]
+        if source == "price_registry":
+            summary["prices_from_price_registry"] += 1
+        elif source == "project_price_overrides":
+            summary["prices_from_project_overrides"] += 1
+        else:
+            summary["prices_from_fallback_input"] += 1
+
+        if resolved["warning"]:
+            warnings.append(f"{price_code}: {resolved['warning']}")
+
+        used_price = resolved["price"]
+        raw_data[field_name] = float(used_price) if used_price is not None else original_price
+        resolutions_by_code[price_code] = {
+            "price_code": price_code,
+            "unit_price_source": source,
+            "unit_price_original": str(original_price),
+            "unit_price_used": str(used_price) if used_price is not None else None,
+            "price_warning": resolved["warning"],
+        }
+
+    summary["warnings_count"] = len(warnings)
+    return WaterproofingInput.from_dict(raw_data), summary, warnings
+
+
+def enrich_lines_with_pricing(
+    lines: list[dict[str, Any]],
+    pricing_summary: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if pricing_summary["mode"] == "locked_case_prices":
+        return lines
+
+    resolutions = pricing_summary.get("price_resolutions_by_code", {})
+    enriched = []
+    for line in lines:
+        item = dict(line)
+        price_code = item.get("price_code")
+        if price_code in resolutions:
+            item.update(resolutions[price_code])
+        else:
+            original_price = item.get("material_unit_price") or item.get("work_unit_price")
+            item.setdefault("price_code", price_code)
+            item["unit_price_source"] = "locked_case_prices"
+            item["unit_price_original"] = str(original_price)
+            item["unit_price_used"] = str(original_price)
+            item["price_warning"] = None
+        enriched.append(item)
+    return enriched
 
 
 def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
@@ -361,17 +495,30 @@ def calculate_internal_totals(
 
 
 def calculate_waterproofing(data: WaterproofingInput) -> dict[str, Any]:
-    waterproofing_block = calculate_waterproofing_block(data)
-    estimate_lines = calculate_internal_estimate_lines(data, waterproofing_block)
+    effective_data, pricing_summary, pricing_warnings = build_effective_pricing(data)
+    waterproofing_block = calculate_waterproofing_block(effective_data)
+    estimate_lines = calculate_internal_estimate_lines(effective_data, waterproofing_block)
     internal_totals = calculate_internal_totals(
         estimate_lines,
         waterproofing_block["waterproofing_base_subtotal"],
     )
+    estimate_lines_data = enrich_lines_with_pricing(
+        [line.to_dict() for line in estimate_lines],
+        pricing_summary,
+    )
+    inputs = data.to_dict()
+    if inputs.get("pricing") is None:
+        inputs.pop("pricing")
 
     return {
-        "inputs": data.to_dict(),
+        "inputs": inputs,
         "calculation_blocks": {"waterproofing": waterproofing_block},
-        "estimate_lines": [line.to_dict() for line in estimate_lines],
+        "estimate_lines": estimate_lines_data,
         "internal_totals": internal_totals,
-        "warnings": [],
+        "pricing_summary": {
+            key: value
+            for key, value in pricing_summary.items()
+            if key != "price_resolutions_by_code"
+        },
+        "warnings": pricing_warnings,
     }

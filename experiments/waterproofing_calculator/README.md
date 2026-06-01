@@ -14,8 +14,16 @@ cases/
     input.json
     expected.json
     notes.md
+  test_waterproofing_foundation_slab_live_prices/
+    input.json
+    notes.md
+    result.json
+    result.md
 output/
   test_waterproofing_foundation_slab/
+    waterproofing_result.json
+    waterproofing_result.md
+  test_waterproofing_foundation_slab_live_prices/
     waterproofing_result.json
     waterproofing_result.md
 ```
@@ -26,6 +34,12 @@ output/
 
 ```bash
 ../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
+```
+
+Live-режим с `price_registry` и fallback:
+
+```bash
+../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab_live_prices
 ```
 
 Проверка компиляции:
@@ -47,6 +61,41 @@ output/
 - объём пачки и цена ЭППС;
 - правило расхода клей-пены;
 - коэффициенты логистики и расходников.
+
+## Режимы цен
+
+По умолчанию используется режим:
+
+```json
+{
+  "pricing": {
+    "mode": "locked_case_prices"
+  }
+}
+```
+
+Если блока `pricing` нет, поведение такое же: цены берутся из `input.json`, старый эталонный кейс сравнивается с `expected.json`.
+
+Live-режим:
+
+```json
+{
+  "pricing": {
+    "mode": "price_registry_with_fallback",
+    "registry_path": "output/price_registry_filled_v3.xlsx"
+  }
+}
+```
+
+В этом режиме цены для строк с `price_code` ищутся по приоритету:
+
+```text
+project_price_overrides
+price_registry
+input.json fallback
+```
+
+Суммы live-режима могут отличаться от старого `expected.json`, потому что часть цен берётся из актуального прайса. Поэтому live-кейс не сравнивается со старым expected по суммам.
 
 ## Ожидаемый результат тестового кейса
 
@@ -77,3 +126,5 @@ internal_section_total      = 51 216
 ```
 
 `waterproofing_result.md` содержит человекочитаемый отчёт: входные параметры, расчётный блок, строки серой сметы, итоги и comparison.
+
+В live-режиме дополнительно выводятся `pricing_summary` и таблица источников цен.

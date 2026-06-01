@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-05-21`.
+Дата актуализации: `2026-06-01`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -15,17 +15,18 @@ feature/ai-project-card
 Коммит расчётной базы:
 
 ```text
-86795ea Add Schiedel vent channels calculator
+Add live pricing mode for all calculators
 ```
 
 Смысл коммита:
 
 - зафиксированы проектные папки PDF/AI;
-- добавлены экспериментальные калькуляторы разделов сметы;
-- добавлены отчёты для руководства;
+- добавлены экспериментальные калькуляторы готовых разделов сметы;
+- добавлен единый слой `price_code`;
+- добавлен live-pricing режим для всех готовых калькуляторов;
 - обновлена документация и handoff.
 
-После этого коммита проект имеет чистую расчётную контрольную точку, от которой можно продолжать следующий раздел сметы.
+После этого коммита проект имеет контрольную точку перед переходом к `box_calculator`.
 
 ## Суть проекта
 
@@ -429,6 +430,47 @@ experiments/unikma_api_tests/
 
 Вывод: УНИКМА полезна как слой товаров, цен, складов и остатков, но не заменяет расчётную логику сметы.
 
+### 13. Live-Pricing Layer
+
+Папка:
+
+```text
+experiments/pricing/
+```
+
+Ключевой helper:
+
+```text
+experiments/pricing/live_pricing.py
+```
+
+Режимы:
+
+- `locked_case_prices` — дефолтный режим, цены берутся из `input.json`, старые `expected.json` остаются эталоном;
+- `price_registry_with_fallback` — live-режим для MVP, цена ищется в `project_price_overrides`, затем в `price_registry`, затем используется fallback из `input.json`.
+
+Live-кейсы созданы для всех готовых калькуляторов:
+
+- `earthworks`;
+- `foundation_slab`;
+- `waterproofing`;
+- `load_bearing_walls_lintels`;
+- `floor_slab_1`;
+- `floor_slab_2`;
+- `flat_roof`;
+- `schiedel_vent_channels`.
+
+Во всех live `result.json` есть `pricing_summary`, во всех live `result.md` есть блок `## Источники цен`.
+
+Сводные отчёты:
+
+```text
+experiments/pricing/output/live_pricing_sections_report.md
+docs/report_live_pricing_layer.md
+```
+
+Live `expected.json` не создавались.
+
 ## Проверочные команды
 
 Земляные работы:
@@ -495,7 +537,7 @@ Pricing-layer:
 
 На момент фиксации `pytest` собирает `0` тестов; основные проверки сейчас идут через CLI калькуляторов.
 
-## Что было проверено перед последней pricing-контрольной точкой
+## Что было проверено перед последней live-pricing контрольной точкой
 
 ```text
 earthworks:
@@ -527,6 +569,7 @@ pricing:
   price_registry validation -> rows=131 filled=18 empty=113 duplicates=0
   required code coverage -> required=81 registry=18 rows_to_add=63 missing=0
   demo -> price_registry source and fallback warnings checked
+  live_pricing_sections_report -> 8 sections
 
 pytest:
   collected 0 items
@@ -548,7 +591,7 @@ output/price_registry_mapping_report_v3.md
 - `material_price_code` и `work_rate_code` не вводились;
 - формулы и `expected.json` не менялись;
 - старый режим расчётов остаётся `locked_case_prices`;
-- будущий режим `price_registry_with_fallback` должен идти через `project_price_overrides -> price_registry -> input fallback`;
+- режим `price_registry_with_fallback` идёт через `project_price_overrides -> price_registry -> input fallback`;
 - если цена не найдена в основном листе прайса, resolver возвращает fallback и warning;
 - `price_registry_v3`: `81` required-код, `18` в основном листе, `63` в `rows_to_add`, `0` потерянных.
 
@@ -563,7 +606,11 @@ output/price_registry_mapping_report_v3.md
 
 ## Следующий разумный шаг
 
-Продолжать следующий раздел сметы отдельным экспериментальным калькулятором по той же схеме:
+Следующий большой шаг — проектировать `box_calculator`.
+
+Не начинать с Excel export, Telegram/n8n и новых калькуляторов, пока не зафиксирована модель агрегирования коробки.
+
+Для новых отдельных разделов по-прежнему использовать схему:
 
 ```text
 input.json -> deterministic calculator -> expected.json -> result JSON/MD -> comparison -> report in docs
