@@ -90,7 +90,7 @@ experiments/pdf_parser_pipeline/cases/mvp_usv_demo/reviewed_parameters.xlsx
 experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx
 ```
 
-Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом. Новым рабочим путём считать `experiments/pdf_parser_pipeline/`.
+Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом и удалён, чтобы не держать два похожих контура. Рабочим путём считать `experiments/pdf_parser_pipeline/`.
 
 Отчёт:
 
@@ -953,6 +953,7 @@ experiments/pricing/output/required_codes_coverage_report.md
 
 - PDF/AI результаты всё ещё экспериментальные;
 - рабочий слой подготовки параметров из PDF — `experiments/pdf_parser_pipeline/`;
+- устаревший `experiments/review_sheet_builder/` удалён;
 - расчётные калькуляторы пока живут в `experiments/`, не в `app/`;
 - клиентская цена, рентабельность, НР/СП/ТН пока не считаются;
 - УНИКМА пока не подключён к расчётному модулю.

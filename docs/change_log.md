@@ -43,6 +43,31 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-01 — Удалён устаревший review_sheet_builder после перехода на pdf_parser_pipeline
+
+- Ветка: `feature/ai-project-card`
+- Коммит: см. коммит `Remove deprecated review sheet builder`
+
+Что изменено:
+
+- старый `experiments/review_sheet_builder/` удалён, чтобы не путаться в двух похожих контурах;
+- рабочий путь подготовки параметров из PDF теперь только `experiments/pdf_parser_pipeline/`;
+- `reviewed_parameters.xlsx` создаётся через `pdf_parser_pipeline`;
+- следующий шаг: `input_builder`.
+
+Проверки перед удалением:
+
+```text
+pdf_parser_pipeline -> ok
+review_cards = 8
+reviewed_parameters.xlsx создан
+missing_total = 287
+manual_required_total = 69
+py_compile -> ok
+```
+
+Калькуляторы и `expected.json` не изменялись.
+
 ### 2026-06-01 — Добавлен рабочий PDF parser pipeline для review cards
 
 - Ветка: `feature/ai-project-card`
@@ -67,7 +92,7 @@ git status
 Ключевые решения:
 
 - рабочим контуром теперь считается `experiments/pdf_parser_pipeline/`;
-- более ранний `experiments/review_sheet_builder/` считается промежуточным экспериментом и не является основным путём;
+- более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом и удалён следующей контрольной точкой;
 - таблица для Елены строится от schema параметров калькуляторов, а не только от найденных parser values;
 - если параметр не найден в PDF, он всё равно попадает в Excel как `missing` или `manual_required`;
 - значения без `source_file/source_id/page/source_text` не считаются найденными.

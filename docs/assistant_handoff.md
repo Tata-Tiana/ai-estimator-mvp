@@ -40,7 +40,7 @@ experiments/pdf_parser_pipeline/
 PDF parser artifacts -> section review cards -> reviewed_parameters.xlsx -> будущий input_builder
 ```
 
-Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом. В новых задачах по PDF-параметрам использовать `experiments/pdf_parser_pipeline/`.
+Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом и удалён. В новых задачах по PDF-параметрам использовать `experiments/pdf_parser_pipeline/`.
 
 ## Суть проекта
 
@@ -119,6 +119,7 @@ experiments/pdf_parser_pipeline/cases/mvp_usv_demo/
 - создаёт `reviewed_parameters.xlsx` для проверки Еленой;
 - не меняет калькуляторы и `expected.json`;
 - не считает смету.
+- заменяет удалённый промежуточный `experiments/review_sheet_builder/`.
 
 Созданные outputs:
 

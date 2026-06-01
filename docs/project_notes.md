@@ -17,7 +17,7 @@ commit: см. последний коммит live-pricing в `git log`
 experiments/pdf_parser_pipeline/
 ```
 
-Более ранний `experiments/review_sheet_builder/` считать промежуточным экспериментом, не основным контуром.
+Более ранний `experiments/review_sheet_builder/` удалён как промежуточный эксперимент, чтобы не путаться в двух похожих контурах.
 
 ## Главные договорённости
 
