@@ -43,6 +43,50 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-01 — Добавлен рабочий PDF parser pipeline для review cards
+
+- Ветка: `feature/ai-project-card`
+- Коммит: см. коммит `Add PDF parser pipeline`
+
+Что добавлено:
+
+- создан новый рабочий слой `experiments/pdf_parser_pipeline/`;
+- добавлена schema по всем 8 готовым разделам сметы;
+- создаются section review cards для:
+  - earthworks;
+  - foundation_slab;
+  - waterproofing;
+  - load_bearing_walls_lintels;
+  - floor_slab_1;
+  - floor_slab_2;
+  - flat_roof;
+  - schiedel_vent_channels;
+- создаётся общий `reviewed_parameters.xlsx` для проверки Еленой;
+- добавлен docs-отчёт `docs/report_pdf_parser_pipeline.md`.
+
+Ключевые решения:
+
+- рабочим контуром теперь считается `experiments/pdf_parser_pipeline/`;
+- более ранний `experiments/review_sheet_builder/` считается промежуточным экспериментом и не является основным путём;
+- таблица для Елены строится от schema параметров калькуляторов, а не только от найденных parser values;
+- если параметр не найден в PDF, он всё равно попадает в Excel как `missing` или `manual_required`;
+- значения без `source_file/source_id/page/source_text` не считаются найденными.
+
+Проверки:
+
+```text
+review_cards: 8
+reviewed_parameters.xlsx создан
+missing_total = 287
+manual_required_total = 69
+py_compile -> ok
+expected.json -> не изменялись
+```
+
+Следующий шаг:
+
+- сделать `input_builder`, который будет собирать `input.json` калькуляторов из проверенного `reviewed_parameters.xlsx`.
+
 ### 2026-06-01 — Добавлен live-pricing режим для всех готовых калькуляторов
 
 - Ветка: `feature/ai-project-card`

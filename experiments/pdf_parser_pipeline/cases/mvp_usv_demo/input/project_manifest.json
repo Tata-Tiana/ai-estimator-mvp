@@ -1,0 +1,66 @@
+{
+  "project": "usv_yusupovo_village",
+  "generated_at": "2026-05-20T11:44:28",
+  "sources": [
+    {
+      "source_id": "kr1_foundation",
+      "source_file": "ЮСВ КР1.pdf",
+      "title": "КР-1: фундаментная часть",
+      "input_path": "input/ЮСВ КР1.pdf",
+      "parsed_dir": "parsed/kr1_foundation",
+      "pages": 12,
+      "text_characters": 19140,
+      "tables_found": 40,
+      "page_images_count": 12,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    },
+    {
+      "source_id": "kr2_above_zero",
+      "source_file": "ЮСВ КР2.pdf",
+      "title": "КР-2: выше нуля",
+      "input_path": "input/ЮСВ КР2.pdf",
+      "parsed_dir": "parsed/kr2_above_zero",
+      "pages": 31,
+      "text_characters": 42820,
+      "tables_found": 116,
+      "page_images_count": 31,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    },
+    {
+      "source_id": "ar_architecture",
+      "source_file": "ЮСВ АР.pdf",
+      "title": "АР: архитектура",
+      "input_path": "input/ЮСВ АР.pdf",
+      "parsed_dir": "parsed/ar_architecture",
+      "pages": 21,
+      "text_characters": 22747,
+      "tables_found": 75,
+      "page_images_count": 21,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    }
+  ]
+}

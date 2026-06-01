@@ -107,6 +107,8 @@ schiedel_vent_channels -> ok (138/138)
 
 ## Следующий Шаг
 
-Следующий этап после фиксации live-pricing: проектировать `box_calculator`.
+На момент фиксации live-pricing следующим этапом планировался `box_calculator`.
+
+После добавления рабочего PDF parser pipeline ближайший технический шаг изменён: сначала нужен `input_builder`, который соберёт `input.json` калькуляторов из проверенного `reviewed_parameters.xlsx`, и только потом `box_calculator`.
 
 В этой контрольной точке `box_calculator`, Excel export и новые калькуляторы не создавались.

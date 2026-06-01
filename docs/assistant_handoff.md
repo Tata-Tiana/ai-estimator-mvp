@@ -26,7 +26,21 @@ Add live pricing mode for all calculators
 - добавлен live-pricing режим для всех готовых калькуляторов;
 - обновлена документация и handoff.
 
-После этого коммита проект имеет контрольную точку перед переходом к `box_calculator`.
+После этого коммита проект имел контрольную точку перед переходом к агрегированию коробки.
+
+После этой контрольной точки добавлен новый рабочий PDF pipeline:
+
+```text
+experiments/pdf_parser_pipeline/
+```
+
+Он теперь считается основным путём подготовки параметров из PDF:
+
+```text
+PDF parser artifacts -> section review cards -> reviewed_parameters.xlsx -> будущий input_builder
+```
+
+Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом. В новых задачах по PDF-параметрам использовать `experiments/pdf_parser_pipeline/`.
 
 ## Суть проекта
 
@@ -82,6 +96,60 @@ experiments/pdf_tests/projects/horoshevka_14/
 
 ```text
 docs/report_pdf_parser.md
+```
+
+### 1.1. Рабочий PDF parser pipeline
+
+Папка:
+
+```text
+experiments/pdf_parser_pipeline/
+```
+
+Кейс:
+
+```text
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/
+```
+
+Что делает:
+
+- читает готовые parser artifacts проекта ЮСВ;
+- строит review cards по всем 8 готовым разделам;
+- создаёт `reviewed_parameters.xlsx` для проверки Еленой;
+- не меняет калькуляторы и `expected.json`;
+- не считает смету.
+
+Созданные outputs:
+
+```text
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/reviewed_parameters.xlsx
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/result.json
+experiments/pdf_parser_pipeline/cases/mvp_usv_demo/result.md
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/
+```
+
+Команда:
+
+```bash
+../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+```
+
+Текущая проверка:
+
+```text
+review_cards = 8
+missing_total = 287
+manual_required_total = 69
+py_compile -> ok
+expected.json не изменялись
+```
+
+Отчёт:
+
+```text
+docs/report_pdf_parser_pipeline.md
 ```
 
 ### 2. AI-карточка проекта
@@ -529,6 +597,12 @@ Pricing-layer:
 ../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
 ```
 
+PDF parser pipeline:
+
+```bash
+../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+```
+
 Общий pytest:
 
 ```bash
@@ -571,6 +645,12 @@ pricing:
   demo -> price_registry source and fallback warnings checked
   live_pricing_sections_report -> 8 sections
 
+pdf_parser_pipeline:
+  review_cards -> 8 sections
+  reviewed_parameters.xlsx -> created
+  missing_total -> 287
+  manual_required_total -> 69
+
 pytest:
   collected 0 items
 ```
@@ -606,9 +686,11 @@ output/price_registry_mapping_report_v3.md
 
 ## Следующий разумный шаг
 
-Следующий большой шаг — проектировать `box_calculator`.
+Следующий большой шаг — сделать `input_builder`, который будет читать проверенный `reviewed_parameters.xlsx` и собирать `input.json` для калькуляторов.
 
-Не начинать с Excel export, Telegram/n8n и новых калькуляторов, пока не зафиксирована модель агрегирования коробки.
+После `input_builder` разумно проектировать `box_calculator` как агрегатор готовых разделов.
+
+Не начинать с Excel export, Telegram/n8n и новых калькуляторов, пока не зафиксирован путь `reviewed_parameters.xlsx -> input.json -> calculators`.
 
 Для новых отдельных разделов по-прежнему использовать схему:
 

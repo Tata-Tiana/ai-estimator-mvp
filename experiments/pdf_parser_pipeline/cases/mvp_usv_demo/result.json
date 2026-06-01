@@ -1,0 +1,161 @@
+{
+  "project": "usv_yusupovo_village",
+  "sources": [
+    {
+      "source_id": "kr1_foundation",
+      "source_file": "ЮСВ КР1.pdf",
+      "title": "КР-1: фундаментная часть",
+      "input_path": "input/ЮСВ КР1.pdf",
+      "parsed_dir": "parsed/kr1_foundation",
+      "pages": 12,
+      "text_characters": 19140,
+      "tables_found": 40,
+      "page_images_count": 12,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    },
+    {
+      "source_id": "kr2_above_zero",
+      "source_file": "ЮСВ КР2.pdf",
+      "title": "КР-2: выше нуля",
+      "input_path": "input/ЮСВ КР2.pdf",
+      "parsed_dir": "parsed/kr2_above_zero",
+      "pages": 31,
+      "text_characters": 42820,
+      "tables_found": 116,
+      "page_images_count": 31,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    },
+    {
+      "source_id": "ar_architecture",
+      "source_file": "ЮСВ АР.pdf",
+      "title": "АР: архитектура",
+      "input_path": "input/ЮСВ АР.pdf",
+      "parsed_dir": "parsed/ar_architecture",
+      "pages": 21,
+      "text_characters": 22747,
+      "tables_found": 75,
+      "page_images_count": 21,
+      "artifacts": [
+        "full_text.txt",
+        "pages_text.json",
+        "blocks.json",
+        "tables.json",
+        "tables.xlsx",
+        "summary.json",
+        "page_images/"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "section_code": "earthworks",
+      "section_name": "Земляные работы",
+      "required_total": 29,
+      "extracted_found": 3,
+      "manual_required": 7,
+      "missing": 6,
+      "control_only": 3,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/earthworks_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/earthworks_review_card.md"
+    },
+    {
+      "section_code": "foundation_slab",
+      "section_name": "Фундаментная плита",
+      "required_total": 95,
+      "extracted_found": 15,
+      "manual_required": 6,
+      "missing": 35,
+      "control_only": 5,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.md"
+    },
+    {
+      "section_code": "waterproofing",
+      "section_name": "Гидроизоляция",
+      "required_total": 24,
+      "extracted_found": 2,
+      "manual_required": 3,
+      "missing": 7,
+      "control_only": 2,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/waterproofing_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/waterproofing_review_card.md"
+    },
+    {
+      "section_code": "load_bearing_walls_lintels",
+      "section_name": "Несущие стены и перемычки",
+      "required_total": 140,
+      "extracted_found": 7,
+      "manual_required": 21,
+      "missing": 68,
+      "control_only": 2,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/load_bearing_walls_lintels_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/load_bearing_walls_lintels_review_card.md"
+    },
+    {
+      "section_code": "floor_slab_1",
+      "section_name": "Плита перекрытия 1-го этажа",
+      "required_total": 124,
+      "extracted_found": 8,
+      "manual_required": 15,
+      "missing": 51,
+      "control_only": 5,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/floor_slab_1_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/floor_slab_1_review_card.md"
+    },
+    {
+      "section_code": "floor_slab_2",
+      "section_name": "Плита перекрытия 2-го этажа",
+      "required_total": 67,
+      "extracted_found": 7,
+      "manual_required": 8,
+      "missing": 21,
+      "control_only": 1,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/floor_slab_2_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/floor_slab_2_review_card.md"
+    },
+    {
+      "section_code": "flat_roof",
+      "section_name": "Плоская кровля",
+      "required_total": 78,
+      "extracted_found": 6,
+      "manual_required": 6,
+      "missing": 27,
+      "control_only": 2,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/flat_roof_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/flat_roof_review_card.md"
+    },
+    {
+      "section_code": "schiedel_vent_channels",
+      "section_name": "Вентиляционные каналы Schiedel",
+      "required_total": 13,
+      "extracted_found": 4,
+      "manual_required": 3,
+      "missing": 3,
+      "control_only": 2,
+      "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/schiedel_vent_channels_review_card.json",
+      "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/schiedel_vent_channels_review_card.md"
+    }
+  ],
+  "parameters_total": 601,
+  "parameters_for_calculation": 570,
+  "missing_total": 287,
+  "manual_required_total": 69,
+  "output_xlsx": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/reviewed_parameters.xlsx",
+  "warnings": []
+}

@@ -6,10 +6,18 @@
 
 ```text
 branch: feature/ai-project-card
-commit: см. последний коммит pricing-layer в `git log`
+commit: см. последний коммит live-pricing в `git log`
 ```
 
-Это последняя зафиксированная точка проекта. В неё вошли экспериментальные калькуляторы, единые `price_code`, `price_registry_v3`, отдельный pricing-layer с fallback, отчёты и handoff-документация.
+Последняя зафиксированная точка проекта — live-pricing. После неё добавлен рабочий PDF parser pipeline, пока без коммита на момент актуализации заметок.
+
+Рабочий путь подготовки параметров из PDF теперь:
+
+```text
+experiments/pdf_parser_pipeline/
+```
+
+Более ранний `experiments/review_sheet_builder/` считать промежуточным экспериментом, не основным контуром.
 
 ## Главные договорённости
 
