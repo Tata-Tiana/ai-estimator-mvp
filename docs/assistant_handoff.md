@@ -42,6 +42,37 @@ PDF parser artifacts -> section review cards -> reviewed_parameters.xlsx -> бу
 
 Более ранний `experiments/review_sheet_builder/` был промежуточным экспериментом и удалён. В новых задачах по PDF-параметрам использовать `experiments/pdf_parser_pipeline/`.
 
+После PDF pipeline добавлен следующий слой:
+
+```text
+experiments/input_builder/
+```
+
+Он читает проверочный Excel:
+
+```text
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx
+```
+
+и собирает generated `input.json` для калькуляторов.
+
+Текущий status:
+
+```text
+strict mode:
+  sections_enabled = 8
+  sections_generated = 0
+  sections_blocked = 8
+  missing_required_total = 287
+  manual_required_total = 69
+
+demo_with_template_fallback:
+  sections_generated = 8
+  template fallback warnings = 287
+```
+
+Strict-результаты оставлены как основные. Demo fallback проверен только как smoke-test механики.
+
 ## Суть проекта
 
 Проект — MVP AI-сметчика для частных домов.
@@ -162,6 +193,35 @@ Labels для авто-параметров в `section_schema.py` переве�
 
 ```text
 docs/report_pdf_parser_pipeline.md
+```
+
+### 1.2. Input builder
+
+Папка:
+
+```text
+experiments/input_builder/
+```
+
+Назначение:
+
+- читает `reviewed_parameters.xlsx`;
+- считает `effective_value` в Python;
+- формирует `missing_parameters_report.md`;
+- генерирует `input.json` для разделов, если хватает required-параметров;
+- в strict-режиме блокирует разделы с missing required;
+- в demo fallback режиме может временно брать значения из template inputs с warning.
+
+Команда:
+
+```bash
+../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
+```
+
+Отчёт:
+
+```text
+docs/report_input_builder.md
 ```
 
 ### 2. AI-карточка проекта

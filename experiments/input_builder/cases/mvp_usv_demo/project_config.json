@@ -1,0 +1,20 @@
+{
+  "project_name": "ЮСВ demo",
+  "object_address": "Российская федерация, Московская область, г. о. Домодедово, п. Государственного племенного завода \"Константиново\", тер. КП \"Юсупово Виладж\", участок с кад. номером 50:28:0050421:2962",
+  "reviewed_parameters_path": "experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx",
+  "pricing": {
+    "mode": "price_registry_with_fallback",
+    "registry_path": "output/price_registry_filled_v3.xlsx"
+  },
+  "sections": {
+    "earthworks": true,
+    "foundation_slab": true,
+    "waterproofing": true,
+    "load_bearing_walls_lintels": true,
+    "floor_slab_1": true,
+    "floor_slab_2": true,
+    "flat_roof": true,
+    "schiedel_vent_channels": true
+  },
+  "builder_mode": "strict"
+}

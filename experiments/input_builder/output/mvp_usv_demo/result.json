@@ -1,0 +1,202 @@
+{
+  "project_name": "ЮСВ demo",
+  "reviewed_parameters_path": "experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx",
+  "builder_mode": "strict",
+  "sections": [
+    {
+      "section_code": "earthworks",
+      "section_name": "Земляные работы",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 33,
+      "used_parameters": 16,
+      "missing_required": 13,
+      "manual_required": 7,
+      "needs_review": 2,
+      "generated_input_path": "",
+      "warnings": [
+        "earthworks:sand_volume: needs_review value used; Elena has not confirmed this parameter",
+        "earthworks:geotextile_area: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "foundation_slab",
+      "section_name": "Фундаментная плита",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 102,
+      "used_parameters": 54,
+      "missing_required": 41,
+      "manual_required": 6,
+      "needs_review": 10,
+      "generated_input_path": "",
+      "warnings": [
+        "foundation_slab:concrete_project_volume: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:eps_50_under_slab_volume: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:rebar_a500c_d12_main_grid_weight: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:rebar_a500c_d12_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:rebar_a500c_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:rebar_a500c_d16_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:rebar_a240_d6_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:sand_volume: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:geotextile_area: needs_review value used; Elena has not confirmed this parameter",
+        "foundation_slab:planter_membrane_area: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "waterproofing",
+      "section_name": "Гидроизоляция",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 26,
+      "used_parameters": 14,
+      "missing_required": 10,
+      "manual_required": 3,
+      "needs_review": 1,
+      "generated_input_path": "",
+      "warnings": [
+        "waterproofing:eps_100_edge_volume: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "load_bearing_walls_lintels",
+      "section_name": "Несущие стены и перемычки",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 143,
+      "used_parameters": 51,
+      "missing_required": 89,
+      "manual_required": 21,
+      "needs_review": 6,
+      "generated_input_path": "",
+      "warnings": [
+        "load_bearing_walls_lintels:gas_block_d400_volume: needs_review value used; Elena has not confirmed this parameter",
+        "load_bearing_walls_lintels:gas_block_d500_250_volume: needs_review value used; Elena has not confirmed this parameter",
+        "load_bearing_walls_lintels:masonry_rebar_a500_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+        "load_bearing_walls_lintels:lintel_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+        "load_bearing_walls_lintels:lintel_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+        "load_bearing_walls_lintels:lintel_rebar_a240_d6_weight: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "floor_slab_1",
+      "section_name": "Плита перекрытия 1-го этажа",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 129,
+      "used_parameters": 58,
+      "missing_required": 66,
+      "manual_required": 15,
+      "needs_review": 8,
+      "generated_input_path": "",
+      "warnings": [
+        "floor_slab_1:floor_slab_1_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_eps100_volume: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a500_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a500_d25_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a500_d16_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a240_d6_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_1:floor_slab_1_rebar_a240_d8_weight: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "floor_slab_2",
+      "section_name": "Плита перекрытия 2-го этажа",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 69,
+      "used_parameters": 38,
+      "missing_required": 29,
+      "manual_required": 8,
+      "needs_review": 6,
+      "generated_input_path": "",
+      "warnings": [
+        "floor_slab_2:floor_slab_2_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_main: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_extra_1: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_extra_2: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_2:floor_slab_2_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+        "floor_slab_2:floor_slab_2_rebar_a500_d16_weight: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "flat_roof",
+      "section_name": "Плоская кровля",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 83,
+      "used_parameters": 45,
+      "missing_required": 33,
+      "manual_required": 6,
+      "needs_review": 2,
+      "generated_input_path": "",
+      "warnings": [
+        "flat_roof:roof_internal_drains_count: needs_review value used; Elena has not confirmed this parameter",
+        "flat_roof:roof_parapet_drains_count: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    },
+    {
+      "section_code": "schiedel_vent_channels",
+      "section_name": "Вентиляционные каналы Schiedel",
+      "enabled": true,
+      "status": "blocked_missing_required_params",
+      "parameters_total": 16,
+      "used_parameters": 7,
+      "missing_required": 6,
+      "manual_required": 3,
+      "needs_review": 2,
+      "generated_input_path": "",
+      "warnings": [
+        "schiedel_vent_channels:schiedel_vent_channel_2x_count: needs_review value used; Elena has not confirmed this parameter",
+        "schiedel_vent_channels:schiedel_vent_channel_3x_count: needs_review value used; Elena has not confirmed this parameter"
+      ]
+    }
+  ],
+  "totals": {
+    "sections_enabled": 8,
+    "sections_generated": 0,
+    "sections_blocked": 8,
+    "missing_required_total": 287,
+    "manual_required_total": 69
+  },
+  "warnings": [
+    "earthworks:sand_volume: needs_review value used; Elena has not confirmed this parameter",
+    "earthworks:geotextile_area: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:concrete_project_volume: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:eps_50_under_slab_volume: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:rebar_a500c_d12_main_grid_weight: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:rebar_a500c_d12_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:rebar_a500c_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:rebar_a500c_d16_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:rebar_a240_d6_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:sand_volume: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:geotextile_area: needs_review value used; Elena has not confirmed this parameter",
+    "foundation_slab:planter_membrane_area: needs_review value used; Elena has not confirmed this parameter",
+    "waterproofing:eps_100_edge_volume: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:gas_block_d400_volume: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:gas_block_d500_250_volume: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:masonry_rebar_a500_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:lintel_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:lintel_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+    "load_bearing_walls_lintels:lintel_rebar_a240_d6_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_eps100_volume: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a500_d10_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a500_d25_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a500_d16_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a240_d6_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_1:floor_slab_1_rebar_a240_d8_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_concrete_volume: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_main: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_extra_1: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_rebar_a500_d10_weight_extra_2: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_rebar_a500_d12_weight: needs_review value used; Elena has not confirmed this parameter",
+    "floor_slab_2:floor_slab_2_rebar_a500_d16_weight: needs_review value used; Elena has not confirmed this parameter",
+    "flat_roof:roof_internal_drains_count: needs_review value used; Elena has not confirmed this parameter",
+    "flat_roof:roof_parapet_drains_count: needs_review value used; Elena has not confirmed this parameter",
+    "schiedel_vent_channels:schiedel_vent_channel_2x_count: needs_review value used; Elena has not confirmed this parameter",
+    "schiedel_vent_channels:schiedel_vent_channel_3x_count: needs_review value used; Elena has not confirmed this parameter"
+  ]
+}

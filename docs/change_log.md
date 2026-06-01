@@ -43,10 +43,47 @@ git status
 
 ## Контрольные точки
 
-### 2026-06-01 — Улучшены русские labels и файл missing-параметров для Елены
+### 2026-06-01 — Добавлен input_builder для сборки input.json из reviewed_parameters.xlsx
 
 - Ветка: `feature/ai-project-card`
 - Коммит: будет создан текущей фиксацией
+
+Что добавлено:
+
+- создан новый слой `experiments/input_builder/`;
+- добавлен registry по 8 готовым разделам;
+- реализовано чтение `reviewed_parameters.xlsx`;
+- реализован расчёт `effective_value` в Python:
+  - `corrected_value`;
+  - затем `final_value`;
+  - затем `extracted_value`;
+  - иначе missing;
+- добавлены режимы:
+  - `strict`;
+  - `demo_with_template_fallback`;
+- создан `missing_parameters_report.md`;
+- создан docs-отчёт `docs/report_input_builder.md`.
+
+Проверки:
+
+```text
+strict mode -> 8 sections blocked, missing_required_total = 287, manual_required_total = 69
+demo_with_template_fallback -> 8 generated inputs, 287 template fallback warnings
+py_compile -> ok
+calculator files -> not changed
+expected.json -> not changed
+```
+
+Следующий шаг:
+
+- заполнить `reviewed_parameters.xlsx` после проверки Еленой;
+- повторно запустить `input_builder`;
+- затем переходить к запуску калькуляторов от generated inputs и к `box_calculator`.
+
+### 2026-06-01 — Улучшены русские labels и файл missing-параметров для Елены
+
+- Ветка: `feature/ai-project-card`
+- Коммит: `03084cf Improve PDF parameter review labels`
 
 Что изменено:
 

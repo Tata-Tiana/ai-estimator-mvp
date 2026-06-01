@@ -116,6 +116,53 @@ experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_
 
 Labels в `section_schema.py` переведены на понятные русские названия, чтобы в таблицах не было голых технических строк вроде `code`, `name`, `diameter mm`.
 
+## 0.3. Текущий input_builder
+
+После PDF pipeline добавлен следующий экспериментальный слой:
+
+```text
+experiments/input_builder/
+```
+
+Он читает:
+
+```text
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx
+```
+
+и собирает промежуточные `input.json` для калькуляторов.
+
+Важное:
+
+- `input_builder` не читает PDF;
+- `input_builder` не считает смету;
+- калькуляторы не читают Excel напрямую;
+- source of truth после проверки — `reviewed_parameters.xlsx`;
+- `effective_value` считается в Python из `corrected_value`, `final_value`, `extracted_value`.
+
+Режимы:
+
+- `strict` — основной режим, required-параметры без значения блокируют раздел;
+- `demo_with_template_fallback` — демонстрационный режим, недостающие значения берутся из template `input.json` только с явными warnings.
+
+Текущий strict-прогон:
+
+```text
+sections_enabled = 8
+sections_generated = 0
+sections_blocked = 8
+missing_required_total = 287
+manual_required_total = 69
+```
+
+Это ожидаемо: Елена ещё не заполнила missing/manual параметры.
+
+Отчёт:
+
+```text
+docs/report_input_builder.md
+```
+
 ## 1. Цель проекта
 
 `ai-estimator-mvp` — MVP AI-сметчика для частных домов.
