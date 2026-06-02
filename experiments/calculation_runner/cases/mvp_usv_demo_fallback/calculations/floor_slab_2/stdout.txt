@@ -1,0 +1,3 @@
+result: /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/calculation_runner/cases/mvp_usv_demo_fallback/generated_cases/floor_slab_2/result.json
+report: /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/calculation_runner/cases/mvp_usv_demo_fallback/generated_cases/floor_slab_2/result.md
+comparison: 190 ok / 32 mismatch

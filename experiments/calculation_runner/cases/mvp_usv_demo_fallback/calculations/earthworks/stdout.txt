@@ -1,0 +1,21 @@
+{
+  "volume_result": {
+    "manual_pit_volume_m3": 26.4,
+    "trench_volume_m3": 18.29,
+    "manual_excavation_total_m3": 44.69,
+    "compacted_sand_base_m3": 125.58,
+    "compacted_sand_trenches_m3": 23.777,
+    "sand_total_m3": 149.357,
+    "sand_order_volume_m3": 160,
+    "geotextile_with_overlap_m2": 352.0,
+    "geotextile_rolls": 4
+  },
+  "internal_totals": {
+    "internal_materials_total": 2248997,
+    "internal_works_total": 337223,
+    "internal_section_total": 2586220,
+    "internal_materials_total_raw": "2248997",
+    "internal_works_total_raw": "337223",
+    "internal_section_total_raw": "2586220"
+  }
+}

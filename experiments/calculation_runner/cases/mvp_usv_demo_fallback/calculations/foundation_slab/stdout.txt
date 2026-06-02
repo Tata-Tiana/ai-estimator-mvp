@@ -1,0 +1,172 @@
+{
+  "calculation_blocks": {
+    "confirmed_rules": [
+      "PLANTERBAND = количество рулонов мембраны * 4.",
+      "Борта = внешний периметр фундаментной плиты.",
+      "При разных толщинах плит можно брать максимальную толщину.",
+      "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
+      "Пеноплэкс = ЭППС.",
+      "ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.",
+      "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
+      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2."
+    ],
+    "membrane": {
+      "membrane_area_with_overlap_m2": 352.0,
+      "membrane_raw_rolls": 8.8,
+      "membrane_rolls": 9,
+      "planterband_quantity": 36
+    },
+    "formwork": {
+      "formwork_area_m2": 24.3,
+      "slab_edge_height_strategy": "max_thickness",
+      "plywood_calc_method": "working_area",
+      "plywood_sheet_working_area_m2": 2.25,
+      "plywood_raw_sheets": 10.8,
+      "plywood_sheets": 11,
+      "timber_raw_volume_m3": 1.215
+    },
+    "eps": {
+      "eps50_laying_area_m2": 270.0,
+      "eps50_under_slab_required_volume_m3": 14.175,
+      "eps50_thermal_insert_volume_m3": 0.18,
+      "eps50_required_volume_m3": 14.355,
+      "eps50_raw_packs": 51.7111,
+      "eps50_packs": 52,
+      "eps50_order_volume_m3": 14.4352,
+      "eps100_required_volume_m3": 0.36,
+      "eps100_raw_packs": 1.2968,
+      "eps100_packs": 2,
+      "eps100_order_volume_m3": 0.5552
+    },
+    "thermal_insert": {
+      "thermal_insert_raw_pieces": 35.8333,
+      "thermal_insert_pieces": 36,
+      "thermal_insert_control_volume_m3": 0.648,
+      "thermal_insert_piece_depth_for_eps_m": 0.25,
+      "slab_edge_height_m": 0.3,
+      "warnings": [
+        "thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку."
+      ]
+    },
+    "rebar": {
+      "items": {
+        "rebar_a500_d16": {
+          "name": "Арматура класса А500 диаметром 16 мм",
+          "steel_class": "A500",
+          "diameter_mm": 16,
+          "weight_parts_kg": [
+            328
+          ],
+          "total_weight_kg": 328.0,
+          "raw_length_m": 207.5949,
+          "length_with_waste_m": 217.9746,
+          "raw_rods": 18.6303,
+          "rods": 19,
+          "order_length_m": 222.3,
+          "control_weight_kg": 344.3999
+        },
+        "rebar_a500_d12": {
+          "name": "Арматура класса А500 диаметром 12 мм",
+          "steel_class": "A500",
+          "diameter_mm": 12,
+          "weight_parts_kg": [
+            122,
+            5276
+          ],
+          "total_weight_kg": 5398.0,
+          "raw_length_m": 6078.8288,
+          "length_with_waste_m": 6382.7702,
+          "raw_rods": 545.5359,
+          "rods": 546,
+          "order_length_m": 6388.2,
+          "control_weight_kg": 5667.8999
+        },
+        "rebar_a500_d10": {
+          "name": "Арматура класса А500 диаметром 10 мм",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "weight_parts_kg": [
+            1078
+          ],
+          "total_weight_kg": 1078.0,
+          "raw_length_m": 1747.1637,
+          "length_with_waste_m": 1834.5219,
+          "raw_rods": 156.7967,
+          "rods": 157,
+          "order_length_m": 1836.9,
+          "control_weight_kg": 1131.9
+        },
+        "rebar_a240_d6": {
+          "name": "Арматура класса А240 диаметром 6 мм",
+          "steel_class": "A240",
+          "diameter_mm": 6,
+          "weight_parts_kg": [
+            35
+          ],
+          "total_weight_kg": 35.0,
+          "raw_length_m": 157.6577,
+          "length_with_waste_m": 165.5406,
+          "raw_rods": 27.5901,
+          "rods": 28,
+          "order_length_m": 168.0,
+          "control_weight_kg": 36.75
+        }
+      },
+      "rebar_frame_assembly_quantity_m": 8615.4,
+      "foundation_slab_rebar_control_weight_kg": 7180.9498,
+      "box_total_metal_weight_kg": 8263,
+      "box_metal_delivery_capacity_kg": 10000,
+      "suggested_box_metal_delivery_trucks": 1,
+      "actual_rebar_metal_delivery_trucks": 1,
+      "warnings": []
+    },
+    "concrete": {
+      "concrete_raw_order_volume_m3": 85.05,
+      "concrete_order_volume_m3": 85.5,
+      "concrete_delivery_raw_trips": 9.5,
+      "concrete_delivery_trips": 10,
+      "reinforcement_density_kg_per_m3": 88.6537,
+      "reinforcement_density_kg_per_m3_rounded": 89
+    },
+    "manual_lines": {
+      "rebar_crane_supply": {
+        "quantity": 1,
+        "unit_price": 30000,
+        "line_type": "fixed/manual"
+      },
+      "rebar_metal_delivery": {
+        "quantity": 1,
+        "unit_price": 22000,
+        "line_type": "fixed/manual"
+      },
+      "concrete_pump_32m": {
+        "quantity": 1,
+        "unit_price": 38000,
+        "line_type": "fixed/manual"
+      },
+      "logistics_and_supply": {
+        "quantity": 1,
+        "unit_price": 36291.7,
+        "line_type": "fixed/manual"
+      },
+      "consumables_tool_amortization": {
+        "quantity": 1,
+        "unit_price": 72583,
+        "line_type": "fixed/manual"
+      },
+      "technical_supervision": {
+        "quantity": 1,
+        "unit_price": 10000,
+        "line_type": "fixed/manual"
+      }
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1366205,
+    "internal_works_total": 1083650,
+    "internal_section_total": 2449855,
+    "internal_materials_total_raw": "1366205.184",
+    "internal_works_total_raw": "1083650",
+    "internal_section_total_raw": "2449855.184"
+  }
+}

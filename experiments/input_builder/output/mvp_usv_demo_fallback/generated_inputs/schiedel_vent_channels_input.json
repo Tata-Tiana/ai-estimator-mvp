@@ -1,0 +1,37 @@
+{
+  "project_name": "test_schiedel_vent_channels_usv",
+  "vent_channel_1_height_m": 6.2,
+  "vent_channel_2_height_m": 4.81,
+  "vent_channel_2_count": 2,
+  "schiedel_masonry_total_length_m": 15.82,
+  "schiedel_masonry_work_rate_per_m": 5000,
+  "schiedel_vent_channel_2x_count": 24,
+  "schiedel_vent_channel_2x_unit_price": 504,
+  "schiedel_vent_channel_3x_count": 8,
+  "schiedel_vent_channel_3x_unit_price": 720,
+  "schiedel_delivery_trips": 1,
+  "schiedel_delivery_truck_price": 15000,
+  "schiedel_delivery_work_price": 2500,
+  "consumables_rate": 0.03,
+  "pricing": {
+    "mode": "price_registry_with_fallback",
+    "registry_path": "output/price_registry_filled_v3.xlsx"
+  },
+  "generated_from": {
+    "source": "reviewed_parameters.xlsx",
+    "source_path": "experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx",
+    "generated_at": "2026-06-02T16:32:01.403876+00:00",
+    "builder_mode": "demo_with_template_fallback",
+    "section_code": "schiedel_vent_channels"
+  },
+  "warnings": [
+    "schiedel_vent_channels:schiedel_vent_channel_2x_count: needs_review value used; Elena has not confirmed this parameter",
+    "schiedel_vent_channels:schiedel_vent_channel_3x_count: needs_review value used; Elena has not confirmed this parameter",
+    "template fallback used for schiedel_vent_channels_vent_channel_1_height_m (vent_channel_1_height_m)",
+    "template fallback used for schiedel_vent_channels_vent_channel_2_height_m (vent_channel_2_height_m)",
+    "template fallback used for schiedel_vent_channels_vent_channel_2_count (vent_channel_2_count)",
+    "template fallback used for schiedel_vent_channels_schiedel_masonry_total_length_m (schiedel_masonry_total_length_m)",
+    "template fallback used for schiedel_vent_channels_schiedel_delivery_trips (schiedel_delivery_trips)",
+    "template fallback used for schiedel_vent_channels_consumables_rate (consumables_rate)"
+  ]
+}

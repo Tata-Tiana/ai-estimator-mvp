@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-01`.
+Дата актуализации: `2026-06-02`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -72,6 +72,33 @@ demo_with_template_fallback:
 ```
 
 Strict-результаты оставлены как основные. Demo fallback проверен только как smoke-test механики.
+
+После fallback input_builder добавлен demo-runner расчётов:
+
+```text
+experiments/calculation_runner/
+```
+
+Он берёт:
+
+```text
+experiments/input_builder/output/mvp_usv_demo_fallback/generated_inputs/
+```
+
+и запускает существующие калькуляторы по 8 разделам.
+
+Текущий demo-run:
+
+```text
+mode = demo_with_template_fallback
+sections_enabled = 8
+sections_completed = 8
+sections_failed = 0
+sections_skipped = 0
+grand_total = 12 271 194
+```
+
+Это не production-расчёт и не финальная смета: часть missing-параметров была взята из template inputs в demo fallback режиме. Следующий слой — `box_calculator`.
 
 ## Суть проекта
 
@@ -222,6 +249,35 @@ experiments/input_builder/
 
 ```text
 docs/report_input_builder.md
+```
+
+### 1.3. Calculation runner
+
+Папка:
+
+```text
+experiments/calculation_runner/
+```
+
+Назначение:
+
+- берёт generated inputs из `input_builder`;
+- создаёт временные case folders;
+- запускает существующие калькуляторы;
+- сохраняет `stdout.txt`, `stderr.txt`, `exit_code.txt`, `result.json`, `result.md` по каждому разделу;
+- собирает общий `result.json` и `result.md`;
+- не меняет формулы и `expected.json`.
+
+Команда:
+
+```bash
+../.venv/bin/python3 experiments/calculation_runner/run_calculation_runner.py experiments/calculation_runner/cases/mvp_usv_demo_fallback
+```
+
+Отчёт:
+
+```text
+docs/report_calculation_runner.md
 ```
 
 ### 2. AI-карточка проекта

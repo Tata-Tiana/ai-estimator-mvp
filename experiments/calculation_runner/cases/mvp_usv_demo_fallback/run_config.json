@@ -1,0 +1,15 @@
+{
+  "project_name": "ЮСВ demo",
+  "mode": "demo_with_template_fallback",
+  "generated_inputs_dir": "experiments/input_builder/output/mvp_usv_demo_fallback/generated_inputs",
+  "sections": {
+    "earthworks": true,
+    "foundation_slab": true,
+    "waterproofing": true,
+    "load_bearing_walls_lintels": true,
+    "floor_slab_1": true,
+    "floor_slab_2": true,
+    "flat_roof": true,
+    "schiedel_vent_channels": true
+  }
+}

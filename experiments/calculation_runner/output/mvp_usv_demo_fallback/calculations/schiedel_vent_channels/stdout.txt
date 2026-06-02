@@ -1,0 +1,23 @@
+status: mismatch
+ok: 118
+mismatch: 20
+mismatch: totals internal_materials_total_raw internal_materials_total_raw expected=36289.68 actual=36596.208
+mismatch: totals internal_materials_total internal_materials_total expected=36290 actual=36596
+mismatch: totals internal_section_total_raw internal_section_total_raw expected=117889.68 actual=118196.208
+mismatch: totals internal_section_total internal_section_total expected=117890 actual=118196
+mismatch: totals sum_of_displayed_line_material_totals sum_of_displayed_line_material_totals expected=36290 actual=36597
+mismatch: totals sum_of_displayed_line_totals sum_of_displayed_line_totals expected=117890 actual=118197
+mismatch: estimate_lines schiedel_vent_channel_2x_36_25 internal_cost.material_unit_price expected=504 actual=512.4
+mismatch: estimate_lines schiedel_vent_channel_2x_36_25 internal_cost.material_total_raw expected=12096 actual=12297.6
+mismatch: estimate_lines schiedel_vent_channel_2x_36_25 internal_cost.material_total expected=12096 actual=12298
+mismatch: estimate_lines schiedel_vent_channel_2x_36_25 internal_cost.line_total_raw expected=12096 actual=12297.6
+mismatch: estimate_lines schiedel_vent_channel_2x_36_25 internal_cost.line_total expected=12096 actual=12298
+mismatch: estimate_lines schiedel_vent_channel_3x_52_25 internal_cost.material_unit_price expected=720 actual=732
+mismatch: estimate_lines schiedel_vent_channel_3x_52_25 internal_cost.material_total_raw expected=5760 actual=5856
+mismatch: estimate_lines schiedel_vent_channel_3x_52_25 internal_cost.material_total expected=5760 actual=5856
+mismatch: estimate_lines schiedel_vent_channel_3x_52_25 internal_cost.line_total_raw expected=5760 actual=5856
+mismatch: estimate_lines schiedel_vent_channel_3x_52_25 internal_cost.line_total expected=5760 actual=5856
+mismatch: estimate_lines schiedel_consumables_tool_depreciation internal_cost.material_total_raw expected=3433.68 actual=3442.608
+mismatch: estimate_lines schiedel_consumables_tool_depreciation internal_cost.material_total expected=3434 actual=3443
+mismatch: estimate_lines schiedel_consumables_tool_depreciation internal_cost.line_total_raw expected=3433.68 actual=3442.608
+mismatch: estimate_lines schiedel_consumables_tool_depreciation internal_cost.line_total expected=3434 actual=3443

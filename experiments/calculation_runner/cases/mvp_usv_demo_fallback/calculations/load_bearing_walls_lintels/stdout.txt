@@ -1,0 +1,170 @@
+{
+  "calculation_blocks": {
+    "scaffolding": {
+      "setup_quantity": 1,
+      "timber_quantity_m3": 1
+    },
+    "cutoff_waterproofing": {
+      "wall_400_length_m": 77.7,
+      "wall_250_length_m": 38.04,
+      "cutoff_waterproofing_area_m2": 40.59
+    },
+    "main_walls": {
+      "main_masonry_volume_m3": 109.35
+    },
+    "main_gas_blocks": {
+      "d400": {
+        "spec_volume_m3": 78.95,
+        "required_volume_m3": 82.8975,
+        "raw_pallets": 38.557,
+        "pallets": 39,
+        "order_volume_m3": 83.85
+      },
+      "d500_250": {
+        "spec_volume_m3": 30.4,
+        "required_volume_m3": 31.92,
+        "raw_pallets": 17.7333,
+        "pallets": 18,
+        "order_volume_m3": 32.4
+      }
+    },
+    "adhesive_and_sand_concrete": {
+      "main_adhesive_raw_bags": 137.781,
+      "main_adhesive_bags": 138,
+      "sand_concrete_raw_bags": 38.5605,
+      "sand_concrete_bags": 39
+    },
+    "lintels": {
+      "lintel_total_length_m": 23.4,
+      "u_block_quantity": 39.0,
+      "lintel_200mm_steps": 117.0,
+      "rebar": {
+        "lintel_rebar_a500_d12": {
+          "weight_kg": 103,
+          "raw_length_m": 115.991,
+          "length_with_waste_m": 121.7905,
+          "raw_rods": 10.4094,
+          "rods": 11,
+          "order_length_m": 128.7
+        },
+        "lintel_rebar_a240_d6": {
+          "weight_kg": 20.4,
+          "raw_length_m": 91.8919,
+          "length_with_waste_m": 96.4865,
+          "raw_rods": 16.0811,
+          "rods": 17,
+          "order_length_m": 102.0
+        }
+      },
+      "lintel_rebar_frame_assembly_quantity_m": 230.7,
+      "lintel_raw_concrete_volume_m3": 0.3656,
+      "lintel_required_concrete_volume_m3": 0.3839,
+      "lintel_concrete_order_volume_m3": 1.0
+    },
+    "main_wall_reinforcement": {
+      "main_wall_chasing_raw_length_m": 1069.9865,
+      "main_wall_chasing_quantity_m": 1070.0,
+      "main_wall_rebar_a500_d10": {
+        "base_length_m": 1070.0,
+        "raw_rods": 96.0256,
+        "rods": 97,
+        "order_length_m": 1134.9,
+        "material_total_raw": 37133.928,
+        "material_total": 37134
+      },
+      "main_wall_rebar_control_weight_kg": 700.2333
+    },
+    "deliveries_and_cranes": {
+      "gas_block_delivery_total_volume_m3": 158.55,
+      "gas_block_delivery_raw_trucks": 4.9547,
+      "gas_block_delivery_trucks": 5,
+      "main_walls_crane_shifts": 2
+    },
+    "parapet": {
+      "parapet_masonry_volume_m3": 22.74,
+      "parapet_upper_level_total_volume_m3": 36.24,
+      "parapet_and_upper_level_d400": {
+        "spec_volume_m3": 36.24,
+        "required_volume_m3": 38.052,
+        "raw_pallets": 17.6986,
+        "pallets": 18,
+        "order_volume_m3": 38.7
+      },
+      "parapet_d400_delivery_control": {
+        "order_volume_m3": 23.65,
+        "notes": "Delivery split from combined parapet+second-light D400 order volume."
+      },
+      "parapet_chasing_base_length_m": 231.6,
+      "parapet_rebar_base_length_m": 232,
+      "parapet_rebar_order_length_m": 245.7,
+      "parapet_crane_shifts": 1
+    },
+    "second_light_addon": {
+      "second_light_masonry_enabled": true,
+      "second_light_masonry_case_specific": true,
+      "second_light_masonry_volume_m3": 13.5,
+      "second_light_d400_delivery_control": {
+        "spec_volume_m3": 13.5,
+        "required_volume_m3": 14.175,
+        "raw_pallets": 6.593,
+        "pallets": 7,
+        "order_volume_m3": 15.05
+      },
+      "second_light_chasing_base_length_m": 153.16,
+      "second_light_chasing_case_specific": true,
+      "second_light_rebar_base_length_m": 153,
+      "second_light_rebar_order_length_m": 163.8,
+      "second_light_rebar_case_specific": true
+    },
+    "vent_chimney_cladding": {
+      "vent_chimney_cladding_area_m2": 11.4666666667,
+      "vent_chimney_display_area_m2": 11.47,
+      "vent_chimney_d500_150": {
+        "spec_volume_m3": 1.72,
+        "required_volume_m3": 1.806,
+        "raw_pallets": 1.0033,
+        "pallets": 2,
+        "order_volume_m3": 3.6
+      },
+      "vent_chimney_total_length_m": 7.22,
+      "vent_chimney_height_m": 1.25,
+      "vent_chimney_geometry_volume_m3": 1.3538
+    },
+    "overheads": {
+      "second_light_adhesive_raw_bags": 17.01,
+      "second_light_adhesive_bags": 18,
+      "parapet_vent_adhesive_raw_bags": 30.8196,
+      "parapet_vent_adhesive_bags": 31,
+      "parapet_upper_level_adhesive_bags": 49,
+      "parapet_rebar": {
+        "base_length_m": 232.0,
+        "raw_rods": 20.8205,
+        "rods": 21,
+        "order_length_m": 245.7,
+        "material_total_raw": 8039.304,
+        "material_total": 8039
+      },
+      "second_light_rebar": {
+        "base_length_m": 153.0,
+        "raw_rods": 13.7308,
+        "rods": 14,
+        "order_length_m": 163.8,
+        "material_total_raw": 5359.536,
+        "material_total": 5360
+      },
+      "parapet_and_second_light_rebar_order_length_m": 409.5,
+      "walls_consumables_tool_amortization_amount_raw": 100521.7
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": "1540668.199",
+    "internal_materials_total": 1540668,
+    "internal_works_total_raw": "1121449.04",
+    "internal_works_total": 1121449,
+    "internal_section_total_raw": "2662117.239",
+    "internal_section_total": 2662117,
+    "sum_of_displayed_line_material_totals": 1540670,
+    "sum_of_displayed_line_work_totals": 1121449,
+    "sum_of_displayed_line_totals": 2662119
+  }
+}

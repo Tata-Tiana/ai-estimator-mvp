@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-01`.
+Дата актуализации: `2026-06-02`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -161,6 +161,54 @@ manual_required_total = 69
 
 ```text
 docs/report_input_builder.md
+```
+
+## 0.4. Текущий calculation_runner
+
+После fallback-кейса `input_builder` добавлен demo-runner расчётов:
+
+```text
+experiments/calculation_runner/
+```
+
+Он берёт generated inputs:
+
+```text
+experiments/input_builder/output/mvp_usv_demo_fallback/generated_inputs/
+```
+
+и запускает существующие калькуляторы по 8 разделам.
+
+Важное:
+
+- режим текущего прогона — `demo_with_template_fallback`;
+- это не production-расчёт и не финальная смета;
+- недостающие параметры могли быть взяты из template `input.json`;
+- старые калькуляторы и `expected.json` не менялись;
+- по каждому разделу сохраняются `stdout.txt`, `stderr.txt`, `exit_code.txt`, `result.json`, `result.md`.
+
+Текущий demo-run:
+
+```text
+sections_enabled = 8
+sections_completed = 8
+sections_failed = 0
+sections_skipped = 0
+total_materials = 8 185 731
+total_works = 4 085 463
+grand_total = 12 271 194
+```
+
+Отчёт:
+
+```text
+docs/report_calculation_runner.md
+```
+
+Следующий слой:
+
+```text
+box_calculator
 ```
 
 ## 1. Цель проекта

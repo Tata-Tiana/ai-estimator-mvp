@@ -1,6 +1,6 @@
 # Project Notes
 
-Дата актуализации: `2026-05-31`.
+Дата актуализации: `2026-06-02`.
 
 ## Последняя расчётная контрольная точка
 
@@ -9,15 +9,49 @@ branch: feature/ai-project-card
 commit: см. последний коммит live-pricing в `git log`
 ```
 
-Последняя зафиксированная точка проекта — live-pricing. После неё добавлен рабочий PDF parser pipeline, пока без коммита на момент актуализации заметок.
+Последняя рабочая цепочка проекта перед `box_calculator`:
 
-Рабочий путь подготовки параметров из PDF теперь:
+```text
+pdf_parser_pipeline -> input_builder -> calculation_runner
+```
+
+Рабочий путь подготовки параметров из PDF:
 
 ```text
 experiments/pdf_parser_pipeline/
 ```
 
 Более ранний `experiments/review_sheet_builder/` удалён как промежуточный эксперимент, чтобы не путаться в двух похожих контурах.
+
+Слой сборки inputs:
+
+```text
+experiments/input_builder/
+```
+
+Demo fallback case:
+
+```text
+experiments/input_builder/cases/mvp_usv_demo_fallback/
+experiments/input_builder/output/mvp_usv_demo_fallback/
+```
+
+Demo runner расчётов:
+
+```text
+experiments/calculation_runner/
+```
+
+Текущий demo-run:
+
+```text
+mode = demo_with_template_fallback
+sections_completed = 8
+sections_failed = 0
+grand_total = 12 271 194
+```
+
+Это не production-расчёт и не финальная смета. Следующий слой — `box_calculator`.
 
 ## Главные договорённости
 
@@ -75,6 +109,8 @@ experiments/floor_slab_2_calculator/
 experiments/flat_roof_calculator/
 experiments/schiedel_vent_channels_calculator/
 experiments/pricing/
+experiments/input_builder/
+experiments/calculation_runner/
 ```
 
 PDF/AI и материалы по плоской кровле:

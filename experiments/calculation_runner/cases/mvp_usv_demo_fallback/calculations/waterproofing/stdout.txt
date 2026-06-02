@@ -1,0 +1,32 @@
+{
+  "calculation_blocks": {
+    "waterproofing": {
+      "waterproofing_area_m2": 24.3,
+      "primer_required_liters": 7.29,
+      "primer_raw_units": 0.405,
+      "primer_units": 1,
+      "mastic_required_kg": 48.6,
+      "mastic_raw_units": 2.7,
+      "mastic_units": 3,
+      "eps100_wall_insulation_area_m2": 17.5,
+      "non_insulated_edge_lengths_total_m": 15.5,
+      "insulated_edge_length_m": 65.5,
+      "eps100_wall_geometry_check_area_m2": 19.65,
+      "eps100_wall_required_volume_m3": 1.8375,
+      "eps100_wall_raw_packs": 6.6192,
+      "eps100_wall_packs": 7,
+      "eps100_wall_order_volume_m3": 1.9432,
+      "glue_foam_raw_units": 1.75,
+      "glue_foam_units": 2,
+      "waterproofing_base_subtotal": 46799,
+      "logistics_amount_raw": 935.98,
+      "consumables_amount_raw": 1403.97
+    }
+  },
+  "internal_totals": {
+    "waterproofing_base_subtotal": 46799,
+    "internal_materials_total": 31884,
+    "internal_works_total": 17255,
+    "internal_section_total": 49139
+  }
+}

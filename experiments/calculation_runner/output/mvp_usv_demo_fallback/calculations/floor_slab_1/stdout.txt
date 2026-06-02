@@ -1,0 +1,1382 @@
+{
+  "totals": {
+    "internal_materials_total": 1132538,
+    "internal_works_total": 611926,
+    "internal_section_total": 1744464,
+    "base_subtotal_raw_before_overheads": 1713968.300518,
+    "logistics_and_supply_total": 17140,
+    "consumables_and_tool_depreciation_total": 51419,
+    "technical_supervision_total": 5000,
+    "internal_materials_total_raw": "1132537.784539",
+    "internal_works_total_raw": "611926.4",
+    "internal_section_total_raw": "1744464.184539",
+    "sum_of_displayed_line_material_totals": 1132537,
+    "sum_of_displayed_line_work_totals": 611926,
+    "sum_of_displayed_line_totals": 1744463
+  },
+  "comparison": {
+    "status": "mismatch",
+    "ok_count": 173,
+    "mismatch_count": 21,
+    "items": [
+      {
+        "key": "totals.internal_materials_total",
+        "expected": 1175601,
+        "actual": 1132538,
+        "diff": -43063,
+        "status": "mismatch"
+      },
+      {
+        "key": "totals.internal_works_total",
+        "expected": 611926,
+        "actual": 611926,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "totals.internal_section_total",
+        "expected": 1787527,
+        "actual": 1744464,
+        "diff": -43063,
+        "status": "mismatch"
+      },
+      {
+        "key": "totals.base_subtotal_raw_before_overheads",
+        "expected": 1713968.300518,
+        "actual": 1713968.300518,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "totals.logistics_and_supply_total",
+        "expected": 17140,
+        "actual": 17140,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "totals.consumables_and_tool_depreciation_total",
+        "expected": 51419,
+        "actual": 51419,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "totals.technical_supervision_total",
+        "expected": 5000,
+        "actual": 5000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.geometry.slab_concrete_volume_m3_raw",
+        "expected": 37.3752,
+        "actual": 37.3752,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.geometry.slab_concrete_volume_m3_display",
+        "expected": 37.38,
+        "actual": 37.38,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.geometry.slab_formwork_area_m2",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.beams.total_length_m",
+        "expected": 23.2,
+        "actual": 23.2,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.beams.total_concrete_volume_m3",
+        "expected": 3.1548,
+        "actual": 3.1548,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.beams.total_formwork_area_m2",
+        "expected": 27.992,
+        "actual": 27.992,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.edge_formwork_area_m2",
+        "expected": 23.6,
+        "actual": 23.6,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.edge_and_beam_formwork_area_m2",
+        "expected": 51.592,
+        "actual": 51.592,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.raw_average_rate",
+        "expected": 589.5903847,
+        "actual": 589.5903847,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_trucks",
+        "expected": 4,
+        "actual": 4.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.plywood_and_timber.order_plywood_sheets",
+        "expected": 51,
+        "actual": 51,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.plywood_and_timber.timber_volume_m3_raw",
+        "expected": 2.790846,
+        "actual": 2.790846,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.rebar_frame_assembly_quantity_m",
+        "expected": 7294.8,
+        "actual": 7294.8,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.floor_slab_1_rebar_weight_with_waste_kg",
+        "expected": 4630.1,
+        "actual": 4630.1,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.total_delivery_weight_kg_raw",
+        "expected": 6455.49,
+        "actual": 6455.49,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.total_delivery_weight_kg_display",
+        "expected": 6456,
+        "actual": 6456,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.trucks_ordered",
+        "expected": 1,
+        "actual": 1,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.concrete.concrete_volume_with_waste_m3_raw",
+        "expected": 42.5565,
+        "actual": 42.5565,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.concrete.concrete_volume_with_waste_m3_display",
+        "expected": 42.56,
+        "actual": 42.56,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.concrete.order_concrete_volume_m3",
+        "expected": 43,
+        "actual": 43,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.concrete.concrete_delivery_trips",
+        "expected": 5,
+        "actual": 5,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.total_insulation_length_m",
+        "expected": 108,
+        "actual": 108.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.edge_and_beam_insulation_area_m2",
+        "expected": 25.78,
+        "actual": 25.78,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.bottom_slab_insulation_area_m2_raw",
+        "expected": 51.92,
+        "actual": 51.92,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.total_insulation_area_m2",
+        "expected": 77.7,
+        "actual": 77.7,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.eps_packs_ordered",
+        "expected": 30,
+        "actual": 30,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.order_eps_volume_m3_raw",
+        "expected": 8.319,
+        "actual": 8.319,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.foam_cans_ordered",
+        "expected": 8,
+        "actual": 8,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.overheads.base_subtotal_raw_before_overheads",
+        "expected": 1713968.300518,
+        "actual": 1713968.300518,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.overheads.logistics_and_supply_total",
+        "expected": 17140,
+        "actual": 17140,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.overheads.consumables_and_tool_depreciation_total",
+        "expected": 51419,
+        "actual": 51419,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.slab_formwork_installation_control.quantity_raw",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.slab_formwork_installation_control.quantity_display",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.slab_formwork_installation_control.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.slab_formwork_installation_control.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.slab_formwork_installation_control.line_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.quantity_raw",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.quantity_display",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.material_total",
+        "expected": 124584,
+        "actual": 124584,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.line_total",
+        "expected": 124584,
+        "actual": 124584,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.quantity_raw",
+        "expected": 4,
+        "actual": 4.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.quantity_display",
+        "expected": 4,
+        "actual": 4.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.material_total",
+        "expected": 80000,
+        "actual": 80000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.line_total",
+        "expected": 80000,
+        "actual": 80000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_rebar_crane_supply.quantity_raw",
+        "expected": 2,
+        "actual": 2.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_rebar_crane_supply.quantity_display",
+        "expected": 2,
+        "actual": 2.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_rebar_crane_supply.material_total",
+        "expected": 60000,
+        "actual": 60000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_rebar_crane_supply.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_rebar_crane_supply.line_total",
+        "expected": 60000,
+        "actual": 60000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.material_total_raw",
+        "expected": 9759.08,
+        "actual": 9759.08,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.material_total",
+        "expected": 9759,
+        "actual": 9759,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_consumables.line_total",
+        "expected": 9759,
+        "actual": 9759,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_formwork_installation_control.quantity_raw",
+        "expected": 51.592,
+        "actual": 51.592,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_formwork_installation_control.quantity_display",
+        "expected": 51.59,
+        "actual": 51.59,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_formwork_installation_control.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_formwork_installation_control.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_formwork_installation_control.line_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.quantity_raw",
+        "expected": 51,
+        "actual": 51.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.quantity_display",
+        "expected": 51,
+        "actual": 51.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.material_total",
+        "expected": 73950,
+        "actual": 73950,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.line_total",
+        "expected": 73950,
+        "actual": 73950,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.quantity_raw",
+        "expected": 2.790846,
+        "actual": 2.790846,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.quantity_display",
+        "expected": 2.79,
+        "actual": 2.79,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.material_total_raw",
+        "expected": 60003.181518,
+        "actual": 60003.181518,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.material_total",
+        "expected": 60003,
+        "actual": 60003,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_timber_gost.line_total",
+        "expected": 60003,
+        "actual": 60003,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_rebar_frame_assembly_control.quantity_raw",
+        "expected": 7294.8,
+        "actual": 7294.8,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_rebar_frame_assembly_control.quantity_display",
+        "expected": 7294.8,
+        "actual": 7294.8,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_rebar_frame_assembly_control.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_rebar_frame_assembly_control.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_rebar_frame_assembly_control.line_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.quantity_raw",
+        "expected": 46.8,
+        "actual": 46.8,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.quantity_display",
+        "expected": 46.8,
+        "actual": 46.8,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.material_total_raw",
+        "expected": 9189.18,
+        "actual": 7291.44,
+        "diff": -1897.74,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.material_total",
+        "expected": 9189,
+        "actual": 7291,
+        "diff": -1898,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d25.line_total",
+        "expected": 9189,
+        "actual": 7291,
+        "diff": -1898,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.quantity_raw",
+        "expected": 81.9,
+        "actual": 81.9,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.quantity_display",
+        "expected": 81.9,
+        "actual": 81.9,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.material_total_raw",
+        "expected": 6599.502,
+        "actual": 5315.31,
+        "diff": -1284.192,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.material_total",
+        "expected": 6600,
+        "actual": 5315,
+        "diff": -1285,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d16.line_total",
+        "expected": 6600,
+        "actual": 5315,
+        "diff": -1285,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.quantity_raw",
+        "expected": 58.5,
+        "actual": 58.5,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.quantity_display",
+        "expected": 58.5,
+        "actual": 58.5,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.material_total_raw",
+        "expected": 2649.465,
+        "actual": 2155.725,
+        "diff": -493.74,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.material_total",
+        "expected": 2649,
+        "actual": 2156,
+        "diff": -493,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d12.line_total",
+        "expected": 2649,
+        "actual": 2156,
+        "diff": -493,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.quantity_raw",
+        "expected": 6879.6,
+        "actual": 6879.6,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.quantity_display",
+        "expected": 6879.6,
+        "actual": 6879.6,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.material_total_raw",
+        "expected": 225100.512,
+        "actual": 186849.936,
+        "diff": -38250.576,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.material_total",
+        "expected": 225101,
+        "actual": 186850,
+        "diff": -38251,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a500_d10.line_total",
+        "expected": 225101,
+        "actual": 186850,
+        "diff": -38251,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d8.quantity_raw",
+        "expected": 48,
+        "actual": 48.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d8.quantity_display",
+        "expected": 48,
+        "actual": 48.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d8.material_total",
+        "expected": 1152,
+        "actual": 888,
+        "diff": -264,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d8.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d8.line_total",
+        "expected": 1152,
+        "actual": 888,
+        "diff": -264,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.quantity_raw",
+        "expected": 180,
+        "actual": 180.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.quantity_display",
+        "expected": 180,
+        "actual": 180.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.material_total_raw",
+        "expected": 2397.6,
+        "actual": 1845.0,
+        "diff": -552.6,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.material_total",
+        "expected": 2398,
+        "actual": 1845,
+        "diff": -553,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_a240_d6.line_total",
+        "expected": 2398,
+        "actual": 1845,
+        "diff": -553,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.rebar_metal_delivery.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_metal_delivery.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_metal_delivery.material_total",
+        "expected": 22000,
+        "actual": 22000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_metal_delivery.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.rebar_metal_delivery.line_total",
+        "expected": 22000,
+        "actual": 22000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.quantity_raw",
+        "expected": 37.3752,
+        "actual": 37.3752,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.quantity_display",
+        "expected": 37.38,
+        "actual": 37.38,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.work_total_raw",
+        "expected": 448502.4,
+        "actual": 448502.4,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.work_total",
+        "expected": 448502,
+        "actual": 448502,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.floor_slab_concreting_work.line_total",
+        "expected": 448502,
+        "actual": 448502,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work.quantity_raw",
+        "expected": 3.1548,
+        "actual": 3.1548,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work.quantity_display",
+        "expected": 3.15,
+        "actual": 3.15,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work.work_total",
+        "expected": 63096,
+        "actual": 63096,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work.line_total",
+        "expected": 63096,
+        "actual": 63096,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_b22_5_m300_material.quantity_raw",
+        "expected": 43,
+        "actual": 43.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_b22_5_m300_material.quantity_display",
+        "expected": 43,
+        "actual": 43.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_b22_5_m300_material.material_total",
+        "expected": 275200,
+        "actual": 275200,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_b22_5_m300_material.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_b22_5_m300_material.line_total",
+        "expected": 275200,
+        "actual": 275200,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_delivery.quantity_raw",
+        "expected": 5,
+        "actual": 5.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_delivery.quantity_display",
+        "expected": 5,
+        "actual": 5.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_delivery.material_total",
+        "expected": 37500,
+        "actual": 37500,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_delivery.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_delivery.line_total",
+        "expected": 37500,
+        "actual": 37500,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_pump_32m.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_pump_32m.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_pump_32m.material_total",
+        "expected": 38000,
+        "actual": 38000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_pump_32m.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.concrete_pump_32m.line_total",
+        "expected": 38000,
+        "actual": 38000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_dismantling_zero_internal.quantity_raw",
+        "expected": 207.64,
+        "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_dismantling_zero_internal.quantity_display",
+        "expected": 207.6,
+        "actual": 207.6,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_dismantling_zero_internal.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_dismantling_zero_internal.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_dismantling_zero_internal.line_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_insulation_work.quantity_raw",
+        "expected": 108,
+        "actual": 108.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_insulation_work.quantity_display",
+        "expected": 108,
+        "actual": 108.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_insulation_work.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_insulation_work.work_total",
+        "expected": 48600,
+        "actual": 48600,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.edge_beam_insulation_work.line_total",
+        "expected": 48600,
+        "actual": 48600,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.bottom_slab_insulation_work.quantity_raw",
+        "expected": 51.92,
+        "actual": 51.92,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.bottom_slab_insulation_work.quantity_display",
+        "expected": 51.9,
+        "actual": 51.9,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.bottom_slab_insulation_work.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.bottom_slab_insulation_work.work_total",
+        "expected": 46728,
+        "actual": 46728,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.bottom_slab_insulation_work.line_total",
+        "expected": 46728,
+        "actual": 46728,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.quantity_raw",
+        "expected": 8.319,
+        "actual": 8.319,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.quantity_display",
+        "expected": 8.32,
+        "actual": 8.32,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.material_total_raw",
+        "expected": 75037.38,
+        "actual": 75037.38,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.material_total",
+        "expected": 75037,
+        "actual": 75037,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_penoplex_osnova_100mm.line_total",
+        "expected": 75037,
+        "actual": 75037,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_glue_foam.quantity_raw",
+        "expected": 8,
+        "actual": 8.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_glue_foam.quantity_display",
+        "expected": 8,
+        "actual": 8.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_glue_foam.material_total",
+        "expected": 3920,
+        "actual": 3600,
+        "diff": -320,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.eps_glue_foam.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.eps_glue_foam.line_total",
+        "expected": 3920,
+        "actual": 3600,
+        "diff": -320,
+        "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.material_total_raw",
+        "expected": 17139.683005,
+        "actual": 17139.683005,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.material_total",
+        "expected": 17140,
+        "actual": 17140,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.logistics_and_supply.line_total",
+        "expected": 17140,
+        "actual": 17140,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.material_total_raw",
+        "expected": 51419.049016,
+        "actual": 51419.049016,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.material_total",
+        "expected": 51419,
+        "actual": 51419,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.work_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.consumables_tool_depreciation.line_total",
+        "expected": 51419,
+        "actual": 51419,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.technical_supervision.quantity_raw",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.technical_supervision.quantity_display",
+        "expected": 1,
+        "actual": 1.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.technical_supervision.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.technical_supervision.work_total",
+        "expected": 5000,
+        "actual": 5000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.technical_supervision.line_total",
+        "expected": 5000,
+        "actual": 5000,
+        "diff": 0,
+        "status": "ok"
+      }
+    ]
+  }
+}

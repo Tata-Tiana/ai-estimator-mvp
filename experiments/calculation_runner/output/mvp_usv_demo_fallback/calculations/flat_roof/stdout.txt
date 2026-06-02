@@ -1,0 +1,21 @@
+status: mismatch
+ok: 442
+mismatch: 18
+mismatch: totals internal_materials_total_raw internal_materials_total_raw expected=1420802 actual=1417243.508576
+mismatch: totals internal_materials_total internal_materials_total expected=1420802 actual=1417244
+mismatch: totals internal_works_total_raw internal_works_total_raw expected=618070 actual=618070.04
+mismatch: totals internal_section_total_raw internal_section_total_raw expected=2038872 actual=2035313.548576
+mismatch: totals internal_section_total internal_section_total expected=2038872 actual=2035314
+mismatch: totals sum_of_displayed_line_material_totals sum_of_displayed_line_material_totals expected=1420802 actual=1417244
+mismatch: totals sum_of_displayed_line_totals sum_of_displayed_line_totals expected=2038872 actual=2035314
+mismatch: estimate_lines vapor_barrier_film_technonikol_120mk internal_cost.material_unit_price expected=35 actual=23.12
+mismatch: estimate_lines vapor_barrier_film_technonikol_120mk internal_cost.material_total_raw expected=10500 actual=6936
+mismatch: estimate_lines vapor_barrier_film_technonikol_120mk internal_cost.material_total expected=10500 actual=6936
+mismatch: estimate_lines vapor_barrier_film_technonikol_120mk internal_cost.line_total_raw expected=10500 actual=6936
+mismatch: estimate_lines vapor_barrier_film_technonikol_120mk internal_cost.line_total expected=10500 actual=6936
+mismatch: estimate_lines eps100_technonikol_carbon_eco internal_cost.material_total expected=377080 actual=377082
+mismatch: estimate_lines eps100_technonikol_carbon_eco internal_cost.line_total expected=377080 actual=377082
+mismatch: estimate_lines eps_slope_2_1_plate_a internal_cost.material_total expected=41304 actual=41305
+mismatch: estimate_lines eps_slope_2_1_plate_a internal_cost.line_total expected=41304 actual=41305
+mismatch: estimate_lines pvc_membrane_logicroof_vrp_1_5mm_gray internal_cost.material_total expected=565738 actual=565741
+mismatch: estimate_lines pvc_membrane_logicroof_vrp_1_5mm_gray internal_cost.line_total expected=565738 actual=565741

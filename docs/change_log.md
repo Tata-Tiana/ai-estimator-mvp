@@ -43,10 +43,55 @@ git status
 
 ## Контрольные точки
 
-### 2026-06-01 — Добавлен input_builder для сборки input.json из reviewed_parameters.xlsx
+### 2026-06-02 — Добавлен calculation_runner для demo-запуска всех разделов
 
 - Ветка: `feature/ai-project-card`
 - Коммит: будет создан текущей фиксацией
+
+Что добавлено:
+
+- создан demo fallback case для `input_builder`:
+  - `experiments/input_builder/cases/mvp_usv_demo_fallback/`;
+  - `experiments/input_builder/output/mvp_usv_demo_fallback/`;
+- создан новый слой `experiments/calculation_runner/`;
+- runner берёт generated `input.json` из `input_builder`;
+- создаёт временные case folders;
+- запускает существующие калькуляторы по 8 разделам;
+- сохраняет по каждому разделу:
+  - `stdout.txt`;
+  - `stderr.txt`;
+  - `exit_code.txt`;
+  - `result.json`;
+  - `result.md`;
+- создан docs-отчёт `docs/report_calculation_runner.md`.
+
+Проверки:
+
+```text
+input_builder fallback -> ok
+warnings = 324
+template fallback warnings = 287
+calculation_runner -> ok
+sections_enabled = 8
+sections_completed = 8
+sections_failed = 0
+sections_skipped = 0
+grand_total = 12 271 194
+py_compile -> ok
+calculator files -> not changed
+expected.json -> not changed
+```
+
+Важно:
+
+- это demo-run в режиме `demo_with_template_fallback`;
+- это не production-расчёт и не финальная смета;
+- следующий шаг: `box_calculator`.
+
+### 2026-06-01 — Добавлен input_builder для сборки input.json из reviewed_parameters.xlsx
+
+- Ветка: `feature/ai-project-card`
+- Коммит: `703b170 Add input builder experiment`
 
 Что добавлено:
 

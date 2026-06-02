@@ -1,0 +1,5359 @@
+{
+  "section_code": "flat_roof",
+  "section_name": "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА",
+  "project_name": "test_flat_roof_usv",
+  "inputs": {
+    "project_name": "test_flat_roof_usv",
+    "roof_area_level_1_m2": 177.52,
+    "roof_area_level_2_m2": 71.4,
+    "roof_area_total_m2": 248.92,
+    "project_spec_roof_area_m2": 294,
+    "parapet_length_level_1_m": 96.0,
+    "parapet_length_level_2_m": 35.4,
+    "vent_wall_abutment_level_1_m": 4.68,
+    "vent_wall_abutment_level_2_m": 2.54,
+    "parapet_and_abutment_total_length_m": 138.62,
+    "roof_work_coeff": 1.1,
+    "vapor_barrier_work_rate_per_m2": 77,
+    "vapor_barrier_film_overlap_coeff": 1.15,
+    "vapor_barrier_film_roll_area_m2": 150,
+    "vapor_barrier_film_unit_price_per_m2": 35,
+    "eps_insulation_base_work_rate_per_m2": 700,
+    "eps_insulation_work_rate_per_m2": 770,
+    "eps_main_thickness_m": 0.2,
+    "eps_insulation_waste_coeff": 1.03,
+    "eps100_pack_volume_m3": 0.27376,
+    "eps100_unit_price_per_m3": 7326.7,
+    "eps50_supplier_required_volume_m3": 3.92,
+    "eps50_pack_volume_m3": 0.27376,
+    "eps50_unit_price_per_m3": 6906.7,
+    "slope_plate_a_supplier_required_volume_m3": 3.63,
+    "slope_plate_a_pack_volume_m3": 0.2916,
+    "slope_plate_a_unit_price_per_m3": 10896,
+    "slope_plate_b_supplier_required_volume_m3": 5.61,
+    "slope_plate_b_pack_volume_m3": 0.2736,
+    "slope_plate_b_unit_price_per_m3": 10896,
+    "slope_plate_j_supplier_required_volume_m3": 1.43,
+    "slope_plate_j_pack_volume_m3": 0.2916,
+    "slope_plate_j_unit_price_per_m3": 10896,
+    "slope_plate_k_supplier_required_volume_m3": 1.5,
+    "slope_plate_k_pack_volume_m3": 0.2736,
+    "slope_plate_k_unit_price_per_m3": 10896,
+    "geotextile_flat_coeff": 1.1,
+    "geotextile_flat_roll_area_m2": 100,
+    "geotextile_flat_unit_price_per_m2": 111.76,
+    "geotextile_parapet_coeff": 1.1,
+    "geotextile_parapet_roll_area_m2": 100,
+    "geotextile_parapet_unit_price_per_m2": 64.34,
+    "pvc_membrane_installation_work_rate_per_m2": 740,
+    "pvc_membrane_abutment_work_rate_per_m": 700,
+    "vent_shaft_abutment_count": 3,
+    "vent_shaft_abutment_work_rate_per_item": 5000,
+    "rail_piece_length_m": 3,
+    "pressure_rail_unit_price_per_m": 95,
+    "edge_rail_unit_price_per_m": 98,
+    "pvc_membrane_flat_coeff": 1.15,
+    "pvc_membrane_parapet_coeff": 1.1,
+    "pvc_membrane_roll_width_m": 2.1,
+    "pvc_membrane_roll_length_m": 20,
+    "pvc_membrane_unit_price_per_roll_display": 51431,
+    "pvc_membrane_expected_material_total": 565738,
+    "roof_aerators_count": 3,
+    "roof_aerator_unit_price": 587,
+    "roof_aerator_installation_rate": 2750,
+    "parapet_roof_drains_count": 2,
+    "parapet_roof_drain_unit_price": 5000,
+    "parapet_roof_drain_installation_rate": 5500,
+    "gas_block_wall_holes_count": 2,
+    "gas_block_wall_hole_drilling_rate": 3000,
+    "internal_roof_drains_count": 3,
+    "internal_roof_drain_unit_price": 5000,
+    "internal_roof_drain_installation_rate": 5500,
+    "internal_drain_height_per_drain_m": 3.75,
+    "internal_drain_pvc_110_unit_price_per_m": 2500,
+    "internal_drain_pvc_110_work_rate_per_m": 3000,
+    "roof_crane_lifting_shifts": 1,
+    "roof_crane_lifting_unit_price_per_shift": 30000,
+    "roof_consumables_total_raw": 75297.06,
+    "roof_consumables_total": 75297,
+    "roof_waste_removal_trucks": 3,
+    "roof_waste_removal_truck_unit_price": 10000,
+    "roof_waste_removal_work_rate_per_truck": 3500,
+    "roof_logistics_and_supply_total_raw": 37648.53,
+    "roof_logistics_and_supply_total": 37649,
+    "technical_supervision_work_total": 10000,
+    "procurement_storage_work_total": 15000,
+    "pricing": {
+      "mode": "price_registry_with_fallback",
+      "registry_path": "output/price_registry_filled_v3.xlsx"
+    }
+  },
+  "calculation_blocks": {
+    "geometry": {
+      "roof_area_level_1_m2": "177.52",
+      "roof_area_level_2_m2": "71.4",
+      "roof_area_total_m2": "248.92",
+      "project_spec_roof_area_m2": "294",
+      "parapet_length_level_1_m": "96",
+      "parapet_length_level_2_m": "35.4",
+      "vent_wall_abutment_level_1_m": "4.68",
+      "vent_wall_abutment_level_2_m": "2.54",
+      "parapet_and_abutment_total_length_m": "138.62"
+    },
+    "internal_drain": {
+      "internal_drain_total_length_m": "11.25"
+    },
+    "pvc_membrane": {
+      "required_area_m2": "438.74",
+      "roll_area_m2": "42",
+      "rolls_ordered": 11
+    }
+  },
+  "estimate_lines": [
+    {
+      "code": "roof_base_preparation_control",
+      "name": "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности",
+      "unit": "м2",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "248.92",
+      "quantity_display": "248.92",
+      "quantity_source": "roof_area_total_m2",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      },
+      "formula": {},
+      "notes": [
+        "Строка сохранена для структуры Excel.",
+        "В текущем scope серая внутренняя себестоимость равна 0."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": null,
+      "unit_price_used": null,
+      "price_warning": null
+    },
+    {
+      "code": "vapor_barrier_installation",
+      "name": "Пароизоляция основания плёнкой ПВХ",
+      "unit": "м2",
+      "line_type": "work",
+      "quantity_raw": "248.92",
+      "quantity_display": "248.92",
+      "quantity_source": "roof_area_total_m2",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "77",
+        "work_total_raw": "19166.84",
+        "work_total": 19167,
+        "line_total_raw": "19166.84",
+        "line_total": 19167
+      },
+      "formula": {
+        "roof_area_total_m2": "248.92",
+        "rate_per_m2": 77
+      },
+      "notes": [],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "77",
+      "unit_price_used": "77",
+      "price_warning": null
+    },
+    {
+      "code": "vapor_barrier_film_technonikol_120mk",
+      "name": "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул",
+      "unit": "м2",
+      "line_type": "materials",
+      "quantity_raw": "300",
+      "quantity_display": "300",
+      "quantity_source": "roof_area_total_m2 * vapor_barrier_film_overlap_coeff rounded to rolls",
+      "internal_cost": {
+        "material_unit_price": "23.12",
+        "material_total_raw": "6936",
+        "material_total": 6936,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "6936",
+        "line_total": 6936
+      },
+      "formula": {
+        "required_area_m2": "286.258",
+        "roll_area_m2": "150",
+        "rolls_ordered": 2,
+        "ordered_area_m2": "300"
+      },
+      "notes": [],
+      "price_code": "roof_vapor_barrier_film_technonikol_120mk_m2",
+      "unit_price_source": "price_registry",
+      "unit_price_original": "35",
+      "unit_price_used": "23.12",
+      "price_warning": null
+    },
+    {
+      "code": "eps_roof_insulation_installation",
+      "name": "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)",
+      "unit": "м2",
+      "line_type": "work",
+      "quantity_raw": "248.92",
+      "quantity_display": "248.92",
+      "quantity_source": "roof_area_total_m2",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "770",
+        "work_total_raw": "191668.4",
+        "work_total": 191668,
+        "line_total_raw": "191668.4",
+        "line_total": 191668
+      },
+      "formula": {
+        "roof_area_total_m2": "248.92",
+        "rate_per_m2": 770,
+        "rate_context": "likely eps_insulation_base_work_rate_per_m2 * roof_work_coeff"
+      },
+      "notes": [
+        "Для текущего проекта ставка 770 вероятно равна 700 * roof_work_coeff 1.10."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "770",
+      "unit_price_used": "770",
+      "price_warning": null
+    },
+    {
+      "code": "eps100_technonikol_carbon_eco",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "51.46688",
+      "quantity_display": "51.47",
+      "quantity_source": "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
+      "internal_cost": {
+        "material_unit_price": "7326.7",
+        "material_total_raw": "377082.389696",
+        "material_total": 377082,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "377082.389696",
+        "line_total": 377082
+      },
+      "formula": {
+        "required_volume_m3": "51.27752",
+        "packs_ordered": 188,
+        "ordered_volume_m3": "51.46688"
+      },
+      "notes": [
+        "Expected total fixed to 377080 for current Excel match because raw/display price differs."
+      ],
+      "price_code": "roof_eps100_technonikol_carbon_eco_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "7326.7",
+      "unit_price_used": "7326.7",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "eps50_technonikol_carbon_eco",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "4.1064",
+      "quantity_display": "4.11",
+      "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+      "internal_cost": {
+        "material_unit_price": "6906.7",
+        "material_total_raw": "28361.67288",
+        "material_total": 28362,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "28361.67288",
+        "line_total": 28362
+      },
+      "formula": {
+        "supplier_required_volume_m3": "3.92",
+        "pack_volume_m3": "0.27376",
+        "packs_ordered": 15,
+        "ordered_volume_m3": "4.1064"
+      },
+      "notes": [
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
+      ],
+      "price_code": "roof_eps50_technonikol_carbon_eco_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "6906.7",
+      "unit_price_used": "6906.7",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "eps_slope_2_1_plate_a",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "3.7908",
+      "quantity_display": "3.79",
+      "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+      "internal_cost": {
+        "material_unit_price": "10896",
+        "material_total_raw": "41304.5568",
+        "material_total": 41305,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "41304.5568",
+        "line_total": 41305
+      },
+      "formula": {
+        "supplier_required_volume_m3": "3.63",
+        "pack_volume_m3": "0.2916",
+        "packs_ordered": 13,
+        "ordered_volume_m3": "3.7908"
+      },
+      "notes": [
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.",
+        "Expected total fixed for current Excel raw/display match."
+      ],
+      "price_code": "roof_eps_slope_2_1_plate_a_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "10896",
+      "unit_price_used": "10896",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "eps_slope_2_1_plate_b",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "5.7456",
+      "quantity_display": "5.75",
+      "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+      "internal_cost": {
+        "material_unit_price": "10896",
+        "material_total_raw": "62604.0576",
+        "material_total": 62604,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "62604.0576",
+        "line_total": 62604
+      },
+      "formula": {
+        "supplier_required_volume_m3": "5.61",
+        "pack_volume_m3": "0.2736",
+        "packs_ordered": 21,
+        "ordered_volume_m3": "5.7456"
+      },
+      "notes": [
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
+      ],
+      "price_code": "roof_eps_slope_2_1_plate_b_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "10896",
+      "unit_price_used": "10896",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "eps_slope_4_2_plate_j",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "1.458",
+      "quantity_display": "1.46",
+      "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+      "internal_cost": {
+        "material_unit_price": "10896",
+        "material_total_raw": "15886.368",
+        "material_total": 15886,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "15886.368",
+        "line_total": 15886
+      },
+      "formula": {
+        "supplier_required_volume_m3": "1.43",
+        "pack_volume_m3": "0.2916",
+        "packs_ordered": 5,
+        "ordered_volume_m3": "1.458"
+      },
+      "notes": [
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
+      ],
+      "price_code": "roof_eps_slope_4_2_plate_j_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "10896",
+      "unit_price_used": "10896",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "eps_slope_4_2_plate_k",
+      "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)",
+      "unit": "м3",
+      "line_type": "materials",
+      "quantity_raw": "1.6416",
+      "quantity_display": "1.64",
+      "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+      "internal_cost": {
+        "material_unit_price": "10896",
+        "material_total_raw": "17886.8736",
+        "material_total": 17887,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "17886.8736",
+        "line_total": 17887
+      },
+      "formula": {
+        "supplier_required_volume_m3": "1.5",
+        "pack_volume_m3": "0.2736",
+        "packs_ordered": 6,
+        "ordered_volume_m3": "1.6416"
+      },
+      "notes": [
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
+      ],
+      "price_code": "roof_eps_slope_4_2_plate_k_m3",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "10896",
+      "unit_price_used": "10896",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "geotextile_prof_300_flat",
+      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
+      "unit": "м2",
+      "line_type": "materials",
+      "quantity_raw": "300",
+      "quantity_display": "300",
+      "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
+      "internal_cost": {
+        "material_unit_price": "111.76",
+        "material_total_raw": "33528",
+        "material_total": 33528,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "33528",
+        "line_total": 33528
+      },
+      "formula": {
+        "required_area_m2": "273.812",
+        "roll_area_m2": "100",
+        "rolls_ordered": 3,
+        "ordered_area_m2": "300"
+      },
+      "notes": [],
+      "price_code": "roof_geotextile_technonikol_prof_300_m2",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "111.76",
+      "unit_price_used": "111.76",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "geotextile_prof_150_parapet",
+      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+      "unit": "м2",
+      "line_type": "materials",
+      "quantity_raw": "200",
+      "quantity_display": "200",
+      "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
+      "internal_cost": {
+        "material_unit_price": "64.34",
+        "material_total_raw": "12868",
+        "material_total": 12868,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "12868",
+        "line_total": 12868
+      },
+      "formula": {
+        "required_area_m2": "152.482",
+        "roll_area_m2": "100",
+        "rolls_ordered": 2,
+        "ordered_area_m2": "200"
+      },
+      "notes": [],
+      "price_code": "roof_geotextile_technonikol_prof_150_m2",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "64.34",
+      "unit_price_used": "64.34",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "pvc_membrane_flat_installation",
+      "name": "Укладка ПВХ Мембраны",
+      "unit": "м2",
+      "line_type": "work",
+      "quantity_raw": "248.92",
+      "quantity_display": "248.92",
+      "quantity_source": "roof_area_total_m2",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "740",
+        "work_total_raw": "184200.8",
+        "work_total": 184201,
+        "line_total_raw": "184200.8",
+        "line_total": 184201
+      },
+      "formula": {},
+      "notes": [],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "740",
+      "unit_price_used": "740",
+      "price_warning": null
+    },
+    {
+      "code": "pvc_membrane_abutment_installation",
+      "name": "Монтаж примыкания кровли из ПВХ мембраны",
+      "unit": "мп",
+      "line_type": "work",
+      "quantity_raw": "138.62",
+      "quantity_display": "138.62",
+      "quantity_source": "parapet_and_abutment_total_length_m",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "700",
+        "work_total_raw": "97034",
+        "work_total": 97034,
+        "line_total_raw": "97034",
+        "line_total": 97034
+      },
+      "formula": {},
+      "notes": [],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "700",
+      "unit_price_used": "700",
+      "price_warning": null
+    },
+    {
+      "code": "vent_shaft_abutment_installation",
+      "name": "Монтаж примыкания к вентшахтам",
+      "unit": "шт",
+      "line_type": "work",
+      "quantity_raw": "3",
+      "quantity_display": "3",
+      "quantity_source": "vent_shaft_abutment_count",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "5000",
+        "work_total_raw": "15000",
+        "work_total": 15000,
+        "line_total_raw": "15000",
+        "line_total": 15000
+      },
+      "formula": {},
+      "notes": [],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "5000",
+      "unit_price_used": "5000",
+      "price_warning": null
+    },
+    {
+      "code": "aluminum_pressure_rail_3m",
+      "name": "Рейка прижимная алюминиевая 3м",
+      "unit": "мп",
+      "line_type": "materials",
+      "quantity_raw": "141",
+      "quantity_display": "141",
+      "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
+      "internal_cost": {
+        "material_unit_price": "95",
+        "material_total_raw": "13395",
+        "material_total": 13395,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "13395",
+        "line_total": 13395
+      },
+      "formula": {
+        "pieces_ordered": 47,
+        "ordered_length_m": "141"
+      },
+      "notes": [],
+      "price_code": "roof_aluminum_pressure_rail_m",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "95",
+      "unit_price_used": "95",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "aluminum_edge_rail_3m",
+      "name": "Рейка краевая алюминиевая 3м",
+      "unit": "мп",
+      "line_type": "materials",
+      "quantity_raw": "141",
+      "quantity_display": "141",
+      "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
+      "internal_cost": {
+        "material_unit_price": "98",
+        "material_total_raw": "13818",
+        "material_total": 13818,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "13818",
+        "line_total": 13818
+      },
+      "formula": {
+        "pieces_ordered": 47,
+        "ordered_length_m": "141"
+      },
+      "notes": [],
+      "price_code": "roof_aluminum_edge_rail_m",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "98",
+      "unit_price_used": "98",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+      "name": "Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
+      "unit": "рул",
+      "line_type": "materials",
+      "quantity_raw": "11",
+      "quantity_display": "11",
+      "quantity_source": "flat and abutment membrane areas rounded to rolls",
+      "internal_cost": {
+        "material_unit_price": "51431",
+        "material_total_raw": "565741",
+        "material_total": 565741,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "565741",
+        "line_total": 565741
+      },
+      "formula": {
+        "flat_area_m2": "286.258",
+        "abutment_area_m2": "152.482",
+        "required_area_m2": "438.74",
+        "roll_area_m2": "42",
+        "rolls_ordered": 11
+      },
+      "notes": [
+        "11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738."
+      ],
+      "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "51431",
+      "unit_price_used": "51431",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "roof_pvc_aerator_75x375",
+      "name": "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)",
+      "unit": "шт",
+      "line_type": "material_and_work",
+      "quantity_raw": "3",
+      "quantity_display": "3",
+      "quantity_source": "roof_aerators_count",
+      "internal_cost": {
+        "material_unit_price": "587",
+        "material_total_raw": "1761",
+        "material_total": 1761,
+        "work_unit_price": "2750",
+        "work_total_raw": "8250",
+        "work_total": 8250,
+        "line_total_raw": "10011",
+        "line_total": 10011
+      },
+      "formula": {},
+      "notes": [],
+      "price_code": "roof_pvc_aerator_75x375_item",
+      "unit_price_source": "price_registry",
+      "unit_price_original": "587",
+      "unit_price_used": "587",
+      "price_warning": null
+    },
+    {
+      "code": "parapet_roof_drain_installation",
+      "name": "Установка воронки парапетной (без пробивки отверстий)",
+      "unit": "шт",
+      "line_type": "material_and_work",
+      "quantity_raw": "2",
+      "quantity_display": "2",
+      "quantity_source": "parapet_roof_drains_count",
+      "internal_cost": {
+        "material_unit_price": "5000",
+        "material_total_raw": "10000",
+        "material_total": 10000,
+        "work_unit_price": "5500",
+        "work_total_raw": "11000",
+        "work_total": 11000,
+        "line_total_raw": "21000",
+        "line_total": 21000
+      },
+      "formula": {},
+      "notes": [],
+      "price_code": "roof_parapet_drain_item",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "5000",
+      "unit_price_used": "5000",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "gas_block_wall_hole_drilling",
+      "name": "Пробивка отверстий в стенах из газоблока толщ.400мм",
+      "unit": "шт",
+      "line_type": "work",
+      "quantity_raw": "2",
+      "quantity_display": "2",
+      "quantity_source": "gas_block_wall_holes_count",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "3000",
+        "work_total_raw": "6000",
+        "work_total": 6000,
+        "line_total_raw": "6000",
+        "line_total": 6000
+      },
+      "formula": {},
+      "notes": [
+        "Ручная строка; количество отверстий не всегда равно количеству парапетных воронок."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "3000",
+      "unit_price_used": "3000",
+      "price_warning": null
+    },
+    {
+      "code": "internal_roof_drain_with_heating",
+      "name": "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)",
+      "unit": "шт",
+      "line_type": "material_and_work",
+      "quantity_raw": "3",
+      "quantity_display": "3",
+      "quantity_source": "internal_roof_drains_count",
+      "internal_cost": {
+        "material_unit_price": "5000",
+        "material_total_raw": "15000",
+        "material_total": 15000,
+        "work_unit_price": "5500",
+        "work_total_raw": "16500",
+        "work_total": 16500,
+        "line_total_raw": "31500",
+        "line_total": 31500
+      },
+      "formula": {},
+      "notes": [],
+      "price_code": "roof_internal_drain_with_heating_item",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "5000",
+      "unit_price_used": "5000",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "internal_drain_pvc_110mm",
+      "name": "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)",
+      "unit": "мп",
+      "line_type": "material_and_work",
+      "quantity_raw": "11.25",
+      "quantity_display": "11.25",
+      "quantity_source": "internal_roof_drains_count * internal_drain_height_per_drain_m",
+      "internal_cost": {
+        "material_unit_price": "2500",
+        "material_total_raw": "28125",
+        "material_total": 28125,
+        "work_unit_price": "3000",
+        "work_total_raw": "33750",
+        "work_total": 33750,
+        "line_total_raw": "61875",
+        "line_total": 61875
+      },
+      "formula": {},
+      "notes": [
+        "internal_drain_height_per_drain_m = 3.75 is a project input, not a permanent constant."
+      ],
+      "price_code": "roof_internal_drain_pvc_110mm_m",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "2500",
+      "unit_price_used": "2500",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "roof_crane_lifting",
+      "name": "Подъем материалов автокраном",
+      "unit": "смена",
+      "line_type": "fixed_manual_machinery",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "roof_crane_lifting_shifts",
+      "internal_cost": {
+        "material_unit_price": "30000",
+        "material_total_raw": "30000",
+        "material_total": 30000,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "30000",
+        "line_total": 30000
+      },
+      "formula": {},
+      "notes": [],
+      "price_code": "roof_crane_lifting_shift",
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "30000",
+      "unit_price_used": "30000",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "roof_consumables_tool_depreciation",
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "line_type": "manual_percentage_addon",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided roof_consumables_total_raw",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "75297.06",
+        "material_total": 75297,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "75297.06",
+        "line_total": 75297
+      },
+      "formula": {},
+      "notes": [
+        "temporarily uses provided raw total; base formula to be confirmed later."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": null,
+      "unit_price_used": null,
+      "price_warning": null
+    },
+    {
+      "code": "roof_waste_removal",
+      "name": "Вывоз мусора с объекта",
+      "unit": "маш",
+      "line_type": "material_and_work",
+      "quantity_raw": "3",
+      "quantity_display": "3",
+      "quantity_source": "roof_waste_removal_trucks",
+      "internal_cost": {
+        "material_unit_price": "10000",
+        "material_total_raw": "30000",
+        "material_total": 30000,
+        "work_unit_price": "3500",
+        "work_total_raw": "10500",
+        "work_total": 10500,
+        "line_total_raw": "40500",
+        "line_total": 40500
+      },
+      "formula": {},
+      "notes": [],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "10000",
+      "unit_price_used": "10000",
+      "price_warning": null
+    },
+    {
+      "code": "roof_logistics_and_supply",
+      "name": "Логистика, и снабжение",
+      "unit": "-",
+      "line_type": "manual_fixed_material",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided roof_logistics_and_supply_total_raw",
+      "internal_cost": {
+        "material_unit_price": "37648.53",
+        "material_total_raw": "37648.53",
+        "material_total": 37649,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "37648.53",
+        "line_total": 37649
+      },
+      "formula": {},
+      "notes": [
+        "Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "37648.53",
+      "unit_price_used": "37648.53",
+      "price_warning": null
+    },
+    {
+      "code": "technical_supervision",
+      "name": "Технический надзор",
+      "unit": "-",
+      "line_type": "manual_fixed_work",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided technical_supervision_work_total",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "10000",
+        "work_total_raw": "10000",
+        "work_total": 10000,
+        "line_total_raw": "10000",
+        "line_total": 10000
+      },
+      "formula": {},
+      "notes": [
+        "Строка включена по уточнению: это серая внутренняя работа текущего раздела."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "10000",
+      "unit_price_used": "10000",
+      "price_warning": null
+    },
+    {
+      "code": "procurement_storage",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "line_type": "manual_fixed_work",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided procurement_storage_work_total",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "15000",
+        "work_total_raw": "15000",
+        "work_total": 15000,
+        "line_total_raw": "15000",
+        "line_total": 15000
+      },
+      "formula": {},
+      "notes": [
+        "Строка включена по сверке с серой зоной: 15 000 входит во внутреннюю себестоимость."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "15000",
+      "unit_price_used": "15000",
+      "price_warning": null
+    },
+    {
+      "code": "overhead_zero",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel structure line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      },
+      "formula": {},
+      "notes": [
+        "Строка сохранена для структуры Excel.",
+        "В текущем scope серая внутренняя себестоимость равна 0."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": null,
+      "unit_price_used": null,
+      "price_warning": null
+    },
+    {
+      "code": "profit_zero",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "excel structure line",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      },
+      "formula": {},
+      "notes": [
+        "Строка сохранена для структуры Excel.",
+        "В текущем scope серая внутренняя себестоимость равна 0."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": null,
+      "unit_price_used": null,
+      "price_warning": null
+    }
+  ],
+  "totals": {
+    "internal_materials_total_raw": "1417243.508576",
+    "internal_materials_total": 1417244,
+    "internal_works_total_raw": "618070.04",
+    "internal_works_total": 618070,
+    "internal_section_total_raw": "2035313.548576",
+    "internal_section_total": 2035314,
+    "sum_of_displayed_line_material_totals": 1417244,
+    "sum_of_displayed_line_work_totals": 618070,
+    "sum_of_displayed_line_totals": 2035314
+  },
+  "warnings": [
+    "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof_area_total_m2.",
+    "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
+    "Temporary door line is case-specific and is not included in this universal base calculator.",
+    "Roof consumables use provided raw total; base formula is to be confirmed later.",
+    "Logistics and supply uses provided raw total from the reviewed gray estimate.",
+    "Technical supervision uses provided gray work total from the reviewed estimate.",
+    "Procurement/storage uses provided gray work total from the reviewed estimate.",
+    "Some material totals intentionally keep current Excel raw/display mismatches.",
+    "roof_eps100_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used",
+    "roof_eps50_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used",
+    "roof_eps_slope_2_1_plate_a_m3: price_code not found in price_registry, fallback input price used",
+    "roof_eps_slope_2_1_plate_b_m3: price_code not found in price_registry, fallback input price used",
+    "roof_eps_slope_4_2_plate_j_m3: price_code not found in price_registry, fallback input price used",
+    "roof_eps_slope_4_2_plate_k_m3: price_code not found in price_registry, fallback input price used",
+    "roof_geotextile_technonikol_prof_300_m2: price_code not found in price_registry, fallback input price used",
+    "roof_geotextile_technonikol_prof_150_m2: price_code not found in price_registry, fallback input price used",
+    "roof_aluminum_pressure_rail_m: price_code not found in price_registry, fallback input price used",
+    "roof_aluminum_edge_rail_m: price_code not found in price_registry, fallback input price used",
+    "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll: price_code not found in price_registry, fallback input price used",
+    "roof_parapet_drain_item: price_code not found in price_registry, fallback input price used",
+    "roof_internal_drain_with_heating_item: price_code not found in price_registry, fallback input price used",
+    "roof_internal_drain_pvc_110mm_m: price_code not found in price_registry, fallback input price used",
+    "roof_crane_lifting_shift: price_code not found in price_registry, fallback input price used"
+  ],
+  "pricing_summary": {
+    "mode": "price_registry_with_fallback",
+    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
+    "prices_from_price_registry": 2,
+    "prices_from_project_overrides": 0,
+    "prices_from_fallback_input": 15,
+    "warnings_count": 15
+  },
+  "expected": {
+    "totals": {
+      "internal_materials_total_raw": "1420802",
+      "internal_materials_total": 1420802,
+      "internal_works_total_raw": "618070",
+      "internal_works_total": 618070,
+      "internal_section_total_raw": "2038872",
+      "internal_section_total": 2038872,
+      "sum_of_displayed_line_material_totals": 1420802,
+      "sum_of_displayed_line_work_totals": 618070,
+      "sum_of_displayed_line_totals": 2038872
+    },
+    "estimate_lines": [
+      {
+        "code": "roof_base_preparation_control",
+        "name": "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности",
+        "unit": "м2",
+        "line_type": "zero_excel_structure_line",
+        "quantity_raw": "248.92",
+        "quantity_display": "248.92",
+        "quantity_source": "roof_area_total_m2",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "0",
+          "line_total": 0
+        }
+      },
+      {
+        "code": "vapor_barrier_installation",
+        "name": "Пароизоляция основания плёнкой ПВХ",
+        "unit": "м2",
+        "line_type": "work",
+        "quantity_raw": "248.92",
+        "quantity_display": "248.92",
+        "quantity_source": "roof_area_total_m2",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "77",
+          "work_total_raw": "19166.84",
+          "work_total": 19167,
+          "line_total_raw": "19166.84",
+          "line_total": 19167
+        }
+      },
+      {
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "name": "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул",
+        "unit": "м2",
+        "line_type": "materials",
+        "quantity_raw": "300",
+        "quantity_display": "300",
+        "quantity_source": "roof_area_total_m2 * vapor_barrier_film_overlap_coeff rounded to rolls",
+        "price_code": "roof_vapor_barrier_film_technonikol_120mk_m2",
+        "internal_cost": {
+          "material_unit_price": "35",
+          "material_total_raw": "10500",
+          "material_total": 10500,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "10500",
+          "line_total": 10500
+        }
+      },
+      {
+        "code": "eps_roof_insulation_installation",
+        "name": "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)",
+        "unit": "м2",
+        "line_type": "work",
+        "quantity_raw": "248.92",
+        "quantity_display": "248.92",
+        "quantity_source": "roof_area_total_m2",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "770",
+          "work_total_raw": "191668.4",
+          "work_total": 191668,
+          "line_total_raw": "191668.4",
+          "line_total": 191668
+        }
+      },
+      {
+        "code": "eps100_technonikol_carbon_eco",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "51.46688",
+        "quantity_display": "51.47",
+        "quantity_source": "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
+        "price_code": "roof_eps100_technonikol_carbon_eco_m3",
+        "internal_cost": {
+          "material_unit_price": "7326.7",
+          "material_total_raw": "377082.389696",
+          "material_total": 377080,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "377082.389696",
+          "line_total": 377080
+        }
+      },
+      {
+        "code": "eps50_technonikol_carbon_eco",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "4.1064",
+        "quantity_display": "4.11",
+        "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+        "price_code": "roof_eps50_technonikol_carbon_eco_m3",
+        "internal_cost": {
+          "material_unit_price": "6906.7",
+          "material_total_raw": "28361.67288",
+          "material_total": 28362,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "28361.67288",
+          "line_total": 28362
+        }
+      },
+      {
+        "code": "eps_slope_2_1_plate_a",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "3.7908",
+        "quantity_display": "3.79",
+        "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+        "price_code": "roof_eps_slope_2_1_plate_a_m3",
+        "internal_cost": {
+          "material_unit_price": "10896",
+          "material_total_raw": "41304.5568",
+          "material_total": 41304,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "41304.5568",
+          "line_total": 41304
+        }
+      },
+      {
+        "code": "eps_slope_2_1_plate_b",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "5.7456",
+        "quantity_display": "5.75",
+        "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+        "price_code": "roof_eps_slope_2_1_plate_b_m3",
+        "internal_cost": {
+          "material_unit_price": "10896",
+          "material_total_raw": "62604.0576",
+          "material_total": 62604,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "62604.0576",
+          "line_total": 62604
+        }
+      },
+      {
+        "code": "eps_slope_4_2_plate_j",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "1.458",
+        "quantity_display": "1.46",
+        "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+        "price_code": "roof_eps_slope_4_2_plate_j_m3",
+        "internal_cost": {
+          "material_unit_price": "10896",
+          "material_total_raw": "15886.368",
+          "material_total": 15886,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "15886.368",
+          "line_total": 15886
+        }
+      },
+      {
+        "code": "eps_slope_4_2_plate_k",
+        "name": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)",
+        "unit": "м3",
+        "line_type": "materials",
+        "quantity_raw": "1.6416",
+        "quantity_display": "1.64",
+        "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
+        "price_code": "roof_eps_slope_4_2_plate_k_m3",
+        "internal_cost": {
+          "material_unit_price": "10896",
+          "material_total_raw": "17886.8736",
+          "material_total": 17887,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "17886.8736",
+          "line_total": 17887
+        }
+      },
+      {
+        "code": "geotextile_prof_300_flat",
+        "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
+        "unit": "м2",
+        "line_type": "materials",
+        "quantity_raw": "300",
+        "quantity_display": "300",
+        "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
+        "price_code": "roof_geotextile_technonikol_prof_300_m2",
+        "internal_cost": {
+          "material_unit_price": "111.76",
+          "material_total_raw": "33528",
+          "material_total": 33528,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "33528",
+          "line_total": 33528
+        }
+      },
+      {
+        "code": "geotextile_prof_150_parapet",
+        "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+        "unit": "м2",
+        "line_type": "materials",
+        "quantity_raw": "200",
+        "quantity_display": "200",
+        "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
+        "price_code": "roof_geotextile_technonikol_prof_150_m2",
+        "internal_cost": {
+          "material_unit_price": "64.34",
+          "material_total_raw": "12868",
+          "material_total": 12868,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "12868",
+          "line_total": 12868
+        }
+      },
+      {
+        "code": "pvc_membrane_flat_installation",
+        "name": "Укладка ПВХ Мембраны",
+        "unit": "м2",
+        "line_type": "work",
+        "quantity_raw": "248.92",
+        "quantity_display": "248.92",
+        "quantity_source": "roof_area_total_m2",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "740",
+          "work_total_raw": "184200.8",
+          "work_total": 184201,
+          "line_total_raw": "184200.8",
+          "line_total": 184201
+        }
+      },
+      {
+        "code": "pvc_membrane_abutment_installation",
+        "name": "Монтаж примыкания кровли из ПВХ мембраны",
+        "unit": "мп",
+        "line_type": "work",
+        "quantity_raw": "138.62",
+        "quantity_display": "138.62",
+        "quantity_source": "parapet_and_abutment_total_length_m",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "700",
+          "work_total_raw": "97034",
+          "work_total": 97034,
+          "line_total_raw": "97034",
+          "line_total": 97034
+        }
+      },
+      {
+        "code": "vent_shaft_abutment_installation",
+        "name": "Монтаж примыкания к вентшахтам",
+        "unit": "шт",
+        "line_type": "work",
+        "quantity_raw": "3",
+        "quantity_display": "3",
+        "quantity_source": "vent_shaft_abutment_count",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "5000",
+          "work_total_raw": "15000",
+          "work_total": 15000,
+          "line_total_raw": "15000",
+          "line_total": 15000
+        }
+      },
+      {
+        "code": "aluminum_pressure_rail_3m",
+        "name": "Рейка прижимная алюминиевая 3м",
+        "unit": "мп",
+        "line_type": "materials",
+        "quantity_raw": "141",
+        "quantity_display": "141",
+        "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "price_code": "roof_aluminum_pressure_rail_m",
+        "internal_cost": {
+          "material_unit_price": "95",
+          "material_total_raw": "13395",
+          "material_total": 13395,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "13395",
+          "line_total": 13395
+        }
+      },
+      {
+        "code": "aluminum_edge_rail_3m",
+        "name": "Рейка краевая алюминиевая 3м",
+        "unit": "мп",
+        "line_type": "materials",
+        "quantity_raw": "141",
+        "quantity_display": "141",
+        "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "price_code": "roof_aluminum_edge_rail_m",
+        "internal_cost": {
+          "material_unit_price": "98",
+          "material_total_raw": "13818",
+          "material_total": 13818,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "13818",
+          "line_total": 13818
+        }
+      },
+      {
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "name": "Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
+        "unit": "рул",
+        "line_type": "materials",
+        "quantity_raw": "11",
+        "quantity_display": "11",
+        "quantity_source": "flat and abutment membrane areas rounded to rolls",
+        "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
+        "internal_cost": {
+          "material_unit_price": "51431",
+          "material_total_raw": "565741",
+          "material_total": 565738,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "565741",
+          "line_total": 565738
+        }
+      },
+      {
+        "code": "roof_pvc_aerator_75x375",
+        "name": "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)",
+        "unit": "шт",
+        "line_type": "material_and_work",
+        "quantity_raw": "3",
+        "quantity_display": "3",
+        "quantity_source": "roof_aerators_count",
+        "price_code": "roof_pvc_aerator_75x375_item",
+        "internal_cost": {
+          "material_unit_price": "587",
+          "material_total_raw": "1761",
+          "material_total": 1761,
+          "work_unit_price": "2750",
+          "work_total_raw": "8250",
+          "work_total": 8250,
+          "line_total_raw": "10011",
+          "line_total": 10011
+        }
+      },
+      {
+        "code": "parapet_roof_drain_installation",
+        "name": "Установка воронки парапетной (без пробивки отверстий)",
+        "unit": "шт",
+        "line_type": "material_and_work",
+        "quantity_raw": "2",
+        "quantity_display": "2",
+        "quantity_source": "parapet_roof_drains_count",
+        "price_code": "roof_parapet_drain_item",
+        "internal_cost": {
+          "material_unit_price": "5000",
+          "material_total_raw": "10000",
+          "material_total": 10000,
+          "work_unit_price": "5500",
+          "work_total_raw": "11000",
+          "work_total": 11000,
+          "line_total_raw": "21000",
+          "line_total": 21000
+        }
+      },
+      {
+        "code": "gas_block_wall_hole_drilling",
+        "name": "Пробивка отверстий в стенах из газоблока толщ.400мм",
+        "unit": "шт",
+        "line_type": "work",
+        "quantity_raw": "2",
+        "quantity_display": "2",
+        "quantity_source": "gas_block_wall_holes_count",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "3000",
+          "work_total_raw": "6000",
+          "work_total": 6000,
+          "line_total_raw": "6000",
+          "line_total": 6000
+        }
+      },
+      {
+        "code": "internal_roof_drain_with_heating",
+        "name": "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)",
+        "unit": "шт",
+        "line_type": "material_and_work",
+        "quantity_raw": "3",
+        "quantity_display": "3",
+        "quantity_source": "internal_roof_drains_count",
+        "price_code": "roof_internal_drain_with_heating_item",
+        "internal_cost": {
+          "material_unit_price": "5000",
+          "material_total_raw": "15000",
+          "material_total": 15000,
+          "work_unit_price": "5500",
+          "work_total_raw": "16500",
+          "work_total": 16500,
+          "line_total_raw": "31500",
+          "line_total": 31500
+        }
+      },
+      {
+        "code": "internal_drain_pvc_110mm",
+        "name": "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)",
+        "unit": "мп",
+        "line_type": "material_and_work",
+        "quantity_raw": "11.25",
+        "quantity_display": "11.25",
+        "quantity_source": "internal_roof_drains_count * internal_drain_height_per_drain_m",
+        "price_code": "roof_internal_drain_pvc_110mm_m",
+        "internal_cost": {
+          "material_unit_price": "2500",
+          "material_total_raw": "28125",
+          "material_total": 28125,
+          "work_unit_price": "3000",
+          "work_total_raw": "33750",
+          "work_total": 33750,
+          "line_total_raw": "61875",
+          "line_total": 61875
+        }
+      },
+      {
+        "code": "roof_crane_lifting",
+        "name": "Подъем материалов автокраном",
+        "unit": "смена",
+        "line_type": "fixed_manual_machinery",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "roof_crane_lifting_shifts",
+        "price_code": "roof_crane_lifting_shift",
+        "internal_cost": {
+          "material_unit_price": "30000",
+          "material_total_raw": "30000",
+          "material_total": 30000,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "30000",
+          "line_total": 30000
+        }
+      },
+      {
+        "code": "roof_consumables_tool_depreciation",
+        "name": "Расходные материалы, амортизация инструмента",
+        "unit": "комплект",
+        "line_type": "manual_percentage_addon",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "provided roof_consumables_total_raw",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "75297.06",
+          "material_total": 75297,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "75297.06",
+          "line_total": 75297
+        }
+      },
+      {
+        "code": "roof_waste_removal",
+        "name": "Вывоз мусора с объекта",
+        "unit": "маш",
+        "line_type": "material_and_work",
+        "quantity_raw": "3",
+        "quantity_display": "3",
+        "quantity_source": "roof_waste_removal_trucks",
+        "internal_cost": {
+          "material_unit_price": "10000",
+          "material_total_raw": "30000",
+          "material_total": 30000,
+          "work_unit_price": "3500",
+          "work_total_raw": "10500",
+          "work_total": 10500,
+          "line_total_raw": "40500",
+          "line_total": 40500
+        }
+      },
+      {
+        "code": "roof_logistics_and_supply",
+        "name": "Логистика, и снабжение",
+        "unit": "-",
+        "line_type": "manual_fixed_material",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "provided roof_logistics_and_supply_total_raw",
+        "internal_cost": {
+          "material_unit_price": "37648.53",
+          "material_total_raw": "37648.53",
+          "material_total": 37649,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "37648.53",
+          "line_total": 37649
+        }
+      },
+      {
+        "code": "technical_supervision",
+        "name": "Технический надзор",
+        "unit": "-",
+        "line_type": "manual_fixed_work",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "provided technical_supervision_work_total",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "10000",
+          "work_total_raw": "10000",
+          "work_total": 10000,
+          "line_total_raw": "10000",
+          "line_total": 10000
+        }
+      },
+      {
+        "code": "procurement_storage",
+        "name": "Заготовительно-складские расходы",
+        "unit": "-",
+        "line_type": "manual_fixed_work",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "provided procurement_storage_work_total",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "15000",
+          "work_total_raw": "15000",
+          "work_total": 15000,
+          "line_total_raw": "15000",
+          "line_total": 15000
+        }
+      },
+      {
+        "code": "overhead_zero",
+        "name": "Накладные и общехозяйственные расходы",
+        "unit": "-",
+        "line_type": "zero_excel_structure_line",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "excel structure line",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "0",
+          "line_total": 0
+        }
+      },
+      {
+        "code": "profit_zero",
+        "name": "Сметная прибыль",
+        "unit": "-",
+        "line_type": "zero_excel_structure_line",
+        "quantity_raw": "1",
+        "quantity_display": "1",
+        "quantity_source": "excel structure line",
+        "internal_cost": {
+          "material_unit_price": "0",
+          "material_total_raw": "0",
+          "material_total": 0,
+          "work_unit_price": "0",
+          "work_total_raw": "0",
+          "work_total": 0,
+          "line_total_raw": "0",
+          "line_total": 0
+        }
+      }
+    ]
+  },
+  "comparison": {
+    "status": "mismatch",
+    "ok_count": 442,
+    "mismatch_count": 18,
+    "checks": [
+      {
+        "scope": "totals",
+        "code": "internal_materials_total_raw",
+        "field": "internal_materials_total_raw",
+        "expected": "1420802",
+        "actual": "1417243.508576",
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "internal_materials_total",
+        "field": "internal_materials_total",
+        "expected": 1420802,
+        "actual": 1417244,
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "internal_works_total_raw",
+        "field": "internal_works_total_raw",
+        "expected": "618070",
+        "actual": "618070.04",
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "internal_works_total",
+        "field": "internal_works_total",
+        "expected": 618070,
+        "actual": 618070,
+        "status": "ok"
+      },
+      {
+        "scope": "totals",
+        "code": "internal_section_total_raw",
+        "field": "internal_section_total_raw",
+        "expected": "2038872",
+        "actual": "2035313.548576",
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "internal_section_total",
+        "field": "internal_section_total",
+        "expected": 2038872,
+        "actual": 2035314,
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "sum_of_displayed_line_material_totals",
+        "field": "sum_of_displayed_line_material_totals",
+        "expected": 1420802,
+        "actual": 1417244,
+        "status": "mismatch"
+      },
+      {
+        "scope": "totals",
+        "code": "sum_of_displayed_line_work_totals",
+        "field": "sum_of_displayed_line_work_totals",
+        "expected": 618070,
+        "actual": 618070,
+        "status": "ok"
+      },
+      {
+        "scope": "totals",
+        "code": "sum_of_displayed_line_totals",
+        "field": "sum_of_displayed_line_totals",
+        "expected": 2038872,
+        "actual": 2035314,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "name",
+        "expected": "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности",
+        "actual": "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "line_type",
+        "expected": "zero_excel_structure_line",
+        "actual": "zero_excel_structure_line",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "quantity_raw",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "quantity_display",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2",
+        "actual": "roof_area_total_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.line_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_base_preparation_control",
+        "field": "internal_cost.line_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "name",
+        "expected": "Пароизоляция основания плёнкой ПВХ",
+        "actual": "Пароизоляция основания плёнкой ПВХ",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "quantity_raw",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "quantity_display",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2",
+        "actual": "roof_area_total_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "77",
+        "actual": "77",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "19166.84",
+        "actual": "19166.84",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.work_total",
+        "expected": 19167,
+        "actual": 19167,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "19166.84",
+        "actual": "19166.84",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_installation",
+        "field": "internal_cost.line_total",
+        "expected": 19167,
+        "actual": 19167,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "name",
+        "expected": "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул",
+        "actual": "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "quantity_raw",
+        "expected": "300",
+        "actual": "300",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "quantity_display",
+        "expected": "300",
+        "actual": "300",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2 * vapor_barrier_film_overlap_coeff rounded to rolls",
+        "actual": "roof_area_total_m2 * vapor_barrier_film_overlap_coeff rounded to rolls",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "price_code",
+        "expected": "roof_vapor_barrier_film_technonikol_120mk_m2",
+        "actual": "roof_vapor_barrier_film_technonikol_120mk_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.material_unit_price",
+        "expected": "35",
+        "actual": "23.12",
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.material_total_raw",
+        "expected": "10500",
+        "actual": "6936",
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.material_total",
+        "expected": 10500,
+        "actual": 6936,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.line_total_raw",
+        "expected": "10500",
+        "actual": "6936",
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vapor_barrier_film_technonikol_120mk",
+        "field": "internal_cost.line_total",
+        "expected": 10500,
+        "actual": 6936,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "name",
+        "expected": "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)",
+        "actual": "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "quantity_raw",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "quantity_display",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2",
+        "actual": "roof_area_total_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "770",
+        "actual": "770",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "191668.4",
+        "actual": "191668.4",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.work_total",
+        "expected": 191668,
+        "actual": 191668,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "191668.4",
+        "actual": "191668.4",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_roof_insulation_installation",
+        "field": "internal_cost.line_total",
+        "expected": 191668,
+        "actual": 191668,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "quantity_raw",
+        "expected": "51.46688",
+        "actual": "51.46688",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "quantity_display",
+        "expected": "51.47",
+        "actual": "51.47",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
+        "actual": "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "price_code",
+        "expected": "roof_eps100_technonikol_carbon_eco_m3",
+        "actual": "roof_eps100_technonikol_carbon_eco_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.material_unit_price",
+        "expected": "7326.7",
+        "actual": "7326.7",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.material_total_raw",
+        "expected": "377082.389696",
+        "actual": "377082.389696",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.material_total",
+        "expected": 377080,
+        "actual": 377082,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.line_total_raw",
+        "expected": "377082.389696",
+        "actual": "377082.389696",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps100_technonikol_carbon_eco",
+        "field": "internal_cost.line_total",
+        "expected": 377080,
+        "actual": 377082,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "quantity_raw",
+        "expected": "4.1064",
+        "actual": "4.1064",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "quantity_display",
+        "expected": "4.11",
+        "actual": "4.11",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "quantity_source",
+        "expected": "supplier_required_volume_m3 rounded up to full packs",
+        "actual": "supplier_required_volume_m3 rounded up to full packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "price_code",
+        "expected": "roof_eps50_technonikol_carbon_eco_m3",
+        "actual": "roof_eps50_technonikol_carbon_eco_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.material_unit_price",
+        "expected": "6906.7",
+        "actual": "6906.7",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.material_total_raw",
+        "expected": "28361.67288",
+        "actual": "28361.67288",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.material_total",
+        "expected": 28362,
+        "actual": 28362,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.line_total_raw",
+        "expected": "28361.67288",
+        "actual": "28361.67288",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps50_technonikol_carbon_eco",
+        "field": "internal_cost.line_total",
+        "expected": 28362,
+        "actual": 28362,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "quantity_raw",
+        "expected": "3.7908",
+        "actual": "3.7908",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "quantity_display",
+        "expected": "3.79",
+        "actual": "3.79",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "quantity_source",
+        "expected": "supplier_required_volume_m3 rounded up to full packs",
+        "actual": "supplier_required_volume_m3 rounded up to full packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "price_code",
+        "expected": "roof_eps_slope_2_1_plate_a_m3",
+        "actual": "roof_eps_slope_2_1_plate_a_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.material_unit_price",
+        "expected": "10896",
+        "actual": "10896",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.material_total_raw",
+        "expected": "41304.5568",
+        "actual": "41304.5568",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.material_total",
+        "expected": 41304,
+        "actual": 41305,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.line_total_raw",
+        "expected": "41304.5568",
+        "actual": "41304.5568",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_a",
+        "field": "internal_cost.line_total",
+        "expected": 41304,
+        "actual": 41305,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "quantity_raw",
+        "expected": "5.7456",
+        "actual": "5.7456",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "quantity_display",
+        "expected": "5.75",
+        "actual": "5.75",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "quantity_source",
+        "expected": "supplier_required_volume_m3 rounded up to full packs",
+        "actual": "supplier_required_volume_m3 rounded up to full packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "price_code",
+        "expected": "roof_eps_slope_2_1_plate_b_m3",
+        "actual": "roof_eps_slope_2_1_plate_b_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.material_unit_price",
+        "expected": "10896",
+        "actual": "10896",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.material_total_raw",
+        "expected": "62604.0576",
+        "actual": "62604.0576",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.material_total",
+        "expected": 62604,
+        "actual": 62604,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.line_total_raw",
+        "expected": "62604.0576",
+        "actual": "62604.0576",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_2_1_plate_b",
+        "field": "internal_cost.line_total",
+        "expected": 62604,
+        "actual": 62604,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "quantity_raw",
+        "expected": "1.458",
+        "actual": "1.458",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "quantity_display",
+        "expected": "1.46",
+        "actual": "1.46",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "quantity_source",
+        "expected": "supplier_required_volume_m3 rounded up to full packs",
+        "actual": "supplier_required_volume_m3 rounded up to full packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "price_code",
+        "expected": "roof_eps_slope_4_2_plate_j_m3",
+        "actual": "roof_eps_slope_4_2_plate_j_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.material_unit_price",
+        "expected": "10896",
+        "actual": "10896",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.material_total_raw",
+        "expected": "15886.368",
+        "actual": "15886.368",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.material_total",
+        "expected": 15886,
+        "actual": 15886,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.line_total_raw",
+        "expected": "15886.368",
+        "actual": "15886.368",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_j",
+        "field": "internal_cost.line_total",
+        "expected": 15886,
+        "actual": 15886,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "name",
+        "expected": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)",
+        "actual": "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "unit",
+        "expected": "м3",
+        "actual": "м3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "quantity_raw",
+        "expected": "1.6416",
+        "actual": "1.6416",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "quantity_display",
+        "expected": "1.64",
+        "actual": "1.64",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "quantity_source",
+        "expected": "supplier_required_volume_m3 rounded up to full packs",
+        "actual": "supplier_required_volume_m3 rounded up to full packs",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "price_code",
+        "expected": "roof_eps_slope_4_2_plate_k_m3",
+        "actual": "roof_eps_slope_4_2_plate_k_m3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.material_unit_price",
+        "expected": "10896",
+        "actual": "10896",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.material_total_raw",
+        "expected": "17886.8736",
+        "actual": "17886.8736",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.material_total",
+        "expected": 17887,
+        "actual": 17887,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.line_total_raw",
+        "expected": "17886.8736",
+        "actual": "17886.8736",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "eps_slope_4_2_plate_k",
+        "field": "internal_cost.line_total",
+        "expected": 17887,
+        "actual": 17887,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "name",
+        "expected": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
+        "actual": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "quantity_raw",
+        "expected": "300",
+        "actual": "300",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "quantity_display",
+        "expected": "300",
+        "actual": "300",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
+        "actual": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "price_code",
+        "expected": "roof_geotextile_technonikol_prof_300_m2",
+        "actual": "roof_geotextile_technonikol_prof_300_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.material_unit_price",
+        "expected": "111.76",
+        "actual": "111.76",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.material_total_raw",
+        "expected": "33528",
+        "actual": "33528",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.material_total",
+        "expected": 33528,
+        "actual": 33528,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.line_total_raw",
+        "expected": "33528",
+        "actual": "33528",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_300_flat",
+        "field": "internal_cost.line_total",
+        "expected": 33528,
+        "actual": 33528,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "name",
+        "expected": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+        "actual": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "quantity_raw",
+        "expected": "200",
+        "actual": "200",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "quantity_display",
+        "expected": "200",
+        "actual": "200",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "quantity_source",
+        "expected": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
+        "actual": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "price_code",
+        "expected": "roof_geotextile_technonikol_prof_150_m2",
+        "actual": "roof_geotextile_technonikol_prof_150_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.material_unit_price",
+        "expected": "64.34",
+        "actual": "64.34",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.material_total_raw",
+        "expected": "12868",
+        "actual": "12868",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.material_total",
+        "expected": 12868,
+        "actual": 12868,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.line_total_raw",
+        "expected": "12868",
+        "actual": "12868",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "geotextile_prof_150_parapet",
+        "field": "internal_cost.line_total",
+        "expected": 12868,
+        "actual": 12868,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "name",
+        "expected": "Укладка ПВХ Мембраны",
+        "actual": "Укладка ПВХ Мембраны",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "unit",
+        "expected": "м2",
+        "actual": "м2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "quantity_raw",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "quantity_display",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "quantity_source",
+        "expected": "roof_area_total_m2",
+        "actual": "roof_area_total_m2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "740",
+        "actual": "740",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "184200.8",
+        "actual": "184200.8",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.work_total",
+        "expected": 184201,
+        "actual": 184201,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "184200.8",
+        "actual": "184200.8",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_flat_installation",
+        "field": "internal_cost.line_total",
+        "expected": 184201,
+        "actual": 184201,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "name",
+        "expected": "Монтаж примыкания кровли из ПВХ мембраны",
+        "actual": "Монтаж примыкания кровли из ПВХ мембраны",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "unit",
+        "expected": "мп",
+        "actual": "мп",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "quantity_raw",
+        "expected": "138.62",
+        "actual": "138.62",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "quantity_display",
+        "expected": "138.62",
+        "actual": "138.62",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "quantity_source",
+        "expected": "parapet_and_abutment_total_length_m",
+        "actual": "parapet_and_abutment_total_length_m",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "700",
+        "actual": "700",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "97034",
+        "actual": "97034",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.work_total",
+        "expected": 97034,
+        "actual": 97034,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "97034",
+        "actual": "97034",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_abutment_installation",
+        "field": "internal_cost.line_total",
+        "expected": 97034,
+        "actual": 97034,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "name",
+        "expected": "Монтаж примыкания к вентшахтам",
+        "actual": "Монтаж примыкания к вентшахтам",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "unit",
+        "expected": "шт",
+        "actual": "шт",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "quantity_raw",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "quantity_display",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "quantity_source",
+        "expected": "vent_shaft_abutment_count",
+        "actual": "vent_shaft_abutment_count",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "5000",
+        "actual": "5000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.work_total",
+        "expected": 15000,
+        "actual": 15000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "vent_shaft_abutment_installation",
+        "field": "internal_cost.line_total",
+        "expected": 15000,
+        "actual": 15000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "name",
+        "expected": "Рейка прижимная алюминиевая 3м",
+        "actual": "Рейка прижимная алюминиевая 3м",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "unit",
+        "expected": "мп",
+        "actual": "мп",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "quantity_raw",
+        "expected": "141",
+        "actual": "141",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "quantity_display",
+        "expected": "141",
+        "actual": "141",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "quantity_source",
+        "expected": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "actual": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "price_code",
+        "expected": "roof_aluminum_pressure_rail_m",
+        "actual": "roof_aluminum_pressure_rail_m",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.material_unit_price",
+        "expected": "95",
+        "actual": "95",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.material_total_raw",
+        "expected": "13395",
+        "actual": "13395",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.material_total",
+        "expected": 13395,
+        "actual": 13395,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.line_total_raw",
+        "expected": "13395",
+        "actual": "13395",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_pressure_rail_3m",
+        "field": "internal_cost.line_total",
+        "expected": 13395,
+        "actual": 13395,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "name",
+        "expected": "Рейка краевая алюминиевая 3м",
+        "actual": "Рейка краевая алюминиевая 3м",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "unit",
+        "expected": "мп",
+        "actual": "мп",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "quantity_raw",
+        "expected": "141",
+        "actual": "141",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "quantity_display",
+        "expected": "141",
+        "actual": "141",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "quantity_source",
+        "expected": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "actual": "parapet_and_abutment_total_length_m rounded to rail pieces",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "price_code",
+        "expected": "roof_aluminum_edge_rail_m",
+        "actual": "roof_aluminum_edge_rail_m",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.material_unit_price",
+        "expected": "98",
+        "actual": "98",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.material_total_raw",
+        "expected": "13818",
+        "actual": "13818",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.material_total",
+        "expected": 13818,
+        "actual": 13818,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.line_total_raw",
+        "expected": "13818",
+        "actual": "13818",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "aluminum_edge_rail_3m",
+        "field": "internal_cost.line_total",
+        "expected": 13818,
+        "actual": 13818,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "name",
+        "expected": "Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
+        "actual": "Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "unit",
+        "expected": "рул",
+        "actual": "рул",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "line_type",
+        "expected": "materials",
+        "actual": "materials",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "quantity_raw",
+        "expected": "11",
+        "actual": "11",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "quantity_display",
+        "expected": "11",
+        "actual": "11",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "quantity_source",
+        "expected": "flat and abutment membrane areas rounded to rolls",
+        "actual": "flat and abutment membrane areas rounded to rolls",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "price_code",
+        "expected": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
+        "actual": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.material_unit_price",
+        "expected": "51431",
+        "actual": "51431",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.material_total_raw",
+        "expected": "565741",
+        "actual": "565741",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.material_total",
+        "expected": 565738,
+        "actual": 565741,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.line_total_raw",
+        "expected": "565741",
+        "actual": "565741",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
+        "field": "internal_cost.line_total",
+        "expected": 565738,
+        "actual": 565741,
+        "status": "mismatch"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "name",
+        "expected": "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)",
+        "actual": "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "unit",
+        "expected": "шт",
+        "actual": "шт",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "line_type",
+        "expected": "material_and_work",
+        "actual": "material_and_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "quantity_raw",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "quantity_display",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "quantity_source",
+        "expected": "roof_aerators_count",
+        "actual": "roof_aerators_count",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "price_code",
+        "expected": "roof_pvc_aerator_75x375_item",
+        "actual": "roof_pvc_aerator_75x375_item",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.material_unit_price",
+        "expected": "587",
+        "actual": "587",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.material_total_raw",
+        "expected": "1761",
+        "actual": "1761",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.material_total",
+        "expected": 1761,
+        "actual": 1761,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.work_unit_price",
+        "expected": "2750",
+        "actual": "2750",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.work_total_raw",
+        "expected": "8250",
+        "actual": "8250",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.work_total",
+        "expected": 8250,
+        "actual": 8250,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.line_total_raw",
+        "expected": "10011",
+        "actual": "10011",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_pvc_aerator_75x375",
+        "field": "internal_cost.line_total",
+        "expected": 10011,
+        "actual": 10011,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "name",
+        "expected": "Установка воронки парапетной (без пробивки отверстий)",
+        "actual": "Установка воронки парапетной (без пробивки отверстий)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "unit",
+        "expected": "шт",
+        "actual": "шт",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "line_type",
+        "expected": "material_and_work",
+        "actual": "material_and_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "quantity_raw",
+        "expected": "2",
+        "actual": "2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "quantity_display",
+        "expected": "2",
+        "actual": "2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "quantity_source",
+        "expected": "parapet_roof_drains_count",
+        "actual": "parapet_roof_drains_count",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "price_code",
+        "expected": "roof_parapet_drain_item",
+        "actual": "roof_parapet_drain_item",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "5000",
+        "actual": "5000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "10000",
+        "actual": "10000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.material_total",
+        "expected": 10000,
+        "actual": 10000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "5500",
+        "actual": "5500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "11000",
+        "actual": "11000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.work_total",
+        "expected": 11000,
+        "actual": 11000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "21000",
+        "actual": "21000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "parapet_roof_drain_installation",
+        "field": "internal_cost.line_total",
+        "expected": 21000,
+        "actual": 21000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "name",
+        "expected": "Пробивка отверстий в стенах из газоблока толщ.400мм",
+        "actual": "Пробивка отверстий в стенах из газоблока толщ.400мм",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "unit",
+        "expected": "шт",
+        "actual": "шт",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "line_type",
+        "expected": "work",
+        "actual": "work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "quantity_raw",
+        "expected": "2",
+        "actual": "2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "quantity_display",
+        "expected": "2",
+        "actual": "2",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "quantity_source",
+        "expected": "gas_block_wall_holes_count",
+        "actual": "gas_block_wall_holes_count",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.work_unit_price",
+        "expected": "3000",
+        "actual": "3000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.work_total_raw",
+        "expected": "6000",
+        "actual": "6000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.work_total",
+        "expected": 6000,
+        "actual": 6000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.line_total_raw",
+        "expected": "6000",
+        "actual": "6000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "gas_block_wall_hole_drilling",
+        "field": "internal_cost.line_total",
+        "expected": 6000,
+        "actual": 6000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "name",
+        "expected": "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)",
+        "actual": "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "unit",
+        "expected": "шт",
+        "actual": "шт",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "line_type",
+        "expected": "material_and_work",
+        "actual": "material_and_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "quantity_raw",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "quantity_display",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "quantity_source",
+        "expected": "internal_roof_drains_count",
+        "actual": "internal_roof_drains_count",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "price_code",
+        "expected": "roof_internal_drain_with_heating_item",
+        "actual": "roof_internal_drain_with_heating_item",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.material_unit_price",
+        "expected": "5000",
+        "actual": "5000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.material_total_raw",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.material_total",
+        "expected": 15000,
+        "actual": 15000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.work_unit_price",
+        "expected": "5500",
+        "actual": "5500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.work_total_raw",
+        "expected": "16500",
+        "actual": "16500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.work_total",
+        "expected": 16500,
+        "actual": 16500,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.line_total_raw",
+        "expected": "31500",
+        "actual": "31500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_roof_drain_with_heating",
+        "field": "internal_cost.line_total",
+        "expected": 31500,
+        "actual": 31500,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "name",
+        "expected": "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)",
+        "actual": "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "unit",
+        "expected": "мп",
+        "actual": "мп",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "line_type",
+        "expected": "material_and_work",
+        "actual": "material_and_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "quantity_raw",
+        "expected": "11.25",
+        "actual": "11.25",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "quantity_display",
+        "expected": "11.25",
+        "actual": "11.25",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "quantity_source",
+        "expected": "internal_roof_drains_count * internal_drain_height_per_drain_m",
+        "actual": "internal_roof_drains_count * internal_drain_height_per_drain_m",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "price_code",
+        "expected": "roof_internal_drain_pvc_110mm_m",
+        "actual": "roof_internal_drain_pvc_110mm_m",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.material_unit_price",
+        "expected": "2500",
+        "actual": "2500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.material_total_raw",
+        "expected": "28125",
+        "actual": "28125",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.material_total",
+        "expected": 28125,
+        "actual": 28125,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.work_unit_price",
+        "expected": "3000",
+        "actual": "3000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.work_total_raw",
+        "expected": "33750",
+        "actual": "33750",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.work_total",
+        "expected": 33750,
+        "actual": 33750,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.line_total_raw",
+        "expected": "61875",
+        "actual": "61875",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "internal_drain_pvc_110mm",
+        "field": "internal_cost.line_total",
+        "expected": 61875,
+        "actual": 61875,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "name",
+        "expected": "Подъем материалов автокраном",
+        "actual": "Подъем материалов автокраном",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "unit",
+        "expected": "смена",
+        "actual": "смена",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "line_type",
+        "expected": "fixed_manual_machinery",
+        "actual": "fixed_manual_machinery",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "quantity_source",
+        "expected": "roof_crane_lifting_shifts",
+        "actual": "roof_crane_lifting_shifts",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "price_code",
+        "expected": "roof_crane_lifting_shift",
+        "actual": "roof_crane_lifting_shift",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.material_unit_price",
+        "expected": "30000",
+        "actual": "30000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.material_total_raw",
+        "expected": "30000",
+        "actual": "30000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.material_total",
+        "expected": 30000,
+        "actual": 30000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.line_total_raw",
+        "expected": "30000",
+        "actual": "30000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_crane_lifting",
+        "field": "internal_cost.line_total",
+        "expected": 30000,
+        "actual": 30000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "name",
+        "expected": "Расходные материалы, амортизация инструмента",
+        "actual": "Расходные материалы, амортизация инструмента",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "unit",
+        "expected": "комплект",
+        "actual": "комплект",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "line_type",
+        "expected": "manual_percentage_addon",
+        "actual": "manual_percentage_addon",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "quantity_source",
+        "expected": "provided roof_consumables_total_raw",
+        "actual": "provided roof_consumables_total_raw",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.material_total_raw",
+        "expected": "75297.06",
+        "actual": "75297.06",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.material_total",
+        "expected": 75297,
+        "actual": 75297,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.line_total_raw",
+        "expected": "75297.06",
+        "actual": "75297.06",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_consumables_tool_depreciation",
+        "field": "internal_cost.line_total",
+        "expected": 75297,
+        "actual": 75297,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "name",
+        "expected": "Вывоз мусора с объекта",
+        "actual": "Вывоз мусора с объекта",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "unit",
+        "expected": "маш",
+        "actual": "маш",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "line_type",
+        "expected": "material_and_work",
+        "actual": "material_and_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "quantity_raw",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "quantity_display",
+        "expected": "3",
+        "actual": "3",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "quantity_source",
+        "expected": "roof_waste_removal_trucks",
+        "actual": "roof_waste_removal_trucks",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.material_unit_price",
+        "expected": "10000",
+        "actual": "10000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.material_total_raw",
+        "expected": "30000",
+        "actual": "30000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.material_total",
+        "expected": 30000,
+        "actual": 30000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.work_unit_price",
+        "expected": "3500",
+        "actual": "3500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.work_total_raw",
+        "expected": "10500",
+        "actual": "10500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.work_total",
+        "expected": 10500,
+        "actual": 10500,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.line_total_raw",
+        "expected": "40500",
+        "actual": "40500",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_waste_removal",
+        "field": "internal_cost.line_total",
+        "expected": 40500,
+        "actual": 40500,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "name",
+        "expected": "Логистика, и снабжение",
+        "actual": "Логистика, и снабжение",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "unit",
+        "expected": "-",
+        "actual": "-",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "line_type",
+        "expected": "manual_fixed_material",
+        "actual": "manual_fixed_material",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "quantity_source",
+        "expected": "provided roof_logistics_and_supply_total_raw",
+        "actual": "provided roof_logistics_and_supply_total_raw",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.material_unit_price",
+        "expected": "37648.53",
+        "actual": "37648.53",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.material_total_raw",
+        "expected": "37648.53",
+        "actual": "37648.53",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.material_total",
+        "expected": 37649,
+        "actual": 37649,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.line_total_raw",
+        "expected": "37648.53",
+        "actual": "37648.53",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "roof_logistics_and_supply",
+        "field": "internal_cost.line_total",
+        "expected": 37649,
+        "actual": 37649,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "name",
+        "expected": "Технический надзор",
+        "actual": "Технический надзор",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "unit",
+        "expected": "-",
+        "actual": "-",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "line_type",
+        "expected": "manual_fixed_work",
+        "actual": "manual_fixed_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "quantity_source",
+        "expected": "provided technical_supervision_work_total",
+        "actual": "provided technical_supervision_work_total",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.work_unit_price",
+        "expected": "10000",
+        "actual": "10000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.work_total_raw",
+        "expected": "10000",
+        "actual": "10000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.work_total",
+        "expected": 10000,
+        "actual": 10000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.line_total_raw",
+        "expected": "10000",
+        "actual": "10000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "technical_supervision",
+        "field": "internal_cost.line_total",
+        "expected": 10000,
+        "actual": 10000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "name",
+        "expected": "Заготовительно-складские расходы",
+        "actual": "Заготовительно-складские расходы",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "unit",
+        "expected": "-",
+        "actual": "-",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "line_type",
+        "expected": "manual_fixed_work",
+        "actual": "manual_fixed_work",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "quantity_source",
+        "expected": "provided procurement_storage_work_total",
+        "actual": "provided procurement_storage_work_total",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.work_unit_price",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.work_total_raw",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.work_total",
+        "expected": 15000,
+        "actual": 15000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.line_total_raw",
+        "expected": "15000",
+        "actual": "15000",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "procurement_storage",
+        "field": "internal_cost.line_total",
+        "expected": 15000,
+        "actual": 15000,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "name",
+        "expected": "Накладные и общехозяйственные расходы",
+        "actual": "Накладные и общехозяйственные расходы",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "unit",
+        "expected": "-",
+        "actual": "-",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "line_type",
+        "expected": "zero_excel_structure_line",
+        "actual": "zero_excel_structure_line",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "quantity_source",
+        "expected": "excel structure line",
+        "actual": "excel structure line",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.line_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "overhead_zero",
+        "field": "internal_cost.line_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "name",
+        "expected": "Сметная прибыль",
+        "actual": "Сметная прибыль",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "unit",
+        "expected": "-",
+        "actual": "-",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "line_type",
+        "expected": "zero_excel_structure_line",
+        "actual": "zero_excel_structure_line",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "quantity_raw",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "quantity_display",
+        "expected": "1",
+        "actual": "1",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "quantity_source",
+        "expected": "excel structure line",
+        "actual": "excel structure line",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.material_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.material_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.material_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.work_unit_price",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.work_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.work_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.line_total_raw",
+        "expected": "0",
+        "actual": "0",
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "profit_zero",
+        "field": "internal_cost.line_total",
+        "expected": 0,
+        "actual": 0,
+        "status": "ok"
+      }
+    ]
+  }
+}
