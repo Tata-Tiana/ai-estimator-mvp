@@ -1,6 +1,6 @@
 # Project Notes
 
-Дата актуализации: `2026-06-02`.
+Дата актуализации: `2026-06-03`.
 
 ## Последняя расчётная контрольная точка
 
@@ -52,6 +52,34 @@ grand_total = 12 271 194
 ```
 
 Это не production-расчёт и не финальная смета. Следующий слой — `box_calculator`.
+
+Аудит missing/manual параметров и pack для созвона с Еленой:
+
+```text
+experiments/parameter_audit/
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_pack.xlsx
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_agenda.md
+```
+
+Текущая классификация 287 missing/manual параметров:
+
+```text
+AUTO_PROJECT = 140
+AUTO_CALCULATED = 81
+DEFAULT_VALUE = 26
+PRICE_DATABASE = 7
+MANUAL_REQUIRED = 33
+```
+
+Review-pack нужен для созвона с Еленой. Он не внедряет изменения в pipeline, а помогает подтвердить:
+
+- какие параметры искать в проекте/PDF;
+- какие считать автоматически;
+- какие унести в defaults/material catalog;
+- какие брать из price_registry;
+- какие оставить ручными решениями сметчика.
+
+В каждой строке pack есть пояснение, где параметр используется в смете и какая формула калькулятора от него зависит.
 
 ## Главные договорённости
 

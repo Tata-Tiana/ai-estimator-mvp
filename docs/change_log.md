@@ -43,6 +43,55 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-03 — Добавлен аудит параметров и review-pack для Елены
+
+- Ветка: `feature/ai-project-card`
+- Коммит: будет создан текущей фиксацией
+
+Что добавлено:
+
+- создан новый эксперимент `experiments/parameter_audit/`;
+- добавлен аудит текущих missing/manual параметров из `reviewed_parameters.xlsx`;
+- создан `parameter_audit_result.xlsx` с листами:
+  - `all_parameters_audit`;
+  - `by_section_summary`;
+  - `to_default_values`;
+  - `to_price_database`;
+  - `to_auto_calculated`;
+  - `to_auto_project`;
+  - `still_manual_required`;
+  - `schema_changes`;
+- создан `parameter_audit_report.md`;
+- создан review-pack для созвона с Еленой:
+  - `elena_parameter_review_pack.xlsx`;
+  - `elena_parameter_review_agenda.md`;
+- в review-pack по каждой строке добавлены пояснения:
+  - где параметр используется в смете;
+  - формула калькулятора;
+  - пример формулы ЮСВ;
+  - что проверить Елене;
+  - зачем нужен параметр.
+
+Результат аудита:
+
+```text
+parameters_audited = 287
+AUTO_PROJECT = 140
+AUTO_CALCULATED = 81
+DEFAULT_VALUE = 26
+PRICE_DATABASE = 7
+MANUAL_REQUIRED = 33
+```
+
+Важно:
+
+- аудит пока не внедрён в `pdf_parser_pipeline`;
+- `section_schema.py` не менялся;
+- калькуляторы не менялись;
+- `expected.json` не менялись;
+- параметры не скрывались из `reviewed_parameters.xlsx`;
+- следующий шаг — обсудить review-pack с Еленой и только потом внедрять defaults/material catalog/derived parameters.
+
 ### 2026-06-02 — Добавлен calculation_runner для demo-запуска всех разделов
 
 - Ветка: `feature/ai-project-card`

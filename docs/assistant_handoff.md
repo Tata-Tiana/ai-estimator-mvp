@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-02`.
+Дата актуализации: `2026-06-03`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -99,6 +99,39 @@ grand_total = 12 271 194
 ```
 
 Это не production-расчёт и не финальная смета: часть missing-параметров была взята из template inputs в demo fallback режиме. Следующий слой — `box_calculator`.
+
+После calculation_runner добавлен аудит missing/manual параметров:
+
+```text
+experiments/parameter_audit/
+```
+
+Он классифицирует текущие 287 missing/manual параметров из `reviewed_parameters.xlsx`:
+
+```text
+AUTO_PROJECT = 140
+AUTO_CALCULATED = 81
+DEFAULT_VALUE = 26
+PRICE_DATABASE = 7
+MANUAL_REQUIRED = 33
+```
+
+Для созвона с Еленой создан review-pack:
+
+```text
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_pack.xlsx
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_agenda.md
+```
+
+В pack по каждой строке есть пояснения:
+
+- где используется в смете;
+- формула калькулятора;
+- пример формулы ЮСВ;
+- что проверить Елене;
+- зачем нужен параметр.
+
+Важно: аудит пока ничего не внедряет. `section_schema.py`, калькуляторы и `expected.json` не менялись.
 
 ## Суть проекта
 

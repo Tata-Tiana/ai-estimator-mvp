@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-02`.
+Дата актуализации: `2026-06-03`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -210,6 +210,54 @@ docs/report_calculation_runner.md
 ```text
 box_calculator
 ```
+
+## 0.5. Parameter Audit И Review-Pack Для Елены
+
+После `calculation_runner` добавлен отдельный аудит missing/manual параметров:
+
+```text
+experiments/parameter_audit/
+```
+
+Он читает текущий файл:
+
+```text
+experiments/pdf_parser_pipeline/output/mvp_usv_demo/reviewed_parameters.xlsx
+```
+
+и классифицирует 287 missing/manual параметров по источнику:
+
+```text
+AUTO_PROJECT = 140
+AUTO_CALCULATED = 81
+DEFAULT_VALUE = 26
+PRICE_DATABASE = 7
+MANUAL_REQUIRED = 33
+```
+
+Аудит ничего не внедряет автоматически:
+
+- `section_schema.py` не меняется;
+- калькуляторы не меняются;
+- `expected.json` не меняются;
+- параметры не скрываются из `reviewed_parameters.xlsx`.
+
+Для созвона с Еленой подготовлен review-pack:
+
+```text
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_pack.xlsx
+experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_agenda.md
+```
+
+В Excel по каждой строке добавлены пояснения:
+
+- где параметр используется в смете;
+- формула калькулятора;
+- пример формулы на ЮСВ;
+- что проверить Елене;
+- зачем параметр нужен.
+
+Назначение этапа — согласовать, что действительно остаётся ручным вводом, а что должно уйти в проектное извлечение, `price_registry`, defaults/material catalog или derived-parameters слой.
 
 ## 1. Цель проекта
 
