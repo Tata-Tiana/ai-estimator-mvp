@@ -42,6 +42,16 @@ def round_up_to_step(value: float, step: float) -> float:
     return _round_decimal(_to_decimal(ceil(value / step)) * _to_decimal(step))
 
 
+def round_up_to_multiple(value: float, multiple: float | None) -> float:
+    _require_non_negative("value", value)
+    if multiple is None or multiple <= 0:
+        return _round_decimal(value, "0.0001")
+    return _round_decimal(
+        _to_decimal(ceil(value / multiple)) * _to_decimal(multiple),
+        "0.0001",
+    )
+
+
 @dataclass(frozen=True)
 class RebarItemInput:
     code: str
@@ -88,8 +98,6 @@ class FoundationSlabInput:
     planter_standard_roll_unit_price: float
     planterband_per_membrane_roll: float
     planterband_unit_price: float
-    slab_formwork_perimeter_m: float
-    slab_edge_height_m: float
     formwork_installation_work_unit_price: float
     plywood_sheet_working_area_m2: float
     plywood_unit_price: float
@@ -99,18 +107,8 @@ class FoundationSlabInput:
     eps50_thickness_m: float
     eps50_laying_work_unit_price: float
     eps_waste_coeff: float
-    thermal_insert_length_m: float
-    thermal_insert_piece_length_m: float
-    thermal_insert_piece_width_m: float
-    thermal_insert_piece_height_m: float
-    thermal_insert_piece_depth_for_work_m: float
-    thermal_insert_piece_depth_for_eps_m: float
-    thermal_insert_installation_work_unit_price: float
     eps50_pack_volume_m3: float
     eps50_unit_price: float
-    eps100_thickness_m: float
-    eps100_pack_volume_m3: float
-    eps100_unit_price: float
     rebar_crane_shifts: float
     rebar_crane_unit_price: float
     rebar_waste_coeff: float
@@ -137,6 +135,32 @@ class FoundationSlabInput:
     plywood_waste_coeff: float = 1.05
     slab_edge_height_strategy: str = "max_thickness"
     box_metal_delivery_capacity_kg: float = 10000
+    formwork_calc_method: str = "legacy_perimeter_height"
+    slab_side_formwork_area_m2: float | None = None
+    slab_formwork_perimeter_m: float | None = None
+    slab_edge_height_m: float | None = None
+    thermal_insert_mode: str = "legacy"
+    thermal_insert_length_m: float | None = None
+    thermal_insert_piece_length_m: float | None = None
+    thermal_insert_piece_width_m: float | None = None
+    thermal_insert_piece_height_m: float | None = None
+    thermal_insert_piece_depth_for_work_m: float | None = None
+    thermal_insert_piece_depth_for_eps_m: float | None = None
+    thermal_insert_installation_work_unit_price: float | None = None
+    eps100_thickness_m: float | None = None
+    eps100_pack_volume_m3: float | None = None
+    eps100_unit_price: float | None = None
+    thermal_insert_50_length_m: float | None = None
+    thermal_insert_100_length_m: float | None = None
+    thermal_insert_50_work_unit_price: float | None = None
+    thermal_insert_100_work_unit_price: float | None = None
+    thermal_insert_50_material_spec_qty: float | None = None
+    thermal_insert_100_material_spec_qty: float | None = None
+    thermal_insert_material_waste_coeff: float | None = None
+    thermal_insert_50_pack_multiple_qty: float | None = None
+    thermal_insert_100_pack_multiple_qty: float | None = None
+    thermal_insert_50_material_unit_price: float | None = None
+    thermal_insert_100_material_unit_price: float | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -161,20 +185,11 @@ class FoundationSlabInput:
             "membrane_overlap_coeff",
             "membrane_roll_area_m2",
             "planterband_per_membrane_roll",
-            "slab_formwork_perimeter_m",
-            "slab_edge_height_m",
             "plywood_sheet_working_area_m2",
             "timber_thickness_m",
             "eps50_thickness_m",
             "eps_waste_coeff",
-            "thermal_insert_piece_length_m",
-            "thermal_insert_piece_width_m",
-            "thermal_insert_piece_height_m",
-            "thermal_insert_piece_depth_for_work_m",
-            "thermal_insert_piece_depth_for_eps_m",
             "eps50_pack_volume_m3",
-            "eps100_thickness_m",
-            "eps100_pack_volume_m3",
             "rebar_waste_coeff",
             "concrete_waste_coeff",
             "concrete_round_step_m3",
@@ -197,10 +212,7 @@ class FoundationSlabInput:
             "timber_unit_price",
             "eps50_under_slab_volume_m3",
             "eps50_laying_work_unit_price",
-            "thermal_insert_length_m",
-            "thermal_insert_installation_work_unit_price",
             "eps50_unit_price",
-            "eps100_unit_price",
             "rebar_crane_shifts",
             "rebar_crane_unit_price",
             "rebar_metal_delivery_trucks",
@@ -229,9 +241,74 @@ class FoundationSlabInput:
             raise ValueError(
                 "plywood_calc_method must be 'working_area' or 'actual_area_with_waste'"
             )
+        if self.formwork_calc_method not in {
+            "legacy_perimeter_height",
+            "spec_area",
+        }:
+            raise ValueError(
+                "formwork_calc_method must be 'legacy_perimeter_height' or 'spec_area'"
+            )
+        if self.formwork_calc_method == "spec_area":
+            _require_non_negative(
+                "slab_side_formwork_area_m2",
+                self.slab_side_formwork_area_m2,
+            )
+        else:
+            _require_positive("slab_formwork_perimeter_m", self.slab_formwork_perimeter_m)
+            _require_positive("slab_edge_height_m", self.slab_edge_height_m)
+
+        if self.thermal_insert_mode not in {"legacy", "standard_50_100"}:
+            raise ValueError(
+                "thermal_insert_mode must be 'legacy' or 'standard_50_100'"
+            )
+        if self.thermal_insert_mode == "legacy":
+            for field_name in [
+                "thermal_insert_piece_length_m",
+                "thermal_insert_piece_width_m",
+                "thermal_insert_piece_height_m",
+                "thermal_insert_piece_depth_for_work_m",
+                "thermal_insert_piece_depth_for_eps_m",
+                "eps100_thickness_m",
+                "eps100_pack_volume_m3",
+            ]:
+                _require_positive(field_name, getattr(self, field_name))
+            for field_name in [
+                "thermal_insert_length_m",
+                "thermal_insert_installation_work_unit_price",
+                "eps100_unit_price",
+            ]:
+                _require_non_negative(field_name, getattr(self, field_name))
+        else:
+            _require_positive(
+                "thermal_insert_material_waste_coeff",
+                self.thermal_insert_material_waste_coeff,
+            )
+            for field_name in [
+                "thermal_insert_50_length_m",
+                "thermal_insert_100_length_m",
+                "thermal_insert_50_work_unit_price",
+                "thermal_insert_100_work_unit_price",
+                "thermal_insert_50_material_spec_qty",
+                "thermal_insert_100_material_spec_qty",
+                "thermal_insert_50_material_unit_price",
+                "thermal_insert_100_material_unit_price",
+            ]:
+                _require_non_negative(field_name, getattr(self, field_name))
+            for field_name in [
+                "thermal_insert_50_pack_multiple_qty",
+                "thermal_insert_100_pack_multiple_qty",
+            ]:
+                value = getattr(self, field_name)
+                if value is not None and value < 0:
+                    raise ValueError(f"{field_name} must be greater than or equal to 0")
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        result = {key: value for key, value in asdict(self).items() if value is not None}
+        if self.formwork_calc_method == "spec_area":
+            result.pop("slab_formwork_perimeter_m", None)
+            result.pop("slab_edge_height_m", None)
+            result.pop("slab_edge_height_strategy", None)
+        return result
 
 
 @dataclass(frozen=True)
@@ -317,15 +394,27 @@ def calculate_membrane_block(data: FoundationSlabInput) -> dict[str, Any]:
 
 
 def calculate_formwork_block(data: FoundationSlabInput) -> dict[str, Any]:
-    formwork_area_m2 = _round_decimal(
-        _to_decimal(data.slab_formwork_perimeter_m) * _to_decimal(data.slab_edge_height_m)
-    )
-
-    formwork_block = {
-        "formwork_area_m2": formwork_area_m2,
-        "slab_edge_height_strategy": data.slab_edge_height_strategy,
-        "plywood_calc_method": data.plywood_calc_method,
-    }
+    if data.formwork_calc_method == "spec_area":
+        formwork_area_m2 = _round_decimal(data.slab_side_formwork_area_m2)
+        formwork_block = {
+            "formwork_calc_method": data.formwork_calc_method,
+            "slab_side_formwork_area_m2": data.slab_side_formwork_area_m2,
+            "formwork_area_m2": formwork_area_m2,
+            "plywood_calc_method": data.plywood_calc_method,
+        }
+    else:
+        formwork_area_m2 = _round_decimal(
+            _to_decimal(data.slab_formwork_perimeter_m)
+            * _to_decimal(data.slab_edge_height_m)
+        )
+        formwork_block = {
+            "formwork_calc_method": data.formwork_calc_method,
+            "formwork_area_m2": formwork_area_m2,
+            "slab_formwork_perimeter_m": data.slab_formwork_perimeter_m,
+            "slab_edge_height_m": data.slab_edge_height_m,
+            "slab_edge_height_strategy": data.slab_edge_height_strategy,
+            "plywood_calc_method": data.plywood_calc_method,
+        }
 
     if data.plywood_calc_method == "actual_area_with_waste":
         plywood_sheet_area_m2 = _round_decimal(
@@ -371,6 +460,54 @@ def calculate_formwork_block(data: FoundationSlabInput) -> dict[str, Any]:
 
 
 def calculate_thermal_insert_block(data: FoundationSlabInput) -> dict[str, Any]:
+    if data.thermal_insert_mode == "standard_50_100":
+        warnings = []
+        if not data.thermal_insert_50_pack_multiple_qty:
+            warnings.append(
+                "thermal_insert_50_pack_multiple_qty отсутствует или равен 0; "
+                "закупочное количество 50 мм не округлено до пачки."
+            )
+        if not data.thermal_insert_100_pack_multiple_qty:
+            warnings.append(
+                "thermal_insert_100_pack_multiple_qty отсутствует или равен 0; "
+                "закупочное количество 100 мм не округлено до пачки."
+            )
+
+        thermal_insert_50_material_raw_qty = _round_decimal(
+            _to_decimal(data.thermal_insert_50_material_spec_qty)
+            * _to_decimal(data.thermal_insert_material_waste_coeff),
+            "0.0001",
+        )
+        thermal_insert_100_material_raw_qty = _round_decimal(
+            _to_decimal(data.thermal_insert_100_material_spec_qty)
+            * _to_decimal(data.thermal_insert_material_waste_coeff),
+            "0.0001",
+        )
+        thermal_insert_50_material_purchase_qty = round_up_to_multiple(
+            thermal_insert_50_material_raw_qty,
+            data.thermal_insert_50_pack_multiple_qty,
+        )
+        thermal_insert_100_material_purchase_qty = round_up_to_multiple(
+            thermal_insert_100_material_raw_qty,
+            data.thermal_insert_100_pack_multiple_qty,
+        )
+
+        return {
+            "mode": data.thermal_insert_mode,
+            "thermal_insert_50_length_m": data.thermal_insert_50_length_m,
+            "thermal_insert_100_length_m": data.thermal_insert_100_length_m,
+            "thermal_insert_50_material_spec_qty": data.thermal_insert_50_material_spec_qty,
+            "thermal_insert_100_material_spec_qty": data.thermal_insert_100_material_spec_qty,
+            "thermal_insert_material_waste_coeff": data.thermal_insert_material_waste_coeff,
+            "thermal_insert_50_material_raw_qty": thermal_insert_50_material_raw_qty,
+            "thermal_insert_100_material_raw_qty": thermal_insert_100_material_raw_qty,
+            "thermal_insert_50_pack_multiple_qty": data.thermal_insert_50_pack_multiple_qty,
+            "thermal_insert_100_pack_multiple_qty": data.thermal_insert_100_pack_multiple_qty,
+            "thermal_insert_50_material_purchase_qty": thermal_insert_50_material_purchase_qty,
+            "thermal_insert_100_material_purchase_qty": thermal_insert_100_material_purchase_qty,
+            "warnings": warnings,
+        }
+
     thermal_insert_raw_pieces = _round_decimal(
         _to_decimal(data.thermal_insert_length_m)
         / _to_decimal(data.thermal_insert_piece_length_m),
@@ -393,6 +530,7 @@ def calculate_thermal_insert_block(data: FoundationSlabInput) -> dict[str, Any]:
         )
 
     return {
+        "mode": data.thermal_insert_mode,
         "thermal_insert_raw_pieces": thermal_insert_raw_pieces,
         "thermal_insert_pieces": thermal_insert_pieces,
         "thermal_insert_control_volume_m3": thermal_insert_control_volume_m3,
@@ -406,7 +544,6 @@ def calculate_eps_block(
     data: FoundationSlabInput,
     thermal_insert_block: dict[str, Any],
 ) -> dict[str, Any]:
-    thermal_insert_pieces = thermal_insert_block["thermal_insert_pieces"]
     eps50_laying_area_m2 = _round_decimal(
         _to_decimal(data.eps50_under_slab_volume_m3) / _to_decimal(data.eps50_thickness_m)
     )
@@ -415,6 +552,33 @@ def calculate_eps_block(
         * _to_decimal(data.eps50_thickness_m)
         * _to_decimal(data.eps_waste_coeff)
     )
+    if data.thermal_insert_mode == "standard_50_100":
+        eps50_required_volume_m3 = eps50_under_slab_required_volume_m3
+        eps50_raw_packs = _round_decimal(
+            _to_decimal(eps50_required_volume_m3) / _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+        eps50_packs = int(ceil(eps50_raw_packs))
+        eps50_order_volume_m3 = _round_decimal(
+            _to_decimal(eps50_packs) * _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+        return {
+            "mode": data.thermal_insert_mode,
+            "eps50_laying_area_m2": eps50_laying_area_m2,
+            "eps50_under_slab_required_volume_m3": eps50_under_slab_required_volume_m3,
+            "eps50_thermal_insert_volume_m3": 0,
+            "eps50_required_volume_m3": eps50_required_volume_m3,
+            "eps50_raw_packs": eps50_raw_packs,
+            "eps50_packs": eps50_packs,
+            "eps50_order_volume_m3": eps50_order_volume_m3,
+            "eps100_required_volume_m3": 0,
+            "eps100_raw_packs": 0,
+            "eps100_packs": 0,
+            "eps100_order_volume_m3": 0,
+        }
+
+    thermal_insert_pieces = thermal_insert_block["thermal_insert_pieces"]
     eps50_thermal_insert_volume_m3 = _round_decimal(
         _to_decimal(thermal_insert_pieces)
         * _to_decimal(data.eps50_thickness_m)
@@ -452,6 +616,7 @@ def calculate_eps_block(
     )
 
     return {
+        "mode": data.thermal_insert_mode,
         "eps50_laying_area_m2": eps50_laying_area_m2,
         "eps50_under_slab_required_volume_m3": eps50_under_slab_required_volume_m3,
         "eps50_thermal_insert_volume_m3": eps50_thermal_insert_volume_m3,
@@ -698,32 +863,7 @@ def calculate_internal_estimate_lines(
             work_unit_price=data.eps50_laying_work_unit_price,
             price_code="eps_laying_work_m2",
         ),
-        calculate_line(
-            code="thermal_insert_installation",
-            name="Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм",
-            unit="мп",
-            quantity=data.thermal_insert_length_m,
-            work_unit_price=data.thermal_insert_installation_work_unit_price,
-            price_code="thermal_insert_installation_work_m",
-        ),
-        calculate_line(
-            code="eps50_penoplex_geo_material",
-            name="Пеноплэкс ГЕО 50 мм",
-            unit="м3",
-            quantity=eps["eps50_order_volume_m3"],
-            display_quantity=14.44,
-            material_unit_price=data.eps50_unit_price,
-            price_code="eps_geo_50_m3",
-        ),
-        calculate_line(
-            code="eps100_penoplex_geo_material",
-            name="Пеноплэкс ГЕО 100 мм",
-            unit="м3",
-            quantity=eps["eps100_order_volume_m3"],
-            display_quantity=0.56,
-            material_unit_price=data.eps100_unit_price,
-            price_code="eps_geo_100_m3",
-        ),
+        *thermal_insert_estimate_lines(data, eps, thermal_insert),
         calculate_line(
             code="rebar_crane_supply",
             name="Подача арматуры автокраном",
@@ -835,6 +975,94 @@ def calculate_internal_estimate_lines(
     return lines
 
 
+def thermal_insert_estimate_lines(
+    data: FoundationSlabInput,
+    eps: dict[str, Any],
+    thermal_insert: dict[str, Any],
+) -> list[EstimateLineResult]:
+    if data.thermal_insert_mode == "standard_50_100":
+        return [
+            calculate_line(
+                code="thermal_insert_50_installation",
+                name="Устройство и монтаж термовставок 50 мм",
+                unit="мп",
+                quantity=data.thermal_insert_50_length_m,
+                work_unit_price=data.thermal_insert_50_work_unit_price,
+                price_code="thermal_insert_50_installation_work_m",
+            ),
+            calculate_line(
+                code="thermal_insert_100_installation",
+                name="Устройство и монтаж термовставок 100 мм",
+                unit="мп",
+                quantity=data.thermal_insert_100_length_m,
+                work_unit_price=data.thermal_insert_100_work_unit_price,
+                price_code="thermal_insert_100_installation_work_m",
+            ),
+            calculate_line(
+                code="eps50_penoplex_geo_material",
+                name="Пеноплэкс ГЕО 50 мм под плитой",
+                unit="м3",
+                quantity=eps["eps50_order_volume_m3"],
+                display_quantity=_round_decimal(eps["eps50_order_volume_m3"], "0.01"),
+                material_unit_price=data.eps50_unit_price,
+                price_code="eps_geo_50_m3",
+            ),
+            calculate_line(
+                code="thermal_insert_50_material",
+                name="Материал термовставок 50 мм",
+                unit="м3",
+                quantity=thermal_insert["thermal_insert_50_material_purchase_qty"],
+                display_quantity=_round_decimal(
+                    thermal_insert["thermal_insert_50_material_purchase_qty"],
+                    "0.01",
+                ),
+                material_unit_price=data.thermal_insert_50_material_unit_price,
+                price_code="thermal_insert_50_material_m3",
+            ),
+            calculate_line(
+                code="thermal_insert_100_material",
+                name="Материал термовставок 100 мм",
+                unit="м3",
+                quantity=thermal_insert["thermal_insert_100_material_purchase_qty"],
+                display_quantity=_round_decimal(
+                    thermal_insert["thermal_insert_100_material_purchase_qty"],
+                    "0.01",
+                ),
+                material_unit_price=data.thermal_insert_100_material_unit_price,
+                price_code="thermal_insert_100_material_m3",
+            ),
+        ]
+
+    return [
+        calculate_line(
+            code="thermal_insert_installation",
+            name="Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм",
+            unit="мп",
+            quantity=data.thermal_insert_length_m,
+            work_unit_price=data.thermal_insert_installation_work_unit_price,
+            price_code="thermal_insert_installation_work_m",
+        ),
+        calculate_line(
+            code="eps50_penoplex_geo_material",
+            name="Пеноплэкс ГЕО 50 мм",
+            unit="м3",
+            quantity=eps["eps50_order_volume_m3"],
+            display_quantity=14.44,
+            material_unit_price=data.eps50_unit_price,
+            price_code="eps_geo_50_m3",
+        ),
+        calculate_line(
+            code="eps100_penoplex_geo_material",
+            name="Пеноплэкс ГЕО 100 мм",
+            unit="м3",
+            quantity=eps["eps100_order_volume_m3"],
+            display_quantity=0.56,
+            material_unit_price=data.eps100_unit_price,
+            price_code="eps_geo_100_m3",
+        ),
+    ]
+
+
 def calculate_internal_totals(lines: list[EstimateLineResult]) -> dict[str, int]:
     internal_materials_total = sum(line.material_total for line in lines)
     internal_works_total = sum(line.work_total for line in lines)
@@ -855,17 +1083,45 @@ def collect_warnings(calculation_blocks: dict[str, Any]) -> list[str]:
     return warnings
 
 
-def confirmed_rules() -> list[str]:
-    return [
+def confirmed_rules(
+    thermal_insert_mode: str = "legacy",
+    formwork_calc_method: str = "legacy_perimeter_height",
+) -> list[str]:
+    rules = [
         "PLANTERBAND = количество рулонов мембраны * 4.",
-        "Борта = внешний периметр фундаментной плиты.",
-        "При разных толщинах плит можно брать максимальную толщину.",
         "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
         "Пеноплэкс = ЭППС.",
-        "ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.",
         "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
         "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
     ]
+    if formwork_calc_method == "spec_area":
+        rules.extend(
+            [
+                "В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.",
+                "Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.",
+                "Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.",
+            ]
+        )
+    else:
+        rules.extend(
+            [
+                "Legacy-опалубка: борта = внешний периметр фундаментной плиты.",
+                "Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.",
+            ]
+        )
+
+    if thermal_insert_mode == "standard_50_100":
+        rules.extend(
+            [
+                "Термовставки считаются отдельно по 50 мм и 100 мм.",
+                "Работы по термовставкам считаются по длине в м.п. из спецификации.",
+                "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
+                "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.",
+            ]
+        )
+    else:
+        rules.append("ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.")
+    return rules
 
 
 def calculate_foundation_slab(data: FoundationSlabInput) -> dict[str, Any]:
@@ -878,7 +1134,10 @@ def calculate_foundation_slab(data: FoundationSlabInput) -> dict[str, Any]:
     manual_lines_block = calculate_manual_lines_block(data)
 
     calculation_blocks = {
-        "confirmed_rules": confirmed_rules(),
+        "confirmed_rules": confirmed_rules(
+            data.thermal_insert_mode,
+            data.formwork_calc_method,
+        ),
         "membrane": membrane_block,
         "formwork": formwork_block,
         "eps": eps_block,

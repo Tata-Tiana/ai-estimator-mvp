@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-03`.
+Дата актуализации: `2026-06-04`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -132,6 +132,44 @@ experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_agenda.md
 - зачем нужен параметр.
 
 Важно: аудит пока ничего не внедряет. `section_schema.py`, калькуляторы и `expected.json` не менялись.
+
+После audit/review-pack обновлён калькулятор фундаментной плиты под новые стандарты Елены:
+
+```text
+experiments/foundation_slab_calculator/
+```
+
+Новые режимы:
+
+- `formwork_calc_method = "spec_area"` — площадь опалубки бортов берётся готовым значением `slab_side_formwork_area_m2` из спецификации;
+- `formwork_calc_method = "legacy_perimeter_height"` — старый расчёт `perimeter * height` только для legacy-кейса;
+- `thermal_insert_mode = "standard_50_100"` — термовставки 50 мм и 100 мм считаются отдельными работами/материалами;
+- `thermal_insert_mode = "legacy"` — старый термовкладыш 150 мм только для старого кейса.
+
+Новые кейсы:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/
+```
+
+Проверено:
+
+```text
+test_foundation_slab -> 229 ok / 0 mismatch
+test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
+test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+```
+
+Документы:
+
+```text
+docs/standard_input_contract.md
+docs/report_thermal_inserts_refactor.md
+docs/report_foundation_slab_formwork_refactor.md
+```
+
+Важно: `pdf_parser_pipeline`, `input_builder`, другие калькуляторы и старый `expected.json` фундаментной плиты не менялись. Следующая отдельная задача — обновить schema/reviewed parameters под новый input contract.
 
 ## Суть проекта
 

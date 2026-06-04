@@ -1,0 +1,877 @@
+{
+  "case_name": "test_foundation_slab_formwork_spec_area",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/expected.json",
+  "inputs": {
+    "project_name": "test_foundation_slab_formwork_spec_area",
+    "membrane_area_m2": 320,
+    "membrane_installation_work_unit_price": 100,
+    "membrane_overlap_coeff": 1.1,
+    "membrane_roll_area_m2": 40,
+    "planter_standard_roll_unit_price": 5166,
+    "planterband_per_membrane_roll": 4,
+    "planterband_unit_price": 790,
+    "formwork_installation_work_unit_price": 0,
+    "plywood_sheet_working_area_m2": 2.25,
+    "plywood_unit_price": 1450,
+    "timber_thickness_m": 0.05,
+    "timber_unit_price": 21500,
+    "eps50_under_slab_volume_m3": 13.5,
+    "eps50_thickness_m": 0.05,
+    "eps50_laying_work_unit_price": 250,
+    "eps_waste_coeff": 1.05,
+    "eps50_pack_volume_m3": 0.2776,
+    "eps50_unit_price": 9800,
+    "rebar_crane_shifts": 1,
+    "rebar_crane_unit_price": 30000,
+    "rebar_waste_coeff": 1.05,
+    "rebar_items": [
+      {
+        "code": "rebar_a500_d16",
+        "name": "Арматура класса А500 диаметром 16 мм",
+        "steel_class": "A500",
+        "diameter_mm": 16,
+        "weight_parts_kg": [
+          328
+        ],
+        "kg_per_meter": 1.58,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 80.58
+      },
+      {
+        "code": "rebar_a500_d12",
+        "name": "Арматура класса А500 диаметром 12 мм",
+        "steel_class": "A500",
+        "diameter_mm": 12,
+        "weight_parts_kg": [
+          122,
+          5276
+        ],
+        "kg_per_meter": 0.888,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 45.29
+      },
+      {
+        "code": "rebar_a500_d10",
+        "name": "Арматура класса А500 диаметром 10 мм",
+        "steel_class": "A500",
+        "diameter_mm": 10,
+        "weight_parts_kg": [
+          1078
+        ],
+        "kg_per_meter": 0.617,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 32.72
+      },
+      {
+        "code": "rebar_a240_d6",
+        "name": "Арматура класса А240 диаметром 6 мм",
+        "steel_class": "A240",
+        "diameter_mm": 6,
+        "weight_parts_kg": [
+          35
+        ],
+        "kg_per_meter": 0.222,
+        "rod_length_m": 6,
+        "unit_price_per_m": 13.32
+      }
+    ],
+    "rebar_metal_delivery_trucks": 1,
+    "rebar_metal_delivery_unit_price": 22000,
+    "box_total_metal_weight_kg": 8263,
+    "concrete_project_volume_m3": 81,
+    "concreting_work_unit_price": 12000,
+    "concrete_waste_coeff": 1.05,
+    "concrete_round_step_m3": 0.5,
+    "concrete_unit_price": 6400,
+    "concrete_mixer_volume_m3": 9,
+    "concrete_delivery_unit_price": 7500,
+    "concrete_pump_shifts": 1,
+    "concrete_pump_unit_price": 38000,
+    "formwork_dismantling_work_unit_price": 0,
+    "logistics_and_supply_amount": 36291.7,
+    "consumables_tool_amortization_amount": 72583,
+    "technical_supervision_amount": 10000,
+    "plywood_calc_method": "working_area",
+    "plywood_sheet_width_m": 1.52,
+    "plywood_sheet_height_m": 1.52,
+    "plywood_waste_coeff": 1.05,
+    "box_metal_delivery_capacity_kg": 10000,
+    "formwork_calc_method": "spec_area",
+    "slab_side_formwork_area_m2": 24.3,
+    "thermal_insert_mode": "standard_50_100",
+    "thermal_insert_50_length_m": 10,
+    "thermal_insert_100_length_m": 15,
+    "thermal_insert_50_work_unit_price": 100,
+    "thermal_insert_100_work_unit_price": 100,
+    "thermal_insert_50_material_spec_qty": 1.0,
+    "thermal_insert_100_material_spec_qty": 0.5,
+    "thermal_insert_material_waste_coeff": 1.05,
+    "thermal_insert_50_pack_multiple_qty": 0.2776,
+    "thermal_insert_100_pack_multiple_qty": 0.2776,
+    "thermal_insert_50_material_unit_price": 9800,
+    "thermal_insert_100_material_unit_price": 10000
+  },
+  "calculation_blocks": {
+    "confirmed_rules": [
+      "PLANTERBAND = количество рулонов мембраны * 4.",
+      "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
+      "Пеноплэкс = ЭППС.",
+      "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
+      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
+      "В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.",
+      "Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.",
+      "Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.",
+      "Термовставки считаются отдельно по 50 мм и 100 мм.",
+      "Работы по термовставкам считаются по длине в м.п. из спецификации.",
+      "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
+      "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте."
+    ],
+    "membrane": {
+      "membrane_area_with_overlap_m2": 352.0,
+      "membrane_raw_rolls": 8.8,
+      "membrane_rolls": 9,
+      "planterband_quantity": 36
+    },
+    "formwork": {
+      "formwork_calc_method": "spec_area",
+      "slab_side_formwork_area_m2": 24.3,
+      "formwork_area_m2": 24.3,
+      "plywood_calc_method": "working_area",
+      "plywood_sheet_working_area_m2": 2.25,
+      "plywood_raw_sheets": 10.8,
+      "plywood_sheets": 11,
+      "timber_raw_volume_m3": 1.215
+    },
+    "eps": {
+      "mode": "standard_50_100",
+      "eps50_laying_area_m2": 270.0,
+      "eps50_under_slab_required_volume_m3": 14.175,
+      "eps50_thermal_insert_volume_m3": 0,
+      "eps50_required_volume_m3": 14.175,
+      "eps50_raw_packs": 51.0627,
+      "eps50_packs": 52,
+      "eps50_order_volume_m3": 14.4352,
+      "eps100_required_volume_m3": 0,
+      "eps100_raw_packs": 0,
+      "eps100_packs": 0,
+      "eps100_order_volume_m3": 0
+    },
+    "thermal_insert": {
+      "mode": "standard_50_100",
+      "thermal_insert_50_length_m": 10,
+      "thermal_insert_100_length_m": 15,
+      "thermal_insert_50_material_spec_qty": 1.0,
+      "thermal_insert_100_material_spec_qty": 0.5,
+      "thermal_insert_material_waste_coeff": 1.05,
+      "thermal_insert_50_material_raw_qty": 1.05,
+      "thermal_insert_100_material_raw_qty": 0.525,
+      "thermal_insert_50_pack_multiple_qty": 0.2776,
+      "thermal_insert_100_pack_multiple_qty": 0.2776,
+      "thermal_insert_50_material_purchase_qty": 1.1104,
+      "thermal_insert_100_material_purchase_qty": 0.5552,
+      "warnings": []
+    },
+    "rebar": {
+      "items": {
+        "rebar_a500_d16": {
+          "name": "Арматура класса А500 диаметром 16 мм",
+          "steel_class": "A500",
+          "diameter_mm": 16,
+          "weight_parts_kg": [
+            328
+          ],
+          "total_weight_kg": 328.0,
+          "raw_length_m": 207.5949,
+          "length_with_waste_m": 217.9746,
+          "raw_rods": 18.6303,
+          "rods": 19,
+          "order_length_m": 222.3,
+          "control_weight_kg": 344.3999
+        },
+        "rebar_a500_d12": {
+          "name": "Арматура класса А500 диаметром 12 мм",
+          "steel_class": "A500",
+          "diameter_mm": 12,
+          "weight_parts_kg": [
+            122,
+            5276
+          ],
+          "total_weight_kg": 5398.0,
+          "raw_length_m": 6078.8288,
+          "length_with_waste_m": 6382.7702,
+          "raw_rods": 545.5359,
+          "rods": 546,
+          "order_length_m": 6388.2,
+          "control_weight_kg": 5667.8999
+        },
+        "rebar_a500_d10": {
+          "name": "Арматура класса А500 диаметром 10 мм",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "weight_parts_kg": [
+            1078
+          ],
+          "total_weight_kg": 1078.0,
+          "raw_length_m": 1747.1637,
+          "length_with_waste_m": 1834.5219,
+          "raw_rods": 156.7967,
+          "rods": 157,
+          "order_length_m": 1836.9,
+          "control_weight_kg": 1131.9
+        },
+        "rebar_a240_d6": {
+          "name": "Арматура класса А240 диаметром 6 мм",
+          "steel_class": "A240",
+          "diameter_mm": 6,
+          "weight_parts_kg": [
+            35
+          ],
+          "total_weight_kg": 35.0,
+          "raw_length_m": 157.6577,
+          "length_with_waste_m": 165.5406,
+          "raw_rods": 27.5901,
+          "rods": 28,
+          "order_length_m": 168.0,
+          "control_weight_kg": 36.75
+        }
+      },
+      "rebar_frame_assembly_quantity_m": 8615.4,
+      "foundation_slab_rebar_control_weight_kg": 7180.9498,
+      "box_total_metal_weight_kg": 8263,
+      "box_metal_delivery_capacity_kg": 10000,
+      "suggested_box_metal_delivery_trucks": 1,
+      "actual_rebar_metal_delivery_trucks": 1,
+      "warnings": []
+    },
+    "concrete": {
+      "concrete_raw_order_volume_m3": 85.05,
+      "concrete_order_volume_m3": 85.5,
+      "concrete_delivery_raw_trips": 9.5,
+      "concrete_delivery_trips": 10,
+      "reinforcement_density_kg_per_m3": 88.6537,
+      "reinforcement_density_kg_per_m3_rounded": 89
+    },
+    "manual_lines": {
+      "rebar_crane_supply": {
+        "quantity": 1,
+        "unit_price": 30000,
+        "line_type": "fixed/manual"
+      },
+      "rebar_metal_delivery": {
+        "quantity": 1,
+        "unit_price": 22000,
+        "line_type": "fixed/manual"
+      },
+      "concrete_pump_32m": {
+        "quantity": 1,
+        "unit_price": 38000,
+        "line_type": "fixed/manual"
+      },
+      "logistics_and_supply": {
+        "quantity": 1,
+        "unit_price": 36291.7,
+        "line_type": "fixed/manual"
+      },
+      "consumables_tool_amortization": {
+        "quantity": 1,
+        "unit_price": 72583,
+        "line_type": "fixed/manual"
+      },
+      "technical_supervision": {
+        "quantity": 1,
+        "unit_price": 10000,
+        "line_type": "fixed/manual"
+      }
+    }
+  },
+  "warnings": [],
+  "estimate_lines": [
+    {
+      "code": "planter_membrane_installation",
+      "name": "Монтаж мембраны PLANTER стандарт",
+      "unit": "м2",
+      "quantity": 320.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 32000,
+      "line_total": 32000,
+      "price_code": "planter_membrane_installation_work_m2"
+    },
+    {
+      "code": "planter_standard_material",
+      "name": "Planter Standard Технониколь",
+      "unit": "рул",
+      "quantity": 9.0,
+      "material_unit_price": 5166,
+      "material_total": 46494,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 46494,
+      "price_code": "planter_standard_roll"
+    },
+    {
+      "code": "planterband_material",
+      "name": "PLANTERBAND 10м х 10см",
+      "unit": "шт",
+      "quantity": 36.0,
+      "material_unit_price": 790,
+      "material_total": 28440,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 28440,
+      "price_code": "planterband_item"
+    },
+    {
+      "code": "formwork_installation",
+      "name": "Монтаж опалубки из пиломатериалов для отбортовки плиты",
+      "unit": "м2",
+      "quantity": 24.3,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0,
+      "price_code": "timber_formwork_installation_work_m2"
+    },
+    {
+      "code": "formwork_plywood",
+      "name": "Фанера ФК 1,52 * 1,52 толщиной 18 мм",
+      "unit": "шт",
+      "quantity": 11.0,
+      "material_unit_price": 1450,
+      "material_total": 15950,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 15950,
+      "price_code": "plywood_1520x1520_18mm_sheet"
+    },
+    {
+      "code": "formwork_timber",
+      "name": "Пиломатериал обрезной хвойных пород ГОСТ",
+      "unit": "м3",
+      "quantity": 1.215,
+      "material_unit_price": 21500,
+      "material_total": 26123,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 26123,
+      "display_quantity": 1.2,
+      "price_code": "timber_m3"
+    },
+    {
+      "code": "eps50_laying_under_slab",
+      "name": "Укладка ЭППС 50мм под плитой",
+      "unit": "м2",
+      "quantity": 270.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 250,
+      "work_total": 67500,
+      "line_total": 67500,
+      "price_code": "eps_laying_work_m2"
+    },
+    {
+      "code": "thermal_insert_50_installation",
+      "name": "Устройство и монтаж термовставок 50 мм",
+      "unit": "мп",
+      "quantity": 10.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 1000,
+      "line_total": 1000,
+      "price_code": "thermal_insert_50_installation_work_m"
+    },
+    {
+      "code": "thermal_insert_100_installation",
+      "name": "Устройство и монтаж термовставок 100 мм",
+      "unit": "мп",
+      "quantity": 15.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 1500,
+      "line_total": 1500,
+      "price_code": "thermal_insert_100_installation_work_m"
+    },
+    {
+      "code": "eps50_penoplex_geo_material",
+      "name": "Пеноплэкс ГЕО 50 мм под плитой",
+      "unit": "м3",
+      "quantity": 14.4352,
+      "material_unit_price": 9800,
+      "material_total": 141465,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 141465,
+      "display_quantity": 14.44,
+      "price_code": "eps_geo_50_m3"
+    },
+    {
+      "code": "thermal_insert_50_material",
+      "name": "Материал термовставок 50 мм",
+      "unit": "м3",
+      "quantity": 1.1104,
+      "material_unit_price": 9800,
+      "material_total": 10882,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 10882,
+      "display_quantity": 1.11,
+      "price_code": "thermal_insert_50_material_m3"
+    },
+    {
+      "code": "thermal_insert_100_material",
+      "name": "Материал термовставок 100 мм",
+      "unit": "м3",
+      "quantity": 0.5552,
+      "material_unit_price": 10000,
+      "material_total": 5552,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 5552,
+      "display_quantity": 0.56,
+      "price_code": "thermal_insert_100_material_m3"
+    },
+    {
+      "code": "rebar_crane_supply",
+      "name": "Подача арматуры автокраном",
+      "unit": "смена",
+      "quantity": 1.0,
+      "material_unit_price": 30000,
+      "material_total": 30000,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 30000,
+      "price_code": "crane_shift"
+    },
+    {
+      "code": "rebar_frame_assembly",
+      "name": "Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры",
+      "unit": "мп",
+      "quantity": 8615.4,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "rebar_a500_d16",
+      "name": "Арматура класса А500 диаметром 16 мм",
+      "unit": "мп",
+      "quantity": 222.3,
+      "material_unit_price": 80.58,
+      "material_total": 17913,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 17913,
+      "price_code": "rebar_a500_d16_m"
+    },
+    {
+      "code": "rebar_a500_d12",
+      "name": "Арматура класса А500 диаметром 12 мм",
+      "unit": "мп",
+      "quantity": 6388.2,
+      "material_unit_price": 45.29,
+      "material_total": 289322,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 289322,
+      "price_code": "rebar_a500_d12_m"
+    },
+    {
+      "code": "rebar_a500_d10",
+      "name": "Арматура класса А500 диаметром 10 мм",
+      "unit": "мп",
+      "quantity": 1836.9,
+      "material_unit_price": 32.72,
+      "material_total": 60103,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 60103,
+      "price_code": "rebar_a500_d10_m"
+    },
+    {
+      "code": "rebar_a240_d6",
+      "name": "Арматура класса А240 диаметром 6 мм",
+      "unit": "мп",
+      "quantity": 168.0,
+      "material_unit_price": 13.32,
+      "material_total": 2238,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 2238,
+      "price_code": "rebar_a240_d6_m"
+    },
+    {
+      "code": "rebar_metal_delivery",
+      "name": "Доставка арматуры, металла",
+      "unit": "маш",
+      "quantity": 1.0,
+      "material_unit_price": 22000,
+      "material_total": 22000,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 22000,
+      "price_code": "metal_delivery_truck"
+    },
+    {
+      "code": "foundation_slab_concreting_work",
+      "name": "Бетонирование фундаментной плиты в опалубке бетоном В22,5 (М300)",
+      "unit": "м3",
+      "quantity": 81.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 12000,
+      "work_total": 972000,
+      "line_total": 972000,
+      "price_code": "concrete_placing_work_m3"
+    },
+    {
+      "code": "concrete_b22_5_m300_material",
+      "name": "Бетон марки В22,5 (М300)",
+      "unit": "м3",
+      "quantity": 85.5,
+      "material_unit_price": 6400,
+      "material_total": 547200,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 547200,
+      "price_code": "concrete_b22_5_m3"
+    },
+    {
+      "code": "concrete_delivery",
+      "name": "Доставка бетона до объекта",
+      "unit": "рейс",
+      "quantity": 10.0,
+      "material_unit_price": 7500,
+      "material_total": 75000,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 75000,
+      "price_code": "concrete_delivery_trip"
+    },
+    {
+      "code": "concrete_pump_32m",
+      "name": "Работа бетононасоса 32м + гаситель",
+      "unit": "смена",
+      "quantity": 1.0,
+      "material_unit_price": 38000,
+      "material_total": 38000,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 38000,
+      "price_code": "concrete_pump_32m_shift"
+    },
+    {
+      "code": "formwork_dismantling",
+      "name": "Демонтаж опалубки после завершения бетонирования",
+      "unit": "м2",
+      "quantity": 24.3,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 0,
+      "price_code": "formwork_dismantling_work_m2"
+    },
+    {
+      "code": "logistics_and_supply",
+      "name": "Логистика и снабжение",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 36291.7,
+      "material_total": 36292,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 36292
+    },
+    {
+      "code": "consumables_tool_amortization",
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "quantity": 1.0,
+      "material_unit_price": 72583,
+      "material_total": 72583,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 72583
+    },
+    {
+      "code": "technical_supervision",
+      "name": "Технический надзор",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 10000,
+      "work_total": 10000,
+      "line_total": 10000,
+      "price_code": "technical_supervision_fixed"
+    },
+    {
+      "code": "procurement_warehouse_costs_excel_structure",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
+    },
+    {
+      "code": "overhead_general_business_costs_excel_structure",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
+    },
+    {
+      "code": "estimated_profit_excel_structure",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0,
+      "line_type": "zero_excel_structure_line"
+    }
+  ],
+  "internal_totals": {
+    "internal_materials_total": 1465557,
+    "internal_works_total": 1084000,
+    "internal_section_total": 2549557
+  },
+  "expected": {
+    "calculation_blocks": {
+      "formwork": {
+        "formwork_calc_method": "spec_area",
+        "slab_side_formwork_area_m2": 24.3,
+        "formwork_area_m2": 24.3,
+        "plywood_calc_method": "working_area",
+        "plywood_sheet_working_area_m2": 2.25,
+        "plywood_sheets": 11,
+        "timber_raw_volume_m3": 1.215
+      }
+    },
+    "estimate_lines": {
+      "formwork_installation": {
+        "unit": "м2",
+        "quantity": 24.3,
+        "line_total": 0
+      },
+      "formwork_plywood": {
+        "unit": "шт",
+        "quantity": 11,
+        "material_total": 15950,
+        "line_total": 15950
+      },
+      "formwork_timber": {
+        "unit": "м3",
+        "quantity": 1.215,
+        "display_quantity": 1.2,
+        "material_total": 26123,
+        "line_total": 26123
+      },
+      "formwork_dismantling": {
+        "unit": "м2",
+        "quantity": 24.3,
+        "line_total": 0
+      }
+    },
+    "internal_totals": {
+      "internal_materials_total": 1465557,
+      "internal_works_total": 1084000,
+      "internal_section_total": 2549557
+    }
+  },
+  "comparison": [
+    {
+      "key": "calculation_blocks.formwork.formwork_calc_method",
+      "expected": "spec_area",
+      "actual": "spec_area",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.slab_side_formwork_area_m2",
+      "expected": 24.3,
+      "actual": 24.3,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.formwork_area_m2",
+      "expected": 24.3,
+      "actual": 24.3,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.plywood_calc_method",
+      "expected": "working_area",
+      "actual": "working_area",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.plywood_sheet_working_area_m2",
+      "expected": 2.25,
+      "actual": 2.25,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.plywood_sheets",
+      "expected": 11,
+      "actual": 11,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "calculation_blocks.formwork.timber_raw_volume_m3",
+      "expected": 1.215,
+      "actual": 1.215,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_installation.unit",
+      "expected": "м2",
+      "actual": "м2",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_installation.quantity",
+      "expected": 24.3,
+      "actual": 24.3,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_installation.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_plywood.unit",
+      "expected": "шт",
+      "actual": "шт",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_plywood.quantity",
+      "expected": 11,
+      "actual": 11.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_plywood.material_total",
+      "expected": 15950,
+      "actual": 15950,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_plywood.line_total",
+      "expected": 15950,
+      "actual": 15950,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_timber.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_timber.quantity",
+      "expected": 1.215,
+      "actual": 1.215,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_timber.display_quantity",
+      "expected": 1.2,
+      "actual": 1.2,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_timber.material_total",
+      "expected": 26123,
+      "actual": 26123,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_timber.line_total",
+      "expected": 26123,
+      "actual": 26123,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_dismantling.unit",
+      "expected": "м2",
+      "actual": "м2",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_dismantling.quantity",
+      "expected": 24.3,
+      "actual": 24.3,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.formwork_dismantling.line_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_materials_total",
+      "expected": 1465557,
+      "actual": 1465557,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_works_total",
+      "expected": 1084000,
+      "actual": 1084000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_section_total",
+      "expected": 2549557,
+      "actual": 2549557,
+      "diff": 0,
+      "status": "ok"
+    }
+  ]
+}

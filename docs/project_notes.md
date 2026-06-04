@@ -1,6 +1,6 @@
 # Project Notes
 
-Дата актуализации: `2026-06-03`.
+Дата актуализации: `2026-06-04`.
 
 ## Последняя расчётная контрольная точка
 
@@ -80,6 +80,40 @@ Review-pack нужен для созвона с Еленой. Он не внед
 - какие оставить ручными решениями сметчика.
 
 В каждой строке pack есть пояснение, где параметр используется в смете и какая формула калькулятора от него зависит.
+
+Новые стандарты фундаментной плиты после созвонов с Еленой:
+
+```text
+experiments/foundation_slab_calculator/
+docs/standard_input_contract.md
+docs/report_thermal_inserts_refactor.md
+docs/report_foundation_slab_formwork_refactor.md
+```
+
+Опалубка бортов:
+
+```text
+formwork_calc_method = "spec_area"
+slab_side_formwork_area_m2 = готовая площадь из спецификации
+```
+
+Термовставки:
+
+```text
+thermal_insert_mode = "standard_50_100"
+```
+
+Старые режимы `legacy_perimeter_height` и `legacy` сохранены только для старого эталонного кейса `test_foundation_slab`.
+
+Проверочные кейсы:
+
+```text
+test_foundation_slab -> 229 ok / 0 mismatch
+test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
+test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+```
+
+TODO отдельной задачей: обновить `pdf_parser_pipeline/section_schema.py`, чтобы Елена видела `slab_side_formwork_area_m2` и новые параметры термовставок как актуальный contract, а legacy-поля не попадали в ручной ввод новых проектов.
 
 ## Главные договорённости
 

@@ -18,7 +18,15 @@ experiments/foundation_slab_calculator/
 ├── foundation_slab_calculator.py
 ├── run_foundation_slab_calc.py
 ├── cases/
-│   └── test_foundation_slab/
+│   ├── test_foundation_slab/
+│   │   ├── input.json
+│   │   ├── expected.json
+│   │   └── notes.md
+│   └── test_foundation_slab_thermal_inserts_standard/
+│       ├── input.json
+│       ├── expected.json
+│       └── notes.md
+│   └── test_foundation_slab_formwork_spec_area/
 │       ├── input.json
 │       ├── expected.json
 │       └── notes.md
@@ -39,7 +47,7 @@ experiments/foundation_slab_calculator/
 - фанеру;
 - пиломатериал;
 - укладку ЭППС 50 мм;
-- термовкладыш;
+- legacy-термовкладыш или новые термовставки 50/100 мм;
 - Пеноплэкс / ЭППС 50 мм;
 - Пеноплэкс / ЭППС 100 мм;
 - подачу арматуры краном;
@@ -86,11 +94,12 @@ calculation_blocks:
 После комментариев Елены в калькулятор и notes добавлены подтверждённые правила:
 
 - PLANTERBAND = количество рулонов мембраны * 4.
-- Борта = внешний периметр фундаментной плиты.
-- При разных толщинах плит можно брать максимальную толщину.
+- В legacy-кейсе борта считались как внешний периметр фундаментной плиты * высота борта.
+- В новом стандарте площадь опалубки бортов берётся готовым значением из спецификации.
 - Пиломатериал = площадь опалубки * 0.05, без дополнительного коэффициента 1.5.
 - Пеноплэкс = ЭППС.
-- ЭППС 50 мм + ЭППС 100 мм дают термовкладыш 150 мм.
+- В legacy-кейсе ЭППС 50 мм + ЭППС 100 мм дают термовкладыш 150 мм.
+- В новом стандарте Елены термовставки 50 мм и 100 мм считаются отдельно.
 - Доставка металла ориентируется на 10 тонн на машину по общему весу листа "Коробка".
 - Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2, но добавлен альтернативный метод.
 
@@ -115,11 +124,20 @@ planterband_quantity = membrane_rolls * 4
 
 ### Опалубка и пиломатериал
 
-Площадь опалубки:
+В legacy-кейсе площадь опалубки считалась по формуле:
 
 ```text
 formwork_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m
 ```
+
+В новом production-стандарте площадь опалубки приходит готовым значением из спецификации:
+
+```text
+formwork_calc_method = "spec_area"
+formwork_area_m2 = slab_side_formwork_area_m2
+```
+
+Периметр и высота борта больше не являются обязательными входами для расчёта опалубки в новом стандарте.
 
 Пиломатериал:
 
@@ -160,6 +178,52 @@ eps50_laying_area_m2 = eps50_under_slab_volume_m3 / eps50_thickness_m
 Материал ЭППС 100 мм считается только для термовкладыша, без запаса 5%.
 
 Оба материала округляются до целых пачек.
+
+### Термовставки по новому стандарту Елены
+
+Добавлен отдельный режим:
+
+```text
+thermal_insert_mode = "standard_50_100"
+```
+
+В нём старая логика термовкладыша 150 мм не используется. Калькулятор больше не делит длину на `0.6`, не считает количество элементов 400 x 150 x высота и не подмешивает материал термовставок в общие строки ЭППС 50/100.
+
+Работы считаются по длине из спецификации:
+
+```text
+thermal_insert_50_work_total = thermal_insert_50_length_m * thermal_insert_50_work_unit_price
+thermal_insert_100_work_total = thermal_insert_100_length_m * thermal_insert_100_work_unit_price
+```
+
+Материал считается по спецификации:
+
+```text
+thermal_insert_50_raw_qty = thermal_insert_50_material_spec_qty * thermal_insert_material_waste_coeff
+thermal_insert_50_purchase_qty = round_up_to_multiple(thermal_insert_50_raw_qty, thermal_insert_50_pack_multiple_qty)
+
+thermal_insert_100_raw_qty = thermal_insert_100_material_spec_qty * thermal_insert_material_waste_coeff
+thermal_insert_100_purchase_qty = round_up_to_multiple(thermal_insert_100_raw_qty, thermal_insert_100_pack_multiple_qty)
+```
+
+В смете появляются отдельные строки:
+
+- "Устройство и монтаж термовставок 50 мм";
+- "Устройство и монтаж термовставок 100 мм";
+- "Материал термовставок 50 мм";
+- "Материал термовставок 100 мм".
+
+Проверочный кейс нового стандарта:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
+```
+
+Проверочный кейс новой площади опалубки из спецификации:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/
+```
 
 ### Арматура
 
@@ -219,6 +283,20 @@ internal_section_total  = 2 538 325
 
 ```text
 229 ok
+0 mismatch
+```
+
+Новый кейс термовставок 50/100 мм также проходит comparison без mismatch:
+
+```text
+41 ok
+0 mismatch
+```
+
+Кейс новой площади опалубки из спецификации также проходит comparison без mismatch:
+
+```text
+25 ok
 0 mismatch
 ```
 

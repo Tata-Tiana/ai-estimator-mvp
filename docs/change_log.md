@@ -43,6 +43,43 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-04 — Обновлены стандарты фундаментной плиты: опалубка и термовставки
+
+- Ветка: `feature/ai-project-card`
+- Коммит: будет создан текущей фиксацией
+
+Что изменено:
+
+- в `foundation_slab_calculator` добавлен режим опалубки `formwork_calc_method`;
+- production-режим `spec_area` считает площадь опалубки от готового значения `slab_side_formwork_area_m2` из спецификации;
+- legacy-режим `legacy_perimeter_height` оставлен для старого кейса и формулы `perimeter * height`;
+- добавлен режим термовставок `thermal_insert_mode = "standard_50_100"`;
+- термовставки 50 мм и 100 мм теперь считаются отдельными строками работ и материалов;
+- старая логика термовкладыша 150 мм через элемент и деление длины на 0.6 оставлена только как legacy;
+- создан `docs/standard_input_contract.md`;
+- созданы отчёты:
+  - `docs/report_thermal_inserts_refactor.md`;
+  - `docs/report_foundation_slab_formwork_refactor.md`;
+- добавлены кейсы:
+  - `test_foundation_slab_thermal_inserts_standard`;
+  - `test_foundation_slab_formwork_spec_area`.
+
+Проверки:
+
+```text
+test_foundation_slab -> 229 ok / 0 mismatch
+test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
+test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+py_compile -> ok
+```
+
+Важно:
+
+- старый `expected.json` не изменён;
+- другие калькуляторы не менялись;
+- `pdf_parser_pipeline` и `input_builder` не менялись;
+- следующий шаг отдельной задачей — обновить schema/reviewed parameters под новый input contract.
+
 ### 2026-06-03 — Добавлен аудит параметров и review-pack для Елены
 
 - Ветка: `feature/ai-project-card`

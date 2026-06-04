@@ -11,8 +11,6 @@
 - `planter_standard_roll_unit_price`: `5166`
 - `planterband_per_membrane_roll`: `4`
 - `planterband_unit_price`: `790`
-- `slab_formwork_perimeter_m`: `81`
-- `slab_edge_height_m`: `0.3`
 - `formwork_installation_work_unit_price`: `0`
 - `plywood_sheet_working_area_m2`: `2.25`
 - `plywood_unit_price`: `1450`
@@ -22,18 +20,8 @@
 - `eps50_thickness_m`: `0.05`
 - `eps50_laying_work_unit_price`: `250`
 - `eps_waste_coeff`: `1.05`
-- `thermal_insert_length_m`: `21.5`
-- `thermal_insert_piece_length_m`: `0.6`
-- `thermal_insert_piece_width_m`: `0.15`
-- `thermal_insert_piece_height_m`: `0.4`
-- `thermal_insert_piece_depth_for_work_m`: `0.3`
-- `thermal_insert_piece_depth_for_eps_m`: `0.25`
-- `thermal_insert_installation_work_unit_price`: `100`
 - `eps50_pack_volume_m3`: `0.2776`
 - `eps50_unit_price`: `9800`
-- `eps100_thickness_m`: `0.1`
-- `eps100_pack_volume_m3`: `0.2776`
-- `eps100_unit_price`: `10000`
 - `rebar_crane_shifts`: `1`
 - `rebar_crane_unit_price`: `30000`
 - `rebar_waste_coeff`: `1.05`
@@ -60,45 +48,63 @@
 - `plywood_waste_coeff`: `1.05`
 - `slab_edge_height_strategy`: `max_thickness`
 - `box_metal_delivery_capacity_kg`: `10000`
+- `formwork_calc_method`: `legacy_perimeter_height`
+- `slab_formwork_perimeter_m`: `81`
+- `slab_edge_height_m`: `0.3`
+- `thermal_insert_mode`: `legacy`
+- `thermal_insert_length_m`: `21.5`
+- `thermal_insert_piece_length_m`: `0.6`
+- `thermal_insert_piece_width_m`: `0.15`
+- `thermal_insert_piece_height_m`: `0.4`
+- `thermal_insert_piece_depth_for_work_m`: `0.3`
+- `thermal_insert_piece_depth_for_eps_m`: `0.25`
+- `thermal_insert_installation_work_unit_price`: `100`
+- `eps100_thickness_m`: `0.1`
+- `eps100_pack_volume_m3`: `0.2776`
+- `eps100_unit_price`: `10000`
 
 ## Формулы
 - Монтаж мембраны: `quantity = membrane_area_m2`.
 - Planter Standard: `rolls = ceil(membrane_area_m2 * overlap / roll_area)`.
 - PLANTERBAND: `quantity = membrane_rolls * planterband_per_membrane_roll`.
-- Опалубка: `formwork_area = slab_formwork_perimeter_m * slab_edge_height_m`.
+- Legacy-опалубка: `formwork_area = slab_formwork_perimeter_m * slab_edge_height_m`.
 - Фанера: `working_area` считает `ceil(formwork_area / plywood_sheet_working_area_m2)`, `actual_area_with_waste` считает через фактическую площадь листа и запас.
 - Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.
 - ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.
-- Термовкладыш: `pieces = ceil(thermal_insert_length_m / thermal_insert_piece_length_m)`.
+- Legacy-термовкладыш: `pieces = ceil(thermal_insert_length_m / thermal_insert_piece_length_m)`.
 - Арматура: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.
 - Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.
 - Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.
 
 ## Подтверждённые правила Елены
 - PLANTERBAND = количество рулонов мембраны * 4.
-- Борта = внешний периметр фундаментной плиты.
-- При разных толщинах плит можно брать максимальную толщину.
 - Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.
 - Пеноплэкс = ЭППС.
-- ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.
 - Доставка металла ориентируется на 10 тонн на машину по листу Коробка.
 - Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.
+- Legacy-опалубка: борта = внешний периметр фундаментной плиты.
+- Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.
+- ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.
 
 ## Промежуточные расчёты
 | Показатель | Значение |
 | --- | ---: |
-| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Борта = внешний периметр фундаментной плиты.', 'При разных толщинах плит можно брать максимальную толщину.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.']` |
+| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.', 'Legacy-опалубка: борта = внешний периметр фундаментной плиты.', 'Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.', 'ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.']` |
 | `membrane.membrane_area_with_overlap_m2` | `352.0` |
 | `membrane.membrane_raw_rolls` | `8.8` |
 | `membrane.membrane_rolls` | `9` |
 | `membrane.planterband_quantity` | `36` |
+| `formwork.formwork_calc_method` | `legacy_perimeter_height` |
 | `formwork.formwork_area_m2` | `24.3` |
+| `formwork.slab_formwork_perimeter_m` | `81` |
+| `formwork.slab_edge_height_m` | `0.3` |
 | `formwork.slab_edge_height_strategy` | `max_thickness` |
 | `formwork.plywood_calc_method` | `working_area` |
 | `formwork.plywood_sheet_working_area_m2` | `2.25` |
 | `formwork.plywood_raw_sheets` | `10.8` |
 | `formwork.plywood_sheets` | `11` |
 | `formwork.timber_raw_volume_m3` | `1.215` |
+| `eps.mode` | `legacy` |
 | `eps.eps50_laying_area_m2` | `270.0` |
 | `eps.eps50_under_slab_required_volume_m3` | `14.175` |
 | `eps.eps50_thermal_insert_volume_m3` | `0.18` |
@@ -110,6 +116,7 @@
 | `eps.eps100_raw_packs` | `1.2968` |
 | `eps.eps100_packs` | `2` |
 | `eps.eps100_order_volume_m3` | `0.5552` |
+| `thermal_insert.mode` | `legacy` |
 | `thermal_insert.thermal_insert_raw_pieces` | `35.8333` |
 | `thermal_insert.thermal_insert_pieces` | `36` |
 | `thermal_insert.thermal_insert_control_volume_m3` | `0.648` |

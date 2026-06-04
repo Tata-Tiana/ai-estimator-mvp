@@ -234,6 +234,46 @@ def format_markdown(
         f"- `{key}`: `{value}`" for key, value in inputs.items() if value is not None
     ]
     block_rows = flatten_block("", calculation["calculation_blocks"])
+    formula_lines = [
+        "- Монтаж мембраны: `quantity = membrane_area_m2`.",
+        "- Planter Standard: `rolls = ceil(membrane_area_m2 * overlap / roll_area)`.",
+        "- PLANTERBAND: `quantity = membrane_rolls * planterband_per_membrane_roll`.",
+    ]
+    if input_data.formwork_calc_method == "spec_area":
+        formula_lines.append(
+            "- Опалубка: `formwork_area = slab_side_formwork_area_m2`."
+        )
+    else:
+        formula_lines.append(
+            "- Legacy-опалубка: `formwork_area = slab_formwork_perimeter_m * slab_edge_height_m`."
+        )
+    formula_lines.extend(
+        [
+            "- Фанера: `working_area` считает `ceil(formwork_area / plywood_sheet_working_area_m2)`, `actual_area_with_waste` считает через фактическую площадь листа и запас.",
+            "- Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.",
+            "- ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.",
+        ]
+    )
+    if input_data.thermal_insert_mode == "standard_50_100":
+        formula_lines.extend(
+            [
+                "- Работы термовставок 50 мм: `quantity = thermal_insert_50_length_m`.",
+                "- Работы термовставок 100 мм: `quantity = thermal_insert_100_length_m`.",
+                "- Материал термовставок 50 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)`.",
+                "- Материал термовставок 100 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)`.",
+            ]
+        )
+    else:
+        formula_lines.append(
+            "- Legacy-термовкладыш: `pieces = ceil(thermal_insert_length_m / thermal_insert_piece_length_m)`."
+        )
+    formula_lines.extend(
+        [
+            "- Арматура: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.",
+            "- Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.",
+            "- Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.",
+        ]
+    )
     pricing_sections = []
     if calculation.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
         pricing_sections = [
@@ -254,17 +294,7 @@ def format_markdown(
             *input_lines,
             "",
             "## Формулы",
-            "- Монтаж мембраны: `quantity = membrane_area_m2`.",
-            "- Planter Standard: `rolls = ceil(membrane_area_m2 * overlap / roll_area)`.",
-            "- PLANTERBAND: `quantity = membrane_rolls * planterband_per_membrane_roll`.",
-            "- Опалубка: `formwork_area = slab_formwork_perimeter_m * slab_edge_height_m`.",
-            "- Фанера: `working_area` считает `ceil(formwork_area / plywood_sheet_working_area_m2)`, `actual_area_with_waste` считает через фактическую площадь листа и запас.",
-            "- Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.",
-            "- ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.",
-            "- Термовкладыш: `pieces = ceil(thermal_insert_length_m / thermal_insert_piece_length_m)`.",
-            "- Арматура: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.",
-            "- Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.",
-            "- Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.",
+            *formula_lines,
             "",
             "## Подтверждённые правила Елены",
             *format_confirmed_rules_markdown(calculation),

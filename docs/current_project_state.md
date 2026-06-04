@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-03`.
+Дата актуализации: `2026-06-04`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -218,6 +218,59 @@ box_calculator
 ```text
 experiments/parameter_audit/
 ```
+
+## 0.6. Новые стандарты фундаментной плиты
+
+После созвонов с Еленой обновлён `foundation_slab_calculator`:
+
+```text
+experiments/foundation_slab_calculator/
+```
+
+Добавлены два production-стандарта входных данных:
+
+1. Опалубка бортов фундаментной плиты:
+
+```text
+formwork_calc_method = "spec_area"
+slab_side_formwork_area_m2 = готовая площадь опалубки из спецификации
+```
+
+Старый расчёт `slab_formwork_perimeter_m * slab_edge_height_m` оставлен только как `legacy_perimeter_height` для старого проверочного кейса.
+
+2. Термовставки:
+
+```text
+thermal_insert_mode = "standard_50_100"
+```
+
+Термовставки 50 мм и 100 мм считаются отдельно: работы по длине из спецификации, материалы по спецификации с запасом и округлением до кратности пачки. Старая логика термовкладыша 150 мм через элемент и деление длины на 0.6 оставлена только для legacy-кейса.
+
+Новые кейсы:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/
+```
+
+Проверки:
+
+```text
+test_foundation_slab -> 229 ok / 0 mismatch
+test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
+test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+py_compile -> ok
+```
+
+Документы:
+
+```text
+docs/standard_input_contract.md
+docs/report_thermal_inserts_refactor.md
+docs/report_foundation_slab_formwork_refactor.md
+```
+
+Важно: `pdf_parser_pipeline` и `input_builder` в этом этапе не менялись. Следующим отдельным шагом нужно обновить schema/reviewed_parameters под `slab_side_formwork_area_m2` и новые поля термовставок.
 
 Он читает текущий файл:
 
