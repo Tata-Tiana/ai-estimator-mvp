@@ -1,5 +1,6 @@
 {
   "project_name": "test_waterproofing_foundation_slab",
+  "waterproofing_area_calc_method": "legacy_perimeter_height",
   "slab_formwork_perimeter_m": 81,
   "slab_edge_height_m": 0.3,
   "waterproofing_work_unit_price": 350,

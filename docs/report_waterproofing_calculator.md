@@ -22,6 +22,10 @@ experiments/waterproofing_calculator/
 │       ├── input.json
 │       ├── expected.json
 │       └── notes.md
+│   └── test_waterproofing_spec_area/
+│       ├── input.json
+│       ├── expected.json
+│       └── notes.md
 └── output/
     └── test_waterproofing_foundation_slab/
         ├── waterproofing_result.json
@@ -45,7 +49,7 @@ experiments/waterproofing_calculator/
 
 ### Площадь гидроизоляции
 
-Площадь считается по бортам плиты:
+В legacy-кейсе площадь считается по бортам плиты:
 
 ```text
 waterproofing_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m
@@ -56,6 +60,15 @@ waterproofing_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m
 ```text
 81 * 0.3 = 24.3 м2
 ```
+
+В новом production-стандарте площадь берётся готовым значением из спецификации проекта:
+
+```text
+waterproofing_area_calc_method = spec_area
+waterproofing_area_m2 = площадь опалубки фундаментной плиты из спецификации
+```
+
+Старые `slab_formwork_perimeter_m` и `slab_edge_height_m` больше не являются обязательными входами для production-гидроизоляции.
 
 ### Работа по гидроизоляции
 
@@ -110,6 +123,14 @@ eps100_wall_insulation_area_m2 = 1.75 / 0.1 = 17.5 м2
 ```
 
 Но в строку сметы берётся значение `17.5 м2` из спецификации.
+
+В production-стандарте `non_insulated_edge_lengths_m` не требуется. Геометрическая проверка включается только в legacy/debug, если заданы периметр, высота борта и участки без утепления.
+
+Основная формула production для работ по ЭППС 100 мм торец:
+
+```text
+eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m
+```
 
 ### Пеноплэкс ГЕО 100 мм
 
@@ -197,6 +218,35 @@ internal_section_total      = 51 216
 Материалы: 33 961
 Работы:    17 255
 Итого:     51 216
+```
+
+## Production-кейс площади из спецификации
+
+Создан кейс:
+
+```text
+experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/
+```
+
+Он проверяет:
+
+```text
+waterproofing_area_calc_method = spec_area
+waterproofing_area_m2 = 24.3
+primer_required_liters = 7.29
+primer_units = 1
+mastic_required_kg = 48.6
+mastic_units = 3
+eps100_wall_insulation_area_m2 = 17.5
+eps100_wall_geometry_check_enabled = false
+```
+
+Итоги остаются такими же для тестового значения 24.3 м2:
+
+```text
+internal_materials_total = 33 961
+internal_works_total = 17 255
+internal_section_total = 51 216
 ```
 
 ## Формат результата

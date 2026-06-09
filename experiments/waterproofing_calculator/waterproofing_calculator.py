@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
 from math import ceil
 from pathlib import Path
@@ -53,8 +53,6 @@ def _require_non_negative(name: str, value: float | int | None) -> None:
 @dataclass(frozen=True)
 class WaterproofingInput:
     project_name: str
-    slab_formwork_perimeter_m: float
-    slab_edge_height_m: float
     waterproofing_work_unit_price: float
     primer_consumption_l_per_m2: float
     primer_canister_volume_l: float
@@ -66,7 +64,6 @@ class WaterproofingInput:
     eps100_wall_volume_m3: float
     eps100_wall_thickness_m: float
     eps100_wall_insulation_work_unit_price: float
-    non_insulated_edge_lengths_m: list[float]
     eps_waste_coeff: float
     eps100_pack_volume_m3: float
     eps100_unit_price: float
@@ -75,6 +72,11 @@ class WaterproofingInput:
     glue_foam_unit_price: float
     waterproofing_logistics_coeff: float
     waterproofing_consumables_coeff: float
+    waterproofing_area_calc_method: str = "legacy_perimeter_height"
+    waterproofing_area_m2: float | None = None
+    slab_formwork_perimeter_m: float | None = None
+    slab_edge_height_m: float | None = None
+    non_insulated_edge_lengths_m: list[float] = field(default_factory=list)
     pricing: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
@@ -87,10 +89,15 @@ class WaterproofingInput:
     def validate(self) -> None:
         if not self.project_name:
             raise ValueError("project_name is required")
+        if self.waterproofing_area_calc_method not in {
+            "legacy_perimeter_height",
+            "spec_area",
+        }:
+            raise ValueError(
+                "waterproofing_area_calc_method must be legacy_perimeter_height or spec_area"
+            )
 
         positive_fields = [
-            "slab_formwork_perimeter_m",
-            "slab_edge_height_m",
             "primer_consumption_l_per_m2",
             "primer_canister_volume_l",
             "mastic_consumption_kg_per_m2_per_layer",
@@ -118,6 +125,12 @@ class WaterproofingInput:
         ]
         for field_name in non_negative_fields:
             _require_non_negative(field_name, getattr(self, field_name))
+
+        if self.waterproofing_area_calc_method == "spec_area":
+            _require_positive("waterproofing_area_m2", self.waterproofing_area_m2)
+        else:
+            _require_positive("slab_formwork_perimeter_m", self.slab_formwork_perimeter_m)
+            _require_positive("slab_edge_height_m", self.slab_edge_height_m)
 
         for index, length in enumerate(self.non_insulated_edge_lengths_m):
             _require_non_negative(f"non_insulated_edge_lengths_m[{index}]", length)
@@ -299,10 +312,21 @@ def enrich_lines_with_pricing(
     return enriched
 
 
+def calculate_waterproofing_area(data: WaterproofingInput) -> tuple[float, str]:
+    if data.waterproofing_area_calc_method == "spec_area":
+        return _round_decimal(_to_decimal(data.waterproofing_area_m2)), "spec_area"
+
+    if data.waterproofing_area_calc_method == "legacy_perimeter_height":
+        area = _to_decimal(data.slab_formwork_perimeter_m) * _to_decimal(
+            data.slab_edge_height_m
+        )
+        return _round_decimal(area), "legacy_perimeter_height"
+
+    raise ValueError(f"Unsupported waterproofing_area_calc_method: {data.waterproofing_area_calc_method}")
+
+
 def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
-    waterproofing_area_m2 = _round_decimal(
-        _to_decimal(data.slab_formwork_perimeter_m) * _to_decimal(data.slab_edge_height_m)
-    )
+    waterproofing_area_m2, waterproofing_area_source = calculate_waterproofing_area(data)
     primer_required_liters = _round_decimal(
         _to_decimal(waterproofing_area_m2)
         * _to_decimal(data.primer_consumption_l_per_m2)
@@ -327,13 +351,25 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
     eps100_wall_insulation_area_m2 = _round_decimal(
         _to_decimal(data.eps100_wall_volume_m3) / _to_decimal(data.eps100_wall_thickness_m)
     )
-    insulated_edge_length_m = _round_decimal(
-        _to_decimal(data.slab_formwork_perimeter_m)
-        - _to_decimal(sum(data.non_insulated_edge_lengths_m))
+    geometry_check_enabled = (
+        data.slab_formwork_perimeter_m is not None
+        and data.slab_edge_height_m is not None
+        and bool(data.non_insulated_edge_lengths_m)
     )
-    eps100_wall_geometry_check_area_m2 = _round_decimal(
-        _to_decimal(insulated_edge_length_m) * _to_decimal(data.slab_edge_height_m)
-    )
+    non_insulated_edge_lengths_total_m = None
+    insulated_edge_length_m = None
+    eps100_wall_geometry_check_area_m2 = None
+    if geometry_check_enabled:
+        non_insulated_edge_lengths_total_m = _round_decimal(
+            sum(data.non_insulated_edge_lengths_m)
+        )
+        insulated_edge_length_m = _round_decimal(
+            _to_decimal(data.slab_formwork_perimeter_m)
+            - _to_decimal(non_insulated_edge_lengths_total_m)
+        )
+        eps100_wall_geometry_check_area_m2 = _round_decimal(
+            _to_decimal(insulated_edge_length_m) * _to_decimal(data.slab_edge_height_m)
+        )
 
     eps100_wall_required_volume_m3 = _round_decimal(
         _to_decimal(eps100_wall_insulation_area_m2)
@@ -360,6 +396,10 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
     glue_foam_units = max(data.glue_foam_min_units, int(ceil(glue_foam_raw_units)))
 
     return {
+        "waterproofing_area_calc_method": data.waterproofing_area_calc_method,
+        "waterproofing_area_source": waterproofing_area_source,
+        "legacy_slab_formwork_perimeter_m": data.slab_formwork_perimeter_m,
+        "legacy_slab_edge_height_m": data.slab_edge_height_m,
         "waterproofing_area_m2": waterproofing_area_m2,
         "primer_required_liters": primer_required_liters,
         "primer_raw_units": primer_raw_units,
@@ -368,9 +408,8 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
         "mastic_raw_units": mastic_raw_units,
         "mastic_units": mastic_units,
         "eps100_wall_insulation_area_m2": eps100_wall_insulation_area_m2,
-        "non_insulated_edge_lengths_total_m": _round_decimal(
-            sum(data.non_insulated_edge_lengths_m)
-        ),
+        "eps100_wall_geometry_check_enabled": geometry_check_enabled,
+        "non_insulated_edge_lengths_total_m": non_insulated_edge_lengths_total_m,
         "insulated_edge_length_m": insulated_edge_length_m,
         "eps100_wall_geometry_check_area_m2": eps100_wall_geometry_check_area_m2,
         "eps100_wall_required_volume_m3": eps100_wall_required_volume_m3,

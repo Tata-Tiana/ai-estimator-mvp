@@ -1,9 +1,9 @@
-# Расчёт гидроизоляции фундаментной плиты: test_waterproofing_foundation_slab
+# Расчёт гидроизоляции фундаментной плиты: test_waterproofing_spec_area
 
-Проект: `test_waterproofing_foundation_slab`
+Проект: `test_waterproofing_spec_area`
 
 ## Входные параметры
-- `project_name`: `test_waterproofing_foundation_slab`
+- `project_name`: `test_waterproofing_spec_area`
 - `waterproofing_work_unit_price`: `350`
 - `primer_consumption_l_per_m2`: `0.3`
 - `primer_canister_volume_l`: `18`
@@ -23,30 +23,29 @@
 - `glue_foam_unit_price`: `490`
 - `waterproofing_logistics_coeff`: `0.02`
 - `waterproofing_consumables_coeff`: `0.03`
-- `waterproofing_area_calc_method`: `legacy_perimeter_height`
-- `slab_formwork_perimeter_m`: `81`
-- `slab_edge_height_m`: `0.3`
-- `non_insulated_edge_lengths_m`: `[8.2, 2, 5.3]`
+- `waterproofing_area_calc_method`: `spec_area`
+- `waterproofing_area_m2`: `24.3`
+- `non_insulated_edge_lengths_m`: `[]`
 
 ## Формулы
-- Площадь гидроизоляции legacy: `waterproofing_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m`.
-- Использованный метод площади: `legacy_perimeter_height`.
-- Источник площади: `legacy_perimeter_height`.
+- Площадь гидроизоляции standard: `waterproofing_area_m2` берётся из спецификации проекта как площадь опалубки фундаментной плиты.
+- Использованный метод площади: `spec_area`.
+- Источник площади: `spec_area`.
 - Площадь, которая ушла в работы, праймер и мастику: `24.3` м2.
 - Праймер: `primer_required_liters = waterproofing_area_m2 * primer_consumption_l_per_m2`; `primer_units = ceil(primer_required_liters / primer_canister_volume_l)`.
 - Мастика: `mastic_required_kg = waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers`; `mastic_units = ceil(mastic_required_kg / mastic_bucket_weight_kg)`.
 - Основная площадь работ по ЭППС 100 мм торец: `eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m`.
 - Геометрическая проверка по участкам без утепления включается только если заданы `slab_formwork_perimeter_m`, `slab_edge_height_m` и `non_insulated_edge_lengths_m`.
 - Если геометрическая проверка выключена, площадь ЭППС берётся из спецификации через `объём / толщину`.
-- Геометрическая проверка включена: `True`.
+- Геометрическая проверка включена: `False`.
 
 ## Расчётные блоки
 | Показатель | Значение |
 | --- | ---: |
-| `waterproofing_area_calc_method` | `legacy_perimeter_height` |
-| `waterproofing_area_source` | `legacy_perimeter_height` |
-| `legacy_slab_formwork_perimeter_m` | `81` |
-| `legacy_slab_edge_height_m` | `0.3` |
+| `waterproofing_area_calc_method` | `spec_area` |
+| `waterproofing_area_source` | `spec_area` |
+| `legacy_slab_formwork_perimeter_m` | `None` |
+| `legacy_slab_edge_height_m` | `None` |
 | `waterproofing_area_m2` | `24.3` |
 | `primer_required_liters` | `7.29` |
 | `primer_raw_units` | `0.405` |
@@ -55,10 +54,10 @@
 | `mastic_raw_units` | `2.7` |
 | `mastic_units` | `3` |
 | `eps100_wall_insulation_area_m2` | `17.5` |
-| `eps100_wall_geometry_check_enabled` | `True` |
-| `non_insulated_edge_lengths_total_m` | `15.5` |
-| `insulated_edge_length_m` | `65.5` |
-| `eps100_wall_geometry_check_area_m2` | `19.65` |
+| `eps100_wall_geometry_check_enabled` | `False` |
+| `non_insulated_edge_lengths_total_m` | `None` |
+| `insulated_edge_length_m` | `None` |
+| `eps100_wall_geometry_check_area_m2` | `None` |
 | `eps100_wall_required_volume_m3` | `1.8375` |
 | `eps100_wall_raw_packs` | `6.6192` |
 | `eps100_wall_packs` | `7` |
@@ -92,6 +91,8 @@
 ## Comparison
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
+| `calculation_blocks.waterproofing.waterproofing_area_calc_method` | `spec_area` | `spec_area` | `` | `ok` |
+| `calculation_blocks.waterproofing.waterproofing_area_source` | `spec_area` | `spec_area` | `` | `ok` |
 | `calculation_blocks.waterproofing.waterproofing_area_m2` | `24.3` | `24.3` | `0.0` | `ok` |
 | `calculation_blocks.waterproofing.primer_required_liters` | `7.29` | `7.29` | `0.0` | `ok` |
 | `calculation_blocks.waterproofing.primer_raw_units` | `0.405` | `0.405` | `0.0` | `ok` |
@@ -100,12 +101,9 @@
 | `calculation_blocks.waterproofing.mastic_raw_units` | `2.7` | `2.7` | `0.0` | `ok` |
 | `calculation_blocks.waterproofing.mastic_units` | `3` | `3` | `0` | `ok` |
 | `calculation_blocks.waterproofing.eps100_wall_insulation_area_m2` | `17.5` | `17.5` | `0.0` | `ok` |
-| `calculation_blocks.waterproofing.eps100_wall_geometry_check_area_m2` | `19.65` | `19.65` | `0.0` | `ok` |
+| `calculation_blocks.waterproofing.eps100_wall_geometry_check_enabled` | `False` | `False` | `0` | `ok` |
 | `calculation_blocks.waterproofing.eps100_wall_required_volume_m3` | `1.8375` | `1.8375` | `0.0` | `ok` |
-| `calculation_blocks.waterproofing.eps100_wall_packs` | `7` | `7` | `0` | `ok` |
 | `calculation_blocks.waterproofing.eps100_wall_order_volume_m3` | `1.9432` | `1.9432` | `0.0` | `ok` |
-| `calculation_blocks.waterproofing.glue_foam_raw_units` | `1.75` | `1.75` | `0.0` | `ok` |
-| `calculation_blocks.waterproofing.glue_foam_units` | `2` | `2` | `0` | `ok` |
 | `calculation_blocks.waterproofing.waterproofing_base_subtotal` | `48777` | `48777` | `0` | `ok` |
 | `calculation_blocks.waterproofing.logistics_amount_raw` | `975.54` | `975.54` | `0.0` | `ok` |
 | `calculation_blocks.waterproofing.consumables_amount_raw` | `1463.31` | `1463.31` | `0.0` | `ok` |
@@ -125,23 +123,6 @@
 | `estimate_lines.eps100_wall_insulation_work.material_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.eps100_wall_insulation_work.work_total` | `8750` | `8750` | `0` | `ok` |
 | `estimate_lines.eps100_wall_insulation_work.line_total` | `8750` | `8750` | `0` | `ok` |
-| `estimate_lines.eps100_wall_penoplex_geo_material.quantity` | `1.9432` | `1.9432` | `0.0` | `ok` |
-| `estimate_lines.eps100_wall_penoplex_geo_material.display_quantity` | `1.94` | `1.94` | `0.0` | `ok` |
-| `estimate_lines.eps100_wall_penoplex_geo_material.material_total` | `19432` | `19432` | `0` | `ok` |
-| `estimate_lines.eps100_wall_penoplex_geo_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps100_wall_penoplex_geo_material.line_total` | `19432` | `19432` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.quantity` | `2` | `2.0` | `0.0` | `ok` |
-| `estimate_lines.eps_glue_foam.material_total` | `980` | `980` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.line_total` | `980` | `980` | `0` | `ok` |
-| `estimate_lines.waterproofing_logistics_and_supply.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.waterproofing_logistics_and_supply.material_total` | `976` | `976` | `0` | `ok` |
-| `estimate_lines.waterproofing_logistics_and_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.waterproofing_logistics_and_supply.line_total` | `976` | `976` | `0` | `ok` |
-| `estimate_lines.waterproofing_consumables_tool_amortization.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.waterproofing_consumables_tool_amortization.material_total` | `1463` | `1463` | `0` | `ok` |
-| `estimate_lines.waterproofing_consumables_tool_amortization.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.waterproofing_consumables_tool_amortization.line_total` | `1463` | `1463` | `0` | `ok` |
 | `internal_totals.waterproofing_base_subtotal` | `48777` | `48777` | `0` | `ok` |
 | `internal_totals.internal_materials_total` | `33961` | `33961` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `17255` | `17255` | `0` | `ok` |

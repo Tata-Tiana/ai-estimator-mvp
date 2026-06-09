@@ -14,6 +14,10 @@ cases/
     input.json
     expected.json
     notes.md
+  test_waterproofing_spec_area/
+    input.json
+    expected.json
+    notes.md
   test_waterproofing_foundation_slab_live_prices/
     input.json
     notes.md
@@ -42,6 +46,12 @@ Live-режим с `price_registry` и fallback:
 ../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab_live_prices
 ```
 
+Production-тест площади гидроизоляции из спецификации:
+
+```bash
+../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_spec_area
+```
+
 Проверка компиляции:
 
 ```bash
@@ -52,15 +62,50 @@ Live-режим с `price_registry` и fallback:
 
 Калькулятору нужны:
 
-- периметр и высота борта фундаментной плиты;
+- площадь гидроизоляции из спецификации для production-режима;
+- периметр и высота борта фундаментной плиты только для legacy-режима;
 - ставка работы по гидроизоляции;
 - расход и цена праймера;
 - расход, слои и цена мастики;
 - объём/толщина ЭППС 100 мм по спецификации;
-- неутепляемые участки для геометрической проверки;
+- неутепляемые участки только для legacy-геометрической проверки;
 - объём пачки и цена ЭППС;
 - правило расхода клей-пены;
 - коэффициенты логистики и расходников.
+
+## Площадь гидроизоляции
+
+Калькулятор поддерживает два режима:
+
+- `legacy_perimeter_height` — старый режим для сверки с исходной сметой: `waterproofing_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m`;
+- `spec_area` — production-стандарт: `waterproofing_area_m2` берётся готовым значением из спецификации проекта.
+
+По методике Елены `waterproofing_area_m2` равна площади опалубки фундаментной плиты.
+
+В production-режиме старые поля не обязательны:
+
+- `slab_formwork_perimeter_m`;
+- `slab_edge_height_m`.
+
+Они остаются только для legacy-кейсов и геометрической проверки/debug.
+
+## ЭППС 100 мм торец
+
+Production-расчёт площади работ по ЭППС 100 мм торец:
+
+```text
+eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m
+```
+
+`eps100_wall_thickness_m = 0.1`.
+
+`non_insulated_edge_lengths_m` больше не нужен для production-расчёта. Он оставлен только как `legacy/geometric check` для старого кейса ЮСВ.
+
+Геометрическая проверка включается только если заданы:
+
+- `slab_formwork_perimeter_m`;
+- `slab_edge_height_m`;
+- непустой `non_insulated_edge_lengths_m`.
 
 ## Режимы цен
 

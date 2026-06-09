@@ -4,8 +4,6 @@
 
 ## Входные параметры
 - `project_name`: `test_waterproofing_foundation_slab_live_prices`
-- `slab_formwork_perimeter_m`: `81`
-- `slab_edge_height_m`: `0.3`
 - `waterproofing_work_unit_price`: `350`
 - `primer_consumption_l_per_m2`: `0.3`
 - `primer_canister_volume_l`: `18`
@@ -17,7 +15,6 @@
 - `eps100_wall_volume_m3`: `1.75`
 - `eps100_wall_thickness_m`: `0.1`
 - `eps100_wall_insulation_work_unit_price`: `500`
-- `non_insulated_edge_lengths_m`: `[8.2, 2, 5.3]`
 - `eps_waste_coeff`: `1.05`
 - `eps100_pack_volume_m3`: `0.2776`
 - `eps100_unit_price`: `10000`
@@ -26,11 +23,31 @@
 - `glue_foam_unit_price`: `490`
 - `waterproofing_logistics_coeff`: `0.02`
 - `waterproofing_consumables_coeff`: `0.03`
+- `waterproofing_area_calc_method`: `legacy_perimeter_height`
+- `slab_formwork_perimeter_m`: `81`
+- `slab_edge_height_m`: `0.3`
+- `non_insulated_edge_lengths_m`: `[8.2, 2, 5.3]`
 - `pricing`: `{'mode': 'price_registry_with_fallback', 'registry_path': 'output/price_registry_filled_v3.xlsx'}`
+
+## Формулы
+- Площадь гидроизоляции legacy: `waterproofing_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m`.
+- Использованный метод площади: `legacy_perimeter_height`.
+- Источник площади: `legacy_perimeter_height`.
+- Площадь, которая ушла в работы, праймер и мастику: `24.3` м2.
+- Праймер: `primer_required_liters = waterproofing_area_m2 * primer_consumption_l_per_m2`; `primer_units = ceil(primer_required_liters / primer_canister_volume_l)`.
+- Мастика: `mastic_required_kg = waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers`; `mastic_units = ceil(mastic_required_kg / mastic_bucket_weight_kg)`.
+- Основная площадь работ по ЭППС 100 мм торец: `eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m`.
+- Геометрическая проверка по участкам без утепления включается только если заданы `slab_formwork_perimeter_m`, `slab_edge_height_m` и `non_insulated_edge_lengths_m`.
+- Если геометрическая проверка выключена, площадь ЭППС берётся из спецификации через `объём / толщину`.
+- Геометрическая проверка включена: `True`.
 
 ## Расчётные блоки
 | Показатель | Значение |
 | --- | ---: |
+| `waterproofing_area_calc_method` | `legacy_perimeter_height` |
+| `waterproofing_area_source` | `legacy_perimeter_height` |
+| `legacy_slab_formwork_perimeter_m` | `81` |
+| `legacy_slab_edge_height_m` | `0.3` |
 | `waterproofing_area_m2` | `24.3` |
 | `primer_required_liters` | `7.29` |
 | `primer_raw_units` | `0.405` |
@@ -39,6 +56,7 @@
 | `mastic_raw_units` | `2.7` |
 | `mastic_units` | `3` |
 | `eps100_wall_insulation_area_m2` | `17.5` |
+| `eps100_wall_geometry_check_enabled` | `True` |
 | `non_insulated_edge_lengths_total_m` | `15.5` |
 | `insulated_edge_length_m` | `65.5` |
 | `eps100_wall_geometry_check_area_m2` | `19.65` |
