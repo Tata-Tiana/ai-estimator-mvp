@@ -2,13 +2,17 @@
   "calculation_blocks": {
     "confirmed_rules": [
       "PLANTERBAND = количество рулонов мембраны * 4.",
-      "Борта = внешний периметр фундаментной плиты.",
-      "При разных толщинах плит можно брать максимальную толщину.",
       "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
       "Пеноплэкс = ЭППС.",
-      "ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.",
       "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
-      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2."
+      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
+      "В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.",
+      "Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.",
+      "Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.",
+      "Термовставки считаются отдельно по 50 мм и 100 мм.",
+      "Работы по термовставкам считаются по длине в м.п. из спецификации.",
+      "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
+      "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте."
     ],
     "membrane": {
       "membrane_area_with_overlap_m2": 352.0,
@@ -17,8 +21,9 @@
       "planterband_quantity": 36
     },
     "formwork": {
+      "formwork_calc_method": "spec_area",
+      "slab_side_formwork_area_m2": 24.3,
       "formwork_area_m2": 24.3,
-      "slab_edge_height_strategy": "max_thickness",
       "plywood_calc_method": "working_area",
       "plywood_sheet_working_area_m2": 2.25,
       "plywood_raw_sheets": 10.8,
@@ -26,27 +31,33 @@
       "timber_raw_volume_m3": 1.215
     },
     "eps": {
+      "mode": "standard_50_100",
       "eps50_laying_area_m2": 270.0,
       "eps50_under_slab_required_volume_m3": 14.175,
-      "eps50_thermal_insert_volume_m3": 0.18,
-      "eps50_required_volume_m3": 14.355,
-      "eps50_raw_packs": 51.7111,
+      "eps50_thermal_insert_volume_m3": 0,
+      "eps50_required_volume_m3": 14.175,
+      "eps50_raw_packs": 51.0627,
       "eps50_packs": 52,
       "eps50_order_volume_m3": 14.4352,
-      "eps100_required_volume_m3": 0.36,
-      "eps100_raw_packs": 1.2968,
-      "eps100_packs": 2,
-      "eps100_order_volume_m3": 0.5552
+      "eps100_required_volume_m3": 0,
+      "eps100_raw_packs": 0,
+      "eps100_packs": 0,
+      "eps100_order_volume_m3": 0
     },
     "thermal_insert": {
-      "thermal_insert_raw_pieces": 35.8333,
-      "thermal_insert_pieces": 36,
-      "thermal_insert_control_volume_m3": 0.648,
-      "thermal_insert_piece_depth_for_eps_m": 0.25,
-      "slab_edge_height_m": 0.3,
-      "warnings": [
-        "thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку."
-      ]
+      "mode": "standard_50_100",
+      "thermal_insert_50_length_m": 10,
+      "thermal_insert_100_length_m": 15,
+      "thermal_insert_50_material_spec_qty": 1.0,
+      "thermal_insert_100_material_spec_qty": 0.5,
+      "thermal_insert_material_waste_coeff": 1.05,
+      "thermal_insert_50_material_raw_qty": 1.05,
+      "thermal_insert_100_material_raw_qty": 0.525,
+      "thermal_insert_50_pack_multiple_qty": 0.2776,
+      "thermal_insert_100_pack_multiple_qty": 0.2776,
+      "thermal_insert_50_material_purchase_qty": 1.1104,
+      "thermal_insert_100_material_purchase_qty": 0.5552,
+      "warnings": []
     },
     "rebar": {
       "items": {
@@ -162,11 +173,11 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total": 1366205,
-    "internal_works_total": 1083650,
-    "internal_section_total": 2449855,
-    "internal_materials_total_raw": "1366205.184",
-    "internal_works_total_raw": "1083650",
-    "internal_section_total_raw": "2449855.184"
+    "internal_materials_total": 1377698,
+    "internal_works_total": 1084000,
+    "internal_section_total": 2461698,
+    "internal_materials_total_raw": "1377697.824",
+    "internal_works_total_raw": "1084000",
+    "internal_section_total_raw": "2461697.824"
   }
 }

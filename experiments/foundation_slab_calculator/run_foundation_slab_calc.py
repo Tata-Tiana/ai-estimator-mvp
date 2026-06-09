@@ -223,6 +223,40 @@ def format_warnings_markdown(calculation: dict[str, Any]) -> list[str]:
     return [f"- {warning}" for warning in warnings]
 
 
+def format_rebar_control_markdown(calculation: dict[str, Any]) -> list[str]:
+    rebar = calculation["calculation_blocks"].get("rebar", {})
+    concrete = calculation["calculation_blocks"].get("concrete", {})
+    rows = {
+        "Метод расчёта арматуры": rebar.get("rebar_calc_method"),
+        "Вес арматуры по спецификации, кг": rebar.get(
+            "foundation_slab_rebar_design_weight_kg"
+        ),
+        "Вес арматуры с запасом/закупкой, кг": rebar.get(
+            "foundation_slab_rebar_delivery_weight_kg"
+        ),
+        "Объём бетона фундаментной плиты, м3": rebar.get(
+            "concrete_project_volume_m3"
+        ),
+        "Плотность по спецификации, кг/м3": rebar.get(
+            "reinforcement_density_design_kg_per_m3"
+        ),
+        "Плотность с запасом/закупкой, кг/м3": rebar.get(
+            "reinforcement_density_delivery_kg_per_m3"
+        ),
+        "Legacy/control плотность, кг/м3": concrete.get(
+            "reinforcement_density_kg_per_m3"
+        ),
+    }
+    lines = format_dict_table(rows)
+    lines.append(
+        ""
+    )
+    lines.append(
+        "Контрольная плотность армирования нужна для проверки разделов с большим объёмом армирования."
+    )
+    return lines
+
+
 def format_markdown(
     case_name: str,
     input_data: FoundationSlabInput,
@@ -249,11 +283,20 @@ def format_markdown(
         )
     formula_lines.extend(
         [
-            "- Фанера: `working_area` считает `ceil(formwork_area / plywood_sheet_working_area_m2)`, `actual_area_with_waste` считает через фактическую площадь листа и запас.",
             "- Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.",
             "- ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.",
         ]
     )
+    if input_data.plywood_calc_method == "actual_area_with_waste":
+        formula_lines.insert(
+            -2,
+            "- Фанера standard: `plywood_sheets = ceil(formwork_area * 1.05 / (1.52 * 1.52))`.",
+        )
+    else:
+        formula_lines.insert(
+            -2,
+            "- Фанера legacy: `plywood_sheets = ceil(formwork_area / plywood_sheet_working_area_m2)`.",
+        )
     if input_data.thermal_insert_mode == "standard_50_100":
         formula_lines.extend(
             [
@@ -269,11 +312,20 @@ def format_markdown(
         )
     formula_lines.extend(
         [
-            "- Арматура: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.",
             "- Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.",
             "- Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.",
         ]
     )
+    if input_data.rebar_calc_method == "spec_length_m":
+        formula_lines.insert(
+            -2,
+            "- Арматура standard: м.п. из спецификации -> запас -> целые хлысты -> стоимость по закупочным м.п.; вес = длина * kg_per_meter.",
+        )
+    else:
+        formula_lines.insert(
+            -2,
+            "- Арматура legacy: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.",
+        )
     pricing_sections = []
     if calculation.get("pricing_summary", {}).get("mode") == "price_registry_with_fallback":
         pricing_sections = [
@@ -301,6 +353,9 @@ def format_markdown(
             "",
             "## Промежуточные расчёты",
             *format_dict_table(block_rows),
+            "",
+            "## Контроль армирования",
+            *format_rebar_control_markdown(calculation),
             "",
             "## Предупреждения",
             *format_warnings_markdown(calculation),

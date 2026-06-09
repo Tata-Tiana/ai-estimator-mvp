@@ -3,7 +3,7 @@
   "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/calculation_runner/cases/mvp_usv_demo_fallback/generated_cases/foundation_slab/input.json",
   "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/calculation_runner/cases/mvp_usv_demo_fallback/generated_cases/foundation_slab/expected.json",
   "inputs": {
-    "project_name": "test_foundation_slab",
+    "project_name": "test_foundation_slab_formwork_spec_area",
     "membrane_area_m2": 320,
     "membrane_installation_work_unit_price": 100,
     "membrane_overlap_coeff": 1.1,
@@ -11,8 +11,6 @@
     "planter_standard_roll_unit_price": 5166,
     "planterband_per_membrane_roll": 4,
     "planterband_unit_price": 790,
-    "slab_formwork_perimeter_m": 81,
-    "slab_edge_height_m": 0.3,
     "formwork_installation_work_unit_price": 0,
     "plywood_sheet_working_area_m2": 2.25,
     "plywood_unit_price": 1450,
@@ -22,18 +20,8 @@
     "eps50_thickness_m": 0.05,
     "eps50_laying_work_unit_price": 250,
     "eps_waste_coeff": 1.05,
-    "thermal_insert_length_m": 21.5,
-    "thermal_insert_piece_length_m": 0.6,
-    "thermal_insert_piece_width_m": 0.15,
-    "thermal_insert_piece_height_m": 0.4,
-    "thermal_insert_piece_depth_for_work_m": 0.3,
-    "thermal_insert_piece_depth_for_eps_m": 0.25,
-    "thermal_insert_installation_work_unit_price": 100,
     "eps50_pack_volume_m3": 0.2776,
     "eps50_unit_price": 9800,
-    "eps100_thickness_m": 0.1,
-    "eps100_pack_volume_m3": 0.2776,
-    "eps100_unit_price": 10000,
     "rebar_crane_shifts": 1,
     "rebar_crane_unit_price": 30000,
     "rebar_waste_coeff": 1.05,
@@ -108,19 +96,36 @@
     "plywood_sheet_width_m": 1.52,
     "plywood_sheet_height_m": 1.52,
     "plywood_waste_coeff": 1.05,
-    "slab_edge_height_strategy": "max_thickness",
-    "box_metal_delivery_capacity_kg": 10000
+    "box_metal_delivery_capacity_kg": 10000,
+    "formwork_calc_method": "spec_area",
+    "slab_side_formwork_area_m2": 24.3,
+    "thermal_insert_mode": "standard_50_100",
+    "thermal_insert_50_length_m": 10,
+    "thermal_insert_100_length_m": 15,
+    "thermal_insert_50_work_unit_price": 100,
+    "thermal_insert_100_work_unit_price": 100,
+    "thermal_insert_50_material_spec_qty": 1.0,
+    "thermal_insert_100_material_spec_qty": 0.5,
+    "thermal_insert_material_waste_coeff": 1.05,
+    "thermal_insert_50_pack_multiple_qty": 0.2776,
+    "thermal_insert_100_pack_multiple_qty": 0.2776,
+    "thermal_insert_50_material_unit_price": 9800,
+    "thermal_insert_100_material_unit_price": 10000
   },
   "calculation_blocks": {
     "confirmed_rules": [
       "PLANTERBAND = количество рулонов мембраны * 4.",
-      "Борта = внешний периметр фундаментной плиты.",
-      "При разных толщинах плит можно брать максимальную толщину.",
       "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
       "Пеноплэкс = ЭППС.",
-      "ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.",
       "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
-      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2."
+      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
+      "В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.",
+      "Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.",
+      "Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.",
+      "Термовставки считаются отдельно по 50 мм и 100 мм.",
+      "Работы по термовставкам считаются по длине в м.п. из спецификации.",
+      "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
+      "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте."
     ],
     "membrane": {
       "membrane_area_with_overlap_m2": 352.0,
@@ -129,8 +134,9 @@
       "planterband_quantity": 36
     },
     "formwork": {
+      "formwork_calc_method": "spec_area",
+      "slab_side_formwork_area_m2": 24.3,
       "formwork_area_m2": 24.3,
-      "slab_edge_height_strategy": "max_thickness",
       "plywood_calc_method": "working_area",
       "plywood_sheet_working_area_m2": 2.25,
       "plywood_raw_sheets": 10.8,
@@ -138,27 +144,33 @@
       "timber_raw_volume_m3": 1.215
     },
     "eps": {
+      "mode": "standard_50_100",
       "eps50_laying_area_m2": 270.0,
       "eps50_under_slab_required_volume_m3": 14.175,
-      "eps50_thermal_insert_volume_m3": 0.18,
-      "eps50_required_volume_m3": 14.355,
-      "eps50_raw_packs": 51.7111,
+      "eps50_thermal_insert_volume_m3": 0,
+      "eps50_required_volume_m3": 14.175,
+      "eps50_raw_packs": 51.0627,
       "eps50_packs": 52,
       "eps50_order_volume_m3": 14.4352,
-      "eps100_required_volume_m3": 0.36,
-      "eps100_raw_packs": 1.2968,
-      "eps100_packs": 2,
-      "eps100_order_volume_m3": 0.5552
+      "eps100_required_volume_m3": 0,
+      "eps100_raw_packs": 0,
+      "eps100_packs": 0,
+      "eps100_order_volume_m3": 0
     },
     "thermal_insert": {
-      "thermal_insert_raw_pieces": 35.8333,
-      "thermal_insert_pieces": 36,
-      "thermal_insert_control_volume_m3": 0.648,
-      "thermal_insert_piece_depth_for_eps_m": 0.25,
-      "slab_edge_height_m": 0.3,
-      "warnings": [
-        "thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку."
-      ]
+      "mode": "standard_50_100",
+      "thermal_insert_50_length_m": 10,
+      "thermal_insert_100_length_m": 15,
+      "thermal_insert_50_material_spec_qty": 1.0,
+      "thermal_insert_100_material_spec_qty": 0.5,
+      "thermal_insert_material_waste_coeff": 1.05,
+      "thermal_insert_50_material_raw_qty": 1.05,
+      "thermal_insert_100_material_raw_qty": 0.525,
+      "thermal_insert_50_pack_multiple_qty": 0.2776,
+      "thermal_insert_100_pack_multiple_qty": 0.2776,
+      "thermal_insert_50_material_purchase_qty": 1.1104,
+      "thermal_insert_100_material_purchase_qty": 0.5552,
+      "warnings": []
     },
     "rebar": {
       "items": {
@@ -274,13 +286,15 @@
     }
   },
   "warnings": [
-    "thermal_insert: thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку.",
     "planter_membrane_installation_work_m2: price_code not found in price_registry, fallback input price used",
     "timber_formwork_installation_work_m2: price_code not found in price_registry and fallback input price is missing",
     "plywood_1520x1520_18mm_sheet: price_code not found in price_registry, fallback input price used",
     "timber_m3: price_code not found in price_registry, fallback input price used",
     "eps_laying_work_m2: price_code not found in price_registry, fallback input price used",
-    "thermal_insert_installation_work_m: price_code not found in price_registry, fallback input price used",
+    "thermal_insert_50_installation_work_m: price_code not found in price_registry, fallback input price used",
+    "thermal_insert_100_installation_work_m: price_code not found in price_registry, fallback input price used",
+    "thermal_insert_50_material_m3: price_code not found in price_registry, fallback input price used",
+    "thermal_insert_100_material_m3: price_code not found in price_registry, fallback input price used",
     "crane_shift: price_code not found in price_registry, fallback input price used",
     "metal_delivery_truck: price_code not found in price_registry, fallback input price used",
     "concrete_placing_work_m3: price_code not found in price_registry, fallback input price used",
@@ -417,18 +431,36 @@
       "price_warning": "price_code not found in price_registry, fallback input price used"
     },
     {
-      "code": "thermal_insert_installation",
-      "name": "Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм",
+      "code": "thermal_insert_50_installation",
+      "name": "Устройство и монтаж термовставок 50 мм",
       "unit": "мп",
-      "quantity": 21.5,
+      "quantity": 10.0,
       "material_unit_price": 0.0,
       "material_total": 0,
       "work_unit_price": 100.0,
-      "work_total": 2150,
-      "line_total": 2150,
-      "price_code": "thermal_insert_installation_work_m",
-      "work_total_raw": 2150.0,
-      "line_total_raw": 2150.0,
+      "work_total": 1000,
+      "line_total": 1000,
+      "price_code": "thermal_insert_50_installation_work_m",
+      "work_total_raw": 1000.0,
+      "line_total_raw": 1000.0,
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "100",
+      "unit_price_used": "100",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "thermal_insert_100_installation",
+      "name": "Устройство и монтаж термовставок 100 мм",
+      "unit": "мп",
+      "quantity": 15.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100.0,
+      "work_total": 1500,
+      "line_total": 1500,
+      "price_code": "thermal_insert_100_installation_work_m",
+      "work_total_raw": 1500.0,
+      "line_total_raw": 1500.0,
       "unit_price_source": "fallback_input",
       "unit_price_original": "100",
       "unit_price_used": "100",
@@ -436,7 +468,7 @@
     },
     {
       "code": "eps50_penoplex_geo_material",
-      "name": "Пеноплэкс ГЕО 50 мм",
+      "name": "Пеноплэкс ГЕО 50 мм под плитой",
       "unit": "м3",
       "quantity": 14.4352,
       "material_unit_price": 8800.0,
@@ -454,23 +486,42 @@
       "price_warning": null
     },
     {
-      "code": "eps100_penoplex_geo_material",
-      "name": "Пеноплэкс ГЕО 100 мм",
+      "code": "thermal_insert_50_material",
+      "name": "Материал термовставок 50 мм",
       "unit": "м3",
-      "quantity": 0.5552,
-      "material_unit_price": 8900.0,
-      "material_total": 4941,
+      "quantity": 1.1104,
+      "material_unit_price": 9800.0,
+      "material_total": 10882,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 4941,
+      "line_total": 10882,
+      "display_quantity": 1.11,
+      "price_code": "thermal_insert_50_material_m3",
+      "material_total_raw": 10881.92,
+      "line_total_raw": 10881.92,
+      "unit_price_source": "fallback_input",
+      "unit_price_original": "9800",
+      "unit_price_used": "9800",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
+    },
+    {
+      "code": "thermal_insert_100_material",
+      "name": "Материал термовставок 100 мм",
+      "unit": "м3",
+      "quantity": 0.5552,
+      "material_unit_price": 10000.0,
+      "material_total": 5552,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 5552,
       "display_quantity": 0.56,
-      "price_code": "eps_geo_100_m3",
-      "material_total_raw": 4941.28,
-      "line_total_raw": 4941.28,
-      "unit_price_source": "price_registry",
+      "price_code": "thermal_insert_100_material_m3",
+      "material_total_raw": 5552.0,
+      "line_total_raw": 5552.0,
+      "unit_price_source": "fallback_input",
       "unit_price_original": "10000",
-      "unit_price_used": "8900",
-      "price_warning": null
+      "unit_price_used": "10000",
+      "price_warning": "price_code not found in price_registry, fallback input price used"
     },
     {
       "code": "rebar_crane_supply",
@@ -781,331 +832,69 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 1366205,
-    "internal_works_total": 1083650,
-    "internal_section_total": 2449855,
-    "internal_materials_total_raw": "1366205.184",
-    "internal_works_total_raw": "1083650",
-    "internal_section_total_raw": "2449855.184"
+    "internal_materials_total": 1377698,
+    "internal_works_total": 1084000,
+    "internal_section_total": 2461698,
+    "internal_materials_total_raw": "1377697.824",
+    "internal_works_total_raw": "1084000",
+    "internal_section_total_raw": "2461697.824"
   },
   "expected": {
     "calculation_blocks": {
-      "membrane": {
-        "membrane_rolls": 9,
-        "planterband_quantity": 36
-      },
       "formwork": {
+        "formwork_calc_method": "spec_area",
+        "slab_side_formwork_area_m2": 24.3,
         "formwork_area_m2": 24.3,
         "plywood_calc_method": "working_area",
         "plywood_sheet_working_area_m2": 2.25,
         "plywood_sheets": 11,
         "timber_raw_volume_m3": 1.215
-      },
-      "eps": {
-        "eps50_laying_area_m2": 270,
-        "eps50_order_volume_m3": 14.4352,
-        "eps100_order_volume_m3": 0.5552
-      },
-      "thermal_insert": {
-        "thermal_insert_pieces": 36
-      },
-      "rebar": {
-        "items.rebar_a500_d16.order_length_m": 222.3,
-        "items.rebar_a500_d12.order_length_m": 6388.2,
-        "items.rebar_a500_d10.order_length_m": 1836.9,
-        "items.rebar_a240_d6.order_length_m": 168,
-        "rebar_frame_assembly_quantity_m": 8615.4,
-        "foundation_slab_rebar_control_weight_kg": 7180.9498,
-        "box_total_metal_weight_kg": 8263,
-        "box_metal_delivery_capacity_kg": 10000,
-        "suggested_box_metal_delivery_trucks": 1,
-        "actual_rebar_metal_delivery_trucks": 1
-      },
-      "concrete": {
-        "concrete_order_volume_m3": 85.5,
-        "concrete_delivery_trips": 10,
-        "reinforcement_density_kg_per_m3_rounded": 89
       }
     },
     "estimate_lines": {
-      "planter_membrane_installation": {
-        "unit": "м2",
-        "quantity": 320,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 100,
-        "work_total": 32000,
-        "line_total": 32000
-      },
-      "planter_standard_material": {
-        "unit": "рул",
-        "quantity": 9,
-        "material_unit_price": 5166,
-        "material_total": 46494,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 46494
-      },
-      "planterband_material": {
-        "unit": "шт",
-        "quantity": 36,
-        "material_unit_price": 790,
-        "material_total": 28440,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 28440
-      },
       "formwork_installation": {
         "unit": "м2",
         "quantity": 24.3,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
         "line_total": 0
       },
       "formwork_plywood": {
         "unit": "шт",
         "quantity": 11,
-        "material_unit_price": 1450,
         "material_total": 15950,
-        "work_unit_price": 0,
-        "work_total": 0,
         "line_total": 15950
       },
       "formwork_timber": {
         "unit": "м3",
         "quantity": 1.215,
         "display_quantity": 1.2,
-        "material_unit_price": 21500,
         "material_total": 26123,
-        "work_unit_price": 0,
-        "work_total": 0,
         "line_total": 26123
-      },
-      "eps50_laying_under_slab": {
-        "unit": "м2",
-        "quantity": 270,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 250,
-        "work_total": 67500,
-        "line_total": 67500
-      },
-      "thermal_insert_installation": {
-        "unit": "мп",
-        "quantity": 21.5,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 100,
-        "work_total": 2150,
-        "line_total": 2150
-      },
-      "eps50_penoplex_geo_material": {
-        "unit": "м3",
-        "quantity": 14.4352,
-        "display_quantity": 14.44,
-        "material_unit_price": 9800,
-        "material_total": 141465,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 141465
-      },
-      "eps100_penoplex_geo_material": {
-        "unit": "м3",
-        "quantity": 0.5552,
-        "display_quantity": 0.56,
-        "material_unit_price": 10000,
-        "material_total": 5552,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 5552
-      },
-      "rebar_crane_supply": {
-        "unit": "смена",
-        "quantity": 1,
-        "material_unit_price": 30000,
-        "material_total": 30000,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 30000
-      },
-      "rebar_frame_assembly": {
-        "unit": "мп",
-        "quantity": 8615.4,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 0
-      },
-      "rebar_a500_d16": {
-        "unit": "мп",
-        "quantity": 222.3,
-        "material_unit_price": 80.58,
-        "material_total": 17913,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 17913
-      },
-      "rebar_a500_d12": {
-        "unit": "мп",
-        "quantity": 6388.2,
-        "material_unit_price": 45.29,
-        "material_total": 289322,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 289322
-      },
-      "rebar_a500_d10": {
-        "unit": "мп",
-        "quantity": 1836.9,
-        "material_unit_price": 32.72,
-        "material_total": 60103,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 60103
-      },
-      "rebar_a240_d6": {
-        "unit": "мп",
-        "quantity": 168,
-        "material_unit_price": 13.32,
-        "material_total": 2238,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 2238
-      },
-      "rebar_metal_delivery": {
-        "unit": "маш",
-        "quantity": 1,
-        "material_unit_price": 22000,
-        "material_total": 22000,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 22000
-      },
-      "foundation_slab_concreting_work": {
-        "unit": "м3",
-        "quantity": 81,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 12000,
-        "work_total": 972000,
-        "line_total": 972000
-      },
-      "concrete_b22_5_m300_material": {
-        "unit": "м3",
-        "quantity": 85.5,
-        "material_unit_price": 6400,
-        "material_total": 547200,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 547200
-      },
-      "concrete_delivery": {
-        "unit": "рейс",
-        "quantity": 10,
-        "material_unit_price": 7500,
-        "material_total": 75000,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 75000
-      },
-      "concrete_pump_32m": {
-        "unit": "смена",
-        "quantity": 1,
-        "material_unit_price": 38000,
-        "material_total": 38000,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 38000
       },
       "formwork_dismantling": {
         "unit": "м2",
         "quantity": 24.3,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
         "line_total": 0
-      },
-      "logistics_and_supply": {
-        "unit": "-",
-        "quantity": 1,
-        "material_unit_price": 36291.7,
-        "material_total": 36292,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 36292
-      },
-      "consumables_tool_amortization": {
-        "unit": "комплект",
-        "quantity": 1,
-        "material_unit_price": 72583,
-        "material_total": 72583,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 72583
-      },
-      "technical_supervision": {
-        "unit": "-",
-        "quantity": 1,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 10000,
-        "work_total": 10000,
-        "line_total": 10000
-      },
-      "procurement_warehouse_costs_excel_structure": {
-        "unit": "-",
-        "quantity": 1,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 0,
-        "line_type": "zero_excel_structure_line"
-      },
-      "overhead_general_business_costs_excel_structure": {
-        "unit": "-",
-        "quantity": 1,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 0,
-        "line_type": "zero_excel_structure_line"
-      },
-      "estimated_profit_excel_structure": {
-        "unit": "-",
-        "quantity": 1,
-        "material_unit_price": 0,
-        "material_total": 0,
-        "work_unit_price": 0,
-        "work_total": 0,
-        "line_total": 0,
-        "line_type": "zero_excel_structure_line"
       }
     },
     "internal_totals": {
-      "internal_materials_total": 1454675,
-      "internal_works_total": 1083650,
-      "internal_section_total": 2538325
+      "internal_materials_total": 1465557,
+      "internal_works_total": 1084000,
+      "internal_section_total": 2549557
     }
   },
   "comparison": [
     {
-      "key": "calculation_blocks.membrane.membrane_rolls",
-      "expected": 9,
-      "actual": 9,
-      "diff": 0,
+      "key": "calculation_blocks.formwork.formwork_calc_method",
+      "expected": "spec_area",
+      "actual": "spec_area",
+      "diff": null,
       "status": "ok"
     },
     {
-      "key": "calculation_blocks.membrane.planterband_quantity",
-      "expected": 36,
-      "actual": 36,
-      "diff": 0,
+      "key": "calculation_blocks.formwork.slab_side_formwork_area_m2",
+      "expected": 24.3,
+      "actual": 24.3,
+      "diff": 0.0,
       "status": "ok"
     },
     {
@@ -1144,272 +933,6 @@
       "status": "ok"
     },
     {
-      "key": "calculation_blocks.eps.eps50_laying_area_m2",
-      "expected": 270,
-      "actual": 270.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.eps.eps50_order_volume_m3",
-      "expected": 14.4352,
-      "actual": 14.4352,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.eps.eps100_order_volume_m3",
-      "expected": 0.5552,
-      "actual": 0.5552,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.thermal_insert.thermal_insert_pieces",
-      "expected": 36,
-      "actual": 36,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.items.rebar_a500_d16.order_length_m",
-      "expected": 222.3,
-      "actual": 222.3,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.items.rebar_a500_d12.order_length_m",
-      "expected": 6388.2,
-      "actual": 6388.2,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.items.rebar_a500_d10.order_length_m",
-      "expected": 1836.9,
-      "actual": 1836.9,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.items.rebar_a240_d6.order_length_m",
-      "expected": 168,
-      "actual": 168.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.rebar_frame_assembly_quantity_m",
-      "expected": 8615.4,
-      "actual": 8615.4,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.foundation_slab_rebar_control_weight_kg",
-      "expected": 7180.9498,
-      "actual": 7180.9498,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.box_total_metal_weight_kg",
-      "expected": 8263,
-      "actual": 8263,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.box_metal_delivery_capacity_kg",
-      "expected": 10000,
-      "actual": 10000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.suggested_box_metal_delivery_trucks",
-      "expected": 1,
-      "actual": 1,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.rebar.actual_rebar_metal_delivery_trucks",
-      "expected": 1,
-      "actual": 1,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.concrete.concrete_order_volume_m3",
-      "expected": 85.5,
-      "actual": 85.5,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.concrete.concrete_delivery_trips",
-      "expected": 10,
-      "actual": 10,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.concrete.reinforcement_density_kg_per_m3_rounded",
-      "expected": 89,
-      "actual": 89,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.unit",
-      "expected": "м2",
-      "actual": "м2",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.quantity",
-      "expected": 320,
-      "actual": 320.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.work_unit_price",
-      "expected": 100,
-      "actual": 100.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.work_total",
-      "expected": 32000,
-      "actual": 32000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_membrane_installation.line_total",
-      "expected": 32000,
-      "actual": 32000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.unit",
-      "expected": "рул",
-      "actual": "рул",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.quantity",
-      "expected": 9,
-      "actual": 9.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.material_unit_price",
-      "expected": 5166,
-      "actual": 4738.0,
-      "diff": -428.0,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.material_total",
-      "expected": 46494,
-      "actual": 42642,
-      "diff": -3852,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planter_standard_material.line_total",
-      "expected": 46494,
-      "actual": 42642,
-      "diff": -3852,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.planterband_material.unit",
-      "expected": "шт",
-      "actual": "шт",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planterband_material.quantity",
-      "expected": 36,
-      "actual": 36.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planterband_material.material_unit_price",
-      "expected": 790,
-      "actual": 750.0,
-      "diff": -40.0,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.planterband_material.material_total",
-      "expected": 28440,
-      "actual": 27000,
-      "diff": -1440,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.planterband_material.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planterband_material.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.planterband_material.line_total",
-      "expected": 28440,
-      "actual": 27000,
-      "diff": -1440,
-      "status": "mismatch"
-    },
-    {
       "key": "estimate_lines.formwork_installation.unit",
       "expected": "м2",
       "actual": "м2",
@@ -1421,34 +944,6 @@
       "expected": 24.3,
       "actual": 24.3,
       "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_installation.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_installation.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_installation.work_unit_price",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_installation.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
       "status": "ok"
     },
     {
@@ -1473,30 +968,9 @@
       "status": "ok"
     },
     {
-      "key": "estimate_lines.formwork_plywood.material_unit_price",
-      "expected": 1450,
-      "actual": 1450.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
       "key": "estimate_lines.formwork_plywood.material_total",
       "expected": 15950,
       "actual": 15950,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_plywood.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_plywood.work_total",
-      "expected": 0,
-      "actual": 0,
       "diff": 0,
       "status": "ok"
     },
@@ -1529,13 +1003,6 @@
       "status": "ok"
     },
     {
-      "key": "estimate_lines.formwork_timber.material_unit_price",
-      "expected": 21500,
-      "actual": 21500.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
       "key": "estimate_lines.formwork_timber.material_total",
       "expected": 26123,
       "actual": 26123,
@@ -1543,772 +1010,9 @@
       "status": "ok"
     },
     {
-      "key": "estimate_lines.formwork_timber.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_timber.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
       "key": "estimate_lines.formwork_timber.line_total",
       "expected": 26123,
       "actual": 26123,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.unit",
-      "expected": "м2",
-      "actual": "м2",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.quantity",
-      "expected": 270,
-      "actual": 270.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.work_unit_price",
-      "expected": 250,
-      "actual": 250.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.work_total",
-      "expected": 67500,
-      "actual": 67500,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_laying_under_slab.line_total",
-      "expected": 67500,
-      "actual": 67500,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.quantity",
-      "expected": 21.5,
-      "actual": 21.5,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.work_unit_price",
-      "expected": 100,
-      "actual": 100.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.work_total",
-      "expected": 2150,
-      "actual": 2150,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_installation.line_total",
-      "expected": 2150,
-      "actual": 2150,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.unit",
-      "expected": "м3",
-      "actual": "м3",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.quantity",
-      "expected": 14.4352,
-      "actual": 14.4352,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.display_quantity",
-      "expected": 14.44,
-      "actual": 14.44,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.material_unit_price",
-      "expected": 9800,
-      "actual": 8800.0,
-      "diff": -1000.0,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.material_total",
-      "expected": 141465,
-      "actual": 127030,
-      "diff": -14435,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps50_penoplex_geo_material.line_total",
-      "expected": 141465,
-      "actual": 127030,
-      "diff": -14435,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.unit",
-      "expected": "м3",
-      "actual": "м3",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.quantity",
-      "expected": 0.5552,
-      "actual": 0.5552,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.display_quantity",
-      "expected": 0.56,
-      "actual": 0.56,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.material_unit_price",
-      "expected": 10000,
-      "actual": 8900.0,
-      "diff": -1100.0,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.material_total",
-      "expected": 5552,
-      "actual": 4941,
-      "diff": -611,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.eps100_penoplex_geo_material.line_total",
-      "expected": 5552,
-      "actual": 4941,
-      "diff": -611,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.unit",
-      "expected": "смена",
-      "actual": "смена",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.material_unit_price",
-      "expected": 30000,
-      "actual": 30000.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.material_total",
-      "expected": 30000,
-      "actual": 30000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_crane_supply.line_total",
-      "expected": 30000,
-      "actual": 30000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.quantity",
-      "expected": 8615.4,
-      "actual": 8615.4,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_frame_assembly.line_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.quantity",
-      "expected": 222.3,
-      "actual": 222.3,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.material_unit_price",
-      "expected": 80.58,
-      "actual": 64.9,
-      "diff": -15.68,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.material_total",
-      "expected": 17913,
-      "actual": 14427,
-      "diff": -3486,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d16.line_total",
-      "expected": 17913,
-      "actual": 14427,
-      "diff": -3486,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.quantity",
-      "expected": 6388.2,
-      "actual": 6388.2,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.material_unit_price",
-      "expected": 45.29,
-      "actual": 36.85,
-      "diff": -8.44,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.material_total",
-      "expected": 289322,
-      "actual": 235405,
-      "diff": -53917,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d12.line_total",
-      "expected": 289322,
-      "actual": 235405,
-      "diff": -53917,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.quantity",
-      "expected": 1836.9,
-      "actual": 1836.9,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.material_unit_price",
-      "expected": 32.72,
-      "actual": 27.16,
-      "diff": -5.56,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.material_total",
-      "expected": 60103,
-      "actual": 49890,
-      "diff": -10213,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a500_d10.line_total",
-      "expected": 60103,
-      "actual": 49890,
-      "diff": -10213,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.unit",
-      "expected": "мп",
-      "actual": "мп",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.quantity",
-      "expected": 168,
-      "actual": 168.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.material_unit_price",
-      "expected": 13.32,
-      "actual": 10.25,
-      "diff": -3.07,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.material_total",
-      "expected": 2238,
-      "actual": 1722,
-      "diff": -516,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_a240_d6.line_total",
-      "expected": 2238,
-      "actual": 1722,
-      "diff": -516,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.unit",
-      "expected": "маш",
-      "actual": "маш",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.material_unit_price",
-      "expected": 22000,
-      "actual": 22000.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.material_total",
-      "expected": 22000,
-      "actual": 22000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.rebar_metal_delivery.line_total",
-      "expected": 22000,
-      "actual": 22000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.unit",
-      "expected": "м3",
-      "actual": "м3",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.quantity",
-      "expected": 81,
-      "actual": 81.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.work_unit_price",
-      "expected": 12000,
-      "actual": 12000.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.work_total",
-      "expected": 972000,
-      "actual": 972000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.foundation_slab_concreting_work.line_total",
-      "expected": 972000,
-      "actual": 972000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.unit",
-      "expected": "м3",
-      "actual": "м3",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.quantity",
-      "expected": 85.5,
-      "actual": 85.5,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.material_unit_price",
-      "expected": 6400,
-      "actual": 6400.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.material_total",
-      "expected": 547200,
-      "actual": 547200,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_b22_5_m300_material.line_total",
-      "expected": 547200,
-      "actual": 547200,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.unit",
-      "expected": "рейс",
-      "actual": "рейс",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.quantity",
-      "expected": 10,
-      "actual": 10.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.material_unit_price",
-      "expected": 7500,
-      "actual": 7500.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.material_total",
-      "expected": 75000,
-      "actual": 75000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_delivery.line_total",
-      "expected": 75000,
-      "actual": 75000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.unit",
-      "expected": "смена",
-      "actual": "смена",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.material_unit_price",
-      "expected": 38000,
-      "actual": 38000.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.material_total",
-      "expected": 38000,
-      "actual": 38000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.concrete_pump_32m.line_total",
-      "expected": 38000,
-      "actual": 38000,
       "diff": 0,
       "status": "ok"
     },
@@ -2327,34 +1031,6 @@
       "status": "ok"
     },
     {
-      "key": "estimate_lines.formwork_dismantling.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_dismantling.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_dismantling.work_unit_price",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.formwork_dismantling.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
       "key": "estimate_lines.formwork_dismantling.line_total",
       "expected": 0,
       "actual": 0,
@@ -2362,348 +1038,33 @@
       "status": "ok"
     },
     {
-      "key": "estimate_lines.logistics_and_supply.unit",
-      "expected": "-",
-      "actual": "-",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.material_unit_price",
-      "expected": 36291.7,
-      "actual": 36291.7,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.material_total",
-      "expected": 36292,
-      "actual": 36292,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.logistics_and_supply.line_total",
-      "expected": 36292,
-      "actual": 36292,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.unit",
-      "expected": "комплект",
-      "actual": "комплект",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.material_unit_price",
-      "expected": 72583,
-      "actual": 72583,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.material_total",
-      "expected": 72583,
-      "actual": 72583,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.consumables_tool_amortization.line_total",
-      "expected": 72583,
-      "actual": 72583,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.unit",
-      "expected": "-",
-      "actual": "-",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.work_unit_price",
-      "expected": 10000,
-      "actual": 10000.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.work_total",
-      "expected": 10000,
-      "actual": 10000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.technical_supervision.line_total",
-      "expected": 10000,
-      "actual": 10000,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.unit",
-      "expected": "-",
-      "actual": "-",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.line_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.procurement_warehouse_costs_excel_structure.line_type",
-      "expected": "zero_excel_structure_line",
-      "actual": "zero_excel_structure_line",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.unit",
-      "expected": "-",
-      "actual": "-",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.line_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.overhead_general_business_costs_excel_structure.line_type",
-      "expected": "zero_excel_structure_line",
-      "actual": "zero_excel_structure_line",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.unit",
-      "expected": "-",
-      "actual": "-",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.quantity",
-      "expected": 1,
-      "actual": 1.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.material_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.material_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.work_unit_price",
-      "expected": 0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.work_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.line_total",
-      "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "estimate_lines.estimated_profit_excel_structure.line_type",
-      "expected": "zero_excel_structure_line",
-      "actual": "zero_excel_structure_line",
-      "diff": null,
-      "status": "ok"
-    },
-    {
       "key": "internal_totals.internal_materials_total",
-      "expected": 1454675,
-      "actual": 1366205,
-      "diff": -88470,
+      "expected": 1465557,
+      "actual": 1377698,
+      "diff": -87859,
       "status": "mismatch"
     },
     {
       "key": "internal_totals.internal_works_total",
-      "expected": 1083650,
-      "actual": 1083650,
+      "expected": 1084000,
+      "actual": 1084000,
       "diff": 0,
       "status": "ok"
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 2538325,
-      "actual": 2449855,
-      "diff": -88470,
+      "expected": 2549557,
+      "actual": 2461698,
+      "diff": -87859,
       "status": "mismatch"
     }
   ],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 8,
+    "prices_from_price_registry": 7,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 14,
-    "warnings_count": 14
+    "prices_from_fallback_input": 17,
+    "warnings_count": 17
   }
 }

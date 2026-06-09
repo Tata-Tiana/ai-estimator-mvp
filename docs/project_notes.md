@@ -103,7 +103,20 @@ slab_side_formwork_area_m2 = готовая площадь из специфик
 thermal_insert_mode = "standard_50_100"
 ```
 
-Старые режимы `legacy_perimeter_height` и `legacy` сохранены только для старого эталонного кейса `test_foundation_slab`.
+Фанера:
+
+```text
+plywood_calc_method = "actual_area_with_waste"
+plywood_sheets = ceil(slab_side_formwork_area_m2 * 1.05 / (1.52 * 1.52))
+```
+
+Арматура:
+
+```text
+rebar_calc_method = "spec_length_m"
+```
+
+Старые режимы `legacy_perimeter_height`, `working_area`, `legacy` и `legacy_weight_to_length` сохранены только для старого эталонного кейса `test_foundation_slab` или отдельных переходных проверок.
 
 Проверочные кейсы:
 
@@ -111,9 +124,20 @@ thermal_insert_mode = "standard_50_100"
 test_foundation_slab -> 229 ok / 0 mismatch
 test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
 test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+test_foundation_slab_plywood_standard -> 18 ok / 0 mismatch
+test_foundation_slab_rebar_spec_length -> 55 ok / 0 mismatch
 ```
 
-TODO отдельной задачей: обновить `pdf_parser_pipeline/section_schema.py`, чтобы Елена видела `slab_side_formwork_area_m2` и новые параметры термовставок как актуальный contract, а legacy-поля не попадали в ручной ввод новых проектов.
+Выполнено следующим шагом: `pdf_parser_pipeline/section_schema.py`, review cards, `reviewed_parameters.xlsx`, `elena_missing_parameters_by_section.*` и `input_builder` обновлены под этот contract. Елена теперь видит `slab_side_formwork_area_m2` и параметры термовставок 50/100 мм как актуальные поля, а legacy-поля старого термовкладыша не попадают в production-ввод фундаментной плиты.
+
+Изолированный POC Excel-сметы с формулами по гидроизоляции:
+
+```text
+experiments/excel_formula_poc_waterproofing/
+docs/report_excel_formula_poc_waterproofing.md
+```
+
+Решение POC: видимый лист `Смета`, белая зона копирует серую, правая область `P:V` — построчные helper-ячейки, цены остаются в `K/M`. Это не production exporter и не часть `box_calculator`.
 
 ## Главные договорённости
 

@@ -227,7 +227,7 @@ experiments/parameter_audit/
 experiments/foundation_slab_calculator/
 ```
 
-Добавлены два production-стандарта входных данных:
+Добавлены production-стандарты входных данных:
 
 1. Опалубка бортов фундаментной плиты:
 
@@ -246,11 +246,32 @@ thermal_insert_mode = "standard_50_100"
 
 Термовставки 50 мм и 100 мм считаются отдельно: работы по длине из спецификации, материалы по спецификации с запасом и округлением до кратности пачки. Старая логика термовкладыша 150 мм через элемент и деление длины на 0.6 оставлена только для legacy-кейса.
 
+3. Фанера для опалубки:
+
+```text
+plywood_calc_method = "actual_area_with_waste"
+plywood_sheet_width_m = 1.52
+plywood_sheet_height_m = 1.52
+plywood_waste_coeff = 1.05
+```
+
+Фанера считается от готовой площади опалубки, по листу `1.52 x 1.52 м`, с запасом 5% и округлением вверх до целого листа. Старый `working_area = 2.25 м2` оставлен только как legacy для старого кейса.
+
+4. Арматура:
+
+```text
+rebar_calc_method = "spec_length_m"
+```
+
+В новом стандарте спецификация даёт арматуру в м.п., а вес считается автоматически через `kg_per_meter` для доставки и контроля плотности армирования. Старый режим `legacy_weight_to_length` оставлен для старого кейса.
+
 Новые кейсы:
 
 ```text
 experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
 experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/
 ```
 
 Проверки:
@@ -259,6 +280,8 @@ experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_
 test_foundation_slab -> 229 ok / 0 mismatch
 test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
 test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+test_foundation_slab_plywood_standard -> 18 ok / 0 mismatch
+test_foundation_slab_rebar_spec_length -> 55 ok / 0 mismatch
 py_compile -> ok
 ```
 
@@ -268,9 +291,16 @@ py_compile -> ok
 docs/standard_input_contract.md
 docs/report_thermal_inserts_refactor.md
 docs/report_foundation_slab_formwork_refactor.md
+docs/report_rebar_spec_length_refactor.md
 ```
 
-Важно: `pdf_parser_pipeline` и `input_builder` в этом этапе не менялись. Следующим отдельным шагом нужно обновить schema/reviewed_parameters под `slab_side_formwork_area_m2` и новые поля термовставок.
+После этого отдельным шагом обновлены `pdf_parser_pipeline` и `input_builder`:
+
+- `section_schema.py` теперь показывает Елене `slab_side_formwork_area_m2` как актуальный проектный параметр опалубки;
+- добавлены проектные параметры термовставок 50 мм и 100 мм;
+- legacy-поля `slab_formwork_perimeter_m`, `slab_edge_height_m`, `thermal_insert_length_m`, `thermal_insert_piece_*` больше не являются production-вводом фундаментной плиты;
+- `input_builder` берёт template фундаментной плиты из `test_foundation_slab_formwork_spec_area`;
+- demo fallback input для фундаментной плиты собирается с `formwork_calc_method = "spec_area"` и `thermal_insert_mode = "standard_50_100"`.
 
 Он читает текущий файл:
 
@@ -311,6 +341,40 @@ experiments/parameter_audit/output/mvp_usv_demo/elena_parameter_review_agenda.md
 - зачем параметр нужен.
 
 Назначение этапа — согласовать, что действительно остаётся ручным вводом, а что должно уйти в проектное извлечение, `price_registry`, defaults/material catalog или derived-parameters слой.
+
+## 0.7. POC Excel-Сметы С Формулами По Гидроизоляции
+
+Создан изолированный POC:
+
+```text
+experiments/excel_formula_poc_waterproofing/
+```
+
+Он генерирует Excel-файл:
+
+```text
+experiments/excel_formula_poc_waterproofing/output/waterproofing_formula_demo.xlsx
+```
+
+Назначение: проверить идею Excel-сметы в привычном виде сметчиц, но с живыми обычными A1-формулами.
+
+Ключевое решение:
+
+- видимый лист один — `Смета`;
+- `A:I` — белая зона, технически копирует серую;
+- `J:O` — серая внутренняя сметная зона;
+- `P:V` — построчные helper-ячейки справа, без отдельной панели и без прайса;
+- цены остаются в колонках `K` и `M`;
+- клиентская часть не считается;
+- POC работает только от frozen fixtures внутри своей папки.
+
+Отчёт:
+
+```text
+docs/report_excel_formula_poc_waterproofing.md
+```
+
+Важно: это не production exporter и не часть `box_calculator`.
 
 ## 1. Цель проекта
 
@@ -1162,6 +1226,7 @@ experiments/pricing/output/required_codes_coverage_report.md
 - считать раздел "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel" на тестовом кейсе.
 - хранить единый `price_code` в строках готовых калькуляторов.
 - проверять покрытие `price_code` через `experiments/pricing/`.
+- распределять доставку арматуры/металла на уровне `experiments/box_calculator/` как recommended allocation без прибавления поверх legacy totals.
 
 При этом:
 
@@ -1172,6 +1237,7 @@ experiments/pricing/output/required_codes_coverage_report.md
 - клиентская цена, рентабельность, НР/СП/ТН пока не считаются;
 - УНИКМА пока не подключён к расчётному модулю.
 - `price_registry_with_fallback` пока не подключён к калькуляторам как основной режим.
+- `box_calculator` пока реализует только первый безопасный блок: `recommended_metal_delivery_allocation`.
 
 ## 9. Что считать стабильной базой
 
@@ -1191,6 +1257,7 @@ experiments/pricing/output/required_codes_coverage_report.md
 - единый `price_code` в готовых калькуляторах;
 - `price_registry_v3` и отдельный pricing-layer с fallback;
 - рабочий pipeline `PDF parser artifacts -> review cards -> reviewed_parameters.xlsx`;
+- первый слой `box_calculator` для распределения доставки металла по общему весу коробки;
 - формат кейсов `input.json`, `expected.json`, `notes.md`;
 - агрегированный запуск `run_all_cases.py`.
 
@@ -1202,18 +1269,20 @@ experiments/pricing/output/required_codes_coverage_report.md
 - полнота `materials_extracted`;
 - правила переноса проверенных PDF-параметров в расчётные inputs;
 - будущий `input_builder` из `reviewed_parameters.xlsx`;
+- дальнейшее развитие `box_calculator` в полноценный агрегатор всех разделов;
 - расчёт следующих разделов сметы;
 - матчинг материалов с УНИКМА;
 - перенос расчётной логики в `app/`.
 
 ## 11. Ближайшие разумные шаги
 
-1. Сделать `input_builder`, который читает проверенный `reviewed_parameters.xlsx` и собирает `input.json` для калькуляторов.
-2. После этого проектировать `box_calculator` как агрегатор готовых разделов.
-3. Добавить ещё несколько кейсов для уже сделанных калькуляторов, чтобы отделить универсальные правила от повторения конкретной сметы.
-4. Постепенно превратить удачные экспериментальные структуры в стабильные модули `app/`.
-5. Позже подключить УНИКМА к материалам, но не смешивать это с расчётной логикой.
-6. После каждого крупного этапа обновлять `docs/assistant_handoff.md`, `docs/current_project_state.md` и `docs/change_log.md`.
+1. Довести `box_calculator` от metal delivery allocation до полноценного агрегатора разделов.
+2. Научить разделы отдавать `section_metal_weight_kg` / `section_rebar_delivery_weight_kg` единообразно.
+3. Обновить Excel exporter так, чтобы он заменял legacy delivery line на allocation line и не задваивал доставку.
+4. Добавить ещё несколько кейсов для уже сделанных калькуляторов, чтобы отделить универсальные правила от повторения конкретной сметы.
+5. Постепенно превратить удачные экспериментальные структуры в стабильные модули `app/`.
+6. Позже подключить УНИКМА к материалам, но не смешивать это с расчётной логикой.
+7. После каждого крупного этапа обновлять `docs/assistant_handoff.md`, `docs/current_project_state.md` и `docs/change_log.md`.
 
 ## 12. Практическое правило
 

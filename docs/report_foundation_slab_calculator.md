@@ -30,6 +30,14 @@ experiments/foundation_slab_calculator/
 │       ├── input.json
 │       ├── expected.json
 │       └── notes.md
+│   └── test_foundation_slab_plywood_standard/
+│       ├── input.json
+│       ├── expected.json
+│       └── notes.md
+│   └── test_foundation_slab_rebar_spec_length/
+│       ├── input.json
+│       ├── expected.json
+│       └── notes.md
 └── output/
     └── test_foundation_slab/
         ├── foundation_slab_result.json
@@ -100,8 +108,10 @@ calculation_blocks:
 - Пеноплэкс = ЭППС.
 - В legacy-кейсе ЭППС 50 мм + ЭППС 100 мм дают термовкладыш 150 мм.
 - В новом стандарте Елены термовставки 50 мм и 100 мм считаются отдельно.
+- В legacy-кейсе арматура считается из веса в кг, а в новом стандарте Елены - из м.п. по спецификации.
 - Доставка металла ориентируется на 10 тонн на машину по общему весу листа "Коробка".
-- Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2, но добавлен альтернативный метод.
+- Фанера в production-стандарте считается по листу 1.52 x 1.52 м с запасом 5% и округлением вверх.
+- `working_area = 2.25 м2` оставлен только как legacy для старого кейса.
 
 ## Важные уточнения по формулам
 
@@ -149,21 +159,42 @@ timber_volume_m3 = formwork_area_m2 * 0.05
 
 ### Фанера
 
-Текущий кейс использует метод:
+Legacy-кейс использует метод:
 
 ```text
 plywood_sheets = ceil(formwork_area_m2 / plywood_sheet_working_area_m2)
 ```
 
-Для будущих кейсов добавлен опциональный метод:
+Этот режим нужен только для повторения исходной сметы:
+
+```text
+plywood_calc_method = "working_area"
+plywood_sheet_working_area_m2 = 2.25
+```
+
+Production-стандарт:
 
 ```text
 plywood_calc_method = "actual_area_with_waste"
+plywood_sheet_area_m2 = 1.52 * 1.52
+plywood_sheets = ceil(formwork_area_m2 * 1.05 / plywood_sheet_area_m2)
 ```
 
-Он считает по фактическому размеру листа `1.52 * 1.52` и запасу 5%.
+Размер листа `1.52 x 1.52 м` и запас `5%` являются системными настройками. Их не нужно показывать Елене как ручные поля.
 
-Текущий кейс оставлен на методе `working_area`, чтобы не ломать совпадение с Excel.
+Проверочный кейс:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard/
+```
+
+В нём при `slab_side_formwork_area_m2 = 24.3`:
+
+```text
+plywood_sheet_area_m2 = 2.3104
+plywood_raw_sheets = 11.0435
+plywood_sheets = 12
+```
 
 ### ЭППС / Пеноплэкс
 
@@ -217,6 +248,44 @@ thermal_insert_100_purchase_qty = round_up_to_multiple(thermal_insert_100_raw_qt
 
 ```text
 experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
+```
+
+### Арматура по новому стандарту Елены
+
+Добавлен отдельный режим:
+
+```text
+rebar_calc_method = "spec_length_m"
+```
+
+В legacy-режиме старый кейс сохраняется без изменения эталона: вес из спецификации переводится в м.п. через `kg_per_meter`, затем добавляется запас, длина округляется до целых хлыстов и стоимость считается по м.п.
+
+В новом production-стандарте проектная спецификация должна давать арматуру в м.п. по позиции/диаметру. Вес не вводится из проекта, а считается автоматически:
+
+```text
+source_length_m = source_length_m или sum(length_parts_m)
+length_with_waste_m = source_length_m * rebar_waste_coeff
+rods = ceil(length_with_waste_m / rod_length_m)
+order_length_m = rods * rod_length_m
+material_total = order_length_m * unit_price_per_m
+design_weight_kg = source_length_m * kg_per_meter
+delivery_weight_kg = order_length_m * kg_per_meter
+```
+
+`kg_per_meter`, `rod_length_m` и `unit_price_per_m` пока остаются в `input.json` тестового кейса. Для production они должны приходить из `price_registry` / каталога арматуры.
+
+В `result.md` добавлен блок "Контроль армирования":
+
+- вес арматуры по спецификации;
+- вес арматуры с запасом/закупкой;
+- объём бетона;
+- плотность армирования по спецификации;
+- плотность армирования с запасом.
+
+Проверочный кейс нового стандарта:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/
 ```
 
 Проверочный кейс новой площади опалубки из спецификации:

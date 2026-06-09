@@ -25,7 +25,7 @@ RUNNER_REGISTRY: dict[str, dict[str, Any]] = {
         "section_code": "foundation_slab",
         "section_name": "Фундаментная плита",
         "generated_input_filename": "foundation_slab_input.json",
-        "template_case_dir": "experiments/foundation_slab_calculator/cases/test_foundation_slab",
+        "template_case_dir": "experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area",
         "runner_command": "../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py {case_dir}",
         "output_result_candidates": [
             "experiments/foundation_slab_calculator/output/{case_name}/foundation_slab_result.json",

@@ -1,0 +1,32 @@
+{
+  "project_name": "test_metal_delivery_allocation",
+  "metal_delivery": {
+    "enabled": true,
+    "capacity_kg": 10000,
+    "unit_price": 22000,
+    "section_order": [
+      "foundation_slab",
+      "load_bearing_walls_lintels",
+      "floor_slab_1",
+      "floor_slab_2"
+    ],
+    "sections": [
+      {
+        "section_code": "foundation_slab",
+        "metal_weight_kg": 8263
+      },
+      {
+        "section_code": "load_bearing_walls_lintels",
+        "metal_weight_kg": 2500
+      },
+      {
+        "section_code": "floor_slab_1",
+        "metal_weight_kg": 6000
+      },
+      {
+        "section_code": "floor_slab_2",
+        "metal_weight_kg": 3000
+      }
+    ]
+  }
+}

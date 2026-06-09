@@ -77,10 +77,10 @@
     {
       "section_code": "foundation_slab",
       "section_name": "Фундаментная плита",
-      "required_total": 95,
-      "extracted_found": 15,
-      "manual_required": 6,
-      "missing": 35,
+      "required_total": 96,
+      "extracted_found": 14,
+      "manual_required": 3,
+      "missing": 34,
       "control_only": 5,
       "review_card_json": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.json",
       "review_card_md": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.md"
@@ -153,9 +153,9 @@
     }
   ],
   "parameters_total": 601,
-  "parameters_for_calculation": 570,
-  "missing_total": 287,
-  "manual_required_total": 69,
+  "parameters_for_calculation": 571,
+  "missing_total": 283,
+  "manual_required_total": 66,
   "output_xlsx": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/reviewed_parameters.xlsx",
   "warnings": []
 }

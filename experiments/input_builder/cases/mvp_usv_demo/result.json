@@ -25,9 +25,9 @@
       "enabled": true,
       "status": "blocked_missing_required_params",
       "parameters_total": 102,
-      "used_parameters": 54,
-      "missing_required": 41,
-      "manual_required": 6,
+      "used_parameters": 59,
+      "missing_required": 37,
+      "manual_required": 3,
       "needs_review": 10,
       "generated_input_path": "",
       "warnings": [
@@ -157,8 +157,8 @@
     "sections_enabled": 8,
     "sections_generated": 0,
     "sections_blocked": 8,
-    "missing_required_total": 287,
-    "manual_required_total": 69
+    "missing_required_total": 283,
+    "manual_required_total": 66
   },
   "warnings": [
     "earthworks:sand_volume: needs_review value used; Elena has not confirmed this parameter",

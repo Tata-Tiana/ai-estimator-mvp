@@ -58,16 +58,18 @@ class RebarItemInput:
     name: str
     steel_class: str
     diameter_mm: int
-    weight_parts_kg: list[float]
     kg_per_meter: float
     rod_length_m: float
     unit_price_per_m: float
+    weight_parts_kg: list[float] = field(default_factory=list)
+    source_length_m: float | None = None
+    length_parts_m: list[float] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RebarItemInput":
         return cls(**data)
 
-    def validate(self) -> None:
+    def validate(self, rebar_calc_method: str = "legacy_weight_to_length") -> None:
         if not self.code:
             raise ValueError("rebar_items.code is required")
         if not self.name:
@@ -79,13 +81,40 @@ class RebarItemInput:
             f"rebar_items.{self.code}.unit_price_per_m",
             self.unit_price_per_m,
         )
-        if not self.weight_parts_kg:
-            raise ValueError(f"rebar_items.{self.code}.weight_parts_kg is required")
-        for index, value in enumerate(self.weight_parts_kg):
-            _require_non_negative(
-                f"rebar_items.{self.code}.weight_parts_kg[{index}]",
-                value,
+        if rebar_calc_method == "legacy_weight_to_length":
+            if not self.weight_parts_kg:
+                raise ValueError(f"rebar_items.{self.code}.weight_parts_kg is required")
+            for index, value in enumerate(self.weight_parts_kg):
+                _require_non_negative(
+                    f"rebar_items.{self.code}.weight_parts_kg[{index}]",
+                    value,
+                )
+        elif rebar_calc_method == "spec_length_m":
+            if not self.length_parts_m and self.source_length_m is None:
+                raise ValueError(
+                    f"rebar_items.{self.code}.source_length_m or length_parts_m is required"
+                )
+            if self.source_length_m is not None:
+                _require_non_negative(
+                    f"rebar_items.{self.code}.source_length_m",
+                    self.source_length_m,
+                )
+            for index, value in enumerate(self.length_parts_m):
+                _require_non_negative(
+                    f"rebar_items.{self.code}.length_parts_m[{index}]",
+                    value,
+                )
+        else:
+            raise ValueError(
+                "rebar_calc_method must be 'legacy_weight_to_length' or 'spec_length_m'"
             )
+
+    def source_length_from_spec_m(self) -> float:
+        if self.length_parts_m:
+            return _round_decimal(sum(self.length_parts_m), "0.0001")
+        if self.source_length_m is None:
+            raise ValueError(f"rebar_items.{self.code}.source_length_m is required")
+        return _round_decimal(self.source_length_m, "0.0001")
 
 
 @dataclass(frozen=True)
@@ -99,7 +128,6 @@ class FoundationSlabInput:
     planterband_per_membrane_roll: float
     planterband_unit_price: float
     formwork_installation_work_unit_price: float
-    plywood_sheet_working_area_m2: float
     plywood_unit_price: float
     timber_thickness_m: float
     timber_unit_price: float
@@ -129,12 +157,14 @@ class FoundationSlabInput:
     logistics_and_supply_amount: float
     consumables_tool_amortization_amount: float
     technical_supervision_amount: float
-    plywood_calc_method: str = "working_area"
+    plywood_calc_method: str = "actual_area_with_waste"
+    plywood_sheet_working_area_m2: float = 2.25
     plywood_sheet_width_m: float = 1.52
     plywood_sheet_height_m: float = 1.52
     plywood_waste_coeff: float = 1.05
     slab_edge_height_strategy: str = "max_thickness"
     box_metal_delivery_capacity_kg: float = 10000
+    rebar_calc_method: str = "legacy_weight_to_length"
     formwork_calc_method: str = "legacy_perimeter_height"
     slab_side_formwork_area_m2: float | None = None
     slab_formwork_perimeter_m: float | None = None
@@ -185,7 +215,6 @@ class FoundationSlabInput:
             "membrane_overlap_coeff",
             "membrane_roll_area_m2",
             "planterband_per_membrane_roll",
-            "plywood_sheet_working_area_m2",
             "timber_thickness_m",
             "eps50_thickness_m",
             "eps_waste_coeff",
@@ -234,12 +263,24 @@ class FoundationSlabInput:
 
         if not self.rebar_items:
             raise ValueError("rebar_items is required")
+        if self.rebar_calc_method not in {
+            "legacy_weight_to_length",
+            "spec_length_m",
+        }:
+            raise ValueError(
+                "rebar_calc_method must be 'legacy_weight_to_length' or 'spec_length_m'"
+            )
         for item in self.rebar_items:
-            item.validate()
+            item.validate(self.rebar_calc_method)
 
         if self.plywood_calc_method not in {"working_area", "actual_area_with_waste"}:
             raise ValueError(
                 "plywood_calc_method must be 'working_area' or 'actual_area_with_waste'"
+            )
+        if self.plywood_calc_method == "working_area":
+            _require_positive(
+                "plywood_sheet_working_area_m2",
+                self.plywood_sheet_working_area_m2,
             )
         if self.formwork_calc_method not in {
             "legacy_perimeter_height",
@@ -304,10 +345,16 @@ class FoundationSlabInput:
 
     def to_dict(self) -> dict[str, Any]:
         result = {key: value for key, value in asdict(self).items() if value is not None}
+        if self.rebar_calc_method == "spec_length_m":
+            for item in result.get("rebar_items", []):
+                if isinstance(item, dict) and not item.get("weight_parts_kg"):
+                    item.pop("weight_parts_kg", None)
         if self.formwork_calc_method == "spec_area":
             result.pop("slab_formwork_perimeter_m", None)
             result.pop("slab_edge_height_m", None)
             result.pop("slab_edge_height_strategy", None)
+        if self.plywood_calc_method == "actual_area_with_waste":
+            result.pop("plywood_sheet_working_area_m2", None)
         return result
 
 
@@ -430,6 +477,8 @@ def calculate_formwork_block(data: FoundationSlabInput) -> dict[str, Any]:
         )
         formwork_block.update(
             {
+                "plywood_sheet_width_m": data.plywood_sheet_width_m,
+                "plywood_sheet_height_m": data.plywood_sheet_height_m,
                 "plywood_sheet_area_m2": plywood_sheet_area_m2,
                 "plywood_waste_coeff": data.plywood_waste_coeff,
             }
@@ -634,12 +683,25 @@ def calculate_eps_block(
 def calculate_rebar_line(
     item: RebarItemInput,
     rebar_waste_coeff: float,
+    rebar_calc_method: str = "legacy_weight_to_length",
 ) -> tuple[EstimateLineResult, dict[str, Any]]:
-    rebar_total_weight_kg = _round_decimal(sum(item.weight_parts_kg), "0.0001")
-    rebar_raw_length_m = _round_decimal(
-        _to_decimal(rebar_total_weight_kg) / _to_decimal(item.kg_per_meter),
-        "0.0001",
-    )
+    if rebar_calc_method == "spec_length_m":
+        source_length_m = item.source_length_from_spec_m()
+        design_weight_kg = _round_decimal(
+            _to_decimal(source_length_m) * _to_decimal(item.kg_per_meter),
+            "0.0001",
+        )
+        rebar_raw_length_m = source_length_m
+        rebar_total_weight_kg = design_weight_kg
+    else:
+        rebar_total_weight_kg = _round_decimal(sum(item.weight_parts_kg), "0.0001")
+        rebar_raw_length_m = _round_decimal(
+            _to_decimal(rebar_total_weight_kg) / _to_decimal(item.kg_per_meter),
+            "0.0001",
+        )
+        source_length_m = rebar_raw_length_m
+        design_weight_kg = rebar_total_weight_kg
+
     rebar_length_with_waste_m = _round_decimal(
         _to_decimal(rebar_raw_length_m) * _to_decimal(rebar_waste_coeff),
         "0.0001",
@@ -657,6 +719,10 @@ def calculate_rebar_line(
         _to_decimal(rebar_length_with_waste_m) * _to_decimal(item.kg_per_meter),
         "0.0001",
     )
+    delivery_weight_kg = _round_decimal(
+        _to_decimal(rebar_order_length_m) * _to_decimal(item.kg_per_meter),
+        "0.0001",
+    )
 
     line = calculate_line(
         code=item.code,
@@ -670,15 +736,25 @@ def calculate_rebar_line(
         "name": item.name,
         "steel_class": item.steel_class,
         "diameter_mm": item.diameter_mm,
-        "weight_parts_kg": item.weight_parts_kg,
+        "calculation_method": rebar_calc_method,
         "total_weight_kg": rebar_total_weight_kg,
         "raw_length_m": rebar_raw_length_m,
+        "source_length_m": source_length_m,
         "length_with_waste_m": rebar_length_with_waste_m,
         "raw_rods": rebar_raw_rods,
         "rods": rebar_rods,
         "order_length_m": rebar_order_length_m,
+        "kg_per_meter": item.kg_per_meter,
+        "rod_length_m": item.rod_length_m,
+        "unit_price_per_m": item.unit_price_per_m,
+        "design_weight_kg": design_weight_kg,
+        "delivery_weight_kg": delivery_weight_kg,
         "control_weight_kg": rebar_control_weight_kg,
     }
+    if item.weight_parts_kg:
+        control["weight_parts_kg"] = item.weight_parts_kg
+    if item.length_parts_m:
+        control["length_parts_m"] = item.length_parts_m
     return line, control
 
 
@@ -689,7 +765,11 @@ def calculate_rebar_block(
     items: dict[str, Any] = {}
 
     for item in data.rebar_items:
-        line, control = calculate_rebar_line(item, data.rebar_waste_coeff)
+        line, control = calculate_rebar_line(
+            item,
+            data.rebar_waste_coeff,
+            data.rebar_calc_method,
+        )
         rebar_lines.append(line)
         items[item.code] = control
 
@@ -701,8 +781,32 @@ def calculate_rebar_block(
         sum(item["control_weight_kg"] for item in items.values()),
         "0.0001",
     )
+    foundation_slab_rebar_design_weight_kg = _round_decimal(
+        sum(item["design_weight_kg"] for item in items.values()),
+        "0.0001",
+    )
+    foundation_slab_rebar_delivery_weight_kg = _round_decimal(
+        sum(item["delivery_weight_kg"] for item in items.values()),
+        "0.0001",
+    )
     suggested_box_metal_delivery_trucks = int(
         ceil(data.box_total_metal_weight_kg / data.box_metal_delivery_capacity_kg)
+    )
+    suggested_foundation_rebar_delivery_trucks = int(
+        ceil(
+            foundation_slab_rebar_delivery_weight_kg
+            / data.box_metal_delivery_capacity_kg
+        )
+    )
+    reinforcement_density_design_kg_per_m3 = _round_decimal(
+        _to_decimal(foundation_slab_rebar_design_weight_kg)
+        / _to_decimal(data.concrete_project_volume_m3),
+        "0.0001",
+    )
+    reinforcement_density_delivery_kg_per_m3 = _round_decimal(
+        _to_decimal(foundation_slab_rebar_delivery_weight_kg)
+        / _to_decimal(data.concrete_project_volume_m3),
+        "0.0001",
     )
     warnings = []
     if data.rebar_metal_delivery_trucks != suggested_box_metal_delivery_trucks:
@@ -713,11 +817,18 @@ def calculate_rebar_block(
 
     return (
         {
+            "rebar_calc_method": data.rebar_calc_method,
             "items": items,
             "rebar_frame_assembly_quantity_m": rebar_frame_assembly_quantity_m,
             "foundation_slab_rebar_control_weight_kg": foundation_slab_rebar_control_weight_kg,
+            "foundation_slab_rebar_design_weight_kg": foundation_slab_rebar_design_weight_kg,
+            "foundation_slab_rebar_delivery_weight_kg": foundation_slab_rebar_delivery_weight_kg,
+            "concrete_project_volume_m3": data.concrete_project_volume_m3,
+            "reinforcement_density_design_kg_per_m3": reinforcement_density_design_kg_per_m3,
+            "reinforcement_density_delivery_kg_per_m3": reinforcement_density_delivery_kg_per_m3,
             "box_total_metal_weight_kg": data.box_total_metal_weight_kg,
             "box_metal_delivery_capacity_kg": data.box_metal_delivery_capacity_kg,
+            "suggested_foundation_rebar_delivery_trucks": suggested_foundation_rebar_delivery_trucks,
             "suggested_box_metal_delivery_trucks": suggested_box_metal_delivery_trucks,
             "actual_rebar_metal_delivery_trucks": data.rebar_metal_delivery_trucks,
             "warnings": warnings,
@@ -756,6 +867,12 @@ def calculate_concrete_block(
         "concrete_delivery_trips": concrete_delivery_trips,
         "reinforcement_density_kg_per_m3": reinforcement_density_kg_per_m3,
         "reinforcement_density_kg_per_m3_rounded": reinforcement_density_kg_per_m3_rounded,
+        "reinforcement_density_design_kg_per_m3": rebar_block[
+            "reinforcement_density_design_kg_per_m3"
+        ],
+        "reinforcement_density_delivery_kg_per_m3": rebar_block[
+            "reinforcement_density_delivery_kg_per_m3"
+        ],
     }
 
 
@@ -1086,14 +1203,28 @@ def collect_warnings(calculation_blocks: dict[str, Any]) -> list[str]:
 def confirmed_rules(
     thermal_insert_mode: str = "legacy",
     formwork_calc_method: str = "legacy_perimeter_height",
+    rebar_calc_method: str = "legacy_weight_to_length",
+    plywood_calc_method: str = "working_area",
 ) -> list[str]:
     rules = [
         "PLANTERBAND = количество рулонов мембраны * 4.",
         "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
         "Пеноплэкс = ЭППС.",
         "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
-        "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
     ]
+    if plywood_calc_method == "actual_area_with_waste":
+        rules.extend(
+            [
+                "Фанера в production-стандарте считается по листу 1.52 x 1.52 м.",
+                "Запас на фанеру фундаментной плиты = 5%.",
+                "Количество листов фанеры округляется вверх до целого.",
+                "plywood_calc_method, размер листа и запас являются системными настройками, а не ручными полями Елены.",
+            ]
+        )
+    else:
+        rules.append(
+            "Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2."
+        )
     if formwork_calc_method == "spec_area":
         rules.extend(
             [
@@ -1121,6 +1252,21 @@ def confirmed_rules(
         )
     else:
         rules.append("ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.")
+
+    if rebar_calc_method == "spec_length_m":
+        rules.extend(
+            [
+                "Арматура в новом стандарте приходит из спецификации в м.п., а не в кг.",
+                "Закупочная длина арматуры = м.п. из спецификации * запас, затем округление до целых хлыстов.",
+                "Стоимость арматуры считается по закупочной длине в м.п.",
+                "Вес арматуры считается через kg_per_meter для доставки и контроля плотности армирования.",
+                "Доставка металла окончательно агрегируется на уровне коробки дома, а строка доставки в разделе остаётся manual/fixed.",
+            ]
+        )
+    else:
+        rules.append(
+            "Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п."
+        )
     return rules
 
 
@@ -1137,6 +1283,8 @@ def calculate_foundation_slab(data: FoundationSlabInput) -> dict[str, Any]:
         "confirmed_rules": confirmed_rules(
             data.thermal_insert_mode,
             data.formwork_calc_method,
+            data.rebar_calc_method,
+            data.plywood_calc_method,
         ),
         "membrane": membrane_block,
         "formwork": formwork_block,

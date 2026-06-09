@@ -12,7 +12,6 @@
     "planterband_per_membrane_roll": 4,
     "planterband_unit_price": 790,
     "formwork_installation_work_unit_price": 0,
-    "plywood_sheet_working_area_m2": 2.25,
     "plywood_unit_price": 1450,
     "timber_thickness_m": 0.05,
     "timber_unit_price": 21500,
@@ -31,49 +30,57 @@
         "name": "Арматура класса А500 диаметром 16 мм",
         "steel_class": "A500",
         "diameter_mm": 16,
+        "kg_per_meter": 1.58,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 80.58,
         "weight_parts_kg": [
           328
         ],
-        "kg_per_meter": 1.58,
-        "rod_length_m": 11.7,
-        "unit_price_per_m": 80.58
+        "source_length_m": null,
+        "length_parts_m": []
       },
       {
         "code": "rebar_a500_d12",
         "name": "Арматура класса А500 диаметром 12 мм",
         "steel_class": "A500",
         "diameter_mm": 12,
+        "kg_per_meter": 0.888,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 45.29,
         "weight_parts_kg": [
           122,
           5276
         ],
-        "kg_per_meter": 0.888,
-        "rod_length_m": 11.7,
-        "unit_price_per_m": 45.29
+        "source_length_m": null,
+        "length_parts_m": []
       },
       {
         "code": "rebar_a500_d10",
         "name": "Арматура класса А500 диаметром 10 мм",
         "steel_class": "A500",
         "diameter_mm": 10,
+        "kg_per_meter": 0.617,
+        "rod_length_m": 11.7,
+        "unit_price_per_m": 32.72,
         "weight_parts_kg": [
           1078
         ],
-        "kg_per_meter": 0.617,
-        "rod_length_m": 11.7,
-        "unit_price_per_m": 32.72
+        "source_length_m": null,
+        "length_parts_m": []
       },
       {
         "code": "rebar_a240_d6",
         "name": "Арматура класса А240 диаметром 6 мм",
         "steel_class": "A240",
         "diameter_mm": 6,
+        "kg_per_meter": 0.222,
+        "rod_length_m": 6,
+        "unit_price_per_m": 13.32,
         "weight_parts_kg": [
           35
         ],
-        "kg_per_meter": 0.222,
-        "rod_length_m": 6,
-        "unit_price_per_m": 13.32
+        "source_length_m": null,
+        "length_parts_m": []
       }
     ],
     "rebar_metal_delivery_trucks": 1,
@@ -93,11 +100,13 @@
     "consumables_tool_amortization_amount": 72583,
     "technical_supervision_amount": 10000,
     "plywood_calc_method": "working_area",
+    "plywood_sheet_working_area_m2": 2.25,
     "plywood_sheet_width_m": 1.52,
     "plywood_sheet_height_m": 1.52,
     "plywood_waste_coeff": 1.05,
     "slab_edge_height_strategy": "max_thickness",
     "box_metal_delivery_capacity_kg": 10000,
+    "rebar_calc_method": "legacy_weight_to_length",
     "formwork_calc_method": "legacy_perimeter_height",
     "slab_formwork_perimeter_m": 81,
     "slab_edge_height_m": 0.3,
@@ -120,13 +129,14 @@
       "Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.",
       "Пеноплэкс = ЭППС.",
       "Доставка металла ориентируется на 10 тонн на машину по листу Коробка.",
-      "Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.",
+      "Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.",
       "Legacy-опалубка: борта = внешний периметр фундаментной плиты.",
       "Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.",
       "Термовставки считаются отдельно по 50 мм и 100 мм.",
       "Работы по термовставкам считаются по длине в м.п. из спецификации.",
       "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
-      "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте."
+      "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.",
+      "Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п."
     ],
     "membrane": {
       "membrane_area_with_overlap_m2": 352.0,
@@ -176,73 +186,108 @@
       "warnings": []
     },
     "rebar": {
+      "rebar_calc_method": "legacy_weight_to_length",
       "items": {
         "rebar_a500_d16": {
           "name": "Арматура класса А500 диаметром 16 мм",
           "steel_class": "A500",
           "diameter_mm": 16,
-          "weight_parts_kg": [
-            328
-          ],
+          "calculation_method": "legacy_weight_to_length",
           "total_weight_kg": 328.0,
           "raw_length_m": 207.5949,
+          "source_length_m": 207.5949,
           "length_with_waste_m": 217.9746,
           "raw_rods": 18.6303,
           "rods": 19,
           "order_length_m": 222.3,
-          "control_weight_kg": 344.3999
+          "kg_per_meter": 1.58,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 80.58,
+          "design_weight_kg": 328.0,
+          "delivery_weight_kg": 351.234,
+          "control_weight_kg": 344.3999,
+          "weight_parts_kg": [
+            328
+          ]
         },
         "rebar_a500_d12": {
           "name": "Арматура класса А500 диаметром 12 мм",
           "steel_class": "A500",
           "diameter_mm": 12,
-          "weight_parts_kg": [
-            122,
-            5276
-          ],
+          "calculation_method": "legacy_weight_to_length",
           "total_weight_kg": 5398.0,
           "raw_length_m": 6078.8288,
+          "source_length_m": 6078.8288,
           "length_with_waste_m": 6382.7702,
           "raw_rods": 545.5359,
           "rods": 546,
           "order_length_m": 6388.2,
-          "control_weight_kg": 5667.8999
+          "kg_per_meter": 0.888,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 45.29,
+          "design_weight_kg": 5398.0,
+          "delivery_weight_kg": 5672.7216,
+          "control_weight_kg": 5667.8999,
+          "weight_parts_kg": [
+            122,
+            5276
+          ]
         },
         "rebar_a500_d10": {
           "name": "Арматура класса А500 диаметром 10 мм",
           "steel_class": "A500",
           "diameter_mm": 10,
-          "weight_parts_kg": [
-            1078
-          ],
+          "calculation_method": "legacy_weight_to_length",
           "total_weight_kg": 1078.0,
           "raw_length_m": 1747.1637,
+          "source_length_m": 1747.1637,
           "length_with_waste_m": 1834.5219,
           "raw_rods": 156.7967,
           "rods": 157,
           "order_length_m": 1836.9,
-          "control_weight_kg": 1131.9
+          "kg_per_meter": 0.617,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 32.72,
+          "design_weight_kg": 1078.0,
+          "delivery_weight_kg": 1133.3673,
+          "control_weight_kg": 1131.9,
+          "weight_parts_kg": [
+            1078
+          ]
         },
         "rebar_a240_d6": {
           "name": "Арматура класса А240 диаметром 6 мм",
           "steel_class": "A240",
           "diameter_mm": 6,
-          "weight_parts_kg": [
-            35
-          ],
+          "calculation_method": "legacy_weight_to_length",
           "total_weight_kg": 35.0,
           "raw_length_m": 157.6577,
+          "source_length_m": 157.6577,
           "length_with_waste_m": 165.5406,
           "raw_rods": 27.5901,
           "rods": 28,
           "order_length_m": 168.0,
-          "control_weight_kg": 36.75
+          "kg_per_meter": 0.222,
+          "rod_length_m": 6,
+          "unit_price_per_m": 13.32,
+          "design_weight_kg": 35.0,
+          "delivery_weight_kg": 37.296,
+          "control_weight_kg": 36.75,
+          "weight_parts_kg": [
+            35
+          ]
         }
       },
       "rebar_frame_assembly_quantity_m": 8615.4,
       "foundation_slab_rebar_control_weight_kg": 7180.9498,
+      "foundation_slab_rebar_design_weight_kg": 6839.0,
+      "foundation_slab_rebar_delivery_weight_kg": 7194.6189,
+      "concrete_project_volume_m3": 81,
+      "reinforcement_density_design_kg_per_m3": 84.4321,
+      "reinforcement_density_delivery_kg_per_m3": 88.8225,
       "box_total_metal_weight_kg": 8263,
       "box_metal_delivery_capacity_kg": 10000,
+      "suggested_foundation_rebar_delivery_trucks": 1,
       "suggested_box_metal_delivery_trucks": 1,
       "actual_rebar_metal_delivery_trucks": 1,
       "warnings": []
@@ -253,7 +298,9 @@
       "concrete_delivery_raw_trips": 9.5,
       "concrete_delivery_trips": 10,
       "reinforcement_density_kg_per_m3": 88.6537,
-      "reinforcement_density_kg_per_m3_rounded": 89
+      "reinforcement_density_kg_per_m3_rounded": 89,
+      "reinforcement_density_design_kg_per_m3": 84.4321,
+      "reinforcement_density_delivery_kg_per_m3": 88.8225
     },
     "manual_lines": {
       "rebar_crane_supply": {

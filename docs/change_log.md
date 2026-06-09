@@ -43,6 +43,137 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-09 — Финализированы production-стандарты калькулятора фундаментной плиты
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: будет создан текущей фиксацией
+
+Что закреплено:
+
+- `formwork_calc_method = "spec_area"` — площадь опалубки приходит готовым значением `slab_side_formwork_area_m2` из спецификации;
+- `thermal_insert_mode = "standard_50_100"` — термовставки 50 мм и 100 мм считаются отдельно;
+- `plywood_calc_method = "actual_area_with_waste"` — фанера считается по листу `1.52 x 1.52 м`, с запасом 5%, с округлением вверх;
+- `rebar_calc_method = "spec_length_m"` — арматура приходит из спецификации в м.п., вес считается через `kg_per_meter`;
+- legacy-режимы сохранены для старого `test_foundation_slab` и переходных проверок;
+- старый `expected.json` фундаментной плиты не менялся молча.
+
+Новые/актуальные кейсы:
+
+```text
+test_foundation_slab -> 229 ok / 0 mismatch
+test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
+test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+test_foundation_slab_plywood_standard -> 18 ok / 0 mismatch
+test_foundation_slab_rebar_spec_length -> 55 ok / 0 mismatch
+py_compile -> ok
+```
+
+Документы:
+
+```text
+docs/standard_input_contract.md
+docs/report_foundation_slab_calculator.md
+docs/report_foundation_slab_formwork_refactor.md
+docs/report_thermal_inserts_refactor.md
+docs/report_rebar_spec_length_refactor.md
+```
+
+### 2026-06-09 — Добавлен allocator доставки металла на уровне box_calculator
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: будет создан текущей фиксацией
+
+Что добавлено:
+
+- создан новый слой `experiments/box_calculator/`;
+- добавлен `metal_delivery_allocator.py`;
+- доставка арматуры/металла считается по общему весу коробки кратно 10 тоннам;
+- первая машина назначается первому разделу с металлом, следующие — разделу, где накопленный вес пересёк очередную границу 10 тонн;
+- создан тест `test_metal_delivery_allocation`;
+- result.md показывает общий вес металла, количество машин и распределение по разделам;
+- allocation выводится как `recommended_metal_delivery_allocation`, не прибавляется поверх старых totals;
+- добавлен warning против задвоения legacy delivery lines.
+
+Проверки:
+
+```text
+box_calculator test_metal_delivery_allocation -> 12 ok / 0 mismatch
+py_compile box_calculator -> ok
+```
+
+Важно:
+
+- старые калькуляторы и старые `expected.json` не менялись;
+- `rebar_metal_delivery_trucks` задокументирован как legacy/manual для старых кейсов и `AUTO_CALCULATED_BY_BOX` для production-потока;
+- Excel exporter позже должен заменять legacy delivery line на allocation line.
+
+### 2026-06-08 — Добавлен изолированный POC Excel-сметы с формулами по гидроизоляции
+
+- Ветка: `poc/waterproofing-excel-formulas`
+- Коммит: будет создан текущей фиксацией
+
+Что добавлено:
+
+- создан изолированный эксперимент `experiments/excel_formula_poc_waterproofing/`;
+- POC работает только от frozen fixtures внутри своей папки;
+- генерируется `waterproofing_formula_demo.xlsx` по разделу "Гидроизоляция, утепление бортов плит";
+- видимый лист один — `Смета`;
+- белая зона `A:I` технически копирует серую зону `J:O`;
+- правая область `P:V` сделана как построчные helper-ячейки, а не отдельная панель;
+- цены остаются в колонках сметной таблицы `K` и `M`;
+- клиентская часть не считается;
+- создан отчёт `docs/report_excel_formula_poc_waterproofing.md`.
+
+Проверки:
+
+```text
+py_compile -> ok
+Excel generated -> ok
+Expected totals: materials = 33961, works = 17255, section_total = 51216
+```
+
+Важно:
+
+- POC не внедрён в `box_calculator`;
+- рабочие калькуляторы, `pricing`, `input_builder`, `pdf_parser_pipeline`, `calculation_runner` и demo app не менялись ради этого POC;
+- следующий возможный шаг — отдельно проектировать production Excel exporter после решения по `box_calculator`.
+
+### 2026-06-08 — Синхронизирован PDF/input contract фундаментной плиты с новым стандартом
+
+- Ветка: `feature/ai-project-card` / текущая рабочая ветка
+- Коммит: будет создан текущей фиксацией
+
+Что изменено:
+
+- `experiments/pdf_parser_pipeline/section_schema.py` переведён на production-поля фундаментной плиты:
+  - `slab_side_formwork_area_m2`;
+  - `thermal_insert_50_length_m`;
+  - `thermal_insert_100_length_m`;
+  - `thermal_insert_50_material_spec_qty`;
+  - `thermal_insert_100_material_spec_qty`;
+- legacy-поля старого расчёта опалубки и термовкладыша больше не попадают в production-ввод фундаментной плиты;
+- review card фундаментной плиты и `reviewed_parameters.xlsx` пересобраны;
+- `elena_missing_parameters_by_section.*` пересобран и теперь показывает Елене новые проектные вопросы по опалубке и термовставкам 50/100 мм;
+- `experiments/input_builder/section_input_registry.py` теперь берёт template фундаментной плиты из `test_foundation_slab_formwork_spec_area`;
+- demo fallback input фундаментной плиты собирается с `formwork_calc_method = "spec_area"` и `thermal_insert_mode = "standard_50_100"`;
+- `calculation_runner` проверен на demo fallback: 8 разделов completed, 0 failed.
+
+Проверки:
+
+```text
+pdf_parser_pipeline -> review_cards: 8, missing_total: 283, manual_required_total: 66
+input_builder strict -> 8 blocked sections, как ожидается до проверки Еленой
+input_builder demo_with_template_fallback -> 8 generated sections
+calculation_runner demo_with_template_fallback -> 8 completed, 0 failed
+py_compile -> ok
+```
+
+Важно:
+
+- калькуляторы и старые `expected.json` не менялись;
+- старый legacy-кейс фундаментной плиты сохранён;
+- `slab_formwork_perimeter_m` всё ещё может встречаться в разделе гидроизоляции, потому что гидроизоляция пока считает площадь по своему старому правилу.
+
 ### 2026-06-04 — Обновлены стандарты фундаментной плиты: опалубка и термовставки
 
 - Ветка: `feature/ai-project-card`
@@ -78,7 +209,7 @@ py_compile -> ok
 - старый `expected.json` не изменён;
 - другие калькуляторы не менялись;
 - `pdf_parser_pipeline` и `input_builder` не менялись;
-- следующий шаг отдельной задачей — обновить schema/reviewed parameters под новый input contract.
+- следующий шаг на тот момент был обновить schema/reviewed parameters под новый input contract; он выполнен записью от 2026-06-08.
 
 ### 2026-06-03 — Добавлен аудит параметров и review-pack для Елены
 

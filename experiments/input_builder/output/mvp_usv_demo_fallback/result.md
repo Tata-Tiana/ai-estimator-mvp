@@ -11,7 +11,7 @@
 | Раздел | Статус | Параметров использовано | Missing | Manual required | Needs review | Generated input |
 |---|---|---:|---:|---:|---:|---|
 | Земляные работы | generated | 29 | 0 | 0 | 2 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/earthworks_input.json |
-| Фундаментная плита | generated | 95 | 0 | 0 | 10 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/foundation_slab_input.json |
+| Фундаментная плита | generated | 96 | 0 | 0 | 10 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/foundation_slab_input.json |
 | Гидроизоляция | generated | 24 | 0 | 0 | 1 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/waterproofing_input.json |
 | Несущие стены и перемычки | generated | 140 | 0 | 0 | 6 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/load_bearing_walls_lintels_input.json |
 | Плита перекрытия 1-го этажа | generated | 124 | 0 | 0 | 8 | experiments/input_builder/cases/mvp_usv_demo_fallback/generated_inputs/floor_slab_1_input.json |
@@ -47,6 +47,11 @@
 - template fallback used for earthworks_manual_excavation_quantity_for_estimate_m3 (manual_excavation_quantity_for_estimate_m3)
 - foundation_slab:concrete_project_volume: needs_review value used; Elena has not confirmed this parameter
 - foundation_slab:eps_50_under_slab_volume: needs_review value used; Elena has not confirmed this parameter
+- template fallback used for slab_side_formwork_area (slab_side_formwork_area_m2)
+- template fallback used for thermal_insert_50_length (thermal_insert_50_length_m)
+- template fallback used for thermal_insert_100_length (thermal_insert_100_length_m)
+- template fallback used for thermal_insert_50_material_spec_qty (thermal_insert_50_material_spec_qty)
+- template fallback used for thermal_insert_100_material_spec_qty (thermal_insert_100_material_spec_qty)
 - foundation_slab:rebar_a500c_d12_main_grid_weight: needs_review value used; Elena has not confirmed this parameter
 - foundation_slab:rebar_a500c_d12_thermal_insert_weight: needs_review value used; Elena has not confirmed this parameter
 - foundation_slab:rebar_a500c_d10_weight: needs_review value used; Elena has not confirmed this parameter
@@ -57,15 +62,7 @@
 - foundation_slab:planter_membrane_area: needs_review value used; Elena has not confirmed this parameter
 - template fallback used for foundation_slab_membrane_roll_area_m2 (membrane_roll_area_m2)
 - template fallback used for foundation_slab_planterband_per_membrane_roll (planterband_per_membrane_roll)
-- template fallback used for foundation_slab_slab_formwork_perimeter_m (slab_formwork_perimeter_m)
-- template fallback used for foundation_slab_slab_edge_height_m (slab_edge_height_m)
 - template fallback used for foundation_slab_plywood_sheet_working_area_m2 (plywood_sheet_working_area_m2)
-- template fallback used for foundation_slab_thermal_insert_length_m (thermal_insert_length_m)
-- template fallback used for foundation_slab_thermal_insert_piece_length_m (thermal_insert_piece_length_m)
-- template fallback used for foundation_slab_thermal_insert_piece_width_m (thermal_insert_piece_width_m)
-- template fallback used for foundation_slab_thermal_insert_piece_height_m (thermal_insert_piece_height_m)
-- template fallback used for foundation_slab_thermal_insert_piece_depth_for_work_m (thermal_insert_piece_depth_for_work_m)
-- template fallback used for foundation_slab_thermal_insert_piece_depth_for_eps_m (thermal_insert_piece_depth_for_eps_m)
 - template fallback used for foundation_slab_rebar_crane_shifts (rebar_crane_shifts)
 - template fallback used for foundation_slab_rebar_items_0_code (rebar_items[0].code)
 - template fallback used for foundation_slab_rebar_items_0_name (rebar_items[0].name)
@@ -95,7 +92,6 @@
 - template fallback used for foundation_slab_plywood_calc_method (plywood_calc_method)
 - template fallback used for foundation_slab_plywood_sheet_width_m (plywood_sheet_width_m)
 - template fallback used for foundation_slab_plywood_sheet_height_m (plywood_sheet_height_m)
-- template fallback used for foundation_slab_slab_edge_height_strategy (slab_edge_height_strategy)
 - waterproofing:eps_100_edge_volume: needs_review value used; Elena has not confirmed this parameter
 - template fallback used for waterproofing_slab_formwork_perimeter_m (slab_formwork_perimeter_m)
 - template fallback used for waterproofing_slab_edge_height_m (slab_edge_height_m)

@@ -1,0 +1,77 @@
+{
+  "calculation_blocks": {
+    "rebar": {
+      "rebar_calc_method": "spec_length_m",
+      "items.rebar_a500_d16.source_length_m": 200,
+      "items.rebar_a500_d16.length_with_waste_m": 210,
+      "items.rebar_a500_d16.rods": 18,
+      "items.rebar_a500_d16.order_length_m": 210.6,
+      "items.rebar_a500_d16.design_weight_kg": 316,
+      "items.rebar_a500_d16.delivery_weight_kg": 332.748,
+      "items.rebar_a500_d12.source_length_m": 6000,
+      "items.rebar_a500_d12.length_with_waste_m": 6300,
+      "items.rebar_a500_d12.rods": 539,
+      "items.rebar_a500_d12.order_length_m": 6306.3,
+      "items.rebar_a500_d12.design_weight_kg": 5328,
+      "items.rebar_a500_d12.delivery_weight_kg": 5599.9944,
+      "items.rebar_a500_d10.source_length_m": 1700,
+      "items.rebar_a500_d10.length_with_waste_m": 1785,
+      "items.rebar_a500_d10.rods": 153,
+      "items.rebar_a500_d10.order_length_m": 1790.1,
+      "items.rebar_a500_d10.design_weight_kg": 1048.9,
+      "items.rebar_a500_d10.delivery_weight_kg": 1104.4917,
+      "items.rebar_a240_d6.source_length_m": 160,
+      "items.rebar_a240_d6.length_with_waste_m": 168,
+      "items.rebar_a240_d6.rods": 28,
+      "items.rebar_a240_d6.order_length_m": 168,
+      "items.rebar_a240_d6.design_weight_kg": 35.52,
+      "items.rebar_a240_d6.delivery_weight_kg": 37.296,
+      "rebar_frame_assembly_quantity_m": 8475,
+      "foundation_slab_rebar_design_weight_kg": 6728.42,
+      "foundation_slab_rebar_delivery_weight_kg": 7074.5301,
+      "reinforcement_density_design_kg_per_m3": 83.0669,
+      "reinforcement_density_delivery_kg_per_m3": 87.3399,
+      "suggested_foundation_rebar_delivery_trucks": 1
+    },
+    "concrete": {
+      "reinforcement_density_design_kg_per_m3": 83.0669,
+      "reinforcement_density_delivery_kg_per_m3": 87.3399
+    }
+  },
+  "estimate_lines": {
+    "rebar_frame_assembly": {
+      "unit": "мп",
+      "quantity": 8475,
+      "line_total": 0
+    },
+    "rebar_a500_d16": {
+      "unit": "мп",
+      "quantity": 210.6,
+      "material_total": 16970,
+      "line_total": 16970
+    },
+    "rebar_a500_d12": {
+      "unit": "мп",
+      "quantity": 6306.3,
+      "material_total": 285612,
+      "line_total": 285612
+    },
+    "rebar_a500_d10": {
+      "unit": "мп",
+      "quantity": 1790.1,
+      "material_total": 58572,
+      "line_total": 58572
+    },
+    "rebar_a240_d6": {
+      "unit": "мп",
+      "quantity": 168,
+      "material_total": 2238,
+      "line_total": 2238
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1459373,
+    "internal_works_total": 1084000,
+    "internal_section_total": 2543373
+  }
+}

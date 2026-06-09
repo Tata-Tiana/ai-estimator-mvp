@@ -11,7 +11,7 @@
 | section_code | section_name | missing required count | manual_required count | can_generate_input |
 |---|---|---:|---:|---|
 | earthworks | Земляные работы | 13 | 7 | no |
-| foundation_slab | Фундаментная плита | 41 | 6 | no |
+| foundation_slab | Фундаментная плита | 37 | 3 | no |
 | waterproofing | Гидроизоляция | 10 | 3 | no |
 | load_bearing_walls_lintels | Несущие стены и перемычки | 89 | 21 | no |
 | floor_slab_1 | Плита перекрытия 1-го этажа | 66 | 15 | no |
@@ -36,17 +36,14 @@
 | earthworks | earthworks_excavator_shifts | `excavator_shifts` | Количество смен экскаватора | manual | смена | manual_required | required parameter not found in parser/review cards |
 | earthworks | earthworks_geotextile_laying_area_m2 | `geotextile_laying_area_m2` | geotextile laying area m2 | parsed | м2 | missing | required parameter not found in parser/review cards |
 | earthworks | earthworks_manual_excavation_quantity_for_estimate_m3 | `manual_excavation_quantity_for_estimate_m3` | Объем ручной доработки котлована для сметы | manual | м3 | manual_required | required parameter not found in parser/review cards |
+| foundation_slab | slab_side_formwork_area | `slab_side_formwork_area_m2` | Площадь опалубки бортов фундаментной плиты по спецификации | parsed | м2 | missing | required parameter not found in parser/review cards |
+| foundation_slab | thermal_insert_50_length | `thermal_insert_50_length_m` | Длина термовставок 50 мм по спецификации | parsed | мп | missing | required parameter not found in parser/review cards |
+| foundation_slab | thermal_insert_100_length | `thermal_insert_100_length_m` | Длина термовставок 100 мм по спецификации | parsed | мп | missing | required parameter not found in parser/review cards |
+| foundation_slab | thermal_insert_50_material_spec_qty | `thermal_insert_50_material_spec_qty` | Материал термовставок 50 мм по спецификации | parsed | м3 | missing | required parameter not found in parser/review cards |
+| foundation_slab | thermal_insert_100_material_spec_qty | `thermal_insert_100_material_spec_qty` | Материал термовставок 100 мм по спецификации | parsed | м3 | missing | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_membrane_roll_area_m2 | `membrane_roll_area_m2` | Площадь одного рулона мембраны | parsed | м2 | missing | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_planterband_per_membrane_roll | `planterband_per_membrane_roll` | Количество PLANTERBAND на один рулон мембраны | parsed | - | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_slab_formwork_perimeter_m | `slab_formwork_perimeter_m` | slab formwork perimeter m | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_slab_edge_height_m | `slab_edge_height_m` | slab edge height m | parsed | м | missing | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_plywood_sheet_working_area_m2 | `plywood_sheet_working_area_m2` | Рабочая площадь листа фанеры | parsed | м2 | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_length_m | `thermal_insert_length_m` | thermal insert length m | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_piece_length_m | `thermal_insert_piece_length_m` | thermal insert piece length m | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_piece_width_m | `thermal_insert_piece_width_m` | thermal insert piece width m | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_piece_height_m | `thermal_insert_piece_height_m` | thermal insert piece height m | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_piece_depth_for_work_m | `thermal_insert_piece_depth_for_work_m` | Глубина элемента термовставки для расчета работ | manual | м | manual_required | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_thermal_insert_piece_depth_for_eps_m | `thermal_insert_piece_depth_for_eps_m` | Глубина элемента термовставки для расчета ЭППС | manual | м | manual_required | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_rebar_crane_shifts | `rebar_crane_shifts` | Количество смен крана для подачи арматуры | manual | смена | manual_required | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_rebar_items_0_code | `rebar_items[0].code` | Арматура 1: код позиции | parsed | - | missing | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_rebar_items_0_name | `rebar_items[0].name` | Арматура 1: наименование позиции | parsed | - | missing | required parameter not found in parser/review cards |
@@ -76,7 +73,6 @@
 | foundation_slab | foundation_slab_plywood_calc_method | `plywood_calc_method` | Метод расчета фанеры | manual | - | manual_required | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_plywood_sheet_width_m | `plywood_sheet_width_m` | Ширина листа фанеры | parsed | м | missing | required parameter not found in parser/review cards |
 | foundation_slab | foundation_slab_plywood_sheet_height_m | `plywood_sheet_height_m` | Высота листа фанеры | parsed | м | missing | required parameter not found in parser/review cards |
-| foundation_slab | foundation_slab_slab_edge_height_strategy | `slab_edge_height_strategy` | Правило выбора высоты торца плиты | manual | - | manual_required | required parameter not found in parser/review cards |
 | waterproofing | waterproofing_slab_formwork_perimeter_m | `slab_formwork_perimeter_m` | slab formwork perimeter m | parsed | м | missing | required parameter not found in parser/review cards |
 | waterproofing | waterproofing_slab_edge_height_m | `slab_edge_height_m` | slab edge height m | parsed | м | missing | required parameter not found in parser/review cards |
 | waterproofing | waterproofing_primer_consumption_l_per_m2 | `primer_consumption_l_per_m2` | Расход праймера на 1 м2 | manual | м2 | manual_required | required parameter not found in parser/review cards |

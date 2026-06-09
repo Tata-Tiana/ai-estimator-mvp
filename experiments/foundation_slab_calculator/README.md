@@ -32,6 +32,14 @@ cases/
     input.json
     expected.json
     notes.md
+  test_foundation_slab_plywood_standard/
+    input.json
+    expected.json
+    notes.md
+  test_foundation_slab_rebar_spec_length/
+    input.json
+    expected.json
+    notes.md
 output/
   test_foundation_slab/
     foundation_slab_result.json
@@ -40,6 +48,12 @@ output/
     foundation_slab_result.json
     foundation_slab_result.md
   test_foundation_slab_formwork_spec_area/
+    foundation_slab_result.json
+    foundation_slab_result.md
+  test_foundation_slab_plywood_standard/
+    foundation_slab_result.json
+    foundation_slab_result.md
+  test_foundation_slab_rebar_spec_length/
     foundation_slab_result.json
     foundation_slab_result.md
 ```
@@ -64,6 +78,18 @@ output/
 ../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area
 ```
 
+Новый стандарт фанеры с листом 1.52 x 1.52 м и запасом 5%:
+
+```bash
+../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard
+```
+
+Новый стандарт арматуры из спецификации в м.п.:
+
+```bash
+../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length
+```
+
 Можно передать как папку кейса, так и прямой путь к `input.json`.
 
 Проверка компиляции:
@@ -78,7 +104,7 @@ output/
 - `formwork` - площадь отбортовки, фанера, пиломатериал.
 - `eps` - ЭППС 50 мм под плитой; в legacy-кейсе также ЭППС для старого термовкладыша.
 - `thermal_insert` - legacy-термовкладыш либо новый стандарт термовставок 50/100 мм.
-- `rebar` - универсальный расчёт арматуры по весу, кг/м, запасу, длине прутка и округлению.
+- `rebar` - legacy-расчёт арматуры из веса или новый расчёт из м.п. спецификации, с запасом, округлением до хлыстов, стоимостью по м.п. и контролем веса.
 - `concrete` - бетон, доставка бетона, контроль плотности армирования.
 - `manual_lines` - фиксированные/manual строки: краны, доставки, насос, логистика, расходники, технадзор.
 
@@ -133,6 +159,35 @@ output/
 - пиломатериал;
 - демонтаж опалубки.
 
+## Фанера
+
+Production-стандарт:
+
+```text
+plywood_calc_method = "actual_area_with_waste"
+plywood_sheet_width_m = 1.52
+plywood_sheet_height_m = 1.52
+plywood_waste_coeff = 1.05
+```
+
+Формула:
+
+```text
+plywood_sheet_area_m2 = 1.52 * 1.52
+plywood_sheets = ceil(formwork_area_m2 * 1.05 / plywood_sheet_area_m2)
+```
+
+`plywood_calc_method`, размер листа и запас являются системными настройками. Их не нужно спрашивать у Елены по каждому проекту.
+
+Legacy-режим:
+
+```text
+plywood_calc_method = "working_area"
+plywood_sheet_working_area_m2 = 2.25
+```
+
+Он сохранён только для старого `test_foundation_slab`, чтобы не ломать сверку с исходной Excel-сметой.
+
 ## Термовставки
 
 Калькулятор поддерживает два режима:
@@ -147,3 +202,23 @@ output/
 - закупочное количество округляется до кратности пачки через `round_up_to_multiple`;
 - материалы термовставок 50 мм и 100 мм идут отдельными строками сметы;
 - старая логика `length / 0.6`, элемент 400 x 150 x высота и строка 150 мм не используются.
+
+## Арматура
+
+Калькулятор поддерживает два режима:
+
+- `rebar_calc_method = "legacy_weight_to_length"` - старый проверочный режим. Спецификация даёт вес арматуры в кг, калькулятор переводит его в м.п. через `kg_per_meter`, добавляет запас, округляет до целых хлыстов и считает стоимость по м.п.
+- `rebar_calc_method = "spec_length_m"` - новый production-стандарт Елены. Спецификация даёт длину арматуры в м.п.; вес не вводится из проекта, а рассчитывается через `kg_per_meter`.
+
+В новом стандарте:
+
+- `source_length_m` или сумма `length_parts_m` - проектная длина из спецификации;
+- `length_with_waste_m = source_length_m * rebar_waste_coeff`;
+- `rods = ceil(length_with_waste_m / rod_length_m)`;
+- `order_length_m = rods * rod_length_m`;
+- стоимость считается от `order_length_m * unit_price_per_m`;
+- проектный вес считается как `source_length_m * kg_per_meter`;
+- закупочный/доставочный вес считается как `order_length_m * kg_per_meter`;
+- `rebar_frame_assembly` получает количество как сумму закупочных м.п. по всем позициям.
+
+`kg_per_meter`, `rod_length_m` и `unit_price_per_m` сейчас остаются входами кейса. Для production они должны приходить из `price_registry` / material catalog. Финальная доставка металла должна агрегироваться на уровне `box_calculator`, потому что металл суммируется по всем разделам коробки дома.

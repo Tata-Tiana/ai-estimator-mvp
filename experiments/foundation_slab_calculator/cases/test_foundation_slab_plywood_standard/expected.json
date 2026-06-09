@@ -1,0 +1,30 @@
+{
+  "calculation_blocks": {
+    "formwork": {
+      "formwork_calc_method": "spec_area",
+      "slab_side_formwork_area_m2": 24.3,
+      "formwork_area_m2": 24.3,
+      "plywood_calc_method": "actual_area_with_waste",
+      "plywood_sheet_width_m": 1.52,
+      "plywood_sheet_height_m": 1.52,
+      "plywood_sheet_area_m2": 2.3104,
+      "plywood_waste_coeff": 1.05,
+      "plywood_raw_sheets": 11.0435,
+      "plywood_sheets": 12,
+      "timber_raw_volume_m3": 1.215
+    }
+  },
+  "estimate_lines": {
+    "formwork_plywood": {
+      "unit": "шт",
+      "quantity": 12,
+      "material_total": 17400,
+      "line_total": 17400
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1467007,
+    "internal_works_total": 1084000,
+    "internal_section_total": 2551007
+  }
+}

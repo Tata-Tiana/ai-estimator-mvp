@@ -100,6 +100,35 @@ grand_total = 12 271 194
 
 Это не production-расчёт и не финальная смета: часть missing-параметров была взята из template inputs в demo fallback режиме. Следующий слой — `box_calculator`.
 
+После этого создан первый безопасный слой `box_calculator`:
+
+```text
+experiments/box_calculator/
+```
+
+На текущем этапе он реализует только распределение доставки арматуры/металла:
+
+```text
+recommended_metal_delivery_allocation
+```
+
+Правило:
+
+```text
+total_metal_delivery_trucks = ceil(total_box_metal_weight_kg / 10000)
+```
+
+Машины распределяются по разделам в порядке выполнения работ: первая машина назначается первому разделу с металлом, следующие — разделу, где накопленный вес пересёк очередную границу 10 тонн.
+
+Проверочный кейс:
+
+```text
+experiments/box_calculator/cases/test_metal_delivery_allocation/
+comparison = 12 ok / 0 mismatch
+```
+
+Важно: allocation пока не добавляется поверх section totals, потому что legacy-калькуляторы могут уже содержать строку доставки металла. Excel exporter позже должен заменить legacy delivery line на allocation line.
+
 После calculation_runner добавлен аудит missing/manual параметров:
 
 ```text
@@ -143,14 +172,20 @@ experiments/foundation_slab_calculator/
 
 - `formwork_calc_method = "spec_area"` — площадь опалубки бортов берётся готовым значением `slab_side_formwork_area_m2` из спецификации;
 - `formwork_calc_method = "legacy_perimeter_height"` — старый расчёт `perimeter * height` только для legacy-кейса;
+- `plywood_calc_method = "actual_area_with_waste"` — production-фанера по листу `1.52 x 1.52 м`, запас 5%, округление вверх;
+- `plywood_calc_method = "working_area"` — legacy-фанера через рабочую площадь `2.25 м2` только для старого кейса;
 - `thermal_insert_mode = "standard_50_100"` — термовставки 50 мм и 100 мм считаются отдельными работами/материалами;
 - `thermal_insert_mode = "legacy"` — старый термовкладыш 150 мм только для старого кейса.
+- `rebar_calc_method = "spec_length_m"` — production-арматура приходит из спецификации в м.п.; вес считается через `kg_per_meter`;
+- `rebar_calc_method = "legacy_weight_to_length"` — старый режим кг -> м.п. только для legacy-кейса.
 
 Новые кейсы:
 
 ```text
 experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/
 experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard/
+experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/
 ```
 
 Проверено:
@@ -159,6 +194,9 @@ experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_
 test_foundation_slab -> 229 ok / 0 mismatch
 test_foundation_slab_thermal_inserts_standard -> 41 ok / 0 mismatch
 test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
+test_foundation_slab_plywood_standard -> 18 ok / 0 mismatch
+test_foundation_slab_rebar_spec_length -> 55 ok / 0 mismatch
+py_compile -> ok
 ```
 
 Документы:
@@ -167,9 +205,26 @@ test_foundation_slab_formwork_spec_area -> 25 ok / 0 mismatch
 docs/standard_input_contract.md
 docs/report_thermal_inserts_refactor.md
 docs/report_foundation_slab_formwork_refactor.md
+docs/report_rebar_spec_length_refactor.md
 ```
 
-Важно: `pdf_parser_pipeline`, `input_builder`, другие калькуляторы и старый `expected.json` фундаментной плиты не менялись. Следующая отдельная задача — обновить schema/reviewed parameters под новый input contract.
+Следующий слой тоже уже синхронизирован с этим стандартом:
+
+- `experiments/pdf_parser_pipeline/section_schema.py` переведён на `slab_side_formwork_area_m2` и термовставки 50/100 мм;
+- `reviewed_parameters.xlsx` и `elena_missing_parameters_by_section.*` пересобраны;
+- `experiments/input_builder/section_input_registry.py` использует template `test_foundation_slab_formwork_spec_area`;
+- demo fallback input фундаментной плиты больше не содержит legacy-полей старого термовкладыша.
+
+Важно: другие калькуляторы и старый `expected.json` фундаментной плиты не менялись.
+
+Также создан изолированный POC Excel-сметы с формулами по гидроизоляции:
+
+```text
+experiments/excel_formula_poc_waterproofing/
+docs/report_excel_formula_poc_waterproofing.md
+```
+
+Смысл POC: проверить привычный Excel-вид сметчиц с живыми A1-формулами. Видимый лист `Смета`, белая зона копирует серую, правая область `P:V` — построчные helper-ячейки, цены остаются в `K/M`. Это не production exporter и не часть `box_calculator`.
 
 ## Суть проекта
 

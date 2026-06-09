@@ -1,0 +1,164 @@
+{
+  "project_name": "test_metal_delivery_allocation",
+  "warnings": [
+    "recommended_metal_delivery_allocation показан отдельно от итогов разделов; legacy section totals могут уже содержать доставку металла. Не добавлять allocation сверху, пока Excel exporter не поддерживает замену legacy-строки."
+  ],
+  "recommended_metal_delivery_allocation": {
+    "capacity_kg": 10000.0,
+    "total_box_metal_weight_kg": 19763.0,
+    "total_trucks": 2,
+    "unit_price": 22000.0,
+    "total_delivery_cost": 44000.0,
+    "section_order": [
+      "foundation_slab",
+      "load_bearing_walls_lintels",
+      "floor_slab_1",
+      "floor_slab_2"
+    ],
+    "sections": [
+      {
+        "section_code": "foundation_slab",
+        "section_name": "Фундаментная плита",
+        "metal_weight_kg": 8263.0,
+        "cumulative_weight_kg": 8263.0,
+        "allocated_trucks": 1,
+        "delivery_cost": 22000.0
+      },
+      {
+        "section_code": "load_bearing_walls_lintels",
+        "section_name": "Несущие стены и перемычки",
+        "metal_weight_kg": 2500.0,
+        "cumulative_weight_kg": 10763.0,
+        "allocated_trucks": 1,
+        "delivery_cost": 22000.0
+      },
+      {
+        "section_code": "floor_slab_1",
+        "section_name": "Плита перекрытия 1-го этажа",
+        "metal_weight_kg": 6000.0,
+        "cumulative_weight_kg": 16763.0,
+        "allocated_trucks": 0,
+        "delivery_cost": 0.0
+      },
+      {
+        "section_code": "floor_slab_2",
+        "section_name": "Плита перекрытия 2-го этажа",
+        "metal_weight_kg": 3000.0,
+        "cumulative_weight_kg": 19763.0,
+        "allocated_trucks": 0,
+        "delivery_cost": 0.0
+      }
+    ],
+    "warnings": [
+      "recommended_metal_delivery_allocation показан отдельно от итогов разделов; legacy section totals могут уже содержать доставку металла. Не добавлять allocation сверху, пока Excel exporter не поддерживает замену legacy-строки."
+    ]
+  },
+  "totals_policy": {
+    "section_totals_recalculated": false,
+    "metal_delivery_added_to_grand_total": false,
+    "reason": "legacy section totals may already include metal delivery; allocation is reported separately until exporter can replace legacy delivery lines."
+  },
+  "case_name": "test_metal_delivery_allocation",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/box_calculator/cases/test_metal_delivery_allocation/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/box_calculator/cases/test_metal_delivery_allocation/expected.json",
+  "expected": {
+    "recommended_metal_delivery_allocation.total_box_metal_weight_kg": 19763,
+    "recommended_metal_delivery_allocation.total_trucks": 2,
+    "recommended_metal_delivery_allocation.total_delivery_cost": 44000,
+    "recommended_metal_delivery_allocation.sections.0.section_code": "foundation_slab",
+    "recommended_metal_delivery_allocation.sections.0.allocated_trucks": 1,
+    "recommended_metal_delivery_allocation.sections.1.section_code": "load_bearing_walls_lintels",
+    "recommended_metal_delivery_allocation.sections.1.allocated_trucks": 1,
+    "recommended_metal_delivery_allocation.sections.2.section_code": "floor_slab_1",
+    "recommended_metal_delivery_allocation.sections.2.allocated_trucks": 0,
+    "recommended_metal_delivery_allocation.sections.3.section_code": "floor_slab_2",
+    "recommended_metal_delivery_allocation.sections.3.allocated_trucks": 0,
+    "totals_policy.metal_delivery_added_to_grand_total": false
+  },
+  "comparison": [
+    {
+      "key": "recommended_metal_delivery_allocation.total_box_metal_weight_kg",
+      "expected": 19763,
+      "actual": 19763.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.total_trucks",
+      "expected": 2,
+      "actual": 2,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.total_delivery_cost",
+      "expected": 44000,
+      "actual": 44000.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.0.section_code",
+      "expected": "foundation_slab",
+      "actual": "foundation_slab",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.0.allocated_trucks",
+      "expected": 1,
+      "actual": 1,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.1.section_code",
+      "expected": "load_bearing_walls_lintels",
+      "actual": "load_bearing_walls_lintels",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.1.allocated_trucks",
+      "expected": 1,
+      "actual": 1,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.2.section_code",
+      "expected": "floor_slab_1",
+      "actual": "floor_slab_1",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.2.allocated_trucks",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.3.section_code",
+      "expected": "floor_slab_2",
+      "actual": "floor_slab_2",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "recommended_metal_delivery_allocation.sections.3.allocated_trucks",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "totals_policy.metal_delivery_added_to_grand_total",
+      "expected": false,
+      "actual": false,
+      "diff": 0,
+      "status": "ok"
+    }
+  ]
+}

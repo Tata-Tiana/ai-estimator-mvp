@@ -13,7 +13,7 @@ SECTION_INPUT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "foundation_slab": {
         "section_name": "Фундаментная плита",
-        "calculator_case_template_input_path": "experiments/foundation_slab_calculator/cases/test_foundation_slab/input.json",
+        "calculator_case_template_input_path": "experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area/input.json",
         "generated_input_filename": "foundation_slab_input.json",
     },
     "waterproofing": {

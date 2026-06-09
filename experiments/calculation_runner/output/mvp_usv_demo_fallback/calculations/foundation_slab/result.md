@@ -1,9 +1,9 @@
 # Расчёт фундаментной плиты: foundation_slab
 
-Проект: `test_foundation_slab`
+Проект: `test_foundation_slab_formwork_spec_area`
 
 ## Входные параметры
-- `project_name`: `test_foundation_slab`
+- `project_name`: `test_foundation_slab_formwork_spec_area`
 - `membrane_area_m2`: `320`
 - `membrane_installation_work_unit_price`: `100`
 - `membrane_overlap_coeff`: `1.1`
@@ -11,8 +11,6 @@
 - `planter_standard_roll_unit_price`: `5166`
 - `planterband_per_membrane_roll`: `4`
 - `planterband_unit_price`: `790`
-- `slab_formwork_perimeter_m`: `81`
-- `slab_edge_height_m`: `0.3`
 - `formwork_installation_work_unit_price`: `0`
 - `plywood_sheet_working_area_m2`: `2.25`
 - `plywood_unit_price`: `1450`
@@ -22,18 +20,8 @@
 - `eps50_thickness_m`: `0.05`
 - `eps50_laying_work_unit_price`: `250`
 - `eps_waste_coeff`: `1.05`
-- `thermal_insert_length_m`: `21.5`
-- `thermal_insert_piece_length_m`: `0.6`
-- `thermal_insert_piece_width_m`: `0.15`
-- `thermal_insert_piece_height_m`: `0.4`
-- `thermal_insert_piece_depth_for_work_m`: `0.3`
-- `thermal_insert_piece_depth_for_eps_m`: `0.25`
-- `thermal_insert_installation_work_unit_price`: `100`
 - `eps50_pack_volume_m3`: `0.2776`
 - `eps50_unit_price`: `9800`
-- `eps100_thickness_m`: `0.1`
-- `eps100_pack_volume_m3`: `0.2776`
-- `eps100_unit_price`: `10000`
 - `rebar_crane_shifts`: `1`
 - `rebar_crane_unit_price`: `30000`
 - `rebar_waste_coeff`: `1.05`
@@ -58,64 +46,93 @@
 - `plywood_sheet_width_m`: `1.52`
 - `plywood_sheet_height_m`: `1.52`
 - `plywood_waste_coeff`: `1.05`
-- `slab_edge_height_strategy`: `max_thickness`
 - `box_metal_delivery_capacity_kg`: `10000`
+- `formwork_calc_method`: `spec_area`
+- `slab_side_formwork_area_m2`: `24.3`
+- `thermal_insert_mode`: `standard_50_100`
+- `thermal_insert_50_length_m`: `10`
+- `thermal_insert_100_length_m`: `15`
+- `thermal_insert_50_work_unit_price`: `100`
+- `thermal_insert_100_work_unit_price`: `100`
+- `thermal_insert_50_material_spec_qty`: `1.0`
+- `thermal_insert_100_material_spec_qty`: `0.5`
+- `thermal_insert_material_waste_coeff`: `1.05`
+- `thermal_insert_50_pack_multiple_qty`: `0.2776`
+- `thermal_insert_100_pack_multiple_qty`: `0.2776`
+- `thermal_insert_50_material_unit_price`: `9800`
+- `thermal_insert_100_material_unit_price`: `10000`
 
 ## Формулы
 - Монтаж мембраны: `quantity = membrane_area_m2`.
 - Planter Standard: `rolls = ceil(membrane_area_m2 * overlap / roll_area)`.
 - PLANTERBAND: `quantity = membrane_rolls * planterband_per_membrane_roll`.
-- Опалубка: `formwork_area = slab_formwork_perimeter_m * slab_edge_height_m`.
+- Опалубка: `formwork_area = slab_side_formwork_area_m2`.
 - Фанера: `working_area` считает `ceil(formwork_area / plywood_sheet_working_area_m2)`, `actual_area_with_waste` считает через фактическую площадь листа и запас.
 - Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.
 - ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.
-- Термовкладыш: `pieces = ceil(thermal_insert_length_m / thermal_insert_piece_length_m)`.
+- Работы термовставок 50 мм: `quantity = thermal_insert_50_length_m`.
+- Работы термовставок 100 мм: `quantity = thermal_insert_100_length_m`.
+- Материал термовставок 50 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)`.
+- Материал термовставок 100 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)`.
 - Арматура: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.
 - Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.
 - Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.
 
 ## Подтверждённые правила Елены
 - PLANTERBAND = количество рулонов мембраны * 4.
-- Борта = внешний периметр фундаментной плиты.
-- При разных толщинах плит можно брать максимальную толщину.
 - Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.
 - Пеноплэкс = ЭППС.
-- ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.
 - Доставка металла ориентируется на 10 тонн на машину по листу Коробка.
 - Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.
+- В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.
+- Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.
+- Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.
+- Термовставки считаются отдельно по 50 мм и 100 мм.
+- Работы по термовставкам считаются по длине в м.п. из спецификации.
+- Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.
+- Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.
 
 ## Промежуточные расчёты
 | Показатель | Значение |
 | --- | ---: |
-| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Борта = внешний периметр фундаментной плиты.', 'При разных толщинах плит можно брать максимальную толщину.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'ЭППС 50 мм + ЭППС 100 мм = термовкладыш 150 мм.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.']` |
+| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Фанера зависит от раскроя; текущий кейс считает через рабочую площадь 2.25 м2.', 'В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.', 'Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.', 'Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.', 'Термовставки считаются отдельно по 50 мм и 100 мм.', 'Работы по термовставкам считаются по длине в м.п. из спецификации.', 'Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.', 'Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.']` |
 | `membrane.membrane_area_with_overlap_m2` | `352.0` |
 | `membrane.membrane_raw_rolls` | `8.8` |
 | `membrane.membrane_rolls` | `9` |
 | `membrane.planterband_quantity` | `36` |
+| `formwork.formwork_calc_method` | `spec_area` |
+| `formwork.slab_side_formwork_area_m2` | `24.3` |
 | `formwork.formwork_area_m2` | `24.3` |
-| `formwork.slab_edge_height_strategy` | `max_thickness` |
 | `formwork.plywood_calc_method` | `working_area` |
 | `formwork.plywood_sheet_working_area_m2` | `2.25` |
 | `formwork.plywood_raw_sheets` | `10.8` |
 | `formwork.plywood_sheets` | `11` |
 | `formwork.timber_raw_volume_m3` | `1.215` |
+| `eps.mode` | `standard_50_100` |
 | `eps.eps50_laying_area_m2` | `270.0` |
 | `eps.eps50_under_slab_required_volume_m3` | `14.175` |
-| `eps.eps50_thermal_insert_volume_m3` | `0.18` |
-| `eps.eps50_required_volume_m3` | `14.355` |
-| `eps.eps50_raw_packs` | `51.7111` |
+| `eps.eps50_thermal_insert_volume_m3` | `0` |
+| `eps.eps50_required_volume_m3` | `14.175` |
+| `eps.eps50_raw_packs` | `51.0627` |
 | `eps.eps50_packs` | `52` |
 | `eps.eps50_order_volume_m3` | `14.4352` |
-| `eps.eps100_required_volume_m3` | `0.36` |
-| `eps.eps100_raw_packs` | `1.2968` |
-| `eps.eps100_packs` | `2` |
-| `eps.eps100_order_volume_m3` | `0.5552` |
-| `thermal_insert.thermal_insert_raw_pieces` | `35.8333` |
-| `thermal_insert.thermal_insert_pieces` | `36` |
-| `thermal_insert.thermal_insert_control_volume_m3` | `0.648` |
-| `thermal_insert.thermal_insert_piece_depth_for_eps_m` | `0.25` |
-| `thermal_insert.slab_edge_height_m` | `0.3` |
-| `thermal_insert.warnings` | `['thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку.']` |
+| `eps.eps100_required_volume_m3` | `0` |
+| `eps.eps100_raw_packs` | `0` |
+| `eps.eps100_packs` | `0` |
+| `eps.eps100_order_volume_m3` | `0` |
+| `thermal_insert.mode` | `standard_50_100` |
+| `thermal_insert.thermal_insert_50_length_m` | `10` |
+| `thermal_insert.thermal_insert_100_length_m` | `15` |
+| `thermal_insert.thermal_insert_50_material_spec_qty` | `1.0` |
+| `thermal_insert.thermal_insert_100_material_spec_qty` | `0.5` |
+| `thermal_insert.thermal_insert_material_waste_coeff` | `1.05` |
+| `thermal_insert.thermal_insert_50_material_raw_qty` | `1.05` |
+| `thermal_insert.thermal_insert_100_material_raw_qty` | `0.525` |
+| `thermal_insert.thermal_insert_50_pack_multiple_qty` | `0.2776` |
+| `thermal_insert.thermal_insert_100_pack_multiple_qty` | `0.2776` |
+| `thermal_insert.thermal_insert_50_material_purchase_qty` | `1.1104` |
+| `thermal_insert.thermal_insert_100_material_purchase_qty` | `0.5552` |
+| `thermal_insert.warnings` | `[]` |
 | `rebar.items.rebar_a500_d16.name` | `Арматура класса А500 диаметром 16 мм` |
 | `rebar.items.rebar_a500_d16.steel_class` | `A500` |
 | `rebar.items.rebar_a500_d16.diameter_mm` | `16` |
@@ -193,13 +210,15 @@
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |
 
 ## Предупреждения
-- thermal_insert: thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку.
 - planter_membrane_installation_work_m2: price_code not found in price_registry, fallback input price used
 - timber_formwork_installation_work_m2: price_code not found in price_registry and fallback input price is missing
 - plywood_1520x1520_18mm_sheet: price_code not found in price_registry, fallback input price used
 - timber_m3: price_code not found in price_registry, fallback input price used
 - eps_laying_work_m2: price_code not found in price_registry, fallback input price used
-- thermal_insert_installation_work_m: price_code not found in price_registry, fallback input price used
+- thermal_insert_50_installation_work_m: price_code not found in price_registry, fallback input price used
+- thermal_insert_100_installation_work_m: price_code not found in price_registry, fallback input price used
+- thermal_insert_50_material_m3: price_code not found in price_registry, fallback input price used
+- thermal_insert_100_material_m3: price_code not found in price_registry, fallback input price used
 - crane_shift: price_code not found in price_registry, fallback input price used
 - metal_delivery_truck: price_code not found in price_registry, fallback input price used
 - concrete_placing_work_m3: price_code not found in price_registry, fallback input price used
@@ -219,9 +238,11 @@
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1450.0` | `15950` | `0.0` | `0` | `15950` |
 | `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.2` | `м3` | `21500.0` | `26123` | `0.0` | `0` | `26123` |
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250.0` | `67500` | `67500` |
-| `thermal_insert_installation` | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `` | `21.5` | `` | `мп` | `0.0` | `0` | `100.0` | `2150` | `2150` |
-| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм | `` | `14.4352` | `14.44` | `м3` | `8800.0` | `127030` | `0.0` | `0` | `127030` |
-| `eps100_penoplex_geo_material` | Пеноплэкс ГЕО 100 мм | `` | `0.5552` | `0.56` | `м3` | `8900.0` | `4941` | `0.0` | `0` | `4941` |
+| `thermal_insert_50_installation` | Устройство и монтаж термовставок 50 мм | `` | `10.0` | `` | `мп` | `0.0` | `0` | `100.0` | `1000` | `1000` |
+| `thermal_insert_100_installation` | Устройство и монтаж термовставок 100 мм | `` | `15.0` | `` | `мп` | `0.0` | `0` | `100.0` | `1500` | `1500` |
+| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм под плитой | `` | `14.4352` | `14.44` | `м3` | `8800.0` | `127030` | `0.0` | `0` | `127030` |
+| `thermal_insert_50_material` | Материал термовставок 50 мм | `` | `1.1104` | `1.11` | `м3` | `9800.0` | `10882` | `0.0` | `0` | `10882` |
+| `thermal_insert_100_material` | Материал термовставок 100 мм | `` | `0.5552` | `0.56` | `м3` | `10000.0` | `5552` | `0.0` | `0` | `5552` |
 | `rebar_crane_supply` | Подача арматуры автокраном | `` | `1.0` | `` | `смена` | `30000.0` | `30000` | `0.0` | `0` | `30000` |
 | `rebar_frame_assembly` | Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры | `` | `8615.4` | `` | `мп` | `0.0` | `0` | `0.0` | `0` | `0` |
 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | `` | `222.3` | `` | `мп` | `64.9` | `14427` | `0.0` | `0` | `14427` |
@@ -244,12 +265,12 @@
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1366205` |
-| `internal_works_total` | `1083650` |
-| `internal_section_total` | `2449855` |
-| `internal_materials_total_raw` | `1366205.184` |
-| `internal_works_total_raw` | `1083650` |
-| `internal_section_total_raw` | `2449855.184` |
+| `internal_materials_total` | `1377698` |
+| `internal_works_total` | `1084000` |
+| `internal_section_total` | `2461698` |
+| `internal_materials_total_raw` | `1377697.824` |
+| `internal_works_total_raw` | `1084000` |
+| `internal_section_total_raw` | `2461697.824` |
 
 ## Источники цен
 
@@ -262,9 +283,11 @@
 | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `plywood_1520x1520_18mm_sheet` | `1450` | `1450` | `fallback_input` | price_code not found in price_registry, fallback input price used |
 | Пиломатериал обрезной хвойных пород ГОСТ | `timber_m3` | `21500` | `21500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
 | Укладка ЭППС 50мм под плитой | `eps_laying_work_m2` | `250` | `250` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `thermal_insert_installation_work_m` | `100` | `100` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Пеноплэкс ГЕО 50 мм | `eps_geo_50_m3` | `9800` | `8800` | `price_registry` |  |
-| Пеноплэкс ГЕО 100 мм | `eps_geo_100_m3` | `10000` | `8900` | `price_registry` |  |
+| Устройство и монтаж термовставок 50 мм | `thermal_insert_50_installation_work_m` | `100` | `100` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Устройство и монтаж термовставок 100 мм | `thermal_insert_100_installation_work_m` | `100` | `100` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Пеноплэкс ГЕО 50 мм под плитой | `eps_geo_50_m3` | `9800` | `8800` | `price_registry` |  |
+| Материал термовставок 50 мм | `thermal_insert_50_material_m3` | `9800` | `9800` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Материал термовставок 100 мм | `thermal_insert_100_material_m3` | `10000` | `10000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
 | Подача арматуры автокраном | `crane_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
 | Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура класса А500 диаметром 16 мм | `rebar_a500_d16_m` | `80.58` | `64.9` | `price_registry` |  |
@@ -289,240 +312,36 @@
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
 | `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `8` |
+| `prices_from_price_registry` | `7` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `14` |
-| `warnings_count` | `14` |
+| `prices_from_fallback_input` | `17` |
+| `warnings_count` | `17` |
 
 ## Проверка с расчётом Елены
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
-| `calculation_blocks.membrane.membrane_rolls` | `9` | `9` | `0` | `ok` |
-| `calculation_blocks.membrane.planterband_quantity` | `36` | `36` | `0` | `ok` |
+| `calculation_blocks.formwork.formwork_calc_method` | `spec_area` | `spec_area` | `` | `ok` |
+| `calculation_blocks.formwork.slab_side_formwork_area_m2` | `24.3` | `24.3` | `0.0` | `ok` |
 | `calculation_blocks.formwork.formwork_area_m2` | `24.3` | `24.3` | `0.0` | `ok` |
 | `calculation_blocks.formwork.plywood_calc_method` | `working_area` | `working_area` | `` | `ok` |
 | `calculation_blocks.formwork.plywood_sheet_working_area_m2` | `2.25` | `2.25` | `0.0` | `ok` |
 | `calculation_blocks.formwork.plywood_sheets` | `11` | `11` | `0` | `ok` |
 | `calculation_blocks.formwork.timber_raw_volume_m3` | `1.215` | `1.215` | `0.0` | `ok` |
-| `calculation_blocks.eps.eps50_laying_area_m2` | `270` | `270.0` | `0.0` | `ok` |
-| `calculation_blocks.eps.eps50_order_volume_m3` | `14.4352` | `14.4352` | `0.0` | `ok` |
-| `calculation_blocks.eps.eps100_order_volume_m3` | `0.5552` | `0.5552` | `0.0` | `ok` |
-| `calculation_blocks.thermal_insert.thermal_insert_pieces` | `36` | `36` | `0` | `ok` |
-| `calculation_blocks.rebar.items.rebar_a500_d16.order_length_m` | `222.3` | `222.3` | `0.0` | `ok` |
-| `calculation_blocks.rebar.items.rebar_a500_d12.order_length_m` | `6388.2` | `6388.2` | `0.0` | `ok` |
-| `calculation_blocks.rebar.items.rebar_a500_d10.order_length_m` | `1836.9` | `1836.9` | `0.0` | `ok` |
-| `calculation_blocks.rebar.items.rebar_a240_d6.order_length_m` | `168` | `168.0` | `0.0` | `ok` |
-| `calculation_blocks.rebar.rebar_frame_assembly_quantity_m` | `8615.4` | `8615.4` | `0.0` | `ok` |
-| `calculation_blocks.rebar.foundation_slab_rebar_control_weight_kg` | `7180.9498` | `7180.9498` | `0.0` | `ok` |
-| `calculation_blocks.rebar.box_total_metal_weight_kg` | `8263` | `8263` | `0` | `ok` |
-| `calculation_blocks.rebar.box_metal_delivery_capacity_kg` | `10000` | `10000` | `0` | `ok` |
-| `calculation_blocks.rebar.suggested_box_metal_delivery_trucks` | `1` | `1` | `0` | `ok` |
-| `calculation_blocks.rebar.actual_rebar_metal_delivery_trucks` | `1` | `1` | `0` | `ok` |
-| `calculation_blocks.concrete.concrete_order_volume_m3` | `85.5` | `85.5` | `0.0` | `ok` |
-| `calculation_blocks.concrete.concrete_delivery_trips` | `10` | `10` | `0` | `ok` |
-| `calculation_blocks.concrete.reinforcement_density_kg_per_m3_rounded` | `89` | `89` | `0` | `ok` |
-| `estimate_lines.planter_membrane_installation.unit` | `м2` | `м2` | `` | `ok` |
-| `estimate_lines.planter_membrane_installation.quantity` | `320` | `320.0` | `0.0` | `ok` |
-| `estimate_lines.planter_membrane_installation.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.planter_membrane_installation.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.planter_membrane_installation.work_unit_price` | `100` | `100.0` | `0.0` | `ok` |
-| `estimate_lines.planter_membrane_installation.work_total` | `32000` | `32000` | `0` | `ok` |
-| `estimate_lines.planter_membrane_installation.line_total` | `32000` | `32000` | `0` | `ok` |
-| `estimate_lines.planter_standard_material.unit` | `рул` | `рул` | `` | `ok` |
-| `estimate_lines.planter_standard_material.quantity` | `9` | `9.0` | `0.0` | `ok` |
-| `estimate_lines.planter_standard_material.material_unit_price` | `5166` | `4738.0` | `-428.0` | `mismatch` |
-| `estimate_lines.planter_standard_material.material_total` | `46494` | `42642` | `-3852` | `mismatch` |
-| `estimate_lines.planter_standard_material.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.planter_standard_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.planter_standard_material.line_total` | `46494` | `42642` | `-3852` | `mismatch` |
-| `estimate_lines.planterband_material.unit` | `шт` | `шт` | `` | `ok` |
-| `estimate_lines.planterband_material.quantity` | `36` | `36.0` | `0.0` | `ok` |
-| `estimate_lines.planterband_material.material_unit_price` | `790` | `750.0` | `-40.0` | `mismatch` |
-| `estimate_lines.planterband_material.material_total` | `28440` | `27000` | `-1440` | `mismatch` |
-| `estimate_lines.planterband_material.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.planterband_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.planterband_material.line_total` | `28440` | `27000` | `-1440` | `mismatch` |
 | `estimate_lines.formwork_installation.unit` | `м2` | `м2` | `` | `ok` |
 | `estimate_lines.formwork_installation.quantity` | `24.3` | `24.3` | `0.0` | `ok` |
-| `estimate_lines.formwork_installation.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_installation.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_installation.work_unit_price` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_installation.work_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_installation.line_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_plywood.unit` | `шт` | `шт` | `` | `ok` |
 | `estimate_lines.formwork_plywood.quantity` | `11` | `11.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_plywood.material_unit_price` | `1450` | `1450.0` | `0.0` | `ok` |
 | `estimate_lines.formwork_plywood.material_total` | `15950` | `15950` | `0` | `ok` |
-| `estimate_lines.formwork_plywood.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_plywood.work_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_plywood.line_total` | `15950` | `15950` | `0` | `ok` |
 | `estimate_lines.formwork_timber.unit` | `м3` | `м3` | `` | `ok` |
 | `estimate_lines.formwork_timber.quantity` | `1.215` | `1.215` | `0.0` | `ok` |
 | `estimate_lines.formwork_timber.display_quantity` | `1.2` | `1.2` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber.material_unit_price` | `21500` | `21500.0` | `0.0` | `ok` |
 | `estimate_lines.formwork_timber.material_total` | `26123` | `26123` | `0` | `ok` |
-| `estimate_lines.formwork_timber.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber.work_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_timber.line_total` | `26123` | `26123` | `0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.unit` | `м2` | `м2` | `` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.quantity` | `270` | `270.0` | `0.0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.work_unit_price` | `250` | `250.0` | `0.0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.work_total` | `67500` | `67500` | `0` | `ok` |
-| `estimate_lines.eps50_laying_under_slab.line_total` | `67500` | `67500` | `0` | `ok` |
-| `estimate_lines.thermal_insert_installation.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.thermal_insert_installation.quantity` | `21.5` | `21.5` | `0.0` | `ok` |
-| `estimate_lines.thermal_insert_installation.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.thermal_insert_installation.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.thermal_insert_installation.work_unit_price` | `100` | `100.0` | `0.0` | `ok` |
-| `estimate_lines.thermal_insert_installation.work_total` | `2150` | `2150` | `0` | `ok` |
-| `estimate_lines.thermal_insert_installation.line_total` | `2150` | `2150` | `0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.quantity` | `14.4352` | `14.4352` | `0.0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.display_quantity` | `14.44` | `14.44` | `0.0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.material_unit_price` | `9800` | `8800.0` | `-1000.0` | `mismatch` |
-| `estimate_lines.eps50_penoplex_geo_material.material_total` | `141465` | `127030` | `-14435` | `mismatch` |
-| `estimate_lines.eps50_penoplex_geo_material.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.line_total` | `141465` | `127030` | `-14435` | `mismatch` |
-| `estimate_lines.eps100_penoplex_geo_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.eps100_penoplex_geo_material.quantity` | `0.5552` | `0.5552` | `0.0` | `ok` |
-| `estimate_lines.eps100_penoplex_geo_material.display_quantity` | `0.56` | `0.56` | `0.0` | `ok` |
-| `estimate_lines.eps100_penoplex_geo_material.material_unit_price` | `10000` | `8900.0` | `-1100.0` | `mismatch` |
-| `estimate_lines.eps100_penoplex_geo_material.material_total` | `5552` | `4941` | `-611` | `mismatch` |
-| `estimate_lines.eps100_penoplex_geo_material.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.eps100_penoplex_geo_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps100_penoplex_geo_material.line_total` | `5552` | `4941` | `-611` | `mismatch` |
-| `estimate_lines.rebar_crane_supply.unit` | `смена` | `смена` | `` | `ok` |
-| `estimate_lines.rebar_crane_supply.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_crane_supply.material_unit_price` | `30000` | `30000.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_crane_supply.material_total` | `30000` | `30000` | `0` | `ok` |
-| `estimate_lines.rebar_crane_supply.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_crane_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_crane_supply.line_total` | `30000` | `30000` | `0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.rebar_frame_assembly.quantity` | `8615.4` | `8615.4` | `0.0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_frame_assembly.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d16.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.rebar_a500_d16.quantity` | `222.3` | `222.3` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d16.material_unit_price` | `80.58` | `64.9` | `-15.68` | `mismatch` |
-| `estimate_lines.rebar_a500_d16.material_total` | `17913` | `14427` | `-3486` | `mismatch` |
-| `estimate_lines.rebar_a500_d16.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d16.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d16.line_total` | `17913` | `14427` | `-3486` | `mismatch` |
-| `estimate_lines.rebar_a500_d12.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.rebar_a500_d12.quantity` | `6388.2` | `6388.2` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d12.material_unit_price` | `45.29` | `36.85` | `-8.44` | `mismatch` |
-| `estimate_lines.rebar_a500_d12.material_total` | `289322` | `235405` | `-53917` | `mismatch` |
-| `estimate_lines.rebar_a500_d12.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d12.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d12.line_total` | `289322` | `235405` | `-53917` | `mismatch` |
-| `estimate_lines.rebar_a500_d10.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.rebar_a500_d10.quantity` | `1836.9` | `1836.9` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d10.material_unit_price` | `32.72` | `27.16` | `-5.56` | `mismatch` |
-| `estimate_lines.rebar_a500_d10.material_total` | `60103` | `49890` | `-10213` | `mismatch` |
-| `estimate_lines.rebar_a500_d10.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d10.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d10.line_total` | `60103` | `49890` | `-10213` | `mismatch` |
-| `estimate_lines.rebar_a240_d6.unit` | `мп` | `мп` | `` | `ok` |
-| `estimate_lines.rebar_a240_d6.quantity` | `168` | `168.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d6.material_unit_price` | `13.32` | `10.25` | `-3.07` | `mismatch` |
-| `estimate_lines.rebar_a240_d6.material_total` | `2238` | `1722` | `-516` | `mismatch` |
-| `estimate_lines.rebar_a240_d6.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d6.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d6.line_total` | `2238` | `1722` | `-516` | `mismatch` |
-| `estimate_lines.rebar_metal_delivery.unit` | `маш` | `маш` | `` | `ok` |
-| `estimate_lines.rebar_metal_delivery.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_metal_delivery.material_unit_price` | `22000` | `22000.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_metal_delivery.material_total` | `22000` | `22000` | `0` | `ok` |
-| `estimate_lines.rebar_metal_delivery.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_metal_delivery.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_metal_delivery.line_total` | `22000` | `22000` | `0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.quantity` | `81` | `81.0` | `0.0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.work_unit_price` | `12000` | `12000.0` | `0.0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.work_total` | `972000` | `972000` | `0` | `ok` |
-| `estimate_lines.foundation_slab_concreting_work.line_total` | `972000` | `972000` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.quantity` | `85.5` | `85.5` | `0.0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.material_unit_price` | `6400` | `6400.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.material_total` | `547200` | `547200` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.line_total` | `547200` | `547200` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.unit` | `рейс` | `рейс` | `` | `ok` |
-| `estimate_lines.concrete_delivery.quantity` | `10` | `10.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_delivery.material_unit_price` | `7500` | `7500.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_delivery.material_total` | `75000` | `75000` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_delivery.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.line_total` | `75000` | `75000` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.unit` | `смена` | `смена` | `` | `ok` |
-| `estimate_lines.concrete_pump_32m.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_pump_32m.material_unit_price` | `38000` | `38000.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_pump_32m.material_total` | `38000` | `38000` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_pump_32m.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.line_total` | `38000` | `38000` | `0` | `ok` |
 | `estimate_lines.formwork_dismantling.unit` | `м2` | `м2` | `` | `ok` |
 | `estimate_lines.formwork_dismantling.quantity` | `24.3` | `24.3` | `0.0` | `ok` |
-| `estimate_lines.formwork_dismantling.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_dismantling.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_dismantling.work_unit_price` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_dismantling.work_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_dismantling.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.unit` | `-` | `-` | `` | `ok` |
-| `estimate_lines.logistics_and_supply.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_unit_price` | `36291.7` | `36291.7` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_total` | `36292` | `36292` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.line_total` | `36292` | `36292` | `0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.unit` | `комплект` | `комплект` | `` | `ok` |
-| `estimate_lines.consumables_tool_amortization.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.material_unit_price` | `72583` | `72583` | `0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.material_total` | `72583` | `72583` | `0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.consumables_tool_amortization.line_total` | `72583` | `72583` | `0` | `ok` |
-| `estimate_lines.technical_supervision.unit` | `-` | `-` | `` | `ok` |
-| `estimate_lines.technical_supervision.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.technical_supervision.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.technical_supervision.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.technical_supervision.work_unit_price` | `10000` | `10000.0` | `0.0` | `ok` |
-| `estimate_lines.technical_supervision.work_total` | `10000` | `10000` | `0` | `ok` |
-| `estimate_lines.technical_supervision.line_total` | `10000` | `10000` | `0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.unit` | `-` | `-` | `` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.procurement_warehouse_costs_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.unit` | `-` | `-` | `` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.overhead_general_business_costs_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.unit` | `-` | `-` | `` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.quantity` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.estimated_profit_excel_structure.line_type` | `zero_excel_structure_line` | `zero_excel_structure_line` | `` | `ok` |
-| `internal_totals.internal_materials_total` | `1454675` | `1366205` | `-88470` | `mismatch` |
-| `internal_totals.internal_works_total` | `1083650` | `1083650` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2538325` | `2449855` | `-88470` | `mismatch` |
+| `internal_totals.internal_materials_total` | `1465557` | `1377698` | `-87859` | `mismatch` |
+| `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
+| `internal_totals.internal_section_total` | `2549557` | `2461698` | `-87859` | `mismatch` |

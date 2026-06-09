@@ -15,7 +15,7 @@
 | section_code | section_name | required total | extracted found | manual required | missing | control only | review_card |
 |---|---|---:|---:|---:|---:|---:|---|
 | earthworks | Земляные работы | 29 | 3 | 7 | 6 | 3 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/earthworks_review_card.json |
-| foundation_slab | Фундаментная плита | 95 | 15 | 6 | 35 | 5 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.json |
+| foundation_slab | Фундаментная плита | 96 | 14 | 3 | 34 | 5 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/foundation_slab_review_card.json |
 | waterproofing | Гидроизоляция | 24 | 2 | 3 | 7 | 2 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/waterproofing_review_card.json |
 | load_bearing_walls_lintels | Несущие стены и перемычки | 140 | 7 | 21 | 68 | 2 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/load_bearing_walls_lintels_review_card.json |
 | floor_slab_1 | Плита перекрытия 1-го этажа | 124 | 8 | 15 | 51 | 5 | /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/pdf_parser_pipeline/cases/mvp_usv_demo/review_cards/floor_slab_1_review_card.json |

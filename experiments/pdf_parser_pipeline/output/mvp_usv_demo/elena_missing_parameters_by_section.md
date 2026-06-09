@@ -9,7 +9,7 @@
 | Раздел | К проектировщикам/по проекту | Ручные сметные/технические | Всего missing/manual |
 |---|---:|---:|---:|
 | Земляные работы (`earthworks`) | 3 | 10 | 13 |
-| Фундаментная плита (`foundation_slab`) | 6 | 35 | 41 |
+| Фундаментная плита (`foundation_slab`) | 5 | 32 | 37 |
 | Гидроизоляция (`waterproofing`) | 5 | 5 | 10 |
 | Несущие стены и перемычки (`load_bearing_walls_lintels`) | 53 | 36 | 89 |
 | Плита перекрытия 1-го этажа (`floor_slab_1`) | 13 | 53 | 66 |
@@ -31,12 +31,11 @@
 
 | Что нужно уточнить | Ед. | calculator_input_key | Статус |
 |---|---|---|---|
-| Высота борта плиты | м | `slab_edge_height_m` | missing |
-| Периметр бортов/опалубки плиты | м | `slab_formwork_perimeter_m` | missing |
-| Длина термовставок | м | `thermal_insert_length_m` | missing |
-| Высота элемента термовставки | м | `thermal_insert_piece_height_m` | missing |
-| Длина элемента термовставки | м | `thermal_insert_piece_length_m` | missing |
-| Ширина элемента термовставки | м | `thermal_insert_piece_width_m` | missing |
+| Площадь опалубки бортов фундаментной плиты по спецификации | м2 | `slab_side_formwork_area_m2` | missing |
+| Длина термовставок 100 мм по спецификации | мп | `thermal_insert_100_length_m` | missing |
+| Материал термовставок 100 мм по спецификации | м3 | `thermal_insert_100_material_spec_qty` | missing |
+| Длина термовставок 50 мм по спецификации | мп | `thermal_insert_50_length_m` | missing |
+| Материал термовставок 50 мм по спецификации | м3 | `thermal_insert_50_material_spec_qty` | missing |
 
 ### Гидроизоляция
 
@@ -216,9 +215,6 @@
 | Арматура 4: класс стали | - | `rebar_items[3].steel_class` | missing |
 | Арматура 4: вес по спецификации | кг | `rebar_items[3].weight_parts_kg[0]` | missing |
 | Количество машин доставки арматуры/металла | - | `rebar_metal_delivery_trucks` | missing |
-| Правило выбора высоты торца плиты | - | `slab_edge_height_strategy` | manual_required |
-| Глубина элемента термовставки для расчета ЭППС | м | `thermal_insert_piece_depth_for_eps_m` | manual_required |
-| Глубина элемента термовставки для расчета работ | м | `thermal_insert_piece_depth_for_work_m` | manual_required |
 
 ### Гидроизоляция
 

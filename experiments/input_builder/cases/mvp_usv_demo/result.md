@@ -11,7 +11,7 @@
 | Раздел | Статус | Параметров использовано | Missing | Manual required | Needs review | Generated input |
 |---|---|---:|---:|---:|---:|---|
 | Земляные работы | blocked_missing_required_params | 16 | 13 | 7 | 2 |  |
-| Фундаментная плита | blocked_missing_required_params | 54 | 41 | 6 | 10 |  |
+| Фундаментная плита | blocked_missing_required_params | 59 | 37 | 3 | 10 |  |
 | Гидроизоляция | blocked_missing_required_params | 14 | 10 | 3 | 1 |  |
 | Несущие стены и перемычки | blocked_missing_required_params | 51 | 89 | 21 | 6 |  |
 | Плита перекрытия 1-го этажа | blocked_missing_required_params | 58 | 66 | 15 | 8 |  |

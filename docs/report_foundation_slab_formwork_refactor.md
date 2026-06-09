@@ -53,12 +53,37 @@ formwork_area_m2 = slab_side_formwork_area_m2
 - `formwork_timber`: пиломатериал;
 - `formwork_dismantling`: демонтаж опалубки.
 
-Формулы фанеры и пиломатериала не менялись:
+Пиломатериал:
 
 ```text
-plywood_sheets = ceil(formwork_area_m2 / plywood_sheet_working_area_m2)
 timber_raw_volume_m3 = formwork_area_m2 * timber_thickness_m
 ```
+
+## Фанера: production-стандарт
+
+После следующего уточнения с Еленой закреплён production-расчёт фанеры:
+
+```text
+plywood_calc_method = "actual_area_with_waste"
+plywood_sheet_area_m2 = 1.52 * 1.52
+plywood_sheets = ceil(formwork_area_m2 * 1.05 / plywood_sheet_area_m2)
+```
+
+Правила:
+
+- лист фанеры всегда `1.52 x 1.52 м`;
+- запас на фанеру фундаментной плиты `5%`;
+- количество листов округляется вверх;
+- `plywood_calc_method`, размер листа и запас являются системными настройками, а не ручными полями Елены.
+
+Legacy-метод:
+
+```text
+plywood_calc_method = "working_area"
+plywood_sheet_working_area_m2 = 2.25
+```
+
+оставлен только для старого `test_foundation_slab`, чтобы не ломать сверку с исходной Excel-сметой.
 
 ## Новый кейс
 
@@ -82,6 +107,21 @@ plywood_sheets = 11
 timber_raw_volume_m3 = 1.215
 formwork_installation.quantity = 24.3
 formwork_dismantling.quantity = 24.3
+```
+
+Дополнительно создан кейс production-фанеры:
+
+```text
+experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard/
+```
+
+В нём:
+
+```text
+slab_side_formwork_area_m2 = 24.3
+plywood_sheet_area_m2 = 2.3104
+plywood_raw_sheets = 11.0435
+plywood_sheets = 12
 ```
 
 ## Проверки

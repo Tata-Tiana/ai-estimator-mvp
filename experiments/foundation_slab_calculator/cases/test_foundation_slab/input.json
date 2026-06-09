@@ -32,6 +32,7 @@
   "eps100_unit_price": 10000,
   "rebar_crane_shifts": 1,
   "rebar_crane_unit_price": 30000,
+  "rebar_calc_method": "legacy_weight_to_length",
   "rebar_waste_coeff": 1.05,
   "rebar_items": [
     {

@@ -18,7 +18,7 @@
 | Раздел | Статус | Материалы | Работы | Итого | Exit code | Warnings | Result |
 |---|---|---:|---:|---:|---:|---:|---|
 | Земляные работы | completed_with_warnings | 2248997 | 337223 | 2586220 | 0 | 2 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/earthworks/result.json |
-| Фундаментная плита | completed_with_warnings | 1366205 | 1083650 | 2449855 | 0 | 17 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/foundation_slab/result.json |
+| Фундаментная плита | completed_with_warnings | 1377698 | 1084000 | 2461698 | 0 | 19 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/foundation_slab/result.json |
 | Гидроизоляция | completed_with_warnings | 31884 | 17255 | 49139 | 0 | 4 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/waterproofing/result.json |
 | Несущие стены и перемычки | completed_with_warnings | 1540668 | 1121449 | 2662117 | 0 | 26 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/load_bearing_walls_lintels/result.json |
 | Плита перекрытия 1-го этажа | completed_with_warnings | 1132538 | 611926 | 1744464 | 0 | 18 | experiments/calculation_runner/cases/mvp_usv_demo_fallback/calculations/floor_slab_1/result.json |
@@ -28,21 +28,23 @@
 
 ## Итоги
 
-- Материалы всего: `8185731`
-- Работы всего: `4085463`
-- Итого: `12271194`
+- Материалы всего: `8197224`
+- Работы всего: `4085813`
+- Итого: `12283037`
 
 ## Ошибки и предупреждения
 
 - earthworks: pricing warnings: 9
 - earthworks: comparison mismatches: 7
-- foundation_slab: thermal_insert: thermal_insert_piece_depth_for_eps_m отличается от slab_edge_height_m; Елена уточнила, что обычно берём высоту плиты, но в текущем кейсе Excel использует/даёт значение, которое после округления не меняет закупку.
 - foundation_slab: planter_membrane_installation_work_m2: price_code not found in price_registry, fallback input price used
 - foundation_slab: timber_formwork_installation_work_m2: price_code not found in price_registry and fallback input price is missing
 - foundation_slab: plywood_1520x1520_18mm_sheet: price_code not found in price_registry, fallback input price used
 - foundation_slab: timber_m3: price_code not found in price_registry, fallback input price used
 - foundation_slab: eps_laying_work_m2: price_code not found in price_registry, fallback input price used
-- foundation_slab: thermal_insert_installation_work_m: price_code not found in price_registry, fallback input price used
+- foundation_slab: thermal_insert_50_installation_work_m: price_code not found in price_registry, fallback input price used
+- foundation_slab: thermal_insert_100_installation_work_m: price_code not found in price_registry, fallback input price used
+- foundation_slab: thermal_insert_50_material_m3: price_code not found in price_registry, fallback input price used
+- foundation_slab: thermal_insert_100_material_m3: price_code not found in price_registry, fallback input price used
 - foundation_slab: crane_shift: price_code not found in price_registry, fallback input price used
 - foundation_slab: metal_delivery_truck: price_code not found in price_registry, fallback input price used
 - foundation_slab: concrete_placing_work_m3: price_code not found in price_registry, fallback input price used
@@ -51,8 +53,8 @@
 - foundation_slab: concrete_pump_32m_shift: price_code not found in price_registry, fallback input price used
 - foundation_slab: formwork_dismantling_work_m2: price_code not found in price_registry and fallback input price is missing
 - foundation_slab: technical_supervision_fixed: price_code not found in price_registry, fallback input price used
-- foundation_slab: pricing warnings: 14
-- foundation_slab: comparison mismatches: 26
+- foundation_slab: pricing warnings: 17
+- foundation_slab: comparison mismatches: 2
 - waterproofing: bitumen_waterproofing_work_m2: price_code not found in price_registry, fallback input price used
 - waterproofing: eps_wall_insulation_work_m2: price_code not found in price_registry, fallback input price used
 - waterproofing: pricing warnings: 2

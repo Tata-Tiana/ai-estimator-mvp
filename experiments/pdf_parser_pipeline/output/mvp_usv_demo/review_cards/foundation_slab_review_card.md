@@ -8,7 +8,6 @@
 | concrete_project_volume | 81 | м3 | ЮСВ КР1.pdf | 9 | needs_human_review |
 | eps_50_under_slab_volume | 13.5 | м3 | ЮСВ КР1.pdf | 9 | needs_human_review |
 | eps_100_edge_volume | 1.75 | м3 | ЮСВ КР1.pdf | 9 | needs_human_review |
-| eps_150_thermal_insert_volume | 0.74 | м3 | ЮСВ КР1.pdf | 10 | needs_human_review |
 | rebar_a500c_d12_main_grid_weight | 5276 | кг | ЮСВ КР1.pdf | 9 | needs_human_review |
 | rebar_a500c_d12_thermal_insert_weight | 122 | кг | ЮСВ КР1.pdf | 10 | needs_human_review |
 | rebar_a500c_d10_weight | 1078 | кг | ЮСВ КР1.pdf | 9 | needs_human_review |
@@ -21,7 +20,8 @@
 
 ## Что проверить Елене
 - Подтвердить, что бетон 81 м3 относится к нужному объему для калькулятора фундаментной плиты.
-- Подтвердить трактовку ЭППС 150 мм термовставок.
+- Подтвердить готовую площадь опалубки бортов фундаментной плиты по спецификации.
+- Подтвердить длины и материал термовставок 50 мм и 100 мм по спецификации.
 - Подтвердить, использовать ли PLANTER 320 м2 из спецификации или геометрическую площадь как контроль.
 
 ## Параметры для калькулятора
@@ -30,7 +30,20 @@
 | concrete_project_volume | concrete_project_volume_m3 | needs_human_review |
 | eps_50_under_slab_volume | eps50_under_slab_volume_m3 | needs_human_review |
 | eps_100_edge_volume | eps100_edge_volume_m3 | needs_human_review |
-| eps_150_thermal_insert_volume | thermal_insert_eps150_volume_m3 | needs_human_review |
+| formwork_calc_method | formwork_calc_method | missing |
+| slab_side_formwork_area | slab_side_formwork_area_m2 | missing |
+| thermal_insert_mode | thermal_insert_mode | missing |
+| thermal_insert_50_length | thermal_insert_50_length_m | missing |
+| thermal_insert_100_length | thermal_insert_100_length_m | missing |
+| thermal_insert_50_material_spec_qty | thermal_insert_50_material_spec_qty | missing |
+| thermal_insert_100_material_spec_qty | thermal_insert_100_material_spec_qty | missing |
+| thermal_insert_material_waste_coeff | thermal_insert_material_waste_coeff | missing |
+| thermal_insert_50_pack_multiple_qty | thermal_insert_50_pack_multiple_qty | missing |
+| thermal_insert_100_pack_multiple_qty | thermal_insert_100_pack_multiple_qty | missing |
+| thermal_insert_50_work_unit_price | thermal_insert_50_work_unit_price | missing |
+| thermal_insert_100_work_unit_price | thermal_insert_100_work_unit_price | missing |
+| thermal_insert_50_material_unit_price | thermal_insert_50_material_unit_price | missing |
+| thermal_insert_100_material_unit_price | thermal_insert_100_material_unit_price | missing |
 | rebar_a500c_d12_main_grid_weight | rebar_items[1].weight_parts_kg | needs_human_review |
 | rebar_a500c_d12_thermal_insert_weight | rebar_items[1].weight_parts_kg | needs_human_review |
 | rebar_a500c_d10_weight | rebar_items[2].weight_parts_kg | needs_human_review |
@@ -45,8 +58,6 @@
 | foundation_slab_planter_standard_roll_unit_price | planter_standard_roll_unit_price | missing |
 | foundation_slab_planterband_per_membrane_roll | planterband_per_membrane_roll | missing |
 | foundation_slab_planterband_unit_price | planterband_unit_price | missing |
-| foundation_slab_slab_formwork_perimeter_m | slab_formwork_perimeter_m | missing |
-| foundation_slab_slab_edge_height_m | slab_edge_height_m | missing |
 | foundation_slab_formwork_installation_work_unit_price | formwork_installation_work_unit_price | missing |
 | foundation_slab_plywood_sheet_working_area_m2 | plywood_sheet_working_area_m2 | missing |
 | foundation_slab_plywood_unit_price | plywood_unit_price | missing |
@@ -55,18 +66,8 @@
 | foundation_slab_eps50_thickness_m | eps50_thickness_m | missing |
 | foundation_slab_eps50_laying_work_unit_price | eps50_laying_work_unit_price | missing |
 | foundation_slab_eps_waste_coeff | eps_waste_coeff | missing |
-| foundation_slab_thermal_insert_length_m | thermal_insert_length_m | missing |
-| foundation_slab_thermal_insert_piece_length_m | thermal_insert_piece_length_m | missing |
-| foundation_slab_thermal_insert_piece_width_m | thermal_insert_piece_width_m | missing |
-| foundation_slab_thermal_insert_piece_height_m | thermal_insert_piece_height_m | missing |
-| foundation_slab_thermal_insert_piece_depth_for_work_m | thermal_insert_piece_depth_for_work_m | manual_required |
-| foundation_slab_thermal_insert_piece_depth_for_eps_m | thermal_insert_piece_depth_for_eps_m | manual_required |
-| foundation_slab_thermal_insert_installation_work_unit_price | thermal_insert_installation_work_unit_price | missing |
 | foundation_slab_eps50_pack_volume_m3 | eps50_pack_volume_m3 | missing |
 | foundation_slab_eps50_unit_price | eps50_unit_price | missing |
-| foundation_slab_eps100_thickness_m | eps100_thickness_m | missing |
-| foundation_slab_eps100_pack_volume_m3 | eps100_pack_volume_m3 | missing |
-| foundation_slab_eps100_unit_price | eps100_unit_price | missing |
 | foundation_slab_rebar_crane_shifts | rebar_crane_shifts | manual_required |
 | foundation_slab_rebar_crane_unit_price | rebar_crane_unit_price | missing |
 | foundation_slab_rebar_waste_coeff | rebar_waste_coeff | missing |
@@ -122,20 +123,31 @@
 | foundation_slab_plywood_sheet_width_m | plywood_sheet_width_m | missing |
 | foundation_slab_plywood_sheet_height_m | plywood_sheet_height_m | missing |
 | foundation_slab_plywood_waste_coeff | plywood_waste_coeff | missing |
-| foundation_slab_slab_edge_height_strategy | slab_edge_height_strategy | manual_required |
 | foundation_slab_box_metal_delivery_capacity_kg | box_metal_delivery_capacity_kg | missing |
 
 ## Missing / manual_required
 | parameter_code | label | status |
 |---|---|---|
+| formwork_calc_method | Метод расчёта опалубки бортов | missing |
+| slab_side_formwork_area | Площадь опалубки бортов фундаментной плиты по спецификации | missing |
+| thermal_insert_mode | Метод расчёта термовставок | missing |
+| thermal_insert_50_length | Длина термовставок 50 мм по спецификации | missing |
+| thermal_insert_100_length | Длина термовставок 100 мм по спецификации | missing |
+| thermal_insert_50_material_spec_qty | Материал термовставок 50 мм по спецификации | missing |
+| thermal_insert_100_material_spec_qty | Материал термовставок 100 мм по спецификации | missing |
+| thermal_insert_material_waste_coeff | Коэффициент запаса материала термовставок | missing |
+| thermal_insert_50_pack_multiple_qty | Кратность упаковки материала термовставок 50 мм | missing |
+| thermal_insert_100_pack_multiple_qty | Кратность упаковки материала термовставок 100 мм | missing |
+| thermal_insert_50_work_unit_price | Ставка работы по термовставкам 50 мм | missing |
+| thermal_insert_100_work_unit_price | Ставка работы по термовставкам 100 мм | missing |
+| thermal_insert_50_material_unit_price | Цена материала термовставок 50 мм | missing |
+| thermal_insert_100_material_unit_price | Цена материала термовставок 100 мм | missing |
 | foundation_slab_membrane_installation_work_unit_price | membrane installation work unit price | missing |
 | foundation_slab_membrane_overlap_coeff | membrane overlap coeff | missing |
 | foundation_slab_membrane_roll_area_m2 | Площадь одного рулона мембраны | missing |
 | foundation_slab_planter_standard_roll_unit_price | planter standard roll unit price | missing |
 | foundation_slab_planterband_per_membrane_roll | Количество PLANTERBAND на один рулон мембраны | missing |
 | foundation_slab_planterband_unit_price | planterband unit price | missing |
-| foundation_slab_slab_formwork_perimeter_m | slab formwork perimeter m | missing |
-| foundation_slab_slab_edge_height_m | slab edge height m | missing |
 | foundation_slab_formwork_installation_work_unit_price | formwork installation work unit price | missing |
 | foundation_slab_plywood_sheet_working_area_m2 | Рабочая площадь листа фанеры | missing |
 | foundation_slab_plywood_unit_price | plywood unit price | missing |
@@ -144,18 +156,8 @@
 | foundation_slab_eps50_thickness_m | eps50 thickness m | missing |
 | foundation_slab_eps50_laying_work_unit_price | eps50 laying work unit price | missing |
 | foundation_slab_eps_waste_coeff | eps waste coeff | missing |
-| foundation_slab_thermal_insert_length_m | thermal insert length m | missing |
-| foundation_slab_thermal_insert_piece_length_m | thermal insert piece length m | missing |
-| foundation_slab_thermal_insert_piece_width_m | thermal insert piece width m | missing |
-| foundation_slab_thermal_insert_piece_height_m | thermal insert piece height m | missing |
-| foundation_slab_thermal_insert_piece_depth_for_work_m | Глубина элемента термовставки для расчета работ | manual_required |
-| foundation_slab_thermal_insert_piece_depth_for_eps_m | Глубина элемента термовставки для расчета ЭППС | manual_required |
-| foundation_slab_thermal_insert_installation_work_unit_price | thermal insert installation work unit price | missing |
 | foundation_slab_eps50_pack_volume_m3 | eps50 pack volume m3 | missing |
 | foundation_slab_eps50_unit_price | eps50 unit price | missing |
-| foundation_slab_eps100_thickness_m | eps100 thickness m | missing |
-| foundation_slab_eps100_pack_volume_m3 | eps100 pack volume m3 | missing |
-| foundation_slab_eps100_unit_price | eps100 unit price | missing |
 | foundation_slab_rebar_crane_shifts | Количество смен крана для подачи арматуры | manual_required |
 | foundation_slab_rebar_crane_unit_price | rebar crane unit price | missing |
 | foundation_slab_rebar_waste_coeff | rebar waste coeff | missing |
@@ -211,5 +213,4 @@
 | foundation_slab_plywood_sheet_width_m | Ширина листа фанеры | missing |
 | foundation_slab_plywood_sheet_height_m | Высота листа фанеры | missing |
 | foundation_slab_plywood_waste_coeff | plywood waste coeff | missing |
-| foundation_slab_slab_edge_height_strategy | Правило выбора высоты торца плиты | manual_required |
 | foundation_slab_box_metal_delivery_capacity_kg | box metal delivery capacity kg | missing |

@@ -1,0 +1,14 @@
+{
+  "recommended_metal_delivery_allocation.total_box_metal_weight_kg": 19763,
+  "recommended_metal_delivery_allocation.total_trucks": 2,
+  "recommended_metal_delivery_allocation.total_delivery_cost": 44000,
+  "recommended_metal_delivery_allocation.sections.0.section_code": "foundation_slab",
+  "recommended_metal_delivery_allocation.sections.0.allocated_trucks": 1,
+  "recommended_metal_delivery_allocation.sections.1.section_code": "load_bearing_walls_lintels",
+  "recommended_metal_delivery_allocation.sections.1.allocated_trucks": 1,
+  "recommended_metal_delivery_allocation.sections.2.section_code": "floor_slab_1",
+  "recommended_metal_delivery_allocation.sections.2.allocated_trucks": 0,
+  "recommended_metal_delivery_allocation.sections.3.section_code": "floor_slab_2",
+  "recommended_metal_delivery_allocation.sections.3.allocated_trucks": 0,
+  "totals_policy.metal_delivery_added_to_grand_total": false
+}
