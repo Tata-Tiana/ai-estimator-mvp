@@ -43,10 +43,66 @@ git status
 
 ## Контрольные точки
 
-### 2026-06-09 — Финализированы production-стандарты калькулятора фундаментной плиты
+### 2026-06-09 — Обновлены production-стандарты калькулятора земляных работ
 
 - Ветка: `feature/foundation-slab-calculator-standards`
 - Коммит: будет создан текущей фиксацией
+
+Что изменено:
+
+- добавлен `excavator_shifts_calc_method`;
+- production-режим `standard_volume_productivity` считает смены JCB по формуле `ceil((pit_area_m2 * pit_excavation_depth_m) / 80)`;
+- добавлен проектный параметр `pit_excavation_depth_m`;
+- добавлен системный default `excavator_productivity_m3_per_shift = 80`;
+- уточнён production-режим ручной разработки грунта `standard_routes`;
+- готовый `trench_volume_m3` из спецификации теперь имеет приоритет над расчётом по трассам;
+- если готового объёма траншей нет, используется расчёт `sum(length_m * depth_m * 0.4)` по `trench_routes`;
+- один и тот же `trench_volume_total_m3` используется для ручной разработки и песка в траншеи;
+- добавлен `communications_length_calc_method`;
+- production-режим `pipe_items` считает `communications_length_m` из труб спецификации;
+- старые прямые значения `excavator_shifts`, `manual_excavation_quantity_for_estimate_m3`, `communications_length_m` сохранены как legacy для старых кейсов.
+
+Новые кейсы:
+
+```text
+test_excavator_shifts_standard -> 17 ok / 0 mismatch
+test_manual_excavation_standard_routes -> 18 ok / 0 mismatch
+test_manual_excavation_spec_trench_volume -> 18 ok / 0 mismatch
+test_communications_pipe_items -> 21 ok / 0 mismatch
+```
+
+Проверки:
+
+```text
+horoshevka_14 -> ok (76/76)
+test_communications_pipe_items -> ok (21/21)
+test_excavator_shifts_standard -> ok (17/17)
+test_manual_excavation_spec_trench_volume -> ok (18/18)
+test_manual_excavation_standard_routes -> ok (18/18)
+usv_yusupovo_village -> ok (100/100)
+usv_yusupovo_village_live_prices -> ok (0/0)
+py_compile -> ok
+```
+
+Документы:
+
+```text
+docs/report_earthworks_calculator.md
+docs/report_earthworks_excavator_shifts_refactor.md
+docs/report_earthworks_manual_excavation_refactor.md
+docs/report_earthworks_communications_refactor.md
+```
+
+Важно:
+
+- `pit_excavation_depth_m` — глубина механизированной выемки, не ручная доработка;
+- `manual_refinement_depth_m = 0.08` — ручная доработка дна котлована;
+- старые `expected.json` не менялись.
+
+### 2026-06-09 — Финализированы production-стандарты калькулятора фундаментной плиты
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: `3682da0 Finalize foundation slab standards and metal delivery allocation`
 
 Что закреплено:
 
@@ -81,7 +137,7 @@ docs/report_rebar_spec_length_refactor.md
 ### 2026-06-09 — Добавлен allocator доставки металла на уровне box_calculator
 
 - Ветка: `feature/foundation-slab-calculator-standards`
-- Коммит: будет создан текущей фиксацией
+- Коммит: `3682da0 Finalize foundation slab standards and metal delivery allocation`
 
 Что добавлено:
 

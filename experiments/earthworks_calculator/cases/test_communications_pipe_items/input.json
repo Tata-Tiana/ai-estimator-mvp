@@ -1,0 +1,54 @@
+{
+  "project_name": "test_communications_pipe_items",
+  "case_meta": {
+    "validated_with_elena": false,
+    "confidence": "formula_test"
+  },
+  "manual_excavation_calc_method": "legacy_manual_override",
+  "pit_area_m2": 0,
+  "trench_volume_m3": 0,
+  "sand_base_volume_m3": 0,
+  "geotextile_area_m2": 0,
+  "communications_length_calc_method": "pipe_items",
+  "communications_pipe_items": [
+    {
+      "code": "pipe_1m",
+      "name": "Труба 1 м",
+      "pipe_length_m": 1,
+      "quantity": 12,
+      "include_in_communications": true
+    },
+    {
+      "code": "pipe_2m",
+      "name": "Труба 2 м",
+      "pipe_length_m": 2,
+      "quantity": 5,
+      "include_in_communications": true
+    },
+    {
+      "code": "pipe_3m",
+      "name": "Труба 3 м",
+      "pipe_length_m": 3,
+      "quantity": 4,
+      "include_in_communications": true
+    },
+    {
+      "code": "corrugated_pipe",
+      "name": "Труба гофрированная",
+      "total_length_m": 25,
+      "include_in_communications": true
+    }
+  ],
+  "axis_marking_shifts": 0,
+  "excavator_shifts": 0,
+  "geotextile_laying_area_m2": 0,
+  "consumables_amount": 0,
+  "enabled_lines": [
+    "communications_work",
+    "communications_material"
+  ],
+  "internal_prices": {
+    "communications_work_unit_price": 350,
+    "communications_material_unit_price": 650
+  }
+}

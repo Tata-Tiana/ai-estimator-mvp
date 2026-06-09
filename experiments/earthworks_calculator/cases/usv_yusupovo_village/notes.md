@@ -49,6 +49,58 @@
 
 Именно это количество используется только для строки внутренней сметы. Объёмный расчёт при этом остаётся `manual_excavation_total_m3 = 44.69`.
 
+## Legacy по ручной разработке грунта
+
+Этот кейс использует режим `manual_excavation_calc_method = legacy_manual_override`.
+
+Ручное количество `manual_excavation_quantity_for_estimate_m3` оставлено только для повторения старой сметы ЮСВ.
+
+В новом production-стандарте ручной override не используется. Ручная разработка считается автоматически:
+
+```text
+manual_excavation_total_m3 = pit_area_m2 * 0.08 + сумма объемов траншей по трассам К1/К2/ВК/ЭО
+```
+
+Ширина траншеи в новом стандарте является системной настройкой `0.4 м`, а длины и глубины трасс приходят из спецификации проекта.
+
+Старый `expected.json` не менять.
+
+## Legacy по сменам экскаватора
+
+Этот кейс использует режим `excavator_shifts_calc_method = legacy_manual_shifts`.
+
+Прямое количество `excavator_shifts = 3` оставлено для повторения старой сметы ЮСВ.
+
+В новом production-стандарте количество смен экскаватора считается автоматически:
+
+```text
+machine_excavation_volume_m3 = pit_area_m2 * pit_excavation_depth_m
+excavator_shifts = ceil(machine_excavation_volume_m3 / 80)
+```
+
+Важно: `pit_excavation_depth_m` — глубина механизированной выемки котлована, а `manual_refinement_depth_m = 0.08` — только ручная доработка дна котлована.
+
+Старый `expected.json` не менять.
+
+## Legacy по длине коммуникаций
+
+Этот кейс использует режим `communications_length_calc_method = legacy_direct_length`.
+
+Прямое значение `communications_length_m = 115` оставлено для повторения старой сметы ЮСВ.
+
+В новом production-стандарте `communications_length_m` считается автоматически как сумма труб из спецификации:
+
+```text
+communications_length_m = sum(pipe_length_m * quantity)
+```
+
+Если позиция спецификации уже содержит готовую длину, используется `total_length_m`.
+
+Рассчитанная длина используется в двух строках:
+
+- `communications_work`;
+- `communications_material`.
+
 ## Что ещё нужно добавить в логику позже
 
 | Блок | Статус | Что нужно уточнить |

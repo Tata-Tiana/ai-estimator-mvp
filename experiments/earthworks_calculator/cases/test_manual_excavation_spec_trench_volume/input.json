@@ -1,0 +1,27 @@
+{
+  "project_name": "test_manual_excavation_spec_trench_volume",
+  "case_meta": {
+    "validated_with_elena": false,
+    "confidence": "formula_test"
+  },
+  "manual_excavation_calc_method": "standard_routes",
+  "pit_area_m2": 330,
+  "manual_refinement_depth_m": 0.08,
+  "trench_volume_m3": 18.29,
+  "trench_width_m": 0.4,
+  "trench_routes": [],
+  "sand_base_volume_m3": 0,
+  "sand_compaction_coeff": 1.3,
+  "geotextile_area_m2": 0,
+  "communications_length_m": 0,
+  "axis_marking_shifts": 0,
+  "excavator_shifts": 0,
+  "geotextile_laying_area_m2": 0,
+  "consumables_amount": 0,
+  "enabled_lines": [
+    "manual_excavation"
+  ],
+  "internal_prices": {
+    "manual_excavation_work_unit_price": 1000
+  }
+}

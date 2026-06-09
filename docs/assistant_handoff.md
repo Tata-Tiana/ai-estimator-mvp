@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-04`.
+Дата актуализации: `2026-06-09`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -9,13 +9,13 @@
 Текущая рабочая ветка:
 
 ```text
-feature/ai-project-card
+feature/foundation-slab-calculator-standards
 ```
 
 Коммит расчётной базы:
 
 ```text
-Add live pricing mode for all calculators
+3682da0 Finalize foundation slab standards and metal delivery allocation
 ```
 
 Смысл коммита:
@@ -225,6 +225,40 @@ docs/report_excel_formula_poc_waterproofing.md
 ```
 
 Смысл POC: проверить привычный Excel-вид сметчиц с живыми A1-формулами. Видимый лист `Смета`, белая зона копирует серую, правая область `P:V` — построчные helper-ячейки, цены остаются в `K/M`. Это не production exporter и не часть `box_calculator`.
+
+После этого обновлён калькулятор земляных работ под новые стандарты Елены:
+
+```text
+experiments/earthworks_calculator/
+```
+
+Новые production-режимы:
+
+- `excavator_shifts_calc_method = "standard_volume_productivity"` — смены JCB считаются как `ceil((pit_area_m2 * pit_excavation_depth_m) / 80)`;
+- `manual_excavation_calc_method = "standard_routes"` — ручная разработка считается как `pit_area_m2 * 0.08 + trench_volume_total_m3`;
+- `communications_length_calc_method = "pipe_items"` — длина коммуникаций считается из труб спецификации.
+
+Правило траншей:
+
+- если спецификация даёт готовый `trench_volume_m3`, он имеет приоритет;
+- если готового объёма нет, траншеи считаются по трассам `length_m * depth_m * 0.4`;
+- один и тот же `trench_volume_total_m3` используется для ручной разработки грунта и песка в траншеи.
+
+Важно по глубинам:
+
+- `pit_excavation_depth_m` — глубина механизированной выемки котлована;
+- `manual_refinement_depth_m = 0.08` — ручная доработка дна котлована.
+
+Новые кейсы:
+
+```text
+test_excavator_shifts_standard -> 17 ok / 0 mismatch
+test_manual_excavation_standard_routes -> 18 ok / 0 mismatch
+test_manual_excavation_spec_trench_volume -> 18 ok / 0 mismatch
+test_communications_pipe_items -> 21 ok / 0 mismatch
+```
+
+Полный `run_all_cases.py` по земляным работам проходит без mismatch.
 
 ## Суть проекта
 
@@ -463,6 +497,11 @@ experiments/earthworks_calculator/
 ```text
 usv_yusupovo_village -> ok (100/100)
 horoshevka_14 -> ok (76/76)
+test_communications_pipe_items -> ok (21/21)
+test_excavator_shifts_standard -> ok (17/17)
+test_manual_excavation_spec_trench_volume -> ok (18/18)
+test_manual_excavation_standard_routes -> ok (18/18)
+usv_yusupovo_village_live_prices -> ok (0/0)
 ```
 
 Итоги:
@@ -483,7 +522,18 @@ horoshevka_14:
 
 ```text
 docs/report_earthworks_calculator.md
+docs/report_earthworks_excavator_shifts_refactor.md
+docs/report_earthworks_manual_excavation_refactor.md
+docs/report_earthworks_communications_refactor.md
 ```
+
+Production-стандарты:
+
+- смены JCB считаются от объёма механизированной выемки: `ceil((pit_area_m2 * pit_excavation_depth_m) / 80)`;
+- ручная разработка: `pit_area_m2 * 0.08 + trench_volume_total_m3`;
+- `trench_volume_total_m3` берётся готовым `trench_volume_m3` из спецификации или считается по трассам `length_m * depth_m * 0.4`;
+- `communications_length_m` считается из труб спецификации;
+- legacy direct inputs оставлены только для старых кейсов.
 
 ### 5. Калькулятор фундаментной плиты
 

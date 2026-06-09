@@ -2,23 +2,23 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-04`.
+Дата актуализации: `2026-06-09`.
 
 ## 0. Последняя расчётная контрольная точка
 
 Текущая рабочая ветка:
 
 ```text
-feature/ai-project-card
+feature/foundation-slab-calculator-standards
 ```
 
 Коммит расчётной базы:
 
 ```text
-Add live pricing mode for all calculators
+3682da0 Finalize foundation slab standards and metal delivery allocation
 ```
 
-Это актуальная расчётная контрольная точка проекта. В неё вошли:
+Это актуальная зафиксированная расчётная контрольная точка проекта перед текущими правками земляных работ. В неё вошли:
 
 - проектная структура PDF/AI экспериментов;
 - калькулятор земляных работ;
@@ -376,6 +376,78 @@ docs/report_excel_formula_poc_waterproofing.md
 
 Важно: это не production exporter и не часть `box_calculator`.
 
+## 0.8. Земляные Работы: Production-Стандарты После Созвона С Еленой
+
+После уточнений Елены обновлён калькулятор земляных работ:
+
+```text
+experiments/earthworks_calculator/
+```
+
+Добавлены production-режимы:
+
+- `excavator_shifts_calc_method = "standard_volume_productivity"` — смены экскаватора считаются от объёма механизированной выемки;
+- `manual_excavation_calc_method = "standard_routes"` — ручная разработка считается от ручной доработки котлована и выбранного объёма траншей;
+- `communications_length_calc_method = "pipe_items"` — длина коммуникаций считается из труб спецификации.
+
+Ключевые формулы:
+
+```text
+machine_excavation_volume_m3 = pit_area_m2 * pit_excavation_depth_m
+excavator_shifts = ceil(machine_excavation_volume_m3 / 80)
+
+manual_pit_volume_m3 = pit_area_m2 * 0.08
+trench_volume_total_m3 = trench_volume_m3 из спецификации
+  или sum(route_length_m * route_depth_m * 0.4)
+manual_excavation_total_m3 = manual_pit_volume_m3 + trench_volume_total_m3
+
+compacted_sand_trenches_m3 = trench_volume_total_m3 * sand_compaction_coeff
+
+communications_length_m = sum(pipe_length_m * quantity)
+  или sum(total_length_m)
+```
+
+Важно:
+
+- `pit_excavation_depth_m` — глубина механизированной выемки котлована из проекта;
+- `manual_refinement_depth_m = 0.08` — системная ручная доработка дна котлована;
+- `trench_width_m = 0.4` — системная ширина траншеи;
+- `excavator_productivity_m3_per_shift = 80` — системная производительность JCB по методике Елены;
+- готовый `trench_volume_m3` из спецификации имеет приоритет над расчётом по трассам;
+- один и тот же `trench_volume_total_m3` используется для ручной разработки и песка в траншеи;
+- старые прямые значения `excavator_shifts`, `manual_excavation_quantity_for_estimate_m3`, `communications_length_m` сохранены только для legacy-кейсов.
+
+Новые тестовые кейсы:
+
+```text
+test_excavator_shifts_standard -> 17 ok / 0 mismatch
+test_manual_excavation_standard_routes -> 18 ok / 0 mismatch
+test_manual_excavation_spec_trench_volume -> 18 ok / 0 mismatch
+test_communications_pipe_items -> 21 ok / 0 mismatch
+```
+
+Полная проверка:
+
+```text
+horoshevka_14 -> ok (76/76)
+test_communications_pipe_items -> ok (21/21)
+test_excavator_shifts_standard -> ok (17/17)
+test_manual_excavation_spec_trench_volume -> ok (18/18)
+test_manual_excavation_standard_routes -> ok (18/18)
+usv_yusupovo_village -> ok (100/100)
+usv_yusupovo_village_live_prices -> ok (0/0)
+py_compile -> ok
+```
+
+Документы:
+
+```text
+docs/report_earthworks_calculator.md
+docs/report_earthworks_excavator_shifts_refactor.md
+docs/report_earthworks_manual_excavation_refactor.md
+docs/report_earthworks_communications_refactor.md
+```
+
 ## 1. Цель проекта
 
 `ai-estimator-mvp` — MVP AI-сметчика для частных домов.
@@ -671,12 +743,14 @@ experiments/earthworks_calculator/
 
 Что считает сейчас:
 
+- смены экскаватора от объёма механизированной выемки в production-режиме;
 - ручную доработку котлована;
-- объём траншей;
+- объём траншей: готовый объём из спецификации или расчёт по трассам;
 - общую ручную разработку;
 - песок под котлован и траншеи с коэффициентом уплотнения;
 - заказ песка с округлением вверх к шагу машины;
 - геотекстиль с нахлёстом и рулонами;
+- длину технологических вводов коммуникаций по трубам спецификации в production-режиме;
 - серые внутренние строки материалов и работ;
 - внутренние итоги `internal_materials_total`, `internal_works_total`, `internal_section_total`.
 
@@ -708,6 +782,18 @@ experiments/earthworks_calculator/
   - используются overrides по ручной разработке, песку и геотекстилю;
   - итог: `559364`.
 
+- `test_excavator_shifts_standard`
+  - проверяет расчёт смен JCB по формуле `ceil((pit_area_m2 * pit_excavation_depth_m) / 80)`.
+
+- `test_manual_excavation_standard_routes`
+  - проверяет расчёт ручной разработки по трассам траншей.
+
+- `test_manual_excavation_spec_trench_volume`
+  - проверяет приоритет готового `trench_volume_m3` из спецификации.
+
+- `test_communications_pipe_items`
+  - проверяет расчёт `communications_length_m` из труб спецификации.
+
 Запуск одного кейса:
 
 ```bash
@@ -724,7 +810,12 @@ experiments/earthworks_calculator/
 
 ```text
 horoshevka_14 -> ok (76/76)
+test_communications_pipe_items -> ok (21/21)
+test_excavator_shifts_standard -> ok (17/17)
+test_manual_excavation_spec_trench_volume -> ok (18/18)
+test_manual_excavation_standard_routes -> ok (18/18)
 usv_yusupovo_village -> ok (100/100)
+usv_yusupovo_village_live_prices -> ok (0/0)
 ```
 
 ### 6.4. Meeting Analysis: `experiments/meeting_analysis/`

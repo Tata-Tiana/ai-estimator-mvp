@@ -7,14 +7,19 @@
 - `pit_area_m2`: `330`
 - `case_meta`: `{'validated_with_elena': True, 'confidence': 'high'}`
 - `assumptions`: `{'manual_excavation_override': True, 'sand_override': False, 'geotextile_override': False}`
+- `excavator_shifts_calc_method`: `legacy_manual_shifts`
+- `excavator_productivity_m3_per_shift`: `80.0`
+- `manual_excavation_calc_method`: `legacy_manual_override`
 - `manual_refinement_depth_m`: `0.08`
 - `trench_volume_m3`: `18.29`
+- `trench_width_m`: `0.4`
 - `sand_base_volume_m3`: `96.6`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `20`
 - `geotextile_area_m2`: `330`
 - `geotextile_overlap_coeff`: `1.1`
 - `geotextile_roll_area_m2`: `100`
+- `communications_length_calc_method`: `legacy_direct_length`
 - `communications_length_m`: `115`
 - `axis_marking_shifts`: `1`
 - `excavator_shifts`: `3`
@@ -26,11 +31,18 @@
 - `internal_prices`: `{'axis_marking_work_unit_price': 20000, 'excavator_material_unit_price': 26000, 'excavator_work_unit_price': 3500, 'manual_excavation_work_unit_price': 1400, 'geotextile_laying_work_unit_price': 35, 'geotextile_material_unit_price': 109, 'sand_filling_work_unit_price': 1200, 'sand_material_unit_price': 1550, 'sand_manual_moving_work_unit_price': 0, 'communications_work_unit_price': 350, 'communications_material_unit_price': 650}`
 
 ## Формулы
-- Ручная доработка котлована: `manual_pit_volume = pit_area_m2 * manual_refinement_depth_m`
-- Объём траншей: `trench_volume = trench_length_m * trench_depth_m * trench_width_m` или готовый `trench_volume_m3`
-- Общая ручная разработка: `manual_excavation_total = manual_pit_volume + trench_volume`
+- Смены экскаватора legacy: используется готовое `excavator_shifts`.
+- Смены экскаватора standard: `machine_excavation_volume = pit_area_m2 * pit_excavation_depth_m`; `excavator_shifts = ceil(machine_excavation_volume / excavator_productivity_m3_per_shift)`.
+- `pit_excavation_depth_m` — глубина механизированной выемки; `manual_refinement_depth_m` — ручная доработка дна котлована.
+- Ручная разработка legacy: строка может брать `manual_excavation_quantity_for_estimate_m3`, если включён `legacy_manual_override`.
+- Ручная разработка standard: `manual_excavation_total = pit_area_m2 * 0.08 + trench_volume_total_m3`.
+- Доработка котлована: `manual_pit_volume = pit_area_m2 * manual_refinement_depth_m`.
+- Объём траншей legacy: `trench_volume = trench_length_m * trench_depth_m * trench_width_m` или готовый `trench_volume_m3`.
+- Объём траншей standard: если есть готовый `trench_volume_m3` из спецификации, берём его; иначе считаем сумму `length_m * depth_m * trench_width_m` по `trench_routes`.
+- Коммуникации legacy: используется готовое `communications_length_m`.
+- Коммуникации standard: `communications_length_m = sum(pipe_length_m * quantity)` или сумма готовых `total_length_m` по трубам из спецификации.
 - Песок под котлован: `compacted_sand_base = sand_base_volume_m3 * sand_compaction_coeff`
-- Песок в траншеи: `compacted_sand_trenches = trench_volume_m3 * sand_compaction_coeff`
+- Песок в траншеи: `compacted_sand_trenches = trench_volume_total_m3 * sand_compaction_coeff`
 - Общий песок: `sand_total = compacted_sand_base + compacted_sand_trenches`
 - Песок к заказу: `sand_order_volume = ceil(sand_total / sand_truck_step_m3) * sand_truck_step_m3`
 - Геотекстиль: `geotextile_with_overlap = geotextile_area_m2 * geotextile_overlap_coeff`
@@ -41,7 +53,18 @@
 ## Объёмы
 | Показатель | Значение |
 | --- | ---: |
+| `excavator_shifts_calc_method` | `legacy_manual_shifts` |
+| `excavator_shifts_source` | `legacy_manual_shifts` |
+| `pit_excavation_depth_m` | `None` |
+| `machine_excavation_volume_m3` | `None` |
+| `excavator_productivity_m3_per_shift` | `80.0` |
+| `excavator_shifts` | `3.0` |
+| `manual_excavation_calc_method` | `legacy_manual_override` |
 | `manual_pit_volume_m3` | `26.4` |
+| `manual_refinement_depth_m` | `0.08` |
+| `trench_width_m` | `0.4` |
+| `trench_volume_source` | `legacy_direct_volume` |
+| `trench_volume_total_m3` | `18.29` |
 | `trench_volume_m3` | `18.29` |
 | `manual_excavation_total_m3` | `44.69` |
 | `compacted_sand_base_m3` | `125.58` |
@@ -50,6 +73,11 @@
 | `sand_order_volume_m3` | `160` |
 | `geotextile_with_overlap_m2` | `363.0` |
 | `geotextile_rolls` | `4` |
+| `communications_length_calc_method` | `legacy_direct_length` |
+| `communications_length_m` | `115.0` |
+
+
+
 
 ## Строки серой внутренней сметы
 | code | name | quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |

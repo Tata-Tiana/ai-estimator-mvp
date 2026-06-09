@@ -1,0 +1,33 @@
+{
+  "volumes": {
+    "communications_length_calc_method": "pipe_items",
+    "communications_length_m": 59
+  },
+  "estimate_lines": {
+    "communications_work": {
+      "name": "Закладка технологических входов коммуникаций до границы дома",
+      "unit": "мп",
+      "quantity": 59,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 350,
+      "work_total": 20650,
+      "line_total": 20650
+    },
+    "communications_material": {
+      "name": "Материалы для устройства входов коммуникаций",
+      "unit": "мп",
+      "quantity": 59,
+      "material_unit_price": 650,
+      "material_total": 38350,
+      "work_unit_price": 0,
+      "work_total": 0,
+      "line_total": 38350
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 38350,
+    "internal_works_total": 20650,
+    "internal_section_total": 59000
+  }
+}

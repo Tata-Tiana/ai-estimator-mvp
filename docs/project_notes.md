@@ -1,6 +1,6 @@
 # Project Notes
 
-Дата актуализации: `2026-06-04`.
+Дата актуализации: `2026-06-09`.
 
 ## Последняя расчётная контрольная точка
 
@@ -139,6 +139,26 @@ docs/report_excel_formula_poc_waterproofing.md
 
 Решение POC: видимый лист `Смета`, белая зона копирует серую, правая область `P:V` — построчные helper-ячейки, цены остаются в `K/M`. Это не production exporter и не часть `box_calculator`.
 
+Новые стандарты земляных работ после созвона с Еленой:
+
+```text
+experiments/earthworks_calculator/
+```
+
+- `excavator_shifts_calc_method = "standard_volume_productivity"` — смены экскаватора считаются от объёма механизированной выемки;
+- `manual_excavation_calc_method = "standard_routes"` — ручная разработка считается от доработки котлована и выбранного объёма траншей;
+- `communications_length_calc_method = "pipe_items"` — длина коммуникаций считается из труб спецификации.
+
+Формулы:
+
+```text
+excavator_shifts = ceil((pit_area_m2 * pit_excavation_depth_m) / 80)
+manual_excavation_total_m3 = pit_area_m2 * 0.08 + trench_volume_total_m3
+communications_length_m = sum(pipe_length_m * quantity) или sum(total_length_m)
+```
+
+`trench_volume_total_m3` сначала берётся готовым `trench_volume_m3` из спецификации; если его нет, считается по трассам `length_m * depth_m * 0.4`.
+
 ## Главные договорённости
 
 - AI не считает смету, а помогает достать входные параметры.
@@ -271,7 +291,12 @@ experiments/earthworks_calculator/cases/usv_yusupovo_village/
 
 ```text
 horoshevka_14 -> ok (76/76), итог 559364
+test_communications_pipe_items -> ok (21/21)
+test_excavator_shifts_standard -> ok (17/17)
+test_manual_excavation_spec_trench_volume -> ok (18/18)
+test_manual_excavation_standard_routes -> ok (18/18)
 usv_yusupovo_village -> ok (100/100), итог 805020
+usv_yusupovo_village_live_prices -> ok (0/0)
 ```
 
 Команда:

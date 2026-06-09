@@ -1,0 +1,29 @@
+{
+  "project_name": "test_excavator_shifts_standard",
+  "case_meta": {
+    "validated_with_elena": false,
+    "confidence": "formula_test"
+  },
+  "excavator_shifts_calc_method": "standard_volume_productivity",
+  "pit_area_m2": 330,
+  "pit_excavation_depth_m": 0.6,
+  "excavator_productivity_m3_per_shift": 80,
+  "manual_excavation_calc_method": "legacy_manual_override",
+  "manual_refinement_depth_m": 0.08,
+  "trench_volume_m3": 0,
+  "sand_base_volume_m3": 0,
+  "geotextile_area_m2": 0,
+  "communications_length_calc_method": "legacy_direct_length",
+  "communications_length_m": 0,
+  "axis_marking_shifts": 0,
+  "excavator_shifts": 0,
+  "geotextile_laying_area_m2": 0,
+  "consumables_amount": 0,
+  "enabled_lines": [
+    "excavator_jcb"
+  ],
+  "internal_prices": {
+    "excavator_material_unit_price": 26000,
+    "excavator_work_unit_price": 3500
+  }
+}

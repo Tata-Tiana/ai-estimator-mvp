@@ -9,6 +9,8 @@
     "sand_override": false,
     "geotextile_override": false
   },
+  "excavator_shifts_calc_method": "legacy_manual_shifts",
+  "manual_excavation_calc_method": "legacy_manual_override",
   "pit_area_m2": 330,
   "manual_refinement_depth_m": 0.08,
   "trench_volume_m3": 18.29,
@@ -18,6 +20,7 @@
   "geotextile_area_m2": 330,
   "geotextile_overlap_coeff": 1.10,
   "geotextile_roll_area_m2": 100,
+  "communications_length_calc_method": "legacy_direct_length",
   "communications_length_m": 115,
   "axis_marking_shifts": 1,
   "excavator_shifts": 3,

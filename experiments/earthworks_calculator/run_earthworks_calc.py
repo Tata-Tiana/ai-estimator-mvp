@@ -150,7 +150,57 @@ def format_comparison_markdown(comparison: list[dict[str, Any]]) -> list[str]:
 def format_dict_table(rows: dict[str, Any]) -> list[str]:
     lines = ["| Показатель | Значение |", "| --- | ---: |"]
     for key, value in rows.items():
+        if isinstance(value, (list, dict)):
+            continue
         lines.append(f"| `{key}` | `{value}` |")
+    return lines
+
+
+def format_trench_routes_markdown(volume_result: dict[str, Any]) -> list[str]:
+    routes = volume_result.get("trench_routes") or []
+    if not routes:
+        return []
+
+    lines = [
+        "## Трассы траншей",
+        "",
+        "| route_code | name | length_m | depth_m | width_m | volume_m3 |",
+        "| --- | --- | ---: | ---: | ---: | ---: |",
+    ]
+    for route in routes:
+        lines.append(
+            "| "
+            f"`{route['route_code']}` | "
+            f"{route.get('name', '')} | "
+            f"`{route['length_m']}` | "
+            f"`{route['depth_m']}` | "
+            f"`{route['width_m']}` | "
+            f"`{route['volume_m3']}` |"
+        )
+    return lines
+
+
+def format_communications_pipe_items_markdown(volume_result: dict[str, Any]) -> list[str]:
+    items = volume_result.get("communications_pipe_items") or []
+    if not items:
+        return []
+
+    lines = [
+        "## Трубы технологических вводов",
+        "",
+        "| code | name | pipe_length_m | quantity | total_length_m | include_in_communications |",
+        "| --- | --- | ---: | ---: | ---: | --- |",
+    ]
+    for item in items:
+        lines.append(
+            "| "
+            f"`{item['code']}` | "
+            f"{item.get('name', '')} | "
+            f"`{item.get('pipe_length_m')}` | "
+            f"`{item.get('quantity')}` | "
+            f"`{item['total_length_m']}` | "
+            f"`{item['include_in_communications']}` |"
+        )
     return lines
 
 
@@ -187,6 +237,24 @@ def format_markdown(
     ]
 
     volume_lines = format_dict_table(calculation["volume_result"])
+    trench_routes_lines = format_trench_routes_markdown(calculation["volume_result"])
+    trench_volume_source = calculation["volume_result"].get("trench_volume_source")
+    trench_source_lines = []
+    if trench_volume_source == "spec_volume":
+        trench_source_lines = [
+            "## Источник объёма траншей",
+            "",
+            "Объём траншей взят готовым значением из спецификации.",
+        ]
+    elif trench_volume_source == "routes_calculated":
+        trench_source_lines = [
+            "## Источник объёма траншей",
+            "",
+            "Объём траншей рассчитан по трассам.",
+        ]
+    communications_pipe_items_lines = format_communications_pipe_items_markdown(
+        calculation["volume_result"]
+    )
     estimate_lines = format_estimate_lines_markdown(calculation["estimate_lines"])
     totals_lines = format_dict_table(calculation["internal_totals"])
     comparison_lines = format_comparison_markdown(comparison)
@@ -210,11 +278,18 @@ def format_markdown(
             *input_lines,
             "",
             "## Формулы",
-            "- Ручная доработка котлована: `manual_pit_volume = pit_area_m2 * manual_refinement_depth_m`",
-            "- Объём траншей: `trench_volume = trench_length_m * trench_depth_m * trench_width_m` или готовый `trench_volume_m3`",
-            "- Общая ручная разработка: `manual_excavation_total = manual_pit_volume + trench_volume`",
+            "- Смены экскаватора legacy: используется готовое `excavator_shifts`.",
+            "- Смены экскаватора standard: `machine_excavation_volume = pit_area_m2 * pit_excavation_depth_m`; `excavator_shifts = ceil(machine_excavation_volume / excavator_productivity_m3_per_shift)`.",
+            "- `pit_excavation_depth_m` — глубина механизированной выемки; `manual_refinement_depth_m` — ручная доработка дна котлована.",
+            "- Ручная разработка legacy: строка может брать `manual_excavation_quantity_for_estimate_m3`, если включён `legacy_manual_override`.",
+            "- Ручная разработка standard: `manual_excavation_total = pit_area_m2 * 0.08 + trench_volume_total_m3`.",
+            "- Доработка котлована: `manual_pit_volume = pit_area_m2 * manual_refinement_depth_m`.",
+            "- Объём траншей legacy: `trench_volume = trench_length_m * trench_depth_m * trench_width_m` или готовый `trench_volume_m3`.",
+            "- Объём траншей standard: если есть готовый `trench_volume_m3` из спецификации, берём его; иначе считаем сумму `length_m * depth_m * trench_width_m` по `trench_routes`.",
+            "- Коммуникации legacy: используется готовое `communications_length_m`.",
+            "- Коммуникации standard: `communications_length_m = sum(pipe_length_m * quantity)` или сумма готовых `total_length_m` по трубам из спецификации.",
             "- Песок под котлован: `compacted_sand_base = sand_base_volume_m3 * sand_compaction_coeff`",
-            "- Песок в траншеи: `compacted_sand_trenches = trench_volume_m3 * sand_compaction_coeff`",
+            "- Песок в траншеи: `compacted_sand_trenches = trench_volume_total_m3 * sand_compaction_coeff`",
             "- Общий песок: `sand_total = compacted_sand_base + compacted_sand_trenches`",
             "- Песок к заказу: `sand_order_volume = ceil(sand_total / sand_truck_step_m3) * sand_truck_step_m3`",
             "- Геотекстиль: `geotextile_with_overlap = geotextile_area_m2 * geotextile_overlap_coeff`",
@@ -224,6 +299,12 @@ def format_markdown(
             "",
             "## Объёмы",
             *volume_lines,
+            "",
+            *trench_source_lines,
+            "",
+            *trench_routes_lines,
+            "",
+            *communications_pipe_items_lines,
             "",
             "## Строки серой внутренней сметы",
             *estimate_lines,

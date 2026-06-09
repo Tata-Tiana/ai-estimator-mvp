@@ -1,0 +1,305 @@
+{
+  "case_name": "test_manual_excavation_standard_routes",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/expected.json",
+  "inputs": {
+    "project_name": "test_manual_excavation_standard_routes",
+    "pit_area_m2": 330,
+    "case_meta": {
+      "validated_with_elena": false,
+      "confidence": "formula_test"
+    },
+    "assumptions": {},
+    "excavator_shifts_calc_method": "legacy_manual_shifts",
+    "pit_excavation_depth_m": null,
+    "excavator_productivity_m3_per_shift": 80.0,
+    "manual_excavation_calc_method": "standard_routes",
+    "manual_refinement_depth_m": 0.08,
+    "trench_volume_m3": null,
+    "trench_length_m": null,
+    "trench_depth_m": null,
+    "trench_width_m": 0.4,
+    "trench_routes": [
+      {
+        "route_code": "K1",
+        "name": "К1",
+        "length_m": 10,
+        "depth_m": 1.2
+      },
+      {
+        "route_code": "K2",
+        "name": "К2",
+        "length_m": 8,
+        "depth_m": 1.0
+      },
+      {
+        "route_code": "VK",
+        "name": "ВК",
+        "length_m": 12,
+        "depth_m": 1.4
+      },
+      {
+        "route_code": "EO",
+        "name": "ЭО",
+        "length_m": 5,
+        "depth_m": 0.7
+      }
+    ],
+    "sand_base_volume_m3": 0,
+    "sand_compaction_coeff": 1.3,
+    "sand_truck_step_m3": 20.0,
+    "geotextile_area_m2": 0,
+    "geotextile_overlap_coeff": 1.1,
+    "geotextile_roll_area_m2": 100.0,
+    "communications_length_calc_method": "legacy_direct_length",
+    "communications_length_m": 0,
+    "communications_pipe_items": null,
+    "axis_marking_shifts": 0,
+    "excavator_shifts": 0,
+    "geotextile_laying_area_m2": 0,
+    "manual_excavation_quantity_for_estimate_m3": null,
+    "consumables_amount": 0,
+    "enabled_lines": [
+      "manual_excavation"
+    ],
+    "quantity_overrides": {},
+    "line_name_overrides": {},
+    "internal_prices": {
+      "manual_excavation_work_unit_price": 1000
+    }
+  },
+  "volume_result": {
+    "excavator_shifts_calc_method": "legacy_manual_shifts",
+    "excavator_shifts_source": "legacy_manual_shifts",
+    "pit_excavation_depth_m": null,
+    "machine_excavation_volume_m3": null,
+    "excavator_productivity_m3_per_shift": 80.0,
+    "excavator_shifts": 0.0,
+    "manual_excavation_calc_method": "standard_routes",
+    "manual_pit_volume_m3": 26.4,
+    "manual_refinement_depth_m": 0.08,
+    "trench_width_m": 0.4,
+    "trench_volume_source": "routes_calculated",
+    "trench_routes": [
+      {
+        "route_code": "K1",
+        "name": "К1",
+        "length_m": 10.0,
+        "depth_m": 1.2,
+        "width_m": 0.4,
+        "volume_m3": 4.8
+      },
+      {
+        "route_code": "K2",
+        "name": "К2",
+        "length_m": 8.0,
+        "depth_m": 1.0,
+        "width_m": 0.4,
+        "volume_m3": 3.2
+      },
+      {
+        "route_code": "VK",
+        "name": "ВК",
+        "length_m": 12.0,
+        "depth_m": 1.4,
+        "width_m": 0.4,
+        "volume_m3": 6.72
+      },
+      {
+        "route_code": "EO",
+        "name": "ЭО",
+        "length_m": 5.0,
+        "depth_m": 0.7,
+        "width_m": 0.4,
+        "volume_m3": 1.4
+      }
+    ],
+    "trench_volume_total_m3": 16.12,
+    "trench_volume_m3": 16.12,
+    "manual_excavation_total_m3": 42.52,
+    "compacted_sand_base_m3": 0.0,
+    "compacted_sand_trenches_m3": 20.956,
+    "sand_total_m3": 20.956,
+    "sand_order_volume_m3": 40,
+    "geotextile_with_overlap_m2": 0.0,
+    "geotextile_rolls": 0,
+    "communications_length_calc_method": "legacy_direct_length",
+    "communications_pipe_items": [],
+    "communications_length_m": 0.0
+  },
+  "estimate_lines": [
+    {
+      "code": "manual_excavation",
+      "name": "Разработка грунта вручную",
+      "unit": "м3",
+      "quantity": 42.52,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 1000,
+      "work_total": 42520,
+      "line_total": 42520,
+      "price_code": "manual_excavation_m3"
+    }
+  ],
+  "internal_totals": {
+    "internal_materials_total": 0,
+    "internal_works_total": 42520,
+    "internal_section_total": 42520
+  },
+  "expected": {
+    "volumes": {
+      "manual_excavation_calc_method": "standard_routes",
+      "manual_pit_volume_m3": 26.4,
+      "manual_refinement_depth_m": 0.08,
+      "trench_width_m": 0.4,
+      "trench_volume_total_m3": 16.12,
+      "trench_volume_m3": 16.12,
+      "manual_excavation_total_m3": 42.52
+    },
+    "estimate_lines": {
+      "manual_excavation": {
+        "name": "Разработка грунта вручную",
+        "unit": "м3",
+        "quantity": 42.52,
+        "material_unit_price": 0,
+        "material_total": 0,
+        "work_unit_price": 1000,
+        "work_total": 42520,
+        "line_total": 42520
+      }
+    },
+    "internal_totals": {
+      "internal_materials_total": 0,
+      "internal_works_total": 42520,
+      "internal_section_total": 42520
+    }
+  },
+  "comparison": [
+    {
+      "key": "volumes.manual_excavation_calc_method",
+      "expected": "standard_routes",
+      "actual": "standard_routes",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.manual_pit_volume_m3",
+      "expected": 26.4,
+      "actual": 26.4,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.manual_refinement_depth_m",
+      "expected": 0.08,
+      "actual": 0.08,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.trench_width_m",
+      "expected": 0.4,
+      "actual": 0.4,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.trench_volume_total_m3",
+      "expected": 16.12,
+      "actual": 16.12,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.trench_volume_m3",
+      "expected": 16.12,
+      "actual": 16.12,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "volumes.manual_excavation_total_m3",
+      "expected": 42.52,
+      "actual": 42.52,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.name",
+      "expected": "Разработка грунта вручную",
+      "actual": "Разработка грунта вручную",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.unit",
+      "expected": "м3",
+      "actual": "м3",
+      "diff": null,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.quantity",
+      "expected": 42.52,
+      "actual": 42.52,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.material_unit_price",
+      "expected": 0,
+      "actual": 0.0,
+      "diff": 0.0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.material_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.work_unit_price",
+      "expected": 1000,
+      "actual": 1000,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.work_total",
+      "expected": 42520,
+      "actual": 42520,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "estimate_lines.manual_excavation.line_total",
+      "expected": 42520,
+      "actual": 42520,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_materials_total",
+      "expected": 0,
+      "actual": 0,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_works_total",
+      "expected": 42520,
+      "actual": 42520,
+      "diff": 0,
+      "status": "ok"
+    },
+    {
+      "key": "internal_totals.internal_section_total",
+      "expected": 42520,
+      "actual": 42520,
+      "diff": 0,
+      "status": "ok"
+    }
+  ]
+}
