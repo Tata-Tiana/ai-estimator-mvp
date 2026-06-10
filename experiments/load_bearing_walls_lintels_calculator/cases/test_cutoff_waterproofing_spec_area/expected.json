@@ -1,0 +1,18 @@
+{
+  "calculation_blocks": {
+    "cutoff_waterproofing": {
+      "cutoff_waterproofing_calc_method": "spec_area",
+      "cutoff_waterproofing_source": "spec_area",
+      "cutoff_waterproofing_load_bearing_walls_area_m2": 40.59,
+      "cutoff_waterproofing_area_m2": 40.59
+    }
+  },
+  "estimate_lines": {
+    "cutoff_waterproofing_under_first_row_blocks": {
+      "quantity": 40.59,
+      "material_total_raw": 10147.5,
+      "work_total_raw": 4059,
+      "line_total_raw": 14206.5
+    }
+  }
+}

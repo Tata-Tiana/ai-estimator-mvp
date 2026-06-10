@@ -1,0 +1,39 @@
+{
+  "calculation_blocks": {
+    "floor_2_load_bearing_walls": {
+      "floors_count": 1,
+      "enabled": false
+    },
+    "parapet": {
+      "parapet_calc_method": "flat_roof_spec_volume",
+      "flat_roof_enabled": true,
+      "parapet_enabled_calculated": true,
+      "parapet_masonry_volume_m3": 22.74
+    },
+    "vent_chimney_cladding": {
+      "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
+      "vent_chimney_geometry_calc_method": "spec_volume_thickness",
+      "flat_roof_enabled": true,
+      "vent_chimney_cladding_enabled_calculated": true,
+      "vent_chimney_gas_block_spec_volume_m3": 1.72,
+      "vent_chimney_block_thickness_m": 0.15,
+      "vent_chimney_cladding_area_m2": 11.4666666667,
+      "vent_chimney_display_area_m2": 11.47
+    }
+  },
+  "estimate_lines": {
+    "parapet_masonry_work": {
+      "quantity": 22.74
+    },
+    "parapet_gas_block_d400_material": {
+      "quantity": 25.8
+    },
+    "vent_chimney_gas_block_cladding_work": {
+      "quantity": 11.4667,
+      "display_quantity": 11.47
+    },
+    "vent_chimney_gas_block_d500_600x150x250_material": {
+      "quantity": 3.6
+    }
+  }
+}

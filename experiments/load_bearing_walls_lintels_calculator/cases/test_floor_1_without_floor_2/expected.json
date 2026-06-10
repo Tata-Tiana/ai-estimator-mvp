@@ -1,0 +1,21 @@
+{
+  "calculation_blocks": {
+    "floor_2_load_bearing_walls": {
+      "floors_count": 1,
+      "upper_floor_calc_method": "floor_2_spec_volume",
+      "enabled": false,
+      "floor_2_load_bearing_walls_enabled": false,
+      "floor_2_masonry_volume_m3": 0.0
+    },
+    "parapet": {
+      "parapet_calc_method": "flat_roof_spec_volume",
+      "flat_roof_enabled": false,
+      "parapet_enabled_calculated": false
+    },
+    "vent_chimney_cladding": {
+      "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
+      "flat_roof_enabled": false,
+      "vent_chimney_cladding_enabled_calculated": false
+    }
+  }
+}

@@ -40,3 +40,150 @@
 3. Количество машин вывоза мусора пока manual/fixed.
 4. Количество смен крана пока input/manual.
 5. Длины перемычек часто требуют ручного ввода или уточнения у проектировщиков.
+
+## Legacy по подмостям/лесам
+
+Этот кейс использует прямые значения:
+
+```text
+scaffolding_setup_quantity = 1
+scaffolding_timber_quantity_m3 = 1
+```
+
+Это нужно для повторения старой эталонной сметы ЮСВ. В новом production-стандарте количество подмостей и объём пиломатериала считаются от количества этажей:
+
+```text
+scaffolding_setup_quantity = floors_count * 1
+scaffolding_timber_quantity_m3 = floors_count * 1 м3
+```
+
+Старый `expected.json` не менять.
+
+## Legacy по геометрии вентканалов
+
+Этот кейс использует старую контрольную геометрию вентканалов:
+
+```text
+vent_total_length = sum(length_m * count)
+vent_height = block_height_m * vent_chimney_rows
+vent_geometry_volume_m3 = vent_total_length * vent_height * vent_chimney_block_thickness_m
+```
+
+В production-стандарте сегменты и ряды не требуются. Площадь работ по обкладке вентканалов считается от объёма кладки из спецификации и постоянной толщины блока 150 мм:
+
+```text
+vent_chimney_cladding_area_m2 = vent_chimney_gas_block_spec_volume_m3 / 0.15
+```
+
+Старый `expected.json` не менять.
+
+## Legacy по отсечной гидроизоляции
+
+Этот кейс использует старую формулу:
+
+```text
+sum(cutoff_waterproofing_wall_400_lengths_m) * wall_400_thickness_m
++ sum(cutoff_waterproofing_wall_250_lengths_m) * wall_250_thickness_m
+```
+
+В новом production-стандарте площадь отсечной гидроизоляции под несущие стены берётся готовым значением из спецификации:
+
+```text
+cutoff_waterproofing_load_bearing_walls_area_m2
+```
+
+Площадь перегородок в этот раздел не включается. Старый `expected.json` не менять.
+
+## Legacy по перемычкам
+
+Этот кейс использует старую формулу:
+
+```text
+lintel_total_length_m = sum(length_m * count)
+```
+
+В новом production-стандарте общая длина перемычек в U-блоке берётся готовым значением из спецификации:
+
+```text
+lintel_total_length_m
+```
+
+Резка U-блока остаётся в штуках:
+
+```text
+u_block_quantity = lintel_total_length_m / gas_block_length_m
+```
+
+Старый `expected.json` не менять.
+
+## Legacy по бетону перемычек
+
+Этот кейс использует старую формулу:
+
+```text
+lintel_raw_concrete_volume_m3 = lintel_total_length_m * lintel_section_width_m * lintel_section_height_m
+lintel_required_concrete_volume_m3 = lintel_raw_concrete_volume_m3 * concrete_waste_coeff
+lintel_concrete_order_volume_m3 = max(1, ceil(lintel_required_concrete_volume_m3))
+```
+
+В новом production-стандарте проектный объём бетона перемычек берётся готовым значением из спецификации:
+
+```text
+lintel_concrete_spec_volume_m3
+```
+
+Минимальный заказ `lintel_concrete_min_order_volume_m3 = 1` является закупочным default, а не полем для Елены.
+
+Старый `expected.json` не менять.
+
+## Legacy по арматуре кладки и перемычек
+
+Этот кейс использует старую логику:
+
+- арматура кладки считается через длины стен, ряды армирования, нитки и коэффициент нахлёста;
+- арматура перемычек считается через вес `weight_kg` с переводом в м.п.
+
+В новом production-стандарте арматура берётся из спецификации в м.п.:
+
+- отдельно по этажам;
+- отдельно по конструкциям;
+- отдельно по классу стали;
+- отдельно по диаметру.
+
+Старый `expected.json` не менять.
+
+## Legacy по сменам крана несущих стен
+
+Этот кейс использует прямое значение:
+
+```text
+main_walls_crane_shifts = 2
+```
+
+В новом production-стандарте количество смен крана для несущих стен считается от количества доставок блоков:
+
+```text
+if gas_block_delivery_trucks <= 3:
+    main_walls_crane_shifts = 1
+else:
+    main_walls_crane_shifts = 2
+```
+
+Старый `expected.json` не менять.
+
+## Legacy по second_light
+
+В этом кейсе поле `second_light` используется как legacy-название для кладки 2-го этажа.
+
+В production термин `second_light` не используется. Production-поля:
+
+- `floors_count = 1` или `2`;
+- `floor_2_load_bearing_walls_enabled` считается от `floors_count`;
+- `floor_2_masonry_volume_m3` берётся из спецификации кладки несущих стен 2-го этажа.
+
+Парапет и обкладка вентканалов в production включаются не ручными toggles, а от `flat_roof_enabled` и проектных объёмов:
+
+- `parapet_masonry_volume_m3`;
+- `vent_chimney_gas_block_spec_volume_m3`.
+
+Старый `expected.json` не менять.

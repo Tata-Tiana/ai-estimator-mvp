@@ -89,9 +89,36 @@ internal_section_total
 
 ## Основные формулы
 
+### Подмости и леса
+
+Старый эталонный кейс использует legacy-режим:
+
+```text
+scaffolding_setup_quantity = прямое значение из input.json
+scaffolding_timber_quantity_m3 = прямое значение из input.json
+```
+
+После уточнения Елены добавлен production-режим `floors_based`:
+
+```text
+scaffolding_setup_quantity = floors_count * scaffolding_setup_units_per_floor
+scaffolding_timber_quantity_m3 = floors_count * scaffolding_timber_m3_per_floor
+```
+
+Production defaults:
+
+```text
+scaffolding_setup_units_per_floor = 1
+scaffolding_timber_m3_per_floor = 1 м3
+```
+
+`floors_count` должен приходить из проекта. Прямые поля `scaffolding_setup_quantity` и `scaffolding_timber_quantity_m3` оставлены только для legacy/debug.
+
 ### Гидроизоляция под первый ряд
 
 В расчёт входят стены 400 мм и 250 мм. Перегородки 150 мм сюда не включаются.
+
+Старый legacy-режим:
 
 ```text
 area = sum(lengths_400) * 0.4 + sum(lengths_250) * 0.25
@@ -108,6 +135,14 @@ sum(lengths_250) = 38.04
 
 area = 40.59 м2
 ```
+
+После уточнения Елены добавлен production-режим `spec_area`:
+
+```text
+cutoff_waterproofing_area_m2 = cutoff_waterproofing_load_bearing_walls_area_m2
+```
+
+`cutoff_waterproofing_load_bearing_walls_area_m2` берётся готовой площадью из спецификации и относится только к несущим стенам. Площадь отсечной гидроизоляции под перегородки должна быть отдельным параметром будущего раздела перегородок: `cutoff_waterproofing_partitions_area_m2`.
 
 ### Кладка несущих стен
 
@@ -167,7 +202,7 @@ ceil(40.59 * 19 * 2 / 40) = 39 мешков
 
 ### Перемычки
 
-Суммарная длина перемычек:
+Старый legacy-режим считает суммарную длину перемычек по списку `length/count`:
 
 ```text
 23.4 м
@@ -179,6 +214,15 @@ ceil(40.59 * 19 * 2 / 40) = 39 мешков
 23.4 / 0.6 = 39 шт
 39 * 400 = 15 600
 ```
+
+После уточнения Елены добавлен production-режим `spec_total_length`:
+
+```text
+lintel_total_length_m = готовая общая длина перемычек в U-блоке из спецификации
+u_block_quantity = lintel_total_length_m / gas_block_length_m
+```
+
+Единица строки `u_block_lintel_cutting` остаётся `шт`. Резка U-блока не переводится в м.п.
 
 Бетонирование перемычек:
 
@@ -194,6 +238,64 @@ ceil(40.59 * 19 * 2 / 40) = 39 мешков
 минимальный заказ = 1 м3
 1 * 6400 = 6 400
 ```
+
+Сечение бетонной части U-блока после уточнения Елены является системным default:
+
+```text
+lintel_section_width_m = 0.125
+lintel_section_height_m = 0.125
+```
+
+В production эти параметры не спрашиваются у Елены. Они остаются в settings/defaults и используются в формуле:
+
+```text
+lintel_raw_concrete_volume_m3 = lintel_total_length_m * 0.125 * 0.125
+```
+
+TODO для следующих этапов:
+
+- убрать `lintel_section_width_m` и `lintel_section_height_m` из `reviewed_parameters.xlsx` как production-поля;
+- оставить эти значения только в settings/defaults;
+- не показывать эти параметры Елене в review form.
+
+Новый production-стандарт по объёму бетона перемычек:
+
+```text
+lintel_concrete_calc_method = spec_volume
+lintel_concrete_spec_volume_m3 = готовый проектный объём бетона перемычек из спецификации
+```
+
+Для `spec_volume` калькулятор не применяет повторно `concrete_waste_coeff`:
+
+```text
+lintel_raw_concrete_volume_m3 = lintel_concrete_spec_volume_m3
+lintel_required_concrete_volume_m3 = lintel_concrete_spec_volume_m3
+lintel_concrete_order_volume_m3 = max(1, ceil(lintel_required_concrete_volume_m3))
+```
+
+Примеры закупочного округления:
+
+| Проектный объём | Заказ |
+| ---: | ---: |
+| 0.38 м3 | 1 м3 |
+| 1.00 м3 | 1 м3 |
+| 1.10 м3 | 2 м3 |
+| 2.00 м3 | 2 м3 |
+| 2.05 м3 | 3 м3 |
+
+Статусы параметров:
+
+| parameter | status | source_of_truth | show_in_review_form |
+| --- | --- | --- | --- |
+| `lintel_concrete_spec_volume_m3` | AUTO_PROJECT | спецификация проекта / объём бетона перемычек | yes |
+| `lintel_concrete_min_order_volume_m3` | DEFAULT_VALUE = 1 | закупочное правило | no |
+
+TODO:
+
+- обновить `section_schema.py`;
+- добавить `lintel_concrete_spec_volume_m3` в `reviewed_parameters.xlsx`;
+- убрать `lintel_concrete_min_order_volume_m3` из формы Елены как production-поле;
+- научить parser брать объём бетона перемычек из спецификации.
 
 ### Арматура
 
@@ -223,6 +325,28 @@ order_length = 97 * 11.7 = 1134.9 мп
 Ø12: 128.7 мп -> 5 829
 Ø6: 102 мп -> 1 359
 ```
+
+После уточнения Елены добавлен production-режим `spec_length_items`.
+
+Арматура несущих стен и перемычек в production должна приходить из спецификации в м.п.:
+
+```text
+spec_length_m
+length_with_waste_m = spec_length_m * rebar_waste_coeff
+rods = ceil(length_with_waste_m / rod_length_m)
+order_length_m = rods * rod_length_m
+delivery_weight_kg = order_length_m * kg_per_meter
+```
+
+Строки арматуры разделяются по этажам и конструкциям, например:
+
+```text
+load_bearing_walls_floor_1_rebar_a500_d10
+lintels_floor_1_rebar_a500_d12
+lintels_floor_1_rebar_a240_d6
+```
+
+Арматура перегородок не включается в этот калькулятор.
 
 ### Доставка и краны
 
@@ -279,6 +403,33 @@ second_light = 15.05 м3
 parapet = 23.65 м3
 ```
 
+### Кран несущих стен
+
+Legacy-режим старого ЮСВ-кейса использует прямое значение:
+
+```text
+main_walls_crane_calc_method = legacy_manual_shifts
+main_walls_crane_shifts = 2
+```
+
+В production-режиме количество смен крана для несущих стен больше не является ручным параметром Елены. Оно считается от количества доставок блоков:
+
+```text
+main_walls_crane_calc_method = delivery_trucks_threshold
+
+if gas_block_delivery_trucks <= 3:
+    main_walls_crane_shifts = 1
+else:
+    main_walls_crane_shifts = 2
+```
+
+Источник `gas_block_delivery_trucks` - расчётный блок `deliveries_and_cranes`, где доставки блоков считаются от закупочного объёма газоблоков и вместимости машины. Строка `main_walls_blocks_crane_moving_25t` берёт quantity из рассчитанного `main_walls_crane_shifts`.
+
+Проверочные кейсы:
+
+- `test_main_walls_crane_from_delivery_trucks`: 3 доставки -> 1 смена крана.
+- `test_main_walls_crane_from_delivery_trucks_four`: 4 доставки -> 2 смены крана.
+
 ### Вентканалы и дымоход
 
 Работа:
@@ -299,6 +450,69 @@ ceil = 2 поддона
 ```
 
 ## Case-specific строки
+
+## Этажность и блок 2-го этажа
+
+После уточнения Елены production-логика поддерживает только 1 или 2 этажа:
+
+```text
+floors_count = 1 или 2
+```
+
+3-этажные дома не входят в MVP scope и отклоняются validation.
+
+Старый термин `second_light` оставлен только для legacy-кейса ЮСВ. В production используется блок:
+
+```text
+floor_2_load_bearing_walls
+```
+
+Если `floors_count = 1`, блок несущих стен 2-го этажа выключен. Если `floors_count = 2`, блок включён, а объём кладки берётся из спецификации:
+
+```text
+floor_2_masonry_volume_m3
+```
+
+Парапет в production включается автоматически:
+
+```text
+parapet_enabled_calculated =
+flat_roof_enabled and parapet_masonry_volume_m3 > 0
+```
+
+Обкладка вентканалов в production включается автоматически:
+
+```text
+vent_chimney_cladding_enabled_calculated =
+flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0
+```
+
+Геометрия вентканалов в production больше не собирается по сегментам и рядам. Основной режим:
+
+```text
+vent_chimney_geometry_calc_method = spec_volume_thickness
+vent_chimney_cladding_area_m2 =
+    vent_chimney_gas_block_spec_volume_m3 / vent_chimney_block_thickness_m
+```
+
+Где:
+
+- `vent_chimney_gas_block_spec_volume_m3` - `AUTO_PROJECT`, объём кладки вентканалов из спецификации;
+- `vent_chimney_block_thickness_m = 0.15` - `DEFAULT_VALUE`, блок 150 мм;
+- `vent_chimney_segment_lengths_m[*]` - `DEPRECATED / LEGACY_CHECK_ONLY`;
+- `vent_chimney_rows` - `DEPRECATED / LEGACY_CHECK_ONLY`;
+- `block_height_m = 0.25` - `DEFAULT_VALUE / LEGACY_CHECK_ONLY`.
+
+Старый режим `legacy_segments_rows` оставлен для ЮСВ-сверки и контрольной геометрии:
+
+```text
+vent_total_length = sum(length_m * count)
+vent_height = block_height_m * vent_chimney_rows
+vent_geometry_volume_m3 =
+    vent_total_length * vent_height * vent_chimney_block_thickness_m
+```
+
+Подробности: `docs/report_load_bearing_walls_floor_2_refactor.md`.
 
 В результате явно помечены строки, связанные со вторым светом / кладкой над кухней:
 

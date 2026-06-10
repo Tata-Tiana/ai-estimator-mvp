@@ -1,0 +1,25 @@
+{
+  "calculation_blocks": {
+    "scaffolding": {
+      "scaffolding_calc_method": "floors_based",
+      "scaffolding_source": "floors_based",
+      "floors_count": 2,
+      "setup_units_per_floor": 1,
+      "timber_m3_per_floor": 1,
+      "setup_quantity": 2,
+      "timber_quantity_m3": 2
+    }
+  },
+  "estimate_lines": {
+    "scaffolding_setup_dismantling": {
+      "quantity": 2,
+      "work_total": 40000,
+      "line_total": 40000
+    },
+    "scaffolding_timber_material": {
+      "quantity": 2,
+      "material_total": 43000,
+      "line_total": 43000
+    }
+  }
+}

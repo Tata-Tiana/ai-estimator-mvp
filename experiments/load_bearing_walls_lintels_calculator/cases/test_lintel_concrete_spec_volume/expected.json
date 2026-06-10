@@ -1,0 +1,25 @@
+{
+  "calculation_blocks": {
+    "lintels": {
+      "lintel_concrete_calc_method": "spec_volume",
+      "lintel_concrete_source": "spec_volume",
+      "lintel_concrete_spec_volume_m3": 1.1,
+      "lintel_raw_concrete_volume_m3": 1.1,
+      "lintel_required_concrete_volume_m3": 1.1,
+      "lintel_concrete_min_order_volume_m3": 1.0,
+      "lintel_concrete_order_volume_m3": 2.0
+    }
+  },
+  "estimate_lines": {
+    "lintel_concrete_b22_5_m300_material": {
+      "quantity": 2.0,
+      "material_total": 12800,
+      "line_total": 12800
+    },
+    "manual_concrete_lifting": {
+      "quantity": 2.0,
+      "work_total": 10000,
+      "line_total": 10000
+    }
+  }
+}

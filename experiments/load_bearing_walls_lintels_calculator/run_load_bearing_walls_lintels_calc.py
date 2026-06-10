@@ -157,8 +157,305 @@ def comparison_table(comparison: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def scaffolding_formula_markdown(calculation: dict[str, Any]) -> list[str]:
+    scaffolding = calculation["calculation_blocks"].get("scaffolding", {})
+    method = scaffolding.get("scaffolding_calc_method")
+    lines = ["## Формулы подмостей/лесов", ""]
+    if method == "floors_based":
+        lines.extend(
+            [
+                "Production-режим `floors_based`: подмости считаются от количества этажей.",
+                "",
+                "* `scaffolding_setup_quantity = floors_count * scaffolding_setup_units_per_floor`",
+                "* `scaffolding_timber_quantity_m3 = floors_count * scaffolding_timber_m3_per_floor`",
+                "",
+                *dict_table(
+                    {
+                        "scaffolding_calc_method": method,
+                        "floors_count": scaffolding.get("floors_count"),
+                        "setup_units_per_floor": scaffolding.get("setup_units_per_floor"),
+                        "timber_m3_per_floor": scaffolding.get("timber_m3_per_floor"),
+                        "setup_quantity": scaffolding.get("setup_quantity"),
+                        "timber_quantity_m3": scaffolding.get("timber_quantity_m3"),
+                    }
+                ),
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Legacy-режим `legacy_direct_quantity`: используются прямые значения `scaffolding_setup_quantity` и `scaffolding_timber_quantity_m3` из старого input.json.",
+                "",
+                *dict_table(
+                    {
+                        "scaffolding_calc_method": method,
+                        "setup_quantity": scaffolding.get("setup_quantity"),
+                        "timber_quantity_m3": scaffolding.get("timber_quantity_m3"),
+                    }
+                ),
+            ]
+        )
+    return lines
+
+
+def cutoff_waterproofing_formula_markdown(calculation: dict[str, Any]) -> list[str]:
+    cutoff = calculation["calculation_blocks"].get("cutoff_waterproofing", {})
+    method = cutoff.get("cutoff_waterproofing_calc_method")
+    lines = ["## Формулы отсечной гидроизоляции", ""]
+    if method == "spec_area":
+        lines.extend(
+            [
+                "Production-режим `spec_area`: площадь отсечной гидроизоляции под несущие стены берётся готовым значением из спецификации.",
+                "",
+                "Площадь перегородок сюда не включается; для перегородок нужен отдельный параметр `cutoff_waterproofing_partitions_area_m2`.",
+                "",
+                *dict_table(
+                    {
+                        "cutoff_waterproofing_calc_method": method,
+                        "cutoff_waterproofing_source": cutoff.get("cutoff_waterproofing_source"),
+                        "cutoff_waterproofing_load_bearing_walls_area_m2": cutoff.get("cutoff_waterproofing_load_bearing_walls_area_m2"),
+                        "cutoff_waterproofing_area_m2": cutoff.get("cutoff_waterproofing_area_m2"),
+                    }
+                ),
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Legacy-режим `legacy_lengths_by_wall_thickness`: площадь считается по длинам стен 400/250 мм и толщине стены.",
+                "",
+                "* `area = sum(lengths_400) * wall_400_thickness_m + sum(lengths_250) * wall_250_thickness_m`",
+                "",
+                *dict_table(
+                    {
+                        "cutoff_waterproofing_calc_method": method,
+                        "cutoff_waterproofing_source": cutoff.get("cutoff_waterproofing_source"),
+                        "wall_400_length_m": cutoff.get("wall_400_length_m"),
+                        "wall_250_length_m": cutoff.get("wall_250_length_m"),
+                        "cutoff_waterproofing_area_m2": cutoff.get("cutoff_waterproofing_area_m2"),
+                    }
+                ),
+            ]
+        )
+    return lines
+
+
+def lintel_formula_markdown(calculation: dict[str, Any]) -> list[str]:
+    lintels = calculation["calculation_blocks"].get("lintels", {})
+    method = lintels.get("lintel_length_calc_method")
+    u_block_line = next((line for line in calculation["estimate_lines"] if line["code"] == "u_block_lintel_cutting"), {})
+    lines = ["## Формулы перемычек", ""]
+    if method == "spec_total_length":
+        lines.extend(
+            [
+                "Production-режим `spec_total_length`: общая длина перемычек в U-блоке берётся готовым значением из спецификации.",
+                "",
+                "* `u_block_quantity = lintel_total_length_m / gas_block_length_m`",
+                "* строка `u_block_lintel_cutting` остаётся в штуках (`шт`), не в м.п.",
+                "",
+                *dict_table(
+                    {
+                        "lintel_length_calc_method": method,
+                        "lintel_length_source": lintels.get("lintel_length_source"),
+                        "lintel_total_length_m": lintels.get("lintel_total_length_m"),
+                        "gas_block_length_m": lintels.get("gas_block_length_m"),
+                        "u_block_quantity": lintels.get("u_block_quantity"),
+                        "lintel_section_width_m": lintels.get("lintel_section_width_m"),
+                        "lintel_section_height_m": lintels.get("lintel_section_height_m"),
+                        "u_block_lintel_cutting.unit": u_block_line.get("unit"),
+                    }
+                ),
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Legacy-режим `legacy_length_count_items`: общая длина перемычек считается по списку `length_m * count`.",
+                "",
+                "* `lintel_total_length_m = sum(length_m * count)`",
+                "* `u_block_quantity = lintel_total_length_m / gas_block_length_m`",
+                "",
+                *dict_table(
+                    {
+                        "lintel_length_calc_method": method,
+                        "lintel_length_source": lintels.get("lintel_length_source"),
+                        "lintel_total_length_m": lintels.get("lintel_total_length_m"),
+                        "gas_block_length_m": lintels.get("gas_block_length_m"),
+                        "u_block_quantity": lintels.get("u_block_quantity"),
+                        "lintel_section_width_m": lintels.get("lintel_section_width_m"),
+                        "lintel_section_height_m": lintels.get("lintel_section_height_m"),
+                        "u_block_lintel_cutting.unit": u_block_line.get("unit"),
+                    }
+                ),
+            ]
+        )
+    lines.extend(["", ""])
+    if lintels.get("lintel_concrete_calc_method") == "spec_volume":
+        lines.extend(
+            [
+                "Бетон перемычек standard: проектный объём берётся из спецификации, без повторного коэффициента запаса.",
+                "",
+                "* `lintel_required_concrete_volume_m3 = lintel_concrete_spec_volume_m3`",
+                "* `lintel_concrete_order_volume_m3 = max(1, ceil(lintel_required_concrete_volume_m3))`",
+                "",
+                *dict_table(
+                    {
+                        "lintel_concrete_calc_method": lintels.get("lintel_concrete_calc_method"),
+                        "lintel_concrete_source": lintels.get("lintel_concrete_source"),
+                        "lintel_concrete_spec_volume_m3": lintels.get("lintel_concrete_spec_volume_m3"),
+                        "lintel_required_concrete_volume_m3": lintels.get("lintel_required_concrete_volume_m3"),
+                        "lintel_concrete_min_order_volume_m3": lintels.get("lintel_concrete_min_order_volume_m3"),
+                        "lintel_concrete_order_volume_m3": lintels.get("lintel_concrete_order_volume_m3"),
+                    }
+                ),
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Бетон перемычек legacy: объём считается по длине перемычек и сечению U-блока.",
+                "",
+                "* `lintel_raw_concrete_volume_m3 = lintel_total_length_m * lintel_section_width_m * lintel_section_height_m`",
+                "* `lintel_required_concrete_volume_m3 = lintel_raw_concrete_volume_m3 * concrete_waste_coeff`",
+                "* `lintel_concrete_order_volume_m3 = max(1, ceil(lintel_required_concrete_volume_m3))`",
+                "",
+                *dict_table(
+                    {
+                        "lintel_concrete_calc_method": lintels.get("lintel_concrete_calc_method"),
+                        "lintel_concrete_source": lintels.get("lintel_concrete_source"),
+                        "lintel_section_width_m": lintels.get("lintel_section_width_m"),
+                        "lintel_section_height_m": lintels.get("lintel_section_height_m"),
+                        "lintel_raw_concrete_volume_m3": lintels.get("lintel_raw_concrete_volume_m3"),
+                        "lintel_required_concrete_volume_m3": lintels.get("lintel_required_concrete_volume_m3"),
+                        "lintel_concrete_order_volume_m3": lintels.get("lintel_concrete_order_volume_m3"),
+                    }
+                ),
+            ]
+        )
+    return lines
+
+
+def rebar_formula_markdown(calculation: dict[str, Any]) -> list[str]:
+    main = calculation["calculation_blocks"].get("main_wall_reinforcement", {})
+    lintels = calculation["calculation_blocks"].get("lintels", {})
+    lines = ["## Формулы арматуры", ""]
+    if main.get("main_wall_rebar_calc_method") == "spec_length_items":
+        lines.extend(
+            [
+                "Арматура кладки standard: берётся из спецификации в м.п. по этажам и конструкциям.",
+                "",
+                "| floor | component | steel_class | diameter_mm | spec_length_m | length_with_waste_m | rods | order_length_m | kg_per_meter | delivery_weight_kg | price_code |",
+                "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+            ]
+        )
+        for item in main.get("items", {}).values():
+            lines.append(
+                f"| `{item.get('floor')}` | `{item.get('component')}` | `{item.get('steel_class')}` | `{item.get('diameter_mm')}` | "
+                f"`{item.get('spec_length_m')}` | `{item.get('length_with_waste_m')}` | `{item.get('rods')}` | `{item.get('order_length_m')}` | "
+                f"`{item.get('kg_per_meter')}` | `{item.get('delivery_weight_kg')}` | `{item.get('price_code')}` |"
+            )
+    else:
+        lines.extend(
+            [
+                "Арматура кладки legacy: считается через длины стен, ряды, нитки и коэффициент нахлёста.",
+                "",
+                *dict_table(
+                    {
+                        "main_wall_rebar_calc_method": main.get("main_wall_rebar_calc_method"),
+                        "main_wall_rebar_source": main.get("main_wall_rebar_source"),
+                        "main_wall_chasing_quantity_m": main.get("main_wall_chasing_quantity_m"),
+                    }
+                ),
+            ]
+        )
+
+    lines.extend(["", ""])
+    if lintels.get("lintel_rebar_calc_method") == "spec_length_items":
+        lines.extend(
+            [
+                "Арматура перемычек standard: берётся из спецификации в м.п. по этажам.",
+                "",
+                "| floor | component | steel_class | diameter_mm | spec_length_m | length_with_waste_m | rods | order_length_m | kg_per_meter | delivery_weight_kg | price_code |",
+                "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+            ]
+        )
+        for item in lintels.get("rebar", {}).values():
+            lines.append(
+                f"| `{item.get('floor')}` | `{item.get('component')}` | `{item.get('steel_class')}` | `{item.get('diameter_mm')}` | "
+                f"`{item.get('spec_length_m')}` | `{item.get('length_with_waste_m')}` | `{item.get('rods')}` | `{item.get('order_length_m')}` | "
+                f"`{item.get('kg_per_meter')}` | `{item.get('delivery_weight_kg')}` | `{item.get('price_code')}` |"
+            )
+    else:
+        lines.extend(
+            [
+                "Арматура перемычек legacy: считается через вес `weight_kg` с переводом в м.п.",
+                "",
+                *dict_table(
+                    {
+                        "lintel_rebar_calc_method": lintels.get("lintel_rebar_calc_method"),
+                        "lintel_rebar_source": lintels.get("lintel_rebar_source"),
+                        "lintel_rebar_frame_assembly_quantity_m": lintels.get("lintel_rebar_frame_assembly_quantity_m"),
+                    }
+                ),
+            ]
+        )
+    return lines
+
+
+def main_walls_crane_formula_markdown(calculation: dict[str, Any]) -> list[str]:
+    delivery = calculation["calculation_blocks"].get("deliveries_and_cranes", {})
+    method = delivery.get("main_walls_crane_calc_method")
+    lines = ["## Формулы крана несущих стен", ""]
+    if method == "delivery_trucks_threshold":
+        lines.extend(
+            [
+                "Production-режим `delivery_trucks_threshold`: количество смен крана считается от количества доставок блоков.",
+                "",
+                "* если `gas_block_delivery_trucks <= 3`, то `main_walls_crane_shifts = 1`",
+                "* если `gas_block_delivery_trucks >= 4`, то `main_walls_crane_shifts = 2`",
+                "",
+                *dict_table(
+                    {
+                        "main_walls_crane_calc_method": method,
+                        "gas_block_delivery_trucks": delivery.get("gas_block_delivery_trucks"),
+                        "main_walls_crane_threshold_trucks": delivery.get("main_walls_crane_threshold_trucks"),
+                        "main_walls_crane_shifts": delivery.get("main_walls_crane_shifts"),
+                    }
+                ),
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Legacy-режим `legacy_manual_shifts`: используется прямое значение `main_walls_crane_shifts` из старого input.json.",
+                "",
+                *dict_table(
+                    {
+                        "main_walls_crane_calc_method": method,
+                        "gas_block_delivery_trucks": delivery.get("gas_block_delivery_trucks"),
+                        "main_walls_crane_shifts": delivery.get("main_walls_crane_shifts"),
+                    }
+                ),
+            ]
+        )
+    return lines
+
+
 def format_markdown(case_name: str, input_data: LoadBearingWallsLintelsInput, calculation: dict[str, Any], comparison: list[dict[str, Any]]) -> str:
-    input_lines = [f"- `{key}`: `{value}`" for key, value in input_data.to_dict().items()]
+    input_values = input_data.to_dict()
+    if input_data.upper_floor_calc_method == "floor_2_spec_volume":
+        input_values = {
+            key: value
+            for key, value in input_values.items()
+            if not key.startswith("second_light_") and key not in {"parapet_enabled", "vent_chimney_cladding_enabled"}
+        }
+    if input_data.vent_chimney_geometry_calc_method == "spec_volume_thickness":
+        input_values = {
+            key: value
+            for key, value in input_values.items()
+            if key not in {"vent_chimney_segment_lengths_m", "vent_chimney_rows", "block_height_m"}
+        }
+    input_lines = [f"- `{key}`: `{value}`" for key, value in input_values.items()]
     block_rows = flatten("", calculation["calculation_blocks"])
     warning_lines = [f"- {warning}" for warning in calculation.get("warnings", [])] or ["Предупреждений нет."]
     pricing_sections = []
@@ -178,6 +475,16 @@ def format_markdown(case_name: str, input_data: LoadBearingWallsLintelsInput, ca
             "",
             "## Входные параметры",
             *input_lines,
+            "",
+            *scaffolding_formula_markdown(calculation),
+            "",
+            *cutoff_waterproofing_formula_markdown(calculation),
+            "",
+            *lintel_formula_markdown(calculation),
+            "",
+            *rebar_formula_markdown(calculation),
+            "",
+            *main_walls_crane_formula_markdown(calculation),
             "",
             "## Расчётные блоки",
             *dict_table(block_rows),

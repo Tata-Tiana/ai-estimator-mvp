@@ -1,0 +1,28 @@
+{
+  "calculation_blocks": {
+    "lintels": {
+      "lintel_length_calc_method": "spec_total_length",
+      "lintel_length_source": "spec_total_length",
+      "lintel_total_length_m": 23.4,
+      "gas_block_length_m": 0.6,
+      "u_block_quantity": 39,
+      "lintel_raw_concrete_volume_m3": 0.3656,
+      "lintel_required_concrete_volume_m3": 0.3839,
+      "lintel_concrete_order_volume_m3": 1
+    }
+  },
+  "estimate_lines": {
+    "u_block_lintel_cutting": {
+      "quantity": 39,
+      "unit": "шт",
+      "work_total": 15600
+    },
+    "lintel_concreting_work": {
+      "quantity": 23.4,
+      "work_total": 23400
+    },
+    "lintel_concrete_b22_5_m300_material": {
+      "quantity": 1
+    }
+  }
+}

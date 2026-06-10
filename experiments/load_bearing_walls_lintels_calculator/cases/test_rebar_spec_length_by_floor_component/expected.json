@@ -1,0 +1,36 @@
+{
+  "calculation_blocks": {
+    "main_wall_reinforcement": {
+      "main_wall_rebar_calc_method": "spec_length_items",
+      "main_wall_rebar_source": "spec_length_items",
+      "main_wall_rebar_base_length_m": 1070,
+      "main_wall_rebar_order_length_m": 1134.9,
+      "main_wall_rebar_delivery_weight_kg": 700.2333
+    },
+    "lintels": {
+      "lintel_rebar_calc_method": "spec_length_items",
+      "lintel_rebar_source": "spec_length_items",
+      "lintel_rebar_base_length_m": 207.8829,
+      "lintel_rebar_order_length_m": 230.7,
+      "lintel_rebar_delivery_weight_kg": 136.9296,
+      "lintel_rebar_frame_assembly_quantity_m": 230.7
+    }
+  },
+  "estimate_lines": {
+    "load_bearing_walls_floor_1_rebar_a500_d10": {
+      "quantity": 1134.9,
+      "price_code": "rebar_a500_d10_m"
+    },
+    "lintels_floor_1_rebar_a500_d12": {
+      "quantity": 128.7,
+      "price_code": "rebar_a500_d12_m"
+    },
+    "lintels_floor_1_rebar_a240_d6": {
+      "quantity": 102,
+      "price_code": "rebar_a240_d6_m"
+    },
+    "lintel_rebar_frame_assembly": {
+      "quantity": 230.7
+    }
+  }
+}

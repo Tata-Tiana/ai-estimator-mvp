@@ -1,0 +1,17 @@
+{
+  "calculation_blocks": {
+    "deliveries_and_cranes": {
+      "gas_block_delivery_trucks": 4,
+      "main_walls_crane_calc_method": "delivery_trucks_threshold",
+      "main_walls_crane_source": "delivery_trucks_threshold",
+      "main_walls_crane_shifts": 2
+    }
+  },
+  "estimate_lines": {
+    "main_walls_blocks_crane_moving_25t": {
+      "quantity": 2,
+      "material_total": 60000,
+      "line_total": 60000
+    }
+  }
+}

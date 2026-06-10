@@ -1,0 +1,29 @@
+{
+  "calculation_blocks": {
+    "floor_2_load_bearing_walls": {
+      "floors_count": 2,
+      "upper_floor_calc_method": "floor_2_spec_volume",
+      "enabled": true,
+      "floor_2_load_bearing_walls_enabled": true,
+      "floor_2_masonry_volume_m3": 13.5,
+      "floor_2_adhesive_bags": 18
+    }
+  },
+  "estimate_lines": {
+    "floor_2_masonry_work": {
+      "quantity": 13.5,
+      "work_total": 94500,
+      "line_total": 94500
+    },
+    "floor_2_gas_block_d400_material": {
+      "quantity": 15.05,
+      "material_total": 90300,
+      "line_total": 90300
+    },
+    "floor_2_masonry_glue": {
+      "quantity": 18,
+      "material_total": 6120,
+      "line_total": 6120
+    }
+  }
+}

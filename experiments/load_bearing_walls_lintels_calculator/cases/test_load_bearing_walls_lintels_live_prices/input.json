@@ -1,9 +1,12 @@
 {
   "project_name": "test_load_bearing_walls_lintels_live_prices",
+  "scaffolding_calc_method": "legacy_direct_quantity",
+  "floors_count": 2,
   "scaffolding_setup_quantity": 1,
   "scaffolding_setup_work_unit_price": 20000,
   "scaffolding_timber_quantity_m3": 1,
   "scaffolding_timber_unit_price": 21500,
+  "cutoff_waterproofing_calc_method": "legacy_lengths_by_wall_thickness",
   "cutoff_waterproofing_wall_400_lengths_m": [
     17.8,
     5.1,
@@ -58,6 +61,7 @@
   "sand_concrete_thickness_factor": 2,
   "sand_concrete_bag_weight_kg": 40,
   "sand_concrete_unit_price": 375,
+  "lintel_length_calc_method": "legacy_length_count_items",
   "lintel_lengths_m": [
     {
       "length_m": 1.4,
@@ -96,11 +100,14 @@
   "rebar_a500_d10_kg_per_m": 0.617,
   "rebar_a500_d10_rod_length_m": 11.7,
   "rebar_a500_d10_unit_price_per_m": 32.72,
+  "main_wall_rebar_calc_method": "legacy_wall_geometry",
   "gas_block_delivery_truck_capacity_m3": 32,
   "gas_block_delivery_unit_price": 28000,
   "gas_block_unloading_manipulator_unit_price": 15000,
+  "main_walls_crane_calc_method": "legacy_manual_shifts",
   "main_walls_crane_shifts": 2,
   "crane_25t_unit_price": 30000,
+  "lintel_rebar_calc_method": "legacy_weight_items",
   "lintel_rebar_items": [
     {
       "code": "lintel_rebar_a500_d12",
@@ -124,6 +131,7 @@
     }
   ],
   "lintel_concreting_work_unit_price": 1000,
+  "lintel_concrete_calc_method": "legacy_length_section",
   "lintel_section_width_m": 0.125,
   "lintel_section_height_m": 0.125,
   "concrete_waste_coeff": 1.05,
@@ -132,6 +140,9 @@
   "concrete_delivery_trips": 1,
   "concrete_delivery_unit_price": 7500,
   "manual_concrete_lifting_work_unit_price": 5000,
+  "upper_floor_calc_method": "legacy_second_light_addon",
+  "parapet_calc_method": "legacy_manual_toggle",
+  "vent_chimney_cladding_calc_method": "legacy_manual_toggle",
   "parapet_enabled": true,
   "parapet_masonry_volume_m3": 22.74,
   "parapet_masonry_work_unit_price": 7000,
@@ -140,6 +151,7 @@
   "second_light_masonry_volume_m3": 13.5,
   "vent_chimney_cladding_enabled": true,
   "vent_chimney_gas_block_spec_volume_m3": 1.72,
+  "vent_chimney_geometry_calc_method": "legacy_segments_rows",
   "vent_chimney_block_thickness_m": 0.15,
   "vent_chimney_cladding_work_unit_price": 1200,
   "gas_block_d500_150_pallet_volume_m3": 1.8,
