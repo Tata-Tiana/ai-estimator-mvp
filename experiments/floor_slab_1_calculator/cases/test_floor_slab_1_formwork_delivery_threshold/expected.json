@@ -1,0 +1,25 @@
+{
+  "calculation_blocks": {
+    "geometry": {
+      "slab_formwork_area_m2": 180
+    },
+    "formwork": {
+      "formwork_delivery_calc_method": "area_threshold",
+      "formwork_delivery_area_source_m2": 180,
+      "formwork_delivery_threshold_m2": 180,
+      "formwork_delivery_trucks": 2,
+      "formwork_delivery_breakdown": "1 привоз + 1 вывоз",
+      "formwork_delivery_status": "calculated"
+    }
+  },
+  "estimate_lines": {
+    "formwork_delivery_return_manipulator": {
+      "quantity_raw": 2,
+      "quantity_display": 2,
+      "unit": "маш",
+      "material_total_raw": 40000,
+      "material_total": 40000,
+      "line_total": 40000
+    }
+  }
+}

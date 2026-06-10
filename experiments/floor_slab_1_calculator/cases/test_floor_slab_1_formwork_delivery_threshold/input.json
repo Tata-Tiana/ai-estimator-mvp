@@ -1,16 +1,16 @@
 {
   "case_meta": {
-    "project": "test_floor_slab_1_live_prices",
+    "project": "test_floor_slab_1_formwork_delivery_threshold",
     "section": "floor_slab_1_with_beams",
     "validated_with_elena": true,
     "confidence": "high"
   },
   "geometry": {
-    "total_concrete_volume_from_spec_m3": 40.53,
+    "total_concrete_volume_from_spec_m3": 35.5548,
     "slab_thickness_m": 0.18,
-    "slab_concrete_volume_m3_raw": 37.3752,
-    "slab_concrete_volume_m3_display": 37.38,
-    "slab_control_geometry_area_m2": 210.64,
+    "slab_concrete_volume_m3_raw": 32.4,
+    "slab_concrete_volume_m3_display": 32.4,
+    "slab_control_geometry_area_m2": 180,
     "slab_edge_perimeter_m": 118,
     "edge_formwork_height_m": 0.2
   },
@@ -40,11 +40,9 @@
     ]
   },
   "rates": {
-    "formwork_rate_calc_method": "legacy_supplier_quote_context",
+    "formwork_rate_calc_method": "direct_section_rate",
     "formwork_delivery_calc_method": "area_threshold",
     "formwork_rate_per_m2": 600,
-    "formwork_supplier_quote_total": 170710,
-    "slab_2_formwork_area_for_rate_context_m2": 81.9,
     "formwork_delivery_rate_per_trip": 20000,
     "crane_shift_rate": 30000,
     "formwork_consumables_rate_per_m2": 47,
@@ -57,8 +55,7 @@
     "additional_timber_coeff": 0.1,
     "additional_timber_thickness_m": 0.05,
     "timber_unit_price": 21500,
-    "metal_delivery_calc_method": "legacy_slab1_slab2_context",
-    "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
+    "metal_delivery_calc_method": "section_output_only",
     "max_rebar_delivery_weight_per_truck_kg": 10000,
     "rebar_delivery_rate_per_truck": 22000,
     "slab_concreting_work_rate_per_m3": 12000,
@@ -165,13 +162,8 @@
     "consumables_and_tool_percent": 0.03
   },
   "manual_lines": {
-    "formwork_delivery_trucks_override": 4,
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
     "technical_supervision_amount": 5000
-  },
-  "pricing": {
-    "mode": "price_registry_with_fallback",
-    "registry_path": "output/price_registry_filled_v3.xlsx"
   }
 }

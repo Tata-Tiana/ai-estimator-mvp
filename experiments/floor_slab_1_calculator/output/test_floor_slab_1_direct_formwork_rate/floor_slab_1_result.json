@@ -1,13 +1,13 @@
 {
   "case_meta": {
-    "project": "horoshevka_14",
+    "project": "test_floor_slab_1_direct_formwork_rate",
     "section": "floor_slab_1_with_beams",
     "validated_with_elena": true,
     "confidence": "high"
   },
   "inputs": {
     "case_meta": {
-      "project": "horoshevka_14",
+      "project": "test_floor_slab_1_direct_formwork_rate",
       "section": "floor_slab_1_with_beams",
       "validated_with_elena": true,
       "confidence": "high"
@@ -47,11 +47,9 @@
       ]
     },
     "rates": {
-      "formwork_rate_calc_method": "legacy_supplier_quote_context",
+      "formwork_rate_calc_method": "direct_section_rate",
       "formwork_delivery_calc_method": "area_threshold",
       "formwork_rate_per_m2": 600,
-      "formwork_supplier_quote_total": 170710,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
       "formwork_delivery_rate_per_trip": 20000,
       "crane_shift_rate": 30000,
       "formwork_consumables_rate_per_m2": 47,
@@ -64,8 +62,7 @@
       "additional_timber_coeff": 0.1,
       "additional_timber_thickness_m": 0.05,
       "timber_unit_price": 21500,
-      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
-      "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
+      "metal_delivery_calc_method": "section_output_only",
       "max_rebar_delivery_weight_per_truck_kg": 10000,
       "rebar_delivery_rate_per_truck": 22000,
       "slab_concreting_work_rate_per_m3": 12000,
@@ -172,7 +169,6 @@
       "consumables_and_tool_percent": 0.03
     },
     "manual_lines": {
-      "formwork_delivery_trucks_override": 4,
       "formwork_rebar_crane_shifts": 2,
       "concrete_pump_shifts": 1,
       "technical_supervision_amount": 5000
@@ -236,18 +232,12 @@
       "formwork_delivery_trucks": 4.0,
       "formwork_delivery_breakdown": "2 привоза + 2 вывоза",
       "formwork_delivery_status": "calculated",
-      "formwork_delivery_note": "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.",
-      "supplier_quote_total": 170710.0,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
-      "raw_average_rate": 589.5903847
+      "formwork_delivery_note": "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины."
     },
     "formwork_rate_context": {
-      "formwork_rate_calc_method": "legacy_supplier_quote_context",
-      "formwork_supplier_quote_total": 170710.0,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
-      "raw_average_rate": 589.5903847,
+      "formwork_rate_calc_method": "direct_section_rate",
       "formwork_rate_per_m2": 600.0,
-      "box_level_quote_context_used": true
+      "box_level_quote_context_used": false
     },
     "plywood_and_timber": {
       "edge_and_beam_plywood_sheets_raw": 22.431304,
@@ -479,15 +469,11 @@
       },
       "rebar_frame_assembly_quantity_m": 7294.8,
       "floor_slab_1_rebar_weight_with_waste_kg": 4630.1,
-      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
+      "metal_delivery_calc_method": "section_output_only",
       "section_rebar_delivery_weight_kg": 4665.1632,
-      "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
-      "total_delivery_weight_kg_raw": 6455.49,
-      "total_delivery_weight_kg_display": 6456,
       "max_weight_per_truck_kg": 10000.0,
-      "trucks_ordered": 1,
-      "legacy_delivery_line_enabled": true,
-      "box_level_delivery_required": false
+      "legacy_delivery_line_enabled": false,
+      "box_level_delivery_required": true
     },
     "concrete": {
       "total_project_concrete_volume_m3": 40.53,
@@ -531,13 +517,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1713968.300518,
+      "base_subtotal_raw_before_overheads": 1691968.300518,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 17139.683005,
-      "logistics_and_supply_total": 17140,
+      "logistics_and_supply_total_raw": 16919.683005,
+      "logistics_and_supply_total": 16920,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 51419.049016,
-      "consumables_and_tool_depreciation_total": 51419
+      "consumables_and_tool_depreciation_total_raw": 50759.049016,
+      "consumables_and_tool_depreciation_total": 50759
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -795,24 +781,6 @@
       "price_code": "rebar_a240_d6_m"
     },
     {
-      "code": "rebar_metal_delivery",
-      "name": "Доставка арматуры, металла",
-      "unit": "маш",
-      "line_type": "logistics_machinery",
-      "quantity_raw": 1.0,
-      "quantity_display": 1.0,
-      "material_total_raw": 22000.0,
-      "material_total": 22000,
-      "work_total_raw": 0.0,
-      "work_total": 0,
-      "line_total_raw": 22000.0,
-      "line_total": 22000,
-      "notes": [
-        "Legacy: доставка металла считалась с контекстом веса арматуры плиты 2-го этажа."
-      ],
-      "price_code": "metal_delivery_truck"
-    },
-    {
       "code": "floor_slab_concreting_work",
       "name": "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",
       "unit": "м3",
@@ -986,12 +954,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 17139.683005,
-      "material_total": 17140,
+      "material_total_raw": 16919.683005,
+      "material_total": 16920,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17139.683005,
-      "line_total": 17140,
+      "line_total_raw": 16919.683005,
+      "line_total": 16920,
       "notes": []
     },
     {
@@ -1001,12 +969,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 51419.049016,
-      "material_total": 51419,
+      "material_total_raw": 50759.049016,
+      "material_total": 50759,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 51419.049016,
-      "line_total": 51419,
+      "line_total_raw": 50759.049016,
+      "line_total": 50759,
       "notes": []
     },
     {
@@ -1027,26 +995,26 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1175601,
+    "internal_materials_total": 1152721,
     "internal_works_total": 611926,
-    "internal_section_total": 1787527,
-    "base_subtotal_raw_before_overheads": 1713968.300518,
-    "logistics_and_supply_total": 17140,
-    "consumables_and_tool_depreciation_total": 51419,
+    "internal_section_total": 1764647,
+    "base_subtotal_raw_before_overheads": 1691968.300518,
+    "logistics_and_supply_total": 16920,
+    "consumables_and_tool_depreciation_total": 50759,
     "technical_supervision_total": 5000
   },
   "warnings": [],
-  "case_name": "test_floor_slab_1",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/expected.json",
+  "case_name": "test_floor_slab_1_direct_formwork_rate",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/expected.json",
   "expected": {
     "totals": {
-      "internal_materials_total": 1175601,
+      "internal_materials_total": 1152721,
       "internal_works_total": 611926,
-      "internal_section_total": 1787527,
-      "base_subtotal_raw_before_overheads": 1713968.300518,
-      "logistics_and_supply_total": 17140,
-      "consumables_and_tool_depreciation_total": 51419,
+      "internal_section_total": 1764647,
+      "base_subtotal_raw_before_overheads": 1691968.300518,
+      "logistics_and_supply_total": 16920,
+      "consumables_and_tool_depreciation_total": 50759,
       "technical_supervision_total": 5000
     },
     "calculation_blocks": {
@@ -1063,8 +1031,12 @@
       "formwork": {
         "edge_formwork_area_m2": 23.6,
         "edge_and_beam_formwork_area_m2": 51.592,
-        "raw_average_rate": 589.5903847,
         "formwork_delivery_trucks": 4
+      },
+      "formwork_rate_context": {
+        "formwork_rate_calc_method": "direct_section_rate",
+        "formwork_rate_per_m2": 600,
+        "box_level_quote_context_used": false
       },
       "plywood_and_timber": {
         "order_plywood_sheets": 51,
@@ -1073,9 +1045,10 @@
       "rebar": {
         "rebar_frame_assembly_quantity_m": 7294.8,
         "floor_slab_1_rebar_weight_with_waste_kg": 4630.1,
-        "total_delivery_weight_kg_raw": 6455.49,
-        "total_delivery_weight_kg_display": 6456,
-        "trucks_ordered": 1
+        "metal_delivery_calc_method": "section_output_only",
+        "section_rebar_delivery_weight_kg": 4665.1632,
+        "legacy_delivery_line_enabled": false,
+        "box_level_delivery_required": true
       },
       "concrete": {
         "concrete_volume_with_waste_m3_raw": 42.5565,
@@ -1093,9 +1066,9 @@
         "foam_cans_ordered": 8
       },
       "overheads": {
-        "base_subtotal_raw_before_overheads": 1713968.300518,
-        "logistics_and_supply_total": 17140,
-        "consumables_and_tool_depreciation_total": 51419
+        "base_subtotal_raw_before_overheads": 1691968.300518,
+        "logistics_and_supply_total": 16920,
+        "consumables_and_tool_depreciation_total": 50759
       }
     },
     "estimate_lines": {
@@ -1109,6 +1082,7 @@
       "formwork_set_rental_material": {
         "quantity_raw": 207.64,
         "quantity_display": 207.64,
+        "material_total_raw": 124584,
         "material_total": 124584,
         "work_total": 0,
         "line_total": 124584
@@ -1211,13 +1185,6 @@
         "work_total": 0,
         "line_total": 2398
       },
-      "rebar_metal_delivery": {
-        "quantity_raw": 1,
-        "quantity_display": 1,
-        "material_total": 22000,
-        "work_total": 0,
-        "line_total": 22000
-      },
       "floor_slab_concreting_work": {
         "quantity_raw": 37.3752,
         "quantity_display": 37.38,
@@ -1293,18 +1260,18 @@
       "logistics_and_supply": {
         "quantity_raw": 1,
         "quantity_display": 1,
-        "material_total_raw": 17139.683005,
-        "material_total": 17140,
+        "material_total_raw": 16919.683005,
+        "material_total": 16920,
         "work_total": 0,
-        "line_total": 17140
+        "line_total": 16920
       },
       "consumables_tool_depreciation": {
         "quantity_raw": 1,
         "quantity_display": 1,
-        "material_total_raw": 51419.049016,
-        "material_total": 51419,
+        "material_total_raw": 50759.049016,
+        "material_total": 50759,
         "work_total": 0,
-        "line_total": 51419
+        "line_total": 50759
       },
       "technical_supervision": {
         "quantity_raw": 1,
@@ -1317,13 +1284,13 @@
   },
   "comparison": {
     "status": "ok",
-    "ok_count": 194,
+    "ok_count": 193,
     "mismatch_count": 0,
     "items": [
       {
         "key": "totals.internal_materials_total",
-        "expected": 1175601,
-        "actual": 1175601,
+        "expected": 1152721,
+        "actual": 1152721,
         "diff": 0,
         "status": "ok"
       },
@@ -1336,29 +1303,29 @@
       },
       {
         "key": "totals.internal_section_total",
-        "expected": 1787527,
-        "actual": 1787527,
+        "expected": 1764647,
+        "actual": 1764647,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.base_subtotal_raw_before_overheads",
-        "expected": 1713968.300518,
-        "actual": 1713968.300518,
+        "expected": 1691968.300518,
+        "actual": 1691968.300518,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "totals.logistics_and_supply_total",
-        "expected": 17140,
-        "actual": 17140,
+        "expected": 16920,
+        "actual": 16920,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.consumables_and_tool_depreciation_total",
-        "expected": 51419,
-        "actual": 51419,
+        "expected": 50759,
+        "actual": 50759,
         "diff": 0,
         "status": "ok"
       },
@@ -1426,17 +1393,31 @@
         "status": "ok"
       },
       {
-        "key": "calculation_blocks.formwork.raw_average_rate",
-        "expected": 589.5903847,
-        "actual": 589.5903847,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
         "key": "calculation_blocks.formwork.formwork_delivery_trucks",
         "expected": 4,
         "actual": 4.0,
         "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork_rate_context.formwork_rate_calc_method",
+        "expected": "direct_section_rate",
+        "actual": "direct_section_rate",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork_rate_context.formwork_rate_per_m2",
+        "expected": 600,
+        "actual": 600.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork_rate_context.box_level_quote_context_used",
+        "expected": false,
+        "actual": false,
+        "diff": 0,
         "status": "ok"
       },
       {
@@ -1468,23 +1449,30 @@
         "status": "ok"
       },
       {
-        "key": "calculation_blocks.rebar.total_delivery_weight_kg_raw",
-        "expected": 6455.49,
-        "actual": 6455.49,
+        "key": "calculation_blocks.rebar.metal_delivery_calc_method",
+        "expected": "section_output_only",
+        "actual": "section_output_only",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.rebar.section_rebar_delivery_weight_kg",
+        "expected": 4665.1632,
+        "actual": 4665.1632,
         "diff": 0.0,
         "status": "ok"
       },
       {
-        "key": "calculation_blocks.rebar.total_delivery_weight_kg_display",
-        "expected": 6456,
-        "actual": 6456,
+        "key": "calculation_blocks.rebar.legacy_delivery_line_enabled",
+        "expected": false,
+        "actual": false,
         "diff": 0,
         "status": "ok"
       },
       {
-        "key": "calculation_blocks.rebar.trucks_ordered",
-        "expected": 1,
-        "actual": 1,
+        "key": "calculation_blocks.rebar.box_level_delivery_required",
+        "expected": true,
+        "actual": true,
         "diff": 0,
         "status": "ok"
       },
@@ -1567,22 +1555,22 @@
       },
       {
         "key": "calculation_blocks.overheads.base_subtotal_raw_before_overheads",
-        "expected": 1713968.300518,
-        "actual": 1713968.300518,
+        "expected": 1691968.300518,
+        "actual": 1691968.300518,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "calculation_blocks.overheads.logistics_and_supply_total",
-        "expected": 17140,
-        "actual": 17140,
+        "expected": 16920,
+        "actual": 16920,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "calculation_blocks.overheads.consumables_and_tool_depreciation_total",
-        "expected": 51419,
-        "actual": 51419,
+        "expected": 50759,
+        "actual": 50759,
         "diff": 0,
         "status": "ok"
       },
@@ -1632,6 +1620,13 @@
         "key": "estimate_lines.formwork_set_rental_material.quantity_display",
         "expected": 207.64,
         "actual": 207.64,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_set_rental_material.material_total_raw",
+        "expected": 124584,
+        "actual": 124584.0,
         "diff": 0.0,
         "status": "ok"
       },
@@ -2161,41 +2156,6 @@
         "status": "ok"
       },
       {
-        "key": "estimate_lines.rebar_metal_delivery.quantity_raw",
-        "expected": 1,
-        "actual": 1.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.rebar_metal_delivery.quantity_display",
-        "expected": 1,
-        "actual": 1.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.rebar_metal_delivery.material_total",
-        "expected": 22000,
-        "actual": 22000,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.rebar_metal_delivery.work_total",
-        "expected": 0,
-        "actual": 0,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.rebar_metal_delivery.line_total",
-        "expected": 22000,
-        "actual": 22000,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
         "key": "estimate_lines.floor_slab_concreting_work.quantity_raw",
         "expected": 37.3752,
         "actual": 37.3752,
@@ -2575,15 +2535,15 @@
       },
       {
         "key": "estimate_lines.logistics_and_supply.material_total_raw",
-        "expected": 17139.683005,
-        "actual": 17139.683005,
+        "expected": 16919.683005,
+        "actual": 16919.683005,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "estimate_lines.logistics_and_supply.material_total",
-        "expected": 17140,
-        "actual": 17140,
+        "expected": 16920,
+        "actual": 16920,
         "diff": 0,
         "status": "ok"
       },
@@ -2596,8 +2556,8 @@
       },
       {
         "key": "estimate_lines.logistics_and_supply.line_total",
-        "expected": 17140,
-        "actual": 17140,
+        "expected": 16920,
+        "actual": 16920,
         "diff": 0,
         "status": "ok"
       },
@@ -2617,15 +2577,15 @@
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.material_total_raw",
-        "expected": 51419.049016,
-        "actual": 51419.049016,
+        "expected": 50759.049016,
+        "actual": 50759.049016,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.material_total",
-        "expected": 51419,
-        "actual": 51419,
+        "expected": 50759,
+        "actual": 50759,
         "diff": 0,
         "status": "ok"
       },
@@ -2638,8 +2598,8 @@
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.line_total",
-        "expected": 51419,
-        "actual": 51419,
+        "expected": 50759,
+        "actual": 50759,
         "diff": 0,
         "status": "ok"
       },

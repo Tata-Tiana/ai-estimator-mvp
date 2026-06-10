@@ -1,0 +1,169 @@
+{
+  "totals": {
+    "internal_materials_total": 1168899,
+    "internal_works_total": 611926,
+    "internal_section_total": 1780825,
+    "base_subtotal_raw_before_overheads": 1707526.834518,
+    "logistics_and_supply_total": 17075,
+    "consumables_and_tool_depreciation_total": 51226,
+    "technical_supervision_total": 5000
+  },
+  "calculation_blocks": {
+    "rebar": {
+      "rebar_calc_method": "spec_length_items",
+      "rebar_frame_assembly_quantity_m": 7698.9,
+      "floor_slab_1_rebar_weight_with_waste_kg": 4898.4,
+      "metal_delivery_calc_method": "section_output_only",
+      "section_rebar_delivery_weight_kg": 4960.6848,
+      "legacy_delivery_line_enabled": false,
+      "box_level_delivery_required": true,
+      "item_controls_by_code": {
+        "rebar_a500_d25": {
+          "code": "rebar_a500_d25",
+          "name": "Арматура класса A500 диаметром 25 мм",
+          "steel_class": "A500",
+          "diameter_mm": 25,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 46.8,
+          "base_length_m": 46.8,
+          "length_with_waste_m": 49.14,
+          "rods": 5,
+          "order_length_m": 58.5,
+          "delivery_weight_kg": 225.225,
+          "material_total_raw": 11486.475
+        },
+        "rebar_a500_d16": {
+          "code": "rebar_a500_d16",
+          "name": "Арматура класса A500 диаметром 16 мм",
+          "steel_class": "A500",
+          "diameter_mm": 16,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 81.9,
+          "base_length_m": 81.9,
+          "length_with_waste_m": 85.995,
+          "rods": 8,
+          "order_length_m": 93.6,
+          "delivery_weight_kg": 147.888,
+          "material_total_raw": 7542.288
+        },
+        "rebar_a500_d12": {
+          "code": "rebar_a500_d12",
+          "name": "Арматура класса A500 диаметром 12 мм",
+          "steel_class": "A500",
+          "diameter_mm": 12,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 58.5,
+          "base_length_m": 58.5,
+          "length_with_waste_m": 61.425,
+          "rods": 6,
+          "order_length_m": 70.2,
+          "delivery_weight_kg": 62.3376,
+          "material_total_raw": 3179.358
+        },
+        "rebar_a500_d10": {
+          "code": "rebar_a500_d10",
+          "name": "Арматура класса A500 диаметром 10 мм",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 6879.6,
+          "base_length_m": 6879.6,
+          "length_with_waste_m": 7223.58,
+          "rods": 618,
+          "order_length_m": 7230.6,
+          "delivery_weight_kg": 4461.2802,
+          "material_total_raw": 236585.232
+        },
+        "rebar_a240_d8": {
+          "code": "rebar_a240_d8",
+          "name": "Арматура класса A240 диаметром 8 мм",
+          "steel_class": "A240",
+          "diameter_mm": 8,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 48,
+          "base_length_m": 48,
+          "length_with_waste_m": 50.4,
+          "rods": 9,
+          "order_length_m": 54,
+          "delivery_weight_kg": 21.33,
+          "material_total_raw": 1296
+        },
+        "rebar_a240_d6": {
+          "code": "rebar_a240_d6",
+          "name": "Арматура класса A240 диаметром 6 мм",
+          "steel_class": "A240",
+          "diameter_mm": 6,
+          "floor": 1,
+          "component": "floor_slab_1",
+          "spec_length_m": 180,
+          "base_length_m": 180,
+          "length_with_waste_m": 189,
+          "rods": 32,
+          "order_length_m": 192,
+          "delivery_weight_kg": 42.624,
+          "material_total_raw": 2557.44
+        }
+      }
+    }
+  },
+  "estimate_lines": {
+    "floor_slab_rebar_frame_assembly_control": {
+      "quantity_raw": 7698.9,
+      "quantity_display": 7698.9,
+      "unit": "мп"
+    },
+    "rebar_a500_d25": {
+      "quantity_raw": 58.5,
+      "quantity_display": 58.5,
+      "unit": "мп",
+      "price_code": "rebar_a500_d25_m",
+      "material_total_raw": 11486.475,
+      "material_total": 11486
+    },
+    "rebar_a500_d16": {
+      "quantity_raw": 93.6,
+      "quantity_display": 93.6,
+      "unit": "мп",
+      "price_code": "rebar_a500_d16_m",
+      "material_total_raw": 7542.288,
+      "material_total": 7542
+    },
+    "rebar_a500_d12": {
+      "quantity_raw": 70.2,
+      "quantity_display": 70.2,
+      "unit": "мп",
+      "price_code": "rebar_a500_d12_m",
+      "material_total_raw": 3179.358,
+      "material_total": 3179
+    },
+    "rebar_a500_d10": {
+      "quantity_raw": 7230.6,
+      "quantity_display": 7230.6,
+      "unit": "мп",
+      "price_code": "rebar_a500_d10_m",
+      "material_total_raw": 236585.232,
+      "material_total": 236585
+    },
+    "rebar_a240_d8": {
+      "quantity_raw": 54,
+      "quantity_display": 54,
+      "unit": "мп",
+      "price_code": "rebar_a240_d8_m",
+      "material_total_raw": 1296,
+      "material_total": 1296
+    },
+    "rebar_a240_d6": {
+      "quantity_raw": 192,
+      "quantity_display": 192,
+      "unit": "мп",
+      "price_code": "rebar_a240_d6_m",
+      "material_total_raw": 2557.44,
+      "material_total": 2557
+    }
+  }
+}

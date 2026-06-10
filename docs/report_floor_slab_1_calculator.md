@@ -125,21 +125,40 @@ slab_formwork_area_m2 = slab_concrete_volume_m3_raw / slab_thickness_m
 material_total = 207.64 * 600 = 124584
 ```
 
-Поставщик давал общий контекст на плиты 1-го и 2-го этажей; raw average rate хранится справочно, но не заменяет ставку текущей строки.
+В legacy-кейсе поставщик давал общий контекст на плиты 1-го и 2-го этажей; raw average rate хранится справочно, но не заменяет ставку текущей строки.
+
+В production-режиме калькулятор плиты перекрытия 1-го этажа не зависит от площади плиты 2-го этажа:
+
+```text
+rates.formwork_rate_calc_method = direct_section_rate
+material_total = slab_formwork_area_m2 * rates.formwork_rate_per_m2
+```
+
+`rates.formwork_supplier_quote_total` и `rates.slab_2_formwork_area_for_rate_context_m2` относятся к box-level quote context и не требуются в production-кейсе плиты 1-го этажа.
 
 ### Доставка опалубки и кран
 
 Доставка/вывоз опалубки:
 
 ```text
-4 машины * 20000 = 80000
+rates.formwork_delivery_calc_method = area_threshold
 ```
 
-Текущее правило:
+Production-правило:
 
-- `<=150 м2`: ориентировочно 1 привоз + 1 вывоз;
-- `>180 м2`: 2 привоз + 2 вывоз;
-- `150-180 м2`: manual review.
+- `slab_formwork_area_m2 <= 180`: 1 привоз + 1 вывоз = 2 машины;
+- `slab_formwork_area_m2 > 180`: 2 привоза + 2 вывоза = 4 машины.
+
+Для текущего ЮСВ-кейса:
+
+```text
+slab_formwork_area_m2 = 207.64
+207.64 > 180
+formwork_delivery_trucks = 4
+material_total = 4 * 20000 = 80000
+```
+
+`manual_lines.formwork_delivery_trucks_override` оставлен только для режима `manual_override`. В production-режиме `area_threshold` он не обязателен и не используется.
 
 Кран:
 
@@ -191,7 +210,7 @@ material_total = ROUND_HALF_UP(2.790845652 * 21500) = 60003
 
 ### Арматура
 
-Универсальная формула по каждому диаметру:
+Legacy-формула по каждому диаметру:
 
 ```text
 source_weight_kg / kg_per_meter
@@ -200,6 +219,20 @@ source_weight_kg / kg_per_meter
 -> order_length_m = rods * rod_length_m
 -> material_total = ROUND_HALF_UP(order_length_m * unit_price_per_m)
 ```
+
+Production-режим:
+
+```text
+rebar_calc_method = spec_length_items
+base_length_m = rebar_items[*].spec_length_m
+length_with_waste_m = spec_length_m * waste_coeff
+rods = ceil(length_with_waste_m / rod_length_m)
+order_length_m = rods * rod_length_m
+delivery_weight_kg = order_length_m * kg_per_meter
+material_total = order_length_m * unit_price_per_m
+```
+
+`rebar_items[*].source_weight_parts_kg` больше не является production-входом. Основной production-вход: `rebar_items[*].spec_length_m` в м.п.; `code` и `name` формируются автоматически.
 
 Текущий кейс:
 
@@ -216,6 +249,21 @@ source_weight_kg / kg_per_meter
 
 ```text
 46.8 + 81.9 + 58.5 + 6879.6 + 48 + 180 = 7294.8 м.п.
+```
+
+Production-выход для будущего расчёта доставки металла:
+
+```text
+section_rebar_delivery_weight_kg = sum(order_length_m * kg_per_meter)
+```
+
+`rates.floor_slab_2_rebar_weight_for_delivery_context_kg` относится к legacy/box-level context и не требуется в production-калькуляторе плиты 1-го этажа.
+
+Доставка металла должна считаться на уровне `box_calculator`:
+
+```text
+total_box_metal_weight_kg = sum(section_rebar_delivery_weight_kg)
+trucks = ceil(total_box_metal_weight_kg / 10000)
 ```
 
 ### Бетон
@@ -258,7 +306,13 @@ ceil(42.5565 / 9) = 5 рейсов
 
 ### Утепление
 
-Утепление торцов плиты и балок:
+Legacy ЮСВ:
+
+```text
+insulation.insulation_calc_method = legacy_usv_geometry
+```
+
+Старый кейс повторяет прежнюю геометрию ЮСВ, чтобы не менять locked expected:
 
 ```text
 slab_outer_edge_length_m = 84.8
@@ -267,23 +321,63 @@ total_insulation_length_m = 108
 work_total = 108 * 450 = 48600
 ```
 
-Утепление низа плиты:
+Production:
 
 ```text
-bottom_slab_eps_volume_m3 = 7.77 - 2.578 = 5.192
-bottom_slab_insulation_area_m2_raw = 5.192 / 0.1 = 51.92
+insulation.insulation_calc_method = spec_work_quantities
+```
+
+В production рабочие количества и чистый объём ЭППС приходят из спецификации:
+
+```text
+insulation.slab_outer_edge_eps_work_length_m
+insulation.slab_edge_eps_material_area_m2
+insulation.bottom_slab_eps_work_area_m2
+insulation.total_eps_volume_from_spec_m3
+beams.items[*].length_m / height_m / count
+```
+
+Калькулятор считает утепление балок из `beams.items`:
+
+```text
+beams_eps_work_length_m = sum(length_m * count)
+beams_eps_material_area_m2 = sum(length_m * height_m * count)
+edge_beam_eps_work_length_m = slab_outer_edge_eps_work_length_m + beams_eps_work_length_m
+edge_and_beam_eps_material_area_m2 = slab_edge_eps_material_area_m2 + beams_eps_material_area_m2
+```
+
+Для ЮСВ-подобного production-кейса:
+
+```text
+beams_eps_work_length_m = 7 + 7.2 + 9 = 23.2
+edge_beam_eps_work_length_m = 84.8 + 23.2 = 108
+beams_eps_material_area_m2 = 7 * 0.25 + 7.2 * 0.68 + 9 * 0.43 = 10.516
+edge_and_beam_eps_material_area_m2 = 15.264 + 10.516 = 25.78
+bottom_slab_eps_work_area_m2 = 51.92
 work_total = 51.92 * 900 = 46728
 ```
 
-ЭППС:
+Материал ЭППС закупается от чистого объёма из спецификации:
 
 ```text
-base_eps_volume_m3 = 77.7 * 0.1 = 7.77
 required_eps_volume_m3_raw = 7.77 * 1.05 = 8.1585
 packs_ordered = ceil(8.1585 / 0.2773) = 30
 order_eps_volume_m3_raw = 30 * 0.2773 = 8.319
 material_total = ROUND_HALF_UP(8.319 * 9020) = 75037
 ```
+
+Контроль объёма:
+
+```text
+edge_and_beam_eps_volume_m3 = edge_and_beam_eps_material_area_m2 * eps_thickness_m
+bottom_slab_eps_volume_m3 = bottom_slab_eps_work_area_m2 * eps_thickness_m
+calculated_clean_eps_volume_m3 = edge_and_beam_eps_volume_m3 + bottom_slab_eps_volume_m3
+eps_volume_delta_m3 = calculated_clean_eps_volume_m3 - total_eps_volume_from_spec_m3
+```
+
+Если `eps_volume_delta_m3` по модулю больше `0.01`, калькулятор добавляет warning, но не падает: спецификационный объём остаётся источником закупки материала.
+
+Важно: `slab_edge_eps_material_area_m2` не выводится из длины торца и толщины ЭППС. Это отдельный production-параметр из спецификации, потому что длина работ в м.п. и площадь материала в м2 имеют разный смысл.
 
 ### Overheads текущего scope
 
@@ -345,7 +439,7 @@ technical_supervision_total = 5000
 
 ## Warnings и ручные места
 
-- Доставка/вывоз опалубки имеет пороговое правило и manual review в диапазоне `150-180 м2`.
+- Доставка/вывоз опалубки имеет пороговое правило `<=180 м2 -> 2 машины`, `>180 м2 -> 4 машины`; ручной override допускается только как отдельный режим исключения.
 - Третья смена автокрана пока только через manual review / override.
 - Бетононасос — fixed/manual line.
 - Доставка металла в этом экспериментальном калькуляторе считается для совпадения с текущей сметой. В будущем `box_calculator` должен считать доставку металла один раз по общему весу металла коробки.

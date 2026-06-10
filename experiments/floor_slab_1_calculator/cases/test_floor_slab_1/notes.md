@@ -17,10 +17,28 @@
 
 ## Важные ручные/спорные места
 
+- Ставка комплекта опалубки:
+  - этот кейс использует legacy-режим `rates.formwork_rate_calc_method = legacy_supplier_quote_context`;
+  - `rates.formwork_supplier_quote_total` и `rates.slab_2_formwork_area_for_rate_context_m2` оставлены только для сверки справочной средней ставки ЮСВ;
+  - в production калькулятор плиты 1-го этажа использует прямую ставку `rates.formwork_rate_per_m2` и не зависит от площади плиты 2-го этажа.
+- Доставка арматуры/металла:
+  - этот кейс использует legacy-режим `rates.metal_delivery_calc_method = legacy_slab1_slab2_context`;
+  - `rates.floor_slab_2_rebar_weight_for_delivery_context_kg` оставлен только для повторения старого контекста ЮСВ;
+  - в production калькулятор плиты 1-го этажа отдаёт `section_rebar_delivery_weight_kg`, а количество машин считается на уровне `box_calculator`.
+- Арматура плиты:
+  - этот кейс использует legacy-режим `rebar_calc_method = legacy_weight_parts`;
+  - арматура приходит весом в кг через `source_weight_kg` / `source_weight_parts_kg`;
+  - калькулятор переводит вес в м.п. через `kg_per_meter`, добавляет запас и округляет до хлыстов;
+  - в production арматура должна приходить из спецификации сразу в м.п. через `rebar_items[*].spec_length_m`.
+- Утепление плиты:
+  - этот кейс использует legacy-режим `insulation.insulation_calc_method = legacy_usv_geometry`;
+  - старые рабочие количества утепления восстанавливаются через геометрию ЮСВ для сверки с исходной сметой;
+  - в production рабочие длины/площади и чистый объём ЭППС должны приходить из спецификации через `insulation.slab_outer_edge_eps_work_length_m`, `insulation.slab_edge_eps_material_area_m2`, `insulation.bottom_slab_eps_work_area_m2`, `insulation.total_eps_volume_from_spec_m3`.
 - Доставка/вывоз опалубки:
-  - `<=150 м2`: ориентировочно 1 привоз + 1 вывоз;
-  - `>180 м2`: 2 привоз + 2 вывоз;
-  - `150–180 м2`: `manual_review`.
+  - этот кейс использует production-режим `rates.formwork_delivery_calc_method = area_threshold`;
+  - до `180 м2` включительно: 1 привоз + 1 вывоз = 2 машины;
+  - более `180 м2`: 2 привоза + 2 вывоза = 4 машины;
+  - `manual_lines.formwork_delivery_trucks_override` оставлен только как optional override для исключений и в этом режиме не используется.
 - Третья смена автокрана пока не выводится формулой и должна проходить только как `manual_review` / override.
 - Бетононасос 32 м + гаситель — fixed/manual line, сейчас 1 смена.
 - Доставка металла в этом экспериментальном калькуляторе считается для совпадения с Excel.

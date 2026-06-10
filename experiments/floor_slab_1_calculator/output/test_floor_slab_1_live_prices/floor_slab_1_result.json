@@ -47,6 +47,8 @@
       ]
     },
     "rates": {
+      "formwork_rate_calc_method": "legacy_supplier_quote_context",
+      "formwork_delivery_calc_method": "area_threshold",
       "formwork_rate_per_m2": 600,
       "formwork_supplier_quote_total": 170710,
       "slab_2_formwork_area_for_rate_context_m2": 81.9,
@@ -62,6 +64,7 @@
       "additional_timber_coeff": 0.1,
       "additional_timber_thickness_m": 0.05,
       "timber_unit_price": 21500,
+      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
       "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
       "max_rebar_delivery_weight_per_truck_kg": 10000,
       "rebar_delivery_rate_per_truck": 22000,
@@ -75,6 +78,7 @@
       "edge_beam_insulation_work_rate_per_m": 450,
       "bottom_slab_insulation_work_rate_per_m2": 900
     },
+    "rebar_calc_method": "legacy_weight_parts",
     "rebar_items": [
       {
         "code": "rebar_a500_d25",
@@ -154,6 +158,7 @@
       }
     ],
     "insulation": {
+      "insulation_calc_method": "legacy_usv_geometry",
       "total_eps_volume_from_spec_m3": 7.77,
       "eps_thickness_m": 0.1,
       "eps_waste_coeff": 1.05,
@@ -196,6 +201,7 @@
           "length_m": 7.0,
           "width_m": 0.3,
           "height_m": 0.25,
+          "count": 1.0,
           "concrete_volume_m3": 0.525,
           "formwork_area_m2": 5.6
         },
@@ -205,6 +211,7 @@
           "length_m": 7.2,
           "width_m": 0.3,
           "height_m": 0.68,
+          "count": 1.0,
           "concrete_volume_m3": 1.4688,
           "formwork_area_m2": 11.952
         },
@@ -214,6 +221,7 @@
           "length_m": 9.0,
           "width_m": 0.3,
           "height_m": 0.43,
+          "count": 1.0,
           "concrete_volume_m3": 1.161,
           "formwork_area_m2": 10.44
         }
@@ -225,12 +233,25 @@
     "formwork": {
       "edge_formwork_area_m2": 23.6,
       "edge_and_beam_formwork_area_m2": 51.592,
+      "excel_rate_per_m2": 600.0,
+      "formwork_delivery_calc_method": "area_threshold",
+      "formwork_delivery_area_source_m2": 207.64,
+      "formwork_delivery_threshold_m2": 180.0,
+      "formwork_delivery_trucks": 4.0,
+      "formwork_delivery_breakdown": "2 привоза + 2 вывоза",
+      "formwork_delivery_status": "calculated",
+      "formwork_delivery_note": "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.",
       "supplier_quote_total": 170710.0,
       "slab_2_formwork_area_for_rate_context_m2": 81.9,
+      "raw_average_rate": 589.5903847
+    },
+    "formwork_rate_context": {
+      "formwork_rate_calc_method": "legacy_supplier_quote_context",
+      "formwork_supplier_quote_total": 170710.0,
+      "slab_2_formwork_area_for_rate_context_m2": 81.9,
       "raw_average_rate": 589.5903847,
-      "excel_rate_per_m2": 600,
-      "formwork_delivery_trucks": 4.0,
-      "formwork_delivery_status": "calculated"
+      "formwork_rate_per_m2": 600.0,
+      "box_level_quote_context_used": true
     },
     "plywood_and_timber": {
       "edge_and_beam_plywood_sheets_raw": 22.431304,
@@ -245,6 +266,7 @@
       "timber_volume_m3_raw": 2.790846
     },
     "rebar": {
+      "rebar_calc_method": "legacy_weight_parts",
       "items": [
         {
           "code": "rebar_a500_d25",
@@ -258,8 +280,10 @@
           "length_with_waste_m": 44.181818,
           "weight_with_waste_kg_display": 170.1,
           "rod_length_m": 11.7,
+          "rods": 4,
           "rods_ordered": 4,
           "order_length_m": 46.8,
+          "delivery_weight_kg": 180.18,
           "unit_price_per_m": 196.35,
           "material_total_raw": 9189.18,
           "material_total": 9189
@@ -276,8 +300,10 @@
           "length_with_waste_m": 74.456962,
           "weight_with_waste_kg_display": 117.64,
           "rod_length_m": 11.7,
+          "rods": 7,
           "rods_ordered": 7,
           "order_length_m": 81.9,
+          "delivery_weight_kg": 129.402,
           "unit_price_per_m": 80.58,
           "material_total_raw": 6599.502,
           "material_total": 6600
@@ -294,8 +320,10 @@
           "length_with_waste_m": 49.662162,
           "weight_with_waste_kg_display": 44.1,
           "rod_length_m": 11.7,
+          "rods": 5,
           "rods_ordered": 5,
           "order_length_m": 58.5,
+          "delivery_weight_kg": 51.948,
           "unit_price_per_m": 45.29,
           "material_total_raw": 2649.465,
           "material_total": 2649
@@ -312,8 +340,10 @@
           "length_with_waste_m": 6872.820097,
           "weight_with_waste_kg_display": 4240.53,
           "rod_length_m": 11.7,
+          "rods": 588,
           "rods_ordered": 588,
           "order_length_m": 6879.6,
+          "delivery_weight_kg": 4244.7132,
           "unit_price_per_m": 32.72,
           "material_total_raw": 225100.512,
           "material_total": 225101
@@ -330,8 +360,10 @@
           "length_with_waste_m": 45.189873,
           "weight_with_waste_kg_display": 17.85,
           "rod_length_m": 6.0,
+          "rods": 8,
           "rods_ordered": 8,
           "order_length_m": 48.0,
+          "delivery_weight_kg": 18.96,
           "unit_price_per_m": 24.0,
           "material_total_raw": 1152.0,
           "material_total": 1152
@@ -348,20 +380,118 @@
           "length_with_waste_m": 179.72973,
           "weight_with_waste_kg_display": 39.9,
           "rod_length_m": 6.0,
+          "rods": 30,
           "rods_ordered": 30,
           "order_length_m": 180.0,
+          "delivery_weight_kg": 39.96,
           "unit_price_per_m": 13.32,
           "material_total_raw": 2397.6,
           "material_total": 2398
         }
       ],
+      "item_controls_by_code": {
+        "rebar_a500_d25": {
+          "code": "rebar_a500_d25",
+          "name": "Арматура класса А500 диаметром 25 мм",
+          "steel_class": "A500",
+          "diameter_mm": 25,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 42.077922,
+          "length_with_waste_m": 44.181818,
+          "rods": 4,
+          "order_length_m": 46.8,
+          "delivery_weight_kg": 180.18,
+          "material_total_raw": 9189.18
+        },
+        "rebar_a500_d16": {
+          "code": "rebar_a500_d16",
+          "name": "Арматура класса А500 диаметром 16 мм",
+          "steel_class": "A500",
+          "diameter_mm": 16,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 70.911392,
+          "length_with_waste_m": 74.456962,
+          "rods": 7,
+          "order_length_m": 81.9,
+          "delivery_weight_kg": 129.402,
+          "material_total_raw": 6599.502
+        },
+        "rebar_a500_d12": {
+          "code": "rebar_a500_d12",
+          "name": "Арматура класса А500 диаметром 12 мм",
+          "steel_class": "A500",
+          "diameter_mm": 12,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 47.297297,
+          "length_with_waste_m": 49.662162,
+          "rods": 5,
+          "order_length_m": 58.5,
+          "delivery_weight_kg": 51.948,
+          "material_total_raw": 2649.465
+        },
+        "rebar_a500_d10": {
+          "code": "rebar_a500_d10",
+          "name": "Арматура класса А500 диаметром 10 мм",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 6545.54295,
+          "length_with_waste_m": 6872.820097,
+          "rods": 588,
+          "order_length_m": 6879.6,
+          "delivery_weight_kg": 4244.7132,
+          "material_total_raw": 225100.512
+        },
+        "rebar_a240_d8": {
+          "code": "rebar_a240_d8",
+          "name": "Арматура класса А240 диаметром 8 мм",
+          "steel_class": "A240",
+          "diameter_mm": 8,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 43.037975,
+          "length_with_waste_m": 45.189873,
+          "rods": 8,
+          "order_length_m": 48.0,
+          "delivery_weight_kg": 18.96,
+          "material_total_raw": 1152.0
+        },
+        "rebar_a240_d6": {
+          "code": "rebar_a240_d6",
+          "name": "Арматура класса А240 диаметром 6 мм",
+          "steel_class": "A240",
+          "diameter_mm": 6,
+          "floor": null,
+          "component": null,
+          "spec_length_m": null,
+          "base_length_m": 171.171171,
+          "length_with_waste_m": 179.72973,
+          "rods": 30,
+          "order_length_m": 180.0,
+          "delivery_weight_kg": 39.96,
+          "material_total_raw": 2397.6
+        }
+      },
       "rebar_frame_assembly_quantity_m": 7294.8,
       "floor_slab_1_rebar_weight_with_waste_kg": 4630.1,
+      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
+      "section_rebar_delivery_weight_kg": 4665.1632,
       "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
       "total_delivery_weight_kg_raw": 6455.49,
       "total_delivery_weight_kg_display": 6456,
-      "max_weight_per_truck_kg": 10000,
-      "trucks_ordered": 1
+      "max_weight_per_truck_kg": 10000.0,
+      "trucks_ordered": 1,
+      "legacy_delivery_line_enabled": true,
+      "box_level_delivery_required": false
     },
     "concrete": {
       "total_project_concrete_volume_m3": 40.53,
@@ -372,17 +502,32 @@
       "concrete_delivery_trips": 5
     },
     "insulation": {
+      "insulation_calc_method": "legacy_usv_geometry",
       "slab_outer_edge_length_m": 84.8,
+      "slab_outer_edge_eps_work_length_m": 84.8,
       "insulated_beams_total_length_m": 23.2,
+      "beams_eps_work_length_m": 23.2,
       "total_insulation_length_m": 108.0,
+      "edge_beam_eps_work_length_m": 108.0,
       "slab_edge_insulation_area_m2": 15.264,
+      "slab_edge_eps_material_area_m2": 15.264,
       "beams_insulation_area_m2": 10.516,
+      "beams_eps_material_area_m2": 10.516,
       "edge_and_beam_insulation_area_m2": 25.78,
+      "edge_and_beam_eps_material_area_m2": 25.78,
       "edge_and_beam_eps_volume_m3": 2.578,
       "bottom_slab_eps_volume_m3": 5.192,
       "bottom_slab_insulation_area_m2_raw": 51.92,
+      "bottom_slab_eps_work_area_m2": 51.92,
       "total_insulation_area_m2": 77.7,
+      "foam_base_area_m2": 77.7,
+      "total_eps_volume_from_spec_m3": 7.77,
+      "calculated_clean_eps_volume_m3": 7.77,
+      "eps_volume_delta_m3": 0.0,
+      "eps_thickness_m": 0.1,
+      "eps_waste_coeff": 1.05,
       "required_eps_volume_m3_raw": 8.1585,
+      "eps_pack_volume_m3": 0.2773,
       "eps_packs_raw": 29.421204,
       "eps_packs_ordered": 30,
       "order_eps_volume_m3_raw": 8.319,
@@ -463,7 +608,7 @@
       "line_total_raw": 80000.0,
       "line_total": 80000,
       "notes": [
-        "<=150 м2: 1 привоз + 1 вывоз; >180 м2: 2 привоз + 2 вывоз; 150-180 м2: manual_review."
+        "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины."
       ],
       "price_code": "formwork_delivery_truck",
       "unit_price_source": "fallback_input",
@@ -733,7 +878,7 @@
       "line_total_raw": 22000.0,
       "line_total": 22000,
       "notes": [
-        "В будущем box_calculator доставка металла должна считаться один раз по общему весу металла коробки."
+        "Legacy: доставка металла считалась с контекстом веса арматуры плиты 2-го этажа."
       ],
       "price_code": "metal_delivery_truck",
       "unit_price_source": "fallback_input",

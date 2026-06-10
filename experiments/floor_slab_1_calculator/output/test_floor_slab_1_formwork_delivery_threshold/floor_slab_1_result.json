@@ -1,23 +1,23 @@
 {
   "case_meta": {
-    "project": "test_floor_slab_1_live_prices",
+    "project": "test_floor_slab_1_formwork_delivery_threshold",
     "section": "floor_slab_1_with_beams",
     "validated_with_elena": true,
     "confidence": "high"
   },
   "inputs": {
     "case_meta": {
-      "project": "test_floor_slab_1_live_prices",
+      "project": "test_floor_slab_1_formwork_delivery_threshold",
       "section": "floor_slab_1_with_beams",
       "validated_with_elena": true,
       "confidence": "high"
     },
     "geometry": {
-      "total_concrete_volume_from_spec_m3": 40.53,
+      "total_concrete_volume_from_spec_m3": 35.5548,
       "slab_thickness_m": 0.18,
-      "slab_concrete_volume_m3_raw": 37.3752,
-      "slab_concrete_volume_m3_display": 37.38,
-      "slab_control_geometry_area_m2": 210.64,
+      "slab_concrete_volume_m3_raw": 32.4,
+      "slab_concrete_volume_m3_display": 32.4,
+      "slab_control_geometry_area_m2": 180,
       "slab_edge_perimeter_m": 118,
       "edge_formwork_height_m": 0.2
     },
@@ -47,11 +47,9 @@
       ]
     },
     "rates": {
-      "formwork_rate_calc_method": "legacy_supplier_quote_context",
+      "formwork_rate_calc_method": "direct_section_rate",
       "formwork_delivery_calc_method": "area_threshold",
       "formwork_rate_per_m2": 600,
-      "formwork_supplier_quote_total": 170710,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
       "formwork_delivery_rate_per_trip": 20000,
       "crane_shift_rate": 30000,
       "formwork_consumables_rate_per_m2": 47,
@@ -64,8 +62,7 @@
       "additional_timber_coeff": 0.1,
       "additional_timber_thickness_m": 0.05,
       "timber_unit_price": 21500,
-      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
-      "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
+      "metal_delivery_calc_method": "section_output_only",
       "max_rebar_delivery_weight_per_truck_kg": 10000,
       "rebar_delivery_rate_per_truck": 22000,
       "slab_concreting_work_rate_per_m3": 12000,
@@ -172,24 +169,19 @@
       "consumables_and_tool_percent": 0.03
     },
     "manual_lines": {
-      "formwork_delivery_trucks_override": 4,
       "formwork_rebar_crane_shifts": 2,
       "concrete_pump_shifts": 1,
       "technical_supervision_amount": 5000
-    },
-    "pricing": {
-      "mode": "price_registry_with_fallback",
-      "registry_path": "output/price_registry_filled_v3.xlsx"
     }
   },
   "calculation_blocks": {
     "geometry": {
-      "total_concrete_volume_from_spec_m3": 40.53,
+      "total_concrete_volume_from_spec_m3": 35.5548,
       "slab_thickness_m": 0.18,
-      "slab_concrete_volume_m3_raw": 37.3752,
-      "slab_concrete_volume_m3_display": 37.38,
-      "slab_formwork_area_m2": 207.64,
-      "slab_control_geometry_area_m2": 210.64,
+      "slab_concrete_volume_m3_raw": 32.4,
+      "slab_concrete_volume_m3_display": 32.4,
+      "slab_formwork_area_m2": 180.0,
+      "slab_control_geometry_area_m2": 180,
       "slab_edge_perimeter_m": 118,
       "edge_formwork_height_m": 0.2
     },
@@ -235,35 +227,29 @@
       "edge_and_beam_formwork_area_m2": 51.592,
       "excel_rate_per_m2": 600.0,
       "formwork_delivery_calc_method": "area_threshold",
-      "formwork_delivery_area_source_m2": 207.64,
+      "formwork_delivery_area_source_m2": 180.0,
       "formwork_delivery_threshold_m2": 180.0,
-      "formwork_delivery_trucks": 4.0,
-      "formwork_delivery_breakdown": "2 привоза + 2 вывоза",
+      "formwork_delivery_trucks": 2.0,
+      "formwork_delivery_breakdown": "1 привоз + 1 вывоз",
       "formwork_delivery_status": "calculated",
-      "formwork_delivery_note": "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.",
-      "supplier_quote_total": 170710.0,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
-      "raw_average_rate": 589.5903847
+      "formwork_delivery_note": "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины."
     },
     "formwork_rate_context": {
-      "formwork_rate_calc_method": "legacy_supplier_quote_context",
-      "formwork_supplier_quote_total": 170710.0,
-      "slab_2_formwork_area_for_rate_context_m2": 81.9,
-      "raw_average_rate": 589.5903847,
+      "formwork_rate_calc_method": "direct_section_rate",
       "formwork_rate_per_m2": 600.0,
-      "box_level_quote_context_used": true
+      "box_level_quote_context_used": false
     },
     "plywood_and_timber": {
       "edge_and_beam_plywood_sheets_raw": 22.431304,
-      "non_multiple_places_area_m2": 41.528,
-      "non_multiple_places_plywood_sheets_raw": 18.055652,
-      "base_plywood_sheets_raw": 40.486957,
-      "order_plywood_sheets_raw": 50.486957,
-      "order_plywood_sheets": 51,
+      "non_multiple_places_area_m2": 36.0,
+      "non_multiple_places_plywood_sheets_raw": 15.652174,
+      "base_plywood_sheets_raw": 38.083478,
+      "order_plywood_sheets_raw": 48.083478,
+      "order_plywood_sheets": 49,
       "overhang_sheet_equivalent": 24.193478,
       "base_timber_volume_m3": 2.5796,
-      "additional_timber_volume_m3": 0.211246,
-      "timber_volume_m3_raw": 2.790846
+      "additional_timber_volume_m3": 0.199228,
+      "timber_volume_m3_raw": 2.778828
     },
     "rebar": {
       "rebar_calc_method": "legacy_weight_parts",
@@ -483,21 +469,17 @@
       },
       "rebar_frame_assembly_quantity_m": 7294.8,
       "floor_slab_1_rebar_weight_with_waste_kg": 4630.1,
-      "metal_delivery_calc_method": "legacy_slab1_slab2_context",
+      "metal_delivery_calc_method": "section_output_only",
       "section_rebar_delivery_weight_kg": 4665.1632,
-      "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
-      "total_delivery_weight_kg_raw": 6455.49,
-      "total_delivery_weight_kg_display": 6456,
       "max_weight_per_truck_kg": 10000.0,
-      "trucks_ordered": 1,
-      "legacy_delivery_line_enabled": true,
-      "box_level_delivery_required": false
+      "legacy_delivery_line_enabled": false,
+      "box_level_delivery_required": true
     },
     "concrete": {
-      "total_project_concrete_volume_m3": 40.53,
-      "concrete_volume_with_waste_m3_raw": 42.5565,
-      "concrete_volume_with_waste_m3_display": 42.56,
-      "order_concrete_volume_m3": 43,
+      "total_project_concrete_volume_m3": 35.5548,
+      "concrete_volume_with_waste_m3_raw": 37.33254,
+      "concrete_volume_with_waste_m3_display": 37.33,
+      "order_concrete_volume_m3": 38,
       "mixer_capacity_m3": 9,
       "concrete_delivery_trips": 5
     },
@@ -535,23 +517,23 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1713968.300518,
+      "base_subtotal_raw_before_overheads": 1539224.446612,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 17139.683005,
-      "logistics_and_supply_total": 17140,
+      "logistics_and_supply_total_raw": 15392.244466,
+      "logistics_and_supply_total": 15392,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 51419.049016,
-      "consumables_and_tool_depreciation_total": 51419
+      "consumables_and_tool_depreciation_total_raw": 46176.733398,
+      "consumables_and_tool_depreciation_total": 46177
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
       "technical_supervision_amount": 5000
     },
     "control_metrics": {
-      "control_geometry_area_m2": 210.64,
-      "slab_area_used_in_estimate_m2": 207.64,
+      "control_geometry_area_m2": 180,
+      "slab_area_used_in_estimate_m2": 180.0,
       "beam_concreting_control_total_by_length": 46400,
-      "reinforcement_density_kg_per_m3": 108.79
+      "reinforcement_density_kg_per_m3": 124.03
     }
   },
   "estimate_lines": [
@@ -560,61 +542,49 @@
       "name": "Монтаж опалубки под монолитное перекрытие 1-го этажа",
       "unit": "м2",
       "line_type": "zero_control_line",
-      "quantity_raw": 207.64,
-      "quantity_display": 207.64,
+      "quantity_raw": 180.0,
+      "quantity_display": 180.0,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,
       "work_total": 0,
       "line_total_raw": 0.0,
       "line_total": 0,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "notes": []
     },
     {
       "code": "formwork_set_rental_material",
       "name": "Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые)",
       "unit": "м2",
       "line_type": "materials",
-      "quantity_raw": 207.64,
-      "quantity_display": 207.64,
-      "material_total_raw": 124584.0,
-      "material_total": 124584,
+      "quantity_raw": 180.0,
+      "quantity_display": 180.0,
+      "material_total_raw": 108000.0,
+      "material_total": 108000,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 124584.0,
-      "line_total": 124584,
+      "line_total_raw": 108000.0,
+      "line_total": 108000,
       "notes": [],
-      "price_code": "formwork_rental_m2",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "formwork_rental_m2"
     },
     {
       "code": "formwork_delivery_return_manipulator",
       "name": "Доставка, вывоз опалубки манипулятором",
       "unit": "маш",
       "line_type": "logistics_machinery",
-      "quantity_raw": 4.0,
-      "quantity_display": 4.0,
-      "material_total_raw": 80000.0,
-      "material_total": 80000,
+      "quantity_raw": 2.0,
+      "quantity_display": 2.0,
+      "material_total_raw": 40000.0,
+      "material_total": 40000,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 80000.0,
-      "line_total": 80000,
+      "line_total_raw": 40000.0,
+      "line_total": 40000,
       "notes": [
         "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины."
       ],
-      "price_code": "formwork_delivery_truck",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "formwork_delivery_truck"
     },
     {
       "code": "formwork_rebar_crane_supply",
@@ -632,11 +602,7 @@
       "notes": [
         "3-я смена пока только manual_review / override."
       ],
-      "price_code": "crane_shift",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "crane_shift"
     },
     {
       "code": "formwork_consumables",
@@ -645,18 +611,14 @@
       "line_type": "materials_consumables",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 9759.08,
-      "material_total": 9759,
+      "material_total_raw": 8460.0,
+      "material_total": 8460,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 9759.08,
-      "line_total": 9759,
+      "line_total_raw": 8460.0,
+      "line_total": 8460,
       "notes": [],
-      "price_code": "formwork_consumables_m2",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "formwork_consumables_m2"
     },
     {
       "code": "edge_beam_formwork_installation_control",
@@ -671,53 +633,41 @@
       "work_total": 0,
       "line_total_raw": 0.0,
       "line_total": 0,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "notes": []
     },
     {
       "code": "plywood_fk_18mm_for_edges_and_non_multiple_places",
       "name": "Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов",
       "unit": "шт",
       "line_type": "materials",
-      "quantity_raw": 51.0,
-      "quantity_display": 51.0,
-      "material_total_raw": 73950.0,
-      "material_total": 73950,
+      "quantity_raw": 49.0,
+      "quantity_display": 49.0,
+      "material_total_raw": 71050.0,
+      "material_total": 71050,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 73950.0,
-      "line_total": 73950,
+      "line_total_raw": 71050.0,
+      "line_total": 71050,
       "notes": [],
-      "price_code": "plywood_1520x1520_18mm_sheet",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "plywood_1520x1520_18mm_sheet"
     },
     {
       "code": "formwork_timber_gost",
       "name": "Пиломатериал обрезной для устройства опалубки ГОСТ",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 2.790846,
-      "quantity_display": 2.79,
-      "material_total_raw": 60003.181518,
-      "material_total": 60003,
+      "quantity_raw": 2.778828,
+      "quantity_display": 2.78,
+      "material_total_raw": 59744.807612,
+      "material_total": 59745,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 60003.181518,
-      "line_total": 60003,
+      "line_total_raw": 59744.807612,
+      "line_total": 59745,
       "notes": [
         "Сумма считается от quantity_raw, не от отображаемого количества."
       ],
-      "price_code": "timber_m3",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "timber_m3"
     },
     {
       "code": "floor_slab_rebar_frame_assembly_control",
@@ -732,11 +682,7 @@
       "work_total": 0,
       "line_total_raw": 0.0,
       "line_total": 0,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "notes": []
     },
     {
       "code": "rebar_a500_d25",
@@ -745,19 +691,14 @@
       "line_type": "materials",
       "quantity_raw": 46.8,
       "quantity_display": 46.8,
-      "material_total_raw": 7291.44,
-      "material_total": 7291,
+      "material_total_raw": 9189.18,
+      "material_total": 9189,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 7291.44,
-      "line_total": 7291,
+      "line_total_raw": 9189.18,
+      "line_total": 9189,
       "notes": [],
-      "price_code": "rebar_a500_d25_m",
-      "material_unit_price": 155.8,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "155.8",
-      "price_warning": null
+      "price_code": "rebar_a500_d25_m"
     },
     {
       "code": "rebar_a500_d16",
@@ -766,19 +707,14 @@
       "line_type": "materials",
       "quantity_raw": 81.9,
       "quantity_display": 81.9,
-      "material_total_raw": 5315.31,
-      "material_total": 5315,
+      "material_total_raw": 6599.502,
+      "material_total": 6600,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 5315.31,
-      "line_total": 5315,
+      "line_total_raw": 6599.502,
+      "line_total": 6600,
       "notes": [],
-      "price_code": "rebar_a500_d16_m",
-      "material_unit_price": 64.9,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "64.9",
-      "price_warning": null
+      "price_code": "rebar_a500_d16_m"
     },
     {
       "code": "rebar_a500_d12",
@@ -787,19 +723,14 @@
       "line_type": "materials",
       "quantity_raw": 58.5,
       "quantity_display": 58.5,
-      "material_total_raw": 2155.725,
-      "material_total": 2156,
+      "material_total_raw": 2649.465,
+      "material_total": 2649,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 2155.725,
-      "line_total": 2156,
+      "line_total_raw": 2649.465,
+      "line_total": 2649,
       "notes": [],
-      "price_code": "rebar_a500_d12_m",
-      "material_unit_price": 36.85,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "36.85",
-      "price_warning": null
+      "price_code": "rebar_a500_d12_m"
     },
     {
       "code": "rebar_a500_d10",
@@ -808,19 +739,14 @@
       "line_type": "materials",
       "quantity_raw": 6879.6,
       "quantity_display": 6879.6,
-      "material_total_raw": 186849.936,
-      "material_total": 186850,
+      "material_total_raw": 225100.512,
+      "material_total": 225101,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 186849.936,
-      "line_total": 186850,
+      "line_total_raw": 225100.512,
+      "line_total": 225101,
       "notes": [],
-      "price_code": "rebar_a500_d10_m",
-      "material_unit_price": 27.16,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "27.16",
-      "price_warning": null
+      "price_code": "rebar_a500_d10_m"
     },
     {
       "code": "rebar_a240_d8",
@@ -829,19 +755,14 @@
       "line_type": "materials",
       "quantity_raw": 48.0,
       "quantity_display": 48.0,
-      "material_total_raw": 888.0,
-      "material_total": 888,
+      "material_total_raw": 1152.0,
+      "material_total": 1152,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 888.0,
-      "line_total": 888,
+      "line_total_raw": 1152.0,
+      "line_total": 1152,
       "notes": [],
-      "price_code": "rebar_a240_d8_m",
-      "material_unit_price": 18.5,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "18.5",
-      "price_warning": null
+      "price_code": "rebar_a240_d8_m"
     },
     {
       "code": "rebar_a240_d6",
@@ -850,63 +771,32 @@
       "line_type": "materials",
       "quantity_raw": 180.0,
       "quantity_display": 180.0,
-      "material_total_raw": 1845.0,
-      "material_total": 1845,
+      "material_total_raw": 2397.6,
+      "material_total": 2398,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 1845.0,
-      "line_total": 1845,
+      "line_total_raw": 2397.6,
+      "line_total": 2398,
       "notes": [],
-      "price_code": "rebar_a240_d6_m",
-      "material_unit_price": 10.25,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "10.25",
-      "price_warning": null
-    },
-    {
-      "code": "rebar_metal_delivery",
-      "name": "Доставка арматуры, металла",
-      "unit": "маш",
-      "line_type": "logistics_machinery",
-      "quantity_raw": 1.0,
-      "quantity_display": 1.0,
-      "material_total_raw": 22000.0,
-      "material_total": 22000,
-      "work_total_raw": 0.0,
-      "work_total": 0,
-      "line_total_raw": 22000.0,
-      "line_total": 22000,
-      "notes": [
-        "Legacy: доставка металла считалась с контекстом веса арматуры плиты 2-го этажа."
-      ],
-      "price_code": "metal_delivery_truck",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "rebar_a240_d6_m"
     },
     {
       "code": "floor_slab_concreting_work",
       "name": "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",
       "unit": "м3",
       "line_type": "work",
-      "quantity_raw": 37.3752,
-      "quantity_display": 37.38,
+      "quantity_raw": 32.4,
+      "quantity_display": 32.4,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 448502.4,
-      "work_total": 448502,
-      "line_total_raw": 448502.4,
-      "line_total": 448502,
+      "work_total_raw": 388800.0,
+      "work_total": 388800,
+      "line_total_raw": 388800.0,
+      "line_total": 388800,
       "notes": [
         "Стоимость считается от raw 37.3752, не от display 37.38."
       ],
-      "price_code": "concrete_placing_work_m3",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "concrete_placing_work_m3"
     },
     {
       "code": "beam_concreting_work",
@@ -922,31 +812,23 @@
       "line_total_raw": 63096.0,
       "line_total": 63096,
       "notes": [],
-      "price_code": "beam_concrete_placing_work_m3",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "beam_concrete_placing_work_m3"
     },
     {
       "code": "concrete_b22_5_m300_material",
       "name": "Бетон марки В22,5 (М300)",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 43.0,
-      "quantity_display": 43.0,
-      "material_total_raw": 275200.0,
-      "material_total": 275200,
+      "quantity_raw": 38.0,
+      "quantity_display": 38.0,
+      "material_total_raw": 243200.0,
+      "material_total": 243200,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 275200.0,
-      "line_total": 275200,
+      "line_total_raw": 243200.0,
+      "line_total": 243200,
       "notes": [],
-      "price_code": "concrete_b22_5_m3",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "concrete_b22_5_m3"
     },
     {
       "code": "concrete_delivery",
@@ -962,11 +844,7 @@
       "line_total_raw": 37500.0,
       "line_total": 37500,
       "notes": [],
-      "price_code": "concrete_delivery_trip",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "concrete_delivery_trip"
     },
     {
       "code": "concrete_pump_32m",
@@ -984,18 +862,14 @@
       "notes": [
         "Fixed/manual line; не вычислять от объёма бетона."
       ],
-      "price_code": "concrete_pump_32m_shift",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "concrete_pump_32m_shift"
     },
     {
       "code": "formwork_dismantling_zero_internal",
       "name": "Демонтаж опалубки после завершения бетонирования",
       "unit": "м2",
       "line_type": "client_only_zero_internal_line",
-      "quantity_raw": 207.64,
+      "quantity_raw": 180.0,
       "quantity_display": 207.6,
       "material_total_raw": 0.0,
       "material_total": 0,
@@ -1003,11 +877,7 @@
       "work_total": 0,
       "line_total_raw": 0.0,
       "line_total": 0,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "notes": []
     },
     {
       "code": "edge_beam_insulation_work",
@@ -1023,11 +893,7 @@
       "line_total_raw": 48600.0,
       "line_total": 48600,
       "notes": [],
-      "price_code": "edge_insulation_work_m",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "edge_insulation_work_m"
     },
     {
       "code": "bottom_slab_insulation_work",
@@ -1045,11 +911,7 @@
       "notes": [
         "Стоимость считается от raw 51.92, не от display 51.9."
       ],
-      "price_code": "eps_bottom_slab_insulation_work_m2",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "eps_bottom_slab_insulation_work_m2"
     },
     {
       "code": "eps_penoplex_osnova_100mm",
@@ -1067,11 +929,7 @@
       "notes": [
         "Стоимость считается от закупочного raw-объёма 8.319, не от display 8.32."
       ],
-      "price_code": "eps_penoplex_osnova_100_m3",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "eps_penoplex_osnova_100_m3"
     },
     {
       "code": "eps_glue_foam",
@@ -1080,19 +938,14 @@
       "line_type": "materials_consumables",
       "quantity_raw": 8.0,
       "quantity_display": 8.0,
-      "material_total_raw": 3600.0,
-      "material_total": 3600,
+      "material_total_raw": 3920.0,
+      "material_total": 3920,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 3600.0,
-      "line_total": 3600,
+      "line_total_raw": 3920.0,
+      "line_total": 3920,
       "notes": [],
-      "price_code": "eps_foam_glue_can",
-      "material_unit_price": 450.0,
-      "unit_price_source": "price_registry",
-      "unit_price_original": null,
-      "unit_price_used": "450",
-      "price_warning": null
+      "price_code": "eps_foam_glue_can"
     },
     {
       "code": "logistics_and_supply",
@@ -1101,17 +954,13 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 17139.683005,
-      "material_total": 17140,
+      "material_total_raw": 15392.244466,
+      "material_total": 15392,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17139.683005,
-      "line_total": 17140,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "line_total_raw": 15392.244466,
+      "line_total": 15392,
+      "notes": []
     },
     {
       "code": "consumables_tool_depreciation",
@@ -1120,17 +969,13 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 51419.049016,
-      "material_total": 51419,
+      "material_total_raw": 46176.733398,
+      "material_total": 46177,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 51419.049016,
-      "line_total": 51419,
-      "notes": [],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": null
+      "line_total_raw": 46176.733398,
+      "line_total": 46177,
+      "notes": []
     },
     {
       "code": "technical_supervision",
@@ -1146,62 +991,143 @@
       "line_total_raw": 5000.0,
       "line_total": 5000,
       "notes": [],
-      "price_code": "technical_supervision_fixed",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": null,
-      "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_code": "technical_supervision_fixed"
     }
   ],
   "totals": {
-    "internal_materials_total": 1132538,
-    "internal_works_total": 611926,
-    "internal_section_total": 1744464,
-    "base_subtotal_raw_before_overheads": 1713968.300518,
-    "logistics_and_supply_total": 17140,
-    "consumables_and_tool_depreciation_total": 51419,
-    "technical_supervision_total": 5000,
-    "internal_materials_total_raw": "1132537.784539",
-    "internal_works_total_raw": "611926.4",
-    "internal_section_total_raw": "1744464.184539",
-    "sum_of_displayed_line_material_totals": 1132537,
-    "sum_of_displayed_line_work_totals": 611926,
-    "sum_of_displayed_line_totals": 1744463
+    "internal_materials_total": 1053570,
+    "internal_works_total": 552224,
+    "internal_section_total": 1605794,
+    "base_subtotal_raw_before_overheads": 1539224.446612,
+    "logistics_and_supply_total": 15392,
+    "consumables_and_tool_depreciation_total": 46177,
+    "technical_supervision_total": 5000
   },
-  "warnings": [
-    "formwork_rental_m2: price_code not found in price_registry and fallback input price is missing",
-    "formwork_delivery_truck: price_code not found in price_registry and fallback input price is missing",
-    "crane_shift: price_code not found in price_registry and fallback input price is missing",
-    "formwork_consumables_m2: price_code not found in price_registry and fallback input price is missing",
-    "plywood_1520x1520_18mm_sheet: price_code not found in price_registry and fallback input price is missing",
-    "timber_m3: price_code not found in price_registry and fallback input price is missing",
-    "metal_delivery_truck: price_code not found in price_registry and fallback input price is missing",
-    "concrete_placing_work_m3: price_code not found in price_registry and fallback input price is missing",
-    "beam_concrete_placing_work_m3: price_code not found in price_registry and fallback input price is missing",
-    "concrete_b22_5_m3: price_code not found in price_registry and fallback input price is missing",
-    "concrete_delivery_trip: price_code not found in price_registry and fallback input price is missing",
-    "concrete_pump_32m_shift: price_code not found in price_registry and fallback input price is missing",
-    "edge_insulation_work_m: price_code not found in price_registry and fallback input price is missing",
-    "eps_bottom_slab_insulation_work_m2: price_code not found in price_registry and fallback input price is missing",
-    "eps_penoplex_osnova_100_m3: price_code not found in price_registry and fallback input price is missing",
-    "technical_supervision_fixed: price_code not found in price_registry and fallback input price is missing"
-  ],
-  "pricing_summary": {
-    "mode": "price_registry_with_fallback",
-    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 7,
-    "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 16,
-    "warnings_count": 16
+  "warnings": [],
+  "case_name": "test_floor_slab_1_formwork_delivery_threshold",
+  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_formwork_delivery_threshold/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_formwork_delivery_threshold/expected.json",
+  "expected": {
+    "calculation_blocks": {
+      "geometry": {
+        "slab_formwork_area_m2": 180
+      },
+      "formwork": {
+        "formwork_delivery_calc_method": "area_threshold",
+        "formwork_delivery_area_source_m2": 180,
+        "formwork_delivery_threshold_m2": 180,
+        "formwork_delivery_trucks": 2,
+        "formwork_delivery_breakdown": "1 привоз + 1 вывоз",
+        "formwork_delivery_status": "calculated"
+      }
+    },
+    "estimate_lines": {
+      "formwork_delivery_return_manipulator": {
+        "quantity_raw": 2,
+        "quantity_display": 2,
+        "unit": "маш",
+        "material_total_raw": 40000,
+        "material_total": 40000,
+        "line_total": 40000
+      }
+    }
   },
-  "case_name": "test_floor_slab_1_live_prices",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_live_prices/input.json",
-  "expected_path": null,
-  "expected": {},
   "comparison": {
     "status": "ok",
-    "ok_count": 0,
+    "ok_count": 13,
     "mismatch_count": 0,
-    "items": []
+    "items": [
+      {
+        "key": "calculation_blocks.geometry.slab_formwork_area_m2",
+        "expected": 180,
+        "actual": 180.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_calc_method",
+        "expected": "area_threshold",
+        "actual": "area_threshold",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_area_source_m2",
+        "expected": 180,
+        "actual": 180.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_threshold_m2",
+        "expected": 180,
+        "actual": 180.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_trucks",
+        "expected": 2,
+        "actual": 2.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_breakdown",
+        "expected": "1 привоз + 1 вывоз",
+        "actual": "1 привоз + 1 вывоз",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.formwork.formwork_delivery_status",
+        "expected": "calculated",
+        "actual": "calculated",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.quantity_raw",
+        "expected": 2,
+        "actual": 2.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.quantity_display",
+        "expected": 2,
+        "actual": 2.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.unit",
+        "expected": "маш",
+        "actual": "маш",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.material_total_raw",
+        "expected": 40000,
+        "actual": 40000.0,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.material_total",
+        "expected": 40000,
+        "actual": 40000,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.formwork_delivery_return_manipulator.line_total",
+        "expected": 40000,
+        "actual": 40000,
+        "diff": 0,
+        "status": "ok"
+      }
+    ]
   }
 }

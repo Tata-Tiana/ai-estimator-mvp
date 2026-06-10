@@ -40,6 +40,8 @@
     ]
   },
   "rates": {
+    "formwork_rate_calc_method": "legacy_supplier_quote_context",
+    "formwork_delivery_calc_method": "area_threshold",
     "formwork_rate_per_m2": 600,
     "formwork_supplier_quote_total": 170710,
     "slab_2_formwork_area_for_rate_context_m2": 81.9,
@@ -55,6 +57,7 @@
     "additional_timber_coeff": 0.1,
     "additional_timber_thickness_m": 0.05,
     "timber_unit_price": 21500,
+    "metal_delivery_calc_method": "legacy_slab1_slab2_context",
     "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
     "max_rebar_delivery_weight_per_truck_kg": 10000,
     "rebar_delivery_rate_per_truck": 22000,
@@ -68,6 +71,7 @@
     "edge_beam_insulation_work_rate_per_m": 450,
     "bottom_slab_insulation_work_rate_per_m2": 900
   },
+  "rebar_calc_method": "legacy_weight_parts",
   "rebar_items": [
     {
       "code": "rebar_a500_d25",
@@ -147,6 +151,7 @@
     }
   ],
   "insulation": {
+    "insulation_calc_method": "legacy_usv_geometry",
     "total_eps_volume_from_spec_m3": 7.77,
     "eps_thickness_m": 0.1,
     "eps_waste_coeff": 1.05,
