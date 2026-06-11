@@ -69,6 +69,154 @@ def calculate_rebar_item(item: dict[str, Any], default_waste_coeff: Any) -> dict
     }
 
 
+def round_optional(value: Any, places: str = "0.000001") -> float | None:
+    return None if value is None else round_decimal(value, places)
+
+
+def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
+    method = input_data.get("formwork_area_calc_method", "legacy_dimensions")
+    if method not in {"legacy_dimensions", "spec_formwork_area"}:
+        raise ValueError(
+            "formwork_area_calc_method must be either legacy_dimensions or spec_formwork_area."
+        )
+
+    slab_length = d(input_data["slab_length_m"]) if input_data.get("slab_length_m") is not None else None
+    slab_width = d(input_data["slab_width_m"]) if input_data.get("slab_width_m") is not None else None
+    input_slab_area = d(input_data["slab_area_m2"]) if input_data.get("slab_area_m2") is not None else None
+    input_edge_perimeter = (
+        d(input_data["slab_edge_perimeter_m"])
+        if input_data.get("slab_edge_perimeter_m") is not None
+        else None
+    )
+
+    calculated_slab_area = None
+    calculated_slab_edge_perimeter = None
+    if slab_length is not None and slab_width is not None:
+        calculated_slab_area = slab_length * slab_width
+        calculated_slab_edge_perimeter = slab_length * d(2) + slab_width * d(2)
+
+    area_delta = None
+    if calculated_slab_area is not None and input_slab_area is not None:
+        area_delta = calculated_slab_area - input_slab_area
+        if abs(area_delta) > d("0.01"):
+            warnings.append(
+                "calculated_slab_area_m2 differs from slab_area_m2 by more than 0.01 m2."
+            )
+
+    if method == "legacy_dimensions":
+        if slab_length is None or slab_width is None:
+            raise ValueError("slab_length_m and slab_width_m are required for legacy_dimensions.")
+        slab_area = calculated_slab_area
+        slab_edge_perimeter = calculated_slab_edge_perimeter
+        main_formwork_area = slab_area
+        formwork_area_source = "legacy_dimensions"
+        slab_edge_perimeter_source = "legacy_dimensions"
+    else:
+        if input_data.get("main_formwork_area_m2") is None:
+            raise ValueError("main_formwork_area_m2 is required for spec_formwork_area.")
+        main_formwork_area = d(input_data["main_formwork_area_m2"])
+        if main_formwork_area < D0:
+            raise ValueError("main_formwork_area_m2 must be >= 0.")
+
+        if input_edge_perimeter is not None:
+            slab_edge_perimeter = input_edge_perimeter
+            slab_edge_perimeter_source = "spec_edge_perimeter"
+        elif calculated_slab_edge_perimeter is not None:
+            slab_edge_perimeter = calculated_slab_edge_perimeter
+            slab_edge_perimeter_source = "dimensions_fallback"
+            warnings.append(
+                "slab_edge_perimeter_m was calculated from dimensions as fallback; "
+                "production should provide it from specification."
+            )
+        else:
+            raise ValueError(
+                "slab_edge_perimeter_m is required for spec_formwork_area because edge insulation uses it."
+            )
+
+        if slab_edge_perimeter < D0:
+            raise ValueError("slab_edge_perimeter_m must be >= 0.")
+
+        slab_area = input_slab_area if input_slab_area is not None else calculated_slab_area
+        formwork_area_source = "spec_formwork_area"
+
+    formwork_area_delta = None
+    if input_slab_area is not None:
+        formwork_area_delta = main_formwork_area - input_slab_area
+        if abs(formwork_area_delta) > d("0.01"):
+            warnings.append("main_formwork_area_m2 differs from slab_area_m2 by more than 0.01 m2.")
+
+    return {
+        "formwork_area_calc_method": method,
+        "formwork_area_source": formwork_area_source,
+        "slab_edge_perimeter_source": slab_edge_perimeter_source,
+        "slab_length_m": slab_length,
+        "slab_width_m": slab_width,
+        "slab_area_m2": slab_area,
+        "slab_edge_perimeter_m": slab_edge_perimeter,
+        "main_formwork_area_m2": main_formwork_area,
+        "calculated_slab_area_m2": calculated_slab_area,
+        "calculated_slab_edge_perimeter_m": calculated_slab_edge_perimeter,
+        "input_slab_area_m2": input_slab_area,
+        "area_delta_m2": area_delta,
+        "formwork_area_delta_m2": formwork_area_delta,
+    }
+
+
+def calculate_formwork_delivery_context(
+    input_data: dict[str, Any],
+    main_formwork_area: Decimal,
+) -> dict[str, Any]:
+    method = input_data.get("formwork_delivery_calc_method", "area_threshold")
+    threshold = d(input_data.get("formwork_delivery_threshold_m2", 180))
+    manual_lines = input_data.get("manual_lines") or {}
+
+    if method == "area_threshold":
+        if main_formwork_area < D0:
+            raise ValueError("main_formwork_area_m2 must be >= 0 for area_threshold.")
+        if main_formwork_area <= threshold:
+            trips = 2
+            breakdown = "1 привоз + 1 вывоз"
+        else:
+            trips = 4
+            breakdown = "2 привоза + 2 вывоза"
+        status = "calculated"
+    elif method == "manual_override":
+        override = manual_lines.get("formwork_delivery_trips_override", input_data.get("formwork_delivery_trips"))
+        if override is None:
+            raise ValueError(
+                "manual_lines.formwork_delivery_trips_override is required for manual_override."
+            )
+        trips_decimal = d(override)
+        if trips_decimal < D0:
+            raise ValueError("manual_lines.formwork_delivery_trips_override must be >= 0.")
+        trips = trips_decimal
+        breakdown = "manual override"
+        status = "manual_override"
+    else:
+        raise ValueError(
+            "formwork_delivery_calc_method must be either area_threshold or manual_override."
+        )
+
+    unit_price = d(input_data["formwork_delivery_unit_price"])
+    if unit_price < D0:
+        raise ValueError("formwork_delivery_unit_price must be >= 0.")
+
+    return {
+        "formwork_delivery_calc_method": method,
+        "formwork_delivery_area_source_m2": main_formwork_area,
+        "formwork_delivery_threshold_m2": threshold,
+        "formwork_delivery_trips": trips,
+        "formwork_delivery_breakdown": breakdown,
+        "formwork_delivery_status": status,
+        "formwork_delivery_unit_price": unit_price,
+        "formwork_delivery_total_raw": d(trips) * unit_price,
+        "formwork_delivery_note": (
+            "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 рейса; "
+            "более 180 м2: 2 привоза + 2 вывоза = 4 рейса."
+        ),
+    }
+
+
 def estimate_line(
     code: str,
     name: str,
@@ -115,20 +263,18 @@ def estimate_line(
 def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings: list[str] = []
 
-    slab_length = d(input_data["slab_length_m"])
-    slab_width = d(input_data["slab_width_m"])
-    slab_area = slab_length * slab_width
-    slab_edge_perimeter = slab_length * d(2) + slab_width * d(2)
-    main_formwork_area = d(input_data["main_formwork_area_m2"])
+    geometry_context = calculate_geometry_context(input_data, warnings)
+    slab_area = geometry_context["slab_area_m2"]
+    slab_edge_perimeter = geometry_context["slab_edge_perimeter_m"]
+    main_formwork_area = geometry_context["main_formwork_area_m2"]
 
     supplier_quote = d(input_data["formwork_rental_supplier_quote_total"])
     raw_supplier_rate = supplier_quote / main_formwork_area
     formwork_rate = d(input_data["formwork_rental_used_rate_per_m2"])
     formwork_rental_total_raw = main_formwork_area * formwork_rate
 
-    formwork_delivery_total_raw = (
-        d(input_data["formwork_delivery_trips"]) * d(input_data["formwork_delivery_unit_price"])
-    )
+    formwork_delivery = calculate_formwork_delivery_context(input_data, main_formwork_area)
+    formwork_delivery_total_raw = d(formwork_delivery["formwork_delivery_total_raw"])
     crane_total_raw = d(input_data["crane_shifts"]) * d(input_data["crane_unit_price"])
     formwork_consumables_total_raw = main_formwork_area * d(input_data["formwork_consumables_rate_per_m2"])
 
@@ -228,9 +374,10 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "Доставка, вывоз опалубки манипулятором",
             "маш",
             "logistics_machinery",
-            input_data["formwork_delivery_trips"],
-            material_unit_price=input_data["formwork_delivery_unit_price"],
+            formwork_delivery["formwork_delivery_trips"],
+            material_unit_price=formwork_delivery["formwork_delivery_unit_price"],
             material_total_raw=formwork_delivery_total_raw,
+            notes=[formwork_delivery["formwork_delivery_note"]],
             price_code="formwork_delivery_truck",
         ),
         estimate_line(
@@ -458,16 +605,38 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
 
     calculation_blocks = {
         "geometry": {
-            "slab_length_m": round_decimal(slab_length),
-            "slab_width_m": round_decimal(slab_width),
-            "slab_area_m2": round_decimal(slab_area),
+            "formwork_area_calc_method": geometry_context["formwork_area_calc_method"],
+            "formwork_area_source": geometry_context["formwork_area_source"],
+            "slab_edge_perimeter_source": geometry_context["slab_edge_perimeter_source"],
+            "slab_length_m": round_optional(geometry_context["slab_length_m"]),
+            "slab_width_m": round_optional(geometry_context["slab_width_m"]),
+            "slab_area_m2": round_optional(slab_area),
             "slab_edge_perimeter_m": round_decimal(slab_edge_perimeter),
+            "main_formwork_area_m2": round_decimal(main_formwork_area),
+            "calculated_slab_area_m2": round_optional(geometry_context["calculated_slab_area_m2"]),
+            "calculated_slab_edge_perimeter_m": round_optional(
+                geometry_context["calculated_slab_edge_perimeter_m"]
+            ),
+            "input_slab_area_m2": round_optional(geometry_context["input_slab_area_m2"]),
+            "area_delta_m2": round_optional(geometry_context["area_delta_m2"]),
+            "formwork_area_delta_m2": round_optional(geometry_context["formwork_area_delta_m2"]),
         },
         "formwork": {
+            "formwork_area_calc_method": geometry_context["formwork_area_calc_method"],
             "main_formwork_area_m2": round_decimal(main_formwork_area),
             "raw_supplier_rate": round_decimal(raw_supplier_rate),
             "used_rate_per_m2": round_decimal(formwork_rate),
             "edge_formwork_area_m2": round_decimal(edge_formwork_area),
+            "formwork_delivery_calc_method": formwork_delivery["formwork_delivery_calc_method"],
+            "formwork_delivery_area_source_m2": round_decimal(
+                formwork_delivery["formwork_delivery_area_source_m2"]
+            ),
+            "formwork_delivery_threshold_m2": round_decimal(
+                formwork_delivery["formwork_delivery_threshold_m2"]
+            ),
+            "formwork_delivery_trips": round_decimal(formwork_delivery["formwork_delivery_trips"]),
+            "formwork_delivery_breakdown": formwork_delivery["formwork_delivery_breakdown"],
+            "formwork_delivery_status": formwork_delivery["formwork_delivery_status"],
         },
         "plywood_and_timber": {
             "edge_plywood_sheets_raw": round_decimal(edge_plywood_sheets_raw),

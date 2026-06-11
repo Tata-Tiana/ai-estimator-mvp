@@ -158,6 +158,49 @@ def collect_notes(calculation: dict[str, Any]) -> list[str]:
     return notes
 
 
+def formwork_areas_context_markdown(calculation: dict[str, Any]) -> list[str]:
+    formwork = calculation["calculation_blocks"].get("formwork", {})
+    method = formwork.get("formwork_areas_calc_method")
+    lines = ["## Площади опалубки", ""]
+    if method == "spec_formwork_areas":
+        lines.extend(
+            [
+                "Production-режим `spec_formwork_areas`: три площади опалубки берутся готовыми значениями из спецификации.",
+                "",
+                "Старые формулы через бетон, толщину, периметр и `beams.items` выводятся только как контрольные значения.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Legacy-режим `legacy_calculated_from_geometry`: площади опалубки восстанавливаются из объёма бетона, толщины, периметра и геометрии балок.",
+                "",
+            ]
+        )
+
+    lines.extend(
+        dict_table(
+            {
+                "formwork_areas_calc_method": method,
+                "formwork_areas_source": formwork.get("formwork_areas_source"),
+                "main_formwork_area_m2": formwork.get("main_formwork_area_m2"),
+                "slab_formwork_area_m2": formwork.get("slab_formwork_area_m2"),
+                "edge_formwork_area_m2": formwork.get("edge_formwork_area_m2"),
+                "beams_formwork_area_m2": formwork.get("beams_formwork_area_m2"),
+                "edge_and_beam_formwork_area_m2": formwork.get("edge_and_beam_formwork_area_m2"),
+                "calculated_main_formwork_area_m2": formwork.get("calculated_main_formwork_area_m2"),
+                "calculated_edge_formwork_area_m2": formwork.get("calculated_edge_formwork_area_m2"),
+                "calculated_beams_formwork_area_m2": formwork.get("calculated_beams_formwork_area_m2"),
+                "main_formwork_area_delta_m2": formwork.get("main_formwork_area_delta_m2"),
+                "edge_formwork_area_delta_m2": formwork.get("edge_formwork_area_delta_m2"),
+                "beams_formwork_area_delta_m2": formwork.get("beams_formwork_area_delta_m2"),
+            }
+        )
+    )
+    return lines
+
+
 def formwork_rate_context_markdown(calculation: dict[str, Any]) -> list[str]:
     context = calculation["calculation_blocks"].get("formwork_rate_context", {})
     method = context.get("formwork_rate_calc_method")
@@ -397,6 +440,8 @@ def format_markdown(case_name: str, calculation: dict[str, Any], comparison: dic
             "",
             "## Расчётные блоки",
             *dict_table(flatten("", calculation["calculation_blocks"])),
+            "",
+            *formwork_areas_context_markdown(calculation),
             "",
             *formwork_rate_context_markdown(calculation),
             "",

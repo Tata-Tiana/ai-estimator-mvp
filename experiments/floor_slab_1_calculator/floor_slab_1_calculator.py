@@ -96,6 +96,7 @@ def calculate_rebar_item(item: dict[str, Any], rebar_calc_method: str) -> dict[s
     order_length = d(rods_ordered) * rod_length
     delivery_weight = order_length * kg_per_meter
     material_total_raw = order_length * unit_price
+
     return {
         "code": item.get("code", make_rebar_code(steel_class, diameter_mm)),
         "name": item.get("name", make_rebar_name(steel_class, diameter_mm)),
@@ -377,6 +378,108 @@ def calculate_insulation_context(
     return context, warnings
 
 
+def optional_decimal(source: dict[str, Any], key: str) -> Decimal | None:
+    if key not in source or source.get(key) is None:
+        return None
+    return d(source[key])
+
+
+def first_optional_decimal(*sources_and_keys: tuple[dict[str, Any], str]) -> Decimal | None:
+    for source, key in sources_and_keys:
+        value = optional_decimal(source, key)
+        if value is not None:
+            return value
+    return None
+
+
+def calculate_formwork_areas_context(
+    input_data: dict[str, Any],
+    geometry_in: dict[str, Any],
+    calculated_main_formwork_area: Decimal | None,
+    calculated_edge_formwork_area: Decimal | None,
+    calculated_beams_formwork_area: Decimal | None,
+    warnings: list[str],
+) -> dict[str, Any]:
+    method = input_data.get("formwork_areas_calc_method", "legacy_calculated_from_geometry")
+    if method not in {"legacy_calculated_from_geometry", "spec_formwork_areas"}:
+        raise ValueError("formwork_areas_calc_method must be legacy_calculated_from_geometry or spec_formwork_areas")
+
+    def delta(spec_value: Decimal | None, calculated_value: Decimal | None, label: str) -> Decimal | None:
+        if spec_value is None or calculated_value is None:
+            return None
+        result = spec_value - calculated_value
+        if abs(result) > d("0.01"):
+            warnings.append(f"Spec formwork area differs from calculated control area: {label}")
+        return result
+
+    if method == "legacy_calculated_from_geometry":
+        if calculated_main_formwork_area is None:
+            raise ValueError("calculated main formwork area is required for legacy_calculated_from_geometry")
+        if calculated_edge_formwork_area is None:
+            raise ValueError("calculated edge formwork area is required for legacy_calculated_from_geometry")
+        if calculated_beams_formwork_area is None:
+            raise ValueError("calculated beams formwork area is required for legacy_calculated_from_geometry")
+        main_formwork_area = calculated_main_formwork_area
+        edge_formwork_area = calculated_edge_formwork_area
+        beams_formwork_area = calculated_beams_formwork_area
+        source = "legacy_calculated_from_geometry"
+    else:
+        main_formwork_area = first_optional_decimal(
+            (input_data, "main_formwork_area_m2"),
+            (geometry_in, "main_formwork_area_m2"),
+        )
+        edge_formwork_area = first_optional_decimal(
+            (input_data, "edge_formwork_area_m2"),
+            (geometry_in, "edge_formwork_area_m2"),
+        )
+        beams_formwork_area = first_optional_decimal(
+            (input_data, "beams_formwork_area_m2"),
+            (geometry_in, "beams_formwork_area_m2"),
+        )
+        if main_formwork_area is None:
+            raise ValueError("main_formwork_area_m2 is required for spec_formwork_areas")
+        if edge_formwork_area is None:
+            raise ValueError("edge_formwork_area_m2 is required for spec_formwork_areas")
+        if beams_formwork_area is None:
+            raise ValueError("beams_formwork_area_m2 is required for spec_formwork_areas")
+        source = "spec_formwork_areas"
+
+    for key, value in {
+        "main_formwork_area_m2": main_formwork_area,
+        "edge_formwork_area_m2": edge_formwork_area,
+        "beams_formwork_area_m2": beams_formwork_area,
+    }.items():
+        if value < D0:
+            raise ValueError(f"{key} must be >= 0")
+
+    edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
+    main_delta = delta(main_formwork_area, calculated_main_formwork_area, "main_formwork_area_m2")
+    edge_delta = delta(edge_formwork_area, calculated_edge_formwork_area, "edge_formwork_area_m2")
+    beams_delta = delta(beams_formwork_area, calculated_beams_formwork_area, "beams_formwork_area_m2")
+
+    return {
+        "formwork_areas_calc_method": method,
+        "formwork_areas_source": source,
+        "main_formwork_area_m2": round_decimal(main_formwork_area),
+        "slab_formwork_area_m2": round_decimal(main_formwork_area),
+        "edge_formwork_area_m2": round_decimal(edge_formwork_area),
+        "beams_formwork_area_m2": round_decimal(beams_formwork_area),
+        "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
+        "calculated_main_formwork_area_m2": None
+        if calculated_main_formwork_area is None
+        else round_decimal(calculated_main_formwork_area),
+        "calculated_edge_formwork_area_m2": None
+        if calculated_edge_formwork_area is None
+        else round_decimal(calculated_edge_formwork_area),
+        "calculated_beams_formwork_area_m2": None
+        if calculated_beams_formwork_area is None
+        else round_decimal(calculated_beams_formwork_area),
+        "main_formwork_area_delta_m2": None if main_delta is None else round_decimal(main_delta),
+        "edge_formwork_area_delta_m2": None if edge_delta is None else round_decimal(edge_delta),
+        "beams_formwork_area_delta_m2": None if beams_delta is None else round_decimal(beams_delta),
+    }
+
+
 def estimate_line(
     code: str,
     name: str,
@@ -453,9 +556,22 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     total_concrete_volume = d(geometry_in["total_concrete_volume_from_spec_m3"])
     slab_thickness = d(geometry_in["slab_thickness_m"])
     slab_concrete_volume = total_concrete_volume - beams_concrete_volume
-    slab_formwork_area = slab_concrete_volume / slab_thickness
-    edge_formwork_area = d(geometry_in["slab_edge_perimeter_m"]) * d(geometry_in["edge_formwork_height_m"])
-    edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
+    calculated_main_formwork_area = slab_concrete_volume / slab_thickness
+    calculated_edge_formwork_area = d(geometry_in["slab_edge_perimeter_m"]) * d(geometry_in["edge_formwork_height_m"])
+    calculated_beams_formwork_area = beams_formwork_area
+    formwork_area_warnings: list[str] = []
+    formwork_areas_context = calculate_formwork_areas_context(
+        input_data,
+        geometry_in,
+        calculated_main_formwork_area,
+        calculated_edge_formwork_area,
+        calculated_beams_formwork_area,
+        formwork_area_warnings,
+    )
+    slab_formwork_area = d(formwork_areas_context["slab_formwork_area_m2"])
+    edge_formwork_area = d(formwork_areas_context["edge_formwork_area_m2"])
+    beams_formwork_area = d(formwork_areas_context["beams_formwork_area_m2"])
+    edge_and_beam_formwork_area = d(formwork_areas_context["edge_and_beam_formwork_area_m2"])
 
     formwork_rate_context = calculate_formwork_rate_context(rates, slab_formwork_area)
     formwork_rate = d(formwork_rate_context["formwork_rate_per_m2"])
@@ -798,8 +914,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     section_total = materials_total + works_total
 
     formwork_block = {
-        "edge_formwork_area_m2": round_decimal(edge_formwork_area),
-        "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
+        **formwork_areas_context,
         "excel_rate_per_m2": formwork_rate_context["formwork_rate_per_m2"],
         **formwork_delivery_context,
     }
@@ -900,5 +1015,5 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "consumables_and_tool_depreciation_total": round_money_half_up(consumables_total_raw),
             "technical_supervision_total": round_money_half_up(manual_lines["technical_supervision_amount"]),
         },
-        "warnings": insulation_warnings,
+        "warnings": formwork_area_warnings + insulation_warnings,
     }

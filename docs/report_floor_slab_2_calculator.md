@@ -12,6 +12,75 @@
 
 AI в расчёте не используется. Формулы, ручные количества, округления и ожидаемые значения зафиксированы явно в `input.json`, `expected.json` и коде калькулятора.
 
+## Обновление 2026-06-10: production-источник площади опалубки
+
+Добавлен режим:
+
+```text
+formwork_area_calc_method =
+  legacy_dimensions
+  spec_formwork_area
+```
+
+В legacy-режиме ЮСВ сохраняется старая геометрия:
+
+```text
+slab_area_m2 = slab_length_m * slab_width_m
+slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)
+main_formwork_area_m2 = slab_area_m2
+```
+
+В production-режиме `spec_formwork_area` строка "Комплект опалубки" берет количество из
+`main_formwork_area_m2`, пришедшего из спецификации. Поля `slab_length_m`, `slab_width_m` и
+`slab_area_m2` больше не являются обязательным источником площади опалубки; они остаются только
+как optional geometry check.
+
+Для утепления торца production-источником является `slab_edge_perimeter_m`: это длина
+утепляемого торца плиты из спецификации. Если в будущем потребуется fallback от габаритов, он
+должен оставаться предупреждением, а не основным production-правилом.
+
+Отдельный отчет по изменению:
+
+```text
+docs/report_floor_slab_2_spec_formwork_area_refactor.md
+```
+
+## Обновление 2026-06-11: автоматизация доставки/вывоза опалубки
+
+Добавлен режим:
+
+```text
+formwork_delivery_calc_method =
+  area_threshold
+  manual_override
+```
+
+Production default: `area_threshold`.
+
+Правило:
+
+```text
+main_formwork_area_m2 <= 180  -> 2 рейса: 1 привоз + 1 вывоз
+main_formwork_area_m2 > 180   -> 4 рейса: 2 привоза + 2 вывоза
+```
+
+В эталонном ЮСВ-кейсе:
+
+```text
+main_formwork_area_m2 = 81.9
+formwork_delivery_trips = 2
+```
+
+Ручной ввод `formwork_delivery_trips` больше не является обязательным production-параметром.
+Для исключений используется режим `manual_override` и поле
+`manual_lines.formwork_delivery_trips_override`.
+
+Отдельный отчет по изменению:
+
+```text
+docs/report_floor_slab_2_formwork_delivery_threshold_refactor.md
+```
+
 ## Где находится
 
 ```text
@@ -84,8 +153,13 @@ calculation_blocks:
 ### Геометрия
 
 ```text
-slab_area_m2 = slab_length_m * slab_width_m
-slab_edge_perimeter_m = slab_length_m * 2 + slab_width_m * 2
+legacy_dimensions:
+  slab_area_m2 = slab_length_m * slab_width_m
+  slab_edge_perimeter_m = slab_length_m * 2 + slab_width_m * 2
+
+spec_formwork_area:
+  main_formwork_area_m2 = готовая площадь опалубки из спецификации
+  slab_edge_perimeter_m = готовая длина утепляемого торца из спецификации
 ```
 
 Текущий кейс:
@@ -103,6 +177,18 @@ material_total = main_formwork_area_m2 * formwork_rental_used_rate_per_m2
 ```
 
 Для совпадения с текущей сметой используется ставка `850 руб/м2`.
+
+### Доставка и вывоз опалубки
+
+```text
+if main_formwork_area_m2 <= 180:
+    formwork_delivery_trips = 2
+else:
+    formwork_delivery_trips = 4
+```
+
+Строка `formwork_delivery_manipulator` берет количество из рассчитанного значения, а не из ручного
+input в production-режиме.
 
 ### Фанера
 

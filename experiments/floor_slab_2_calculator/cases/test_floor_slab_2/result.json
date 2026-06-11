@@ -4,6 +4,7 @@
   "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа на отм. +4.680 (200мм)",
   "inputs": {
     "project_name": "test_floor_slab_2",
+    "formwork_area_calc_method": "legacy_dimensions",
     "slab_length_m": 9,
     "slab_width_m": 9.1,
     "slab_area_m2": 81.9,
@@ -11,6 +12,7 @@
     "main_formwork_area_m2": 81.9,
     "formwork_rental_supplier_quote_total": 68860,
     "formwork_rental_used_rate_per_m2": 850,
+    "formwork_delivery_calc_method": "area_threshold",
     "formwork_delivery_trips": 2,
     "formwork_delivery_unit_price": 20000,
     "crane_shifts": 2,
@@ -80,16 +82,32 @@
   },
   "calculation_blocks": {
     "geometry": {
+      "formwork_area_calc_method": "legacy_dimensions",
+      "formwork_area_source": "legacy_dimensions",
+      "slab_edge_perimeter_source": "legacy_dimensions",
       "slab_length_m": 9.0,
       "slab_width_m": 9.1,
       "slab_area_m2": 81.9,
-      "slab_edge_perimeter_m": 36.2
+      "slab_edge_perimeter_m": 36.2,
+      "main_formwork_area_m2": 81.9,
+      "calculated_slab_area_m2": 81.9,
+      "calculated_slab_edge_perimeter_m": 36.2,
+      "input_slab_area_m2": 81.9,
+      "area_delta_m2": 0.0,
+      "formwork_area_delta_m2": 0.0
     },
     "formwork": {
+      "formwork_area_calc_method": "legacy_dimensions",
       "main_formwork_area_m2": 81.9,
       "raw_supplier_rate": 840.781441,
       "used_rate_per_m2": 850.0,
-      "edge_formwork_area_m2": 7.24
+      "edge_formwork_area_m2": 7.24,
+      "formwork_delivery_calc_method": "area_threshold",
+      "formwork_delivery_area_source_m2": 81.9,
+      "formwork_delivery_threshold_m2": 180.0,
+      "formwork_delivery_trips": 2.0,
+      "formwork_delivery_breakdown": "1 привоз + 1 вывоз",
+      "formwork_delivery_status": "calculated"
     },
     "plywood_and_timber": {
       "edge_plywood_sheets_raw": 3.147826,
@@ -243,7 +261,9 @@
       "work_total": 0,
       "line_total_raw": 40000.0,
       "line_total": 40000,
-      "notes": [],
+      "notes": [
+        "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 рейса; более 180 м2: 2 привоза + 2 вывоза = 4 рейса."
+      ],
       "price_code": "formwork_delivery_truck"
     },
     {

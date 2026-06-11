@@ -1,5 +1,6 @@
 {
   "project_name": "test_floor_slab_2",
+  "formwork_area_calc_method": "legacy_dimensions",
   "slab_length_m": 9,
   "slab_width_m": 9.1,
   "slab_area_m2": 81.9,
@@ -7,6 +8,7 @@
   "main_formwork_area_m2": 81.9,
   "formwork_rental_supplier_quote_total": 68860,
   "formwork_rental_used_rate_per_m2": 850,
+  "formwork_delivery_calc_method": "area_threshold",
   "formwork_delivery_trips": 2,
   "formwork_delivery_unit_price": 20000,
   "crane_shifts": 2,

@@ -5,6 +5,7 @@
     "validated_with_elena": true,
     "confidence": "high"
   },
+  "formwork_areas_calc_method": "legacy_calculated_from_geometry",
   "geometry": {
     "total_concrete_volume_from_spec_m3": 40.53,
     "slab_thickness_m": 0.18,

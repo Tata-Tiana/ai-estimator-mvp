@@ -28,7 +28,71 @@ experiments/floor_slab_1_calculator/
 
 ## Что изменено
 
-### 1. Ставка комплекта опалубки
+### 1. Площади опалубки из спецификации
+
+Что было:
+
+- основная площадь опалубки под плиту восстанавливалась расчётом:
+
+```text
+(total_concrete_volume_from_spec_m3 - beams_total_concrete_volume_m3) / slab_thickness_m
+```
+
+- площадь торцевой опалубки восстанавливалась через периметр и высоту:
+
+```text
+slab_edge_perimeter_m * edge_formwork_height_m
+```
+
+- площадь опалубки балок восстанавливалась из `beams.items`.
+
+Что уточнила Елена:
+
+В production спецификация должна давать три готовые площади:
+
+```text
+main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
+```
+
+Что стало:
+
+Добавлен режим:
+
+```text
+formwork_areas_calc_method
+```
+
+Варианты:
+
+- `legacy_calculated_from_geometry` — старый ЮСВ-режим;
+- `spec_formwork_areas` — production.
+
+Production-формулы:
+
+```text
+slab_formwork_area_m2 = main_formwork_area_m2
+edge_and_beam_formwork_area_m2 =
+    edge_formwork_area_m2 + beams_formwork_area_m2
+```
+
+Старые формулы через бетон, толщину, периметр и балки оставлены как контрольные:
+
+```text
+calculated_main_formwork_area_m2
+calculated_edge_formwork_area_m2
+calculated_beams_formwork_area_m2
+main_formwork_area_delta_m2
+edge_formwork_area_delta_m2
+beams_formwork_area_delta_m2
+```
+
+Если отличие больше `0.01 м2`, калькулятор добавляет warning, но не подменяет значения из спецификации.
+
+Строка "Комплект опалубки" использует `main_formwork_area_m2`. Фанера, пиломатериал и контроль торцов/балок используют сумму `edge_formwork_area_m2 + beams_formwork_area_m2`.
+
+### 2. Ставка комплекта опалубки
 
 Что было:
 
@@ -62,7 +126,7 @@ rates.formwork_rate_per_m2
 
 Поля `formwork_supplier_quote_total` и `slab_2_formwork_area_for_rate_context_m2` больше не обязательны для production-кейса плиты 1-го этажа. Они оставлены только как legacy/reference context.
 
-### 2. Доставка/вывоз опалубки
+### 3. Доставка/вывоз опалубки
 
 Что было:
 
@@ -103,7 +167,7 @@ else:
 
 `manual_lines.formwork_delivery_trucks_override` больше не обязателен в production и используется только в режиме `manual_override`.
 
-### 3. Доставка арматуры и металла
+### 4. Доставка арматуры и металла
 
 Что было:
 
@@ -140,7 +204,7 @@ total_box_metal_weight_kg = sum(section_rebar_delivery_weight_kg)
 trucks = ceil(total_box_metal_weight_kg / 10000)
 ```
 
-### 4. Арматура плиты 1-го этажа
+### 5. Арматура плиты 1-го этажа
 
 Что было:
 
@@ -193,7 +257,7 @@ material_total = order_length_m * unit_price_per_m
 
 `source_weight_parts_kg` оставлен только для legacy-кейса.
 
-### 5. Утепление плиты
+### 6. Утепление плиты
 
 Что было:
 
@@ -261,10 +325,12 @@ test_floor_slab_1_direct_formwork_rate
 test_floor_slab_1_formwork_delivery_threshold
 test_floor_slab_1_rebar_spec_lengths
 test_floor_slab_1_insulation_spec_quantities
+test_floor_slab_1_spec_formwork_areas
 ```
 
 Что они проверяют:
 
+- три готовые площади опалубки из спецификации;
 - прямую ставку опалубки без контекста плиты 2-го этажа;
 - порог доставки опалубки `180 м2`;
 - арматуру из спецификации в м.п.;
@@ -288,6 +354,7 @@ docs/report_floor_slab_1_formwork_delivery_threshold_refactor.md
 docs/report_floor_slab_1_metal_delivery_context_refactor.md
 docs/report_floor_slab_1_rebar_spec_length_refactor.md
 docs/report_floor_slab_1_insulation_spec_quantities_refactor.md
+docs/report_floor_slab_1_spec_formwork_areas_refactor.md
 ```
 
 ## Что не входило в работы

@@ -1,0 +1,20 @@
+{
+  "calculation_blocks": {
+    "formwork.formwork_delivery_calc_method": "area_threshold",
+    "formwork.formwork_delivery_area_source_m2": 180,
+    "formwork.formwork_delivery_threshold_m2": 180,
+    "formwork.formwork_delivery_trips": 2,
+    "formwork.formwork_delivery_breakdown": "1 привоз + 1 вывоз",
+    "formwork.formwork_delivery_status": "calculated"
+  },
+  "estimate_lines": [
+    {
+      "code": "formwork_delivery_manipulator",
+      "quantity_raw": 2,
+      "quantity_display": 2,
+      "material_unit_price": 20000,
+      "material_total": 40000,
+      "line_total": 40000
+    }
+  ]
+}

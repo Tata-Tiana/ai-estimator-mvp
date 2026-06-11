@@ -34,6 +34,12 @@
   - этот кейс использует legacy-режим `insulation.insulation_calc_method = legacy_usv_geometry`;
   - старые рабочие количества утепления восстанавливаются через геометрию ЮСВ для сверки с исходной сметой;
   - в production рабочие длины/площади и чистый объём ЭППС должны приходить из спецификации через `insulation.slab_outer_edge_eps_work_length_m`, `insulation.slab_edge_eps_material_area_m2`, `insulation.bottom_slab_eps_work_area_m2`, `insulation.total_eps_volume_from_spec_m3`.
+- Площади опалубки:
+  - этот кейс использует legacy-режим `formwork_areas_calc_method = legacy_calculated_from_geometry`;
+  - основная площадь опалубки восстанавливается через объём бетона и толщину плиты;
+  - площадь торца восстанавливается через периметр и высоту;
+  - площадь опалубки балок восстанавливается из `beams.items`;
+  - в production эти три площади должны приходить готовыми значениями из спецификации: `main_formwork_area_m2`, `edge_formwork_area_m2`, `beams_formwork_area_m2`.
 - Доставка/вывоз опалубки:
   - этот кейс использует production-режим `rates.formwork_delivery_calc_method = area_threshold`;
   - до `180 м2` включительно: 1 привоз + 1 вывоз = 2 машины;

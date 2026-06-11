@@ -48,6 +48,16 @@ def values_equal(actual: Any, expected: Any) -> bool:
     return actual == expected
 
 
+def get_nested_value(payload: dict[str, Any], path: str) -> Any:
+    current: Any = payload
+    for part in path.split("."):
+        if isinstance(current, dict):
+            current = current.get(part)
+        else:
+            return None
+    return current
+
+
 def compare_result(result: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
 
@@ -58,6 +68,19 @@ def compare_result(result: dict[str, Any], expected: dict[str, Any]) -> dict[str
                 "scope": "totals",
                 "code": key,
                 "field": key,
+                "expected": expected_value,
+                "actual": actual_value,
+                "status": "ok" if values_equal(actual_value, expected_value) else "mismatch",
+            }
+        )
+
+    for path, expected_value in expected.get("calculation_blocks", {}).items():
+        actual_value = get_nested_value(result.get("calculation_blocks", {}), path)
+        checks.append(
+            {
+                "scope": "calculation_blocks",
+                "code": path,
+                "field": path,
                 "expected": expected_value,
                 "actual": actual_value,
                 "status": "ok" if values_equal(actual_value, expected_value) else "mismatch",
@@ -116,6 +139,58 @@ def money(value: Any) -> str:
     return f"{number:,.2f}".replace(",", " ").rstrip("0").rstrip(".")
 
 
+def formwork_area_method_markdown(result: dict[str, Any]) -> list[str]:
+    geometry = result.get("calculation_blocks", {}).get("geometry", {})
+    formwork = result.get("calculation_blocks", {}).get("formwork", {})
+    method = geometry.get("formwork_area_calc_method")
+    lines = ["## Площадь опалубки и геометрия", ""]
+    if method == "legacy_dimensions":
+        lines.extend(
+            [
+                "Legacy-режим `legacy_dimensions`: площадь плиты, периметр и площадь опалубки считаются от габаритов.",
+                "",
+                "- `slab_area_m2 = slab_length_m * slab_width_m`",
+                "- `slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)`",
+                "- `main_formwork_area_m2 = slab_area_m2`",
+            ]
+        )
+    elif method == "spec_formwork_area":
+        lines.extend(
+            [
+                "Production-режим `spec_formwork_area`: площадь опалубки берется из спецификации.",
+                "",
+                "- `main_formwork_area_m2` используется для строки `formwork_rental_set`.",
+                "- `slab_edge_perimeter_m` используется как проектная длина утепляемого торца.",
+                "- `slab_length_m`, `slab_width_m`, `slab_area_m2` являются optional geometry check.",
+            ]
+        )
+    else:
+        lines.append(f"- formwork_area_calc_method: `{method}`")
+    lines.extend(
+        [
+            "",
+            f"- main_formwork_area_m2: `{geometry.get('main_formwork_area_m2')}`",
+            f"- slab_edge_perimeter_m: `{geometry.get('slab_edge_perimeter_m')}`",
+            f"- calculated_slab_area_m2: `{geometry.get('calculated_slab_area_m2')}`",
+            f"- calculated_slab_edge_perimeter_m: `{geometry.get('calculated_slab_edge_perimeter_m')}`",
+            f"- area_delta_m2: `{geometry.get('area_delta_m2')}`",
+            f"- formwork_area_delta_m2: `{geometry.get('formwork_area_delta_m2')}`",
+            "",
+            "## Доставка и вывоз опалубки",
+            "",
+            "- Production-правило: до 180 м2 включительно — 2 рейса; более 180 м2 — 4 рейса.",
+            f"- formwork_delivery_calc_method: `{formwork.get('formwork_delivery_calc_method')}`",
+            f"- formwork_delivery_area_source_m2: `{formwork.get('formwork_delivery_area_source_m2')}`",
+            f"- formwork_delivery_threshold_m2: `{formwork.get('formwork_delivery_threshold_m2')}`",
+            f"- formwork_delivery_trips: `{formwork.get('formwork_delivery_trips')}`",
+            f"- formwork_delivery_breakdown: `{formwork.get('formwork_delivery_breakdown')}`",
+            f"- formwork_delivery_status: `{formwork.get('formwork_delivery_status')}`",
+            "",
+        ]
+    )
+    return lines
+
+
 def build_markdown(result: dict[str, Any]) -> str:
     comparison = result.get("comparison", {})
     lines = [
@@ -124,13 +199,14 @@ def build_markdown(result: dict[str, Any]) -> str:
         "## Inputs",
         "",
         f"- project_name: `{result['project_name']}`",
-        f"- slab_area_m2: `{result['inputs']['slab_area_m2']}`",
-        f"- slab_edge_perimeter_m: `{result['inputs']['slab_edge_perimeter_m']}`",
+        f"- slab_area_m2: `{result['inputs'].get('slab_area_m2')}`",
+        f"- slab_edge_perimeter_m: `{result['inputs'].get('slab_edge_perimeter_m')}`",
         f"- concrete_placing_volume_m3: `{result['inputs']['concrete_placing_volume_m3']}`",
         "",
         "## Calculation Blocks",
         "",
     ]
+    lines.extend(formwork_area_method_markdown(result))
     for block_name, block in result.get("calculation_blocks", {}).items():
         lines.extend([f"### {block_name}", ""])
         if isinstance(block, dict):

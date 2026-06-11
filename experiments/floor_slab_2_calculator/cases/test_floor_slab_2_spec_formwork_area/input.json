@@ -1,15 +1,11 @@
 {
-  "project_name": "test_floor_slab_2_live_prices",
-  "formwork_area_calc_method": "legacy_dimensions",
-  "slab_length_m": 9,
-  "slab_width_m": 9.1,
-  "slab_area_m2": 81.9,
-  "slab_edge_perimeter_m": 36.2,
+  "project_name": "test_floor_slab_2_spec_formwork_area",
+  "formwork_area_calc_method": "spec_formwork_area",
   "main_formwork_area_m2": 81.9,
+  "slab_edge_perimeter_m": 36.2,
   "formwork_rental_supplier_quote_total": 68860,
   "formwork_rental_used_rate_per_m2": 850,
   "formwork_delivery_calc_method": "area_threshold",
-  "formwork_delivery_trips": 2,
   "formwork_delivery_unit_price": 20000,
   "crane_shifts": 2,
   "crane_unit_price": 30000,
@@ -74,9 +70,5 @@
   "foam_min_cans": 1,
   "foam_can_unit_price": 490,
   "logistics_rate": 0.01,
-  "consumables_rate": 0.03,
-  "pricing": {
-    "mode": "price_registry_with_fallback",
-    "registry_path": "output/price_registry_filled_v3.xlsx"
-  }
+  "consumables_rate": 0.03
 }

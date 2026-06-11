@@ -99,9 +99,29 @@ total_concrete_volume_m3 = 3.1548
 total_formwork_area_m2 = 27.992
 ```
 
-### Основная площадь плиты
+### Площади опалубки
 
-Основная площадь плиты выводится из общего проектного объёма бетона и объёма балок:
+Production-режим:
+
+```text
+formwork_areas_calc_method = spec_formwork_areas
+slab_formwork_area_m2 = main_formwork_area_m2
+edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
+```
+
+Спецификация должна давать:
+
+```text
+main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
+```
+
+Эти значения являются главным источником для строк опалубки.
+
+Legacy/control-расчет:
+
+Основная площадь плиты может быть восстановлена из общего проектного объёма бетона и объёма балок:
 
 ```text
 slab_concrete_volume_m3_raw = total_concrete_volume_from_spec_m3 - beams_total_concrete_volume_m3
@@ -116,6 +136,15 @@ slab_formwork_area_m2 = slab_concrete_volume_m3_raw / slab_thickness_m
 ```
 
 Контрольная геометрия `210.64 м2` хранится только как контрольный показатель. В смете используется `207.64 м2`.
+
+Торец и балки в legacy/control:
+
+```text
+calculated_edge_formwork_area_m2 = slab_edge_perimeter_m * edge_formwork_height_m
+calculated_beams_formwork_area_m2 = sum(length_m * (width_m + 2 * height_m) * count)
+```
+
+Если production spec-площади отличаются от контрольных больше чем на `0.01 м2`, калькулятор пишет warning, но не подменяет значения из спецификации.
 
 ### Комплект опалубки
 
@@ -170,11 +199,20 @@ material_total = 4 * 20000 = 80000
 
 ### Фанера и пиломатериал
 
-Площадь для опалубки балок и отбортовки:
+Production-площадь для опалубки балок и отбортовки:
 
 ```text
-edge_formwork_area_m2 = slab_edge_perimeter_m * edge_formwork_height_m
-edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
+edge_and_beam_formwork_area_m2 =
+  edge_formwork_area_m2 + beams_formwork_area_m2
+```
+
+Где `edge_formwork_area_m2` и `beams_formwork_area_m2` приходят из спецификации.
+
+Legacy/control-расчет:
+
+```text
+calculated_edge_formwork_area_m2 = slab_edge_perimeter_m * edge_formwork_height_m
+calculated_beams_formwork_area_m2 = sum(length_m * (width_m + 2 * height_m) * count)
 ```
 
 Текущий кейс:

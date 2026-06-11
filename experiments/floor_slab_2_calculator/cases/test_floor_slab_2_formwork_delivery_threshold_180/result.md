@@ -2,8 +2,8 @@
 
 ## Inputs
 
-- project_name: `test_floor_slab_2_live_prices`
-- slab_area_m2: `81.9`
+- project_name: `test_floor_slab_2_formwork_delivery_threshold_180`
+- slab_area_m2: `None`
 - slab_edge_perimeter_m: `36.2`
 - concrete_placing_volume_m3: `16.5`
 
@@ -11,24 +11,24 @@
 
 ## Площадь опалубки и геометрия
 
-Legacy-режим `legacy_dimensions`: площадь плиты, периметр и площадь опалубки считаются от габаритов.
+Production-режим `spec_formwork_area`: площадь опалубки берется из спецификации.
 
-- `slab_area_m2 = slab_length_m * slab_width_m`
-- `slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)`
-- `main_formwork_area_m2 = slab_area_m2`
+- `main_formwork_area_m2` используется для строки `formwork_rental_set`.
+- `slab_edge_perimeter_m` используется как проектная длина утепляемого торца.
+- `slab_length_m`, `slab_width_m`, `slab_area_m2` являются optional geometry check.
 
-- main_formwork_area_m2: `81.9`
+- main_formwork_area_m2: `180.0`
 - slab_edge_perimeter_m: `36.2`
-- calculated_slab_area_m2: `81.9`
-- calculated_slab_edge_perimeter_m: `36.2`
-- area_delta_m2: `0.0`
-- formwork_area_delta_m2: `0.0`
+- calculated_slab_area_m2: `None`
+- calculated_slab_edge_perimeter_m: `None`
+- area_delta_m2: `None`
+- formwork_area_delta_m2: `None`
 
 ## Доставка и вывоз опалубки
 
 - Production-правило: до 180 м2 включительно — 2 рейса; более 180 м2 — 4 рейса.
 - formwork_delivery_calc_method: `area_threshold`
-- formwork_delivery_area_source_m2: `81.9`
+- formwork_delivery_area_source_m2: `180.0`
 - formwork_delivery_threshold_m2: `180.0`
 - formwork_delivery_trips: `2.0`
 - formwork_delivery_breakdown: `1 привоз + 1 вывоз`
@@ -36,29 +36,29 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### geometry
 
-- formwork_area_calc_method: `legacy_dimensions`
-- formwork_area_source: `legacy_dimensions`
-- slab_edge_perimeter_source: `legacy_dimensions`
-- slab_length_m: `9.0`
-- slab_width_m: `9.1`
-- slab_area_m2: `81.9`
+- formwork_area_calc_method: `spec_formwork_area`
+- formwork_area_source: `spec_formwork_area`
+- slab_edge_perimeter_source: `spec_edge_perimeter`
+- slab_length_m: `None`
+- slab_width_m: `None`
+- slab_area_m2: `None`
 - slab_edge_perimeter_m: `36.2`
-- main_formwork_area_m2: `81.9`
-- calculated_slab_area_m2: `81.9`
-- calculated_slab_edge_perimeter_m: `36.2`
-- input_slab_area_m2: `81.9`
-- area_delta_m2: `0.0`
-- formwork_area_delta_m2: `0.0`
+- main_formwork_area_m2: `180.0`
+- calculated_slab_area_m2: `None`
+- calculated_slab_edge_perimeter_m: `None`
+- input_slab_area_m2: `None`
+- area_delta_m2: `None`
+- formwork_area_delta_m2: `None`
 
 ### formwork
 
-- formwork_area_calc_method: `legacy_dimensions`
-- main_formwork_area_m2: `81.9`
-- raw_supplier_rate: `840.781441`
+- formwork_area_calc_method: `spec_formwork_area`
+- main_formwork_area_m2: `180.0`
+- raw_supplier_rate: `850.0`
 - used_rate_per_m2: `850.0`
 - edge_formwork_area_m2: `7.24`
 - formwork_delivery_calc_method: `area_threshold`
-- formwork_delivery_area_source_m2: `81.9`
+- formwork_delivery_area_source_m2: `180.0`
 - formwork_delivery_threshold_m2: `180.0`
 - formwork_delivery_trips: `2.0`
 - formwork_delivery_breakdown: `1 привоз + 1 вывоз`
@@ -67,11 +67,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### plywood_and_timber
 
 - edge_plywood_sheets_raw: `3.147826`
-- non_multiple_places_area_m2: `16.38`
-- non_multiple_places_plywood_sheets_raw: `7.121739`
-- base_plywood_sheets_raw: `10.269565`
-- order_plywood_sheets_raw: `15.269565`
-- plywood_sheets: `16`
+- non_multiple_places_area_m2: `36.0`
+- non_multiple_places_plywood_sheets_raw: `15.652174`
+- base_plywood_sheets_raw: `18.8`
+- order_plywood_sheets_raw: `23.8`
+- plywood_sheets: `24`
 - timber_volume_m3_raw: `0.362`
 - timber_volume_m3_display: `0.36`
 
@@ -105,38 +105,38 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### addons
 
-- direct_cost_base_before_addons_raw: `689472.487`
+- direct_cost_base_before_addons_raw: `789068.187`
 - logistics_rate: `0.01`
-- logistics_total_raw: `6894.72487`
+- logistics_total_raw: `7890.68187`
 - consumables_rate: `0.03`
-- consumables_total_raw: `20684.17461`
+- consumables_total_raw: `23672.04561`
 
 ## Estimate Lines
 
 | # | code | name | unit | qty raw | qty display | material | work | total |
 | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | `floor_slab_2_formwork_installation_control` | Монтаж опалубки под монолитное перекрытие 2-го этажа | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
-| 2 | `formwork_rental_set` | Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | м2 | 81.9 | 81.9 | 69 615 | 0 | 69 615 |
+| 1 | `floor_slab_2_formwork_installation_control` | Монтаж опалубки под монолитное перекрытие 2-го этажа | м2 | 180 | 180 | 0 | 0 | 0 |
+| 2 | `formwork_rental_set` | Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | м2 | 180 | 180 | 153 000 | 0 | 153 000 |
 | 3 | `formwork_delivery_manipulator` | Доставка, вывоз опалубки манипулятором | маш | 2 | 2 | 40 000 | 0 | 40 000 |
 | 4 | `crane_supply_formwork_rebar` | Подача опалубки, арматуры автокраном | смена | 2 | 2 | 60 000 | 0 | 60 000 |
-| 5 | `formwork_consumables` | Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | - | 1 | 1 | 3 849 | 0 | 3 849 |
+| 5 | `formwork_consumables` | Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | - | 1 | 1 | 8 460 | 0 | 8 460 |
 | 6 | `edge_formwork_installation_control` | Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты | м2 | 7.24 | 7.24 | 0 | 0 | 0 |
-| 7 | `plywood_for_edges` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | шт | 16 | 16 | 23 200 | 0 | 23 200 |
+| 7 | `plywood_for_edges` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | шт | 24 | 24 | 34 800 | 0 | 34 800 |
 | 8 | `timber_for_formwork` | Пиломатериал обрезной для устройства опалубки ГОСТ | м3 | 0.36 | 0.36 | 7 783 | 0 | 7 783 |
 | 9 | `rebar_frame_assembly_control` | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры | мп | 2 819.7 | 2 819.7 | 0 | 0 | 0 |
-| 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 105.3 | 105.3 | 6 834 | 0 | 6 834 |
-| 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 293 | 0 | 1 293 |
-| 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 72 770 | 0 | 72 770 |
+| 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 105.3 | 105.3 | 8 485 | 0 | 8 485 |
+| 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
+| 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
 | 14 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
 | 15 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
 | 16 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
-| 17 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
+| 17 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 180 | 180 | 0 | 0 | 0 |
 | 18 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 36.2 | 36.2 | 0 | 16 290 | 16 290 |
 | 19 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
-| 20 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 450 | 0 | 450 |
-| 21 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
-| 22 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
+| 20 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
+| 21 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 7 891 | 0 | 7 891 |
+| 22 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 23 672 | 0 | 23 672 |
 | 23 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
 | 24 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
 | 25 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
@@ -147,7 +147,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### 1. Монтаж опалубки под монолитное перекрытие 2-го этажа
 
 - Тип строки: `zero_excel_structure_line`
-- Количество raw/display: `81.9` / `81.9`
+- Количество raw/display: `180.0` / `180.0`
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
@@ -155,10 +155,10 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### 2. Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые)
 
 - Тип строки: `materials`
-- Количество raw/display: `81.9` / `81.9`
-- Материалы raw/display: `69615.0` / `69615`
+- Количество raw/display: `180.0` / `180.0`
+- Материалы raw/display: `153000.0` / `153000`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `69615.0` / `69615`
+- Итого raw/display: `153000.0` / `153000`
 
 ### 3. Доставка, вывоз опалубки манипулятором
 
@@ -181,9 +181,9 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `3849.3` / `3849`
+- Материалы raw/display: `8460.0` / `8460`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `3849.3` / `3849`
+- Итого raw/display: `8460.0` / `8460`
 
 ### 6. Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты
 
@@ -197,10 +197,10 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### 7. Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов
 
 - Тип строки: `materials`
-- Количество raw/display: `16.0` / `16.0`
-- Материалы raw/display: `23200.0` / `23200`
+- Количество raw/display: `24.0` / `24.0`
+- Материалы raw/display: `34800.0` / `34800`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `23200.0` / `23200`
+- Итого raw/display: `34800.0` / `34800`
 
 ### 8. Пиломатериал обрезной для устройства опалубки ГОСТ
 
@@ -223,25 +223,25 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials`
 - Количество raw/display: `105.3` / `105.3`
-- Материалы raw/display: `6833.97` / `6834`
+- Материалы raw/display: `8485.074` / `8485`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `6833.97` / `6834`
+- Итого raw/display: `8485.074` / `8485`
 
 ### 11. Арматура класса А500 диаметром 12 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `35.1` / `35.1`
-- Материалы raw/display: `1293.435` / `1293`
+- Материалы raw/display: `1589.679` / `1590`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `1293.435` / `1293`
+- Итого raw/display: `1589.679` / `1590`
 
 ### 12. Арматура класса А500 диаметром 10 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `2679.3` / `2679.3`
-- Материалы raw/display: `72769.788` / `72770`
+- Материалы raw/display: `87666.696` / `87667`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `72769.788` / `72770`
+- Итого raw/display: `87666.696` / `87667`
 
 ### 13. Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)
 
@@ -278,7 +278,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### 17. Демонтаж опалубки после завершения бетонирования
 
 - Тип строки: `zero_excel_structure_line`
-- Количество raw/display: `81.9` / `81.9`
+- Количество raw/display: `180.0` / `180.0`
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
@@ -304,25 +304,25 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `450.0` / `450`
+- Материалы raw/display: `490.0` / `490`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `450.0` / `450`
+- Итого raw/display: `490.0` / `490`
 
 ### 21. Логистика, и снабжение
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `6894.72487` / `6895`
+- Материалы raw/display: `7890.68187` / `7891`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `6894.72487` / `6895`
+- Итого raw/display: `7890.68187` / `7891`
 
 ### 22. Расходные материалы, амортизация инструмента
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `20684.17461` / `20684`
+- Материалы raw/display: `23672.04561` / `23672`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `20684.17461` / `20684`
+- Итого raw/display: `23672.04561` / `23672`
 
 ### 23. Технический надзор
 
@@ -358,78 +358,37 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ## Totals
 
-- internal_materials_total_raw: `485877.13048`
-- internal_materials_total: `485877`
-- internal_works_total_raw: `214290`
+- internal_materials_total_raw: `606340.91448`
+- internal_materials_total: `606341`
+- internal_works_total_raw: `214290.0`
 - internal_works_total: `214290`
-- internal_section_total_raw: `700167.13048`
-- internal_section_total: `700167`
-- sum_of_displayed_line_material_totals: `485877`
+- internal_section_total_raw: `820630.91448`
+- internal_section_total: `820631`
+- sum_of_displayed_line_material_totals: `606342`
 - sum_of_displayed_line_work_totals: `214290`
-- sum_of_displayed_line_totals: `700167`
+- sum_of_displayed_line_totals: `820632`
 
 ## Warnings
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness.
 - edge_insulation_height_m is 0.18 m although the section title says 200 mm; 0.18 m is kept for the current Excel match.
-- formwork_rental_m2: price_code not found in price_registry, fallback input price used
-- formwork_delivery_truck: price_code not found in price_registry, fallback input price used
-- crane_shift: price_code not found in price_registry, fallback input price used
-- formwork_consumables_m2: price_code not found in price_registry and fallback input price is missing
-- plywood_1520x1520_18mm_sheet: price_code not found in price_registry, fallback input price used
-- timber_m3: price_code not found in price_registry, fallback input price used
-- concrete_placing_work_m3: price_code not found in price_registry, fallback input price used
-- concrete_b22_5_m3: price_code not found in price_registry, fallback input price used
-- concrete_delivery_trip: price_code not found in price_registry, fallback input price used
-- concrete_pump_32m_shift: price_code not found in price_registry, fallback input price used
-- edge_insulation_work_m: price_code not found in price_registry, fallback input price used
-- eps_penoplex_osnova_100_m3: price_code not found in price_registry, fallback input price used
-
-## Источники цен
-
-| Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
-| --- | --- | ---: | ---: | --- | --- |
-| Монтаж опалубки под монолитное перекрытие 2-го этажа | `` | `None` | `None` | `locked_case_prices` |  |
-| Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | `formwork_rental_m2` | `850` | `850` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Доставка, вывоз опалубки манипулятором | `formwork_delivery_truck` | `20000` | `20000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Подача опалубки, арматуры автокраном | `crane_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `formwork_consumables_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты | `` | `None` | `None` | `locked_case_prices` |  |
-| Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `plywood_1520x1520_18mm_sheet` | `1450` | `1450` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Пиломатериал обрезной для устройства опалубки ГОСТ | `timber_m3` | `21500` | `21500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры | `` | `None` | `None` | `locked_case_prices` |  |
-| Арматура класса А500 диаметром 16 мм | `rebar_a500_d16_m` | `80.58` | `64.9` | `price_registry` |  |
-| Арматура класса А500 диаметром 12 мм | `rebar_a500_d12_m` | `45.29` | `36.85` | `price_registry` |  |
-| Арматура класса А500 диаметром 10 мм | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
-| Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `concrete_placing_work_m3` | `12000` | `12000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Бетон марки В22,5 (М300) | `concrete_b22_5_m3` | `6400` | `6400` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Доставка бетона до объекта | `concrete_delivery_trip` | `7500` | `7500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Работа бетононасоса 32м + гаситель | `concrete_pump_32m_shift` | `38000` | `38000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Демонтаж опалубки после завершения бетонирования | `` | `None` | `None` | `locked_case_prices` |  |
-| Устройство утепления по наружной стороне торцов плиты, балок | `edge_insulation_work_m` | `450` | `450` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `eps_penoplex_osnova_100_m3` | `9020` | `9020` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Клей-пена для ЭППС | `eps_foam_glue_can` | `490` | `450` | `price_registry` |  |
-| Логистика, и снабжение | `` | `None` | `None` | `locked_case_prices` |  |
-| Расходные материалы, амортизация инструмента | `` | `None` | `None` | `locked_case_prices` |  |
-| Технический надзор | `` | `None` | `None` | `locked_case_prices` |  |
-| Заготовительно-складские расходы | `` | `None` | `None` | `locked_case_prices` |  |
-| Накладные и общехозяйственные расходы | `` | `None` | `None` | `locked_case_prices` |  |
-| Сметная прибыль | `` | `None` | `None` | `locked_case_prices` |  |
-
-## Pricing summary
-
-- mode: `price_registry_with_fallback`
-- registry_path: `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx`
-- prices_from_price_registry: `4`
-- prices_from_project_overrides: `0`
-- prices_from_fallback_input: `12`
-- warnings_count: `12`
 
 ## Comparison
 
 - status: `ok`
-- ok: `0`
+- ok: `11`
 - mismatch: `0`
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
+| calculation_blocks | `formwork.formwork_delivery_calc_method` | `formwork.formwork_delivery_calc_method` | area_threshold | area_threshold | ok |
+| calculation_blocks | `formwork.formwork_delivery_area_source_m2` | `formwork.formwork_delivery_area_source_m2` | 180 | 180.0 | ok |
+| calculation_blocks | `formwork.formwork_delivery_threshold_m2` | `formwork.formwork_delivery_threshold_m2` | 180 | 180.0 | ok |
+| calculation_blocks | `formwork.formwork_delivery_trips` | `formwork.formwork_delivery_trips` | 2 | 2.0 | ok |
+| calculation_blocks | `formwork.formwork_delivery_breakdown` | `formwork.formwork_delivery_breakdown` | 1 привоз + 1 вывоз | 1 привоз + 1 вывоз | ok |
+| calculation_blocks | `formwork.formwork_delivery_status` | `formwork.formwork_delivery_status` | calculated | calculated | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `quantity_raw` | 2 | 2.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `quantity_display` | 2 | 2.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `material_unit_price` | 20000 | 20000.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `material_total` | 40000 | 40000 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `line_total` | 40000 | 40000 | ok |

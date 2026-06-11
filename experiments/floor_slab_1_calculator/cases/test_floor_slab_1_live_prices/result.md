@@ -39,8 +39,19 @@
 | `beams.total_length_m` | `23.2` |
 | `beams.total_concrete_volume_m3` | `3.1548` |
 | `beams.total_formwork_area_m2` | `27.992` |
+| `formwork.formwork_areas_calc_method` | `legacy_calculated_from_geometry` |
+| `formwork.formwork_areas_source` | `legacy_calculated_from_geometry` |
+| `formwork.main_formwork_area_m2` | `207.64` |
+| `formwork.slab_formwork_area_m2` | `207.64` |
 | `formwork.edge_formwork_area_m2` | `23.6` |
+| `formwork.beams_formwork_area_m2` | `27.992` |
 | `formwork.edge_and_beam_formwork_area_m2` | `51.592` |
+| `formwork.calculated_main_formwork_area_m2` | `207.64` |
+| `formwork.calculated_edge_formwork_area_m2` | `23.6` |
+| `formwork.calculated_beams_formwork_area_m2` | `27.992` |
+| `formwork.main_formwork_area_delta_m2` | `0.0` |
+| `formwork.edge_formwork_area_delta_m2` | `0.0` |
+| `formwork.beams_formwork_area_delta_m2` | `0.0` |
 | `formwork.excel_rate_per_m2` | `600.0` |
 | `formwork.formwork_delivery_calc_method` | `area_threshold` |
 | `formwork.formwork_delivery_area_source_m2` | `207.64` |
@@ -209,6 +220,26 @@
 | `control_metrics.slab_area_used_in_estimate_m2` | `207.64` |
 | `control_metrics.beam_concreting_control_total_by_length` | `46400` |
 | `control_metrics.reinforcement_density_kg_per_m3` | `108.79` |
+
+## Площади опалубки
+
+Legacy-режим `legacy_calculated_from_geometry`: площади опалубки восстанавливаются из объёма бетона, толщины, периметра и геометрии балок.
+
+| Показатель | Значение |
+| --- | ---: |
+| `formwork_areas_calc_method` | `legacy_calculated_from_geometry` |
+| `formwork_areas_source` | `legacy_calculated_from_geometry` |
+| `main_formwork_area_m2` | `207.64` |
+| `slab_formwork_area_m2` | `207.64` |
+| `edge_formwork_area_m2` | `23.6` |
+| `beams_formwork_area_m2` | `27.992` |
+| `edge_and_beam_formwork_area_m2` | `51.592` |
+| `calculated_main_formwork_area_m2` | `207.64` |
+| `calculated_edge_formwork_area_m2` | `23.6` |
+| `calculated_beams_formwork_area_m2` | `27.992` |
+| `main_formwork_area_delta_m2` | `0.0` |
+| `edge_formwork_area_delta_m2` | `0.0` |
+| `beams_formwork_area_delta_m2` | `0.0` |
 
 ## Ставка комплекта опалубки
 

@@ -9,19 +9,60 @@
 
 ## Calculation Blocks
 
+## Площадь опалубки и геометрия
+
+Legacy-режим `legacy_dimensions`: площадь плиты, периметр и площадь опалубки считаются от габаритов.
+
+- `slab_area_m2 = slab_length_m * slab_width_m`
+- `slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)`
+- `main_formwork_area_m2 = slab_area_m2`
+
+- main_formwork_area_m2: `81.9`
+- slab_edge_perimeter_m: `36.2`
+- calculated_slab_area_m2: `81.9`
+- calculated_slab_edge_perimeter_m: `36.2`
+- area_delta_m2: `0.0`
+- formwork_area_delta_m2: `0.0`
+
+## Доставка и вывоз опалубки
+
+- Production-правило: до 180 м2 включительно — 2 рейса; более 180 м2 — 4 рейса.
+- formwork_delivery_calc_method: `area_threshold`
+- formwork_delivery_area_source_m2: `81.9`
+- formwork_delivery_threshold_m2: `180.0`
+- formwork_delivery_trips: `2.0`
+- formwork_delivery_breakdown: `1 привоз + 1 вывоз`
+- formwork_delivery_status: `calculated`
+
 ### geometry
 
+- formwork_area_calc_method: `legacy_dimensions`
+- formwork_area_source: `legacy_dimensions`
+- slab_edge_perimeter_source: `legacy_dimensions`
 - slab_length_m: `9.0`
 - slab_width_m: `9.1`
 - slab_area_m2: `81.9`
 - slab_edge_perimeter_m: `36.2`
+- main_formwork_area_m2: `81.9`
+- calculated_slab_area_m2: `81.9`
+- calculated_slab_edge_perimeter_m: `36.2`
+- input_slab_area_m2: `81.9`
+- area_delta_m2: `0.0`
+- formwork_area_delta_m2: `0.0`
 
 ### formwork
 
+- formwork_area_calc_method: `legacy_dimensions`
 - main_formwork_area_m2: `81.9`
 - raw_supplier_rate: `840.781441`
 - used_rate_per_m2: `850.0`
 - edge_formwork_area_m2: `7.24`
+- formwork_delivery_calc_method: `area_threshold`
+- formwork_delivery_area_source_m2: `81.9`
+- formwork_delivery_threshold_m2: `180.0`
+- formwork_delivery_trips: `2.0`
+- formwork_delivery_breakdown: `1 привоз + 1 вывоз`
+- formwork_delivery_status: `calculated`
 
 ### plywood_and_timber
 
@@ -126,6 +167,7 @@
 - Материалы raw/display: `40000.0` / `40000`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `40000.0` / `40000`
+- Примечание: До 180 м2 включительно: 1 привоз + 1 вывоз = 2 рейса; более 180 м2: 2 привоза + 2 вывоза = 4 рейса.
 
 ### 4. Подача опалубки, арматуры автокраном
 

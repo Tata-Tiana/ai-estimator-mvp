@@ -42,7 +42,11 @@ experiments/floor_slab_1_calculator/
 │   │   ├── input.json
 │   │   ├── expected.json
 │   │   └── notes.md
-│   └── test_floor_slab_1_insulation_spec_quantities/
+│   ├── test_floor_slab_1_insulation_spec_quantities/
+│   │   ├── input.json
+│   │   ├── expected.json
+│   │   └── notes.md
+│   └── test_floor_slab_1_spec_formwork_areas/
 │       ├── input.json
 │       ├── expected.json
 │       └── notes.md
@@ -51,6 +55,49 @@ experiments/floor_slab_1_calculator/
         ├── floor_slab_1_result.json
         └── floor_slab_1_result.md
 ```
+
+## Production-стандарт площадей опалубки
+
+В production спецификация должна давать три готовые площади:
+
+```text
+main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
+```
+
+Смысл:
+
+- `main_formwork_area_m2` - площадь опалубки под плиту; используется для строки `formwork_set_rental_material`;
+- `edge_formwork_area_m2` - площадь торцевой опалубки плиты;
+- `beams_formwork_area_m2` - площадь опалубки балок.
+
+Режимы:
+
+- `formwork_areas_calc_method = legacy_calculated_from_geometry` - legacy ЮСВ, где площади восстанавливаются через бетон, толщину, периметр и `beams.items`;
+- `formwork_areas_calc_method = spec_formwork_areas` - production, где три площади берутся из спецификации.
+
+Production-формулы:
+
+```text
+slab_formwork_area_m2 = main_formwork_area_m2
+edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
+```
+
+Старые расчетные формулы остаются как контроль:
+
+```text
+calculated_main_formwork_area_m2 =
+  (total_concrete_volume_from_spec_m3 - calculated_beams_concrete_volume_m3) / slab_thickness_m
+
+calculated_edge_formwork_area_m2 =
+  slab_edge_perimeter_m * edge_formwork_height_m
+
+calculated_beams_formwork_area_m2 =
+  sum(beam.length_m * (beam.width_m + 2 * beam.height_m) * beam.count)
+```
+
+Если контрольные значения отличаются от spec-площадей больше чем на `0.01 м2`, калькулятор добавляет warning, но не заменяет production-значения.
 
 ## Production-стандарт ставки опалубки
 
