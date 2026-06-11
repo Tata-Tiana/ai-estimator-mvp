@@ -30,14 +30,31 @@ slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)
 main_formwork_area_m2 = slab_area_m2
 ```
 
-В production-режиме `spec_formwork_area` строка "Комплект опалубки" берет количество из
-`main_formwork_area_m2`, пришедшего из спецификации. Поля `slab_length_m`, `slab_width_m` и
-`slab_area_m2` больше не являются обязательным источником площади опалубки; они остаются только
-как optional geometry check.
+В production-режиме `spec_formwork_area` калькулятор берет из спецификации три площади:
+
+```text
+main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
+```
+
+Строка "Комплект опалубки" берет количество из `main_formwork_area_m2`.
+Торцевая опалубка, фанера и пиломатериал используют:
+
+```text
+edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
+```
+
+Для текущей плиты 2-го этажа балок нет, поэтому `beams_formwork_area_m2 = 0`.
+Поля `slab_length_m`, `slab_width_m` и `slab_area_m2` больше не являются обязательным источником
+площади опалубки; они остаются только как optional geometry check.
 
 Для утепления торца production-источником является `slab_edge_perimeter_m`: это длина
 утепляемого торца плиты из спецификации. Если в будущем потребуется fallback от габаритов, он
 должен оставаться предупреждением, а не основным production-правилом.
+
+Формула `slab_edge_perimeter_m * edge_formwork_height_m` оставлена только как контрольная площадь
+торцевой опалубки (`calculated_edge_formwork_area_m2`) и не подменяет `edge_formwork_area_m2`.
 
 Отдельный отчет по изменению:
 
@@ -79,6 +96,35 @@ formwork_delivery_trips = 2
 
 ```text
 docs/report_floor_slab_2_formwork_delivery_threshold_refactor.md
+```
+
+## Обновление 2026-06-11: арматура через спецификацию и каталог
+
+Добавлен режим:
+
+```text
+rebar_calc_method =
+  legacy_weight_kg
+  spec_length_items
+```
+
+`legacy_weight_kg` сохраняет старую схему ЮСВ от `source_weight_kg`.
+
+`spec_length_items` — production-режим: из спецификации приходят `steel_class`, `diameter_mm` и
+`spec_length_m`; `code`, `name`, `kg_per_meter`, `rod_length_m` и `price_code` берутся из локального
+каталога арматуры.
+
+Главные production-показатели:
+
+```text
+total_rebar_order_length_m
+total_rebar_order_weight_kg
+```
+
+Отдельный отчет по изменению:
+
+```text
+docs/report_floor_slab_2_rebar_spec_lengths_refactor.md
 ```
 
 ## Где находится
@@ -158,7 +204,10 @@ legacy_dimensions:
   slab_edge_perimeter_m = slab_length_m * 2 + slab_width_m * 2
 
 spec_formwork_area:
-  main_formwork_area_m2 = готовая площадь опалубки из спецификации
+  main_formwork_area_m2 = готовая площадь опалубки под плиту из спецификации
+  edge_formwork_area_m2 = готовая площадь торцевой опалубки из спецификации
+  beams_formwork_area_m2 = готовая площадь опалубки балок из спецификации
+  edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
   slab_edge_perimeter_m = готовая длина утепляемого торца из спецификации
 ```
 
@@ -193,7 +242,7 @@ input в production-режиме.
 ### Фанера
 
 ```text
-edge_plywood_sheets_raw = edge_formwork_area_m2 / plywood_sheet_working_area_m2
+edge_plywood_sheets_raw = edge_and_beam_formwork_area_m2 / plywood_sheet_working_area_m2
 non_multiple_places_area_m2 = main_formwork_area_m2 * non_multiple_places_coeff
 non_multiple_places_plywood_sheets_raw = non_multiple_places_area_m2 / plywood_sheet_working_area_m2
 plywood_sheets = ceil(edge + non_multiple + reserve)
@@ -209,7 +258,7 @@ material_total = 16 * 1450 = 23200
 ### Пиломатериал
 
 ```text
-timber_volume_m3_raw = edge_formwork_area_m2 * timber_thickness_m
+timber_volume_m3_raw = edge_and_beam_formwork_area_m2 * timber_thickness_m
 material_total = timber_volume_m3_raw * timber_unit_price
 ```
 
@@ -285,7 +334,8 @@ order_volume = 3 * 0.2773 = 0.8319
 material_total = ROUND_HALF_UP(0.8319 * 9020) = 7504
 ```
 
-Важно: высота утепления `0.18 м` сохранена для совпадения с текущей сметой, хотя название раздела говорит о плите 200 мм. Это вынесено в warning.
+Важно: высота утепления `0.18 м` подтверждена спецификацией. Указание `200 мм` в названии раздела
+считается ошибкой названия и не используется как источник расчета.
 
 ### Addons
 
@@ -346,7 +396,7 @@ sum_of_displayed_line_totals = 717052
 ## Warnings текущего кейса
 
 - `concrete_placing_volume_m3 = 16.5` — ручное/проектное количество; не выводится из площади и толщины.
-- `edge_insulation_height_m = 0.18` — оставлено для совпадения с текущей сметой, хотя название раздела говорит о 200 мм.
+- `edge_insulation_height_m = 0.18` — подтверждено спецификацией; 200 мм в названии раздела считается ошибкой названия.
 
 ## Что пока не сделано
 

@@ -139,6 +139,7 @@
   ],
   "insulation": {
     "insulation_calc_method": "legacy_usv_geometry",
+    "edge_insulation_height_m": 0.18,
     "total_eps_volume_from_spec_m3": 7.77,
     "eps_thickness_m": 0.1,
     "eps_waste_coeff": 1.05,

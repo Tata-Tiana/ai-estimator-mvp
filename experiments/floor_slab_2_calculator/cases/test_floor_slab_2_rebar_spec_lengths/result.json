@@ -1,9 +1,9 @@
 {
-  "project_name": "test_floor_slab_2_spec_formwork_area",
+  "project_name": "test_floor_slab_2_rebar_spec_lengths",
   "section": "floor_slab_2",
   "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа на отм. +4.680 (200мм)",
   "inputs": {
-    "project_name": "test_floor_slab_2_spec_formwork_area",
+    "project_name": "test_floor_slab_2_rebar_spec_lengths",
     "formwork_area_calc_method": "spec_formwork_area",
     "main_formwork_area_m2": 81.9,
     "edge_formwork_area_m2": 7.24,
@@ -23,37 +23,26 @@
     "plywood_unit_price": 1450,
     "timber_thickness_m": 0.05,
     "timber_unit_price": 21500,
+    "rebar_calc_method": "spec_length_items",
     "rebar_waste_coeff": 1.05,
     "rebar_rod_length_m": 11.7,
     "rebar_items": [
       {
-        "code": "rebar_a500_d16",
-        "name": "Арматура класса А500 диаметром 16 мм",
         "steel_class": "A500",
         "diameter_mm": 16,
-        "source_weight_kg": 142.4,
-        "kg_per_meter": 1.58,
-        "rod_length_m": 11.7,
+        "spec_length_m": 90.126582,
         "unit_price_per_m": 80.58
       },
       {
-        "code": "rebar_a500_d12",
-        "name": "Арматура класса А500 диаметром 12 мм",
         "steel_class": "A500",
         "diameter_mm": 12,
-        "source_weight_kg": 22,
-        "kg_per_meter": 0.888,
-        "rod_length_m": 11.7,
+        "spec_length_m": 24.774775,
         "unit_price_per_m": 45.29
       },
       {
-        "code": "rebar_a500_d10",
-        "name": "Арматура класса А500 диаметром 10 мм",
         "steel_class": "A500",
         "diameter_mm": 10,
-        "source_weight_kg": 1574.07,
-        "kg_per_meter": 0.617,
-        "rod_length_m": 11.7,
+        "spec_length_m": 2551.166937,
         "unit_price_per_m": 32.72
       }
     ],
@@ -130,7 +119,7 @@
       "timber_volume_m3_display": 0.36
     },
     "rebar": {
-      "rebar_calc_method": "legacy_weight_kg",
+      "rebar_calc_method": "spec_length_items",
       "items": [
         {
           "code": "rebar_a500_d16",
@@ -150,8 +139,7 @@
           "price_code": "rebar_a500_d16_m",
           "material_total_raw": 8485.074,
           "material_total": 8485,
-          "source_weight_kg": 142.4,
-          "weight_with_waste_kg": 149.52
+          "spec_length_m": 90.126582
         },
         {
           "code": "rebar_a500_d12",
@@ -171,8 +159,7 @@
           "price_code": "rebar_a500_d12_m",
           "material_total_raw": 1589.679,
           "material_total": 1590,
-          "source_weight_kg": 22.0,
-          "weight_with_waste_kg": 23.1
+          "spec_length_m": 24.774775
         },
         {
           "code": "rebar_a500_d10",
@@ -192,13 +179,12 @@
           "price_code": "rebar_a500_d10_m",
           "material_total_raw": 87666.696,
           "material_total": 87667,
-          "source_weight_kg": 1574.07,
-          "weight_with_waste_kg": 1652.7735
+          "spec_length_m": 2551.166937
         }
       ],
       "total_rebar_order_length_m": 2819.7,
       "total_rebar_order_weight_kg": 1850.6709,
-      "total_rebar_weight_with_waste_kg": 1825.39
+      "total_rebar_weight_with_waste_kg": 1850.67
     },
     "concrete": {
       "concrete_placing_volume_m3": 16.5,
@@ -207,7 +193,7 @@
       "concrete_order_volume_m3": 17.5,
       "delivery_trips_raw": 1.944444,
       "delivery_trips": 2,
-      "reinforcement_density_kg_per_m3": 105.36
+      "reinforcement_density_kg_per_m3": 106.82
     },
     "insulation": {
       "edge_insulation_height_m": 0.18,
@@ -744,10 +730,42 @@
       "formwork.formwork_delivery_trips": 2,
       "formwork.formwork_delivery_breakdown": "1 привоз + 1 вывоз",
       "formwork.formwork_delivery_status": "calculated",
-      "insulation.edge_insulation_height_m": 0.18,
-      "insulation.edge_insulation_height_source": "specification",
-      "insulation.edge_insulation_area_m2": 6.516,
-      "insulation.eps100_required_volume_without_waste_m3": 0.6516
+      "rebar.rebar_calc_method": "spec_length_items",
+      "rebar.items.0.code": "rebar_a500_d16",
+      "rebar.items.0.name": "Арматура класса А500 диаметром 16 мм",
+      "rebar.items.0.steel_class": "A500",
+      "rebar.items.0.diameter_mm": 16,
+      "rebar.items.0.spec_length_m": 90.126582,
+      "rebar.items.0.kg_per_meter": 1.58,
+      "rebar.items.0.rod_length_m": 11.7,
+      "rebar.items.0.order_length_m": 105.3,
+      "rebar.items.0.order_weight_kg": 166.374,
+      "rebar.items.0.price_code": "rebar_a500_d16_m",
+      "rebar.items.0.material_total": 8485,
+      "rebar.items.1.code": "rebar_a500_d12",
+      "rebar.items.1.name": "Арматура класса А500 диаметром 12 мм",
+      "rebar.items.1.steel_class": "A500",
+      "rebar.items.1.diameter_mm": 12,
+      "rebar.items.1.spec_length_m": 24.774775,
+      "rebar.items.1.kg_per_meter": 0.888,
+      "rebar.items.1.rod_length_m": 11.7,
+      "rebar.items.1.order_length_m": 35.1,
+      "rebar.items.1.order_weight_kg": 31.1688,
+      "rebar.items.1.price_code": "rebar_a500_d12_m",
+      "rebar.items.1.material_total": 1590,
+      "rebar.items.2.code": "rebar_a500_d10",
+      "rebar.items.2.name": "Арматура класса А500 диаметром 10 мм",
+      "rebar.items.2.steel_class": "A500",
+      "rebar.items.2.diameter_mm": 10,
+      "rebar.items.2.spec_length_m": 2551.166937,
+      "rebar.items.2.kg_per_meter": 0.617,
+      "rebar.items.2.rod_length_m": 11.7,
+      "rebar.items.2.order_length_m": 2679.3,
+      "rebar.items.2.order_weight_kg": 1653.1281,
+      "rebar.items.2.price_code": "rebar_a500_d10_m",
+      "rebar.items.2.material_total": 87667,
+      "rebar.total_rebar_order_length_m": 2819.7,
+      "rebar.total_rebar_order_weight_kg": 1850.6709
     },
     "estimate_lines": [
       {
@@ -786,12 +804,38 @@
         "unit": "мп",
         "quantity_raw": 36.2,
         "quantity_display": 36.2
+      },
+      {
+        "code": "rebar_frame_assembly_control",
+        "quantity_raw": 2819.7,
+        "quantity_display": 2819.7
+      },
+      {
+        "code": "rebar_a500_d16",
+        "quantity_raw": 105.3,
+        "quantity_display": 105.3,
+        "material_total": 8485,
+        "price_code": "rebar_a500_d16_m"
+      },
+      {
+        "code": "rebar_a500_d12",
+        "quantity_raw": 35.1,
+        "quantity_display": 35.1,
+        "material_total": 1590,
+        "price_code": "rebar_a500_d12_m"
+      },
+      {
+        "code": "rebar_a500_d10",
+        "quantity_raw": 2679.3,
+        "quantity_display": 2679.3,
+        "material_total": 87667,
+        "price_code": "rebar_a500_d10_m"
       }
     ]
   },
   "comparison": {
     "status": "ok",
-    "ok_count": 50,
+    "ok_count": 93,
     "mismatch_count": 0,
     "checks": [
       {
@@ -1012,34 +1056,290 @@
       },
       {
         "scope": "calculation_blocks",
-        "code": "insulation.edge_insulation_height_m",
-        "field": "insulation.edge_insulation_height_m",
-        "expected": 0.18,
-        "actual": 0.18,
+        "code": "rebar.rebar_calc_method",
+        "field": "rebar.rebar_calc_method",
+        "expected": "spec_length_items",
+        "actual": "spec_length_items",
         "status": "ok"
       },
       {
         "scope": "calculation_blocks",
-        "code": "insulation.edge_insulation_height_source",
-        "field": "insulation.edge_insulation_height_source",
-        "expected": "specification",
-        "actual": "specification",
+        "code": "rebar.items.0.code",
+        "field": "rebar.items.0.code",
+        "expected": "rebar_a500_d16",
+        "actual": "rebar_a500_d16",
         "status": "ok"
       },
       {
         "scope": "calculation_blocks",
-        "code": "insulation.edge_insulation_area_m2",
-        "field": "insulation.edge_insulation_area_m2",
-        "expected": 6.516,
-        "actual": 6.516,
+        "code": "rebar.items.0.name",
+        "field": "rebar.items.0.name",
+        "expected": "Арматура класса А500 диаметром 16 мм",
+        "actual": "Арматура класса А500 диаметром 16 мм",
         "status": "ok"
       },
       {
         "scope": "calculation_blocks",
-        "code": "insulation.eps100_required_volume_without_waste_m3",
-        "field": "insulation.eps100_required_volume_without_waste_m3",
-        "expected": 0.6516,
-        "actual": 0.6516,
+        "code": "rebar.items.0.steel_class",
+        "field": "rebar.items.0.steel_class",
+        "expected": "A500",
+        "actual": "A500",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.diameter_mm",
+        "field": "rebar.items.0.diameter_mm",
+        "expected": 16,
+        "actual": 16,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.spec_length_m",
+        "field": "rebar.items.0.spec_length_m",
+        "expected": 90.126582,
+        "actual": 90.126582,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.kg_per_meter",
+        "field": "rebar.items.0.kg_per_meter",
+        "expected": 1.58,
+        "actual": 1.58,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.rod_length_m",
+        "field": "rebar.items.0.rod_length_m",
+        "expected": 11.7,
+        "actual": 11.7,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.order_length_m",
+        "field": "rebar.items.0.order_length_m",
+        "expected": 105.3,
+        "actual": 105.3,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.order_weight_kg",
+        "field": "rebar.items.0.order_weight_kg",
+        "expected": 166.374,
+        "actual": 166.374,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.price_code",
+        "field": "rebar.items.0.price_code",
+        "expected": "rebar_a500_d16_m",
+        "actual": "rebar_a500_d16_m",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.0.material_total",
+        "field": "rebar.items.0.material_total",
+        "expected": 8485,
+        "actual": 8485,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.code",
+        "field": "rebar.items.1.code",
+        "expected": "rebar_a500_d12",
+        "actual": "rebar_a500_d12",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.name",
+        "field": "rebar.items.1.name",
+        "expected": "Арматура класса А500 диаметром 12 мм",
+        "actual": "Арматура класса А500 диаметром 12 мм",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.steel_class",
+        "field": "rebar.items.1.steel_class",
+        "expected": "A500",
+        "actual": "A500",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.diameter_mm",
+        "field": "rebar.items.1.diameter_mm",
+        "expected": 12,
+        "actual": 12,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.spec_length_m",
+        "field": "rebar.items.1.spec_length_m",
+        "expected": 24.774775,
+        "actual": 24.774775,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.kg_per_meter",
+        "field": "rebar.items.1.kg_per_meter",
+        "expected": 0.888,
+        "actual": 0.888,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.rod_length_m",
+        "field": "rebar.items.1.rod_length_m",
+        "expected": 11.7,
+        "actual": 11.7,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.order_length_m",
+        "field": "rebar.items.1.order_length_m",
+        "expected": 35.1,
+        "actual": 35.1,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.order_weight_kg",
+        "field": "rebar.items.1.order_weight_kg",
+        "expected": 31.1688,
+        "actual": 31.1688,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.price_code",
+        "field": "rebar.items.1.price_code",
+        "expected": "rebar_a500_d12_m",
+        "actual": "rebar_a500_d12_m",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.1.material_total",
+        "field": "rebar.items.1.material_total",
+        "expected": 1590,
+        "actual": 1590,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.code",
+        "field": "rebar.items.2.code",
+        "expected": "rebar_a500_d10",
+        "actual": "rebar_a500_d10",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.name",
+        "field": "rebar.items.2.name",
+        "expected": "Арматура класса А500 диаметром 10 мм",
+        "actual": "Арматура класса А500 диаметром 10 мм",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.steel_class",
+        "field": "rebar.items.2.steel_class",
+        "expected": "A500",
+        "actual": "A500",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.diameter_mm",
+        "field": "rebar.items.2.diameter_mm",
+        "expected": 10,
+        "actual": 10,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.spec_length_m",
+        "field": "rebar.items.2.spec_length_m",
+        "expected": 2551.166937,
+        "actual": 2551.166937,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.kg_per_meter",
+        "field": "rebar.items.2.kg_per_meter",
+        "expected": 0.617,
+        "actual": 0.617,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.rod_length_m",
+        "field": "rebar.items.2.rod_length_m",
+        "expected": 11.7,
+        "actual": 11.7,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.order_length_m",
+        "field": "rebar.items.2.order_length_m",
+        "expected": 2679.3,
+        "actual": 2679.3,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.order_weight_kg",
+        "field": "rebar.items.2.order_weight_kg",
+        "expected": 1653.1281,
+        "actual": 1653.1281,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.price_code",
+        "field": "rebar.items.2.price_code",
+        "expected": "rebar_a500_d10_m",
+        "actual": "rebar_a500_d10_m",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.items.2.material_total",
+        "field": "rebar.items.2.material_total",
+        "expected": 87667,
+        "actual": 87667,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.total_rebar_order_length_m",
+        "field": "rebar.total_rebar_order_length_m",
+        "expected": 2819.7,
+        "actual": 2819.7,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "rebar.total_rebar_order_weight_kg",
+        "field": "rebar.total_rebar_order_weight_kg",
+        "expected": 1850.6709,
+        "actual": 1850.6709,
         "status": "ok"
       },
       {
@@ -1192,6 +1492,94 @@
         "field": "quantity_display",
         "expected": 36.2,
         "actual": 36.2,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_frame_assembly_control",
+        "field": "quantity_raw",
+        "expected": 2819.7,
+        "actual": 2819.7,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_frame_assembly_control",
+        "field": "quantity_display",
+        "expected": 2819.7,
+        "actual": 2819.7,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d16",
+        "field": "quantity_raw",
+        "expected": 105.3,
+        "actual": 105.3,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d16",
+        "field": "quantity_display",
+        "expected": 105.3,
+        "actual": 105.3,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d16",
+        "field": "material_total",
+        "expected": 8485,
+        "actual": 8485,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d12",
+        "field": "quantity_raw",
+        "expected": 35.1,
+        "actual": 35.1,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d12",
+        "field": "quantity_display",
+        "expected": 35.1,
+        "actual": 35.1,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d12",
+        "field": "material_total",
+        "expected": 1590,
+        "actual": 1590,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d10",
+        "field": "quantity_raw",
+        "expected": 2679.3,
+        "actual": 2679.3,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d10",
+        "field": "quantity_display",
+        "expected": 2679.3,
+        "actual": 2679.3,
+        "status": "ok"
+      },
+      {
+        "scope": "estimate_lines",
+        "code": "rebar_a500_d10",
+        "field": "material_total",
+        "expected": 87667,
+        "actual": 87667,
         "status": "ok"
       }
     ]

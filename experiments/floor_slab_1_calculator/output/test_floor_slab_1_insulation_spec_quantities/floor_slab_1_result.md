@@ -15,7 +15,7 @@
 
 ## Comparison Summary
 - status: `ok`
-- ok: `46`
+- ok: `48`
 - mismatch: `0`
 
 ## Расчётные блоки
@@ -161,6 +161,8 @@
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
 | `insulation.insulation_calc_method` | `spec_work_quantities` |
+| `insulation.edge_insulation_height_m` | `0.18` |
+| `insulation.edge_insulation_height_source` | `specification` |
 | `insulation.slab_outer_edge_length_m` | `84.8` |
 | `insulation.slab_outer_edge_eps_work_length_m` | `84.8` |
 | `insulation.insulated_beams_total_length_m` | `23.2` |
@@ -351,6 +353,8 @@ Production-режим `spec_work_quantities`: рабочие количеств�
 | `totals.consumables_and_tool_depreciation_total` | `51226` | `51226` | `0` | `ok` |
 | `totals.technical_supervision_total` | `5000` | `5000` | `0` | `ok` |
 | `calculation_blocks.insulation.insulation_calc_method` | `spec_work_quantities` | `spec_work_quantities` | `` | `ok` |
+| `calculation_blocks.insulation.edge_insulation_height_m` | `0.18` | `0.18` | `0.0` | `ok` |
+| `calculation_blocks.insulation.edge_insulation_height_source` | `specification` | `specification` | `` | `ok` |
 | `calculation_blocks.insulation.slab_outer_edge_eps_work_length_m` | `84.8` | `84.8` | `0.0` | `ok` |
 | `calculation_blocks.insulation.beams_eps_work_length_m` | `23.2` | `23.2` | `0.0` | `ok` |
 | `calculation_blocks.insulation.edge_beam_eps_work_length_m` | `108` | `108.0` | `0.0` | `ok` |

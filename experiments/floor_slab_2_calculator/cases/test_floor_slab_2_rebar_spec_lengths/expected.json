@@ -1,0 +1,132 @@
+{
+  "calculation_blocks": {
+    "geometry.formwork_area_calc_method": "spec_formwork_area",
+    "geometry.formwork_area_source": "spec_formwork_area",
+    "geometry.slab_edge_perimeter_source": "spec_edge_perimeter",
+    "geometry.main_formwork_area_m2": 81.9,
+    "geometry.edge_formwork_area_m2": 7.24,
+    "geometry.beams_formwork_area_m2": 0,
+    "geometry.edge_and_beam_formwork_area_m2": 7.24,
+    "geometry.calculated_edge_formwork_area_m2": 7.24,
+    "geometry.edge_formwork_area_delta_m2": 0,
+    "geometry.calculated_slab_area_m2": null,
+    "geometry.calculated_slab_edge_perimeter_m": null,
+    "geometry.area_delta_m2": null,
+    "geometry.formwork_area_delta_m2": null,
+    "formwork.formwork_area_calc_method": "spec_formwork_area",
+    "formwork.main_formwork_area_m2": 81.9,
+    "formwork.edge_formwork_area_m2": 7.24,
+    "formwork.beams_formwork_area_m2": 0,
+    "formwork.edge_and_beam_formwork_area_m2": 7.24,
+    "formwork.calculated_edge_formwork_area_m2": 7.24,
+    "formwork.edge_formwork_area_delta_m2": 0,
+    "formwork.edge_formwork_area_source": "spec_formwork_area",
+    "formwork.formwork_delivery_calc_method": "area_threshold",
+    "formwork.formwork_delivery_area_source_m2": 81.9,
+    "formwork.formwork_delivery_threshold_m2": 180,
+    "formwork.formwork_delivery_trips": 2,
+    "formwork.formwork_delivery_breakdown": "1 привоз + 1 вывоз",
+    "formwork.formwork_delivery_status": "calculated",
+    "rebar.rebar_calc_method": "spec_length_items",
+    "rebar.items.0.code": "rebar_a500_d16",
+    "rebar.items.0.name": "Арматура класса А500 диаметром 16 мм",
+    "rebar.items.0.steel_class": "A500",
+    "rebar.items.0.diameter_mm": 16,
+    "rebar.items.0.spec_length_m": 90.126582,
+    "rebar.items.0.kg_per_meter": 1.58,
+    "rebar.items.0.rod_length_m": 11.7,
+    "rebar.items.0.order_length_m": 105.3,
+    "rebar.items.0.order_weight_kg": 166.374,
+    "rebar.items.0.price_code": "rebar_a500_d16_m",
+    "rebar.items.0.material_total": 8485,
+    "rebar.items.1.code": "rebar_a500_d12",
+    "rebar.items.1.name": "Арматура класса А500 диаметром 12 мм",
+    "rebar.items.1.steel_class": "A500",
+    "rebar.items.1.diameter_mm": 12,
+    "rebar.items.1.spec_length_m": 24.774775,
+    "rebar.items.1.kg_per_meter": 0.888,
+    "rebar.items.1.rod_length_m": 11.7,
+    "rebar.items.1.order_length_m": 35.1,
+    "rebar.items.1.order_weight_kg": 31.1688,
+    "rebar.items.1.price_code": "rebar_a500_d12_m",
+    "rebar.items.1.material_total": 1590,
+    "rebar.items.2.code": "rebar_a500_d10",
+    "rebar.items.2.name": "Арматура класса А500 диаметром 10 мм",
+    "rebar.items.2.steel_class": "A500",
+    "rebar.items.2.diameter_mm": 10,
+    "rebar.items.2.spec_length_m": 2551.166937,
+    "rebar.items.2.kg_per_meter": 0.617,
+    "rebar.items.2.rod_length_m": 11.7,
+    "rebar.items.2.order_length_m": 2679.3,
+    "rebar.items.2.order_weight_kg": 1653.1281,
+    "rebar.items.2.price_code": "rebar_a500_d10_m",
+    "rebar.items.2.material_total": 87667,
+    "rebar.total_rebar_order_length_m": 2819.7,
+    "rebar.total_rebar_order_weight_kg": 1850.6709
+  },
+  "estimate_lines": [
+    {
+      "code": "formwork_rental_set",
+      "unit": "м2",
+      "quantity_raw": 81.9,
+      "quantity_display": 81.9,
+      "material_unit_price": 850,
+      "material_total": 69615
+    },
+    {
+      "code": "formwork_delivery_manipulator",
+      "quantity_raw": 2,
+      "quantity_display": 2,
+      "material_unit_price": 20000,
+      "material_total": 40000,
+      "line_total": 40000
+    },
+    {
+      "code": "edge_formwork_installation_control",
+      "quantity_raw": 7.24,
+      "quantity_display": 7.24
+    },
+    {
+      "code": "plywood_for_edges",
+      "quantity_raw": 16,
+      "quantity_display": 16
+    },
+    {
+      "code": "timber_for_formwork",
+      "quantity_raw": 0.362,
+      "quantity_display": 0.36
+    },
+    {
+      "code": "edge_insulation_work",
+      "unit": "мп",
+      "quantity_raw": 36.2,
+      "quantity_display": 36.2
+    },
+    {
+      "code": "rebar_frame_assembly_control",
+      "quantity_raw": 2819.7,
+      "quantity_display": 2819.7
+    },
+    {
+      "code": "rebar_a500_d16",
+      "quantity_raw": 105.3,
+      "quantity_display": 105.3,
+      "material_total": 8485,
+      "price_code": "rebar_a500_d16_m"
+    },
+    {
+      "code": "rebar_a500_d12",
+      "quantity_raw": 35.1,
+      "quantity_display": 35.1,
+      "material_total": 1590,
+      "price_code": "rebar_a500_d12_m"
+    },
+    {
+      "code": "rebar_a500_d10",
+      "quantity_raw": 2679.3,
+      "quantity_display": 2679.3,
+      "material_total": 87667,
+      "price_code": "rebar_a500_d10_m"
+    }
+  ]
+}

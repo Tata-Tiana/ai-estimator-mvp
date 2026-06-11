@@ -142,6 +142,7 @@
   ],
   "insulation": {
     "insulation_calc_method": "spec_work_quantities",
+    "edge_insulation_height_m": 0.18,
     "slab_outer_edge_eps_work_length_m": 84.8,
     "slab_edge_eps_material_area_m2": 15.264,
     "bottom_slab_eps_work_area_m2": 51.92,

@@ -18,6 +18,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - `main_formwork_area_m2 = slab_area_m2`
 
 - main_formwork_area_m2: `81.9`
+- edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
 - slab_edge_perimeter_m: `36.2`
 - calculated_slab_area_m2: `81.9`
 - calculated_slab_edge_perimeter_m: `36.2`
@@ -38,12 +43,18 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - formwork_area_calc_method: `legacy_dimensions`
 - formwork_area_source: `legacy_dimensions`
+- edge_formwork_area_source: `legacy_dimensions`
 - slab_edge_perimeter_source: `legacy_dimensions`
 - slab_length_m: `9.0`
 - slab_width_m: `9.1`
 - slab_area_m2: `81.9`
 - slab_edge_perimeter_m: `36.2`
 - main_formwork_area_m2: `81.9`
+- edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
 - calculated_slab_area_m2: `81.9`
 - calculated_slab_edge_perimeter_m: `36.2`
 - input_slab_area_m2: `81.9`
@@ -57,6 +68,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - raw_supplier_rate: `840.781441`
 - used_rate_per_m2: `850.0`
 - edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
+- edge_formwork_area_source: `legacy_dimensions`
 - formwork_delivery_calc_method: `area_threshold`
 - formwork_delivery_area_source_m2: `81.9`
 - formwork_delivery_threshold_m2: `180.0`
@@ -66,6 +82,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### plywood_and_timber
 
+- edge_and_beam_formwork_area_m2: `7.24`
 - edge_plywood_sheets_raw: `3.147826`
 - non_multiple_places_area_m2: `16.38`
 - non_multiple_places_plywood_sheets_raw: `7.121739`
@@ -77,8 +94,10 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### rebar
 
+- rebar_calc_method: `legacy_weight_kg`
 - items: 3 items
 - total_rebar_order_length_m: `2819.7`
+- total_rebar_order_weight_kg: `1850.6709`
 - total_rebar_weight_with_waste_kg: `1825.39`
 
 ### concrete
@@ -93,6 +112,8 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### insulation
 
+- edge_insulation_height_m: `0.18`
+- edge_insulation_height_source: `specification`
 - edge_insulation_area_m2: `6.516`
 - eps100_required_volume_without_waste_m3: `0.6516`
 - eps100_required_volume_with_waste_m3: `0.68418`
@@ -192,7 +213,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
-- Примечание: For floor slab 2 this control line is used for slab edge formwork only; no beams are calculated.
+- Примечание: Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 from specification.
 
 ### 7. Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов
 
@@ -371,7 +392,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ## Warnings
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness.
-- edge_insulation_height_m is 0.18 m although the section title says 200 mm; 0.18 m is kept for the current Excel match.
+- edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
 
 ## Comparison
 

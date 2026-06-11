@@ -284,6 +284,7 @@ Production-источники из спецификации:
 
 ```text
 insulation.slab_outer_edge_eps_work_length_m
+insulation.edge_insulation_height_m
 insulation.slab_edge_eps_material_area_m2
 insulation.bottom_slab_eps_work_area_m2
 insulation.total_eps_volume_from_spec_m3
@@ -301,6 +302,27 @@ edge_beam_eps_work_length_m =
     slab_outer_edge_eps_work_length_m + beams_eps_work_length_m
 edge_and_beam_eps_material_area_m2 =
     slab_edge_eps_material_area_m2 + beams_eps_material_area_m2
+```
+
+Дополнительно явно оформлена высота утепления торца:
+
+```text
+insulation.edge_insulation_height_m
+```
+
+Для ЮСВ подтверждено значение `0.18 м`: это фактическая высота утепления торца 180 мм. Расхождение с 200 мм было ошибкой в названии раздела.
+
+Если `edge_insulation_height_m` не передан, калькулятор использует fallback:
+
+```text
+edge_insulation_height_m = slab_thickness_m
+edge_insulation_height_source = fallback_slab_thickness
+```
+
+Если значение пришло из спецификации:
+
+```text
+edge_insulation_height_source = specification
 ```
 
 ЭППС закупается от чистого объёма из спецификации:
@@ -335,7 +357,8 @@ test_floor_slab_1_spec_formwork_areas
 - порог доставки опалубки `180 м2`;
 - арматуру из спецификации в м.п.;
 - section-only вес металла для будущего box-level delivery;
-- утепление по рабочим количествам и объёму ЭППС из спецификации.
+- утепление по рабочим количествам и объёму ЭППС из спецификации;
+- явную высоту утепления торца `edge_insulation_height_m = 0.18`.
 
 ## Документация
 

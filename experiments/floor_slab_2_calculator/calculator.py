@@ -7,6 +7,30 @@ from typing import Any
 D0 = Decimal("0")
 D1 = Decimal("1")
 
+REBAR_CATALOG: dict[tuple[str, int], dict[str, Any]] = {
+    ("A500", 16): {
+        "code": "rebar_a500_d16",
+        "name": "Арматура класса А500 диаметром 16 мм",
+        "kg_per_meter": Decimal("1.58"),
+        "rod_length_m": Decimal("11.7"),
+        "price_code": "rebar_a500_d16_m",
+    },
+    ("A500", 12): {
+        "code": "rebar_a500_d12",
+        "name": "Арматура класса А500 диаметром 12 мм",
+        "kg_per_meter": Decimal("0.888"),
+        "rod_length_m": Decimal("11.7"),
+        "price_code": "rebar_a500_d12_m",
+    },
+    ("A500", 10): {
+        "code": "rebar_a500_d10",
+        "name": "Арматура класса А500 диаметром 10 мм",
+        "kg_per_meter": Decimal("0.617"),
+        "rod_length_m": Decimal("11.7"),
+        "price_code": "rebar_a500_d10_m",
+    },
+}
+
 
 def d(value: Any) -> Decimal:
     return value if isinstance(value, Decimal) else Decimal(str(value))
@@ -34,39 +58,96 @@ def ceil_to_step(value: Any, step: Any) -> Decimal:
     return d(ceil_decimal(value_dec / step_dec)) * step_dec
 
 
-def calculate_rebar_item(item: dict[str, Any], default_waste_coeff: Any) -> dict[str, Any]:
-    source_weight = d(item["source_weight_kg"])
-    kg_per_meter = d(item["kg_per_meter"])
+def rebar_catalog_item(steel_class: Any, diameter_mm: Any) -> dict[str, Any]:
+    normalized_steel_class = str(steel_class).upper()
+    normalized_diameter = int(diameter_mm)
+    catalog_item = REBAR_CATALOG.get((normalized_steel_class, normalized_diameter))
+    if catalog_item is None:
+        raise ValueError(
+            "Unsupported rebar catalog item: "
+            f"steel_class={steel_class}, diameter_mm={diameter_mm}"
+        )
+    return catalog_item
+
+
+def calculate_rebar_item(
+    item: dict[str, Any],
+    default_waste_coeff: Any,
+    calc_method: str,
+) -> dict[str, Any]:
+    steel_class = str(item["steel_class"]).upper()
+    diameter_mm = int(item["diameter_mm"])
     waste_coeff = d(item.get("waste_coeff", default_waste_coeff))
-    rod_length = d(item["rod_length_m"])
     unit_price = d(item["unit_price_per_m"])
 
-    raw_length = source_weight / kg_per_meter
+    if calc_method == "legacy_weight_kg":
+        source_weight = d(item["source_weight_kg"])
+        kg_per_meter = d(item["kg_per_meter"])
+        rod_length = d(item["rod_length_m"])
+        code = item["code"]
+        name = item["name"]
+        price_code = item.get("price_code", f"rebar_{steel_class.lower()}_d{diameter_mm}_m")
+        raw_length = source_weight / kg_per_meter
+        spec_length = None
+        weight_with_waste = source_weight * waste_coeff
+    elif calc_method == "spec_length_items":
+        if item.get("spec_length_m") is None:
+            raise ValueError("rebar_items[*].spec_length_m is required for spec_length_items.")
+        catalog_item = rebar_catalog_item(steel_class, diameter_mm)
+        spec_length = d(item["spec_length_m"])
+        if spec_length < D0:
+            raise ValueError("rebar_items[*].spec_length_m must be >= 0.")
+        kg_per_meter = d(catalog_item["kg_per_meter"])
+        rod_length = d(catalog_item["rod_length_m"])
+        code = catalog_item["code"]
+        name = catalog_item["name"]
+        price_code = catalog_item["price_code"]
+        source_weight = None
+        raw_length = spec_length
+        weight_with_waste = None
+    else:
+        raise ValueError("rebar_calc_method must be either legacy_weight_kg or spec_length_items.")
+
+    if kg_per_meter <= D0:
+        raise ValueError("rebar kg_per_meter must be > 0.")
+    if rod_length <= D0:
+        raise ValueError("rebar rod_length_m must be > 0.")
+    if unit_price < D0:
+        raise ValueError("rebar unit_price_per_m must be >= 0.")
+
     length_with_waste = raw_length * waste_coeff
     raw_rods = length_with_waste / rod_length
     rods = ceil_decimal(raw_rods)
     order_length = d(rods) * rod_length
+    order_weight = order_length * kg_per_meter
     material_total_raw = order_length * unit_price
 
-    return {
-        "code": item["code"],
-        "name": item["name"],
-        "steel_class": item["steel_class"],
-        "diameter_mm": item["diameter_mm"],
-        "source_weight_kg": round_decimal(source_weight),
+    result = {
+        "code": code,
+        "name": name,
+        "steel_class": steel_class,
+        "diameter_mm": diameter_mm,
         "kg_per_meter": round_decimal(kg_per_meter),
         "raw_length_m": round_decimal(raw_length),
         "waste_coeff": round_decimal(waste_coeff),
         "length_with_waste_m": round_decimal(length_with_waste),
-        "weight_with_waste_kg": round_decimal(source_weight * waste_coeff),
         "rod_length_m": round_decimal(rod_length),
         "raw_rods": round_decimal(raw_rods),
         "rods": rods,
         "order_length_m": round_decimal(order_length),
+        "order_weight_kg": round_decimal(order_weight),
         "unit_price_per_m": round_decimal(unit_price),
+        "price_code": price_code,
         "material_total_raw": round_decimal(material_total_raw),
         "material_total": round_money_half_up(material_total_raw),
     }
+    if source_weight is not None:
+        result["source_weight_kg"] = round_decimal(source_weight)
+    if spec_length is not None:
+        result["spec_length_m"] = round_decimal(spec_length)
+    if weight_with_waste is not None:
+        result["weight_with_waste_kg"] = round_decimal(weight_with_waste)
+    return result
 
 
 def round_optional(value: Any, places: str = "0.000001") -> float | None:
@@ -86,6 +167,21 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
     input_edge_perimeter = (
         d(input_data["slab_edge_perimeter_m"])
         if input_data.get("slab_edge_perimeter_m") is not None
+        else None
+    )
+    input_edge_formwork_area = (
+        d(input_data["edge_formwork_area_m2"])
+        if input_data.get("edge_formwork_area_m2") is not None
+        else None
+    )
+    input_beams_formwork_area = (
+        d(input_data["beams_formwork_area_m2"])
+        if input_data.get("beams_formwork_area_m2") is not None
+        else None
+    )
+    edge_formwork_height = (
+        d(input_data["edge_formwork_height_m"])
+        if input_data.get("edge_formwork_height_m") is not None
         else None
     )
 
@@ -109,7 +205,12 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
         slab_area = calculated_slab_area
         slab_edge_perimeter = calculated_slab_edge_perimeter
         main_formwork_area = slab_area
+        if edge_formwork_height is None:
+            raise ValueError("edge_formwork_height_m is required for legacy_dimensions.")
+        edge_formwork_area = slab_edge_perimeter * edge_formwork_height
+        beams_formwork_area = D0
         formwork_area_source = "legacy_dimensions"
+        edge_formwork_area_source = "legacy_dimensions"
         slab_edge_perimeter_source = "legacy_dimensions"
     else:
         if input_data.get("main_formwork_area_m2") is None:
@@ -117,6 +218,20 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
         main_formwork_area = d(input_data["main_formwork_area_m2"])
         if main_formwork_area < D0:
             raise ValueError("main_formwork_area_m2 must be >= 0.")
+        if input_edge_formwork_area is None:
+            raise ValueError("edge_formwork_area_m2 is required for spec_formwork_area.")
+        edge_formwork_area = input_edge_formwork_area
+        if edge_formwork_area < D0:
+            raise ValueError("edge_formwork_area_m2 must be >= 0.")
+        if input_beams_formwork_area is None:
+            beams_formwork_area = D0
+            warnings.append(
+                "beams_formwork_area_m2 is not provided; floor slab 2 has no beams, assumed 0."
+            )
+        else:
+            beams_formwork_area = input_beams_formwork_area
+        if beams_formwork_area < D0:
+            raise ValueError("beams_formwork_area_m2 must be >= 0.")
 
         if input_edge_perimeter is not None:
             slab_edge_perimeter = input_edge_perimeter
@@ -138,6 +253,7 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
 
         slab_area = input_slab_area if input_slab_area is not None else calculated_slab_area
         formwork_area_source = "spec_formwork_area"
+        edge_formwork_area_source = "spec_formwork_area"
 
     formwork_area_delta = None
     if input_slab_area is not None:
@@ -145,15 +261,30 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
         if abs(formwork_area_delta) > d("0.01"):
             warnings.append("main_formwork_area_m2 differs from slab_area_m2 by more than 0.01 m2.")
 
+    edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
+    calculated_edge_formwork_area = None
+    edge_formwork_area_delta = None
+    if slab_edge_perimeter is not None and edge_formwork_height is not None:
+        calculated_edge_formwork_area = slab_edge_perimeter * edge_formwork_height
+        edge_formwork_area_delta = edge_formwork_area - calculated_edge_formwork_area
+        if method == "spec_formwork_area" and abs(edge_formwork_area_delta) > d("0.01"):
+            warnings.append("Spec edge_formwork_area_m2 differs from calculated control area.")
+
     return {
         "formwork_area_calc_method": method,
         "formwork_area_source": formwork_area_source,
+        "edge_formwork_area_source": edge_formwork_area_source,
         "slab_edge_perimeter_source": slab_edge_perimeter_source,
         "slab_length_m": slab_length,
         "slab_width_m": slab_width,
         "slab_area_m2": slab_area,
         "slab_edge_perimeter_m": slab_edge_perimeter,
         "main_formwork_area_m2": main_formwork_area,
+        "edge_formwork_area_m2": edge_formwork_area,
+        "beams_formwork_area_m2": beams_formwork_area,
+        "edge_and_beam_formwork_area_m2": edge_and_beam_formwork_area,
+        "calculated_edge_formwork_area_m2": calculated_edge_formwork_area,
+        "edge_formwork_area_delta_m2": edge_formwork_area_delta,
         "calculated_slab_area_m2": calculated_slab_area,
         "calculated_slab_edge_perimeter_m": calculated_slab_edge_perimeter,
         "input_slab_area_m2": input_slab_area,
@@ -267,6 +398,9 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     slab_area = geometry_context["slab_area_m2"]
     slab_edge_perimeter = geometry_context["slab_edge_perimeter_m"]
     main_formwork_area = geometry_context["main_formwork_area_m2"]
+    edge_formwork_area = geometry_context["edge_formwork_area_m2"]
+    beams_formwork_area = geometry_context["beams_formwork_area_m2"]
+    edge_and_beam_formwork_area = geometry_context["edge_and_beam_formwork_area_m2"]
 
     supplier_quote = d(input_data["formwork_rental_supplier_quote_total"])
     raw_supplier_rate = supplier_quote / main_formwork_area
@@ -278,9 +412,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     crane_total_raw = d(input_data["crane_shifts"]) * d(input_data["crane_unit_price"])
     formwork_consumables_total_raw = main_formwork_area * d(input_data["formwork_consumables_rate_per_m2"])
 
-    edge_formwork_area = slab_edge_perimeter * d(input_data["edge_formwork_height_m"])
     plywood_working_area = d(input_data["plywood_sheet_working_area_m2"])
-    edge_plywood_sheets_raw = edge_formwork_area / plywood_working_area
+    edge_plywood_sheets_raw = edge_and_beam_formwork_area / plywood_working_area
     non_multiple_places_area = main_formwork_area * d(input_data["non_multiple_places_coeff"])
     non_multiple_plywood_sheets_raw = non_multiple_places_area / plywood_working_area
     base_plywood_sheets_raw = edge_plywood_sheets_raw + non_multiple_plywood_sheets_raw
@@ -288,15 +421,22 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     plywood_sheets = ceil_decimal(order_plywood_sheets_raw)
     plywood_total_raw = d(plywood_sheets) * d(input_data["plywood_unit_price"])
 
-    timber_volume = edge_formwork_area * d(input_data["timber_thickness_m"])
+    timber_volume = edge_and_beam_formwork_area * d(input_data["timber_thickness_m"])
     timber_total_raw = timber_volume * d(input_data["timber_unit_price"])
 
+    rebar_calc_method = input_data.get("rebar_calc_method", "legacy_weight_kg")
+    if rebar_calc_method not in {"legacy_weight_kg", "spec_length_items"}:
+        raise ValueError("rebar_calc_method must be either legacy_weight_kg or spec_length_items.")
     rebar_items = [
-        calculate_rebar_item(item, input_data["rebar_waste_coeff"])
+        calculate_rebar_item(item, input_data["rebar_waste_coeff"], rebar_calc_method)
         for item in input_data["rebar_items"]
     ]
     total_rebar_order_length = sum((d(item["order_length_m"]) for item in rebar_items), D0)
-    total_rebar_weight_with_waste = sum((d(item["weight_with_waste_kg"]) for item in rebar_items), D0)
+    total_rebar_order_weight = sum((d(item["order_weight_kg"]) for item in rebar_items), D0)
+    total_rebar_weight_with_waste = sum(
+        (d(item.get("weight_with_waste_kg", item["order_weight_kg"])) for item in rebar_items),
+        D0,
+    )
 
     concrete_placing_volume = d(input_data["concrete_placing_volume_m3"])
     warnings.append(
@@ -313,9 +453,12 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     concrete_pump_total_raw = d(input_data["concrete_pump_shifts"]) * d(input_data["concrete_pump_unit_price"])
 
     edge_insulation_height = d(input_data["edge_insulation_height_m"])
+    if edge_insulation_height <= D0:
+        raise ValueError("edge_insulation_height_m must be > 0.")
+    edge_insulation_height_source = "specification"
     warnings.append(
-        "edge_insulation_height_m is 0.18 m although the section title says 200 mm; "
-        "0.18 m is kept for the current Excel match."
+        "edge_insulation_height_m = 0.18 m is confirmed by specification; "
+        "200 mm in the section title is considered a naming error."
     )
     edge_insulation_area = slab_edge_perimeter * edge_insulation_height
     eps100_required_without_waste = edge_insulation_area * d(input_data["eps100_thickness_m"])
@@ -404,9 +547,9 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты",
             "м2",
             "zero_excel_structure_line",
-            edge_formwork_area,
+            edge_and_beam_formwork_area,
             notes=[
-                "For floor slab 2 this control line is used for slab edge formwork only; no beams are calculated."
+                "Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 from specification."
             ],
         ),
         estimate_line(
@@ -446,7 +589,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             rebar_by_code["rebar_a500_d16"]["order_length_m"],
             material_unit_price=rebar_by_code["rebar_a500_d16"]["unit_price_per_m"],
             material_total_raw=rebar_by_code["rebar_a500_d16"]["material_total_raw"],
-            price_code="rebar_a500_d16_m",
+            price_code=rebar_by_code["rebar_a500_d16"]["price_code"],
         ),
         estimate_line(
             "rebar_a500_d12",
@@ -456,7 +599,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             rebar_by_code["rebar_a500_d12"]["order_length_m"],
             material_unit_price=rebar_by_code["rebar_a500_d12"]["unit_price_per_m"],
             material_total_raw=rebar_by_code["rebar_a500_d12"]["material_total_raw"],
-            price_code="rebar_a500_d12_m",
+            price_code=rebar_by_code["rebar_a500_d12"]["price_code"],
         ),
         estimate_line(
             "rebar_a500_d10",
@@ -466,7 +609,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             rebar_by_code["rebar_a500_d10"]["order_length_m"],
             material_unit_price=rebar_by_code["rebar_a500_d10"]["unit_price_per_m"],
             material_total_raw=rebar_by_code["rebar_a500_d10"]["material_total_raw"],
-            price_code="rebar_a500_d10_m",
+            price_code=rebar_by_code["rebar_a500_d10"]["price_code"],
         ),
         estimate_line(
             "concrete_placing_work",
@@ -607,12 +750,22 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         "geometry": {
             "formwork_area_calc_method": geometry_context["formwork_area_calc_method"],
             "formwork_area_source": geometry_context["formwork_area_source"],
+            "edge_formwork_area_source": geometry_context["edge_formwork_area_source"],
             "slab_edge_perimeter_source": geometry_context["slab_edge_perimeter_source"],
             "slab_length_m": round_optional(geometry_context["slab_length_m"]),
             "slab_width_m": round_optional(geometry_context["slab_width_m"]),
             "slab_area_m2": round_optional(slab_area),
             "slab_edge_perimeter_m": round_decimal(slab_edge_perimeter),
             "main_formwork_area_m2": round_decimal(main_formwork_area),
+            "edge_formwork_area_m2": round_decimal(edge_formwork_area),
+            "beams_formwork_area_m2": round_decimal(beams_formwork_area),
+            "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
+            "calculated_edge_formwork_area_m2": round_optional(
+                geometry_context["calculated_edge_formwork_area_m2"]
+            ),
+            "edge_formwork_area_delta_m2": round_optional(
+                geometry_context["edge_formwork_area_delta_m2"]
+            ),
             "calculated_slab_area_m2": round_optional(geometry_context["calculated_slab_area_m2"]),
             "calculated_slab_edge_perimeter_m": round_optional(
                 geometry_context["calculated_slab_edge_perimeter_m"]
@@ -627,6 +780,15 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "raw_supplier_rate": round_decimal(raw_supplier_rate),
             "used_rate_per_m2": round_decimal(formwork_rate),
             "edge_formwork_area_m2": round_decimal(edge_formwork_area),
+            "beams_formwork_area_m2": round_decimal(beams_formwork_area),
+            "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
+            "calculated_edge_formwork_area_m2": round_optional(
+                geometry_context["calculated_edge_formwork_area_m2"]
+            ),
+            "edge_formwork_area_delta_m2": round_optional(
+                geometry_context["edge_formwork_area_delta_m2"]
+            ),
+            "edge_formwork_area_source": geometry_context["edge_formwork_area_source"],
             "formwork_delivery_calc_method": formwork_delivery["formwork_delivery_calc_method"],
             "formwork_delivery_area_source_m2": round_decimal(
                 formwork_delivery["formwork_delivery_area_source_m2"]
@@ -639,6 +801,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "formwork_delivery_status": formwork_delivery["formwork_delivery_status"],
         },
         "plywood_and_timber": {
+            "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
             "edge_plywood_sheets_raw": round_decimal(edge_plywood_sheets_raw),
             "non_multiple_places_area_m2": round_decimal(non_multiple_places_area),
             "non_multiple_places_plywood_sheets_raw": round_decimal(non_multiple_plywood_sheets_raw),
@@ -649,8 +812,10 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "timber_volume_m3_display": display_decimal(timber_volume, "0.01"),
         },
         "rebar": {
+            "rebar_calc_method": rebar_calc_method,
             "items": rebar_items,
             "total_rebar_order_length_m": round_decimal(total_rebar_order_length),
+            "total_rebar_order_weight_kg": round_decimal(total_rebar_order_weight),
             "total_rebar_weight_with_waste_kg": round_decimal(total_rebar_weight_with_waste, "0.01"),
         },
         "concrete": {
@@ -665,6 +830,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         "insulation": {
+            "edge_insulation_height_m": round_decimal(edge_insulation_height),
+            "edge_insulation_height_source": edge_insulation_height_source,
             "edge_insulation_area_m2": round_decimal(edge_insulation_area),
             "eps100_required_volume_without_waste_m3": round_decimal(eps100_required_without_waste),
             "eps100_required_volume_with_waste_m3": round_decimal(eps100_required_with_waste),

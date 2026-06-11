@@ -2,8 +2,8 @@
 
 ## Inputs
 
-- project_name: `test_floor_slab_2_live_prices`
-- slab_area_m2: `81.9`
+- project_name: `test_floor_slab_2_rebar_spec_lengths`
+- slab_area_m2: `None`
 - slab_edge_perimeter_m: `36.2`
 - concrete_placing_volume_m3: `16.5`
 
@@ -11,11 +11,13 @@
 
 ## Площадь опалубки и геометрия
 
-Legacy-режим `legacy_dimensions`: площадь плиты, периметр и площадь опалубки считаются от габаритов.
+Production-режим `spec_formwork_area`: площади опалубки берутся из спецификации.
 
-- `slab_area_m2 = slab_length_m * slab_width_m`
-- `slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)`
-- `main_formwork_area_m2 = slab_area_m2`
+- `main_formwork_area_m2` используется для строки `formwork_rental_set`.
+- `edge_formwork_area_m2 + beams_formwork_area_m2` используется для торцевой опалубки, фанеры и пиломатериала.
+- `slab_edge_perimeter_m` используется как проектная длина утепляемого торца.
+- `slab_edge_perimeter_m * edge_formwork_height_m` остается только контрольной формулой.
+- `slab_length_m`, `slab_width_m`, `slab_area_m2` являются optional geometry check.
 
 - main_formwork_area_m2: `81.9`
 - edge_formwork_area_m2: `7.24`
@@ -24,10 +26,10 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - calculated_edge_formwork_area_m2: `7.24`
 - edge_formwork_area_delta_m2: `0.0`
 - slab_edge_perimeter_m: `36.2`
-- calculated_slab_area_m2: `81.9`
-- calculated_slab_edge_perimeter_m: `36.2`
-- area_delta_m2: `0.0`
-- formwork_area_delta_m2: `0.0`
+- calculated_slab_area_m2: `None`
+- calculated_slab_edge_perimeter_m: `None`
+- area_delta_m2: `None`
+- formwork_area_delta_m2: `None`
 
 ## Доставка и вывоз опалубки
 
@@ -41,13 +43,13 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### geometry
 
-- formwork_area_calc_method: `legacy_dimensions`
-- formwork_area_source: `legacy_dimensions`
-- edge_formwork_area_source: `legacy_dimensions`
-- slab_edge_perimeter_source: `legacy_dimensions`
-- slab_length_m: `9.0`
-- slab_width_m: `9.1`
-- slab_area_m2: `81.9`
+- formwork_area_calc_method: `spec_formwork_area`
+- formwork_area_source: `spec_formwork_area`
+- edge_formwork_area_source: `spec_formwork_area`
+- slab_edge_perimeter_source: `spec_edge_perimeter`
+- slab_length_m: `None`
+- slab_width_m: `None`
+- slab_area_m2: `None`
 - slab_edge_perimeter_m: `36.2`
 - main_formwork_area_m2: `81.9`
 - edge_formwork_area_m2: `7.24`
@@ -55,15 +57,15 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - edge_and_beam_formwork_area_m2: `7.24`
 - calculated_edge_formwork_area_m2: `7.24`
 - edge_formwork_area_delta_m2: `0.0`
-- calculated_slab_area_m2: `81.9`
-- calculated_slab_edge_perimeter_m: `36.2`
-- input_slab_area_m2: `81.9`
-- area_delta_m2: `0.0`
-- formwork_area_delta_m2: `0.0`
+- calculated_slab_area_m2: `None`
+- calculated_slab_edge_perimeter_m: `None`
+- input_slab_area_m2: `None`
+- area_delta_m2: `None`
+- formwork_area_delta_m2: `None`
 
 ### formwork
 
-- formwork_area_calc_method: `legacy_dimensions`
+- formwork_area_calc_method: `spec_formwork_area`
 - main_formwork_area_m2: `81.9`
 - raw_supplier_rate: `840.781441`
 - used_rate_per_m2: `850.0`
@@ -72,7 +74,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - edge_and_beam_formwork_area_m2: `7.24`
 - calculated_edge_formwork_area_m2: `7.24`
 - edge_formwork_area_delta_m2: `0.0`
-- edge_formwork_area_source: `legacy_dimensions`
+- edge_formwork_area_source: `spec_formwork_area`
 - formwork_delivery_calc_method: `area_threshold`
 - formwork_delivery_area_source_m2: `81.9`
 - formwork_delivery_threshold_m2: `180.0`
@@ -94,11 +96,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### rebar
 
-- rebar_calc_method: `legacy_weight_kg`
+- rebar_calc_method: `spec_length_items`
 - items: 3 items
 - total_rebar_order_length_m: `2819.7`
 - total_rebar_order_weight_kg: `1850.6709`
-- total_rebar_weight_with_waste_kg: `1825.39`
+- total_rebar_weight_with_waste_kg: `1850.67`
 
 ### concrete
 
@@ -108,7 +110,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - concrete_order_volume_m3: `17.5`
 - delivery_trips_raw: `1.944444`
 - delivery_trips: `2`
-- reinforcement_density_kg_per_m3: `105.36`
+- reinforcement_density_kg_per_m3: `106.82`
 
 ### insulation
 
@@ -145,9 +147,9 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 7 | `plywood_for_edges` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | шт | 16 | 16 | 23 200 | 0 | 23 200 |
 | 8 | `timber_for_formwork` | Пиломатериал обрезной для устройства опалубки ГОСТ | м3 | 0.36 | 0.36 | 7 783 | 0 | 7 783 |
 | 9 | `rebar_frame_assembly_control` | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры | мп | 2 819.7 | 2 819.7 | 0 | 0 | 0 |
-| 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 105.3 | 105.3 | 6 834 | 0 | 6 834 |
-| 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 293 | 0 | 1 293 |
-| 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 72 770 | 0 | 72 770 |
+| 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 105.3 | 105.3 | 8 485 | 0 | 8 485 |
+| 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
+| 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
 | 14 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
 | 15 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
@@ -155,7 +157,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 17 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
 | 18 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 36.2 | 36.2 | 0 | 16 290 | 16 290 |
 | 19 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
-| 20 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 450 | 0 | 450 |
+| 20 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
 | 21 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
 | 22 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
 | 23 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
@@ -244,25 +246,25 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials`
 - Количество raw/display: `105.3` / `105.3`
-- Материалы raw/display: `6833.97` / `6834`
+- Материалы raw/display: `8485.074` / `8485`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `6833.97` / `6834`
+- Итого raw/display: `8485.074` / `8485`
 
 ### 11. Арматура класса А500 диаметром 12 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `35.1` / `35.1`
-- Материалы raw/display: `1293.435` / `1293`
+- Материалы raw/display: `1589.679` / `1590`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `1293.435` / `1293`
+- Итого raw/display: `1589.679` / `1590`
 
 ### 12. Арматура класса А500 диаметром 10 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `2679.3` / `2679.3`
-- Материалы raw/display: `72769.788` / `72770`
+- Материалы raw/display: `87666.696` / `87667`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `72769.788` / `72770`
+- Итого raw/display: `87666.696` / `87667`
 
 ### 13. Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)
 
@@ -325,9 +327,9 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `450.0` / `450`
+- Материалы raw/display: `490.0` / `490`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `450.0` / `450`
+- Итого raw/display: `490.0` / `490`
 
 ### 21. Логистика, и снабжение
 
@@ -379,78 +381,119 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ## Totals
 
-- internal_materials_total_raw: `485877.13048`
-- internal_materials_total: `485877`
-- internal_works_total_raw: `214290`
+- internal_materials_total_raw: `502761.38648`
+- internal_materials_total: `502761`
+- internal_works_total_raw: `214290.0`
 - internal_works_total: `214290`
-- internal_section_total_raw: `700167.13048`
-- internal_section_total: `700167`
-- sum_of_displayed_line_material_totals: `485877`
+- internal_section_total_raw: `717051.38648`
+- internal_section_total: `717051`
+- sum_of_displayed_line_material_totals: `502762`
 - sum_of_displayed_line_work_totals: `214290`
-- sum_of_displayed_line_totals: `700167`
+- sum_of_displayed_line_totals: `717052`
 
 ## Warnings
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
-- formwork_rental_m2: price_code not found in price_registry, fallback input price used
-- formwork_delivery_truck: price_code not found in price_registry, fallback input price used
-- crane_shift: price_code not found in price_registry, fallback input price used
-- formwork_consumables_m2: price_code not found in price_registry and fallback input price is missing
-- plywood_1520x1520_18mm_sheet: price_code not found in price_registry, fallback input price used
-- timber_m3: price_code not found in price_registry, fallback input price used
-- concrete_placing_work_m3: price_code not found in price_registry, fallback input price used
-- concrete_b22_5_m3: price_code not found in price_registry, fallback input price used
-- concrete_delivery_trip: price_code not found in price_registry, fallback input price used
-- concrete_pump_32m_shift: price_code not found in price_registry, fallback input price used
-- edge_insulation_work_m: price_code not found in price_registry, fallback input price used
-- eps_penoplex_osnova_100_m3: price_code not found in price_registry, fallback input price used
-
-## Источники цен
-
-| Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
-| --- | --- | ---: | ---: | --- | --- |
-| Монтаж опалубки под монолитное перекрытие 2-го этажа | `` | `None` | `None` | `locked_case_prices` |  |
-| Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | `formwork_rental_m2` | `850` | `850` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Доставка, вывоз опалубки манипулятором | `formwork_delivery_truck` | `20000` | `20000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Подача опалубки, арматуры автокраном | `crane_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `formwork_consumables_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Монтаж опалубки из доски 50 мм и фанеры для устройства балок и отбортовки плиты | `` | `None` | `None` | `locked_case_prices` |  |
-| Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `plywood_1520x1520_18mm_sheet` | `1450` | `1450` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Пиломатериал обрезной для устройства опалубки ГОСТ | `timber_m3` | `21500` | `21500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры | `` | `None` | `None` | `locked_case_prices` |  |
-| Арматура класса А500 диаметром 16 мм | `rebar_a500_d16_m` | `80.58` | `64.9` | `price_registry` |  |
-| Арматура класса А500 диаметром 12 мм | `rebar_a500_d12_m` | `45.29` | `36.85` | `price_registry` |  |
-| Арматура класса А500 диаметром 10 мм | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
-| Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `concrete_placing_work_m3` | `12000` | `12000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Бетон марки В22,5 (М300) | `concrete_b22_5_m3` | `6400` | `6400` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Доставка бетона до объекта | `concrete_delivery_trip` | `7500` | `7500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Работа бетононасоса 32м + гаситель | `concrete_pump_32m_shift` | `38000` | `38000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Демонтаж опалубки после завершения бетонирования | `` | `None` | `None` | `locked_case_prices` |  |
-| Устройство утепления по наружной стороне торцов плиты, балок | `edge_insulation_work_m` | `450` | `450` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `eps_penoplex_osnova_100_m3` | `9020` | `9020` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Клей-пена для ЭППС | `eps_foam_glue_can` | `490` | `450` | `price_registry` |  |
-| Логистика, и снабжение | `` | `None` | `None` | `locked_case_prices` |  |
-| Расходные материалы, амортизация инструмента | `` | `None` | `None` | `locked_case_prices` |  |
-| Технический надзор | `` | `None` | `None` | `locked_case_prices` |  |
-| Заготовительно-складские расходы | `` | `None` | `None` | `locked_case_prices` |  |
-| Накладные и общехозяйственные расходы | `` | `None` | `None` | `locked_case_prices` |  |
-| Сметная прибыль | `` | `None` | `None` | `locked_case_prices` |  |
-
-## Pricing summary
-
-- mode: `price_registry_with_fallback`
-- registry_path: `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx`
-- prices_from_price_registry: `4`
-- prices_from_project_overrides: `0`
-- prices_from_fallback_input: `12`
-- warnings_count: `12`
 
 ## Comparison
 
 - status: `ok`
-- ok: `0`
+- ok: `93`
 - mismatch: `0`
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
+| calculation_blocks | `geometry.formwork_area_calc_method` | `geometry.formwork_area_calc_method` | spec_formwork_area | spec_formwork_area | ok |
+| calculation_blocks | `geometry.formwork_area_source` | `geometry.formwork_area_source` | spec_formwork_area | spec_formwork_area | ok |
+| calculation_blocks | `geometry.slab_edge_perimeter_source` | `geometry.slab_edge_perimeter_source` | spec_edge_perimeter | spec_edge_perimeter | ok |
+| calculation_blocks | `geometry.main_formwork_area_m2` | `geometry.main_formwork_area_m2` | 81.9 | 81.9 | ok |
+| calculation_blocks | `geometry.edge_formwork_area_m2` | `geometry.edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.beams_formwork_area_m2` | `geometry.beams_formwork_area_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `geometry.edge_and_beam_formwork_area_m2` | `geometry.edge_and_beam_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.calculated_edge_formwork_area_m2` | `geometry.calculated_edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.edge_formwork_area_delta_m2` | `geometry.edge_formwork_area_delta_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `geometry.calculated_slab_area_m2` | `geometry.calculated_slab_area_m2` | None | None | ok |
+| calculation_blocks | `geometry.calculated_slab_edge_perimeter_m` | `geometry.calculated_slab_edge_perimeter_m` | None | None | ok |
+| calculation_blocks | `geometry.area_delta_m2` | `geometry.area_delta_m2` | None | None | ok |
+| calculation_blocks | `geometry.formwork_area_delta_m2` | `geometry.formwork_area_delta_m2` | None | None | ok |
+| calculation_blocks | `formwork.formwork_area_calc_method` | `formwork.formwork_area_calc_method` | spec_formwork_area | spec_formwork_area | ok |
+| calculation_blocks | `formwork.main_formwork_area_m2` | `formwork.main_formwork_area_m2` | 81.9 | 81.9 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_m2` | `formwork.edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.beams_formwork_area_m2` | `formwork.beams_formwork_area_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `formwork.edge_and_beam_formwork_area_m2` | `formwork.edge_and_beam_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.calculated_edge_formwork_area_m2` | `formwork.calculated_edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_delta_m2` | `formwork.edge_formwork_area_delta_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_source` | `formwork.edge_formwork_area_source` | spec_formwork_area | spec_formwork_area | ok |
+| calculation_blocks | `formwork.formwork_delivery_calc_method` | `formwork.formwork_delivery_calc_method` | area_threshold | area_threshold | ok |
+| calculation_blocks | `formwork.formwork_delivery_area_source_m2` | `formwork.formwork_delivery_area_source_m2` | 81.9 | 81.9 | ok |
+| calculation_blocks | `formwork.formwork_delivery_threshold_m2` | `formwork.formwork_delivery_threshold_m2` | 180 | 180.0 | ok |
+| calculation_blocks | `formwork.formwork_delivery_trips` | `formwork.formwork_delivery_trips` | 2 | 2.0 | ok |
+| calculation_blocks | `formwork.formwork_delivery_breakdown` | `formwork.formwork_delivery_breakdown` | 1 привоз + 1 вывоз | 1 привоз + 1 вывоз | ok |
+| calculation_blocks | `formwork.formwork_delivery_status` | `formwork.formwork_delivery_status` | calculated | calculated | ok |
+| calculation_blocks | `rebar.rebar_calc_method` | `rebar.rebar_calc_method` | spec_length_items | spec_length_items | ok |
+| calculation_blocks | `rebar.items.0.code` | `rebar.items.0.code` | rebar_a500_d16 | rebar_a500_d16 | ok |
+| calculation_blocks | `rebar.items.0.name` | `rebar.items.0.name` | Арматура класса А500 диаметром 16 мм | Арматура класса А500 диаметром 16 мм | ok |
+| calculation_blocks | `rebar.items.0.steel_class` | `rebar.items.0.steel_class` | A500 | A500 | ok |
+| calculation_blocks | `rebar.items.0.diameter_mm` | `rebar.items.0.diameter_mm` | 16 | 16 | ok |
+| calculation_blocks | `rebar.items.0.spec_length_m` | `rebar.items.0.spec_length_m` | 90.126582 | 90.126582 | ok |
+| calculation_blocks | `rebar.items.0.kg_per_meter` | `rebar.items.0.kg_per_meter` | 1.58 | 1.58 | ok |
+| calculation_blocks | `rebar.items.0.rod_length_m` | `rebar.items.0.rod_length_m` | 11.7 | 11.7 | ok |
+| calculation_blocks | `rebar.items.0.order_length_m` | `rebar.items.0.order_length_m` | 105.3 | 105.3 | ok |
+| calculation_blocks | `rebar.items.0.order_weight_kg` | `rebar.items.0.order_weight_kg` | 166.374 | 166.374 | ok |
+| calculation_blocks | `rebar.items.0.price_code` | `rebar.items.0.price_code` | rebar_a500_d16_m | rebar_a500_d16_m | ok |
+| calculation_blocks | `rebar.items.0.material_total` | `rebar.items.0.material_total` | 8485 | 8485 | ok |
+| calculation_blocks | `rebar.items.1.code` | `rebar.items.1.code` | rebar_a500_d12 | rebar_a500_d12 | ok |
+| calculation_blocks | `rebar.items.1.name` | `rebar.items.1.name` | Арматура класса А500 диаметром 12 мм | Арматура класса А500 диаметром 12 мм | ok |
+| calculation_blocks | `rebar.items.1.steel_class` | `rebar.items.1.steel_class` | A500 | A500 | ok |
+| calculation_blocks | `rebar.items.1.diameter_mm` | `rebar.items.1.diameter_mm` | 12 | 12 | ok |
+| calculation_blocks | `rebar.items.1.spec_length_m` | `rebar.items.1.spec_length_m` | 24.774775 | 24.774775 | ok |
+| calculation_blocks | `rebar.items.1.kg_per_meter` | `rebar.items.1.kg_per_meter` | 0.888 | 0.888 | ok |
+| calculation_blocks | `rebar.items.1.rod_length_m` | `rebar.items.1.rod_length_m` | 11.7 | 11.7 | ok |
+| calculation_blocks | `rebar.items.1.order_length_m` | `rebar.items.1.order_length_m` | 35.1 | 35.1 | ok |
+| calculation_blocks | `rebar.items.1.order_weight_kg` | `rebar.items.1.order_weight_kg` | 31.1688 | 31.1688 | ok |
+| calculation_blocks | `rebar.items.1.price_code` | `rebar.items.1.price_code` | rebar_a500_d12_m | rebar_a500_d12_m | ok |
+| calculation_blocks | `rebar.items.1.material_total` | `rebar.items.1.material_total` | 1590 | 1590 | ok |
+| calculation_blocks | `rebar.items.2.code` | `rebar.items.2.code` | rebar_a500_d10 | rebar_a500_d10 | ok |
+| calculation_blocks | `rebar.items.2.name` | `rebar.items.2.name` | Арматура класса А500 диаметром 10 мм | Арматура класса А500 диаметром 10 мм | ok |
+| calculation_blocks | `rebar.items.2.steel_class` | `rebar.items.2.steel_class` | A500 | A500 | ok |
+| calculation_blocks | `rebar.items.2.diameter_mm` | `rebar.items.2.diameter_mm` | 10 | 10 | ok |
+| calculation_blocks | `rebar.items.2.spec_length_m` | `rebar.items.2.spec_length_m` | 2551.166937 | 2551.166937 | ok |
+| calculation_blocks | `rebar.items.2.kg_per_meter` | `rebar.items.2.kg_per_meter` | 0.617 | 0.617 | ok |
+| calculation_blocks | `rebar.items.2.rod_length_m` | `rebar.items.2.rod_length_m` | 11.7 | 11.7 | ok |
+| calculation_blocks | `rebar.items.2.order_length_m` | `rebar.items.2.order_length_m` | 2679.3 | 2679.3 | ok |
+| calculation_blocks | `rebar.items.2.order_weight_kg` | `rebar.items.2.order_weight_kg` | 1653.1281 | 1653.1281 | ok |
+| calculation_blocks | `rebar.items.2.price_code` | `rebar.items.2.price_code` | rebar_a500_d10_m | rebar_a500_d10_m | ok |
+| calculation_blocks | `rebar.items.2.material_total` | `rebar.items.2.material_total` | 87667 | 87667 | ok |
+| calculation_blocks | `rebar.total_rebar_order_length_m` | `rebar.total_rebar_order_length_m` | 2819.7 | 2819.7 | ok |
+| calculation_blocks | `rebar.total_rebar_order_weight_kg` | `rebar.total_rebar_order_weight_kg` | 1850.6709 | 1850.6709 | ok |
+| estimate_lines | `formwork_rental_set` | `unit` | м2 | м2 | ok |
+| estimate_lines | `formwork_rental_set` | `quantity_raw` | 81.9 | 81.9 | ok |
+| estimate_lines | `formwork_rental_set` | `quantity_display` | 81.9 | 81.9 | ok |
+| estimate_lines | `formwork_rental_set` | `material_unit_price` | 850 | 850.0 | ok |
+| estimate_lines | `formwork_rental_set` | `material_total` | 69615 | 69615 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `quantity_raw` | 2 | 2.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `quantity_display` | 2 | 2.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `material_unit_price` | 20000 | 20000.0 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `material_total` | 40000 | 40000 | ok |
+| estimate_lines | `formwork_delivery_manipulator` | `line_total` | 40000 | 40000 | ok |
+| estimate_lines | `edge_formwork_installation_control` | `quantity_raw` | 7.24 | 7.24 | ok |
+| estimate_lines | `edge_formwork_installation_control` | `quantity_display` | 7.24 | 7.24 | ok |
+| estimate_lines | `plywood_for_edges` | `quantity_raw` | 16 | 16.0 | ok |
+| estimate_lines | `plywood_for_edges` | `quantity_display` | 16 | 16.0 | ok |
+| estimate_lines | `timber_for_formwork` | `quantity_raw` | 0.362 | 0.362 | ok |
+| estimate_lines | `timber_for_formwork` | `quantity_display` | 0.36 | 0.36 | ok |
+| estimate_lines | `edge_insulation_work` | `unit` | мп | мп | ok |
+| estimate_lines | `edge_insulation_work` | `quantity_raw` | 36.2 | 36.2 | ok |
+| estimate_lines | `edge_insulation_work` | `quantity_display` | 36.2 | 36.2 | ok |
+| estimate_lines | `rebar_frame_assembly_control` | `quantity_raw` | 2819.7 | 2819.7 | ok |
+| estimate_lines | `rebar_frame_assembly_control` | `quantity_display` | 2819.7 | 2819.7 | ok |
+| estimate_lines | `rebar_a500_d16` | `quantity_raw` | 105.3 | 105.3 | ok |
+| estimate_lines | `rebar_a500_d16` | `quantity_display` | 105.3 | 105.3 | ok |
+| estimate_lines | `rebar_a500_d16` | `material_total` | 8485 | 8485 | ok |
+| estimate_lines | `rebar_a500_d12` | `quantity_raw` | 35.1 | 35.1 | ok |
+| estimate_lines | `rebar_a500_d12` | `quantity_display` | 35.1 | 35.1 | ok |
+| estimate_lines | `rebar_a500_d12` | `material_total` | 1590 | 1590 | ok |
+| estimate_lines | `rebar_a500_d10` | `quantity_raw` | 2679.3 | 2679.3 | ok |
+| estimate_lines | `rebar_a500_d10` | `quantity_display` | 2679.3 | 2679.3 | ok |
+| estimate_lines | `rebar_a500_d10` | `material_total` | 87667 | 87667 | ok |

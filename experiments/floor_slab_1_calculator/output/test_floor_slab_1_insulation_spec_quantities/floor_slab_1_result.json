@@ -149,6 +149,7 @@
     ],
     "insulation": {
       "insulation_calc_method": "spec_work_quantities",
+      "edge_insulation_height_m": 0.18,
       "slab_outer_edge_eps_work_length_m": 84.8,
       "slab_edge_eps_material_area_m2": 15.264,
       "bottom_slab_eps_work_area_m2": 51.92,
@@ -504,6 +505,8 @@
     },
     "insulation": {
       "insulation_calc_method": "spec_work_quantities",
+      "edge_insulation_height_m": 0.18,
+      "edge_insulation_height_source": "specification",
       "slab_outer_edge_length_m": 84.8,
       "slab_outer_edge_eps_work_length_m": 84.8,
       "insulated_beams_total_length_m": 23.2,
@@ -1039,6 +1042,8 @@
     "calculation_blocks": {
       "insulation": {
         "insulation_calc_method": "spec_work_quantities",
+        "edge_insulation_height_m": 0.18,
+        "edge_insulation_height_source": "specification",
         "slab_outer_edge_eps_work_length_m": 84.8,
         "beams_eps_work_length_m": 23.2,
         "edge_beam_eps_work_length_m": 108,
@@ -1092,7 +1097,7 @@
   },
   "comparison": {
     "status": "ok",
-    "ok_count": 46,
+    "ok_count": 48,
     "mismatch_count": 0,
     "items": [
       {
@@ -1148,6 +1153,20 @@
         "key": "calculation_blocks.insulation.insulation_calc_method",
         "expected": "spec_work_quantities",
         "actual": "spec_work_quantities",
+        "diff": null,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.edge_insulation_height_m",
+        "expected": 0.18,
+        "actual": 0.18,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "calculation_blocks.insulation.edge_insulation_height_source",
+        "expected": "specification",
+        "actual": "specification",
         "diff": null,
         "status": "ok"
       },

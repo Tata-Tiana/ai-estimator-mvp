@@ -161,6 +161,8 @@
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
 | `insulation.insulation_calc_method` | `legacy_usv_geometry` |
+| `insulation.edge_insulation_height_m` | `0.18` |
+| `insulation.edge_insulation_height_source` | `specification` |
 | `insulation.slab_outer_edge_length_m` | `84.8` |
 | `insulation.slab_outer_edge_eps_work_length_m` | `84.8` |
 | `insulation.insulated_beams_total_length_m` | `23.2` |

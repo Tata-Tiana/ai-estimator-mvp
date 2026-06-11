@@ -1,5 +1,5 @@
 {
-  "project_name": "test_floor_slab_2_spec_formwork_area",
+  "project_name": "test_floor_slab_2_rebar_spec_lengths",
   "formwork_area_calc_method": "spec_formwork_area",
   "main_formwork_area_m2": 81.9,
   "edge_formwork_area_m2": 7.24,
@@ -19,37 +19,26 @@
   "plywood_unit_price": 1450,
   "timber_thickness_m": 0.05,
   "timber_unit_price": 21500,
+  "rebar_calc_method": "spec_length_items",
   "rebar_waste_coeff": 1.05,
   "rebar_rod_length_m": 11.7,
   "rebar_items": [
     {
-      "code": "rebar_a500_d16",
-      "name": "Арматура класса А500 диаметром 16 мм",
       "steel_class": "A500",
       "diameter_mm": 16,
-      "source_weight_kg": 142.4,
-      "kg_per_meter": 1.58,
-      "rod_length_m": 11.7,
+      "spec_length_m": 90.126582,
       "unit_price_per_m": 80.58
     },
     {
-      "code": "rebar_a500_d12",
-      "name": "Арматура класса А500 диаметром 12 мм",
       "steel_class": "A500",
       "diameter_mm": 12,
-      "source_weight_kg": 22,
-      "kg_per_meter": 0.888,
-      "rod_length_m": 11.7,
+      "spec_length_m": 24.774775,
       "unit_price_per_m": 45.29
     },
     {
-      "code": "rebar_a500_d10",
-      "name": "Арматура класса А500 диаметром 10 мм",
       "steel_class": "A500",
       "diameter_mm": 10,
-      "source_weight_kg": 1574.07,
-      "kg_per_meter": 0.617,
-      "rod_length_m": 11.7,
+      "spec_length_m": 2551.166937,
       "unit_price_per_m": 32.72
     }
   ],

@@ -11,6 +11,8 @@
   "calculation_blocks": {
     "insulation": {
       "insulation_calc_method": "spec_work_quantities",
+      "edge_insulation_height_m": 0.18,
+      "edge_insulation_height_source": "specification",
       "slab_outer_edge_eps_work_length_m": 84.8,
       "beams_eps_work_length_m": 23.2,
       "edge_beam_eps_work_length_m": 108,

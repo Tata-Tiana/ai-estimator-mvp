@@ -160,6 +160,7 @@
     ],
     "insulation": {
       "insulation_calc_method": "legacy_usv_geometry",
+      "edge_insulation_height_m": 0.18,
       "total_eps_volume_from_spec_m3": 7.77,
       "eps_thickness_m": 0.1,
       "eps_waste_coeff": 1.05,
@@ -500,6 +501,8 @@
     },
     "insulation": {
       "insulation_calc_method": "legacy_usv_geometry",
+      "edge_insulation_height_m": 0.18,
+      "edge_insulation_height_source": "specification",
       "slab_outer_edge_length_m": 84.8,
       "slab_outer_edge_eps_work_length_m": 84.8,
       "insulated_beams_total_length_m": 23.2,

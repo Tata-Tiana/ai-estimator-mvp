@@ -233,6 +233,7 @@ Production input:
 
 ```text
 insulation.slab_outer_edge_eps_work_length_m
+insulation.edge_insulation_height_m
 insulation.slab_edge_eps_material_area_m2
 insulation.bottom_slab_eps_work_area_m2
 insulation.total_eps_volume_from_spec_m3
@@ -253,6 +254,8 @@ eps_packs_ordered = ceil(required_eps_volume_m3_raw / eps_pack_volume_m3)
 order_eps_volume_m3_raw = eps_packs_ordered * eps_pack_volume_m3
 foam_cans_ordered = ceil((edge_and_beam_eps_material_area_m2 + bottom_slab_eps_work_area_m2) / foam_coverage_m2_per_can)
 ```
+
+`insulation.edge_insulation_height_m` — высота утепления торца плиты. Для ЮСВ подтвержденное значение `0.18 м`: это фактические 180 мм, а не 200 мм из ошибочного названия раздела. Если поле не пришло, калькулятор использует fallback `geometry.slab_thickness_m` и добавляет warning.
 
 `slab_edge_eps_material_area_m2` не выводится из длины торца и толщины ЭППС. Это отдельный production-параметр из спецификации, потому что рабочая длина торца в м.п. и площадь материала торца в м2 имеют разный смысл.
 

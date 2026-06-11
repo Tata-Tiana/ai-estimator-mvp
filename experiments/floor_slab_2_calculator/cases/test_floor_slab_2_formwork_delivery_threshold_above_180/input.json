@@ -2,6 +2,8 @@
   "project_name": "test_floor_slab_2_formwork_delivery_threshold_above_180",
   "formwork_area_calc_method": "spec_formwork_area",
   "main_formwork_area_m2": 180.01,
+  "edge_formwork_area_m2": 7.24,
+  "beams_formwork_area_m2": 0,
   "slab_edge_perimeter_m": 36.2,
   "formwork_rental_supplier_quote_total": 153008.5,
   "formwork_rental_used_rate_per_m2": 850,

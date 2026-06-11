@@ -14,8 +14,18 @@ formwork_area_calc_method =
   spec_formwork_area
 ```
 
-В production-режиме `spec_formwork_area` главным источником количества для строки
-`formwork_rental_set` становится `main_formwork_area_m2` из спецификации проекта.
+В production-режиме `spec_formwork_area` источником опалубки становятся готовые площади
+из спецификации проекта:
+
+```text
+main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
+```
+
+`main_formwork_area_m2` используется для строки `formwork_rental_set`.
+`edge_formwork_area_m2 + beams_formwork_area_m2` используется для торцевой опалубки,
+фанеры и пиломатериала.
 
 ## Было
 
@@ -42,9 +52,18 @@ Production-калькулятор не обязан знать длину и ш�
 
 ```text
 main_formwork_area_m2
+edge_formwork_area_m2
+beams_formwork_area_m2
 ```
 
-как готовую площадь опалубки из спецификации.
+как готовые площади опалубки из спецификации.
+
+Для текущего ЮСВ-кейса плиты 2-го этажа балок нет:
+
+```text
+beams_formwork_area_m2 = 0
+edge_and_beam_formwork_area_m2 = edge_formwork_area_m2 + beams_formwork_area_m2
+```
 
 Для утепления торца плиты отдельно используется:
 
@@ -55,11 +74,26 @@ slab_edge_perimeter_m
 Это проектная длина утепляемого торца, а не обязательная формула прямоугольного периметра. Фактическая
 утепляемая длина может отличаться от `2 * (slab_length_m + slab_width_m)`.
 
+Старая формула площади торцевой опалубки:
+
+```text
+slab_edge_perimeter_m * edge_formwork_height_m
+```
+
+оставлена только как контроль:
+
+```text
+calculated_edge_formwork_area_m2
+edge_formwork_area_delta_m2
+```
+
 ## Статусы параметров
 
 AUTO_PROJECT:
 
 - `main_formwork_area_m2`;
+- `edge_formwork_area_m2`;
+- `beams_formwork_area_m2`;
 - `slab_edge_perimeter_m`.
 
 OPTIONAL_CONTROL / GEOMETRY_CHECK:
@@ -72,12 +106,16 @@ AUTO_CALCULATED:
 
 - `calculated_slab_area_m2`;
 - `calculated_slab_edge_perimeter_m`;
+- `edge_and_beam_formwork_area_m2`;
+- `calculated_edge_formwork_area_m2`;
+- `edge_formwork_area_delta_m2`;
 - `area_delta_m2`;
 - `formwork_area_delta_m2`.
 
 DEPRECATED / LEGACY_ONLY:
 
 - использование `slab_length_m * slab_width_m` как обязательного источника площади опалубки;
+- использование `slab_edge_perimeter_m * edge_formwork_height_m` как обязательного production-источника площади торцевой опалубки;
 - использование `2 * (slab_length_m + slab_width_m)` как обязательного источника утепляемого периметра.
 
 PRICE_DATABASE / MANUAL_RATE:
@@ -105,9 +143,15 @@ experiments/floor_slab_2_calculator/cases/test_floor_slab_2_spec_formwork_area/
 Он работает без `slab_length_m` и `slab_width_m` и проверяет:
 
 - `main_formwork_area_m2 = 81.9`;
+- `edge_formwork_area_m2 = 7.24`;
+- `beams_formwork_area_m2 = 0`;
+- `edge_and_beam_formwork_area_m2 = 7.24`;
 - `slab_edge_perimeter_m = 36.2`;
 - `formwork_rental_set.quantity_raw = 81.9`;
 - `formwork_rental_set.material_total = 69615`;
+- `edge_formwork_installation_control.quantity_raw = 7.24`;
+- `plywood_for_edges.quantity_raw = 16`;
+- `timber_for_formwork.quantity_raw = 0.362`;
 - `edge_insulation_work.quantity_raw = 36.2`.
 
 ## TODO
@@ -115,5 +159,7 @@ experiments/floor_slab_2_calculator/cases/test_floor_slab_2_spec_formwork_area/
 - обновить `section_schema.py`;
 - обновить `reviewed_parameters.xlsx`;
 - научить parser брать `main_formwork_area_m2` из спецификации;
+- научить parser брать `edge_formwork_area_m2` из спецификации;
+- научить parser брать `beams_formwork_area_m2` из спецификации;
 - научить parser брать `slab_edge_perimeter_m` из спецификации;
 - позже убрать `legacy_dimensions` из production-flow.

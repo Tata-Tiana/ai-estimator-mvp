@@ -369,11 +369,17 @@ insulation.insulation_calc_method = spec_work_quantities
 
 ```text
 insulation.slab_outer_edge_eps_work_length_m
+insulation.edge_insulation_height_m
 insulation.slab_edge_eps_material_area_m2
 insulation.bottom_slab_eps_work_area_m2
 insulation.total_eps_volume_from_spec_m3
 beams.items[*].length_m / height_m / count
 ```
+
+`insulation.edge_insulation_height_m` — AUTO_PROJECT высота утепления торца. Для ЮСВ используется
+`0.18 м`: это подтвержденная высота 180 мм, а не 200 мм из ошибочного названия раздела. Если
+значение не пришло, калькулятор использует `slab_thickness_m` как CONTROL_OR_FALLBACK и пишет
+warning `edge_insulation_height_m is not provided; fallback to slab_thickness_m.`
 
 Калькулятор считает утепление балок из `beams.items`:
 

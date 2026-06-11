@@ -124,6 +124,7 @@ DEPRECATED / LEGACY_ONLY:
 AUTO_PROJECT:
 
 - `insulation.slab_outer_edge_eps_work_length_m`;
+- `insulation.edge_insulation_height_m`;
 - `insulation.slab_edge_eps_material_area_m2`;
 - `insulation.bottom_slab_eps_work_area_m2`;
 - `insulation.total_eps_volume_from_spec_m3`;
@@ -148,6 +149,12 @@ DEFAULT_VALUE / MATERIAL_CATALOG:
 - `eps_thickness_m = 0.1`;
 - `eps_waste_coeff = 1.05`;
 - `eps_pack_volume_m3 = 0.2773`.
+
+CONTROL_OR_FALLBACK:
+
+- `geometry.slab_thickness_m` как fallback для высоты утепления торца, если `insulation.edge_insulation_height_m` не пришел.
+
+Комментарий: для ЮСВ `edge_insulation_height_m = 0.18 м`. Это подтвержденная высота утепления торца 180 мм; расхождение с 200 мм было ошибкой в названии раздела.
 
 PRICE_DATABASE:
 

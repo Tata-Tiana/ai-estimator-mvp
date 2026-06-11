@@ -53,6 +53,9 @@ def get_nested_value(payload: dict[str, Any], path: str) -> Any:
     for part in path.split("."):
         if isinstance(current, dict):
             current = current.get(part)
+        elif isinstance(current, list) and part.isdigit():
+            index = int(part)
+            current = current[index] if index < len(current) else None
         else:
             return None
     return current
@@ -157,10 +160,12 @@ def formwork_area_method_markdown(result: dict[str, Any]) -> list[str]:
     elif method == "spec_formwork_area":
         lines.extend(
             [
-                "Production-режим `spec_formwork_area`: площадь опалубки берется из спецификации.",
+                "Production-режим `spec_formwork_area`: площади опалубки берутся из спецификации.",
                 "",
                 "- `main_formwork_area_m2` используется для строки `formwork_rental_set`.",
+                "- `edge_formwork_area_m2 + beams_formwork_area_m2` используется для торцевой опалубки, фанеры и пиломатериала.",
                 "- `slab_edge_perimeter_m` используется как проектная длина утепляемого торца.",
+                "- `slab_edge_perimeter_m * edge_formwork_height_m` остается только контрольной формулой.",
                 "- `slab_length_m`, `slab_width_m`, `slab_area_m2` являются optional geometry check.",
             ]
         )
@@ -170,6 +175,11 @@ def formwork_area_method_markdown(result: dict[str, Any]) -> list[str]:
         [
             "",
             f"- main_formwork_area_m2: `{geometry.get('main_formwork_area_m2')}`",
+            f"- edge_formwork_area_m2: `{geometry.get('edge_formwork_area_m2')}`",
+            f"- beams_formwork_area_m2: `{geometry.get('beams_formwork_area_m2')}`",
+            f"- edge_and_beam_formwork_area_m2: `{geometry.get('edge_and_beam_formwork_area_m2')}`",
+            f"- calculated_edge_formwork_area_m2: `{geometry.get('calculated_edge_formwork_area_m2')}`",
+            f"- edge_formwork_area_delta_m2: `{geometry.get('edge_formwork_area_delta_m2')}`",
             f"- slab_edge_perimeter_m: `{geometry.get('slab_edge_perimeter_m')}`",
             f"- calculated_slab_area_m2: `{geometry.get('calculated_slab_area_m2')}`",
             f"- calculated_slab_edge_perimeter_m: `{geometry.get('calculated_slab_edge_perimeter_m')}`",

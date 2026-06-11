@@ -4,18 +4,33 @@
     "geometry.formwork_area_source": "spec_formwork_area",
     "geometry.slab_edge_perimeter_source": "spec_edge_perimeter",
     "geometry.main_formwork_area_m2": 81.9,
+    "geometry.edge_formwork_area_m2": 7.24,
+    "geometry.beams_formwork_area_m2": 0,
+    "geometry.edge_and_beam_formwork_area_m2": 7.24,
+    "geometry.calculated_edge_formwork_area_m2": 7.24,
+    "geometry.edge_formwork_area_delta_m2": 0,
     "geometry.calculated_slab_area_m2": null,
     "geometry.calculated_slab_edge_perimeter_m": null,
     "geometry.area_delta_m2": null,
     "geometry.formwork_area_delta_m2": null,
     "formwork.formwork_area_calc_method": "spec_formwork_area",
     "formwork.main_formwork_area_m2": 81.9,
+    "formwork.edge_formwork_area_m2": 7.24,
+    "formwork.beams_formwork_area_m2": 0,
+    "formwork.edge_and_beam_formwork_area_m2": 7.24,
+    "formwork.calculated_edge_formwork_area_m2": 7.24,
+    "formwork.edge_formwork_area_delta_m2": 0,
+    "formwork.edge_formwork_area_source": "spec_formwork_area",
     "formwork.formwork_delivery_calc_method": "area_threshold",
     "formwork.formwork_delivery_area_source_m2": 81.9,
     "formwork.formwork_delivery_threshold_m2": 180,
     "formwork.formwork_delivery_trips": 2,
     "formwork.formwork_delivery_breakdown": "1 привоз + 1 вывоз",
-    "formwork.formwork_delivery_status": "calculated"
+    "formwork.formwork_delivery_status": "calculated",
+    "insulation.edge_insulation_height_m": 0.18,
+    "insulation.edge_insulation_height_source": "specification",
+    "insulation.edge_insulation_area_m2": 6.516,
+    "insulation.eps100_required_volume_without_waste_m3": 0.6516
   },
   "estimate_lines": [
     {
@@ -33,6 +48,21 @@
       "material_unit_price": 20000,
       "material_total": 40000,
       "line_total": 40000
+    },
+    {
+      "code": "edge_formwork_installation_control",
+      "quantity_raw": 7.24,
+      "quantity_display": 7.24
+    },
+    {
+      "code": "plywood_for_edges",
+      "quantity_raw": 16,
+      "quantity_display": 16
+    },
+    {
+      "code": "timber_for_formwork",
+      "quantity_raw": 0.362,
+      "quantity_display": 0.36
     },
     {
       "code": "edge_insulation_work",

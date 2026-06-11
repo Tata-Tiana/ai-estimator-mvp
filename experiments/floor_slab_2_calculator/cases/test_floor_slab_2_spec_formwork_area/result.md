@@ -11,13 +11,20 @@
 
 ## Площадь опалубки и геометрия
 
-Production-режим `spec_formwork_area`: площадь опалубки берется из спецификации.
+Production-режим `spec_formwork_area`: площади опалубки берутся из спецификации.
 
 - `main_formwork_area_m2` используется для строки `formwork_rental_set`.
+- `edge_formwork_area_m2 + beams_formwork_area_m2` используется для торцевой опалубки, фанеры и пиломатериала.
 - `slab_edge_perimeter_m` используется как проектная длина утепляемого торца.
+- `slab_edge_perimeter_m * edge_formwork_height_m` остается только контрольной формулой.
 - `slab_length_m`, `slab_width_m`, `slab_area_m2` являются optional geometry check.
 
 - main_formwork_area_m2: `81.9`
+- edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
 - slab_edge_perimeter_m: `36.2`
 - calculated_slab_area_m2: `None`
 - calculated_slab_edge_perimeter_m: `None`
@@ -38,12 +45,18 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 
 - formwork_area_calc_method: `spec_formwork_area`
 - formwork_area_source: `spec_formwork_area`
+- edge_formwork_area_source: `spec_formwork_area`
 - slab_edge_perimeter_source: `spec_edge_perimeter`
 - slab_length_m: `None`
 - slab_width_m: `None`
 - slab_area_m2: `None`
 - slab_edge_perimeter_m: `36.2`
 - main_formwork_area_m2: `81.9`
+- edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
 - calculated_slab_area_m2: `None`
 - calculated_slab_edge_perimeter_m: `None`
 - input_slab_area_m2: `None`
@@ -57,6 +70,11 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 - raw_supplier_rate: `840.781441`
 - used_rate_per_m2: `850.0`
 - edge_formwork_area_m2: `7.24`
+- beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_m2: `7.24`
+- calculated_edge_formwork_area_m2: `7.24`
+- edge_formwork_area_delta_m2: `0.0`
+- edge_formwork_area_source: `spec_formwork_area`
 - formwork_delivery_calc_method: `area_threshold`
 - formwork_delivery_area_source_m2: `81.9`
 - formwork_delivery_threshold_m2: `180.0`
@@ -66,6 +84,7 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 
 ### plywood_and_timber
 
+- edge_and_beam_formwork_area_m2: `7.24`
 - edge_plywood_sheets_raw: `3.147826`
 - non_multiple_places_area_m2: `16.38`
 - non_multiple_places_plywood_sheets_raw: `7.121739`
@@ -77,8 +96,10 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 
 ### rebar
 
+- rebar_calc_method: `legacy_weight_kg`
 - items: 3 items
 - total_rebar_order_length_m: `2819.7`
+- total_rebar_order_weight_kg: `1850.6709`
 - total_rebar_weight_with_waste_kg: `1825.39`
 
 ### concrete
@@ -93,6 +114,8 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 
 ### insulation
 
+- edge_insulation_height_m: `0.18`
+- edge_insulation_height_source: `specification`
 - edge_insulation_area_m2: `6.516`
 - eps100_required_volume_without_waste_m3: `0.6516`
 - eps100_required_volume_with_waste_m3: `0.68418`
@@ -192,7 +215,7 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
-- Примечание: For floor slab 2 this control line is used for slab edge formwork only; no beams are calculated.
+- Примечание: Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 from specification.
 
 ### 7. Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов
 
@@ -371,12 +394,12 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 ## Warnings
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness.
-- edge_insulation_height_m is 0.18 m although the section title says 200 mm; 0.18 m is kept for the current Excel match.
+- edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
 
 ## Comparison
 
 - status: `ok`
-- ok: `29`
+- ok: `50`
 - mismatch: `0`
 
 | scope | code | field | expected | actual | status |
@@ -385,18 +408,33 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 | calculation_blocks | `geometry.formwork_area_source` | `geometry.formwork_area_source` | spec_formwork_area | spec_formwork_area | ok |
 | calculation_blocks | `geometry.slab_edge_perimeter_source` | `geometry.slab_edge_perimeter_source` | spec_edge_perimeter | spec_edge_perimeter | ok |
 | calculation_blocks | `geometry.main_formwork_area_m2` | `geometry.main_formwork_area_m2` | 81.9 | 81.9 | ok |
+| calculation_blocks | `geometry.edge_formwork_area_m2` | `geometry.edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.beams_formwork_area_m2` | `geometry.beams_formwork_area_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `geometry.edge_and_beam_formwork_area_m2` | `geometry.edge_and_beam_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.calculated_edge_formwork_area_m2` | `geometry.calculated_edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `geometry.edge_formwork_area_delta_m2` | `geometry.edge_formwork_area_delta_m2` | 0 | 0.0 | ok |
 | calculation_blocks | `geometry.calculated_slab_area_m2` | `geometry.calculated_slab_area_m2` | None | None | ok |
 | calculation_blocks | `geometry.calculated_slab_edge_perimeter_m` | `geometry.calculated_slab_edge_perimeter_m` | None | None | ok |
 | calculation_blocks | `geometry.area_delta_m2` | `geometry.area_delta_m2` | None | None | ok |
 | calculation_blocks | `geometry.formwork_area_delta_m2` | `geometry.formwork_area_delta_m2` | None | None | ok |
 | calculation_blocks | `formwork.formwork_area_calc_method` | `formwork.formwork_area_calc_method` | spec_formwork_area | spec_formwork_area | ok |
 | calculation_blocks | `formwork.main_formwork_area_m2` | `formwork.main_formwork_area_m2` | 81.9 | 81.9 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_m2` | `formwork.edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.beams_formwork_area_m2` | `formwork.beams_formwork_area_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `formwork.edge_and_beam_formwork_area_m2` | `formwork.edge_and_beam_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.calculated_edge_formwork_area_m2` | `formwork.calculated_edge_formwork_area_m2` | 7.24 | 7.24 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_delta_m2` | `formwork.edge_formwork_area_delta_m2` | 0 | 0.0 | ok |
+| calculation_blocks | `formwork.edge_formwork_area_source` | `formwork.edge_formwork_area_source` | spec_formwork_area | spec_formwork_area | ok |
 | calculation_blocks | `formwork.formwork_delivery_calc_method` | `formwork.formwork_delivery_calc_method` | area_threshold | area_threshold | ok |
 | calculation_blocks | `formwork.formwork_delivery_area_source_m2` | `formwork.formwork_delivery_area_source_m2` | 81.9 | 81.9 | ok |
 | calculation_blocks | `formwork.formwork_delivery_threshold_m2` | `formwork.formwork_delivery_threshold_m2` | 180 | 180.0 | ok |
 | calculation_blocks | `formwork.formwork_delivery_trips` | `formwork.formwork_delivery_trips` | 2 | 2.0 | ok |
 | calculation_blocks | `formwork.formwork_delivery_breakdown` | `formwork.formwork_delivery_breakdown` | 1 привоз + 1 вывоз | 1 привоз + 1 вывоз | ok |
 | calculation_blocks | `formwork.formwork_delivery_status` | `formwork.formwork_delivery_status` | calculated | calculated | ok |
+| calculation_blocks | `insulation.edge_insulation_height_m` | `insulation.edge_insulation_height_m` | 0.18 | 0.18 | ok |
+| calculation_blocks | `insulation.edge_insulation_height_source` | `insulation.edge_insulation_height_source` | specification | specification | ok |
+| calculation_blocks | `insulation.edge_insulation_area_m2` | `insulation.edge_insulation_area_m2` | 6.516 | 6.516 | ok |
+| calculation_blocks | `insulation.eps100_required_volume_without_waste_m3` | `insulation.eps100_required_volume_without_waste_m3` | 0.6516 | 0.6516 | ok |
 | estimate_lines | `formwork_rental_set` | `unit` | м2 | м2 | ok |
 | estimate_lines | `formwork_rental_set` | `quantity_raw` | 81.9 | 81.9 | ok |
 | estimate_lines | `formwork_rental_set` | `quantity_display` | 81.9 | 81.9 | ok |
@@ -407,6 +445,12 @@ Production-режим `spec_formwork_area`: площадь опалубки бе
 | estimate_lines | `formwork_delivery_manipulator` | `material_unit_price` | 20000 | 20000.0 | ok |
 | estimate_lines | `formwork_delivery_manipulator` | `material_total` | 40000 | 40000 | ok |
 | estimate_lines | `formwork_delivery_manipulator` | `line_total` | 40000 | 40000 | ok |
+| estimate_lines | `edge_formwork_installation_control` | `quantity_raw` | 7.24 | 7.24 | ok |
+| estimate_lines | `edge_formwork_installation_control` | `quantity_display` | 7.24 | 7.24 | ok |
+| estimate_lines | `plywood_for_edges` | `quantity_raw` | 16 | 16.0 | ok |
+| estimate_lines | `plywood_for_edges` | `quantity_display` | 16 | 16.0 | ok |
+| estimate_lines | `timber_for_formwork` | `quantity_raw` | 0.362 | 0.362 | ok |
+| estimate_lines | `timber_for_formwork` | `quantity_display` | 0.36 | 0.36 | ok |
 | estimate_lines | `edge_insulation_work` | `unit` | мп | мп | ok |
 | estimate_lines | `edge_insulation_work` | `quantity_raw` | 36.2 | 36.2 | ok |
 | estimate_lines | `edge_insulation_work` | `quantity_display` | 36.2 | 36.2 | ok |

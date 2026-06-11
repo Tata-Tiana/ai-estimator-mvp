@@ -294,10 +294,19 @@ def calculate_insulation_context(
         beams_eps_material_area += length * height * count
 
     warnings: list[str] = []
+    if "edge_insulation_height_m" in insulation:
+        edge_insulation_height = d(insulation["edge_insulation_height_m"])
+        edge_insulation_height_source = "specification"
+    else:
+        edge_insulation_height = slab_thickness
+        edge_insulation_height_source = "fallback_slab_thickness"
+        warnings.append("edge_insulation_height_m is not provided; fallback to slab_thickness_m.")
+    if edge_insulation_height <= D0:
+        raise ValueError("insulation.edge_insulation_height_m must be > 0")
 
     if method == "legacy_usv_geometry":
         slab_outer_edge_eps_work_length = d(19) * d(2) + (d(7) + d("13.2")) * d(2) + d("3.2") * d(2)
-        slab_edge_eps_material_area = slab_outer_edge_eps_work_length * slab_thickness
+        slab_edge_eps_material_area = slab_outer_edge_eps_work_length * edge_insulation_height
         edge_and_beam_eps_material_area = slab_edge_eps_material_area + beams_eps_material_area
         edge_and_beam_eps_volume = edge_and_beam_eps_material_area * eps_thickness
         bottom_slab_eps_volume = total_eps_volume_from_spec - edge_and_beam_eps_volume
@@ -344,6 +353,8 @@ def calculate_insulation_context(
 
     context = {
         "insulation_calc_method": method,
+        "edge_insulation_height_m": round_decimal(edge_insulation_height),
+        "edge_insulation_height_source": edge_insulation_height_source,
         "slab_outer_edge_length_m": round_decimal(slab_outer_edge_eps_work_length),
         "slab_outer_edge_eps_work_length_m": round_decimal(slab_outer_edge_eps_work_length),
         "insulated_beams_total_length_m": round_decimal(beams_eps_work_length),

@@ -171,6 +171,8 @@
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
 | `insulation.insulation_calc_method` | `legacy_usv_geometry` |
+| `insulation.edge_insulation_height_m` | `0.18` |
+| `insulation.edge_insulation_height_source` | `specification` |
 | `insulation.slab_outer_edge_length_m` | `84.8` |
 | `insulation.slab_outer_edge_eps_work_length_m` | `84.8` |
 | `insulation.insulated_beams_total_length_m` | `23.2` |
@@ -214,6 +216,26 @@
 | `control_metrics.slab_area_used_in_estimate_m2` | `207.64` |
 | `control_metrics.beam_concreting_control_total_by_length` | `46400` |
 | `control_metrics.reinforcement_density_kg_per_m3` | `108.79` |
+
+## Площади опалубки
+
+Legacy-режим `legacy_calculated_from_geometry`: площади опалубки восстанавливаются из объёма бетона, толщины, периметра и геометрии балок.
+
+| Показатель | Значение |
+| --- | ---: |
+| `formwork_areas_calc_method` | `legacy_calculated_from_geometry` |
+| `formwork_areas_source` | `legacy_calculated_from_geometry` |
+| `main_formwork_area_m2` | `207.64` |
+| `slab_formwork_area_m2` | `207.64` |
+| `edge_formwork_area_m2` | `23.6` |
+| `beams_formwork_area_m2` | `27.992` |
+| `edge_and_beam_formwork_area_m2` | `51.592` |
+| `calculated_main_formwork_area_m2` | `207.64` |
+| `calculated_edge_formwork_area_m2` | `23.6` |
+| `calculated_beams_formwork_area_m2` | `27.992` |
+| `main_formwork_area_delta_m2` | `0.0` |
+| `edge_formwork_area_delta_m2` | `0.0` |
+| `beams_formwork_area_delta_m2` | `0.0` |
 
 ## Ставка комплекта опалубки
 
