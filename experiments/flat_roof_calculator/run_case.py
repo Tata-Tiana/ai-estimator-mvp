@@ -39,6 +39,25 @@ COMPARE_COST_FIELDS = [
 ]
 
 
+def flatten_expected(prefix: str, value: Any) -> list[tuple[str, Any]]:
+    if isinstance(value, dict):
+        items: list[tuple[str, Any]] = []
+        for key, nested in value.items():
+            next_prefix = f"{prefix}.{key}" if prefix else key
+            items.extend(flatten_expected(next_prefix, nested))
+        return items
+    return [(prefix, value)]
+
+
+def get_nested_value(payload: dict[str, Any], path: str) -> Any:
+    current: Any = payload
+    for part in path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -65,6 +84,19 @@ def compare_result(result: dict[str, Any], expected: dict[str, Any]) -> dict[str
                 "scope": "totals",
                 "code": key,
                 "field": key,
+                "expected": expected_value,
+                "actual": actual_value,
+                "status": "ok" if values_equal(actual_value, expected_value) else "mismatch",
+            }
+        )
+
+    for path, expected_value in flatten_expected("", expected.get("calculation_blocks", {})):
+        actual_value = get_nested_value(result.get("calculation_blocks", {}), path)
+        checks.append(
+            {
+                "scope": "calculation_blocks",
+                "code": path,
+                "field": path,
                 "expected": expected_value,
                 "actual": actual_value,
                 "status": "ok" if values_equal(actual_value, expected_value) else "mismatch",
@@ -151,9 +183,10 @@ def build_markdown(result: dict[str, Any]) -> str:
         "## Исходные параметры кровли",
         "",
         f"- project_name: `{result.get('project_name')}`",
-        f"- roof_area_total_m2: `{result['inputs'].get('roof_area_total_m2')}`",
+        f"- roof_geometry_calc_method: `{geometry.get('roof_geometry_calc_method')}`",
+        f"- roof_area_total_m2: `{geometry.get('roof_area_total_m2')}`",
         f"- project_spec_roof_area_m2: `{result['inputs'].get('project_spec_roof_area_m2')}`",
-        f"- parapet_and_abutment_total_length_m: `{result['inputs'].get('parapet_and_abutment_total_length_m')}`",
+        f"- parapet_and_abutment_total_length_m: `{geometry.get('parapet_and_abutment_total_length_m')}`",
         "",
         "## Геометрия кровли",
         "",

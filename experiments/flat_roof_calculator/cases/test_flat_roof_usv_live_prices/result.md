@@ -6,6 +6,7 @@ AI не используется для расчёта. Калькулятор �
 ## Исходные параметры кровли
 
 - project_name: `test_flat_roof_usv_live_prices`
+- roof_geometry_calc_method: `legacy_totals`
 - roof_area_total_m2: `248.92`
 - project_spec_roof_area_m2: `294`
 - parapet_and_abutment_total_length_m: `138.62`
@@ -14,15 +15,24 @@ AI не используется для расчёта. Калькулятор �
 
 | Параметр | Значение |
 | --- | ---: |
+| `roof_geometry_calc_method` | legacy_totals |
 | `roof_area_level_1_m2` | 177.52 |
 | `roof_area_level_2_m2` | 71.4 |
 | `roof_area_total_m2` | 248.92 |
+| `roof_area_total_source` | legacy_totals |
 | `project_spec_roof_area_m2` | 294 |
 | `parapet_length_level_1_m` | 96 |
 | `parapet_length_level_2_m` | 35.4 |
 | `vent_wall_abutment_level_1_m` | 4.68 |
 | `vent_wall_abutment_level_2_m` | 2.54 |
 | `parapet_and_abutment_total_length_m` | 138.62 |
+| `parapet_and_abutment_total_length_source` | legacy_totals |
+| `input_roof_area_total_m2` | 248.92 |
+| `calculated_roof_area_total_m2` | None |
+| `roof_area_total_delta_m2` | 0 |
+| `input_parapet_and_abutment_total_length_m` | 138.62 |
+| `calculated_parapet_and_abutment_total_length_m` | None |
+| `parapet_and_abutment_total_delta_m` | 0 |
 
 ## Построчный расчёт
 
@@ -577,7 +587,7 @@ AI не используется для расчёта. Калькулятор �
 
 ## Warnings
 
-- project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof_area_total_m2.
+- project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.
 - Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.
 - Temporary door line is case-specific and is not included in this universal base calculator.
 - Roof consumables use provided raw total; base formula is to be confirmed later.

@@ -131,6 +131,86 @@ def material_roll_line(
     )
 
 
+def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
+    if key not in input_data:
+        raise ValueError(f"{key} is required")
+    value = d(input_data[key])
+    if value < D0:
+        raise ValueError(f"{key} must be >= 0")
+    return value
+
+
+def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
+    method = input_data.get("roof_geometry_calc_method", "legacy_totals")
+    if method not in {"legacy_totals", "detailed_project_geometry"}:
+        raise ValueError(f"Unsupported roof_geometry_calc_method: {method}")
+
+    if method == "legacy_totals":
+        roof_area = require_non_negative(input_data, "roof_area_total_m2")
+        parapet_and_abutment = require_non_negative(input_data, "parapet_and_abutment_total_length_m")
+        calculated_roof_area = None
+        calculated_parapet_and_abutment = None
+        roof_area_source = "legacy_totals"
+        parapet_and_abutment_source = "legacy_totals"
+    else:
+        roof_area_level_1 = require_non_negative(input_data, "roof_area_level_1_m2")
+        roof_area_level_2 = require_non_negative(input_data, "roof_area_level_2_m2")
+        parapet_level_1 = require_non_negative(input_data, "parapet_length_level_1_m")
+        parapet_level_2 = require_non_negative(input_data, "parapet_length_level_2_m")
+        vent_level_1 = require_non_negative(input_data, "vent_wall_abutment_level_1_m")
+        vent_level_2 = require_non_negative(input_data, "vent_wall_abutment_level_2_m")
+
+        calculated_roof_area = roof_area_level_1 + roof_area_level_2
+        calculated_parapet_and_abutment = parapet_level_1 + parapet_level_2 + vent_level_1 + vent_level_2
+        roof_area = calculated_roof_area
+        parapet_and_abutment = calculated_parapet_and_abutment
+        roof_area_source = "calculated_from_roof_area_levels"
+        parapet_and_abutment_source = "calculated_from_detailed_abutment_lengths"
+
+    input_roof_area = d(input_data["roof_area_total_m2"]) if "roof_area_total_m2" in input_data else None
+    input_parapet_and_abutment = (
+        d(input_data["parapet_and_abutment_total_length_m"])
+        if "parapet_and_abutment_total_length_m" in input_data
+        else None
+    )
+    if input_roof_area is not None and input_roof_area < D0:
+        raise ValueError("roof_area_total_m2 must be >= 0")
+    if input_parapet_and_abutment is not None and input_parapet_and_abutment < D0:
+        raise ValueError("parapet_and_abutment_total_length_m must be >= 0")
+
+    roof_area_delta = None
+    if input_roof_area is not None:
+        roof_area_delta = input_roof_area - roof_area
+        if abs(roof_area_delta) > Decimal("0.01"):
+            warnings.append("Provided roof_area_total_m2 differs from calculated detailed roof areas.")
+
+    parapet_and_abutment_delta = None
+    if input_parapet_and_abutment is not None:
+        parapet_and_abutment_delta = input_parapet_and_abutment - parapet_and_abutment
+        if abs(parapet_and_abutment_delta) > Decimal("0.01"):
+            warnings.append(
+                "Provided parapet_and_abutment_total_length_m differs from calculated detailed abutment lengths."
+            )
+
+    return {
+        "roof_geometry_calc_method": method,
+        "roof_area": roof_area,
+        "parapet_and_abutment": parapet_and_abutment,
+        "roof_area_total_source": roof_area_source,
+        "parapet_and_abutment_total_length_source": parapet_and_abutment_source,
+        "input_roof_area_total_m2": input_roof_area,
+        "calculated_roof_area_total_m2": calculated_roof_area,
+        "roof_area_total_delta_m2": roof_area_delta,
+        "input_parapet_and_abutment_total_length_m": input_parapet_and_abutment,
+        "calculated_parapet_and_abutment_total_length_m": calculated_parapet_and_abutment,
+        "parapet_and_abutment_total_delta_m": parapet_and_abutment_delta,
+    }
+
+
+def optional_decimal_str(value: Any) -> str | None:
+    return None if value is None else decimal_str(value)
+
+
 def supplier_pack_material_line(
     *,
     code: str,
@@ -168,7 +248,7 @@ def supplier_pack_material_line(
 
 def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings = [
-        "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof_area_total_m2.",
+        "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.",
         "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
         "Temporary door line is case-specific and is not included in this universal base calculator.",
         "Roof consumables use provided raw total; base formula is to be confirmed later.",
@@ -177,8 +257,9 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         "Procurement/storage uses provided gray work total from the reviewed estimate.",
         "Some material totals intentionally keep current Excel raw/display mismatches.",
     ]
-    roof_area = d(input_data["roof_area_total_m2"])
-    parapet_and_abutment = d(input_data["parapet_and_abutment_total_length_m"])
+    geometry = calculate_roof_geometry(input_data, warnings)
+    roof_area = geometry["roof_area"]
+    parapet_and_abutment = geometry["parapet_and_abutment"]
 
     lines: list[dict[str, Any]] = []
     lines.append(
@@ -570,15 +651,30 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         "inputs": input_data,
         "calculation_blocks": {
             "geometry": {
+                "roof_geometry_calc_method": geometry["roof_geometry_calc_method"],
                 "roof_area_level_1_m2": decimal_str(input_data["roof_area_level_1_m2"]),
                 "roof_area_level_2_m2": decimal_str(input_data["roof_area_level_2_m2"]),
                 "roof_area_total_m2": decimal_str(roof_area),
+                "roof_area_total_source": geometry["roof_area_total_source"],
                 "project_spec_roof_area_m2": decimal_str(input_data["project_spec_roof_area_m2"]),
                 "parapet_length_level_1_m": decimal_str(input_data["parapet_length_level_1_m"]),
                 "parapet_length_level_2_m": decimal_str(input_data["parapet_length_level_2_m"]),
                 "vent_wall_abutment_level_1_m": decimal_str(input_data["vent_wall_abutment_level_1_m"]),
                 "vent_wall_abutment_level_2_m": decimal_str(input_data["vent_wall_abutment_level_2_m"]),
                 "parapet_and_abutment_total_length_m": decimal_str(parapet_and_abutment),
+                "parapet_and_abutment_total_length_source": geometry["parapet_and_abutment_total_length_source"],
+                "input_roof_area_total_m2": optional_decimal_str(geometry["input_roof_area_total_m2"]),
+                "calculated_roof_area_total_m2": optional_decimal_str(geometry["calculated_roof_area_total_m2"]),
+                "roof_area_total_delta_m2": optional_decimal_str(geometry["roof_area_total_delta_m2"]),
+                "input_parapet_and_abutment_total_length_m": optional_decimal_str(
+                    geometry["input_parapet_and_abutment_total_length_m"]
+                ),
+                "calculated_parapet_and_abutment_total_length_m": optional_decimal_str(
+                    geometry["calculated_parapet_and_abutment_total_length_m"]
+                ),
+                "parapet_and_abutment_total_delta_m": optional_decimal_str(
+                    geometry["parapet_and_abutment_total_delta_m"]
+                ),
             },
             "internal_drain": {"internal_drain_total_length_m": decimal_str(internal_drain_length)},
             "pvc_membrane": {

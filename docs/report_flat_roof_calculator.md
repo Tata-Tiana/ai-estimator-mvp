@@ -90,10 +90,29 @@ calculation_blocks:
 
 ### Геометрия
 
+Legacy-режим `legacy_totals` использует готовые totals:
+
 ```text
 roof_area_total_m2 = 248.92
 parapet_and_abutment_total_length_m = 138.62
 ```
+
+Production-режим `detailed_project_geometry` считает totals из проектных составляющих:
+
+```text
+roof_area_total_m2 = roof_area_level_1_m2 + roof_area_level_2_m2
+248.92 = 177.52 + 71.40
+
+parapet_and_abutment_total_length_m =
+parapet_length_level_1_m
++ parapet_length_level_2_m
++ vent_wall_abutment_level_1_m
++ vent_wall_abutment_level_2_m
+
+138.62 = 96 + 35.4 + 4.68 + 2.54
+```
+
+В production `roof_area_total_m2` и `parapet_and_abutment_total_length_m` не являются обязательными входными totals. Если они переданы, калькулятор использует их только как контроль и считает delta.
 
 Площадь `294 м2` из спецификации хранится как контрольный показатель и не используется без ручной проверки.
 

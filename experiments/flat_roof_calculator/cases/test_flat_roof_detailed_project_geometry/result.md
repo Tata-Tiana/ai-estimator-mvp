@@ -5,8 +5,8 @@ AI не используется для расчёта. Калькулятор �
 
 ## Исходные параметры кровли
 
-- project_name: `test_flat_roof_usv`
-- roof_geometry_calc_method: `legacy_totals`
+- project_name: `test_flat_roof_detailed_project_geometry`
+- roof_geometry_calc_method: `detailed_project_geometry`
 - roof_area_total_m2: `248.92`
 - project_spec_roof_area_m2: `294`
 - parapet_and_abutment_total_length_m: `138.62`
@@ -15,24 +15,24 @@ AI не используется для расчёта. Калькулятор �
 
 | Параметр | Значение |
 | --- | ---: |
-| `roof_geometry_calc_method` | legacy_totals |
+| `roof_geometry_calc_method` | detailed_project_geometry |
 | `roof_area_level_1_m2` | 177.52 |
 | `roof_area_level_2_m2` | 71.4 |
 | `roof_area_total_m2` | 248.92 |
-| `roof_area_total_source` | legacy_totals |
+| `roof_area_total_source` | calculated_from_roof_area_levels |
 | `project_spec_roof_area_m2` | 294 |
 | `parapet_length_level_1_m` | 96 |
 | `parapet_length_level_2_m` | 35.4 |
 | `vent_wall_abutment_level_1_m` | 4.68 |
 | `vent_wall_abutment_level_2_m` | 2.54 |
 | `parapet_and_abutment_total_length_m` | 138.62 |
-| `parapet_and_abutment_total_length_source` | legacy_totals |
-| `input_roof_area_total_m2` | 248.92 |
-| `calculated_roof_area_total_m2` | None |
-| `roof_area_total_delta_m2` | 0 |
-| `input_parapet_and_abutment_total_length_m` | 138.62 |
-| `calculated_parapet_and_abutment_total_length_m` | None |
-| `parapet_and_abutment_total_delta_m` | 0 |
+| `parapet_and_abutment_total_length_source` | calculated_from_detailed_abutment_lengths |
+| `input_roof_area_total_m2` | None |
+| `calculated_roof_area_total_m2` | 248.92 |
+| `roof_area_total_delta_m2` | None |
+| `input_parapet_and_abutment_total_length_m` | None |
+| `calculated_parapet_and_abutment_total_length_m` | 138.62 |
+| `parapet_and_abutment_total_delta_m` | None |
 
 ## Построчный расчёт
 
@@ -608,7 +608,7 @@ AI не используется для расчёта. Калькулятор �
 ## Проверка
 
 - status: `ok`
-- ok: `460`
+- ok: `477`
 - mismatch: `0`
 
 | scope | code | field | expected | actual | status |
@@ -622,6 +622,23 @@ AI не используется для расчёта. Калькулятор �
 | totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 1420802 | 1420802 | ok |
 | totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 618070 | 618070 | ok |
 | totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 2038872 | 2038872 | ok |
+| calculation_blocks | `geometry.roof_geometry_calc_method` | `geometry.roof_geometry_calc_method` | detailed_project_geometry | detailed_project_geometry | ok |
+| calculation_blocks | `geometry.roof_area_level_1_m2` | `geometry.roof_area_level_1_m2` | 177.52 | 177.52 | ok |
+| calculation_blocks | `geometry.roof_area_level_2_m2` | `geometry.roof_area_level_2_m2` | 71.4 | 71.4 | ok |
+| calculation_blocks | `geometry.roof_area_total_m2` | `geometry.roof_area_total_m2` | 248.92 | 248.92 | ok |
+| calculation_blocks | `geometry.roof_area_total_source` | `geometry.roof_area_total_source` | calculated_from_roof_area_levels | calculated_from_roof_area_levels | ok |
+| calculation_blocks | `geometry.parapet_length_level_1_m` | `geometry.parapet_length_level_1_m` | 96 | 96 | ok |
+| calculation_blocks | `geometry.parapet_length_level_2_m` | `geometry.parapet_length_level_2_m` | 35.4 | 35.4 | ok |
+| calculation_blocks | `geometry.vent_wall_abutment_level_1_m` | `geometry.vent_wall_abutment_level_1_m` | 4.68 | 4.68 | ok |
+| calculation_blocks | `geometry.vent_wall_abutment_level_2_m` | `geometry.vent_wall_abutment_level_2_m` | 2.54 | 2.54 | ok |
+| calculation_blocks | `geometry.parapet_and_abutment_total_length_m` | `geometry.parapet_and_abutment_total_length_m` | 138.62 | 138.62 | ok |
+| calculation_blocks | `geometry.parapet_and_abutment_total_length_source` | `geometry.parapet_and_abutment_total_length_source` | calculated_from_detailed_abutment_lengths | calculated_from_detailed_abutment_lengths | ok |
+| calculation_blocks | `geometry.input_roof_area_total_m2` | `geometry.input_roof_area_total_m2` | None | None | ok |
+| calculation_blocks | `geometry.calculated_roof_area_total_m2` | `geometry.calculated_roof_area_total_m2` | 248.92 | 248.92 | ok |
+| calculation_blocks | `geometry.roof_area_total_delta_m2` | `geometry.roof_area_total_delta_m2` | None | None | ok |
+| calculation_blocks | `geometry.input_parapet_and_abutment_total_length_m` | `geometry.input_parapet_and_abutment_total_length_m` | None | None | ok |
+| calculation_blocks | `geometry.calculated_parapet_and_abutment_total_length_m` | `geometry.calculated_parapet_and_abutment_total_length_m` | 138.62 | 138.62 | ok |
+| calculation_blocks | `geometry.parapet_and_abutment_total_delta_m` | `geometry.parapet_and_abutment_total_delta_m` | None | None | ok |
 | estimate_lines | `roof_base_preparation_control` | `name` | Подготовка основания под укладку пароизоляционного слоя, очистка поверхности | Подготовка основания под укладку пароизоляционного слоя, очистка поверхности | ok |
 | estimate_lines | `roof_base_preparation_control` | `unit` | м2 | м2 | ok |
 | estimate_lines | `roof_base_preparation_control` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |

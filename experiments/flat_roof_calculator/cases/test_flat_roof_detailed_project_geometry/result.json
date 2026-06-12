@@ -1,18 +1,17 @@
 {
   "section_code": "flat_roof",
   "section_name": "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА",
-  "project_name": "test_flat_roof_usv",
+  "project_name": "test_flat_roof_detailed_project_geometry",
   "inputs": {
-    "project_name": "test_flat_roof_usv",
+    "project_name": "test_flat_roof_detailed_project_geometry",
+    "roof_geometry_calc_method": "detailed_project_geometry",
     "roof_area_level_1_m2": 177.52,
     "roof_area_level_2_m2": 71.4,
-    "roof_area_total_m2": 248.92,
     "project_spec_roof_area_m2": 294,
     "parapet_length_level_1_m": 96.0,
     "parapet_length_level_2_m": 35.4,
     "vent_wall_abutment_level_1_m": 4.68,
     "vent_wall_abutment_level_2_m": 2.54,
-    "parapet_and_abutment_total_length_m": 138.62,
     "roof_work_coeff": 1.1,
     "vapor_barrier_work_rate_per_m2": 77,
     "vapor_barrier_film_overlap_coeff": 1.15,
@@ -86,24 +85,24 @@
   },
   "calculation_blocks": {
     "geometry": {
-      "roof_geometry_calc_method": "legacy_totals",
+      "roof_geometry_calc_method": "detailed_project_geometry",
       "roof_area_level_1_m2": "177.52",
       "roof_area_level_2_m2": "71.4",
       "roof_area_total_m2": "248.92",
-      "roof_area_total_source": "legacy_totals",
+      "roof_area_total_source": "calculated_from_roof_area_levels",
       "project_spec_roof_area_m2": "294",
       "parapet_length_level_1_m": "96",
       "parapet_length_level_2_m": "35.4",
       "vent_wall_abutment_level_1_m": "4.68",
       "vent_wall_abutment_level_2_m": "2.54",
       "parapet_and_abutment_total_length_m": "138.62",
-      "parapet_and_abutment_total_length_source": "legacy_totals",
-      "input_roof_area_total_m2": "248.92",
-      "calculated_roof_area_total_m2": null,
-      "roof_area_total_delta_m2": "0",
-      "input_parapet_and_abutment_total_length_m": "138.62",
-      "calculated_parapet_and_abutment_total_length_m": null,
-      "parapet_and_abutment_total_delta_m": "0"
+      "parapet_and_abutment_total_length_source": "calculated_from_detailed_abutment_lengths",
+      "input_roof_area_total_m2": null,
+      "calculated_roof_area_total_m2": "248.92",
+      "roof_area_total_delta_m2": null,
+      "input_parapet_and_abutment_total_length_m": null,
+      "calculated_parapet_and_abutment_total_length_m": "138.62",
+      "parapet_and_abutment_total_delta_m": null
     },
     "internal_drain": {
       "internal_drain_total_length_m": "11.25"
@@ -918,6 +917,27 @@
       "sum_of_displayed_line_work_totals": 618070,
       "sum_of_displayed_line_totals": 2038872
     },
+    "calculation_blocks": {
+      "geometry": {
+        "roof_geometry_calc_method": "detailed_project_geometry",
+        "roof_area_level_1_m2": "177.52",
+        "roof_area_level_2_m2": "71.4",
+        "roof_area_total_m2": "248.92",
+        "roof_area_total_source": "calculated_from_roof_area_levels",
+        "parapet_length_level_1_m": "96",
+        "parapet_length_level_2_m": "35.4",
+        "vent_wall_abutment_level_1_m": "4.68",
+        "vent_wall_abutment_level_2_m": "2.54",
+        "parapet_and_abutment_total_length_m": "138.62",
+        "parapet_and_abutment_total_length_source": "calculated_from_detailed_abutment_lengths",
+        "input_roof_area_total_m2": null,
+        "calculated_roof_area_total_m2": "248.92",
+        "roof_area_total_delta_m2": null,
+        "input_parapet_and_abutment_total_length_m": null,
+        "calculated_parapet_and_abutment_total_length_m": "138.62",
+        "parapet_and_abutment_total_delta_m": null
+      }
+    },
     "estimate_lines": [
       {
         "code": "roof_base_preparation_control",
@@ -1529,7 +1549,7 @@
   },
   "comparison": {
     "status": "ok",
-    "ok_count": 460,
+    "ok_count": 477,
     "mismatch_count": 0,
     "checks": [
       {
@@ -1602,6 +1622,142 @@
         "field": "sum_of_displayed_line_totals",
         "expected": 2038872,
         "actual": 2038872,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_geometry_calc_method",
+        "field": "geometry.roof_geometry_calc_method",
+        "expected": "detailed_project_geometry",
+        "actual": "detailed_project_geometry",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_area_level_1_m2",
+        "field": "geometry.roof_area_level_1_m2",
+        "expected": "177.52",
+        "actual": "177.52",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_area_level_2_m2",
+        "field": "geometry.roof_area_level_2_m2",
+        "expected": "71.4",
+        "actual": "71.4",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_area_total_m2",
+        "field": "geometry.roof_area_total_m2",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_area_total_source",
+        "field": "geometry.roof_area_total_source",
+        "expected": "calculated_from_roof_area_levels",
+        "actual": "calculated_from_roof_area_levels",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.parapet_length_level_1_m",
+        "field": "geometry.parapet_length_level_1_m",
+        "expected": "96",
+        "actual": "96",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.parapet_length_level_2_m",
+        "field": "geometry.parapet_length_level_2_m",
+        "expected": "35.4",
+        "actual": "35.4",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.vent_wall_abutment_level_1_m",
+        "field": "geometry.vent_wall_abutment_level_1_m",
+        "expected": "4.68",
+        "actual": "4.68",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.vent_wall_abutment_level_2_m",
+        "field": "geometry.vent_wall_abutment_level_2_m",
+        "expected": "2.54",
+        "actual": "2.54",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.parapet_and_abutment_total_length_m",
+        "field": "geometry.parapet_and_abutment_total_length_m",
+        "expected": "138.62",
+        "actual": "138.62",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.parapet_and_abutment_total_length_source",
+        "field": "geometry.parapet_and_abutment_total_length_source",
+        "expected": "calculated_from_detailed_abutment_lengths",
+        "actual": "calculated_from_detailed_abutment_lengths",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.input_roof_area_total_m2",
+        "field": "geometry.input_roof_area_total_m2",
+        "expected": null,
+        "actual": null,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.calculated_roof_area_total_m2",
+        "field": "geometry.calculated_roof_area_total_m2",
+        "expected": "248.92",
+        "actual": "248.92",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.roof_area_total_delta_m2",
+        "field": "geometry.roof_area_total_delta_m2",
+        "expected": null,
+        "actual": null,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.input_parapet_and_abutment_total_length_m",
+        "field": "geometry.input_parapet_and_abutment_total_length_m",
+        "expected": null,
+        "actual": null,
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.calculated_parapet_and_abutment_total_length_m",
+        "field": "geometry.calculated_parapet_and_abutment_total_length_m",
+        "expected": "138.62",
+        "actual": "138.62",
+        "status": "ok"
+      },
+      {
+        "scope": "calculation_blocks",
+        "code": "geometry.parapet_and_abutment_total_delta_m",
+        "field": "geometry.parapet_and_abutment_total_delta_m",
+        "expected": null,
+        "actual": null,
         "status": "ok"
       },
       {
