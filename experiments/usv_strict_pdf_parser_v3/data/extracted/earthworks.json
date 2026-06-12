@@ -1,0 +1,87 @@
+{
+  "sand": {
+    "sand_volume_m3": 96.6,
+    "evidence_id": "ev_90eb60942f4267cf",
+    "raw_context": "Песок (300 мм) Купл=0,95 96,6 м3\n7 7\n2 000 8 085 4 4 ГОСТ 5670 4- 2015 П р о ф и л ирова н н ая мембрана 3 2 0 м 2\n0 0 6 1 0 0 3 0 0 4 0 0 5 К 1 PL A N T E R К 2 Во д а Эл. кабель И т ого\n2\n2 000 701 0 0 Длина 51,209 14,5 12,61 20,69\n4\nВВВв"
+  },
+  "trenches": {
+    "trench_routes": [
+      {
+        "route_name": "К1",
+        "length_m": 51.209,
+        "depth_m": 0.6,
+        "width_m": 0.4,
+        "volume_m3": 12.2,
+        "evidence_id": "ev_c26948829e16c3a3"
+      },
+      {
+        "route_name": "К2",
+        "length_m": 14.5,
+        "depth_m": 0.6,
+        "width_m": 0.4,
+        "volume_m3": 3.48,
+        "evidence_id": "ev_c26948829e16c3a3"
+      },
+      {
+        "route_name": "Вода",
+        "length_m": 12.61,
+        "depth_m": 1.7,
+        "width_m": 0.4,
+        "volume_m3": 8.5,
+        "evidence_id": "ev_c26948829e16c3a3"
+      },
+      {
+        "route_name": "Эл. кабель",
+        "length_m": 20.69,
+        "depth_m": 1.0,
+        "width_m": 0.4,
+        "volume_m3": 8.2,
+        "evidence_id": "ev_c26948829e16c3a3"
+      }
+    ],
+    "trench_volume_total_m3": 32.38,
+    "evidence_ids": [
+      "ev_c26948829e16c3a3"
+    ]
+  },
+  "communications": {
+    "communication_pipe_items": [
+      {
+        "name": "Схема коммуникаций\nЖ\nВВВннн... вввооодддоооссстттоооккк ффф111111000\nнннаааччч... гггллл... зззааалллооожжжееенннииияяя ",
+        "piece_length_m": 1.0,
+        "qty": 12.0,
+        "total_length_m": 12.0,
+        "evidence_id": "ev_b7bae390ad609482"
+      },
+      {
+        "name": "ГОСТ 32412-2013 Труба 1 м. ф110 (рыжая) 12 шт",
+        "piece_length_m": 1.0,
+        "qty": 12.0,
+        "total_length_m": 12.0,
+        "evidence_id": "ev_ebc0aca0c9164e66"
+      },
+      {
+        "name": "ГОСТ 32412-2013 Труба 2 м. ф110 (рыжая) 7 шт",
+        "piece_length_m": 2.0,
+        "qty": 7.0,
+        "total_length_m": 14.0,
+        "evidence_id": "ev_8d21a76581dd3ddf"
+      },
+      {
+        "name": "ГОСТ 32412-2013 Труба 3 м. ф110 (рыжая) 18 шт",
+        "piece_length_m": 3.0,
+        "qty": 18.0,
+        "total_length_m": 54.0,
+        "evidence_id": "ev_ebaf6c76b4b57238"
+      },
+      {
+        "name": "ГОСТ 32412-2013 Труба ф110 гофрированная 35 м/п",
+        "piece_length_m": null,
+        "qty": null,
+        "total_length_m": 35.0,
+        "evidence_id": "ev_83395e5c2636085a"
+      }
+    ],
+    "communications_length_m": 127.0
+  }
+}

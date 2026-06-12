@@ -1,0 +1,903 @@
+[
+  {
+    "section_name": "Земляные работы",
+    "calculator_input_key": "pit_area_m2",
+    "label": "Площадь котлована",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "площадь",
+        "котлован"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "котлован"
+      ]
+    },
+    "section_code": "earthworks"
+  },
+  {
+    "section_name": "Земляные работы",
+    "calculator_input_key": "geotextile_laying_area_m2",
+    "label": "Площадь геотекстиля",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "геотекст"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "котлован"
+      ]
+    },
+    "section_code": "earthworks"
+  },
+  {
+    "section_name": "Земляные работы",
+    "calculator_input_key": "sand_volume_m3",
+    "label": "Объем песка",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "песок"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "котлован"
+      ]
+    },
+    "section_code": "earthworks"
+  },
+  {
+    "section_name": "Земляные работы",
+    "calculator_input_key": "trench_routes",
+    "label": "Таблица траншей",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "транше",
+        "к1"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "котлован"
+      ]
+    },
+    "section_code": "earthworks"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "concrete_volume_m3",
+    "label": "Бетон фундаментной плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бетон"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "фундамент"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "eps100_edge_volume_m3",
+    "label": "ЭППС 100 мм торец фундаментной плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "100",
+        "торец"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "фундамент"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "eps50_bottom_volume_m3",
+    "label": "ЭППС 50 мм низ фундаментной плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "50"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "фундамент"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "slab_side_formwork_area_m2",
+    "label": "Площадь боковой опалубки фундаментной плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "площадь",
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "фундамент"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "edge_insulation_area_m2",
+    "label": "Площадь утепления торцов фундаментной плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "утеплен",
+        "торц"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "фундамент"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "thermal_insert_100_material_spec_qty",
+    "label": "ЭППС 100 мм термовставки",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "100",
+        "термовстав"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "термовстав"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "thermal_insert_50_material_spec_qty",
+    "label": "ЭППС 50 мм термовставки",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "50",
+        "термовстав"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "термовстав"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Фундаментная плита",
+    "calculator_input_key": "thermal_insert_length_m",
+    "label": "Длина термовставок",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м/п",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "длина",
+        "термовстав"
+      ],
+      "units": [
+        "м/п"
+      ],
+      "page_titles": [
+        "термовстав"
+      ]
+    },
+    "section_code": "foundation_slab"
+  },
+  {
+    "section_name": "Гидроизоляция",
+    "calculator_input_key": "cutoff_waterproofing_load_bearing_walls_area_m2",
+    "label": "Отсечная гидроизоляция несущих стен",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "гидроизоля",
+        "несущ"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "гидроизоля"
+      ]
+    },
+    "section_code": "waterproofing"
+  },
+  {
+    "section_name": "Гидроизоляция",
+    "calculator_input_key": "cutoff_waterproofing_partitions_area_m2",
+    "label": "Отсечная гидроизоляция перегородок",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "гидроизоля",
+        "перегород"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "гидроизоля"
+      ]
+    },
+    "section_code": "waterproofing"
+  },
+  {
+    "section_name": "Несущие стены и перемычки",
+    "calculator_input_key": "lintel_total_length_m",
+    "label": "Длина перемычек в U-блоках",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м/п",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "перемыч",
+        "u"
+      ],
+      "units": [
+        "м/п"
+      ],
+      "page_titles": [
+        "перемыч"
+      ]
+    },
+    "section_code": "load_bearing_walls_lintels"
+  },
+  {
+    "section_name": "Несущие стены и перемычки",
+    "calculator_input_key": "lintel_concrete_spec_volume_m3",
+    "label": "Бетон перемычек",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бетон",
+        "перемыч"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "перемыч"
+      ]
+    },
+    "section_code": "load_bearing_walls_lintels"
+  },
+  {
+    "section_name": "Несущие стены и перемычки",
+    "calculator_input_key": "vent_chimney_gas_block_spec_volume_m3",
+    "label": "Газоблок для обкладки вентканалов",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "газобет",
+        "обклад"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "вент"
+      ]
+    },
+    "section_code": "load_bearing_walls_lintels"
+  },
+  {
+    "section_name": "Несущие стены и перемычки",
+    "calculator_input_key": "floor_2_masonry_volume_m3",
+    "label": "Объем кладки несущих стен 2-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "несущ",
+        "стен"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "газобет"
+      ]
+    },
+    "section_code": "load_bearing_walls_lintels"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "slab_concrete_volume_m3",
+    "label": "Бетон плиты +3.480",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бетон",
+        "плит"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "beams_concrete_volume_m3",
+    "label": "Бетон балок +3.480",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бетон",
+        "бал"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "main_formwork_area_m2",
+    "label": "Площадь опалубки под плиту 1-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "edge_formwork_area_m2",
+    "label": "Площадь торцевой опалубки плиты 1-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "торц",
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "beams_formwork_area_m2",
+    "label": "Площадь опалубки балок",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бал",
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "bottom_slab_eps_work_area_m2",
+    "label": "Площадь утепления низа плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "низ"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 1-го этажа",
+    "calculator_input_key": "slab_edge_eps_material_area_m2",
+    "label": "Площадь утепления торца плиты",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "торец"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "3.480"
+      ]
+    },
+    "section_code": "floor_slab_1"
+  },
+  {
+    "section_name": "Плита перекрытия 2-го этажа",
+    "calculator_input_key": "slab_concrete_volume_m3",
+    "label": "Бетон плиты +4.680",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "бетон"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "4.680"
+      ]
+    },
+    "section_code": "floor_slab_2"
+  },
+  {
+    "section_name": "Плита перекрытия 2-го этажа",
+    "calculator_input_key": "main_formwork_area_m2",
+    "label": "Площадь опалубки плиты 2-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "площадь",
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "4.680"
+      ]
+    },
+    "section_code": "floor_slab_2"
+  },
+  {
+    "section_name": "Плита перекрытия 2-го этажа",
+    "calculator_input_key": "edge_formwork_area_m2",
+    "label": "Площадь торцевой опалубки плиты 2-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "торец",
+        "опалуб"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "4.680"
+      ]
+    },
+    "section_code": "floor_slab_2"
+  },
+  {
+    "section_name": "Плита перекрытия 2-го этажа",
+    "calculator_input_key": "edge_insulation_area_m2",
+    "label": "Площадь утепления торца плиты 2-го этажа",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "эппс",
+        "торец"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "4.680"
+      ]
+    },
+    "section_code": "floor_slab_2"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "roof_area_level_1_m2",
+    "label": "Площадь кровли уровня +3.480",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "площадь",
+        "кровл",
+        "3.480"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "roof_area_level_2_m2",
+    "label": "Площадь кровли уровня +4.680",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м2",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "площадь",
+        "кровл",
+        "4.680"
+      ],
+      "units": [
+        "м2"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "parapet_abutment_length_m",
+    "label": "Длина примыкания к парапетам",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м/п",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "примыкан",
+        "парапет"
+      ],
+      "units": [
+        "м/п"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "wall_abutment_length_m",
+    "label": "Длина примыкания к стенам",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м/п",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "примыкан",
+        "стен"
+      ],
+      "units": [
+        "м/п"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "eps50_supplier_required_volume_m3",
+    "label": "ЭППС кровли по раскладке поставщика",
+    "required_status": "SUPPLIER_INPUT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "carbon",
+        "prof"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "slope_plates_supplier_layout",
+    "label": "Разуклонка кровли",
+    "required_status": "SUPPLIER_INPUT",
+    "unit": "",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "разуклон",
+        "уточнить"
+      ],
+      "units": [],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "internal_roof_drains_count",
+    "label": "Внутренние воронки",
+    "required_status": "AUTO_PROJECT",
+    "unit": "шт",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "внутрен",
+        "ворон"
+      ],
+      "units": [
+        "шт"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Плоская кровля",
+    "calculator_input_key": "parapet_roof_drains_count",
+    "label": "Парапетные воронки",
+    "required_status": "AUTO_PROJECT",
+    "unit": "шт",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "парапет",
+        "ворон"
+      ],
+      "units": [
+        "шт"
+      ],
+      "page_titles": [
+        "кровл"
+      ]
+    },
+    "section_code": "flat_roof"
+  },
+  {
+    "section_name": "Вентиляционные каналы Schiedel",
+    "calculator_input_key": "schiedel_vent_2_count",
+    "label": "Schiedel VENT 2",
+    "required_status": "AUTO_PROJECT",
+    "unit": "шт",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "schiedel vent 2"
+      ],
+      "units": [
+        "шт"
+      ],
+      "page_titles": [
+        "вент"
+      ]
+    },
+    "section_code": "schiedel_vent_channels"
+  },
+  {
+    "section_name": "Вентиляционные каналы Schiedel",
+    "calculator_input_key": "schiedel_vent_3_count",
+    "label": "Schiedel VENT 3",
+    "required_status": "AUTO_PROJECT",
+    "unit": "шт",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "schiedel vent 3"
+      ],
+      "units": [
+        "шт"
+      ],
+      "page_titles": [
+        "вент"
+      ]
+    },
+    "section_code": "schiedel_vent_channels"
+  },
+  {
+    "section_name": "Вентиляционные каналы Schiedel",
+    "calculator_input_key": "vent_chimney_gas_block_spec_volume_m3",
+    "label": "Газоблок обкладки вентканалов",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м3",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "газобет",
+        "600",
+        "150",
+        "250"
+      ],
+      "units": [
+        "м3"
+      ],
+      "page_titles": [
+        "вент"
+      ]
+    },
+    "section_code": "schiedel_vent_channels"
+  },
+  {
+    "section_name": "Вентиляционные каналы Schiedel",
+    "calculator_input_key": "schiedel_masonry_total_length_m",
+    "label": "Общая длина кладки вентканалов",
+    "required_status": "AUTO_PROJECT",
+    "unit": "м/п",
+    "required_for_calculation": true,
+    "show_to_elena": true,
+    "mapping_hints": {
+      "keywords": [
+        "общая",
+        "длина",
+        "кладк"
+      ],
+      "units": [
+        "м/п"
+      ],
+      "page_titles": [
+        "вент"
+      ]
+    },
+    "section_code": "schiedel_vent_channels"
+  }
+]
