@@ -1,0 +1,191 @@
+{
+  "input": {
+    "project_name": "usv_earthworks_mini_mvp_poc",
+    "case_meta": {
+      "experiment": "earthworks_mini_mvp_poc",
+      "review_source": "earthworks_parameter_review.xlsx",
+      "not_final_estimate": true
+    },
+    "assumptions": {
+      "manual_excavation_override": false,
+      "sand_override": false,
+      "geotextile_override": false
+    },
+    "excavator_shifts_calc_method": "standard_volume_productivity",
+    "manual_excavation_calc_method": "standard_routes",
+    "communications_length_calc_method": "pipe_items",
+    "pit_area_m2": 322.5,
+    "pit_excavation_depth_m": 0.3,
+    "sand_base_volume_m3": 96.6,
+    "trench_volume_m3": 32.38,
+    "trench_routes": [
+      {
+        "route_code": "K1",
+        "name": "К1",
+        "length_m": 51.209,
+        "depth_m": 0.6
+      },
+      {
+        "route_code": "K2",
+        "name": "К2",
+        "length_m": 14.5,
+        "depth_m": 0.6
+      },
+      {
+        "route_code": "water",
+        "name": "Вода",
+        "length_m": 12.61,
+        "depth_m": 1.7
+      },
+      {
+        "route_code": "electric_cable",
+        "name": "Эл. кабель",
+        "length_m": 20.69,
+        "depth_m": 1.0
+      }
+    ],
+    "geotextile_area_m2": 320,
+    "geotextile_laying_area_m2": 320,
+    "communications_pipe_items": [
+      {
+        "code": "pipe_2m_f110",
+        "name": "ГОСТ 32412-2013 Труба 2 м. ф110 (рыжая) 7 шт",
+        "pipe_length_m": 2,
+        "quantity": 7,
+        "total_length_m": 14,
+        "include_in_communications": true
+      },
+      {
+        "code": "pipe_1m_f110",
+        "name": "ГОСТ 32412-2013 Труба 1 м. ф110 (рыжая) 12 шт",
+        "pipe_length_m": 1,
+        "quantity": 12,
+        "total_length_m": 12,
+        "include_in_communications": true
+      },
+      {
+        "code": "pipe_3m_f110",
+        "name": "ГОСТ 32412-2013 Труба 3 м. ф110 (рыжая) 18 шт",
+        "pipe_length_m": 3,
+        "quantity": 18,
+        "total_length_m": 54,
+        "include_in_communications": true
+      },
+      {
+        "code": "corrugated_pipe_f110",
+        "name": "ГОСТ 32412-2013 Труба ф110 гофрированная 35 м/п",
+        "pipe_length_m": null,
+        "quantity": null,
+        "total_length_m": 35,
+        "include_in_communications": true
+      }
+    ],
+    "communications_length_m": 115,
+    "manual_refinement_depth_m": 0.08,
+    "trench_width_m": 0.4,
+    "sand_compaction_coeff": 1.3,
+    "sand_truck_step_m3": 20.0,
+    "geotextile_overlap_coeff": 1.1,
+    "geotextile_roll_area_m2": 100.0,
+    "excavator_productivity_m3_per_shift": 80.0,
+    "axis_marking_shifts": 1.0,
+    "consumables_amount": 0.0,
+    "internal_prices": {
+      "axis_marking_work_unit_price": 20000.0,
+      "excavator_material_unit_price": 26000.0,
+      "excavator_work_unit_price": 3500.0,
+      "manual_excavation_work_unit_price": 1400.0,
+      "geotextile_laying_work_unit_price": 35.0,
+      "geotextile_material_unit_price": 109.0,
+      "sand_filling_work_unit_price": 1200.0,
+      "sand_material_unit_price": 1550.0,
+      "sand_manual_moving_work_unit_price": 0.0,
+      "communications_work_unit_price": 350.0,
+      "communications_material_unit_price": 650.0
+    }
+  },
+  "price_sources": {
+    "axis_marking_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "excavator_material_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "excavator_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "manual_excavation_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "geotextile_laying_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "geotextile_material_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "sand_filling_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "sand_material_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "sand_manual_moving_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "communications_work_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    },
+    "communications_material_unit_price": {
+      "source": "fallback_input_for_poc",
+      "price_code": "",
+      "warning": "Price not found in compatible registry rows; using fallback price from live input for POC only."
+    }
+  },
+  "price_warnings": [
+    "Registry price_code geotextile_dornit_300_m2 skipped: unit `рул` does not match calculator unit `м2`.",
+    "Fallback price used for axis_marking_work_unit_price.",
+    "Fallback price used for excavator_material_unit_price.",
+    "Fallback price used for excavator_work_unit_price.",
+    "Fallback price used for manual_excavation_work_unit_price.",
+    "Fallback price used for geotextile_laying_work_unit_price.",
+    "Fallback price used for geotextile_material_unit_price.",
+    "Fallback price used for sand_filling_work_unit_price.",
+    "Fallback price used for sand_material_unit_price.",
+    "Fallback price used for sand_manual_moving_work_unit_price.",
+    "Fallback price used for communications_work_unit_price.",
+    "Fallback price used for communications_material_unit_price."
+  ],
+  "validation_warnings": [
+    "pit_area_m2: найден parser value, но статус еще `ожидает проверки`.",
+    "sand_base_volume_m3: найден parser value, но статус еще `ожидает проверки`.",
+    "trench_volume_m3: найден parser value, но статус еще `ожидает проверки`.",
+    "geotextile_area_m2: найден parser value, но статус еще `ожидает проверки`.",
+    "geotextile_laying_area_m2: найден parser value, но статус еще `ожидает проверки`.",
+    "trench_routes: найден parser value, но статус еще `ожидает проверки`.",
+    "communications_pipe_items: найден parser value, но статус еще `ожидает проверки`."
+  ],
+  "assumptions": [
+    "geotextile_laying_area_m2 comes from reviewed table; initial prepare used geotextile_area_m2 as POC suggestion.",
+    "manual_required_smoke_test is validated but not passed to EarthworksInput."
+  ]
+}

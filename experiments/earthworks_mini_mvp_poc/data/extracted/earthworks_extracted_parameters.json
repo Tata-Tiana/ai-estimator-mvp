@@ -1,0 +1,247 @@
+{
+  "warnings": [],
+  "parameters": {
+    "pit_area_m2": {
+      "value": 322.5,
+      "unit": "м2",
+      "evidence": {
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "Площадь ктлована 322,5 м2",
+        "confidence": "high"
+      }
+    },
+    "pit_excavation_depth_m": {
+      "value": 0.3,
+      "unit": "м",
+      "raw_value": "300-250 мм",
+      "interpretation": "max_depth_from_range_for_poc",
+      "needs_elena_review": true,
+      "evidence": {
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "Глубина котлована - 300-250 мм",
+        "confidence": "medium"
+      }
+    },
+    "sand_base_volume_m3": {
+      "value": 96.6,
+      "unit": "м3",
+      "evidence": {
+        "evidence_id": "ev_90eb60942f4267cf",
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "Песок (300 мм) Купл=0,95 96,6 м3\n7 7\n2 000 8 085 4 4 ГОСТ 5670 4- 2015 П р о ф и л ирова н н ая мембрана 3 2 0 м 2\n0 0 6 1 0 0 3 0 0 4 0 0 5 К 1 PL A N T E R К 2 Во д а Эл. кабель И т ого\n2\n2 000 701 0 0 Длина 51,209 14,5 12,61 20,69\n4\nВВВв",
+        "confidence": "high"
+      }
+    },
+    "trench_routes": {
+      "value": [
+        {
+          "route_code": "K1",
+          "name": "К1",
+          "length_m": 51.209,
+          "depth_m": 0.6,
+          "width_m": 0.4,
+          "volume_m3": 12.2,
+          "evidence": {
+            "evidence_id": "ev_c26948829e16c3a3",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 8,
+            "drawing_sheet_number": "8",
+            "logical_sheet_title": "План котлована",
+            "logical_sheet_type": "earthworks_pit_plan",
+            "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+            "confidence": "high"
+          }
+        },
+        {
+          "route_code": "K2",
+          "name": "К2",
+          "length_m": 14.5,
+          "depth_m": 0.6,
+          "width_m": 0.4,
+          "volume_m3": 3.48,
+          "evidence": {
+            "evidence_id": "ev_c26948829e16c3a3",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 8,
+            "drawing_sheet_number": "8",
+            "logical_sheet_title": "План котлована",
+            "logical_sheet_type": "earthworks_pit_plan",
+            "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+            "confidence": "high"
+          }
+        },
+        {
+          "route_code": "water",
+          "name": "Вода",
+          "length_m": 12.61,
+          "depth_m": 1.7,
+          "width_m": 0.4,
+          "volume_m3": 8.5,
+          "evidence": {
+            "evidence_id": "ev_c26948829e16c3a3",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 8,
+            "drawing_sheet_number": "8",
+            "logical_sheet_title": "План котлована",
+            "logical_sheet_type": "earthworks_pit_plan",
+            "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+            "confidence": "high"
+          }
+        },
+        {
+          "route_code": "electric_cable",
+          "name": "Эл. кабель",
+          "length_m": 20.69,
+          "depth_m": 1.0,
+          "width_m": 0.4,
+          "volume_m3": 8.2,
+          "evidence": {
+            "evidence_id": "ev_c26948829e16c3a3",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 8,
+            "drawing_sheet_number": "8",
+            "logical_sheet_title": "План котлована",
+            "logical_sheet_type": "earthworks_pit_plan",
+            "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+            "confidence": "high"
+          }
+        }
+      ],
+      "unit": "routes",
+      "evidence": {
+        "evidence_id": "ev_c26948829e16c3a3",
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+        "confidence": "high"
+      }
+    },
+    "trench_volume_m3": {
+      "value": 32.38,
+      "unit": "м3",
+      "source": "spec_volume",
+      "evidence": {
+        "evidence_id": "ev_c26948829e16c3a3",
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "0\n0\n3 | 0\n0\n5 | К 1 | К 2 Вода | Эл. кабель | Итого | Длина\nГлубина | 51,209\n0,6 | 14,5 12,61\n0,6 1,7 | 20,69\n1 | Ширина\nм3 | 0,4\n12,2 | 0,4 0,4\n3,48 8,5 | 0,4\n8,2 | 32,38",
+        "confidence": "high"
+      }
+    },
+    "communications_pipe_items": {
+      "value": [
+        {
+          "code": "pipe_2m_f110",
+          "name": "ГОСТ 32412-2013 Труба 2 м. ф110 (рыжая) 7 шт",
+          "pipe_length_m": 2.0,
+          "quantity": 7.0,
+          "total_length_m": 14.0,
+          "include_in_communications": true,
+          "evidence": {
+            "evidence_id": "ev_8d21a76581dd3ddf",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 7,
+            "drawing_sheet_number": "7",
+            "logical_sheet_title": "Схема коммуникаций",
+            "logical_sheet_type": "communications_scheme",
+            "raw_context": "ГОСТ 32412-2013 Труба 2 м. ф110 (рыжая) 7 шт",
+            "confidence": "high"
+          }
+        },
+        {
+          "code": "pipe_1m_f110",
+          "name": "ГОСТ 32412-2013 Труба 1 м. ф110 (рыжая) 12 шт",
+          "pipe_length_m": 1.0,
+          "quantity": 12.0,
+          "total_length_m": 12.0,
+          "include_in_communications": true,
+          "evidence": {
+            "evidence_id": "ev_ebc0aca0c9164e66",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 7,
+            "drawing_sheet_number": "7",
+            "logical_sheet_title": "Схема коммуникаций",
+            "logical_sheet_type": "communications_scheme",
+            "raw_context": "ГОСТ 32412-2013 Труба 1 м. ф110 (рыжая) 12 шт",
+            "confidence": "high"
+          }
+        },
+        {
+          "code": "pipe_3m_f110",
+          "name": "ГОСТ 32412-2013 Труба 3 м. ф110 (рыжая) 18 шт",
+          "pipe_length_m": 3.0,
+          "quantity": 18.0,
+          "total_length_m": 54.0,
+          "include_in_communications": true,
+          "evidence": {
+            "evidence_id": "ev_ebaf6c76b4b57238",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 7,
+            "drawing_sheet_number": "7",
+            "logical_sheet_title": "Схема коммуникаций",
+            "logical_sheet_type": "communications_scheme",
+            "raw_context": "ГОСТ 32412-2013 Труба 3 м. ф110 (рыжая) 18 шт",
+            "confidence": "high"
+          }
+        },
+        {
+          "code": "corrugated_pipe_f110",
+          "name": "ГОСТ 32412-2013 Труба ф110 гофрированная 35 м/п",
+          "pipe_length_m": null,
+          "quantity": null,
+          "total_length_m": 35.0,
+          "include_in_communications": true,
+          "evidence": {
+            "evidence_id": "ev_83395e5c2636085a",
+            "source_pdf": "usv_2026_kr1.pdf",
+            "physical_page_number": 7,
+            "drawing_sheet_number": "7",
+            "logical_sheet_title": "Схема коммуникаций",
+            "logical_sheet_type": "communications_scheme",
+            "raw_context": "ГОСТ 32412-2013 Труба ф110 гофрированная 35 м/п",
+            "confidence": "high"
+          }
+        }
+      ],
+      "unit": "items",
+      "evidence": null
+    },
+    "communications_length_m": {
+      "value": 115.0,
+      "unit": "м",
+      "source": "calculated_from_pipe_items",
+      "evidence": null
+    },
+    "geotextile_area_m2": {
+      "value": 320.0,
+      "unit": "м2",
+      "evidence": {
+        "source_pdf": "usv_2026_kr1.pdf",
+        "physical_page_number": 8,
+        "drawing_sheet_number": "8",
+        "logical_sheet_title": "План котлована",
+        "logical_sheet_type": "earthworks_pit_plan",
+        "raw_context": "             ГОСТ Р 53225-2008 Геотекстиль иглопробивной\n320\n250-400 г/м2  м2",
+        "confidence": "medium"
+      }
+    }
+  }
+}

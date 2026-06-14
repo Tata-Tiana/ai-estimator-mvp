@@ -1,0 +1,100 @@
+[
+  {
+    "timestamp": "2026-06-12T23:36:27",
+    "event": "prepare",
+    "messages_for_elena": [
+      "Подготовлена таблица проверки по разделу Земляные работы.",
+      "Найдено параметров из PDF/parser: 8.",
+      "Требуют внимания Елены: 9.",
+      "Ожидают проверки: 9.",
+      "prepare не запускал расчет."
+    ],
+    "stats": {
+      "total": 19,
+      "need_review": 9,
+      "waiting": 9,
+      "missing": 0,
+      "checked_or_not_required": 10
+    }
+  },
+  {
+    "timestamp": "2026-06-12T23:36:38",
+    "event": "validate",
+    "messages_for_elena": [
+      "Расчет пока нельзя запускать.",
+      "Ошибок gate: 2.",
+      "Предупреждений: 7."
+    ],
+    "stats": {
+      "total": 19,
+      "need_review": 9,
+      "waiting": 9,
+      "missing": 0,
+      "checked_or_not_required": 10,
+      "errors": 2,
+      "warnings": 7
+    }
+  },
+  {
+    "timestamp": "2026-06-12T23:36:38",
+    "event": "calculate_blocked",
+    "messages_for_elena": [
+      "Расчет заблокирован.",
+      "Не заполнены / не проверены обязательные поля:",
+      "pit_excavation_depth_m: рискованная интерпретация должна быть проверена или исправлена Еленой.",
+      "manual_required_smoke_test: требуется ручное значение и статус `ручной ввод` или `проверено`."
+    ],
+    "stats": {
+      "errors": 2,
+      "warnings": 7
+    }
+  },
+  {
+    "timestamp": "2026-06-12T23:36:55",
+    "event": "validate",
+    "messages_for_elena": [
+      "Проверка пройдена, расчет можно запускать.",
+      "Предупреждений: 7."
+    ],
+    "stats": {
+      "total": 19,
+      "need_review": 9,
+      "waiting": 7,
+      "missing": 0,
+      "checked_or_not_required": 12,
+      "errors": 0,
+      "warnings": 7
+    }
+  },
+  {
+    "timestamp": "2026-06-12T23:36:55",
+    "event": "validate",
+    "messages_for_elena": [
+      "Проверка пройдена, расчет можно запускать.",
+      "Предупреждений: 7."
+    ],
+    "stats": {
+      "total": 19,
+      "need_review": 9,
+      "waiting": 7,
+      "missing": 0,
+      "checked_or_not_required": 12,
+      "errors": 0,
+      "warnings": 7
+    }
+  },
+  {
+    "timestamp": "2026-06-12T23:36:56",
+    "event": "calculate",
+    "messages_for_elena": [
+      "Расчет выполнен из проверенной таблицы.",
+      "Материалы: 449350.",
+      "Работы: 375902.",
+      "Итого раздел: 825252.",
+      "Итоговый Excel: /Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_mini_mvp_poc/data/excel/earthworks_final_from_review.xlsx."
+    ],
+    "stats": {
+      "section_total": 825252
+    }
+  }
+]
