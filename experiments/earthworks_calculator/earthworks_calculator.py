@@ -200,7 +200,9 @@ def _round_money(value: Decimal | float | int) -> int:
 
 
 def _price(data: EarthworksInput, key: str) -> float:
-    return data.internal_prices.get(key, 0.0)
+    if key not in data.internal_prices:
+        raise ValueError(f"internal_prices.{key} is required")
+    return data.internal_prices[key]
 
 
 def _quantity(data: EarthworksInput, key: str, default: float) -> float:
@@ -209,6 +211,10 @@ def _quantity(data: EarthworksInput, key: str, default: float) -> float:
 
 def _line_name(data: EarthworksInput, code: str, default: str) -> str:
     return data.line_name_overrides.get(code, default)
+
+
+def _line_enabled(data: EarthworksInput, code: str) -> bool:
+    return data.enabled_lines is None or code in set(data.enabled_lines)
 
 
 def calculate_manual_pit_volume(
@@ -419,131 +425,166 @@ def calculate_internal_estimate_lines(
     communications_length_m = volume_result["communications_length_m"]
     excavator_shifts = volume_result["excavator_shifts"]
 
-    lines = [
-        calculate_line(
-            code="axis_marking",
-            name=_line_name(
-                data,
-                "axis_marking",
-                "Вынос осей фундамента, котлована на участок",
-            ),
-            unit="смена",
-            quantity=data.axis_marking_shifts,
-            work_unit_price=_price(data, "axis_marking_work_unit_price"),
-            price_code="axis_marking_shift",
-        ),
-        calculate_line(
-            code="excavator_jcb",
-            name=_line_name(
-                data,
-                "excavator_jcb",
-                "Механизированная разработка грунта, Экскаватор JCB",
-            ),
-            unit="смена",
-            quantity=excavator_shifts,
-            material_unit_price=_price(data, "excavator_material_unit_price"),
-            work_unit_price=_price(data, "excavator_work_unit_price"),
-            price_code="excavator_jcb_shift",
-        ),
-        calculate_line(
-            code="manual_excavation",
-            name=_line_name(data, "manual_excavation", "Разработка грунта вручную"),
-            unit="м3",
-            quantity=manual_excavation_quantity,
-            work_unit_price=_price(data, "manual_excavation_work_unit_price"),
-            price_code="manual_excavation_m3",
-        ),
-        calculate_line(
-            code="geotextile_laying",
-            name=_line_name(data, "geotextile_laying", "Укладка геотекстиля"),
-            unit="м2",
-            quantity=data.geotextile_laying_area_m2,
-            work_unit_price=_price(data, "geotextile_laying_work_unit_price"),
-            price_code="geotextile_laying_m2",
-        ),
-        calculate_line(
-            code="geotextile_material",
-            name=_line_name(
-                data,
-                "geotextile_material",
-                "Геотекстиль Дорнит 300 г.м2 (100м2)",
-            ),
-            unit="м2",
-            quantity=geotextile_material_quantity_m2,
-            material_unit_price=_price(data, "geotextile_material_unit_price"),
-            work_unit_price=_price(data, "geotextile_material_work_unit_price"),
-            price_code="geotextile_dornit_300_m2",
-        ),
-        calculate_line(
-            code="sand_filling",
-            name=_line_name(
-                data,
-                "sand_filling",
-                "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
-            ),
-            unit="м3",
-            quantity=sand_order_volume_m3,
-            work_unit_price=_price(data, "sand_filling_work_unit_price"),
-            price_code="sand_filling_work_m3",
-        ),
-        calculate_line(
-            code="sand_material",
-            name=_line_name(data, "sand_material", "Песок строительный"),
-            unit="м3",
-            quantity=sand_order_volume_m3,
-            material_unit_price=_price(data, "sand_material_unit_price"),
-            price_code="sand_m3",
-        ),
-        calculate_line(
-            code="sand_manual_moving",
-            name=_line_name(data, "sand_manual_moving", "Перемещение песка вручную"),
-            unit="м3",
-            quantity=sand_order_volume_m3,
-            work_unit_price=_price(data, "sand_manual_moving_work_unit_price"),
-            price_code="sand_manual_moving_m3",
-        ),
-        calculate_line(
-            code="communications_work",
-            name=_line_name(
-                data,
-                "communications_work",
-                "Закладка технологических входов коммуникаций до границы дома",
-            ),
-            unit="мп",
-            quantity=communications_length_m,
-            work_unit_price=_price(data, "communications_work_unit_price"),
-            price_code="communications_installation_m",
-        ),
-        calculate_line(
-            code="communications_material",
-            name=_line_name(
-                data,
-                "communications_material",
-                "Материалы для устройства входов коммуникаций",
-            ),
-            unit="мп",
-            quantity=communications_length_m,
-            material_unit_price=_price(data, "communications_material_unit_price"),
-            price_code="communications_material_m",
-        ),
-        calculate_line(
-            code="consumables",
-            name=_line_name(
-                data,
-                "consumables",
-                "Расходные материалы, амортизация инструмента",
-            ),
-            unit="комплект",
-            quantity=1,
-            material_unit_price=data.consumables_amount,
-        ),
-    ]
+    lines = []
 
-    if data.enabled_lines is None:
-        return lines
+    if _line_enabled(data, "axis_marking"):
+        lines.append(
+            calculate_line(
+                code="axis_marking",
+                name=_line_name(
+                    data,
+                    "axis_marking",
+                    "Вынос осей фундамента, котлована на участок",
+                ),
+                unit="смена",
+                quantity=data.axis_marking_shifts,
+                work_unit_price=_price(data, "axis_marking_work_unit_price"),
+                price_code="axis_marking_shift",
+            )
+        )
+    if _line_enabled(data, "excavator_jcb"):
+        lines.append(
+            calculate_line(
+                code="excavator_jcb",
+                name=_line_name(
+                    data,
+                    "excavator_jcb",
+                    "Механизированная разработка грунта, Экскаватор JCB",
+                ),
+                unit="смена",
+                quantity=excavator_shifts,
+                material_unit_price=_price(data, "excavator_material_unit_price"),
+                work_unit_price=_price(data, "excavator_work_unit_price"),
+                price_code="excavator_jcb_shift",
+            )
+        )
+    if _line_enabled(data, "manual_excavation"):
+        lines.append(
+            calculate_line(
+                code="manual_excavation",
+                name=_line_name(data, "manual_excavation", "Разработка грунта вручную"),
+                unit="м3",
+                quantity=manual_excavation_quantity,
+                work_unit_price=_price(data, "manual_excavation_work_unit_price"),
+                price_code="manual_excavation_m3",
+            )
+        )
+    if _line_enabled(data, "geotextile_laying"):
+        lines.append(
+            calculate_line(
+                code="geotextile_laying",
+                name=_line_name(data, "geotextile_laying", "Укладка геотекстиля"),
+                unit="м2",
+                quantity=data.geotextile_laying_area_m2,
+                work_unit_price=_price(data, "geotextile_laying_work_unit_price"),
+                price_code="geotextile_laying_m2",
+            )
+        )
+    if _line_enabled(data, "geotextile_material"):
+        legacy_material_work_price = (
+            _price(data, "geotextile_material_work_unit_price")
+            if not _line_enabled(data, "geotextile_laying")
+            and "geotextile_material_work_unit_price" in data.internal_prices
+            else 0.0
+        )
+        lines.append(
+            calculate_line(
+                code="geotextile_material",
+                name=_line_name(
+                    data,
+                    "geotextile_material",
+                    "Геотекстиль Дорнит 300 г.м2 (100м2)",
+                ),
+                unit="м2",
+                quantity=geotextile_material_quantity_m2,
+                material_unit_price=_price(data, "geotextile_material_unit_price"),
+                work_unit_price=legacy_material_work_price,
+                price_code="geotextile_dornit_300_m2",
+            )
+        )
+    if _line_enabled(data, "sand_filling"):
+        lines.append(
+            calculate_line(
+                code="sand_filling",
+                name=_line_name(
+                    data,
+                    "sand_filling",
+                    "Отсыпка дна котлована, засыпка под плитой песком с трамбованием",
+                ),
+                unit="м3",
+                quantity=sand_order_volume_m3,
+                work_unit_price=_price(data, "sand_filling_work_unit_price"),
+                price_code="sand_filling_work_m3",
+            )
+        )
+    if _line_enabled(data, "sand_material"):
+        lines.append(
+            calculate_line(
+                code="sand_material",
+                name=_line_name(data, "sand_material", "Песок строительный"),
+                unit="м3",
+                quantity=sand_order_volume_m3,
+                material_unit_price=_price(data, "sand_material_unit_price"),
+                price_code="sand_m3",
+            )
+        )
+    if _line_enabled(data, "sand_manual_moving"):
+        lines.append(
+            calculate_line(
+                code="sand_manual_moving",
+                name=_line_name(data, "sand_manual_moving", "Перемещение песка вручную"),
+                unit="м3",
+                quantity=sand_order_volume_m3,
+                work_unit_price=_price(data, "sand_manual_moving_work_unit_price"),
+                price_code="sand_manual_moving_m3",
+            )
+        )
+    if _line_enabled(data, "communications_work"):
+        lines.append(
+            calculate_line(
+                code="communications_work",
+                name=_line_name(
+                    data,
+                    "communications_work",
+                    "Закладка технологических входов коммуникаций до границы дома",
+                ),
+                unit="мп",
+                quantity=communications_length_m,
+                work_unit_price=_price(data, "communications_work_unit_price"),
+                price_code="communications_installation_m",
+            )
+        )
+    if _line_enabled(data, "communications_material"):
+        lines.append(
+            calculate_line(
+                code="communications_material",
+                name=_line_name(
+                    data,
+                    "communications_material",
+                    "Материалы для устройства входов коммуникаций",
+                ),
+                unit="мп",
+                quantity=communications_length_m,
+                material_unit_price=_price(data, "communications_material_unit_price"),
+                price_code="communications_material_m",
+            )
+        )
+    if _line_enabled(data, "consumables"):
+        lines.append(
+            calculate_line(
+                code="consumables",
+                name=_line_name(
+                    data,
+                    "consumables",
+                    "Расходные материалы, амортизация инструмента",
+                ),
+                unit="комплект",
+                quantity=1,
+                material_unit_price=data.consumables_amount,
+            )
+        )
 
-    enabled_codes = set(data.enabled_lines)
-    return [line for line in lines if line.code in enabled_codes]
+    return lines
 
 
 def calculate_internal_totals(lines: list[EstimateLineResult]) -> dict[str, int]:

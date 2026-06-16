@@ -1,0 +1,80 @@
+{
+  "calculation_blocks": {
+    "waterproofing": {
+      "waterproofing_area_m2": 24.3,
+      "primer_required_liters": 7.29,
+      "primer_raw_units": 0.405,
+      "primer_units": 1,
+      "mastic_required_kg": 48.6,
+      "mastic_raw_units": 2.7,
+      "mastic_units": 3,
+      "eps100_wall_insulation_area_m2": 17.5,
+      "eps100_wall_geometry_check_area_m2": 19.65,
+      "eps100_wall_required_volume_m3": 1.8375,
+      "eps100_wall_packs": 7,
+      "eps100_wall_order_volume_m3": 1.9432,
+      "glue_foam_raw_units": 1.75,
+      "glue_foam_units": 2,
+      "waterproofing_base_subtotal": 48777,
+      "logistics_amount_raw": 975.54,
+      "consumables_amount_raw": 1463.31
+    }
+  },
+  "estimate_lines": {
+    "waterproofing_bitumen_mastic_work": {
+      "quantity": 24.3,
+      "material_total": 0,
+      "work_total": 8505,
+      "line_total": 8505
+    },
+    "bitumen_primer_aquamast_18l": {
+      "quantity": 1,
+      "material_total": 2770,
+      "work_total": 0,
+      "line_total": 2770
+    },
+    "bitumen_mastic_aquamast_18kg": {
+      "quantity": 3,
+      "material_total": 8340,
+      "work_total": 0,
+      "line_total": 8340
+    },
+    "eps100_wall_insulation_work": {
+      "quantity": 17.5,
+      "material_total": 0,
+      "work_total": 8750,
+      "line_total": 8750
+    },
+    "eps100_wall_penoplex_geo_material": {
+      "quantity": 1.9432,
+      "display_quantity": 1.94,
+      "material_total": 19432,
+      "work_total": 0,
+      "line_total": 19432
+    },
+    "eps_glue_foam": {
+      "quantity": 2,
+      "material_total": 980,
+      "work_total": 0,
+      "line_total": 980
+    },
+    "waterproofing_logistics_and_supply": {
+      "quantity": 1,
+      "material_total": 976,
+      "work_total": 0,
+      "line_total": 976
+    },
+    "waterproofing_consumables_tool_amortization": {
+      "quantity": 1,
+      "material_total": 1463,
+      "work_total": 0,
+      "line_total": 1463
+    }
+  },
+  "internal_totals": {
+    "waterproofing_base_subtotal": 48777,
+    "internal_materials_total": 33961,
+    "internal_works_total": 17255,
+    "internal_section_total": 51216
+  }
+}

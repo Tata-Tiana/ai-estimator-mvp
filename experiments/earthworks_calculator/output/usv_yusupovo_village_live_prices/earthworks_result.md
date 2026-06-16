@@ -82,13 +82,13 @@
 ## Строки серой внутренней сметы
 | code | name | quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `axis_marking` | Вынос осей фундамента, котлована на участок | `1.0` | `смена` | `0.0` | `0` | `20000.0` | `20000` | `20000` |
-| `excavator_jcb` | Механизированная разработка грунта, Экскаватор JCB | `3.0` | `смена` | `26000.0` | `78000` | `3500` | `10500` | `78000` |
-| `manual_excavation` | Разработка грунта вручную | `44.695` | `м3` | `0.0` | `0` | `1400.0` | `62573` | `62573` |
+| `axis_marking` | Вынос осей фундамента, котлована на участок | `1.0` | `смена` | `0.0` | `0` | `15000.0` | `15000` | `15000` |
+| `excavator_jcb` | Механизированная разработка грунта, Экскаватор JCB | `3.0` | `смена` | `22000.0` | `66000` | `3500` | `10500` | `66000` |
+| `manual_excavation` | Разработка грунта вручную | `44.695` | `м3` | `0.0` | `0` | `1200.0` | `53634` | `53634` |
 | `geotextile_laying` | Укладка геотекстиля | `340.0` | `м2` | `0.0` | `0` | `35.0` | `11900` | `11900` |
-| `geotextile_material` | Геотекстиль Дорнит 300 г.м2 (100м2) | `400.0` | `м2` | `4562.0` | `1824800` | `0.0` | `0` | `1824800` |
+| `geotextile_material` | Геотекстиль Дорнит 300 г.м2 (100м2) | `400.0` | `м2` | `109.0` | `43600` | `0.0` | `0` | `43600` |
 | `sand_filling` | Отсыпка дна котлована, засыпка под плитой песком с трамбованием | `160.0` | `м3` | `0.0` | `0` | `1200.0` | `192000` | `192000` |
-| `sand_material` | Песок строительный | `160.0` | `м3` | `1550.0` | `248000` | `0.0` | `0` | `248000` |
+| `sand_material` | Песок строительный | `160.0` | `м3` | `1000.0` | `160000` | `0.0` | `0` | `160000` |
 | `sand_manual_moving` | Перемещение песка вручную | `160.0` | `м3` | `0.0` | `0` | `0` | `0` | `0` |
 | `communications_work` | Закладка технологических входов коммуникаций до границы дома | `115.0` | `мп` | `0.0` | `0` | `350.0` | `40250` | `40250` |
 | `communications_material` | Материалы для устройства входов коммуникаций | `115.0` | `мп` | `650.0` | `74750` | `0.0` | `0` | `74750` |
@@ -97,27 +97,27 @@
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `2248997` |
-| `internal_works_total` | `337223` |
-| `internal_section_total` | `2586220` |
-| `internal_materials_total_raw` | `2248997` |
-| `internal_works_total_raw` | `337223` |
-| `internal_section_total_raw` | `2586220` |
+| `internal_materials_total` | `367797` |
+| `internal_works_total` | `323284` |
+| `internal_section_total` | `691081` |
+| `internal_materials_total_raw` | `367797` |
+| `internal_works_total_raw` | `323284` |
+| `internal_section_total_raw` | `691081` |
 
 ## Источники цен
 
 | Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
 | --- | --- | ---: | ---: | --- | --- |
-| Вынос осей фундамента, котлована на участок | `axis_marking_shift` | `20000` | `20000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Механизированная разработка грунта, Экскаватор JCB | `excavator_jcb_shift` | `26000` | `26000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Разработка грунта вручную | `manual_excavation_m3` | `1400` | `1400` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Укладка геотекстиля | `geotextile_laying_m2` | `35` | `35` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Геотекстиль Дорнит 300 г.м2 (100м2) | `geotextile_dornit_300_m2` | `109` | `4562` | `price_registry` |  |
-| Отсыпка дна котлована, засыпка под плитой песком с трамбованием | `sand_filling_work_m3` | `1200` | `1200` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Песок строительный | `sand_m3` | `1550` | `1550` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Вынос осей фундамента, котлована на участок | `axis_marking_shift` | `20000` | `15000` | `price_registry` |  |
+| Механизированная разработка грунта, Экскаватор JCB | `excavator_jcb_shift` | `26000` | `22000` | `price_registry` |  |
+| Разработка грунта вручную | `manual_excavation_m3` | `1400` | `1200` | `price_registry` |  |
+| Укладка геотекстиля | `geotextile_laying_m2` | `35` | `35` | `price_registry` |  |
+| Геотекстиль Дорнит 300 г.м2 (100м2) | `geotextile_dornit_300_m2` | `109` | `109` | `price_registry` |  |
+| Отсыпка дна котлована, засыпка под плитой песком с трамбованием | `sand_filling_work_m3` | `1200` | `1200` | `price_registry` |  |
+| Песок строительный | `sand_m3` | `1550` | `1000` | `price_registry` |  |
 | Перемещение песка вручную | `sand_manual_moving_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Закладка технологических входов коммуникаций до границы дома | `communications_installation_m` | `350` | `350` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Материалы для устройства входов коммуникаций | `communications_material_m` | `650` | `650` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Закладка технологических входов коммуникаций до границы дома | `communications_installation_m` | `350` | `350` | `price_registry` |  |
+| Материалы для устройства входов коммуникаций | `communications_material_m` | `650` | `650` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `23447.18` | `23447.18` | `locked_case_prices` |  |
 
 ## Pricing summary
@@ -125,10 +125,10 @@
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
 | `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `1` |
+| `prices_from_price_registry` | `9` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `9` |
-| `warnings_count` | `9` |
+| `prices_from_fallback_input` | `1` |
+| `warnings_count` | `1` |
 
 ## Проверка с расчётом Елены
 Expected values are not provided for this case.

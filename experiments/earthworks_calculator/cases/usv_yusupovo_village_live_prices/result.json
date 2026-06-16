@@ -89,34 +89,34 @@
       "quantity": 1.0,
       "material_unit_price": 0.0,
       "material_total": 0,
-      "work_unit_price": 20000.0,
-      "work_total": 20000,
-      "line_total": 20000,
+      "work_unit_price": 15000.0,
+      "work_total": 15000,
+      "line_total": 15000,
       "price_code": "axis_marking_shift",
-      "work_total_raw": 20000.0,
-      "line_total_raw": 20000.0,
-      "unit_price_source": "fallback_input",
+      "work_total_raw": 15000.0,
+      "line_total_raw": 15000.0,
+      "unit_price_source": "price_registry",
       "unit_price_original": "20000",
-      "unit_price_used": "20000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "15000",
+      "price_warning": null
     },
     {
       "code": "excavator_jcb",
       "name": "Механизированная разработка грунта, Экскаватор JCB",
       "unit": "смена",
       "quantity": 3.0,
-      "material_unit_price": 26000.0,
-      "material_total": 78000,
+      "material_unit_price": 22000.0,
+      "material_total": 66000,
       "work_unit_price": 3500,
       "work_total": 10500,
-      "line_total": 78000,
+      "line_total": 66000,
       "price_code": "excavator_jcb_shift",
-      "material_total_raw": 78000.0,
-      "line_total_raw": 78000.0,
-      "unit_price_source": "fallback_input",
+      "material_total_raw": 66000.0,
+      "line_total_raw": 66000.0,
+      "unit_price_source": "price_registry",
       "unit_price_original": "26000",
-      "unit_price_used": "26000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "22000",
+      "price_warning": null
     },
     {
       "code": "manual_excavation",
@@ -125,16 +125,16 @@
       "quantity": 44.695,
       "material_unit_price": 0.0,
       "material_total": 0,
-      "work_unit_price": 1400.0,
-      "work_total": 62573,
-      "line_total": 62573,
+      "work_unit_price": 1200.0,
+      "work_total": 53634,
+      "line_total": 53634,
       "price_code": "manual_excavation_m3",
-      "work_total_raw": 62573.0,
-      "line_total_raw": 62573.0,
-      "unit_price_source": "fallback_input",
+      "work_total_raw": 53634.0,
+      "line_total_raw": 53634.0,
+      "unit_price_source": "price_registry",
       "unit_price_original": "1400",
-      "unit_price_used": "1400",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "1200",
+      "price_warning": null
     },
     {
       "code": "geotextile_laying",
@@ -149,27 +149,27 @@
       "price_code": "geotextile_laying_m2",
       "work_total_raw": 11900.0,
       "line_total_raw": 11900.0,
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "35",
       "unit_price_used": "35",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "geotextile_material",
       "name": "Геотекстиль Дорнит 300 г.м2 (100м2)",
       "unit": "м2",
       "quantity": 400.0,
-      "material_unit_price": 4562.0,
-      "material_total": 1824800,
+      "material_unit_price": 109.0,
+      "material_total": 43600,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 1824800,
+      "line_total": 43600,
       "price_code": "geotextile_dornit_300_m2",
-      "material_total_raw": 1824800.0,
-      "line_total_raw": 1824800.0,
+      "material_total_raw": 43600.0,
+      "line_total_raw": 43600.0,
       "unit_price_source": "price_registry",
       "unit_price_original": "109",
-      "unit_price_used": "4562",
+      "unit_price_used": "109",
       "price_warning": null
     },
     {
@@ -185,28 +185,28 @@
       "price_code": "sand_filling_work_m3",
       "work_total_raw": 192000.0,
       "line_total_raw": 192000.0,
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "1200",
       "unit_price_used": "1200",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "sand_material",
       "name": "Песок строительный",
       "unit": "м3",
       "quantity": 160.0,
-      "material_unit_price": 1550.0,
-      "material_total": 248000,
+      "material_unit_price": 1000.0,
+      "material_total": 160000,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 248000,
+      "line_total": 160000,
       "price_code": "sand_m3",
-      "material_total_raw": 248000.0,
-      "line_total_raw": 248000.0,
-      "unit_price_source": "fallback_input",
+      "material_total_raw": 160000.0,
+      "line_total_raw": 160000.0,
+      "unit_price_source": "price_registry",
       "unit_price_original": "1550",
-      "unit_price_used": "1550",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "1000",
+      "price_warning": null
     },
     {
       "code": "sand_manual_moving",
@@ -237,10 +237,10 @@
       "price_code": "communications_installation_m",
       "work_total_raw": 40250.0,
       "line_total_raw": 40250.0,
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "350",
       "unit_price_used": "350",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "communications_material",
@@ -255,10 +255,10 @@
       "price_code": "communications_material_m",
       "material_total_raw": 74750.0,
       "line_total_raw": 74750.0,
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "650",
       "unit_price_used": "650",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "consumables",
@@ -277,21 +277,21 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 2248997,
-    "internal_works_total": 337223,
-    "internal_section_total": 2586220,
-    "internal_materials_total_raw": "2248997",
-    "internal_works_total_raw": "337223",
-    "internal_section_total_raw": "2586220"
+    "internal_materials_total": 367797,
+    "internal_works_total": 323284,
+    "internal_section_total": 691081,
+    "internal_materials_total_raw": "367797",
+    "internal_works_total_raw": "323284",
+    "internal_section_total_raw": "691081"
   },
   "expected": {},
   "comparison": [],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 1,
+    "prices_from_price_registry": 9,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 9,
-    "warnings_count": 9
+    "prices_from_fallback_input": 1,
+    "warnings_count": 1
   }
 }

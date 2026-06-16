@@ -1,0 +1,85 @@
+# Earthworks Parser Google Stage 1
+
+Изолированная репетиция production-flow для раздела **Земляные работы**:
+
+```text
+PDF / parser artifacts
+-> разбор проектных параметров
+-> read-only snapshot Google price_registry
+-> price resolution для earthworks
+-> Google/Excel review sheet для Елены
+```
+
+## Важные правила
+
+- `price_registry` читается только read-only.
+- Недостающие цены калькулятора не публикуются обратно в общий прайс.
+- Fallback из базового кейса ЮСВ используется только внутри текущей сметы/job и только для цен.
+- Объемы/количества нельзя брать из legacy input/result.
+- Ручная правка цены в review sheet действует только для текущей сметы.
+- Лист `02_Цены себестоимости` показывает реальные price components одним списком, без искусственных строк с нулевой ценой.
+
+## Структура
+
+- `parser/` - адаптер проектных данных для earthworks.
+- `pricing/` - локальный price contract, reader и resolver только для earthworks.
+- `google/` - сборка review workbook/Google Sheet.
+- `reports/` - отчеты и anti-cheat.
+- `data/jobs/<job_id>/` - все outputs конкретного запуска.
+
+Такая структура потом переносится в Telegram-бот: бот создает job, кладет PDF и запускает эти же шаги.
+
+## Запуск
+
+```bash
+cd experiments/earthworks_parser_google_stage1
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python run_stage1.py prepare --project-name "ЮСВ"
+```
+
+Если OAuth-настройки заполнены, будет создан Google Sheet. Если нет, будет создан локальный `review_workbook.xlsx` в папке job.
+
+## Полное обнуление локальных прогонов
+
+Перед повторным тестом можно удалить все созданные jobs:
+
+```bash
+python run_stage1.py clean
+```
+
+Команда удаляет только:
+
+```text
+data/jobs/*
+```
+
+И не трогает:
+
+- `data/input_pdfs/`;
+- `.env`, `credentials.json`, `token.json`;
+- код эксперимента;
+- v3 parser outputs;
+- общий `price_registry`.
+
+Удалить один конкретный job:
+
+```bash
+python run_stage1.py clean --job-id restore_check
+```
+
+## Прайс
+
+Настройки `.env`:
+
+```env
+GOOGLE_OAUTH_CREDENTIALS_PATH=credentials.json
+GOOGLE_TOKEN_PATH=token.json
+GOOGLE_DRIVE_FOLDER_ID=
+GOOGLE_PRICE_REGISTRY_SPREADSHEET_ID=
+GOOGLE_PRICE_REGISTRY_SHEET_NAME=price_registry
+```
+
+Секреты не коммитятся.
