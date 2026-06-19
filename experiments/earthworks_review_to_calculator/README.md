@@ -73,6 +73,22 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
   --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json
 ```
 
+## Step 3: run existing earthworks calculator
+
+Следующий слой запускает уже существующий `earthworks_calculator` на входе из review layer
+и сохраняет результат локально в `outputs/calculation_result/`.
+
+```bash
+python experiments/earthworks_review_to_calculator/run_calculator_from_review_input.py \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --out-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
+
+python experiments/earthworks_review_to_calculator/anti_cheat.py \
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
+```
+
 ## Запуск
 
 Из корня репозитория:
@@ -82,8 +98,19 @@ python experiments/earthworks_review_to_calculator/run_review_reader.py \
   --workbook experiments/earthworks_parser_google_stage1/review_workbook.xlsx \
   --out-dir experiments/earthworks_review_to_calculator/outputs
 
+python experiments/earthworks_review_to_calculator/run_build_calculator_input.py \
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --out experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --report experiments/earthworks_review_to_calculator/outputs/calculator_input_report.md
+
+python experiments/earthworks_review_to_calculator/run_calculator_from_review_input.py \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --out-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
+
 python experiments/earthworks_review_to_calculator/anti_cheat.py \
-  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
 ```
 
 Если путь `review_workbook.xlsx` указывает на несуществующий файл, reader попробует найти свежий workbook stage1 в `data/jobs/*/google/review_workbook.xlsx`.

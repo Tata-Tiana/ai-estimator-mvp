@@ -350,9 +350,74 @@ def validate_calculator_input(
     return errors, warnings
 
 
+def validate_calculation_result(result_dir: Path | str | None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if result_dir is None:
+        errors.append("calculation result dir is required")
+        return errors, warnings
+
+    path = Path(result_dir)
+    if not path.exists():
+        errors.append(f"calculation result dir does not exist: {path}")
+        return errors, warnings
+
+    result_json_path: Path | None = None
+    result_md_exists = False
+    for candidate in ("earthworks_result.json", "result.json"):
+        candidate_path = path / candidate
+        if candidate_path.exists():
+            result_json_path = candidate_path
+            break
+    for candidate in ("earthworks_result.md", "result.md"):
+        if (path / candidate).exists():
+            result_md_exists = True
+            break
+
+    if result_json_path is None:
+        errors.append(f"no result json found in calculation result dir: {path}")
+        return errors, warnings
+
+    try:
+        result_data = load_json(result_json_path)
+    except Exception as exc:  # pragma: no cover - defensive
+        errors.append(f"failed to read calculation result json: {exc}")
+        return errors, warnings
+
+    if not isinstance(result_data, dict):
+        errors.append("calculation result json must be a mapping")
+        return errors, warnings
+
+    internal_totals = result_data.get("internal_totals", {})
+    if not isinstance(internal_totals, dict) or not internal_totals:
+        errors.append("calculation result internal_totals is missing")
+    else:
+        section_total = _as_number(internal_totals.get("internal_section_total"))
+        if section_total is None or section_total <= 0:
+            errors.append(
+                f"internal_section_total must be > 0, got {internal_totals.get('internal_section_total')}"
+            )
+
+    volume_result = result_data.get("volume_result", {})
+    communications_length = _as_number(volume_result.get("communications_length_m"))
+    if communications_length != 115.0:
+        errors.append(f"communications_length_m expected 115.0, got {volume_result.get('communications_length_m')}")
+
+    estimate_lines = result_data.get("estimate_lines") or []
+    if not isinstance(estimate_lines, list) or not estimate_lines:
+        errors.append("calculation result estimate_lines is missing")
+
+    if not result_md_exists:
+        warnings.append("calculation result markdown is missing")
+
+    return errors, warnings
+
+
 def run_anti_cheat(
     normalized_json_path: str | Path,
     calculator_input_path: str | Path | None = None,
+    calculation_result_dir: str | Path | None = None,
 ) -> bool:
     normalized_path = Path(normalized_json_path)
     normalized_data = load_json(normalized_path)
@@ -364,6 +429,11 @@ def run_anti_cheat(
         calc_errors, calc_warnings = validate_calculator_input(normalized_data, calculator_input)
         errors.extend(calc_errors)
         warnings.extend(calc_warnings)
+
+    if calculation_result_dir is not None:
+        result_errors, result_warnings = validate_calculation_result(calculation_result_dir)
+        errors.extend(result_errors)
+        warnings.extend(result_warnings)
 
     if errors:
         print("anti-cheat errors:")
@@ -383,12 +453,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to earthworks_calculation_input.json",
     )
+    parser.add_argument(
+        "--calculation-result-dir",
+        default=None,
+        help="Optional path to calculation_result directory",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input) else 1
+    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir) else 1
 
 
 if __name__ == "__main__":
