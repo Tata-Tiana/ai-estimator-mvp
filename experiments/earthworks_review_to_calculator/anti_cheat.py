@@ -7,13 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from constants import (
-    DETAIL_REQUIRED_COMM_NAMES,
-    DETAIL_REQUIRED_TRENCH_NAMES,
     DEFAULT_COMMUNICATIONS_METHOD,
     DEFAULT_EXCAVATOR_SHIFTS_METHOD,
     DEFAULT_MANUAL_EXCAVATION_METHOD,
-    PRICE_EXPECTED_MIN_ROWS,
-    PRICE_REQUIRED_LINES,
+    REQUIRED_CALC_PRICE_KEYS,
     REQUIRED_PARAMETERS,
 )
 from normalization import cell_text
@@ -36,6 +33,19 @@ def _as_number(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _as_boolish(value: Any) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if text in {"1", "true", "yes", "да", "y"}:
+        return True
+    if text in {"0", "false", "no", "нет", "n", ""}:
+        return False
+    return None
 
 
 def _expected_prices_by_calc_key(prices: list[dict[str, Any]]) -> tuple[dict[str, float], float | None]:
@@ -77,108 +87,120 @@ def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[st
     summary = details.get("summary", {})
 
     for key in REQUIRED_PARAMETERS:
-        if key not in parameters:
+        parameter = parameters.get(key)
+        if parameter is None:
             errors.append(f"missing parameter: {key}")
+            continue
+        value = _as_number(parameter.get("value"))
+        if value is None:
+            errors.append(f"required parameter must be numeric: {key}")
+            continue
+        if key in {"pit_area_m2", "pit_excavation_depth_m", "sand_base_volume_m3", "geotextile_area_m2", "geotextile_laying_area_m2"} and value <= 0:
+            errors.append(f"required parameter must be > 0: {key}")
+        if key in {"trench_volume_m3", "communications_length_m"} and value < 0:
+            errors.append(f"required parameter must be >= 0: {key}")
 
-    expected_values = {
-        "pit_area_m2": 322.5,
-        "pit_excavation_depth_m": 0.3,
-        "sand_base_volume_m3": 96.6,
-        "trench_volume_m3": 32.38,
-        "geotextile_area_m2": 320.0,
-        "geotextile_laying_area_m2": 320.0,
-        "communications_length_m": 115.0,
-    }
-    for key, expected in expected_values.items():
-        actual = parameters.get(key, {}).get("value")
-        if actual != expected:
-            errors.append(f"{key} expected {expected}, got {actual}")
-
-    if len(prices) < PRICE_EXPECTED_MIN_ROWS:
-        errors.append(f"prices rows expected >= {PRICE_EXPECTED_MIN_ROWS}, got {len(prices)}")
-
-    price_map = {row.get("estimate_line"): row for row in prices}
     calc_price_keys = [cell_text(row.get("calc_price_key")) for row in prices]
     if any(not key for key in calc_price_keys):
         errors.append("all price rows must have calc_price_key")
     if len(set(calc_price_keys)) != len(prices):
         errors.append("calc_price_key values must be unique across price rows")
 
+    price_by_key = {key: row for key, row in ((cell_text(row.get("calc_price_key")), row) for row in prices) if key}
+    missing_calc_keys = [key for key in REQUIRED_CALC_PRICE_KEYS if key not in price_by_key]
+    if missing_calc_keys:
+        errors.append(f"missing required calc_price_keys: {', '.join(missing_calc_keys)}")
+
     for row in prices:
-        estimate_line = cell_text(row.get("estimate_line"))
         calc_price_key = cell_text(row.get("calc_price_key"))
         selected_price_source = cell_text(row.get("selected_price_source")).lower()
         effective_price_source = cell_text(row.get("effective_price_source")).lower()
         price_registry_code = cell_text(row.get("price_registry_code"))
         fallback_key = cell_text(row.get("fallback_key"))
         override_used = bool(row.get("override_used"))
+        selected_price = _as_number(row.get("selected_price"))
 
         if selected_price_source not in VALID_SELECTED_PRICE_SOURCES:
-            errors.append(f"invalid selected_price_source for {estimate_line}: {selected_price_source}")
+            errors.append(f"invalid selected_price_source for {calc_price_key}: {selected_price_source}")
         if effective_price_source not in VALID_EFFECTIVE_PRICE_SOURCES:
-            errors.append(f"invalid effective_price_source for {estimate_line}: {effective_price_source}")
+            errors.append(f"invalid effective_price_source for {calc_price_key}: {effective_price_source}")
+        if selected_price is None:
+            errors.append(f"selected_price must be numeric for {calc_price_key}")
+        elif selected_price < 0:
+            errors.append(f"selected_price must be >= 0 for {calc_price_key}")
         if override_used and effective_price_source != "manual_override":
-            errors.append(f"{estimate_line}: override_used rows must have effective_price_source manual_override")
+            errors.append(f"{calc_price_key}: override_used rows must have effective_price_source manual_override")
         if not override_used and effective_price_source != selected_price_source:
             errors.append(
-                f"{estimate_line}: effective_price_source must equal selected_price_source when no override is used"
+                f"{calc_price_key}: effective_price_source must equal selected_price_source when no override is used"
             )
         if selected_price_source == "fallback":
             if not fallback_key.startswith("fallback."):
-                errors.append(f"{estimate_line}: fallback rows must have fallback_key starting with fallback.")
+                errors.append(f"{calc_price_key}: fallback rows must have fallback_key starting with fallback.")
             if price_registry_code:
-                errors.append(f"{estimate_line}: fallback rows must not have price_registry_code")
+                errors.append(f"{calc_price_key}: fallback rows must not have price_registry_code")
         if selected_price_source == "price_registry" and not price_registry_code:
-            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key or estimate_line}")
-
-    for required_line in PRICE_REQUIRED_LINES:
-        if required_line not in price_map:
-            errors.append(f"missing price row: {required_line}")
-
-    if price_map.get("Расходные материалы", {}).get("selected_price") != 23447.18:
-        errors.append("Расходные материалы selected_price must be 23447.18")
-    расходные = price_map.get("Расходные материалы", {})
-    if расходные:
-        if cell_text(расходные.get("calc_price_key")) != "consumables_amount":
-            errors.append("Расходные материалы calc_price_key must be consumables_amount")
-        if cell_text(расходные.get("selected_price_source")) != "fallback":
-            errors.append("Расходные материалы selected_price_source must be fallback")
-        if cell_text(расходные.get("fallback_key")) != "fallback.consumables_amount":
-            errors.append("Расходные материалы fallback_key must be fallback.consumables_amount")
-
-    geotextile = price_map.get("Геотекстиль Дорнит 300 г.м2", {})
-    if geotextile.get("selected_price") != 109.0:
-        errors.append("Геотекстиль Дорнит 300 г.м2 selected_price must be 109.0")
-    if geotextile:
-        if cell_text(geotextile.get("calc_price_key")) != "geotextile_material_unit_price":
-            errors.append("Геотекстиль Дорнит 300 г.м2 calc_price_key must be geotextile_material_unit_price")
-        if cell_text(geotextile.get("selected_price_source")) != "price_registry":
-            errors.append("Геотекстиль Дорнит 300 г.м2 selected_price_source must be price_registry")
+            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key}")
 
     trench_routes = details.get("trench_routes", [])
+    if not isinstance(trench_routes, list):
+        errors.append("trench_routes must be a list")
+        trench_routes = []
+    for index, row in enumerate(trench_routes):
+        if not isinstance(row, dict):
+            errors.append(f"trench_routes[{index}] must be a mapping")
+            continue
+        if not cell_text(row.get("name")):
+            errors.append(f"trench_routes[{index}].name is required")
+        for field in ("length_m", "depth_m", "width_m", "volume_m3"):
+            value = _as_number(row.get(field))
+            if value is not None and value < 0:
+                errors.append(f"trench_routes[{index}].{field} must be >= 0")
+
     communications = details.get("communications_pipe_items", [])
-    if len(trench_routes) != 4:
-        errors.append(f"trench_routes count expected 4, got {len(trench_routes)}")
-    if len(communications) != 4:
-        errors.append(f"communications_pipe_items count expected 4, got {len(communications)}")
+    if not isinstance(communications, list):
+        errors.append("communications_pipe_items must be a list")
+        communications = []
+    for index, row in enumerate(communications):
+        if not isinstance(row, dict):
+            errors.append(f"communications_pipe_items[{index}] must be a mapping")
+            continue
+        if not cell_text(row.get("name")):
+            errors.append(f"communications_pipe_items[{index}].name is required")
+        total_length = _as_number(row.get("total_length_m"))
+        if total_length is None:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be numeric")
+        elif total_length < 0:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be >= 0")
+        diameter = row.get("diameter_mm")
+        if diameter not in {None, ""}:
+            diameter_value = _as_number(diameter)
+            if diameter_value is None:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be numeric")
+            elif diameter_value <= 0:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be > 0")
+        quantity = row.get("quantity")
+        if quantity not in {None, ""}:
+            quantity_value = _as_number(quantity)
+            if quantity_value is None:
+                errors.append(f"communications_pipe_items[{index}].quantity must be numeric")
+            elif quantity_value < 0:
+                errors.append(f"communications_pipe_items[{index}].quantity must be >= 0")
+        included = _as_boolish(row.get("included"))
+        if included is None:
+            errors.append(f"communications_pipe_items[{index}].included must be boolean-like")
 
-    trench_names = [cell_text(row.get("name")) for row in trench_routes]
-    for required_name in DETAIL_REQUIRED_TRENCH_NAMES:
-        if required_name not in trench_names:
-            errors.append(f"missing trench name: {required_name}")
-
-    comm_names = [cell_text(row.get("name")) for row in communications]
-    for required_name in DETAIL_REQUIRED_COMM_NAMES:
-        if required_name not in comm_names:
-            errors.append(f"missing communication item: {required_name}")
-
-    for row in communications:
-        if row.get("diameter_mm") != 110:
-            errors.append(f"communication diameter must be 110: {row.get('name')}")
-
-    if summary.get("communications_total_length_m") != 115.0:
+    summary_total = _as_number(summary.get("communications_total_length_m"))
+    pipe_total = sum(
+        _as_number(row.get("total_length_m")) or 0.0
+        for row in communications
+        if _as_boolish(row.get("included")) is True
+    )
+    if summary_total is None:
+        errors.append("communications_total_length_m must be numeric")
+    elif abs(summary_total - pipe_total) > 0.001:
         errors.append(
-            f"communications_total_length_m expected 115.0, got {summary.get('communications_total_length_m')}"
+            f"communications_total_length_m must equal sum of pipe rows ({pipe_total}), got {summary_total}"
         )
 
     return errors, warnings
@@ -194,6 +216,14 @@ def validate_calculator_input(
     parameters = normalized_data.get("parameters", {})
     prices = normalized_data.get("prices", [])
     details = normalized_data.get("details", {})
+    normalized_summary = details.get("summary", {})
+    normalized_communications_total = _as_number(normalized_summary.get("communications_total_length_m"))
+    if normalized_communications_total is None:
+        normalized_communications_total = sum(
+            _as_number(row.get("total_length_m")) or 0.0
+            for row in details.get("communications_pipe_items", [])
+            if _as_boolish(row.get("included")) is True
+        )
 
     try:
         expected_internal_prices, expected_consumables_amount = _expected_prices_by_calc_key(prices)
@@ -214,79 +244,47 @@ def validate_calculator_input(
         parameters.get("geotextile_laying_area_m2", {}).get("value")
     )
 
-    expected_excavator_method = (
-        DEFAULT_EXCAVATOR_SHIFTS_METHOD if pit_excavation_depth_m is not None else "legacy_manual_shifts"
-    )
-    expected_manual_method = (
-        DEFAULT_MANUAL_EXCAVATION_METHOD
-        if (details.get("trench_routes") or trench_volume_m3 is not None)
-        else "legacy_manual_override"
-    )
-    expected_communications_method = (
-        "legacy_direct_length" if communications_override_used else DEFAULT_COMMUNICATIONS_METHOD
-    )
+    expected_excavator_method = DEFAULT_EXCAVATOR_SHIFTS_METHOD
+    expected_manual_method = DEFAULT_MANUAL_EXCAVATION_METHOD
+    expected_communications_method = DEFAULT_COMMUNICATIONS_METHOD
 
     if calculator_input.get("project_name") in {None, ""}:
         errors.append("project_name is required")
 
     if _as_number(calculator_input.get("pit_area_m2")) != pit_area_m2:
-        errors.append(f"pit_area_m2 expected {pit_area_m2}, got {calculator_input.get('pit_area_m2')}")
+        errors.append("pit_area_m2 must match normalized review value")
     if _as_number(calculator_input.get("pit_excavation_depth_m")) != pit_excavation_depth_m:
-        errors.append(
-            f"pit_excavation_depth_m expected {pit_excavation_depth_m}, got {calculator_input.get('pit_excavation_depth_m')}"
-        )
+        errors.append("pit_excavation_depth_m must match normalized review value")
     if _as_number(calculator_input.get("sand_base_volume_m3")) != sand_base_volume_m3:
-        errors.append(
-            f"sand_base_volume_m3 expected {sand_base_volume_m3}, got {calculator_input.get('sand_base_volume_m3')}"
-        )
+        errors.append("sand_base_volume_m3 must match normalized review value")
     if _as_number(calculator_input.get("trench_volume_m3")) != trench_volume_m3:
-        errors.append(
-            f"trench_volume_m3 expected {trench_volume_m3}, got {calculator_input.get('trench_volume_m3')}"
-        )
+        errors.append("trench_volume_m3 must match normalized review value")
     if _as_number(calculator_input.get("geotextile_area_m2")) != geotextile_area_m2:
-        errors.append(
-            f"geotextile_area_m2 expected {geotextile_area_m2}, got {calculator_input.get('geotextile_area_m2')}"
-        )
+        errors.append("geotextile_area_m2 must match normalized review value")
     if _as_number(calculator_input.get("geotextile_laying_area_m2")) != geotextile_laying_area_m2:
-        errors.append(
-            f"geotextile_laying_area_m2 expected {geotextile_laying_area_m2}, got {calculator_input.get('geotextile_laying_area_m2')}"
-        )
+        errors.append("geotextile_laying_area_m2 must match normalized review value")
 
     if calculator_input.get("excavator_shifts_calc_method") != expected_excavator_method:
-        errors.append(
-            f"excavator_shifts_calc_method expected {expected_excavator_method}, got {calculator_input.get('excavator_shifts_calc_method')}"
-        )
+        errors.append("excavator_shifts_calc_method must match normalized review method")
     if calculator_input.get("manual_excavation_calc_method") != expected_manual_method:
-        errors.append(
-            f"manual_excavation_calc_method expected {expected_manual_method}, got {calculator_input.get('manual_excavation_calc_method')}"
-        )
+        errors.append("manual_excavation_calc_method must match normalized review method")
     if calculator_input.get("communications_length_calc_method") != expected_communications_method:
-        errors.append(
-            f"communications_length_calc_method expected {expected_communications_method}, got {calculator_input.get('communications_length_calc_method')}"
-        )
+        errors.append("communications_length_calc_method must match normalized review method")
 
     if expected_communications_method == DEFAULT_COMMUNICATIONS_METHOD:
         if _as_number(calculator_input.get("communications_length_m")) not in {0.0, 0}:
-            errors.append(
-                f"communications_length_m expected 0 for pipe_items mode, got {calculator_input.get('communications_length_m')}"
-            )
+            errors.append("communications_length_m must be 0 in pipe_items mode")
     else:
         if _as_number(calculator_input.get("communications_length_m")) != communications_value:
-            errors.append(
-                f"communications_length_m expected {communications_value}, got {calculator_input.get('communications_length_m')}"
-            )
+            errors.append("communications_length_m must match normalized review value")
 
     if expected_manual_method == DEFAULT_MANUAL_EXCAVATION_METHOD:
         if calculator_input.get("manual_excavation_quantity_for_estimate_m3") is not None:
-            errors.append(
-                "manual_excavation_quantity_for_estimate_m3 must be null in standard_routes mode"
-            )
+            errors.append("manual_excavation_quantity_for_estimate_m3 must be null in standard_routes mode")
 
     if expected_excavator_method == DEFAULT_EXCAVATOR_SHIFTS_METHOD:
         if _as_number(calculator_input.get("excavator_shifts")) not in {0.0, 0}:
-            errors.append(
-                f"excavator_shifts expected 0 in standard_volume_productivity mode, got {calculator_input.get('excavator_shifts')}"
-            )
+            errors.append("excavator_shifts must be 0 in standard_volume_productivity mode")
 
     internal_prices = calculator_input.get("internal_prices", {})
     if not isinstance(internal_prices, dict) or not internal_prices:
@@ -296,10 +294,8 @@ def validate_calculator_input(
             actual = _as_number(internal_prices.get(key))
             if actual != expected_value:
                 errors.append(f"internal_prices.{key} expected {expected_value}, got {actual}")
-        unexpected_consumables = internal_prices.get("consumables_amount")
-        if unexpected_consumables is not None:
+        if internal_prices.get("consumables_amount") is not None:
             errors.append("internal_prices must not contain consumables_amount")
-
         if len(internal_prices) != len(expected_internal_prices):
             missing = sorted(set(expected_internal_prices) - set(internal_prices))
             unexpected = sorted(set(internal_prices) - set(expected_internal_prices))
@@ -311,46 +307,76 @@ def validate_calculator_input(
     if expected_consumables_amount is None:
         errors.append("consumables_amount must be mapped from review sheet")
     elif _as_number(calculator_input.get("consumables_amount")) != expected_consumables_amount:
-        errors.append(
-            f"consumables_amount expected {expected_consumables_amount}, got {calculator_input.get('consumables_amount')}"
-        )
+        errors.append("consumables_amount must match normalized review value")
 
     trench_routes = calculator_input.get("trench_routes") or []
-    if expected_manual_method == DEFAULT_MANUAL_EXCAVATION_METHOD:
-        if len(trench_routes) != 4:
-            errors.append(f"trench_routes count expected 4, got {len(trench_routes)}")
-        trench_names = [cell_text(row.get("name")) for row in trench_routes]
-        for required_name in DETAIL_REQUIRED_TRENCH_NAMES:
-            if required_name not in trench_names:
-                errors.append(f"missing trench name in calculator input: {required_name}")
+    if not isinstance(trench_routes, list):
+        errors.append("trench_routes must be a list in calculator input")
+        trench_routes = []
+    for index, row in enumerate(trench_routes):
+        if not isinstance(row, dict):
+            errors.append(f"trench_routes[{index}] must be a mapping in calculator input")
+            continue
+        if not cell_text(row.get("name")):
+            errors.append(f"trench_routes[{index}].name is required in calculator input")
+        for field in ("length_m", "depth_m", "width_m", "volume_m3"):
+            value = _as_number(row.get(field))
+            if value is None:
+                errors.append(f"trench_routes[{index}].{field} must be numeric in calculator input")
+            elif value < 0:
+                errors.append(f"trench_routes[{index}].{field} must be >= 0 in calculator input")
 
     communications_pipe_items = calculator_input.get("communications_pipe_items") or []
-    if expected_communications_method == DEFAULT_COMMUNICATIONS_METHOD:
-        if len(communications_pipe_items) != 4:
-            errors.append(
-                f"communications_pipe_items count expected 4, got {len(communications_pipe_items)}"
-            )
-        comm_names = [cell_text(row.get("name")) for row in communications_pipe_items]
-        for required_name in DETAIL_REQUIRED_COMM_NAMES:
-            if required_name not in comm_names:
-                errors.append(f"missing communication item in calculator input: {required_name}")
+    if not isinstance(communications_pipe_items, list):
+        errors.append("communications_pipe_items must be a list in calculator input")
+        communications_pipe_items = []
+    included_total = 0.0
+    for index, row in enumerate(communications_pipe_items):
+        if not isinstance(row, dict):
+            errors.append(f"communications_pipe_items[{index}] must be a mapping in calculator input")
+            continue
+        if not cell_text(row.get("name")):
+            errors.append(f"communications_pipe_items[{index}].name is required in calculator input")
+        total_length = _as_number(row.get("total_length_m"))
+        if total_length is None:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be numeric in calculator input")
+        elif total_length < 0:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be >= 0 in calculator input")
+        diameter = row.get("diameter_mm")
+        if diameter not in {None, ""}:
+            diameter_value = _as_number(diameter)
+            if diameter_value is None:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be numeric in calculator input")
+            elif diameter_value <= 0:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be > 0 in calculator input")
+        quantity = row.get("quantity")
+        if quantity not in {None, ""}:
+            quantity_value = _as_number(quantity)
+            if quantity_value is None:
+                errors.append(f"communications_pipe_items[{index}].quantity must be numeric in calculator input")
+            elif quantity_value < 0:
+                errors.append(f"communications_pipe_items[{index}].quantity must be >= 0 in calculator input")
+        included = _as_boolish(row.get("include_in_communications"))
+        if included is None:
+            included = _as_boolish(row.get("included"))
+        if included is None:
+            errors.append(f"communications_pipe_items[{index}].include_in_communications must be boolean-like")
+        elif included and total_length is not None:
+            included_total += total_length
 
-        for row in communications_pipe_items:
-            if _as_number(row.get("diameter_mm")) != 110:
-                errors.append(f"calculator input communication diameter must be 110: {row.get('name')}")
-
-        total_length = sum(
-            _as_number(row.get("total_length_m")) or 0.0
-            for row in communications_pipe_items
-            if row.get("include_in_communications", True)
+    if abs(included_total - normalized_communications_total) > 0.001:
+        errors.append(
+            f"communications total length must equal normalized review total ({normalized_communications_total}), got {included_total}"
         )
-        if total_length != 115.0:
-            errors.append(f"communications total length expected 115.0, got {total_length}")
 
     return errors, warnings
 
 
-def validate_calculation_result(result_dir: Path | str | None) -> tuple[list[str], list[str]]:
+
+def validate_calculation_result(
+    normalized_data: dict[str, Any],
+    result_dir: Path | str | None,
+) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -401,8 +427,20 @@ def validate_calculation_result(result_dir: Path | str | None) -> tuple[list[str
 
     volume_result = result_data.get("volume_result", {})
     communications_length = _as_number(volume_result.get("communications_length_m"))
-    if communications_length != 115.0:
-        errors.append(f"communications_length_m expected 115.0, got {volume_result.get('communications_length_m')}")
+    normalized_summary = normalized_data.get("details", {}).get("summary", {})
+    expected_communications_length = _as_number(normalized_summary.get("communications_total_length_m"))
+    if expected_communications_length is None:
+        expected_communications_length = sum(
+            _as_number(row.get("total_length_m")) or 0.0
+            for row in normalized_data.get("details", {}).get("communications_pipe_items", [])
+            if _as_boolish(row.get("included")) is True
+        )
+    if communications_length is None:
+        errors.append("calculation result communications_length_m must be numeric")
+    elif abs(communications_length - expected_communications_length) > 0.001:
+        errors.append(
+            f"communications_length_m expected {expected_communications_length}, got {volume_result.get('communications_length_m')}"
+        )
 
     estimate_lines = result_data.get("estimate_lines") or []
     if not isinstance(estimate_lines, list) or not estimate_lines:
@@ -431,7 +469,7 @@ def run_anti_cheat(
         warnings.extend(calc_warnings)
 
     if calculation_result_dir is not None:
-        result_errors, result_warnings = validate_calculation_result(calculation_result_dir)
+        result_errors, result_warnings = validate_calculation_result(normalized_data, calculation_result_dir)
         errors.extend(result_errors)
         warnings.extend(result_warnings)
 

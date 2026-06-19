@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from constants import (
-    CALCULATOR_TEMPLATE_PATH,
     DEFAULT_COMMUNICATIONS_METHOD,
     DEFAULT_EXCAVATOR_SHIFTS_METHOD,
     DEFAULT_MANUAL_EXCAVATION_METHOD,
+    GENERIC_CALCULATOR_DEFAULTS,
     PROJECT_NAME,
     REQUIRED_PARAMETERS,
     SECTION_CODE,
@@ -97,12 +97,6 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def dump_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
-def load_template(path: Path = CALCULATOR_TEMPLATE_PATH) -> dict[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(f"Calculator input template not found: {path}")
-    return load_json(path)
 
 
 def _as_number(value: Any) -> float | None:
@@ -218,12 +212,12 @@ def _build_internal_prices(
 
 
 def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
-    template = copy.deepcopy(load_template())
     meta = normalized_data.get("meta", {})
     parameters = normalized_data.get("parameters", {})
     prices = normalized_data.get("prices", [])
     details = normalized_data.get("details", {})
     summary = details.get("summary", {})
+    defaults = copy.deepcopy(GENERIC_CALCULATOR_DEFAULTS)
 
     pit_area_m2 = _parameter_value(parameters, "pit_area_m2")
     pit_excavation_depth_m = _parameter_value(parameters, "pit_excavation_depth_m")
@@ -231,9 +225,6 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     trench_volume_m3 = _parameter_value(parameters, "trench_volume_m3")
     geotextile_area_m2 = _parameter_value(parameters, "geotextile_area_m2")
     geotextile_laying_area_m2 = _parameter_value(parameters, "geotextile_laying_area_m2")
-    communications_length_parameter = _get_parameter(parameters, "communications_length_m")
-    communications_length_value = _value_or_none(communications_length_parameter.get("value"))
-    communications_override_used = bool(communications_length_parameter.get("override_used"))
 
     trench_routes = _build_trench_routes(details)
     communications_pipe_items = _build_communications_pipe_items(details)
@@ -242,60 +233,49 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     if consumables_amount is None:
         consumables_amount = 0.0
 
-    payload = copy.deepcopy(template)
+    payload: dict[str, Any] = {}
     payload["project_name"] = PROJECT_NAME
-    payload["case_meta"] = {
-        "validated_with_elena": True,
-        "confidence": "high",
-        "source": "review_workbook",
-        "workbook_path": str(meta.get("workbook_path", "")),
-    }
-    payload["assumptions"] = copy.deepcopy(template.get("assumptions", {}))
+    payload["case_meta"] = copy.deepcopy(defaults.get("case_meta", {}))
+    payload["case_meta"]["workbook_path"] = str(meta.get("workbook_path", ""))
+    payload["case_meta"]["section_code"] = meta.get("section_code", SECTION_CODE)
+    payload["case_meta"]["section_name"] = meta.get("section_name", SECTION_NAME_RU)
+    payload["case_meta"]["source"] = defaults.get("case_meta", {}).get("source", "review_workbook")
+    payload["assumptions"] = copy.deepcopy(defaults.get("assumptions", {}))
 
-    payload["excavator_shifts_calc_method"] = (
-        DEFAULT_EXCAVATOR_SHIFTS_METHOD if pit_excavation_depth_m is not None else template.get("excavator_shifts_calc_method", DEFAULT_EXCAVATOR_SHIFTS_METHOD)
-    )
+    payload["excavator_shifts_calc_method"] = DEFAULT_EXCAVATOR_SHIFTS_METHOD
     payload["pit_area_m2"] = pit_area_m2 if pit_area_m2 is not None else 0.0
     payload["pit_excavation_depth_m"] = pit_excavation_depth_m
-    payload["excavator_productivity_m3_per_shift"] = template.get("excavator_productivity_m3_per_shift", 80.0)
-    payload["excavator_shifts"] = 0.0 if payload["excavator_shifts_calc_method"] == DEFAULT_EXCAVATOR_SHIFTS_METHOD else template.get("excavator_shifts", 0.0)
+    payload["excavator_productivity_m3_per_shift"] = defaults["excavator_productivity_m3_per_shift"]
+    payload["excavator_shifts"] = 0.0
+    payload["axis_marking_shifts"] = defaults["axis_marking_shifts"]
 
-    payload["manual_excavation_calc_method"] = (
-        DEFAULT_MANUAL_EXCAVATION_METHOD if (trench_routes or trench_volume_m3 is not None) else template.get("manual_excavation_calc_method", DEFAULT_MANUAL_EXCAVATION_METHOD)
-    )
-    payload["manual_refinement_depth_m"] = template.get("manual_refinement_depth_m", 0.08)
+    payload["manual_excavation_calc_method"] = DEFAULT_MANUAL_EXCAVATION_METHOD
+    payload["manual_refinement_depth_m"] = defaults["manual_refinement_depth_m"]
     payload["trench_volume_m3"] = trench_volume_m3
     payload["trench_length_m"] = None
     payload["trench_depth_m"] = None
-    payload["trench_width_m"] = template.get("trench_width_m", 0.4)
+    payload["trench_width_m"] = defaults["trench_width_m"]
     payload["trench_routes"] = trench_routes
 
     payload["sand_base_volume_m3"] = sand_base_volume_m3 if sand_base_volume_m3 is not None else 0.0
-    payload["sand_compaction_coeff"] = template.get("sand_compaction_coeff", 1.3)
-    payload["sand_truck_step_m3"] = template.get("sand_truck_step_m3", 20.0)
+    payload["sand_compaction_coeff"] = defaults["sand_compaction_coeff"]
+    payload["sand_truck_step_m3"] = defaults["sand_truck_step_m3"]
     payload["geotextile_area_m2"] = geotextile_area_m2 if geotextile_area_m2 is not None else 0.0
-    payload["geotextile_overlap_coeff"] = template.get("geotextile_overlap_coeff", 1.10)
-    payload["geotextile_roll_area_m2"] = template.get("geotextile_roll_area_m2", 100.0)
+    payload["geotextile_overlap_coeff"] = defaults["geotextile_overlap_coeff"]
+    payload["geotextile_roll_area_m2"] = defaults["geotextile_roll_area_m2"]
 
-    payload["communications_length_calc_method"] = (
-        DEFAULT_COMMUNICATIONS_METHOD if (communications_pipe_items and not communications_override_used) else template.get("communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD)
-    )
-    payload["communications_length_m"] = (
-        0.0
-        if payload["communications_length_calc_method"] == DEFAULT_COMMUNICATIONS_METHOD
-        else communications_length_value
-    )
+    payload["communications_length_calc_method"] = DEFAULT_COMMUNICATIONS_METHOD
+    payload["communications_length_m"] = 0.0
     payload["communications_pipe_items"] = communications_pipe_items
 
-    payload["axis_marking_shifts"] = template.get("axis_marking_shifts", 0.0)
     payload["geotextile_laying_area_m2"] = (
         geotextile_laying_area_m2 if geotextile_laying_area_m2 is not None else 0.0
     )
     payload["manual_excavation_quantity_for_estimate_m3"] = None
     payload["consumables_amount"] = consumables_amount
-    payload["enabled_lines"] = copy.deepcopy(template.get("enabled_lines"))
-    payload["quantity_overrides"] = copy.deepcopy(template.get("quantity_overrides", {}))
-    payload["line_name_overrides"] = copy.deepcopy(template.get("line_name_overrides", {}))
+    payload["enabled_lines"] = copy.deepcopy(defaults["enabled_lines"])
+    payload["quantity_overrides"] = copy.deepcopy(defaults["quantity_overrides"])
+    payload["line_name_overrides"] = copy.deepcopy(defaults["line_name_overrides"])
     payload["internal_prices"] = internal_prices
 
     summary_info = {
@@ -386,7 +366,7 @@ def render_calculator_input_report(
             "## Deprecated mapping",
             "- russian label mapping used: no",
             "",
-            "## Defaults from calculator input template",
+            "## Defaults from generic calculator defaults",
             f"- project_name: {calculator_input.get('project_name', '')}",
             f"- case_meta: {calculator_input.get('case_meta', {})}",
             f"- assumptions: {calculator_input.get('assumptions', {})}",

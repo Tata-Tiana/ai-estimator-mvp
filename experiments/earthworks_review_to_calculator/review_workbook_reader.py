@@ -8,11 +8,8 @@ from typing import Any
 from openpyxl import load_workbook
 
 from constants import (
-    DETAIL_REQUIRED_COMM_NAMES,
-    DETAIL_REQUIRED_TRENCH_NAMES,
     NORMALIZED_JSON_FILENAME,
-    PRICE_EXPECTED_MIN_ROWS,
-    PRICE_REQUIRED_LINES,
+    REQUIRED_CALC_PRICE_KEYS,
     REQUIRED_PARAMETERS,
     SECTION_CODE,
     SECTION_NAME_RU,
@@ -26,6 +23,17 @@ from normalization import cell_text, display_number, is_blank, parse_boolean, pa
 
 VALID_SELECTED_PRICE_SOURCES = {"price_registry", "fallback"}
 VALID_EFFECTIVE_PRICE_SOURCES = {"price_registry", "fallback", "manual_override"}
+REQUIRED_PARAMETER_POSITIVE = {
+    "pit_area_m2",
+    "pit_excavation_depth_m",
+    "sand_base_volume_m3",
+    "geotextile_area_m2",
+    "geotextile_laying_area_m2",
+}
+REQUIRED_PARAMETER_NON_NEGATIVE = {
+    "trench_volume_m3",
+    "communications_length_m",
+}
 
 
 def resolve_workbook_path(workbook_path: str | Path) -> Path:
@@ -268,92 +276,117 @@ def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[st
         if parameter is None:
             errors.append(f"missing required parameter: {key}")
             continue
-        if parameter.get("value") in {"", None}:
-            errors.append(f"empty required parameter value: {key}")
+        value = parse_number(parameter.get("value"))
+        if value is None:
+            errors.append(f"required parameter must be numeric: {key}")
+            continue
+        if key in REQUIRED_PARAMETER_POSITIVE and value <= 0:
+            errors.append(f"required parameter must be > 0: {key}")
+        if key in REQUIRED_PARAMETER_NON_NEGATIVE and value < 0:
+            errors.append(f"required parameter must be >= 0: {key}")
 
-    if len(prices) < PRICE_EXPECTED_MIN_ROWS:
-        errors.append(f"expected at least {PRICE_EXPECTED_MIN_ROWS} price rows, got {len(prices)}")
-
-    price_map = {row.get("estimate_line"): row for row in prices}
     calc_price_keys = [cell_text(row.get("calc_price_key")) for row in prices]
     if any(not key for key in calc_price_keys):
         errors.append("all price rows must have calc_price_key")
     if len(set(calc_price_keys)) != len(prices):
         errors.append("calc_price_key values must be unique across price rows")
+    price_by_key = {cell_text(row.get("calc_price_key")): row for row in prices if cell_text(row.get("calc_price_key"))}
+    missing_calc_keys = [key for key in REQUIRED_CALC_PRICE_KEYS if key not in price_by_key]
+    if missing_calc_keys:
+        errors.append(f"missing required calc_price_keys: {', '.join(missing_calc_keys)}")
+
     for row in prices:
-        estimate_line = cell_text(row.get("estimate_line"))
         calc_price_key = cell_text(row.get("calc_price_key"))
         selected_source = cell_text(row.get("selected_price_source")).lower()
         effective_source = cell_text(row.get("effective_price_source")).lower()
         price_registry_code = cell_text(row.get("price_registry_code"))
         fallback_key = cell_text(row.get("fallback_key"))
         override_used = bool(row.get("override_used"))
+        selected_price = parse_number(row.get("selected_price"))
         if selected_source not in VALID_SELECTED_PRICE_SOURCES:
-            errors.append(f"invalid selected_price_source for {estimate_line}: {selected_source}")
+            errors.append(f"invalid selected_price_source for {calc_price_key}: {selected_source}")
         if effective_source not in VALID_EFFECTIVE_PRICE_SOURCES:
-            errors.append(f"invalid effective_price_source for {estimate_line}: {effective_source}")
+            errors.append(f"invalid effective_price_source for {calc_price_key}: {effective_source}")
+        if selected_price is None:
+            errors.append(f"selected_price must be numeric for {calc_price_key}")
+        elif selected_price < 0:
+            errors.append(f"selected_price must be >= 0 for {calc_price_key}")
         if override_used and effective_source != "manual_override":
-            errors.append(f"{estimate_line}: override_used rows must have effective_price_source manual_override")
+            errors.append(f"{calc_price_key}: override_used rows must have effective_price_source manual_override")
         if not override_used and effective_source != selected_source:
             errors.append(
-                f"{estimate_line}: effective_price_source must equal selected_price_source when no override is used"
+                f"{calc_price_key}: effective_price_source must equal selected_price_source when no override is used"
             )
         if selected_source == "fallback":
             if not fallback_key.startswith("fallback."):
-                errors.append(f"{estimate_line}: fallback rows must have fallback_key starting with fallback.")
+                errors.append(f"{calc_price_key}: fallback rows must have fallback_key starting with fallback.")
             if price_registry_code:
-                errors.append(f"{estimate_line}: fallback rows must not have price_registry_code")
+                errors.append(f"{calc_price_key}: fallback rows must not have price_registry_code")
         if selected_source == "price_registry" and not price_registry_code:
-            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key or estimate_line}")
-    for required_line in PRICE_REQUIRED_LINES:
-        if required_line not in price_map:
-            errors.append(f"missing required price row: {required_line}")
-
-    расходные = price_map.get("Расходные материалы")
-    if расходные and (расходные.get("selected_price") != 23447.18):
-        errors.append("Расходные материалы selected_price must be 23447.18")
-    if расходные:
-        if cell_text(расходные.get("calc_price_key")) != "consumables_amount":
-            errors.append("Расходные материалы calc_price_key must be consumables_amount")
-        if cell_text(расходные.get("selected_price_source")) != "fallback":
-            errors.append("Расходные материалы selected_price_source must be fallback")
-        if cell_text(расходные.get("fallback_key")) != "fallback.consumables_amount":
-            errors.append("Расходные материалы fallback_key must be fallback.consumables_amount")
-
-    geotextile = price_map.get("Геотекстиль Дорнит 300 г.м2")
-    if geotextile and (geotextile.get("selected_price") != 109.0):
-        errors.append("Геотекстиль Дорнит 300 г.м2 selected_price must be 109.0")
-    if geotextile:
-        if cell_text(geotextile.get("calc_price_key")) != "geotextile_material_unit_price":
-            errors.append("Геотекстиль Дорнит 300 г.м2 calc_price_key must be geotextile_material_unit_price")
-        if cell_text(geotextile.get("selected_price_source")) != "price_registry":
-            errors.append("Геотекстиль Дорнит 300 г.м2 selected_price_source must be price_registry")
+            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key}")
 
     trench_routes = details.get("trench_routes", [])
+    if not isinstance(trench_routes, list):
+        errors.append("trench_routes must be a list")
+        trench_routes = []
+    for index, item in enumerate(trench_routes):
+        if not isinstance(item, dict):
+            errors.append(f"trench_routes[{index}] must be a mapping")
+            continue
+        if not cell_text(item.get("name")):
+            errors.append(f"trench_routes[{index}].name is required")
+        for field in ("length_m", "depth_m", "width_m", "volume_m3"):
+            value = parse_number(item.get(field))
+            if value is None:
+                errors.append(f"trench_routes[{index}].{field} must be numeric")
+            elif value < 0:
+                errors.append(f"trench_routes[{index}].{field} must be >= 0")
+
     communications = details.get("communications_pipe_items", [])
-    if len(trench_routes) != 4:
-        errors.append(f"trench_routes count must be 4, got {len(trench_routes)}")
+    if not isinstance(communications, list):
+        errors.append("communications_pipe_items must be a list")
+        communications = []
+    for index, item in enumerate(communications):
+        if not isinstance(item, dict):
+            errors.append(f"communications_pipe_items[{index}] must be a mapping")
+            continue
+        if not cell_text(item.get("name")):
+            errors.append(f"communications_pipe_items[{index}].name is required")
+        total_length = parse_number(item.get("total_length_m"))
+        if total_length is None:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be numeric")
+        elif total_length < 0:
+            errors.append(f"communications_pipe_items[{index}].total_length_m must be >= 0")
+        diameter = item.get("diameter_mm")
+        if diameter not in {None, ""}:
+            diameter_value = parse_number(diameter)
+            if diameter_value is None:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be numeric")
+            elif diameter_value <= 0:
+                errors.append(f"communications_pipe_items[{index}].diameter_mm must be > 0")
+        quantity = item.get("quantity")
+        if quantity not in {None, ""}:
+            quantity_value = parse_number(quantity)
+            if quantity_value is None:
+                errors.append(f"communications_pipe_items[{index}].quantity must be numeric")
+            elif quantity_value < 0:
+                errors.append(f"communications_pipe_items[{index}].quantity must be >= 0")
+        included = item.get("included")
+        included_bool = included if isinstance(included, bool) else parse_boolean(str(included))
+        if included_bool is None:
+            errors.append(f"communications_pipe_items[{index}].included must be boolean-like")
+        item["included"] = bool(included_bool)
 
-    trench_names = [row.get("name") for row in trench_routes]
-    for required_name in DETAIL_REQUIRED_TRENCH_NAMES:
-        if required_name not in trench_names:
-            errors.append(f"missing trench route name: {required_name}")
-
-    if len(communications) != 4:
-        errors.append(f"communications_pipe_items count must be 4, got {len(communications)}")
-
-    comm_names = [row.get("name") for row in communications]
-    for required_name in DETAIL_REQUIRED_COMM_NAMES:
-        if required_name not in comm_names:
-            errors.append(f"missing communication item: {required_name}")
-
-    for item in communications:
-        if item.get("diameter_mm") != 110:
-            errors.append(f"communication diameter must be 110: {item.get('name')}")
-
-    total_length = summary.get("communications_total_length_m")
-    if total_length != 115.0:
-        errors.append(f"communications_total_length_m must be 115.0, got {total_length}")
+    total_length = safe_float_sum(
+        [row.get("total_length_m") for row in communications if row.get("included") is True]
+    )
+    summary_total = parse_number(summary.get("communications_total_length_m"))
+    if summary_total is None:
+        errors.append("communications_total_length_m must be numeric")
+    elif abs(summary_total - total_length) > 0.001:
+        errors.append(
+            f"communications_total_length_m must equal sum of pipe rows ({total_length}), got {summary_total}"
+        )
 
     return errors, warnings
 
@@ -429,9 +462,9 @@ def render_review_report(data: dict[str, Any]) -> str:
             f"- missing calc_price_key: {sum(1 for row in prices if not cell_text(row.get('calc_price_key')))}",
             "",
             "### Price key samples",
-            f"- Вынос осей: {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('calc_price_key') if find_price_row(prices, 'Вынос осей', 'Работа') else '')} / {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('selected_price_source') if find_price_row(prices, 'Вынос осей', 'Работа') else '')} / {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('fallback_key') if find_price_row(prices, 'Вынос осей', 'Работа') else '')}",
-            f"- Геотекстиль Дорнит 300 г.м2: {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('calc_price_key') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')} / {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('selected_price_source') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')} / {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('fallback_key') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')}",
-            f"- Расходные материалы: {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('calc_price_key') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')} / {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('selected_price_source') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')} / {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('fallback_key') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')}",
+            f"- axis_marking_work_unit_price: {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'axis_marking_work_unit_price'), {}).get('selected_price_source') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'axis_marking_work_unit_price'), None) else '')} / {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'axis_marking_work_unit_price'), {}).get('fallback_key') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'axis_marking_work_unit_price'), None) else '')}",
+            f"- geotextile_material_unit_price: {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'geotextile_material_unit_price'), {}).get('selected_price_source') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'geotextile_material_unit_price'), None) else '')} / {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'geotextile_material_unit_price'), {}).get('price_registry_code') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'geotextile_material_unit_price'), None) else '')}",
+            f"- consumables_amount: {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'consumables_amount'), {}).get('selected_price_source') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'consumables_amount'), None) else '')} / {cell_text(next((row for row in prices if cell_text(row.get('calc_price_key')) == 'consumables_amount'), {}).get('fallback_key') if next((row for row in prices if cell_text(row.get('calc_price_key')) == 'consumables_amount'), None) else '')}",
             "## Details",
             f"- trench_routes: {len(details.get('trench_routes', []))}",
             f"- communications_pipe_items: {len(details.get('communications_pipe_items', []))}",
