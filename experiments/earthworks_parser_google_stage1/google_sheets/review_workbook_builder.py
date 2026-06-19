@@ -57,6 +57,13 @@ PRICE_HEADERS = [
     "Комментарий",
 ]
 
+PRICE_TECH_HEADERS = [
+    "calc_price_key",
+    "price_registry_code",
+    "fallback_key",
+    "selected_price_source",
+]
+
 PARAM_META = {
     "pit_area_m2": ("Площадь котлована", "м2"),
     "pit_excavation_depth_m": ("Глубина котлована", "м"),
@@ -438,6 +445,10 @@ def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
 def price_rows(price_resolution: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for component in price_resolution["resolved_components"]:
+        calc_price_key = str(component.get("internal_price_key", "") or "").strip()
+        price_registry_code = str(component.get("price_registry_code", "") or "").strip()
+        fallback_key = f"fallback.{calc_price_key}" if calc_price_key else ""
+        selected_price_source = "price_registry" if component.get("source") == "price_registry" else "fallback"
         rows.append(
             {
                 "Строка сметы": component["estimate_line_name_ru"],
@@ -450,6 +461,10 @@ def price_rows(price_resolution: dict[str, Any]) -> list[dict[str, Any]]:
                 "Источник цены": component["source_label_ru"],
                 "Нужно внимание": "да" if component["needs_attention"] else "нет",
                 "Комментарий": component["comment_ru"],
+                "calc_price_key": calc_price_key,
+                "price_registry_code": price_registry_code,
+                "fallback_key": fallback_key,
+                "selected_price_source": selected_price_source,
             }
         )
     return rows
@@ -699,7 +714,7 @@ def build_review_workbook(
             cell.fill = fill
 
     ws = wb.create_sheet("02_Цены себестоимости")
-    append_table(ws, PRICE_HEADERS, price_rows(price_resolution))
+    append_table(ws, PRICE_HEADERS + PRICE_TECH_HEADERS, price_rows(price_resolution))
     set_widths(
         ws,
         {
@@ -713,8 +728,14 @@ def build_review_workbook(
             "H": 38,
             "I": 16,
             "J": 66,
+            "K": 22,
+            "L": 24,
+            "M": 28,
+            "N": 22,
         },
     )
+    for column in ["K", "L", "M", "N"]:
+        ws.column_dimensions[column].hidden = True
     for row in ws.iter_rows(min_row=2):
         attention = str(ws.cell(row[0].row, 9).value or "").strip().lower()
         source = str(ws.cell(row[0].row, 8).value or "").strip().lower()

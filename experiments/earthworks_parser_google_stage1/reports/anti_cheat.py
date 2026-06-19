@@ -495,8 +495,12 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
             "Источник цены",
             "Нужно внимание",
             "Комментарий",
+            "calc_price_key",
+            "price_registry_code",
+            "fallback_key",
+            "selected_price_source",
         ]
-        actual_price_headers = [price_ws.cell(1, col).value for col in range(1, 11)]
+        actual_price_headers = [price_ws.cell(1, col).value for col in range(1, len(expected_price_headers) + 1)]
         if actual_price_headers != expected_price_headers:
             errors.append(f"02_Цены себестоимости has wrong headers: {actual_price_headers}")
         forbidden_price_headers = {
@@ -510,7 +514,7 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
         if forbidden_present:
             errors.append(f"02_Цены себестоимости contains forbidden headers: {forbidden_present}")
         price_rows = [
-            [price_ws.cell(row, col).value for col in range(1, min(price_ws.max_column, 10) + 1)]
+            [price_ws.cell(row, col).value for col in range(1, min(price_ws.max_column, len(expected_price_headers)) + 1)]
             for row in range(2, price_ws.max_row + 1)
         ]
         flat_text = "\n".join("\t".join(str(value or "") for value in row) for row in price_rows)
@@ -528,15 +532,43 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
         bad_pairs = sorted(forbidden_artificial_pairs & actual_pairs)
         if bad_pairs:
             errors.append(f"02_Цены себестоимости contains artificial zero pairs: {bad_pairs}")
+        allowed_price_sources = {"price_registry", "fallback"}
+        registry_warning_emitted = False
         for row in price_rows:
             line_name = str(row[0] or "")
             calculation_price = row[5]
             source = str(row[7] or "").strip()
             needs_attention = str(row[8] or "").strip().lower()
+            calc_price_key = str(row[10] or "").strip()
+            price_registry_code = str(row[11] or "").strip()
+            fallback_key = str(row[12] or "").strip()
+            selected_price_source = str(row[13] or "").strip()
             if not source:
                 errors.append(f"{line_name}: price source must be filled.")
             if calculation_price in (None, "") and needs_attention != "да":
                 errors.append(f"{line_name}: calculation price must be filled unless attention is required.")
+            if not calc_price_key:
+                errors.append(f"{line_name}: calc_price_key must be filled.")
+            if selected_price_source not in allowed_price_sources:
+                errors.append(f"{line_name}: selected_price_source must be price_registry or fallback.")
+            if selected_price_source == "fallback":
+                if price_registry_code:
+                    errors.append(f"{line_name}: fallback rows must not have price_registry_code.")
+                if not fallback_key.startswith("fallback."):
+                    errors.append(f"{line_name}: fallback rows must have fallback_key starting with `fallback.`.")
+            if line_name == "Геотекстиль Дорнит 300 г.м2":
+                if selected_price_source != "price_registry":
+                    errors.append("Геотекстиль Дорнит 300 г.м2 must use price_registry as selected_price_source.")
+                if not price_registry_code and not registry_warning_emitted:
+                    warnings.append("warning: price_registry_code is not available from resolver yet")
+                    registry_warning_emitted = True
+            if line_name == "Расходные материалы":
+                if calc_price_key != "consumables_amount":
+                    errors.append("Расходные материалы must use calc_price_key consumables_amount.")
+                if selected_price_source != "fallback":
+                    errors.append("Расходные материалы must use fallback as selected_price_source.")
+                if fallback_key != "fallback.consumables_amount":
+                    errors.append("Расходные материалы must use fallback.consumables_amount as fallback_key.")
     else:
         errors.append("review_workbook.xlsx is missing.")
 
