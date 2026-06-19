@@ -24,6 +24,10 @@ from constants import (
 from normalization import cell_text, display_number, is_blank, parse_boolean, parse_number, safe_float_sum
 
 
+VALID_SELECTED_PRICE_SOURCES = {"price_registry", "fallback"}
+VALID_EFFECTIVE_PRICE_SOURCES = {"price_registry", "fallback", "manual_override"}
+
+
 def resolve_workbook_path(workbook_path: str | Path) -> Path:
     path = Path(workbook_path)
     if path.exists():
@@ -117,6 +121,19 @@ def build_price_row(ws, row_idx: int, col_map: dict[str, int]) -> dict[str, Any]
     override_value_text = sheet_row_as_text(ws, row_idx, col_map, "Исправить цену")
     override_value = parse_number(override_value_text) if override_value_text else None
     selected_price = override_value if override_value is not None else price_for_calculation
+    calc_price_key = sheet_row_as_text(ws, row_idx, col_map, "calc_price_key")
+    price_registry_code = sheet_row_as_text(ws, row_idx, col_map, "price_registry_code")
+    fallback_key = sheet_row_as_text(ws, row_idx, col_map, "fallback_key")
+    selected_price_source = sheet_row_as_text(ws, row_idx, col_map, "selected_price_source").lower()
+    price_source = sheet_row_as_text(ws, row_idx, col_map, "Источник цены")
+    if selected_price_source not in VALID_SELECTED_PRICE_SOURCES:
+        if price_registry_code:
+            selected_price_source = "price_registry"
+        elif "price_registry" in price_source.lower():
+            selected_price_source = "price_registry"
+        else:
+            selected_price_source = "fallback"
+    effective_price_source = "manual_override" if override_value is not None else selected_price_source
 
     return {
         "estimate_line": estimate_line,
@@ -128,7 +145,12 @@ def build_price_row(ws, row_idx: int, col_map: dict[str, int]) -> dict[str, Any]
         "override_value": override_value,
         "selected_price": selected_price,
         "override_used": override_value is not None,
-        "price_source": sheet_row_as_text(ws, row_idx, col_map, "Источник цены"),
+        "calc_price_key": calc_price_key,
+        "price_registry_code": price_registry_code,
+        "fallback_key": fallback_key,
+        "selected_price_source": selected_price_source,
+        "effective_price_source": effective_price_source,
+        "price_source": price_source,
         "needs_attention": sheet_row_as_text(ws, row_idx, col_map, "Нужно внимание"),
         "comment": sheet_row_as_text(ws, row_idx, col_map, "Комментарий"),
     }
@@ -218,6 +240,20 @@ def read_details_sheet(wb) -> dict[str, Any]:
     }
 
 
+def find_price_row(
+    prices: list[dict[str, Any]],
+    estimate_line: str,
+    price_role: str | None = None,
+) -> dict[str, Any] | None:
+    for row in prices:
+        if row.get("estimate_line") != estimate_line:
+            continue
+        if price_role is not None and row.get("price_role") != price_role:
+            continue
+        return row
+    return None
+
+
 def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -239,6 +275,36 @@ def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[st
         errors.append(f"expected at least {PRICE_EXPECTED_MIN_ROWS} price rows, got {len(prices)}")
 
     price_map = {row.get("estimate_line"): row for row in prices}
+    calc_price_keys = [cell_text(row.get("calc_price_key")) for row in prices]
+    if any(not key for key in calc_price_keys):
+        errors.append("all price rows must have calc_price_key")
+    if len(set(calc_price_keys)) != len(prices):
+        errors.append("calc_price_key values must be unique across price rows")
+    for row in prices:
+        estimate_line = cell_text(row.get("estimate_line"))
+        calc_price_key = cell_text(row.get("calc_price_key"))
+        selected_source = cell_text(row.get("selected_price_source")).lower()
+        effective_source = cell_text(row.get("effective_price_source")).lower()
+        price_registry_code = cell_text(row.get("price_registry_code"))
+        fallback_key = cell_text(row.get("fallback_key"))
+        override_used = bool(row.get("override_used"))
+        if selected_source not in VALID_SELECTED_PRICE_SOURCES:
+            errors.append(f"invalid selected_price_source for {estimate_line}: {selected_source}")
+        if effective_source not in VALID_EFFECTIVE_PRICE_SOURCES:
+            errors.append(f"invalid effective_price_source for {estimate_line}: {effective_source}")
+        if override_used and effective_source != "manual_override":
+            errors.append(f"{estimate_line}: override_used rows must have effective_price_source manual_override")
+        if not override_used and effective_source != selected_source:
+            errors.append(
+                f"{estimate_line}: effective_price_source must equal selected_price_source when no override is used"
+            )
+        if selected_source == "fallback":
+            if not fallback_key.startswith("fallback."):
+                errors.append(f"{estimate_line}: fallback rows must have fallback_key starting with fallback.")
+            if price_registry_code:
+                errors.append(f"{estimate_line}: fallback rows must not have price_registry_code")
+        if selected_source == "price_registry" and not price_registry_code:
+            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key or estimate_line}")
     for required_line in PRICE_REQUIRED_LINES:
         if required_line not in price_map:
             errors.append(f"missing required price row: {required_line}")
@@ -246,10 +312,22 @@ def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[st
     расходные = price_map.get("Расходные материалы")
     if расходные and (расходные.get("selected_price") != 23447.18):
         errors.append("Расходные материалы selected_price must be 23447.18")
+    if расходные:
+        if cell_text(расходные.get("calc_price_key")) != "consumables_amount":
+            errors.append("Расходные материалы calc_price_key must be consumables_amount")
+        if cell_text(расходные.get("selected_price_source")) != "fallback":
+            errors.append("Расходные материалы selected_price_source must be fallback")
+        if cell_text(расходные.get("fallback_key")) != "fallback.consumables_amount":
+            errors.append("Расходные материалы fallback_key must be fallback.consumables_amount")
 
     geotextile = price_map.get("Геотекстиль Дорнит 300 г.м2")
     if geotextile and (geotextile.get("selected_price") != 109.0):
         errors.append("Геотекстиль Дорнит 300 г.м2 selected_price must be 109.0")
+    if geotextile:
+        if cell_text(geotextile.get("calc_price_key")) != "geotextile_material_unit_price":
+            errors.append("Геотекстиль Дорнит 300 г.м2 calc_price_key must be geotextile_material_unit_price")
+        if cell_text(geotextile.get("selected_price_source")) != "price_registry":
+            errors.append("Геотекстиль Дорнит 300 г.м2 selected_price_source must be price_registry")
 
     trench_routes = details.get("trench_routes", [])
     communications = details.get("communications_pipe_items", [])
@@ -343,6 +421,17 @@ def render_review_report(data: dict[str, Any]) -> str:
             f"- overrides used: {sum(1 for row in prices if row.get('override_used'))}",
             f"- rows needing attention: {sum(1 for row in prices if cell_text(row.get('needs_attention')).lower() not in {'', 'нет'})}",
             "",
+            "## Price keys",
+            f"- rows with calc_price_key: {sum(1 for row in prices if cell_text(row.get('calc_price_key')))}",
+            f"- selected_price_source=fallback: {sum(1 for row in prices if cell_text(row.get('selected_price_source')).lower() == 'fallback')}",
+            f"- selected_price_source=price_registry: {sum(1 for row in prices if cell_text(row.get('selected_price_source')).lower() == 'price_registry')}",
+            f"- manual overrides: {sum(1 for row in prices if row.get('override_used'))}",
+            f"- missing calc_price_key: {sum(1 for row in prices if not cell_text(row.get('calc_price_key')))}",
+            "",
+            "### Price key samples",
+            f"- Вынос осей: {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('calc_price_key') if find_price_row(prices, 'Вынос осей', 'Работа') else '')} / {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('selected_price_source') if find_price_row(prices, 'Вынос осей', 'Работа') else '')} / {cell_text(find_price_row(prices, 'Вынос осей', 'Работа').get('fallback_key') if find_price_row(prices, 'Вынос осей', 'Работа') else '')}",
+            f"- Геотекстиль Дорнит 300 г.м2: {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('calc_price_key') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')} / {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('selected_price_source') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')} / {cell_text(find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал').get('fallback_key') if find_price_row(prices, 'Геотекстиль Дорнит 300 г.м2', 'Материал') else '')}",
+            f"- Расходные материалы: {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('calc_price_key') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')} / {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('selected_price_source') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')} / {cell_text(find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма').get('fallback_key') if find_price_row(prices, 'Расходные материалы', 'Фиксированная сумма') else '')}",
             "## Details",
             f"- trench_routes: {len(details.get('trench_routes', []))}",
             f"- communications_pipe_items: {len(details.get('communications_pipe_items', []))}",
@@ -366,4 +455,3 @@ def render_review_report(data: dict[str, Any]) -> str:
 
 def dump_review_json(data: dict[str, Any], output_path: Path) -> None:
     output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-

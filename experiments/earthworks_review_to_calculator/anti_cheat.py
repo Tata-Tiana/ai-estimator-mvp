@@ -21,6 +21,10 @@ from constants import (
 from normalization import cell_text
 
 
+VALID_SELECTED_PRICE_SOURCES = {"price_registry", "fallback"}
+VALID_EFFECTIVE_PRICE_SOURCES = {"price_registry", "fallback", "manual_override"}
+
+
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -89,14 +93,62 @@ def validate_normalized_review(data: dict[str, Any]) -> tuple[list[str], list[st
         errors.append(f"prices rows expected >= {PRICE_EXPECTED_MIN_ROWS}, got {len(prices)}")
 
     price_map = {row.get("estimate_line"): row for row in prices}
+    calc_price_keys = [cell_text(row.get("calc_price_key")) for row in prices]
+    if any(not key for key in calc_price_keys):
+        errors.append("all price rows must have calc_price_key")
+    if len(set(calc_price_keys)) != len(prices):
+        errors.append("calc_price_key values must be unique across price rows")
+
+    for row in prices:
+        estimate_line = cell_text(row.get("estimate_line"))
+        calc_price_key = cell_text(row.get("calc_price_key"))
+        selected_price_source = cell_text(row.get("selected_price_source")).lower()
+        effective_price_source = cell_text(row.get("effective_price_source")).lower()
+        price_registry_code = cell_text(row.get("price_registry_code"))
+        fallback_key = cell_text(row.get("fallback_key"))
+        override_used = bool(row.get("override_used"))
+
+        if selected_price_source not in VALID_SELECTED_PRICE_SOURCES:
+            errors.append(f"invalid selected_price_source for {estimate_line}: {selected_price_source}")
+        if effective_price_source not in VALID_EFFECTIVE_PRICE_SOURCES:
+            errors.append(f"invalid effective_price_source for {estimate_line}: {effective_price_source}")
+        if override_used and effective_price_source != "manual_override":
+            errors.append(f"{estimate_line}: override_used rows must have effective_price_source manual_override")
+        if not override_used and effective_price_source != selected_price_source:
+            errors.append(
+                f"{estimate_line}: effective_price_source must equal selected_price_source when no override is used"
+            )
+        if selected_price_source == "fallback":
+            if not fallback_key.startswith("fallback."):
+                errors.append(f"{estimate_line}: fallback rows must have fallback_key starting with fallback.")
+            if price_registry_code:
+                errors.append(f"{estimate_line}: fallback rows must not have price_registry_code")
+        if selected_price_source == "price_registry" and not price_registry_code:
+            warnings.append(f"price_registry_code is empty for price_registry row: {calc_price_key or estimate_line}")
+
     for required_line in PRICE_REQUIRED_LINES:
         if required_line not in price_map:
             errors.append(f"missing price row: {required_line}")
 
     if price_map.get("Расходные материалы", {}).get("selected_price") != 23447.18:
         errors.append("Расходные материалы selected_price must be 23447.18")
-    if price_map.get("Геотекстиль Дорнит 300 г.м2", {}).get("selected_price") != 109.0:
+    расходные = price_map.get("Расходные материалы", {})
+    if расходные:
+        if cell_text(расходные.get("calc_price_key")) != "consumables_amount":
+            errors.append("Расходные материалы calc_price_key must be consumables_amount")
+        if cell_text(расходные.get("selected_price_source")) != "fallback":
+            errors.append("Расходные материалы selected_price_source must be fallback")
+        if cell_text(расходные.get("fallback_key")) != "fallback.consumables_amount":
+            errors.append("Расходные материалы fallback_key must be fallback.consumables_amount")
+
+    geotextile = price_map.get("Геотекстиль Дорнит 300 г.м2", {})
+    if geotextile.get("selected_price") != 109.0:
         errors.append("Геотекстиль Дорнит 300 г.м2 selected_price must be 109.0")
+    if geotextile:
+        if cell_text(geotextile.get("calc_price_key")) != "geotextile_material_unit_price":
+            errors.append("Геотекстиль Дорнит 300 г.м2 calc_price_key must be geotextile_material_unit_price")
+        if cell_text(geotextile.get("selected_price_source")) != "price_registry":
+            errors.append("Геотекстиль Дорнит 300 г.м2 selected_price_source must be price_registry")
 
     trench_routes = details.get("trench_routes", [])
     communications = details.get("communications_pipe_items", [])
@@ -321,4 +373,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

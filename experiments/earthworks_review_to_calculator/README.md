@@ -34,7 +34,7 @@ experiments/earthworks_calculator/
 ## Что читает
 
 - `01_Проверка проекта` — проектные параметры и возможные ручные исправления;
-- `02_Цены себестоимости` — список реальных ценовых компонентов;
+- `02_Цены себестоимости` — список реальных ценовых компонентов и технические price keys;
 - `03_Детали объемов` — траншеи и коммуникации как структурированные данные.
 
 ## Что создаёт
@@ -46,10 +46,21 @@ review_values_normalized.json
 review_reader_report.md
 ```
 
+В `prices` reader сохраняет и видимые поля, и технические ключи:
+
+- `calc_price_key`
+- `price_registry_code`
+- `fallback_key`
+- `selected_price_source`
+- `effective_price_source`
+
 ## Step 2: build calculator input
 
 Следующий слой читает уже нормализованный review JSON и собирает вход для калькулятора,
 не заходя ни в Google Sheet, ни в сам calculator runtime.
+
+На этом шаге calculator input builder всё ещё может опираться на старый mapping по русским названиям.
+Следующий шаг будет переводить его на `calc_price_key`.
 
 ```bash
 python experiments/earthworks_review_to_calculator/run_build_calculator_input.py \
