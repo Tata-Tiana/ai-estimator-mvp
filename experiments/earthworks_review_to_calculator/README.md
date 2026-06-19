@@ -46,6 +46,22 @@ review_values_normalized.json
 review_reader_report.md
 ```
 
+## Step 2: build calculator input
+
+Следующий слой читает уже нормализованный review JSON и собирает вход для калькулятора,
+не заходя ни в Google Sheet, ни в сам calculator runtime.
+
+```bash
+python experiments/earthworks_review_to_calculator/run_build_calculator_input.py \
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --out experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --report experiments/earthworks_review_to_calculator/outputs/calculator_input_report.md
+
+python experiments/earthworks_review_to_calculator/anti_cheat.py \
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json
+```
+
 ## Запуск
 
 Из корня репозитория:
@@ -68,4 +84,3 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
 - это не замена stage1 review workbook;
 - это не запуск калькулятора;
 - это не изменение production-калькулятора земляных работ.
-
