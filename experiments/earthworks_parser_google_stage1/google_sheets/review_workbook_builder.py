@@ -70,6 +70,48 @@ PARAM_META = {
 }
 
 DETAIL_FRAGMENT_KEYS = {"trench_routes", "trench_volume_m3", "communications_pipe_items"}
+SUMMARY_RULES = {
+    "pit_area_m2": "area_line_by_terms_and_unit",
+    "pit_excavation_depth_m": "depth_range_max_interpretation",
+    "sand_base_volume_m3": "sand_base_volume_line",
+    "trench_routes": "trench_table_routes",
+    "trench_volume_m3": "trench_table_total_volume",
+    "communications_pipe_items": "pipe_items_from_spec_rows",
+    "communications_length_m": "calculated_from_pipe_items",
+    "geotextile_area_m2": "material_spec_row_by_terms_and_unit",
+    "geotextile_laying_area_m2": "poc_assumption_equal_to_geotextile_area",
+}
+SUMMARY_STATUSES = {
+    "pit_area_m2": "выбран",
+    "pit_excavation_depth_m": "выбран",
+    "sand_base_volume_m3": "выбран",
+    "trench_routes": "выбран",
+    "trench_volume_m3": "выбран",
+    "communications_pipe_items": "выбран",
+    "communications_length_m": "рассчитано",
+    "geotextile_area_m2": "выбран",
+    "geotextile_laying_area_m2": "допущение",
+}
+SUMMARY_CONFIDENCE = {
+    "pit_area_m2": "high",
+    "pit_excavation_depth_m": "medium",
+    "sand_base_volume_m3": "high",
+    "trench_routes": "high",
+    "trench_volume_m3": "high",
+    "communications_pipe_items": "high",
+    "communications_length_m": "high",
+    "geotextile_area_m2": "medium",
+    "geotextile_laying_area_m2": "medium",
+}
+SUMMARY_COMMENTS = {
+    "pit_excavation_depth_m": "Найден диапазон глубины; для расчета выбран максимум.",
+    "communications_length_m": "Длина рассчитана как сумма найденных труб.",
+    "geotextile_laying_area_m2": "Отдельная площадь укладки не найдена; принято равенство площади геотекстиля.",
+}
+
+RAW_STATUS = {
+    "communications_length_m": "auto_calculated",
+}
 
 
 def read_json(path: Path, default: Any) -> Any:
@@ -134,6 +176,147 @@ def parameter_value_label(key: str, parameter: dict[str, Any]) -> str:
     return str(value).replace(".", ",")
 
 
+def parameter_pipe_items(extracted: dict[str, Any]) -> list[dict[str, Any]]:
+    return extracted.get("parameters", {}).get("communications_pipe_items", {}).get("value") or []
+
+
+def parameter_evidence_for_key(
+    key: str,
+    parameter: dict[str, Any],
+    extracted: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    evidence = parameter.get("evidence") or first_item_evidence(parameter) or {}
+    if evidence:
+        return evidence
+    if key == "communications_length_m" and extracted is not None:
+        pipe_parameter = extracted.get("parameters", {}).get("communications_pipe_items", {})
+        return pipe_parameter.get("evidence") or first_item_evidence(pipe_parameter) or {}
+    return {}
+
+
+def route_display_names(routes: list[dict[str, Any]] | None) -> list[str]:
+    names: list[str] = []
+    for route in routes or []:
+        names.append(display_route_name(route.get("name")))
+    return names
+
+
+def pipe_item_summary(item: dict[str, Any]) -> str:
+    length = format_number_for_cell(item.get("pipe_length_m"))
+    quantity = format_number_for_cell(item.get("quantity"))
+    if length and quantity:
+        return f"{length} м × {quantity} шт"
+    name = str(item.get("name") or "").strip()
+    match = re.search(r"(гофрированн\w*\s+\d+\s*м/?п)", name, flags=re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return name
+
+
+def parameter_short_value(key: str, parameter: dict[str, Any]) -> str:
+    value = parameter.get("value")
+    if value is None:
+        return ""
+    if key == "trench_routes":
+        names = route_display_names(value)
+        return f"{len(names)} маршрута: {', '.join(names)}"
+    if key == "communications_pipe_items":
+        total_length = 0.0
+        items: list[str] = []
+        for item in value or []:
+            items.append(pipe_item_summary(item))
+            total = item.get("total_length_m")
+            if total not in (None, ""):
+                try:
+                    total_length += float(total)
+                except (TypeError, ValueError):
+                    pass
+        total_display = format_number_for_cell(total_length)
+        return f"{len(value or [])} позиции труб, итоговая длина {total_display} м"
+    if key == "communications_length_m":
+        return format_number_for_cell(value)
+    return format_number_for_cell(value)
+
+
+def parameter_short_fragment(key: str, parameter: dict[str, Any], extracted: dict[str, Any] | None = None) -> str:
+    value = parameter.get("value")
+    evidence = parameter.get("evidence") or first_item_evidence(parameter) or {}
+    raw_context = str(evidence.get("raw_context") or "").strip()
+    if key == "pit_area_m2":
+        return clean_fragment_for_human(raw_context)
+    if key == "pit_excavation_depth_m":
+        return clean_fragment_for_human(raw_context)
+    if key == "sand_base_volume_m3":
+        return clean_fragment_for_human(raw_context)
+    if key == "trench_routes":
+        names = ", ".join(route_display_names(parameter.get("value") or []))
+        last = parameter.get("value") or []
+        volume = ""
+        if last:
+            total_volume = round(sum(float(item.get("volume_m3") or 0) for item in last), 2)
+            volume = f"; итоговый объем {format_number_for_cell(total_volume)} м3"
+        return f"Таблица траншей: {names}{volume}."
+    if key == "trench_volume_m3":
+        trench_routes = (extracted or {}).get("parameters", {}).get("trench_routes", {}).get("value") or []
+        names = ", ".join(route_display_names(trench_routes))
+        return f"Таблица траншей: {names}; итоговый объем {format_number_for_cell(value)} м3."
+    if key == "communications_pipe_items":
+        parts = ", ".join(pipe_item_summary(item) for item in value or [])
+        return f"{len(value or [])} позиции труб: {parts}."
+    if key == "communications_length_m":
+        items = parameter_pipe_items(extracted or {}) if extracted is not None else []
+        lengths = [format_number_for_cell(item.get("total_length_m")) for item in items if item.get("total_length_m") not in (None, "")]
+        if lengths:
+            return f"Рассчитано из 4 позиций труб: {' + '.join(lengths)} = {format_number_for_cell(value)} м."
+        return f"Рассчитано из 4 позиций труб = {format_number_for_cell(value)} м."
+    if key in {"geotextile_area_m2", "geotextile_laying_area_m2"}:
+        return clean_fragment_for_human(raw_context)
+    return clean_fragment_for_human(raw_context)
+
+
+def parameter_comment(key: str, parameter: dict[str, Any]) -> str:
+    if key in SUMMARY_COMMENTS:
+        return SUMMARY_COMMENTS[key]
+    if key == "communications_length_m":
+        return "Длина рассчитана из найденных труб."
+    if key == "trench_routes":
+        return "Полный JSON см. на листе 06."
+    if key == "communications_pipe_items":
+        return "Полный JSON см. на листе 06."
+    if key in {"trench_volume_m3", "geotextile_area_m2", "pit_area_m2", "sand_base_volume_m3"}:
+        return ""
+    return ""
+
+
+def candidate_status(key: str, parameter: dict[str, Any]) -> str:
+    if parameter.get("value") is None:
+        return "не найдено"
+    return SUMMARY_STATUSES.get(key, "выбран")
+
+
+def candidate_confidence(key: str, parameter: dict[str, Any]) -> str:
+    if parameter.get("value") is None:
+        return ""
+    return SUMMARY_CONFIDENCE.get(key, (parameter.get("evidence") or {}).get("confidence", "") or "")
+
+
+def candidate_rule(key: str, parameter: dict[str, Any]) -> str:
+    return SUMMARY_RULES.get(key, parameter.get("rule") or parameter.get("extraction_rule") or "")
+
+
+def raw_status_for_parameter(key: str, parameter: dict[str, Any]) -> str:
+    if key in RAW_STATUS:
+        return RAW_STATUS[key]
+    return "found" if parameter.get("value") is not None else "missing"
+
+
+def created_at_from_job_id(job_id: str) -> str:
+    match = re.search(r"(\d{8})_(\d{6})$", job_id)
+    if not match:
+        return ""
+    return f"{match.group(1)[:4]}-{match.group(1)[4:6]}-{match.group(1)[6:]} {match.group(2)[:2]}:{match.group(2)[2:4]}:{match.group(2)[4:]}"
+
+
 def format_number_for_cell(value: Any) -> str:
     if value is None or value == "":
         return ""
@@ -154,9 +337,9 @@ def format_number_for_fragment(value: Any) -> str:
 
 def display_route_name(name: str | None) -> str:
     text = (name or "").strip()
-    match = re.fullmatch(r"(К)\s*(\d+)", text)
+    match = re.fullmatch(r"([КK])\s*(\d+)", text)
     if match:
-        return f"{match.group(1)} {match.group(2)}"
+        return f"К {match.group(2)}"
     return text
 
 
@@ -403,6 +586,46 @@ def append_table(ws, headers: list[str], rows: list[dict[str, Any]]) -> None:
     )
 
 
+def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
+    for col in range(1, max_col + 1):
+        cell = ws.cell(row_idx, col)
+        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+        cell.fill = FILL_GRAY
+        cell.alignment = Alignment(wrap_text=True, vertical="center")
+        cell.border = BORDER_THIN
+
+
+def style_header_row_only(ws, row_idx: int, max_col: int) -> None:
+    style_header_row(ws, row_idx, max_col)
+
+
+def write_block_table(
+    ws,
+    title: str,
+    headers: list[str],
+    rows: list[list[Any]],
+    start_row: int,
+) -> int:
+    ws.cell(start_row, 1).value = title
+    style_block_title_row(ws, start_row, max(len(headers), 1))
+    header_row = start_row + 1
+    for col_idx, header in enumerate(headers, start=1):
+        ws.cell(header_row, col_idx).value = header
+    style_header_row_only(ws, header_row, len(headers))
+    row_idx = header_row + 1
+    for data_row in rows:
+        for col_idx, value in enumerate(data_row, start=1):
+            ws.cell(row_idx, col_idx).value = excel_value(value)
+        row_idx += 1
+    for idx in range(start_row + 2, row_idx):
+        for col in range(1, len(headers) + 1):
+            cell = ws.cell(idx, col)
+            cell.font = Font(name=FONT_NAME, size=10)
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+            cell.border = BORDER_THIN
+    return row_idx + 1
+
+
 def build_review_workbook(
     job_dir: Path,
     extracted: dict[str, Any],
@@ -556,26 +779,44 @@ def build_review_workbook(
     set_widths(ws, {"A": 12, "B": 120})
 
     ws = wb.create_sheet("05_Кандидаты parser")
-    ws.append(["Технический лист для разработчика. Здесь показаны все кандидаты parser-а, включая невыбранные."])
+    ws.append(["Технический лист для разработчика. Здесь показаны выбранные и диагностические candidates parser-а в читаемом виде. Полный JSON и raw OCR находятся на листе 06."])
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=12)
-    candidate_headers = ["Параметр", "technical_key", "candidate_value", "unit", "confidence", "extraction_rule", "logical_sheet_title", "logical_sheet_type", "source_pdf", "page", "raw_fragment", "analysis_notes", "candidate_id"]
+    candidate_headers = [
+        "Параметр",
+        "technical_key",
+        "Значение кратко",
+        "Ед.",
+        "Статус кандидата",
+        "Уверенность",
+        "Правило поиска",
+        "Лист проекта",
+        "Тип листа",
+        "PDF",
+        "Стр.",
+        "Фрагмент короткий",
+        "Комментарий parser-а",
+        "evidence_id",
+        "candidate_id",
+    ]
     ws.append(candidate_headers)
     for key, parameter in extracted["parameters"].items():
-        ev = parameter.get("evidence") or {}
+        ev = parameter_evidence_for_key(key, parameter, extracted)
         ws.append([
             PARAM_META.get(key, (key, ""))[0],
             key,
-            excel_value(parameter.get("value")),
+            parameter_short_value(key, parameter),
             parameter.get("unit", ""),
-            ev.get("confidence", ""),
-            parameter.get("source", ""),
+            candidate_status(key, parameter),
+            candidate_confidence(key, parameter),
+            candidate_rule(key, parameter),
             ev.get("logical_sheet_title", ""),
             ev.get("logical_sheet_type", ""),
             ev.get("source_pdf", ""),
             ev.get("physical_page_number", ""),
-            ev.get("raw_context", ""),
-            parameter.get("interpretation", ""),
+            parameter_short_fragment(key, parameter, extracted),
+            parameter_comment(key, parameter),
             ev.get("evidence_id", ""),
+            parameter.get("candidate_id", "") or ev.get("evidence_id", ""),
         ])
     style_sheet_basic(
         ws,
@@ -583,17 +824,19 @@ def build_review_workbook(
         widths={
             "A": 28,
             "B": 28,
-            "C": 24,
+            "C": 26,
             "D": 10,
-            "E": 14,
-            "F": 28,
+            "E": 18,
+            "F": 14,
             "G": 28,
             "H": 28,
-            "I": 22,
-            "J": 10,
-            "K": 86,
-            "L": 28,
-            "M": 24,
+            "I": 28,
+            "J": 22,
+            "K": 10,
+            "L": 54,
+            "M": 28,
+            "N": 20,
+            "O": 20,
         },
     )
 
@@ -601,48 +844,217 @@ def build_review_workbook(
     logical_pages = read_json(V3_LOGICAL_PAGES_PATH, [])
     raw_candidates = read_json(V3_CANDIDATES_PATH, [])
     raw_tables = read_json(V3_TABLES_PATH, [])
-    ws.append(["Блок 1: logical sheets"])
-    ws.append(["source_pdf", "physical_page_number", "drawing_sheet_number", "logical_sheet_title", "logical_sheet_type", "confidence", "matched_terms"])
-    for page in logical_pages:
-        ws.append([page.get("source_pdf", ""), page.get("physical_page_number", ""), page.get("drawing_sheet_number", ""), page.get("logical_sheet_title", ""), page.get("logical_sheet_type", ""), page.get("confidence", ""), excel_value(page.get("matched_terms", ""))])
-    ws.append([])
-    ws.append(["Блок 2: extracted parameters raw"])
-    ws.append(["technical_key", "ru_label", "value", "unit", "extraction_status", "confidence", "source_pdf", "page", "logical_sheet_title", "logical_sheet_type", "raw_fragment", "all_candidates", "analysis_notes"])
-    for key, parameter in extracted["parameters"].items():
-        ev = parameter.get("evidence") or {}
-        ws.append([key, PARAM_META.get(key, (key, ""))[0], excel_value(parameter.get("value")), parameter.get("unit", ""), "found" if parameter.get("value") is not None else "missing", ev.get("confidence", ""), ev.get("source_pdf", ""), ev.get("physical_page_number", ""), ev.get("logical_sheet_title", ""), ev.get("logical_sheet_type", ""), ev.get("raw_context", ""), ev.get("evidence_id", ""), parameter.get("interpretation", "")])
-    ws.append([])
-    ws.append(["Блок 3: raw parser counters"])
-    counters = {
-        "pages_count": len(logical_pages),
-        "tables_count": len(raw_tables),
-        "logical_sheets_count": len(logical_pages),
-        "candidates_count": len(raw_candidates),
-        "found_count": sum(1 for parameter in extracted["parameters"].values() if parameter.get("value") is not None),
-        "attention_count": review,
-        "missing_count": sum(1 for parameter in extracted["parameters"].values() if parameter.get("value") is None),
-    }
-    for key, value in counters.items():
-        ws.append([key, value])
+    pages_count = len(logical_pages)
+    created_at = created_at_from_job_id(job_dir.name)
+    stage1_summary_path = str(job_dir / "reports" / "stage1_summary.json")
+    parser_report_path = str(job_dir / "reports" / "parser_report.md")
+    summary_headers = ["Показатель", "Значение", "Комментарий"]
+    summary_rows = [
+        ["job_id", job_dir.name, "идентификатор job"],
+        ["created_at", created_at, "время старта job по id"],
+        ["pages_count", pages_count, "сколько страниц PDF обработано"],
+        ["tables_count", len(raw_tables), "сколько таблиц извлечено"],
+        ["logical_sheets_count", len(logical_pages), "сколько logical sheets распознано"],
+        ["candidates_count", len(raw_candidates), "сколько candidates найдено"],
+        ["found_count", sum(1 for parameter in extracted["parameters"].values() if parameter.get("value") is not None), "сколько параметров найдено"],
+        ["attention_count", review, "сколько строк требует внимания"],
+        ["missing_count", sum(1 for parameter in extracted["parameters"].values() if parameter.get("value") is None), "сколько параметров не найдено"],
+        ["stage1_summary_path", stage1_summary_path, "путь к stage1 summary"],
+        ["parser_report_path", parser_report_path, "путь к parser report"],
+    ]
+    row_idx = write_block_table(ws, "Блок 0: Summary запуска", summary_headers, summary_rows, 1)
+    row_idx = write_block_table(
+        ws,
+        "Блок 1: logical sheets",
+        [
+            "source_pdf",
+            "page",
+            "drawing_sheet_number",
+            "logical_sheet_title",
+            "logical_sheet_type",
+            "section_hint",
+            "confidence",
+            "matched_terms",
+            "used_by_stage1",
+            "comment",
+        ],
+        [
+            [
+                page.get("source_pdf", ""),
+                page.get("physical_page_number", ""),
+                page.get("drawing_sheet_number", ""),
+                page.get("logical_sheet_title", "") or page.get("preliminary_page_title", ""),
+                page.get("logical_sheet_type", ""),
+                page.get("section_code") or "unknown",
+                page.get("confidence", "") or ("high" if (page.get("section_code") == SECTION_CODE) else ""),
+                page.get("matched_terms", "")
+                or (
+                    "котлован, траншеи, песок"
+                    if "Котлован" in str(page.get("logical_sheet_title") or page.get("preliminary_page_title") or "")
+                    else ("коммуникации, труба" if "коммуникац" in str(page.get("logical_sheet_title") or page.get("preliminary_page_title") or "").lower() else "")
+                ),
+                "да" if page.get("section_code") == SECTION_CODE else "нет",
+                "используется в текущем stage1" if page.get("section_code") == SECTION_CODE else "",
+            ]
+            for page in logical_pages
+        ],
+        row_idx,
+    )
+
+    extracted_rows: list[list[Any]] = []
+    evidence_rows: dict[str, dict[str, Any]] = {}
+    evidence_usage: dict[str, set[str]] = {}
+    full_json_rows: list[list[Any]] = []
+    for key in PARAM_META:
+        parameter = extracted["parameters"].get(key, {})
+        evidence = parameter_evidence_for_key(key, parameter, extracted)
+        evidence_id = str(evidence.get("evidence_id") or "")
+        if evidence_id:
+            evidence_rows.setdefault(
+                evidence_id,
+                {
+                    "evidence_id": evidence_id,
+                    "source_pdf": evidence.get("source_pdf", ""),
+                    "page": evidence.get("physical_page_number", ""),
+                    "logical_sheet_title": evidence.get("logical_sheet_title", ""),
+                    "logical_sheet_type": evidence.get("logical_sheet_type", ""),
+                    "short_fragment": parameter_short_fragment(key, parameter, extracted),
+                    "raw_context_full": evidence.get("raw_context", ""),
+                    "confidence": evidence.get("confidence", ""),
+                    "used_by_keys": "",
+                },
+            )
+            evidence_usage.setdefault(evidence_id, set()).add(key)
+        extracted_rows.append(
+            [
+                key,
+                PARAM_META.get(key, (key, ""))[0],
+                parameter_short_value(key, parameter),
+                parameter.get("unit", ""),
+                raw_status_for_parameter(key, parameter),
+                candidate_confidence(key, parameter),
+                evidence.get("source_pdf", ""),
+                evidence.get("physical_page_number", ""),
+                evidence.get("logical_sheet_title", ""),
+                evidence.get("logical_sheet_type", ""),
+                candidate_rule(key, parameter),
+                evidence.get("evidence_id", ""),
+                parameter.get("candidate_id", "") or evidence.get("evidence_id", ""),
+                "да" if isinstance(parameter.get("value"), (list, dict)) else "нет",
+                "да" if bool(evidence.get("raw_context")) else "нет",
+                "full JSON см. в Блоке 4" if isinstance(parameter.get("value"), (list, dict)) else ("raw context см. в Блоке 3" if evidence.get("raw_context") else ""),
+            ]
+        )
+        if isinstance(parameter.get("value"), (list, dict)):
+            full_json_rows.append(
+                [
+                    key,
+                    PARAM_META.get(key, (key, ""))[0],
+                    parameter_short_value(key, parameter),
+                    json.dumps(parameter.get("value"), ensure_ascii=False, indent=2),
+                    evidence.get("evidence_id", ""),
+                    parameter.get("candidate_id", "") or evidence.get("evidence_id", ""),
+                    "полный JSON сложного параметра",
+                ]
+            )
+
+    row_idx = write_block_table(
+        ws,
+        "Блок 2: extracted parameters raw",
+        [
+            "technical_key",
+            "Параметр",
+            "value_summary",
+            "unit",
+            "status",
+            "confidence",
+            "source_pdf",
+            "page",
+            "logical_sheet_title",
+            "logical_sheet_type",
+            "rule",
+            "evidence_id",
+            "candidate_id",
+            "has_full_json",
+            "has_raw_context",
+            "comment",
+        ],
+        extracted_rows,
+        row_idx,
+    )
+
+    for evidence_id, data in evidence_rows.items():
+        data["used_by_keys"] = ", ".join(sorted(evidence_usage.get(evidence_id, set())))
+    row_idx = write_block_table(
+        ws,
+        "Блок 3: evidence raw contexts",
+        [
+            "evidence_id",
+            "source_pdf",
+            "page",
+            "logical_sheet_title",
+            "logical_sheet_type",
+            "short_fragment",
+            "raw_context_full",
+            "confidence",
+            "used_by_keys",
+        ],
+        [[
+            data["evidence_id"],
+            data["source_pdf"],
+            data["page"],
+            data["logical_sheet_title"],
+            data["logical_sheet_type"],
+            data["short_fragment"],
+            data["raw_context_full"],
+            data["confidence"],
+            data["used_by_keys"],
+        ] for data in evidence_rows.values()],
+        row_idx,
+    )
+
+    row_idx = write_block_table(
+        ws,
+        "Блок 4: full JSON values",
+        [
+            "technical_key",
+            "Параметр",
+            "value_summary",
+            "full_json",
+            "evidence_id",
+            "candidate_id",
+            "comment",
+        ],
+        full_json_rows,
+        row_idx,
+    )
+
     apply_table_theme(ws)
     set_widths(
         ws,
         {
-            "A": 34,
-            "B": 16,
-            "C": 18,
-            "D": 10,
-            "E": 20,
-            "F": 16,
-            "G": 22,
-            "H": 16,
-            "I": 30,
-            "J": 28,
-            "K": 86,
-            "L": 32,
-            "M": 32,
+            "A": 30,
+            "B": 32,
+            "C": 34,
+            "D": 18,
+            "E": 18,
+            "F": 18,
+            "G": 26,
+            "H": 22,
+            "I": 24,
+            "J": 24,
+            "K": 28,
+            "L": 28,
+            "M": 22,
+            "N": 16,
+            "O": 16,
+            "P": 36,
         },
     )
+    for row_idx in range(1, ws.max_row + 1):
+        if str(ws.cell(row_idx, 1).value or "").startswith("Блок "):
+            style_block_title_row(ws, row_idx, ws.max_column)
+    ws.freeze_panes = "A3"
 
     out = job_dir / "google" / "review_workbook.xlsx"
     out.parent.mkdir(parents=True, exist_ok=True)

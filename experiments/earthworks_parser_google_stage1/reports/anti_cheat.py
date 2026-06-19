@@ -12,6 +12,85 @@ FORBIDDEN_SOURCE_STRINGS = [
     "normalize_price_registry_sheet",
 ]
 
+EXPECTED_05_HEADERS = [
+    "Параметр",
+    "technical_key",
+    "Значение кратко",
+    "Ед.",
+    "Статус кандидата",
+    "Уверенность",
+    "Правило поиска",
+    "Лист проекта",
+    "Тип листа",
+    "PDF",
+    "Стр.",
+    "Фрагмент короткий",
+    "Комментарий parser-а",
+    "evidence_id",
+    "candidate_id",
+]
+
+EXPECTED_06_BLOCKS = {
+    "Блок 0: Summary запуска": ["Показатель", "Значение", "Комментарий"],
+    "Блок 1: logical sheets": [
+        "source_pdf",
+        "page",
+        "drawing_sheet_number",
+        "logical_sheet_title",
+        "logical_sheet_type",
+        "section_hint",
+        "confidence",
+        "matched_terms",
+        "used_by_stage1",
+        "comment",
+    ],
+    "Блок 2: extracted parameters raw": [
+        "technical_key",
+        "Параметр",
+        "value_summary",
+        "unit",
+        "status",
+        "confidence",
+        "source_pdf",
+        "page",
+        "logical_sheet_title",
+        "logical_sheet_type",
+        "rule",
+        "evidence_id",
+        "candidate_id",
+        "has_full_json",
+        "has_raw_context",
+        "comment",
+    ],
+    "Блок 3: evidence raw contexts": [
+        "evidence_id",
+        "source_pdf",
+        "page",
+        "logical_sheet_title",
+        "logical_sheet_type",
+        "short_fragment",
+        "raw_context_full",
+        "confidence",
+        "used_by_keys",
+    ],
+    "Блок 4: full JSON values": [
+        "technical_key",
+        "Параметр",
+        "value_summary",
+        "full_json",
+        "evidence_id",
+        "candidate_id",
+        "comment",
+    ],
+}
+
+
+def find_row_by_title(sheet, title: str) -> int:
+    for row in range(1, sheet.max_row + 1):
+        if str(sheet.cell(row, 1).value or "") == title:
+            return row
+    return 0
+
 
 def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
     errors: list[str] = []
@@ -118,6 +197,192 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
                     errors.append("communications_length_m must have extraction_status auto_calculated.")
                 if str(ws.cell(comm_len_row, header_map.get("confidence", 12)).value or "") != "high":
                     errors.append("communications_length_m must have confidence high.")
+
+        ws05 = wb["05_Кандидаты parser"]
+        actual_05_headers = [ws05.cell(2, col).value for col in range(1, len(EXPECTED_05_HEADERS) + 1)]
+        if actual_05_headers != EXPECTED_05_HEADERS:
+            errors.append(f"05_Кандидаты parser has wrong headers: {actual_05_headers}")
+        title_text = str(ws05.cell(1, 1).value or "")
+        if "Полный JSON и raw OCR находятся на листе 06" not in title_text:
+            errors.append("05_Кандидаты parser title must point raw JSON/OCR to sheet 06.")
+        candidate_rows = {}
+        for row in range(3, ws05.max_row + 1):
+            technical_key = str(ws05.cell(row, 2).value or "").strip()
+            if technical_key:
+                candidate_rows[technical_key] = row
+            value_summary = str(ws05.cell(row, 3).value or "").strip()
+            if value_summary.startswith(("[", "{")):
+                errors.append("05_Кандидаты parser contains JSON in `Значение кратко`.")
+                break
+            fragment = str(ws05.cell(row, 12).value or "")
+            if len(fragment) > 250:
+                errors.append("05_Кандидаты parser contains an overlong fragment.")
+                break
+        spec_05_expectations = {
+            "trench_routes": {
+                "value": "4 маршрута: К 1, К 2, Вода, Эл. кабель",
+                "status": "выбран",
+                "confidence": "high",
+                "rule": "trench_table_routes",
+            },
+            "communications_pipe_items": {
+                "value": "4 позиции труб, итоговая длина 115 м",
+                "status": "выбран",
+                "confidence": "high",
+                "rule": "pipe_items_from_spec_rows",
+                "source_pdf": "usv_2026_kr1.pdf",
+                "page": "7",
+                "logical_sheet_title": "Схема коммуникаций",
+            },
+            "communications_length_m": {
+                "value": "115",
+                "status": "рассчитано",
+                "confidence": "high",
+                "rule": "calculated_from_pipe_items",
+            },
+            "geotextile_laying_area_m2": {
+                "status": "допущение",
+                "confidence": "medium",
+                "rule": "poc_assumption_equal_to_geotextile_area",
+            },
+        }
+        for technical_key, expectation in spec_05_expectations.items():
+            row = candidate_rows.get(technical_key)
+            if not row:
+                errors.append(f"05_Кандидаты parser: missing row for `{technical_key}`.")
+                continue
+            if "value" in expectation and str(ws05.cell(row, 3).value or "") != expectation["value"]:
+                errors.append(f"05_Кандидаты parser: `{technical_key}` has unexpected value summary.")
+            if str(ws05.cell(row, 5).value or "") != expectation["status"]:
+                errors.append(f"05_Кандидаты parser: `{technical_key}` has unexpected status.")
+            if str(ws05.cell(row, 6).value or "") != expectation["confidence"]:
+                errors.append(f"05_Кандидаты parser: `{technical_key}` has unexpected confidence.")
+            if str(ws05.cell(row, 7).value or "") != expectation["rule"]:
+                errors.append(f"05_Кандидаты parser: `{technical_key}` has unexpected rule.")
+            if technical_key == "trench_routes" and "Таблица траншей" not in str(ws05.cell(row, 12).value or ""):
+                errors.append("05_Кандидаты parser: `trench_routes` fragment must mention `Таблица траншей`.")
+            if technical_key == "communications_pipe_items":
+                if str(ws05.cell(row, 8).value or "") != "Схема коммуникаций":
+                    errors.append("05_Кандидаты parser: `communications_pipe_items` must source from `Схема коммуникаций`.")
+                if str(ws05.cell(row, 9).value or "") != "communications_scheme":
+                    errors.append("05_Кандидаты parser: `communications_pipe_items` must use `communications_scheme`.")
+                if str(ws05.cell(row, 10).value or "") != "usv_2026_kr1.pdf":
+                    errors.append("05_Кандидаты parser: `communications_pipe_items` must show `usv_2026_kr1.pdf`.")
+                if str(ws05.cell(row, 11).value or "") != "7":
+                    errors.append("05_Кандидаты parser: `communications_pipe_items` must show page 7.")
+
+        ws06 = wb["06_Сырые данные parser"]
+        for title, headers in EXPECTED_06_BLOCKS.items():
+            row = find_row_by_title(ws06, title)
+            if not row:
+                errors.append(f"06_Сырые данные parser is missing block title `{title}`.")
+                continue
+            actual_headers = [ws06.cell(row + 1, col).value for col in range(1, len(headers) + 1)]
+            if actual_headers != headers:
+                errors.append(f"06_Сырые данные parser block `{title}` has wrong headers: {actual_headers}")
+
+        summary_row = find_row_by_title(ws06, "Блок 0: Summary запуска")
+        if summary_row:
+            summary_map = {}
+            for row in range(summary_row + 2, ws06.max_row + 1):
+                key = str(ws06.cell(row, 1).value or "").strip()
+                if not key:
+                    continue
+                if key.startswith("Блок "):
+                    break
+                summary_map[key] = str(ws06.cell(row, 2).value or "")
+            for required_key in [
+                "job_id",
+                "created_at",
+                "pages_count",
+                "tables_count",
+                "logical_sheets_count",
+                "candidates_count",
+                "found_count",
+                "attention_count",
+                "missing_count",
+                "stage1_summary_path",
+                "parser_report_path",
+            ]:
+                if required_key not in summary_map:
+                    errors.append(f"06_Сырые данные parser summary is missing `{required_key}`.")
+            for path_key in ["stage1_summary_path", "parser_report_path"]:
+                if summary_map.get(path_key) and not Path(summary_map[path_key]).exists():
+                    errors.append(f"06_Сырые данные parser summary path does not exist: {summary_map[path_key]}")
+
+        extracted_row = find_row_by_title(ws06, "Блок 2: extracted parameters raw")
+        if extracted_row:
+            block2_headers = [ws06.cell(extracted_row + 1, col).value for col in range(1, len(EXPECTED_06_BLOCKS["Блок 2: extracted parameters raw"]) + 1)]
+            if block2_headers != EXPECTED_06_BLOCKS["Блок 2: extracted parameters raw"]:
+                errors.append(f"06_Сырые данные parser block `Блок 2: extracted parameters raw` has wrong headers: {block2_headers}")
+            block2_map = {str(header or ""): idx for idx, header in enumerate(block2_headers, start=1)}
+            raw_rows_by_key = {}
+            for row in range(extracted_row + 2, ws06.max_row + 1):
+                key = str(ws06.cell(row, 1).value or "").strip()
+                if not key:
+                    continue
+                if key.startswith("Блок "):
+                    break
+                raw_rows_by_key[key] = row
+                value_summary = str(ws06.cell(row, block2_map.get("value_summary", 3)).value or "").strip()
+                if value_summary.startswith(("[", "{")):
+                    errors.append(f"06_Сырые данные parser: `{key}` value_summary must be short.")
+                    break
+            expected_rows = {
+                "pit_area_m2": {
+                    "source_pdf": "usv_2026_kr1.pdf",
+                    "page": "8",
+                    "rule": "area_line_by_terms_and_unit",
+                },
+                "trench_routes": {
+                    "source_pdf": "usv_2026_kr1.pdf",
+                    "page": "8",
+                    "rule": "trench_table_routes",
+                    "has_full_json": "да",
+                },
+                "communications_pipe_items": {
+                    "source_pdf": "usv_2026_kr1.pdf",
+                    "page": "7",
+                    "logical_sheet_title": "Схема коммуникаций",
+                    "logical_sheet_type": "communications_scheme",
+                    "rule": "pipe_items_from_spec_rows",
+                    "has_full_json": "да",
+                },
+                "communications_length_m": {
+                    "status": "auto_calculated",
+                    "confidence": "high",
+                    "source_pdf": "usv_2026_kr1.pdf",
+                    "page": "7",
+                    "logical_sheet_title": "Схема коммуникаций",
+                    "logical_sheet_type": "communications_scheme",
+                    "rule": "calculated_from_pipe_items",
+                },
+            }
+            for technical_key, expected in expected_rows.items():
+                row = raw_rows_by_key.get(technical_key)
+                if not row:
+                    errors.append(f"06_Сырые данные parser: missing extracted row for `{technical_key}`.")
+                    continue
+                for col_name, expected_value in expected.items():
+                    actual_value = str(ws06.cell(row, block2_map.get(col_name, 0)).value or "") if block2_map.get(col_name, 0) else ""
+                    if actual_value != expected_value:
+                        errors.append(
+                            f"06_Сырые данные parser: `{technical_key}` has wrong `{col_name}` value `{actual_value}`; expected `{expected_value}`."
+                        )
+
+        json_row = find_row_by_title(ws06, "Блок 4: full JSON values")
+        if json_row:
+            json_keys = set()
+            for row in range(json_row + 2, ws06.max_row + 1):
+                key = str(ws06.cell(row, 1).value or "").strip()
+                if not key:
+                    continue
+                if key.startswith("Блок "):
+                    break
+                json_keys.add(key)
+            for required_key in ["trench_routes", "communications_pipe_items"]:
+                if required_key not in json_keys:
+                    errors.append(f"06_Сырые данные parser JSON block missing `{required_key}`.")
         details_ws = wb["03_Детали объемов"]
         expected_detail_headers = [
             "Тип",
@@ -290,6 +555,8 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
             "First sheet does not expose routes/items/JSON/English technical statuses.",
             "01_Проверка проекта uses action-based statuses and technical confidence/extraction fields.",
             "03_Детали объемов uses the approved unified detail table without manual correction columns.",
+            "05_Кандидаты parser uses short summaries instead of JSON dumps.",
+            "06_Сырые данные parser keeps summary, raw contexts, and full JSON in separate blocks.",
         ],
     }
     out = job_dir / "reports" / "anti_cheat_report.md"
