@@ -69,6 +69,8 @@ PARAM_META = {
     "communications_length_m": ("Длина коммуникаций", "м"),
 }
 
+DETAIL_FRAGMENT_KEYS = {"trench_routes", "trench_volume_m3", "communications_pipe_items"}
+
 
 def read_json(path: Path, default: Any) -> Any:
     if not path.exists():
@@ -111,6 +113,16 @@ def evidence_source(evidence: dict[str, Any] | None) -> str:
     return title or ""
 
 
+def first_item_evidence(parameter: dict[str, Any]) -> dict[str, Any] | None:
+    value = parameter.get("value")
+    if isinstance(value, list):
+        for item in value:
+            evidence = (item or {}).get("evidence") if isinstance(item, dict) else None
+            if evidence:
+                return evidence
+    return None
+
+
 def parameter_value_label(key: str, parameter: dict[str, Any]) -> str:
     value = parameter.get("value")
     if key == "trench_routes":
@@ -122,21 +134,62 @@ def parameter_value_label(key: str, parameter: dict[str, Any]) -> str:
     return str(value).replace(".", ",")
 
 
+def format_number_for_cell(value: Any) -> str:
+    if value is None or value == "":
+        return ""
+    if isinstance(value, float):
+        if value.is_integer():
+            return str(int(value))
+        return str(value).replace(".", ",")
+    return str(value).replace(".", ",")
+
+
+def format_number_for_fragment(value: Any) -> str:
+    if value is None or value == "":
+        return ""
+    if isinstance(value, float):
+        return str(value)
+    return str(value)
+
+
+def display_route_name(name: str | None) -> str:
+    text = (name or "").strip()
+    match = re.fullmatch(r"(К)\s*(\d+)", text)
+    if match:
+        return f"{match.group(1)} {match.group(2)}"
+    return text
+
+
+def extract_pipe_diameter_mm(item: dict[str, Any]) -> str:
+    direct = item.get("diameter_mm")
+    if direct not in (None, ""):
+        return format_number_for_cell(direct)
+    name = str(item.get("name") or "")
+    match = re.search(r"[фØødD]\s*(\d{2,3})", name)
+    if match:
+        return match.group(1)
+    return ""
+
+
 def status_for_parameter(key: str, parameter: dict[str, Any]) -> str:
     value = parameter.get("value")
     confidence = (parameter.get("evidence") or {}).get("confidence") or ""
-    if key in {"trench_routes", "trench_volume_m3", "communications_pipe_items", "communications_length_m"}:
-        return "📋 См. детали"
     if value is None:
         return "🟥 Не найдено"
-    if key in {"pit_excavation_depth_m", "geotextile_area_m2", "geotextile_laying_area_m2"} or confidence == "medium":
+    if key in {
+        "pit_excavation_depth_m",
+        "trench_routes",
+        "trench_volume_m3",
+        "geotextile_area_m2",
+        "geotextile_laying_area_m2",
+        "communications_pipe_items",
+        "communications_length_m",
+    } or confidence == "medium" or parameter.get("source") == "calculated_from_pipe_items":
         return "🟧 Проверьте"
     return "✅ Найдено"
 
 
 def action_for_parameter(key: str, parameter: dict[str, Any], status: str) -> str:
-    if "См. детали" in status:
-        return "Проверьте подробности на листе 03_Детали объемов."
     if "Не найдено" in status:
         return "Parser не нашел значение в проекте; внесите значение вручную в колонку “Исправить / ввести значение”."
     if key == "pit_excavation_depth_m" and parameter.get("raw_value"):
@@ -145,6 +198,10 @@ def action_for_parameter(key: str, parameter: dict[str, Any], status: str) -> st
         return "Отдельная площадь укладки не найдена; предложена площадь геотекстиля, нужно проверить."
     if key == "geotextile_area_m2":
         return "Найдена строка геотекстиля; проверьте, что это нужная площадь материала."
+    if key == "communications_length_m":
+        return "Длина рассчитана автоматически из труб коммуникаций. Проверьте состав труб на листе 03_Детали объемов."
+    if key in {"trench_routes", "trench_volume_m3", "communications_pipe_items"}:
+        return "Проверьте подробности на листе 03_Детали объемов."
     if "Проверьте" in status:
         return "Parser нашел значение, но уверенность средняя; проверьте фрагмент проекта."
     return "Проверьте при необходимости; если все верно, ничего не меняйте."
@@ -156,11 +213,17 @@ def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
         parameter = extracted["parameters"].get(key, {})
         status = status_for_parameter(key, parameter)
         action = action_for_parameter(key, parameter, status)
-        evidence = parameter.get("evidence") or {}
-        fragment = "См. лист 03_Детали объемов." if "См. детали" in status else clean_fragment_for_human(evidence.get("raw_context", ""))
+        evidence = parameter.get("evidence") or first_item_evidence(parameter) or {}
         source = evidence_source(evidence)
-        if key == "communications_length_m" and not source:
-            source = "Рассчитано из таблицы коммуникаций"
+        if key in DETAIL_FRAGMENT_KEYS:
+            fragment = "См. лист 03_Детали объемов."
+        elif key == "communications_length_m":
+            source = "Рассчитано из труб коммуникаций"
+            fragment = "рассчитано из 4 позиций труб"
+        else:
+            fragment = clean_fragment_for_human(evidence.get("raw_context", ""))
+        if key == "communications_pipe_items" and not source:
+            source = "Схема коммуникаций / источник: usv_2026_kr1.pdf, стр. 7"
         rows.append(
             {
                 "Что проверяем": label,
@@ -173,8 +236,17 @@ def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
                 "Исправить / ввести значение": "",
                 "Комментарий Елены": "",
                 "technical_key": key,
-                "extraction_status": "found" if parameter.get("value") is not None else "missing",
-                "confidence": evidence.get("confidence", ""),
+                "extraction_status": "auto_calculated"
+                if key == "communications_length_m"
+                else ("found" if parameter.get("value") is not None else "missing"),
+                "confidence": (
+                    "high"
+                    if key == "communications_length_m"
+                    else (
+                        evidence.get("confidence", "")
+                        or ("high" if key in {"trench_routes", "trench_volume_m3", "communications_pipe_items"} else "")
+                    )
+                ),
             }
         )
     return rows
@@ -200,39 +272,79 @@ def price_rows(price_resolution: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def details_rows(extracted: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    trenches = []
+DETAIL_HEADERS = [
+    "Тип",
+    "Наименование",
+    "Длина, м",
+    "Глубина, м",
+    "Ширина, м",
+    "Объем, м3",
+    "Диаметр, мм",
+    "Длина одной, м",
+    "Количество",
+    "Итоговая длина, м",
+    "Включено",
+    "Источник",
+    "Фрагмент проекта",
+    "Комментарий Елены",
+]
+
+
+def details_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = [{"Тип": "Траншеи"}]
+
     for route in extracted["parameters"]["trench_routes"]["value"] or []:
         ev = route.get("evidence") or {}
-        trenches.append(
+        route_name = display_route_name(route.get("name"))
+        rows.append(
             {
-                "Маршрут": route.get("name"),
-                "Длина, м": route.get("length_m"),
-                "Глубина, м": route.get("depth_m"),
-                "Ширина, м": route.get("width_m"),
-                "Объём, м3": route.get("volume_m3"),
+                "Тип": "Траншея",
+                "Наименование": route_name,
+                "Длина, м": format_number_for_cell(route.get("length_m")),
+                "Глубина, м": format_number_for_cell(route.get("depth_m")),
+                "Ширина, м": format_number_for_cell(route.get("width_m")),
+                "Объем, м3": format_number_for_cell(route.get("volume_m3")),
+                "Диаметр, мм": "",
+                "Длина одной, м": "",
+                "Количество": "",
+                "Итоговая длина, м": "",
+                "Включено": "",
                 "Источник": evidence_source(ev),
-                "Фрагмент проекта": ev.get("raw_context", ""),
-                "Комментарий": "Проверьте маршрут и объем по таблице траншей.",
+                "Фрагмент проекта": (
+                    f"Таблица траншей: {route_name}; длина {format_number_for_fragment(route.get('length_m'))} м; "
+                    f"глубина {format_number_for_fragment(route.get('depth_m'))} м; "
+                    f"ширина {format_number_for_fragment(route.get('width_m'))} м; "
+                    f"объем {format_number_for_fragment(route.get('volume_m3'))} м3."
+                ),
+                "Комментарий Елены": "",
             }
         )
-    pipes = []
+
+    rows.append({})
+    rows.append({"Тип": "Коммуникации"})
+
     for item in extracted["parameters"]["communications_pipe_items"]["value"] or []:
         ev = item.get("evidence") or {}
-        pipes.append(
+        rows.append(
             {
-                "Наименование из проекта": item.get("name"),
-                "Диаметр, мм": item.get("diameter_mm", ""),
-                "Длина одной трубы, м": item.get("pipe_length_m"),
-                "Количество": item.get("quantity"),
-                "Итоговая длина, м": item.get("total_length_m"),
-                "Включено в расчёт": "да" if item.get("include_in_communications") else "нет",
+                "Тип": "Коммуникация",
+                "Наименование": item.get("name", ""),
+                "Длина, м": "",
+                "Глубина, м": "",
+                "Ширина, м": "",
+                "Объем, м3": "",
+                "Диаметр, мм": extract_pipe_diameter_mm(item),
+                "Длина одной, м": format_number_for_cell(item.get("pipe_length_m")),
+                "Количество": format_number_for_cell(item.get("quantity")),
+                "Итоговая длина, м": format_number_for_cell(item.get("total_length_m")),
+                "Включено": "да" if item.get("include_in_communications") else "нет",
                 "Источник": evidence_source(ev),
-                "Фрагмент проекта": ev.get("raw_context", ""),
-                "Комментарий": "Труба ф110 считается коммуникацией, не арматурой.",
+                "Фрагмент проекта": item.get("name", ""),
+                "Комментарий Елены": "",
             }
         )
-    return trenches, pipes
+
+    return rows
 
 
 def style_header_row(ws, row_idx: int, max_col: int) -> None:
@@ -323,10 +435,9 @@ def build_review_workbook(
     rows = project_review_rows(extracted)
     found = sum(1 for row in rows if "Найдено" in row["Статус"])
     review = sum(1 for row in rows if "Проверьте" in row["Статус"])
-    details = sum(1 for row in rows if "См. детали" in row["Статус"])
     missing = sum(1 for row in rows if "Не найдено" in row["Статус"])
     ws.append(["Разбор проекта:\nЗемляные работы", "", "", "", "", "", "", "", "", "", "", ""])
-    ws.append([f"Найдено уверенно: {found}", f"Проверьте: {review}", f"См. детали: {details}", f"Не найдено: {missing}", "Ручной ввод: 0", "", "", "", "", "", "", ""])
+    ws.append([f"Найдено уверенно: {found}", f"Проверьте: {review}", f"Не найдено: {missing}", "Ручной ввод: 0", "", "", "", "", "", "", "", ""])
     ws.append(["", "", "", "", "", "", "", "", "", "", "", ""])
     ws.append(PROJECT_REVIEW_HEADERS)
     for row in rows:
@@ -359,8 +470,6 @@ def build_review_workbook(
         fill = FILL_FOUND
         if "Проверьте" in status:
             fill = FILL_REVIEW
-        elif "См. детали" in status:
-            fill = FILL_DETAILS
         elif "Не найдено" in status:
             fill = FILL_MISSING
         for cell in ws[row_idx]:
@@ -395,41 +504,37 @@ def build_review_workbook(
             cell.fill = fill
 
     ws = wb.create_sheet("03_Детали объемов")
-    trenches, pipes = details_rows(extracted)
-    ws.append(["Траншеи"])
-    ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
-    trench_headers = ["Маршрут", "Длина, м", "Глубина, м", "Ширина, м", "Объём, м3", "Источник", "Фрагмент проекта", "Исправить длину", "Исправить глубину", "Исправить ширину", "Исправить объём", "Комментарий"]
-    ws.append(trench_headers)
-    for row in trenches:
-        ws.append([row.get(header, "") for header in trench_headers])
-    start = ws.max_row + 2
-    ws.cell(start, 1).value = "Коммуникации"
-    ws.cell(start, 1).font = Font(name=FONT_NAME, bold=True, size=13)
-    pipe_headers = ["Наименование из проекта", "Диаметр, мм", "Длина одной трубы, м", "Количество", "Итоговая длина, м", "Включено в расчёт", "Источник", "Фрагмент проекта", "Исправить итоговую длину", "Комментарий"]
-    ws.append(pipe_headers)
-    for row in pipes:
-        ws.append([row.get(header, "") for header in pipe_headers])
-    style_header_row(ws, 2, len(trench_headers))
-    style_header_row(ws, start + 1, len(pipe_headers))
-    apply_table_theme(ws)
-    ws.freeze_panes = "A3"
-    set_widths(
+    detail_rows = details_rows(extracted)
+    ws.append(DETAIL_HEADERS)
+    for row in detail_rows:
+        ws.append([row.get(header, "") for header in DETAIL_HEADERS])
+    style_sheet_basic(
         ws,
-        {
-            "A": 24,
-            "B": 42,
-            "C": 14,
-            "D": 14,
-            "E": 14,
+        header_row=1,
+        widths={
+            "A": 18,
+            "B": 44,
+            "C": 12,
+            "D": 12,
+            "E": 12,
             "F": 14,
-            "G": 16,
-            "H": 16,
-            "I": 16,
+            "G": 14,
+            "H": 14,
+            "I": 12,
             "J": 16,
-            "K": 18,
-            "L": 54,
+            "K": 12,
+            "L": 44,
+            "M": 78,
+            "N": 24,
         },
     )
+    ws.freeze_panes = "A2"
+    for row_idx in range(2, ws.max_row + 1):
+        row_type = str(ws.cell(row_idx, 1).value or "")
+        if row_type in {"Траншеи", "Коммуникации"}:
+            for cell in ws[row_idx]:
+                cell.fill = FILL_GRAY
+                cell.font = Font(name=FONT_NAME, bold=True, size=10)
 
     ws = wb.create_sheet("04_Инструкция")
     append_table(
@@ -441,9 +546,11 @@ def build_review_workbook(
             {"Раздел": 3, "Инструкция": "Зеленые строки parser нашел уверенно. Если все верно, ничего делать не нужно."},
             {"Раздел": 4, "Инструкция": "Оранжевые строки требуют проверки. Если значение проекта неверное, внесите исправление в колонку “Исправить / ввести значение”."},
             {"Раздел": 5, "Инструкция": "Красные строки parser не нашел. Внесите значение вручную в колонку “Исправить / ввести значение”."},
-            {"Раздел": 6, "Инструкция": "Строки “См. детали” проверяются на листе 03_Детали объемов."},
-            {"Раздел": 7, "Инструкция": "Цены себестоимости проверяются на листе 02_Цены себестоимости. Если цена неверная, заполните колонку “Исправить цену”."},
-            {"Раздел": 8, "Инструкция": "Листы 05–06 технические. Они нужны разработчику для проверки parser-а. Елене обычно достаточно листов 00–03."},
+            {"Раздел": 6, "Инструкция": "Где именно проверять оранжевую строку, написано в колонке “Что нужно сделать”."},
+            {"Раздел": 7, "Инструкция": "Проектные параметры и объемы исправляются на листе 01_Проверка проекта."},
+            {"Раздел": 8, "Инструкция": "Цены себестоимости проверяются на листе 02_Цены себестоимости. Если цена неверная, заполните колонку “Исправить цену”."},
+            {"Раздел": 9, "Инструкция": "Лист 03_Детали объемов — справочный, не источник ручных правок."},
+            {"Раздел": 10, "Инструкция": "Листы 05–06 технические. Они нужны разработчику для проверки parser-а. Елене обычно достаточно листов 00–03."},
         ],
     )
     set_widths(ws, {"A": 12, "B": 120})
