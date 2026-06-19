@@ -452,10 +452,32 @@ def validate_calculation_result(
     return errors, warnings
 
 
+def validate_comparison_report(report_path: Path | str | None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if report_path is None:
+        return errors, warnings
+
+    path = Path(report_path)
+    if not path.exists():
+        errors.append(f"comparison report does not exist: {path}")
+        return errors, warnings
+
+    text = path.read_text(encoding="utf-8")
+    if "Diagnostic comparison" not in text and "diagnostic comparison" not in text.lower():
+        errors.append("comparison report must mention diagnostic comparison")
+    if "Baseline result path is provided via CLI" not in text:
+        errors.append("comparison report must mention CLI baseline path")
+
+    return errors, warnings
+
+
 def run_anti_cheat(
     normalized_json_path: str | Path,
     calculator_input_path: str | Path | None = None,
     calculation_result_dir: str | Path | None = None,
+    comparison_report: str | Path | None = None,
 ) -> bool:
     normalized_path = Path(normalized_json_path)
     normalized_data = load_json(normalized_path)
@@ -472,6 +494,11 @@ def run_anti_cheat(
         result_errors, result_warnings = validate_calculation_result(normalized_data, calculation_result_dir)
         errors.extend(result_errors)
         warnings.extend(result_warnings)
+
+    if comparison_report is not None:
+        comparison_errors, comparison_warnings = validate_comparison_report(comparison_report)
+        errors.extend(comparison_errors)
+        warnings.extend(comparison_warnings)
 
     if errors:
         print("anti-cheat errors:")
@@ -496,12 +523,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to calculation_result directory",
     )
+    parser.add_argument(
+        "--comparison-report",
+        default=None,
+        help="Optional path to calculation_comparison_report.md",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir) else 1
+    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir, args.comparison_report) else 1
 
 
 if __name__ == "__main__":

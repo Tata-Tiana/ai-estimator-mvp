@@ -89,6 +89,19 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
   --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
 ```
 
+## Diagnostic comparison
+
+Comparison is not part of the production flow.
+Baseline result path is always passed explicitly.
+Review-layer does not import or read old fixture paths by default.
+
+```bash
+python experiments/earthworks_review_to_calculator/compare_calculation_results.py \
+  --baseline-result <baseline_result.json> \
+  --review-result experiments/earthworks_review_to_calculator/outputs/calculation_result/result.json \
+  --out experiments/earthworks_review_to_calculator/outputs/calculation_comparison_report.md
+```
+
 ## Запуск
 
 Из корня репозитория:
