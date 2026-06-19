@@ -59,8 +59,8 @@ review_reader_report.md
 Следующий слой читает уже нормализованный review JSON и собирает вход для калькулятора,
 не заходя ни в Google Sheet, ни в сам calculator runtime.
 
-На этом шаге calculator input builder всё ещё может опираться на старый mapping по русским названиям.
-Следующий шаг будет переводить его на `calc_price_key`.
+На этом шаге calculator input builder строит цены по `calc_price_key`.
+Русские названия строк больше не являются source of truth для price mapping.
 
 ```bash
 python experiments/earthworks_review_to_calculator/run_build_calculator_input.py \

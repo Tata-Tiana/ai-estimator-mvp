@@ -8,11 +8,9 @@ from typing import Any
 
 from constants import (
     CALCULATOR_TEMPLATE_PATH,
-    CONSUMABLES_PRICE_KEY,
     DEFAULT_COMMUNICATIONS_METHOD,
     DEFAULT_EXCAVATOR_SHIFTS_METHOD,
     DEFAULT_MANUAL_EXCAVATION_METHOD,
-    PRICE_TO_INTERNAL_KEY_MAP,
     PROJECT_NAME,
     REQUIRED_PARAMETERS,
     SECTION_CODE,
@@ -191,24 +189,30 @@ def _build_internal_prices(
     internal_prices: dict[str, float] = {}
     consumables_amount: float | None = None
     warnings: list[str] = []
+    seen_keys: set[str] = set()
 
     for row in prices:
         estimate_line = str(row.get("estimate_line", "")).strip()
         price_role = str(row.get("price_role", "")).strip()
+        calc_price_key = str(row.get("calc_price_key", "")).strip()
         selected_price = _as_number(row.get("selected_price"))
         if selected_price is None:
             warnings.append(f"price row without selected_price: {estimate_line} / {price_role}")
             continue
 
-        if (estimate_line, price_role) == CONSUMABLES_PRICE_KEY:
+        if not calc_price_key:
+            warnings.append(f"price row without calc_price_key: {estimate_line} / {price_role}")
+            continue
+
+        if calc_price_key in seen_keys:
+            warnings.append(f"duplicate calc_price_key: {calc_price_key}")
+        seen_keys.add(calc_price_key)
+
+        if calc_price_key == "consumables_amount":
             consumables_amount = selected_price
             continue
 
-        internal_key = PRICE_TO_INTERNAL_KEY_MAP.get((estimate_line, price_role))
-        if internal_key is None:
-            warnings.append(f"unmapped price row: {estimate_line} / {price_role}")
-            continue
-        internal_prices[internal_key] = selected_price
+        internal_prices[calc_price_key] = selected_price
 
     return internal_prices, consumables_amount, warnings
 
@@ -358,6 +362,29 @@ def render_calculator_input_report(
             f"- rows read: {len(prices)}",
             f"- internal_prices keys: {', '.join(sorted(calculator_input.get('internal_prices', {}).keys()))}",
             f"- consumables_amount: {display_number(calculator_input.get('consumables_amount'))}",
+            "",
+            "## Price mapping by calc_price_key",
+        ]
+    )
+
+    for row in prices:
+        calc_price_key = str(row.get("calc_price_key", "")).strip()
+        selected_price = display_number(row.get("selected_price"))
+        selected_source = str(row.get("selected_price_source", "")).strip()
+        fallback_key = str(row.get("fallback_key", "")).strip()
+        price_registry_code = str(row.get("price_registry_code", "")).strip()
+        details_parts = [selected_price, selected_source]
+        if price_registry_code:
+            details_parts.append(price_registry_code)
+        elif fallback_key:
+            details_parts.append(fallback_key)
+        lines.append(f"- {calc_price_key}: {' / '.join(details_parts)}")
+
+    lines.extend(
+        [
+            "",
+            "## Deprecated mapping",
+            "- russian label mapping used: no",
             "",
             "## Defaults from calculator input template",
             f"- project_name: {calculator_input.get('project_name', '')}",

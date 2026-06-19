@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from constants import (
-    CONSUMABLES_PRICE_KEY,
     DETAIL_REQUIRED_COMM_NAMES,
     DETAIL_REQUIRED_TRENCH_NAMES,
     DEFAULT_COMMUNICATIONS_METHOD,
@@ -15,7 +14,6 @@ from constants import (
     DEFAULT_MANUAL_EXCAVATION_METHOD,
     PRICE_EXPECTED_MIN_ROWS,
     PRICE_REQUIRED_LINES,
-    PRICE_TO_INTERNAL_KEY_MAP,
     REQUIRED_PARAMETERS,
 )
 from normalization import cell_text
@@ -40,24 +38,31 @@ def _as_number(value: Any) -> float | None:
         return None
 
 
-def _expected_internal_prices(prices: list[dict[str, Any]]) -> tuple[dict[str, float], float | None]:
+def _expected_prices_by_calc_key(prices: list[dict[str, Any]]) -> tuple[dict[str, float], float | None]:
     internal_prices: dict[str, float] = {}
     consumables_amount: float | None = None
+    seen_keys: set[str] = set()
 
     for row in prices:
         estimate_line = str(row.get("estimate_line", "")).strip()
         price_role = str(row.get("price_role", "")).strip()
+        calc_price_key = str(row.get("calc_price_key", "")).strip()
         selected_price = _as_number(row.get("selected_price"))
         if selected_price is None:
             continue
 
-        if (estimate_line, price_role) == CONSUMABLES_PRICE_KEY:
+        if not calc_price_key:
+            continue
+
+        if calc_price_key in seen_keys:
+            raise ValueError(f"duplicate calc_price_key in normalized review: {calc_price_key}")
+        seen_keys.add(calc_price_key)
+
+        if calc_price_key == "consumables_amount":
             consumables_amount = selected_price
             continue
 
-        internal_key = PRICE_TO_INTERNAL_KEY_MAP.get((estimate_line, price_role))
-        if internal_key is not None:
-            internal_prices[internal_key] = selected_price
+        internal_prices[calc_price_key] = selected_price
 
     return internal_prices, consumables_amount
 
@@ -190,7 +195,11 @@ def validate_calculator_input(
     prices = normalized_data.get("prices", [])
     details = normalized_data.get("details", {})
 
-    expected_internal_prices, expected_consumables_amount = _expected_internal_prices(prices)
+    try:
+        expected_internal_prices, expected_consumables_amount = _expected_prices_by_calc_key(prices)
+    except ValueError as exc:
+        errors.append(str(exc))
+        expected_internal_prices, expected_consumables_amount = {}, None
 
     communications_parameter = parameters.get("communications_length_m", {})
     communications_override_used = bool(communications_parameter.get("override_used"))
@@ -287,6 +296,17 @@ def validate_calculator_input(
             actual = _as_number(internal_prices.get(key))
             if actual != expected_value:
                 errors.append(f"internal_prices.{key} expected {expected_value}, got {actual}")
+        unexpected_consumables = internal_prices.get("consumables_amount")
+        if unexpected_consumables is not None:
+            errors.append("internal_prices must not contain consumables_amount")
+
+        if len(internal_prices) != len(expected_internal_prices):
+            missing = sorted(set(expected_internal_prices) - set(internal_prices))
+            unexpected = sorted(set(internal_prices) - set(expected_internal_prices))
+            if missing:
+                errors.append(f"internal_prices missing keys: {', '.join(missing)}")
+            if unexpected:
+                errors.append(f"internal_prices unexpected keys: {', '.join(unexpected)}")
 
     if expected_consumables_amount is None:
         errors.append("consumables_amount must be mapped from review sheet")
