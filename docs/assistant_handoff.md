@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-09`.
+Дата актуализации: `2026-06-19`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -99,6 +99,32 @@ grand_total = 12 271 194
 ```
 
 Это не production-расчёт и не финальная смета: часть missing-параметров была взята из template inputs в demo fallback режиме. Следующий слой — `box_calculator`.
+
+### Earthworks Parser Google Stage 1
+
+Отдельно от расчётной цепочки сейчас живёт изолированный review-flow для `earthworks`:
+
+```text
+experiments/earthworks_parser_google_stage1/
+```
+
+Он нужен не для расчёта, а для проверки PDF-параметров и цен перед расчётом.
+
+Что уже сделано:
+
+- `prepare` собирает свежий `review_workbook.xlsx` и публикует Google Sheet через OAuth;
+- листы `01–04` остаются для Елены, лист `05` — короткая техническая диагностика candidates, лист `06` — raw/summary/full JSON;
+- `clean` удаляет только generated jobs и не трогает исходные PDF, `.env`, `credentials.json` и `token.json`;
+- `review_workbook_builder.py` и `anti_cheat.py` синхронизированы с утверждённой структурой;
+- stage1 не пишет найденные цены обратно в общий `price_registry`;
+- stage1 не заменяет `parser core`, `price resolver` или будущий Telegram-бот.
+
+Что не входит в stage1:
+
+- запуск расчёта сметы;
+- общий `price_provider` на все разделы;
+- публикация данных обратно в `price_registry`;
+- интеграция с другими калькуляторами вне `earthworks`.
 
 После этого создан первый безопасный слой `box_calculator`:
 

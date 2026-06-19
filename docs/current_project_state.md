@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-09`.
+Дата актуализации: `2026-06-19`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -447,6 +447,40 @@ docs/report_earthworks_excavator_shifts_refactor.md
 docs/report_earthworks_manual_excavation_refactor.md
 docs/report_earthworks_communications_refactor.md
 ```
+
+## 0.9. Earthworks Parser Google Stage 1
+
+После стабилизации земляных расчётов добавлен отдельный изолированный контур проверки PDF-параметров через Google Sheet:
+
+```text
+experiments/earthworks_parser_google_stage1/
+```
+
+Назначение этого слоя:
+
+- прочитать PDF проекта;
+- собрать `review_workbook.xlsx` для Елены;
+- опубликовать Google Sheet через OAuth;
+- хранить технические листы `05_Кандидаты parser` и `06_Сырые данные parser` отдельно от человекочитаемых листов;
+- выполнять clean-run без удаления секретов и исходных PDF;
+- проверять, что builder и workbook совпадают по утверждённой структуре.
+
+Что уже сделано внутри stage1:
+
+- листы `01–04` зафиксированы для рабочего review-flow;
+- лист `05_Кандидаты parser` сделан читаемым, без JSON-простыней;
+- лист `06_Сырые данные parser` хранит summary, logical sheets, raw evidence и full JSON в разных блоках;
+- `review_workbook_builder.py` и `anti_cheat.py` синхронизированы с workbook;
+- clean-run и публикация Google Sheet проверены на реальном job;
+- stage1 не пишет ничего обратно в общий `price_registry` и не запускает расчёт сметы.
+
+Что специально не входит в этот контур:
+
+- Telegram-бот и общий orchestration layer;
+- общий `price_provider` для всех калькуляторов;
+- back-write цен в `price_registry`;
+- расчёт сметы после review;
+- изменение `parser core` вне этого review-flow.
 
 ## 1. Цель проекта
 

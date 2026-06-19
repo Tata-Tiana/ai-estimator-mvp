@@ -10,6 +10,16 @@ PDF / parser artifacts
 -> Google/Excel review sheet для Елены
 ```
 
+## Что уже сделано в этом контуре
+
+- собран изолированный review-flow именно для `earthworks`, без общего `price_provider` на весь MVP;
+- реализован clean-run: можно удалить только generated jobs и заново прогнать подготовку;
+- `prepare` строит свежий `review_workbook.xlsx` и публикует Google Sheet через OAuth;
+- листы `01–04` остаются человекочитаемыми, а `05–06` используются как техническая диагностика;
+- лист `05_Кандидаты parser` показывает короткие кандидаты без JSON-простыней;
+- лист `06_Сырые данные parser` хранит summary, logical sheets, raw evidence и full JSON отдельно;
+- anti-cheat проверяет, что workbook и builder не расходятся по утверждённой структуре.
+
 ## Важные правила
 
 - `price_registry` читается только read-only.
@@ -18,6 +28,7 @@ PDF / parser artifacts
 - Объемы/количества нельзя брать из legacy input/result.
 - Ручная правка цены в review sheet действует только для текущей сметы.
 - Лист `02_Цены себестоимости` показывает реальные price components одним списком, без искусственных строк с нулевой ценой.
+- Этот stage1 не пишет ничего обратно в `price_registry` и не служит общим price-provider слоем для всего MVP.
 
 ## Структура
 
@@ -26,8 +37,20 @@ PDF / parser artifacts
 - `google/` - сборка review workbook/Google Sheet.
 - `reports/` - отчеты и anti-cheat.
 - `data/jobs/<job_id>/` - все outputs конкретного запуска.
+- `data/jobs/<job_id>/google/review_workbook.xlsx` - свежий workbook для проверки.
+- `data/jobs/<job_id>/google/google_sheet_metadata.json` - метаданные опубликованной таблицы.
+- `data/jobs/<job_id>/reports/` - stage1 summary, parser report, anti-cheat.
 
 Такая структура потом переносится в Telegram-бот: бот создает job, кладет PDF и запускает эти же шаги.
+
+## Что пока не входит в stage1
+
+- Telegram-бот и общий orchestration layer;
+- запуск расчёта/сметы после проверки;
+- запись найденных цен обратно в общий `price_registry`;
+- общий `price_provider` для всех калькуляторов;
+- любые изменения `parser core` вне этого review-flow;
+- интеграция с другими разделами сметы за пределами `earthworks`.
 
 ## Запуск
 
@@ -63,6 +86,22 @@ data/jobs/*
 - код эксперимента;
 - v3 parser outputs;
 - общий `price_registry`.
+
+## Текущее состояние workbook
+
+Актуальный workbook stage1 сейчас строится с такими листами:
+
+```text
+00_Конструктор сметы
+01_Проверка проекта
+02_Цены себестоимости
+03_Детали объемов
+04_Инструкция
+05_Кандидаты parser
+06_Сырые данные parser
+```
+
+Лист `07_Лог parser` не используется.
 
 Удалить один конкретный job:
 

@@ -43,6 +43,31 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-19 — Изолирован stage1 review-flow для земляных работ и Google Sheet проверки
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит кодовой стабилизации workbook builder: `9478b99`
+
+Что сделано:
+
+- выделен отдельный контур `experiments/earthworks_parser_google_stage1/` для проверки PDF-параметров земляных работ;
+- `prepare` собирает свежий `review_workbook.xlsx`, пишет `google_sheet_metadata.json` и публикует Google Sheet через OAuth;
+- добавлен clean-run, который удаляет только generated jobs и не трогает секреты/исходные PDF;
+- workbook разделён на человекочитаемые листы `01–04` и технические листы `05–06`;
+- лист `05_Кандидаты parser` хранит короткие diagnostic candidates без JSON-простыней;
+- лист `06_Сырые данные parser` хранит summary, logical sheets, raw evidence и full JSON в отдельных блоках;
+- `review_workbook_builder.py` и `anti_cheat.py` синхронизированы с утверждённым форматом;
+- Google publish проверен на реальном прогоне;
+- stage1 не пишет найденные цены обратно в общий `price_registry` и не запускает расчёт сметы.
+
+Что не вошло:
+
+- Telegram-бот;
+- общий `price_provider` для всех калькуляторов;
+- расчёт сметы после review;
+- изменения `parser core` вне этого review-flow;
+- back-write данных в `price_registry`.
+
 ### 2026-06-09 — Обновлены production-стандарты калькулятора земляных работ
 
 - Ветка: `feature/foundation-slab-calculator-standards`

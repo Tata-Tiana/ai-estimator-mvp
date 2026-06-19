@@ -26,6 +26,7 @@ docs/change_log.md
 
 ```text
 docs/report_pdf_parser.md
+docs/report_earthworks_parser_google_stage1.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
@@ -84,6 +85,29 @@ experiments/earthworks_calculator/
 usv_yusupovo_village -> ok (100/100), итог 805020
 horoshevka_14 -> ok (76/76), итог 559364
 ```
+
+### Earthworks Parser Google Stage 1
+
+Папка:
+
+```text
+experiments/earthworks_parser_google_stage1/
+```
+
+Назначение:
+
+- изолированный review-flow для земляных работ;
+- clean-run с `prepare` и `clean`;
+- сборка `review_workbook.xlsx` и публикация Google Sheet через OAuth;
+- листы `01–04` для Елены и `05–06` для технической диагностики;
+- `05_Кандидаты parser` хранит краткие candidates без JSON-простыней;
+- `06_Сырые данные parser` хранит summary, logical sheets, raw evidence и full JSON отдельно.
+
+Важно:
+
+- этот контур не возвращает найденные цены обратно в общий `price_registry`;
+- он не заменяет `parser core`, `price resolver` или Telegram-бот;
+- расчёт сметы здесь не запускается, это только подготовка и проверка входных данных.
 
 ### Калькулятор фундаментной плиты
 
