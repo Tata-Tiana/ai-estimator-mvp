@@ -11,6 +11,7 @@ from constants import (
     DEFAULT_COMMUNICATIONS_METHOD,
     DEFAULT_EXCAVATOR_SHIFTS_METHOD,
     DEFAULT_MANUAL_EXCAVATION_METHOD,
+    HUMAN_REVIEW_STATUS_VALUES,
     REQUIRED_CALC_PRICE_KEYS,
     REQUIRED_PARAMETERS,
 )
@@ -53,9 +54,9 @@ LINEAGE_REQUIRED_GENERIC_DEFAULTS = {
 LINEAGE_REQUIRED_PROJECT_FIELDS = {
     "project_name",
     "case_meta",
-    "case_meta.validated_with_elena",
+    "case_meta.review_source",
+    "case_meta.human_review_status",
     "case_meta.confidence",
-    "case_meta.source",
     "case_meta.workbook_path",
     "case_meta.section_code",
     "case_meta.section_name",
@@ -66,6 +67,9 @@ LINEAGE_REQUIRED_PROJECT_FIELDS = {
     "geotextile_area_m2",
     "geotextile_laying_area_m2",
     "communications_length_m",
+    "case_meta.communications_quantity_mode",
+    "case_meta.communications_length_m_from_review",
+    "case_meta.communications_length_m_effective",
     "trench_routes",
     "communications_pipe_items",
     "excavator_shifts",
@@ -310,6 +314,38 @@ def validate_calculator_input(
     if calculator_input.get("project_name") in {None, ""}:
         errors.append("project_name is required")
 
+    case_meta = calculator_input.get("case_meta", {})
+    if isinstance(case_meta, dict):
+        if case_meta.get("validated_with_elena") is True:
+            errors.append("case_meta must not contain validated_with_elena = True")
+        human_review_status = case_meta.get("human_review_status")
+        if human_review_status not in HUMAN_REVIEW_STATUS_VALUES:
+            errors.append(
+                f"case_meta.human_review_status must be one of "
+                f"{sorted(HUMAN_REVIEW_STATUS_VALUES)}, got {human_review_status!r}"
+            )
+
+    communications_quantity_mode = case_meta.get("communications_quantity_mode") if isinstance(case_meta, dict) else None
+    if communications_quantity_mode != expected_communications_method:
+        errors.append(
+            f"case_meta.communications_quantity_mode must be {expected_communications_method!r}, "
+            f"got {communications_quantity_mode!r}"
+        )
+
+    comms_from_review = _as_number(case_meta.get("communications_length_m_from_review") if isinstance(case_meta, dict) else None)
+    comms_effective = _as_number(case_meta.get("communications_length_m_effective") if isinstance(case_meta, dict) else None)
+    if comms_from_review is None:
+        errors.append("case_meta.communications_length_m_from_review must be numeric")
+    if comms_effective is None:
+        errors.append("case_meta.communications_length_m_effective must be numeric")
+    if comms_from_review is not None and comms_effective is not None:
+        if abs(comms_from_review - comms_effective) > 0.01:
+            warnings.append(
+                f"case_meta.communications_length_m_from_review ({comms_from_review}) "
+                f"!= case_meta.communications_length_m_effective ({comms_effective}); "
+                "sheet 01 reference value differs from sum of included pipe items"
+            )
+
     if _as_number(calculator_input.get("pit_area_m2")) != pit_area_m2:
         errors.append("pit_area_m2 must match normalized review value")
     if _as_number(calculator_input.get("pit_excavation_depth_m")) != pit_excavation_depth_m:
@@ -426,6 +462,12 @@ def validate_calculator_input(
     if abs(included_total - normalized_communications_total) > 0.001:
         errors.append(
             f"communications total length must equal normalized review total ({normalized_communications_total}), got {included_total}"
+        )
+
+    if comms_effective is not None and abs(comms_effective - included_total) > 0.001:
+        errors.append(
+            f"case_meta.communications_length_m_effective ({comms_effective}) "
+            f"must equal sum of included calculator_input.communications_pipe_items ({included_total})"
         )
 
     return errors, warnings
@@ -740,6 +782,115 @@ def validate_formula_ready_result(report_path: Path | str | None) -> tuple[list[
     return errors, warnings
 
 
+def validate_formula_ready_vs_result(formula_ready_path: Path | str) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    path = Path(formula_ready_path)
+    if not path.exists():
+        errors.append(f"formula-ready result does not exist: {path}")
+        return errors, warnings
+
+    try:
+        report = load_json(path)
+    except Exception as exc:  # pragma: no cover - defensive
+        errors.append(f"failed to read formula-ready json for cross-check: {exc}")
+        return errors, warnings
+
+    source_files = report.get("source_files", {})
+    if not isinstance(source_files, dict):
+        errors.append("formula-ready source_files must be a mapping")
+        return errors, warnings
+
+    calculation_result_path_str = cell_text(source_files.get("calculation_result"))
+    if not calculation_result_path_str:
+        errors.append("formula-ready source_files.calculation_result path is required for cross-check")
+        return errors, warnings
+
+    calculation_result_path = Path(calculation_result_path_str)
+    if not calculation_result_path.is_absolute():
+        calculation_result_path = path.parent / calculation_result_path_str
+
+    if not calculation_result_path.exists():
+        errors.append(f"formula-ready source_files.calculation_result does not exist: {calculation_result_path}")
+        return errors, warnings
+
+    try:
+        result_data = load_json(calculation_result_path)
+    except Exception as exc:  # pragma: no cover - defensive
+        errors.append(f"failed to read calculation result for cross-check: {exc}")
+        return errors, warnings
+
+    estimate_lines = result_data.get("estimate_lines") or []
+    result_by_code: dict[str, dict] = {
+        str(line.get("code", "")): line for line in estimate_lines if line.get("code")
+    }
+
+    section_code = cell_text(report.get("section_code"))
+    section_prefix = (section_code + ".") if section_code else ""
+
+    rows = report.get("rows") or []
+    tolerance = 0.01
+    field_map = [
+        ("quantity", "quantity"),
+        ("material_total", "material_total"),
+        ("work_total", "work_total"),
+        ("row_total", "line_total"),
+    ]
+    matched = 0
+    unmatched = 0
+
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        row_id = str(row.get("row_id", ""))
+        if not row_id:
+            continue
+
+        bare_code = row_id[len(section_prefix):] if section_prefix and row_id.startswith(section_prefix) else row_id
+        result_line = result_by_code.get(bare_code) or result_by_code.get(row_id)
+        if result_line is None:
+            unmatched += 1
+            errors.append(
+                f"formula_ready row {row_id!r} has no matching calculation_result estimate line"
+            )
+            continue
+
+        matched += 1
+        calc_zone = row.get("calc_zone", {})
+        if not isinstance(calc_zone, dict):
+            errors.append(f"formula_ready row {row_id!r} calc_zone must be a mapping")
+            continue
+
+        for formula_field, result_field in field_map:
+            formula_value = _as_number((calc_zone.get(formula_field) or {}).get("value"))
+            result_value = _as_number(result_line.get(result_field))
+            if formula_value is None:
+                errors.append(
+                    f"formula_ready row {row_id!r} calc_zone.{formula_field}.value is missing or non-numeric"
+                )
+                continue
+            if result_value is None:
+                errors.append(
+                    f"formula_ready row {row_id!r}: calculation_result.{result_field} is missing or non-numeric"
+                )
+                continue
+            if abs(formula_value - result_value) > tolerance:
+                errors.append(
+                    f"formula_ready row {row_id!r} {formula_field} ({formula_value}) "
+                    f"does not match calculation_result {result_field} ({result_value}), "
+                    f"tolerance={tolerance}"
+                )
+
+    if rows:
+        print(
+            f"  cross-check: matched_formula_ready_rows={matched}, "
+            f"unmatched_formula_ready_rows={unmatched}"
+        )
+
+    return errors, warnings
+
+
 def validate_comparison_report(report_path: Path | str | None) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -872,6 +1023,10 @@ def run_anti_cheat(
         formula_ready_errors, formula_ready_warnings = validate_formula_ready_result(formula_ready_result)
         errors.extend(formula_ready_errors)
         warnings.extend(formula_ready_warnings)
+
+        vs_result_errors, vs_result_warnings = validate_formula_ready_vs_result(formula_ready_result)
+        errors.extend(vs_result_errors)
+        warnings.extend(vs_result_warnings)
 
     if errors:
         print("anti-cheat errors:")

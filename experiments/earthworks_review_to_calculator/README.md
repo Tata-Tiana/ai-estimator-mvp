@@ -184,3 +184,35 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
 - это не замена stage1 review workbook;
 - это не изменение production-калькулятора земляных работ;
 - это не изменение формул калькулятора, только orchestration вокруг него.
+
+## Design decisions / Known limitations
+
+### Sand helper cells repeat by design
+
+Each estimate row in `formula_ready_result.json` carries its own helper cells.
+Sand calculation generates several helper rows (volume, compaction, truck steps, etc.), and
+these helper values may appear in multiple rows when formula models reference them.
+This repetition is intentional — each row must be self-contained for future Excel export.
+Do NOT deduplicate helper cells across rows.
+
+### `communications_length_m = 0.0` is a technical legacy field
+
+In `pipe_items` mode (the current default), the legacy `communications_length_m` field in
+the calculator input is always set to `0.0`. The calculator does not use it for estimate lines
+in this mode — it consumes `communications_pipe_items` directly.
+
+The actual length used for estimate lines is `communications_length_m_effective`, which is
+the sum of the `total_length_m` fields of all pipe items with `include_in_communications = true`.
+
+The reference value from sheet 01 is preserved as `communications_length_m_from_review`.
+If these two values differ, anti-cheat emits a warning (not an error).
+
+### `human_review_status = "unknown"` by default
+
+The `case_meta.human_review_status` field starts as `"unknown"` for all cases built by
+this layer. Valid values are: `unknown`, `pending`, `reviewed`.
+
+It must be set to `"reviewed"` only after Елена (or the designated reviewer) has explicitly
+confirmed the review workbook values. Anti-cheat validates that the value is one of the
+three valid enum members, but does not block on `"unknown"` — that is an expected state
+for in-progress or not-yet-confirmed estimates.

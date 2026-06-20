@@ -123,11 +123,19 @@ def build_lineage(
     )
     case_meta = calculator_input.get("case_meta", {}) or {}
     add(
-        input_path="case_meta.validated_with_elena",
-        value=case_meta.get("validated_with_elena"),
+        input_path="case_meta.review_source",
+        value=case_meta.get("review_source"),
         source_type="GENERIC_CALCULATOR_DEFAULTS",
-        source_path="GENERIC_CALCULATOR_DEFAULTS.case_meta.validated_with_elena",
-        source_note="generic review provenance",
+        source_path="GENERIC_CALCULATOR_DEFAULTS.case_meta.review_source",
+        source_note="origin of review data",
+        group="system_metadata",
+    )
+    add(
+        input_path="case_meta.human_review_status",
+        value=case_meta.get("human_review_status"),
+        source_type="GENERIC_CALCULATOR_DEFAULTS",
+        source_path="GENERIC_CALCULATOR_DEFAULTS.case_meta.human_review_status",
+        source_note="human review status: unknown/pending/reviewed — unknown by default until Елена confirms",
         group="system_metadata",
     )
     add(
@@ -135,15 +143,7 @@ def build_lineage(
         value=case_meta.get("confidence"),
         source_type="GENERIC_CALCULATOR_DEFAULTS",
         source_path="GENERIC_CALCULATOR_DEFAULTS.case_meta.confidence",
-        source_note="generic review provenance",
-        group="system_metadata",
-    )
-    add(
-        input_path="case_meta.source",
-        value=case_meta.get("source"),
-        source_type="GENERIC_CALCULATOR_DEFAULTS",
-        source_path="GENERIC_CALCULATOR_DEFAULTS.case_meta.source",
-        source_note="generic review provenance",
+        source_note="confidence level from review layer",
         group="system_metadata",
     )
     add(
@@ -212,8 +212,34 @@ def build_lineage(
         value=calculator_input.get("communications_length_m"),
         source_type="derived_from_normalized_details",
         source_path="details.communications_pipe_items[*].total_length_m",
+        source_note="technical legacy field; set to 0.0 in pipe_items mode — calculator uses pipe rows directly",
+        group="detail_derived",
+    )
+    _case_meta = calculator_input.get("case_meta", {})
+    add(
+        input_path="case_meta.communications_quantity_mode",
+        value=_case_meta.get("communications_quantity_mode"),
+        source_type="GENERIC_CALCULATOR_DEFAULTS",
+        source_path="GENERIC_CALCULATOR_DEFAULTS.communications_length_calc_method",
+        source_note="mode governing how communications length is computed: pipe_items = sum of included pipe rows",
+        group="detail_derived",
+    )
+    add(
+        input_path="case_meta.communications_length_m_from_review",
+        value=_case_meta.get("communications_length_m_from_review"),
+        source_type="normalized.project_parameters",
+        source_path="parameters.communications_length_m.value",
+        source_note="reference value from sheet 01; stored for audit — not used by calculator in pipe_items mode",
+        group="detail_derived",
+    )
+    add(
+        input_path="case_meta.communications_length_m_effective",
+        value=_case_meta.get("communications_length_m_effective"),
+        source_type="derived_from_normalized_details",
+        source_path="details.communications_pipe_items[included=true][*].total_length_m",
         source_note=(
-            f"calculator placeholder; normalized total is {display_number(summary.get('communications_total_length_m'))}"
+            f"sum of included pipe rows = {display_number(_case_meta.get('communications_length_m_effective'))} м; "
+            "this is the length used for estimate lines in pipe_items mode"
         ),
         group="detail_derived",
     )

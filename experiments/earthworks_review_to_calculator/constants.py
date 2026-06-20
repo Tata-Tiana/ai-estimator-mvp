@@ -35,11 +35,13 @@ DEFAULT_EXCAVATOR_SHIFTS_METHOD = "standard_volume_productivity"
 DEFAULT_MANUAL_EXCAVATION_METHOD = "standard_routes"
 DEFAULT_COMMUNICATIONS_METHOD = "pipe_items"
 
+HUMAN_REVIEW_STATUS_VALUES = {"unknown", "pending", "reviewed"}
+
 GENERIC_CALCULATOR_DEFAULTS = {
     "case_meta": {
-        "validated_with_elena": True,
-        "confidence": "high",
-        "source": "review_workbook",
+        "review_source": "review_workbook",
+        "human_review_status": "unknown",
+        "confidence": "from_review_layer",
     },
     "assumptions": {
         "manual_excavation_override": False,

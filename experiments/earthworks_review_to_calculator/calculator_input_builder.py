@@ -229,6 +229,19 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     trench_routes = _build_trench_routes(details)
     communications_pipe_items = _build_communications_pipe_items(details)
 
+    # Compute communications length from included pipe rows (source of truth in pipe_items mode).
+    # communications_length_m_from_review: what Елена entered on sheet 01 (reference/audit value).
+    # communications_length_m_effective: sum of included pipe rows (used by calculator).
+    communications_length_m_from_review = _parameter_value(parameters, "communications_length_m")
+    communications_length_m_effective = float(sum(
+        (item.get("total_length_m") or 0.0)
+        for item in communications_pipe_items
+        if item.get("include_in_communications")
+    ))
+    communications_quantity_mode = defaults.get(
+        "communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD
+    )
+
     internal_prices, consumables_amount, price_warnings = _build_internal_prices(prices)
     if consumables_amount is None:
         consumables_amount = 0.0
@@ -239,7 +252,6 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     payload["case_meta"]["workbook_path"] = str(meta.get("workbook_path", ""))
     payload["case_meta"]["section_code"] = meta.get("section_code", SECTION_CODE)
     payload["case_meta"]["section_name"] = meta.get("section_name", SECTION_NAME_RU)
-    payload["case_meta"]["source"] = defaults.get("case_meta", {}).get("source", "review_workbook")
     payload["assumptions"] = copy.deepcopy(defaults.get("assumptions", {}))
 
     payload["excavator_shifts_calc_method"] = defaults.get(
@@ -271,8 +283,14 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     payload["communications_length_calc_method"] = defaults.get(
         "communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD
     )
+    # Technical field required by the calculator in pipe_items mode; kept as 0.0 (legacy input).
+    # The actual length used for estimate lines is communications_length_m_effective below.
     payload["communications_length_m"] = 0.0
     payload["communications_pipe_items"] = communications_pipe_items
+    # Audit/lineage fields — stored in case_meta so the calculator ignores them.
+    payload["case_meta"]["communications_quantity_mode"] = communications_quantity_mode
+    payload["case_meta"]["communications_length_m_from_review"] = communications_length_m_from_review
+    payload["case_meta"]["communications_length_m_effective"] = communications_length_m_effective
 
     payload["geotextile_laying_area_m2"] = (
         geotextile_laying_area_m2 if geotextile_laying_area_m2 is not None else 0.0
@@ -338,6 +356,12 @@ def render_calculator_input_report(
 
     lines.extend(
         [
+            "",
+            "## Communications length semantics",
+            f"- communications_quantity_mode: `{calculator_input.get('case_meta', {}).get('communications_quantity_mode', '')}`",
+            f"- communications_length_m_from_review: {display_number(calculator_input.get('case_meta', {}).get('communications_length_m_from_review'))} м (reference value from sheet 01)",
+            f"- communications_length_m_effective: {display_number(calculator_input.get('case_meta', {}).get('communications_length_m_effective'))} м (sum of included pipe rows — used for estimate lines)",
+            f"- communications_length_m: {display_number(calculator_input.get('communications_length_m'))} (technical legacy field, 0.0 in pipe_items mode)",
             "",
             "## Details",
             f"- trench_routes: {len(details.get('trench_routes', []))}",
