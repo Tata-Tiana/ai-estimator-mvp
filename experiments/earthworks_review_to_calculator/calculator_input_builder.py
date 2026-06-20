@@ -242,14 +242,18 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     payload["case_meta"]["source"] = defaults.get("case_meta", {}).get("source", "review_workbook")
     payload["assumptions"] = copy.deepcopy(defaults.get("assumptions", {}))
 
-    payload["excavator_shifts_calc_method"] = DEFAULT_EXCAVATOR_SHIFTS_METHOD
+    payload["excavator_shifts_calc_method"] = defaults.get(
+        "excavator_shifts_calc_method", DEFAULT_EXCAVATOR_SHIFTS_METHOD
+    )
     payload["pit_area_m2"] = pit_area_m2 if pit_area_m2 is not None else 0.0
     payload["pit_excavation_depth_m"] = pit_excavation_depth_m
     payload["excavator_productivity_m3_per_shift"] = defaults["excavator_productivity_m3_per_shift"]
     payload["excavator_shifts"] = 0.0
     payload["axis_marking_shifts"] = defaults["axis_marking_shifts"]
 
-    payload["manual_excavation_calc_method"] = DEFAULT_MANUAL_EXCAVATION_METHOD
+    payload["manual_excavation_calc_method"] = defaults.get(
+        "manual_excavation_calc_method", DEFAULT_MANUAL_EXCAVATION_METHOD
+    )
     payload["manual_refinement_depth_m"] = defaults["manual_refinement_depth_m"]
     payload["trench_volume_m3"] = trench_volume_m3
     payload["trench_length_m"] = None
@@ -264,7 +268,9 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     payload["geotextile_overlap_coeff"] = defaults["geotextile_overlap_coeff"]
     payload["geotextile_roll_area_m2"] = defaults["geotextile_roll_area_m2"]
 
-    payload["communications_length_calc_method"] = DEFAULT_COMMUNICATIONS_METHOD
+    payload["communications_length_calc_method"] = defaults.get(
+        "communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD
+    )
     payload["communications_length_m"] = 0.0
     payload["communications_pipe_items"] = communications_pipe_items
 

@@ -18,6 +18,50 @@ from normalization import cell_text
 
 VALID_SELECTED_PRICE_SOURCES = {"price_registry", "fallback"}
 VALID_EFFECTIVE_PRICE_SOURCES = {"price_registry", "fallback", "manual_override"}
+LINEAGE_REQUIRED_GENERIC_DEFAULTS = {
+    "assumptions.manual_excavation_override",
+    "assumptions.sand_override",
+    "assumptions.geotextile_override",
+    "excavator_shifts_calc_method",
+    "manual_excavation_calc_method",
+    "communications_length_calc_method",
+    "excavator_productivity_m3_per_shift",
+    "manual_refinement_depth_m",
+    "trench_width_m",
+    "sand_compaction_coeff",
+    "sand_truck_step_m3",
+    "geotextile_overlap_coeff",
+    "geotextile_roll_area_m2",
+    "axis_marking_shifts",
+    "enabled_lines",
+    "quantity_overrides",
+    "line_name_overrides",
+}
+LINEAGE_REQUIRED_PROJECT_FIELDS = {
+    "project_name",
+    "case_meta",
+    "case_meta.validated_with_elena",
+    "case_meta.confidence",
+    "case_meta.source",
+    "case_meta.workbook_path",
+    "case_meta.section_code",
+    "case_meta.section_name",
+    "pit_area_m2",
+    "pit_excavation_depth_m",
+    "sand_base_volume_m3",
+    "trench_volume_m3",
+    "geotextile_area_m2",
+    "geotextile_laying_area_m2",
+    "communications_length_m",
+    "trench_routes",
+    "communications_pipe_items",
+    "excavator_shifts",
+    "trench_length_m",
+    "trench_depth_m",
+    "manual_excavation_quantity_for_estimate_m3",
+    "internal_prices",
+    "consumables_amount",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -473,11 +517,85 @@ def validate_comparison_report(report_path: Path | str | None) -> tuple[list[str
     return errors, warnings
 
 
+def validate_lineage_report(report_path: Path | str | None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if report_path is None:
+        return errors, warnings
+
+    path = Path(report_path)
+    if not path.exists():
+        errors.append(f"lineage report does not exist: {path}")
+        return errors, warnings
+
+    try:
+        report = load_json(path)
+    except Exception as exc:  # pragma: no cover - defensive
+        errors.append(f"failed to read lineage report json: {exc}")
+        return errors, warnings
+
+    if report.get("verdict") != "clean":
+        errors.append(f"lineage report verdict must be clean, got {report.get('verdict')}")
+    if report.get("hardcoded_project_values_detected_in_source") is not False:
+        errors.append("lineage report must declare hardcoded_project_values_detected_in_source = false")
+
+    untraced_fields = report.get("untraced_fields", [])
+    if untraced_fields:
+        errors.append(f"lineage report must not have untraced fields: {', '.join(map(str, untraced_fields))}")
+
+    report_text = path.read_text(encoding="utf-8").lower()
+    if "old fixture" in report_text or "template source" in report_text or "template path" in report_text:
+        errors.append("lineage report must not claim old fixture or template source")
+
+    fields = report.get("fields", [])
+    if not isinstance(fields, list) or not fields:
+        errors.append("lineage report fields are missing")
+        return errors, warnings
+
+    field_by_path = {cell_text(row.get("input_path")): row for row in fields if cell_text(row.get("input_path"))}
+
+    for required_path in sorted(LINEAGE_REQUIRED_PROJECT_FIELDS):
+        if required_path not in field_by_path:
+            errors.append(f"missing lineage trace for {required_path}")
+
+    for required_path in sorted(LINEAGE_REQUIRED_GENERIC_DEFAULTS):
+        if required_path not in field_by_path:
+            errors.append(f"missing lineage trace for generic default {required_path}")
+        elif cell_text(field_by_path[required_path].get("source_type")) != "GENERIC_CALCULATOR_DEFAULTS":
+            errors.append(f"{required_path} must be traced to GENERIC_CALCULATOR_DEFAULTS")
+
+    for required_key in REQUIRED_CALC_PRICE_KEYS:
+        if required_key == "consumables_amount":
+            path_key = "consumables_amount"
+        else:
+            path_key = f"internal_prices.{required_key}"
+        if path_key not in field_by_path:
+            errors.append(f"missing lineage trace for price key {required_key}")
+            continue
+        if cell_text(field_by_path[path_key].get("source_type")) != "normalized.prices by calc_price_key":
+            errors.append(f"price key {required_key} must be traced by calc_price_key")
+
+    for required_path in ("trench_routes", "communications_pipe_items"):
+        row = field_by_path.get(required_path)
+        if row is None:
+            errors.append(f"missing lineage trace for {required_path}")
+            continue
+        if cell_text(row.get("source_type")) not in {
+            "normalized.details.trench_routes",
+            "normalized.details.communications_pipe_items",
+        }:
+            errors.append(f"{required_path} must be traced to normalized details")
+
+    return errors, warnings
+
+
 def run_anti_cheat(
     normalized_json_path: str | Path,
     calculator_input_path: str | Path | None = None,
     calculation_result_dir: str | Path | None = None,
     comparison_report: str | Path | None = None,
+    lineage_report: str | Path | None = None,
 ) -> bool:
     normalized_path = Path(normalized_json_path)
     normalized_data = load_json(normalized_path)
@@ -499,6 +617,11 @@ def run_anti_cheat(
         comparison_errors, comparison_warnings = validate_comparison_report(comparison_report)
         errors.extend(comparison_errors)
         warnings.extend(comparison_warnings)
+
+    if lineage_report is not None:
+        lineage_errors, lineage_warnings = validate_lineage_report(lineage_report)
+        errors.extend(lineage_errors)
+        warnings.extend(lineage_warnings)
 
     if errors:
         print("anti-cheat errors:")
@@ -528,12 +651,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to calculation_comparison_report.md",
     )
+    parser.add_argument(
+        "--lineage-report",
+        default=None,
+        help="Optional path to input_lineage_report.json",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir, args.comparison_report) else 1
+    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir, args.comparison_report, args.lineage_report) else 1
 
 
 if __name__ == "__main__":

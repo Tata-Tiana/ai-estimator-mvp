@@ -102,6 +102,23 @@ python experiments/earthworks_review_to_calculator/compare_calculation_results.p
   --out experiments/earthworks_review_to_calculator/outputs/calculation_comparison_report.md
 ```
 
+## Input lineage report
+
+This report explains where each calculator input field comes from.
+It is a diagnostic transparency report.
+It is not a production dependency.
+Project quantities come from normalized review data.
+Prices come from `calc_price_key` rows.
+Generic method defaults come from `GENERIC_CALCULATOR_DEFAULTS`.
+
+```bash
+python experiments/earthworks_review_to_calculator/build_input_lineage_report.py \
+  --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --out experiments/earthworks_review_to_calculator/outputs/input_lineage_report.md \
+  --out-json experiments/earthworks_review_to_calculator/outputs/input_lineage_report.json
+```
+
 ## Запуск
 
 Из корня репозитория:
