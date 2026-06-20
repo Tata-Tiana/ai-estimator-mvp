@@ -482,6 +482,40 @@ experiments/earthworks_parser_google_stage1/
 - расчёт сметы после review;
 - изменение `parser core` вне этого review-flow.
 
+## 0.10. Earthworks Review To Calculator
+
+Следующий локальный мост между stage1 и расчётным контуром:
+
+```text
+experiments/earthworks_review_to_calculator/
+```
+
+Назначение слоя:
+
+- читать локальный `review_workbook.xlsx`;
+- собирать `review_values_normalized.json`;
+- строить `earthworks_calculation_input.json`;
+- строить `input_lineage_report.md/json`;
+- запускать существующий `earthworks_calculator` на review input;
+- делать `full_review_flow_report.md/json`;
+- держать diagnostic comparison как отдельную диагностику, а не как production dependency.
+
+Что уже сделано:
+
+- review reader читает листы 01–03 и технические листы stage1;
+- sheet 02 использует `calc_price_key` как source of truth для цен;
+- builder input использует `GENERIC_CALCULATOR_DEFAULTS`, а не старый fixture;
+- lineages показывают происхождение project quantities, prices и defaults;
+- full local flow запускается одной командой `run_full_review_flow.py`;
+- anti-cheat умеет проверять normalized JSON, calculator input, result, lineage report и comparison report.
+
+Что специально не входит в этот контур:
+
+- Google API;
+- изменение stage1;
+- изменение `earthworks_calculator`;
+- back-write в `price_registry`.
+
 ## 1. Цель проекта
 
 `ai-estimator-mvp` — MVP AI-сметчика для частных домов.

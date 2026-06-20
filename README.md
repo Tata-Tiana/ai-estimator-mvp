@@ -109,6 +109,28 @@ experiments/earthworks_parser_google_stage1/
 - он не заменяет `parser core`, `price resolver` или Telegram-бот;
 - расчёт сметы здесь не запускается, это только подготовка и проверка входных данных.
 
+### Earthworks Review To Calculator
+
+Папка:
+
+```text
+experiments/earthworks_review_to_calculator/
+```
+
+Назначение:
+
+- читать локальный `review_workbook.xlsx` из stage1;
+- собирать `review_values_normalized.json` и `earthworks_calculation_input.json`;
+- строить отчёт происхождения данных (`input_lineage_report.*`);
+- запускать существующий `earthworks_calculator` на review input;
+- делать локальный full flow report и diagnostic comparison как диагностику, а не как production-зависимость.
+
+Важно:
+
+- этот слой не трогает Google API;
+- этот слой не меняет stage1 и не меняет `earthworks_calculator`;
+- полный локальный контур запускается одной командой через `run_full_review_flow.py`.
+
 ### Калькулятор фундаментной плиты
 
 Папка:

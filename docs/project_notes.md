@@ -53,6 +53,33 @@ grand_total = 12 271 194
 
 Это не production-расчёт и не финальная смета. Следующий слой — `box_calculator`.
 
+Изолированный мост для земляных работ между review workbook и калькулятором:
+
+```text
+experiments/earthworks_parser_google_stage1/
+experiments/earthworks_review_to_calculator/
+```
+
+Рабочий поток:
+
+```text
+review_workbook.xlsx -> review_values_normalized.json -> earthworks_calculation_input.json -> earthworks_calculator -> result
+```
+
+Рекомендуемый локальный запуск для этого контура:
+
+```bash
+python experiments/earthworks_review_to_calculator/run_full_review_flow.py \
+  --workbook experiments/earthworks_parser_google_stage1/review_workbook.xlsx \
+  --out-dir experiments/earthworks_review_to_calculator/outputs
+```
+
+Важно:
+
+- stage1 остаётся только review-слоем и не считает смету;
+- `earthworks_review_to_calculator` не читает Google API и не зависит от старого fixture path;
+- `earthworks_calculator` остаётся детерминированным и получает только input JSON.
+
 Аудит missing/manual параметров и pack для созвона с Еленой:
 
 ```text

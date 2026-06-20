@@ -89,6 +89,20 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
   --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
 ```
 
+## Full local review flow
+
+This is the recommended local command for the earthworks review-to-calculator flow.
+It does not call Google API.
+It does not modify Stage1.
+It does not modify `earthworks_calculator`.
+It only orchestrates existing local scripts.
+
+```bash
+python experiments/earthworks_review_to_calculator/run_full_review_flow.py \
+  --workbook experiments/earthworks_parser_google_stage1/review_workbook.xlsx \
+  --out-dir experiments/earthworks_review_to_calculator/outputs
+```
+
 ## Diagnostic comparison
 
 Comparison is not part of the production flow.

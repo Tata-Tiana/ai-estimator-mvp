@@ -126,6 +126,33 @@ experiments/earthworks_parser_google_stage1/
 - публикация данных обратно в `price_registry`;
 - интеграция с другими калькуляторами вне `earthworks`.
 
+### Earthworks Review To Calculator
+
+Следующий локальный мост после stage1:
+
+```text
+experiments/earthworks_review_to_calculator/
+```
+
+Он нужен, чтобы взять проверенный `review_workbook.xlsx` и дойти до расчётного результата без Google API и без изменений в `earthworks_calculator`.
+
+Что уже сделано:
+
+- `review_workbook.xlsx` читается в `review_values_normalized.json`;
+- `calc_price_key` используется для сборки `earthworks_calculation_input.json`;
+- строится `input_lineage_report.md/json`, чтобы видно было, откуда взялся каждый input;
+- существующий `earthworks_calculator` запускается через review input;
+- full flow собирается одной локальной командой `run_full_review_flow.py`;
+- diagnostic comparison остаётся отдельной диагностикой и не является production dependency.
+
+Что здесь принципиально не меняется:
+
+- stage1 review-flow;
+- `parser core`;
+- `earthworks_calculator`;
+- Google API;
+- back-write в `price_registry`.
+
 После этого создан первый безопасный слой `box_calculator`:
 
 ```text
