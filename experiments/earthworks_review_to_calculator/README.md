@@ -16,7 +16,8 @@
 - не обращается к Google Sheet API;
 - не меняет parser;
 - не меняет калькулятор;
-- не запускает расчёт сметы;
+- не содержит формул расчёта;
+- может запускать существующий `earthworks_calculator` как отдельный orchestration step;
 - не пишет ничего обратно в `price_registry`.
 
 Слой нужен как промежуточный мост между:
@@ -133,6 +134,21 @@ python experiments/earthworks_review_to_calculator/build_input_lineage_report.py
   --out-json experiments/earthworks_review_to_calculator/outputs/input_lineage_report.json
 ```
 
+## Formula-ready output for future Excel formulas
+
+This is not Excel export yet.
+It prepares estimate rows, symbolic formula models, layout-aware calc zones, and row-level helper cells.
+The future Excel exporter will map symbolic references to real A1 cell references.
+
+```bash
+python experiments/earthworks_review_to_calculator/build_formula_ready_result.py \
+  --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
+  --calculation-result experiments/earthworks_review_to_calculator/outputs/calculation_result/result.json \
+  --lineage-report experiments/earthworks_review_to_calculator/outputs/input_lineage_report.json \
+  --out experiments/earthworks_review_to_calculator/outputs/formula_ready_result.json \
+  --report experiments/earthworks_review_to_calculator/outputs/formula_ready_report.md
+```
+
 ## Запуск
 
 Из корня репозитория:
@@ -154,7 +170,9 @@ python experiments/earthworks_review_to_calculator/run_calculator_from_review_in
 python experiments/earthworks_review_to_calculator/anti_cheat.py \
   --normalized-json experiments/earthworks_review_to_calculator/outputs/review_values_normalized.json \
   --calculator-input experiments/earthworks_review_to_calculator/outputs/earthworks_calculation_input.json \
-  --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result
+  --calculation-result-dir experiments/earthworks_review_to_calculator/outputs/calculation_result \
+  --lineage-report experiments/earthworks_review_to_calculator/outputs/input_lineage_report.json \
+  --formula-ready-result experiments/earthworks_review_to_calculator/outputs/formula_ready_result.json
 ```
 
 Если путь `review_workbook.xlsx` указывает на несуществующий файл, reader попробует найти свежий workbook stage1 в `data/jobs/*/google/review_workbook.xlsx`.
@@ -164,5 +182,5 @@ python experiments/earthworks_review_to_calculator/anti_cheat.py \
 - это не общий `price_provider` для всего MVP;
 - это не публикация данных в Google;
 - это не замена stage1 review workbook;
-- это не запуск калькулятора;
-- это не изменение production-калькулятора земляных работ.
+- это не изменение production-калькулятора земляных работ;
+- это не изменение формул калькулятора, только orchestration вокруг него.

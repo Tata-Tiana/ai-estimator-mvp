@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,18 @@ from normalization import cell_text
 
 VALID_SELECTED_PRICE_SOURCES = {"price_registry", "fallback"}
 VALID_EFFECTIVE_PRICE_SOURCES = {"price_registry", "fallback", "manual_override"}
+EXPECTED_FORMULA_READY_LAYOUT = {
+    "white_zone": ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+    "calc_zone": ["J", "K", "L", "M", "N", "O"],
+    "helper_zone": ["P", "Q", "R", "S", "T", "U", "V"],
+}
+EXPECTED_FORMULA_READY_SUPPORTED_TYPES = [
+    "ref",
+    "multiply",
+    "sum",
+    "ceil_divide",
+    "roundup_to_step",
+]
 LINEAGE_REQUIRED_GENERIC_DEFAULTS = {
     "assumptions.manual_excavation_override",
     "assumptions.sand_override",
@@ -62,6 +75,8 @@ LINEAGE_REQUIRED_PROJECT_FIELDS = {
     "internal_prices",
     "consumables_amount",
 }
+
+FORMULA_MODEL_A1_REF_PATTERN = re.compile(r"\b[A-Z]{1,3}\d+\b")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -496,6 +511,235 @@ def validate_calculation_result(
     return errors, warnings
 
 
+def _formula_model_violations(model: Any, path: str = "formula_model") -> list[str]:
+    violations: list[str] = []
+
+    def walk(value: Any, current_path: str) -> None:
+        if isinstance(value, dict):
+            for key, nested in value.items():
+                walk(nested, f"{current_path}.{key}")
+            return
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{current_path}[{index}]")
+            return
+        if isinstance(value, str):
+            if value.startswith("="):
+                violations.append(f"{current_path} must not start with =")
+            if FORMULA_MODEL_A1_REF_PATTERN.search(value):
+                violations.append(f"{current_path} must not contain Excel A1 refs")
+
+    walk(model, path)
+    return violations
+
+
+def _formula_model_contains_calculator_result_ref(model: Any) -> bool:
+    if isinstance(model, dict):
+        for value in model.values():
+            if _formula_model_contains_calculator_result_ref(value):
+                return True
+        return False
+    if isinstance(model, list):
+        return any(_formula_model_contains_calculator_result_ref(item) for item in model)
+    if isinstance(model, str):
+        return "calculator_result." in model
+    return False
+
+
+def validate_formula_ready_result(report_path: Path | str | None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if report_path is None:
+        return errors, warnings
+
+    path = Path(report_path)
+    if not path.exists():
+        errors.append(f"formula-ready report does not exist: {path}")
+        return errors, warnings
+
+    try:
+        report = load_json(path)
+    except Exception as exc:  # pragma: no cover - defensive
+        errors.append(f"failed to read formula-ready json: {exc}")
+        return errors, warnings
+
+    if report.get("section_code") != "earthworks":
+        errors.append(f"formula-ready section_code must be earthworks, got {report.get('section_code')}")
+    if report.get("section_title") != "Земляные работы":
+        errors.append("formula-ready section_title must be Земляные работы")
+    if report.get("excel_export_ready") is not True:
+        errors.append("formula-ready excel_export_ready must be true")
+    supported_formula_types = report.get("supported_formula_types")
+    if supported_formula_types != EXPECTED_FORMULA_READY_SUPPORTED_TYPES:
+        errors.append(
+            "formula-ready supported_formula_types must be "
+            + ", ".join(EXPECTED_FORMULA_READY_SUPPORTED_TYPES)
+        )
+
+    layout_model = report.get("layout_model")
+    if not isinstance(layout_model, dict):
+        errors.append("formula-ready layout_model must be a mapping")
+    else:
+        for zone, expected_columns in EXPECTED_FORMULA_READY_LAYOUT.items():
+            zone_model = layout_model.get(zone)
+            if not isinstance(zone_model, dict):
+                errors.append(f"formula-ready layout_model missing {zone}")
+                continue
+            if zone_model.get("columns") != expected_columns:
+                errors.append(f"formula-ready layout_model.{zone}.columns must be {expected_columns}")
+
+    rows = report.get("rows")
+    if not isinstance(rows, list) or not rows:
+        errors.append("formula-ready rows must be a non-empty list")
+        rows = []
+
+    row_ids: set[str] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            errors.append(f"formula-ready rows[{index}] must be a mapping")
+            continue
+        row_id = cell_text(row.get("row_id"))
+        estimate_line = cell_text(row.get("estimate_line"))
+        if not row_id:
+            errors.append(f"formula-ready rows[{index}].row_id is required")
+        elif row_id in row_ids:
+            errors.append(f"duplicate formula-ready row_id: {row_id}")
+        else:
+            row_ids.add(row_id)
+        if not estimate_line:
+            errors.append(f"formula-ready rows[{index}].estimate_line is required")
+
+        white_zone = row.get("white_zone")
+        calc_zone = row.get("calc_zone")
+        helper_zone = row.get("helper_zone")
+        hints = row.get("excel_export_hints")
+        if not isinstance(white_zone, dict):
+            errors.append(f"formula-ready rows[{index}].white_zone must be a mapping")
+        if not isinstance(calc_zone, dict):
+            errors.append(f"formula-ready rows[{index}].calc_zone must be a mapping")
+            calc_zone = {}
+        if not isinstance(helper_zone, dict):
+            errors.append(f"formula-ready rows[{index}].helper_zone must be a mapping")
+            helper_zone = {}
+        if not isinstance(hints, dict):
+            errors.append(f"formula-ready rows[{index}].excel_export_hints must be a mapping")
+
+        expected_white_zone = {
+            "line_name": ("B", "estimate_line"),
+            "unit": ("C", "unit"),
+            "quantity": ("D", "calc_zone.quantity"),
+            "material_unit_price": ("E", "calc_zone.material_unit_price"),
+            "material_total": ("F", "calc_zone.material_total"),
+            "work_unit_price": ("G", "calc_zone.work_unit_price"),
+            "work_total": ("H", "calc_zone.work_total"),
+            "row_total": ("I", "calc_zone.row_total"),
+        }
+        for field, (target_role, mirror_of) in expected_white_zone.items():
+            item = (white_zone or {}).get(field, {})
+            if not isinstance(item, dict):
+                errors.append(f"formula-ready rows[{index}].white_zone.{field} must be a mapping")
+                continue
+            if item.get("target_col_role") != target_role:
+                errors.append(f"formula-ready rows[{index}].white_zone.{field}.target_col_role must be {target_role}")
+            if field in {"line_name", "unit"}:
+                if item.get("source") != mirror_of:
+                    errors.append(f"formula-ready rows[{index}].white_zone.{field}.source must be {mirror_of}")
+            else:
+                if item.get("mirror_of") != mirror_of:
+                    errors.append(f"formula-ready rows[{index}].white_zone.{field}.mirror_of must be {mirror_of}")
+
+        expected_calc_roles = {
+            "quantity": "J",
+            "material_unit_price": "K",
+            "material_total": "L",
+            "work_unit_price": "M",
+            "work_total": "N",
+            "row_total": "O",
+        }
+        for field, target_role in expected_calc_roles.items():
+            item = calc_zone.get(field, {})
+            if not isinstance(item, dict):
+                errors.append(f"formula-ready rows[{index}].calc_zone.{field} must be a mapping")
+                continue
+            if item.get("target_col_role") != target_role:
+                errors.append(f"formula-ready rows[{index}].calc_zone.{field}.target_col_role must be {target_role}")
+            value = item.get("value")
+            if field in {"quantity", "material_unit_price", "material_total", "work_unit_price", "work_total", "row_total"}:
+                if _as_number(value) is None:
+                    errors.append(f"formula-ready rows[{index}].calc_zone.{field}.value must be numeric")
+            formula_model = item.get("formula_model")
+            if field == "row_total":
+                if not isinstance(formula_model, dict):
+                    errors.append(f"formula-ready rows[{index}].calc_zone.row_total.formula_model is required")
+            if formula_model is not None:
+                violations = _formula_model_violations(formula_model, f"rows[{index}].calc_zone.{field}.formula_model")
+                errors.extend(violations)
+                if _formula_model_contains_calculator_result_ref(formula_model):
+                    if item.get("excel_formula_exportable") is not False:
+                        errors.append(
+                            f"formula-ready rows[{index}].calc_zone.{field} with calculator_result ref must be marked excel_formula_exportable = false"
+                        )
+                    if not cell_text(item.get("reason")):
+                        errors.append(
+                            f"formula-ready rows[{index}].calc_zone.{field} with calculator_result ref must include a reason"
+                        )
+
+            if field in {"material_unit_price", "work_unit_price"} and item.get("price_key"):
+                if cell_text(item.get("selected_price_source")).lower() not in VALID_SELECTED_PRICE_SOURCES | {""}:
+                    errors.append(
+                        f"formula-ready rows[{index}].calc_zone.{field}.selected_price_source must be a known price source"
+                    )
+
+        cells = helper_zone.get("cells", [])
+        if not isinstance(cells, list):
+            errors.append(f"formula-ready rows[{index}].helper_zone.cells must be a list")
+            cells = []
+        for cell_index, cell in enumerate(cells):
+            if not isinstance(cell, dict):
+                errors.append(f"formula-ready rows[{index}].helper_zone.cells[{cell_index}] must be a mapping")
+                continue
+            for required_field in ("helper_id", "target_col_role", "label", "value", "source_type", "source_path", "source_note"):
+                if required_field not in cell:
+                    errors.append(f"formula-ready rows[{index}].helper_zone.cells[{cell_index}].{required_field} is required")
+            if isinstance(cell.get("value"), (dict, list)):
+                errors.append(
+                    f"formula-ready rows[{index}].helper_zone.cells[{cell_index}].value must not be raw JSON structure"
+                )
+            formula_model = cell.get("formula_model")
+            if formula_model is not None:
+                violations = _formula_model_violations(formula_model, f"rows[{index}].helper_zone.cells[{cell_index}].formula_model")
+                errors.extend(violations)
+                if _formula_model_contains_calculator_result_ref(formula_model):
+                    if cell.get("excel_formula_exportable") is not False:
+                        errors.append(
+                            f"formula-ready rows[{index}].helper_zone.cells[{cell_index}] with calculator_result ref must be marked excel_formula_exportable = false"
+                        )
+                    if not cell_text(cell.get("reason")):
+                        errors.append(
+                            f"formula-ready rows[{index}].helper_zone.cells[{cell_index}] with calculator_result ref must include a reason"
+                        )
+
+    source_files = report.get("source_files", {})
+    if isinstance(source_files, dict):
+        for key in ("calculator_input", "calculation_result", "lineage_report"):
+            value = cell_text(source_files.get(key))
+            if not value:
+                errors.append(f"formula-ready source_files.{key} is required")
+    else:
+        errors.append("formula-ready source_files must be a mapping")
+
+    excel_export_hints = report.get("excel_export_hints", {})
+    if not isinstance(excel_export_hints, dict) or excel_export_hints.get("formula_models_symbolic") is not True:
+        errors.append("formula-ready excel_export_hints.formula_models_symbolic must be true")
+
+    warnings_list = report.get("warnings", [])
+    if not isinstance(warnings_list, list):
+        warnings.append("formula-ready warnings should be a list")
+
+    return errors, warnings
+
+
 def validate_comparison_report(report_path: Path | str | None) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -596,6 +840,7 @@ def run_anti_cheat(
     calculation_result_dir: str | Path | None = None,
     comparison_report: str | Path | None = None,
     lineage_report: str | Path | None = None,
+    formula_ready_result: str | Path | None = None,
 ) -> bool:
     normalized_path = Path(normalized_json_path)
     normalized_data = load_json(normalized_path)
@@ -622,6 +867,11 @@ def run_anti_cheat(
         lineage_errors, lineage_warnings = validate_lineage_report(lineage_report)
         errors.extend(lineage_errors)
         warnings.extend(lineage_warnings)
+
+    if formula_ready_result is not None:
+        formula_ready_errors, formula_ready_warnings = validate_formula_ready_result(formula_ready_result)
+        errors.extend(formula_ready_errors)
+        warnings.extend(formula_ready_warnings)
 
     if errors:
         print("anti-cheat errors:")
@@ -656,12 +906,24 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to input_lineage_report.json",
     )
+    parser.add_argument(
+        "--formula-ready-result",
+        default=None,
+        help="Optional path to formula_ready_result.json",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return 0 if run_anti_cheat(args.normalized_json, args.calculator_input, args.calculation_result_dir, args.comparison_report, args.lineage_report) else 1
+    return 0 if run_anti_cheat(
+        args.normalized_json,
+        args.calculator_input,
+        args.calculation_result_dir,
+        args.comparison_report,
+        args.lineage_report,
+        args.formula_ready_result,
+    ) else 1
 
 
 if __name__ == "__main__":

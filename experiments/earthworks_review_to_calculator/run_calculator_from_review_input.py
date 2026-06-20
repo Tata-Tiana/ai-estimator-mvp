@@ -15,7 +15,6 @@ from normalization import display_number
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
 CALCULATOR_SCRIPT = REPO_ROOT / "experiments" / "earthworks_calculator" / "run_earthworks_calc.py"
-DEFAULT_VENV_PYTHON = Path("/private/tmp/ai_estimator_venv/bin/python")
 TEMP_INPUT_CASE_NAME = "review_calculator_input"
 TEMP_INPUT_DIRNAME = "_review_calculator_input_case"
 RESULT_JSON_CANDIDATES = ("earthworks_result.json", "result.json")
@@ -34,8 +33,6 @@ def _resolve_python() -> Path:
     env_python = os.environ.get("REVIEW_CALCULATOR_PYTHON")
     if env_python:
         return Path(env_python)
-    if DEFAULT_VENV_PYTHON.exists():
-        return DEFAULT_VENV_PYTHON
     return Path(sys.executable)
 
 
@@ -258,7 +255,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    result = run_calculator_from_review_input(Path(args.calculator_input), Path(args.out_dir))
+    calculator_input = Path(args.calculator_input).resolve()
+    out_dir = Path(args.out_dir).resolve()
+    result = run_calculator_from_review_input(calculator_input, out_dir)
     print(
         json.dumps(
             {

@@ -15,15 +15,12 @@ from normalization import display_number
 
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
-DEFAULT_VENV_PYTHON = Path("/private/tmp/ai_estimator_venv/bin/python")
 
 
 def _resolve_python() -> Path:
     env_python = os.environ.get("REVIEW_CALCULATOR_PYTHON")
     if env_python:
         return Path(env_python)
-    if DEFAULT_VENV_PYTHON.exists():
-        return DEFAULT_VENV_PYTHON
     return Path(sys.executable)
 
 
@@ -32,6 +29,7 @@ PYTHON = _resolve_python()
 RUN_REVIEW_READER = BASE_DIR / "run_review_reader.py"
 RUN_BUILD_CALCULATOR_INPUT = BASE_DIR / "run_build_calculator_input.py"
 BUILD_INPUT_LINEAGE_REPORT = BASE_DIR / "build_input_lineage_report.py"
+BUILD_FORMULA_READY_RESULT = BASE_DIR / "build_formula_ready_result.py"
 RUN_CALCULATOR_FROM_REVIEW_INPUT = BASE_DIR / "run_calculator_from_review_input.py"
 ANTI_CHEAT = BASE_DIR / "anti_cheat.py"
 
@@ -45,6 +43,8 @@ GENERATED_FILES_TO_CLEAN = (
     "calculator_input_report.md",
     "input_lineage_report.md",
     "input_lineage_report.json",
+    "formula_ready_result.json",
+    "formula_ready_report.md",
     "calculation_result_report.md",
     "hardcode_audit_report.md",
     "full_review_flow_report.md",
@@ -173,6 +173,32 @@ def _extract_lineage_summary(lineage_data: dict[str, Any] | None) -> dict[str, A
     }
 
 
+def _extract_formula_ready_summary(formula_ready_data: dict[str, Any] | None) -> dict[str, Any]:
+    if not formula_ready_data:
+        return {
+            "verdict": "missing",
+            "excel_export_ready": None,
+            "rows": None,
+            "rows_with_formula_model": None,
+            "rows_with_control_fields": None,
+            "layout_model_present": None,
+            "warnings": None,
+            "errors": None,
+            "row_count_note": None,
+        }
+    return {
+        "verdict": "clean" if formula_ready_data.get("excel_export_ready") else "failed",
+        "excel_export_ready": formula_ready_data.get("excel_export_ready"),
+        "rows": len(formula_ready_data.get("rows", []) or []),
+        "rows_with_formula_model": formula_ready_data.get("rows_with_formula_model"),
+        "rows_with_control_fields": formula_ready_data.get("rows_with_control_fields"),
+        "layout_model_present": bool(formula_ready_data.get("layout_model")),
+        "warnings": len(formula_ready_data.get("warnings", []) or []),
+        "errors": len(formula_ready_data.get("errors", []) or []),
+        "row_count_note": formula_ready_data.get("row_count_note"),
+    }
+
+
 def _extract_generated_files(out_dir: Path) -> list[str]:
     candidates = [
         out_dir / "review_values_normalized.json",
@@ -181,6 +207,8 @@ def _extract_generated_files(out_dir: Path) -> list[str]:
         out_dir / "calculator_input_report.md",
         out_dir / "input_lineage_report.md",
         out_dir / "input_lineage_report.json",
+        out_dir / "formula_ready_result.json",
+        out_dir / "formula_ready_report.md",
         out_dir / "calculation_result" / "result.json",
         out_dir / "calculation_result" / "result.md",
         out_dir / "calculation_result" / "earthworks_result.json",
@@ -223,6 +251,14 @@ def _render_markdown(summary: dict[str, Any]) -> str:
             f"- communications_length_m: {_format_display(summary['key_totals']['communications_length_m'])}",
             f"- sand_order_volume_m3: {_format_display(summary['key_totals']['sand_order_volume_m3'])}",
             f"- excavator_shifts: {_format_display(summary['key_totals']['excavator_shifts'])}",
+            "",
+            "## Formula-ready output",
+            f"- formula_ready_result: {summary['formula_ready_summary']['verdict']}",
+            f"- excel_export_ready: {'yes' if summary['formula_ready_summary']['excel_export_ready'] else 'no'}",
+            f"- rows: {_format_display(summary['formula_ready_summary']['rows'])}",
+            f"- layout_model: {'yes' if summary['formula_ready_summary']['layout_model_present'] else 'no'}",
+            f"- row_count_note: {_format_display(summary['formula_ready_summary']['row_count_note'])}",
+            f"- errors: {_format_display(summary['formula_ready_summary']['errors'])}",
             "",
             "## Data lineage summary",
             f"- untraced_fields: {_format_display(summary['lineage_summary']['untraced_fields'])}",
@@ -267,11 +303,25 @@ def _build_json_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "steps": [_build_step_summary(step) for step in summary["steps"]],
         "generated_files": summary["generated_files"],
         "key_totals": summary["key_totals"],
+        "formula_ready_status": summary["formula_ready_status"],
+        "formula_ready_summary": summary["formula_ready_summary"],
         "lineage_summary": summary["lineage_summary"],
         "anti_cheat_status": summary["anti_cheat_status"],
         "calculator_run": summary["calculator_run"],
         "errors": summary["errors"],
     }
+
+
+def _write_full_flow_report(summary: dict[str, Any], md_path: Path, json_path: Path, out_dir: Path) -> dict[str, Any]:
+    current_summary = dict(summary)
+    _save_text(md_path, _render_markdown(current_summary))
+    _save_json(json_path, _build_json_summary(current_summary))
+    final_generated_files = _extract_generated_files(out_dir)
+    if final_generated_files != current_summary.get("generated_files", []):
+        current_summary["generated_files"] = final_generated_files
+        _save_text(md_path, _render_markdown(current_summary))
+        _save_json(json_path, _build_json_summary(current_summary))
+    return current_summary
 
 
 def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool) -> dict[str, Any]:
@@ -287,10 +337,14 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
     calculator_input = out_dir / "earthworks_calculation_input.json"
     lineage_md = out_dir / "input_lineage_report.md"
     lineage_json = out_dir / "input_lineage_report.json"
+    formula_ready_json = out_dir / "formula_ready_result.json"
+    formula_ready_md = out_dir / "formula_ready_report.md"
     calculation_result_dir = out_dir / "calculation_result"
     calculation_result_report = out_dir / "calculation_result_report.md"
     full_report_md = out_dir / FULL_FLOW_REPORT_MD
     full_report_json = out_dir / FULL_FLOW_REPORT_JSON
+    formula_ready_status = "missing"
+    formula_ready_summary = _extract_formula_ready_summary(None)
 
     def record_step(step: dict[str, Any]) -> None:
         steps.append(step)
@@ -321,17 +375,18 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             "verdict": "failed",
             "anti_cheat_status": anti_cheat_status,
             "calculator_run": calculator_run,
+            "formula_ready_status": formula_ready_status,
             "lineage_status": "missing",
             "workbook": str(workbook),
             "out_dir": str(out_dir),
             "generated_files": generated_files,
             "key_totals": _extract_result_summary(result_data),
+            "formula_ready_summary": formula_ready_summary,
             "lineage_summary": _extract_lineage_summary(lineage_data),
             "steps": steps,
             "errors": errors,
         }
-        _save_text(full_report_md, _render_markdown(summary))
-        _save_json(full_report_json, _build_json_summary(summary))
+        summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
         return summary
 
     # Step 2: calculator input
@@ -360,17 +415,18 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
                 "verdict": "failed",
                 "anti_cheat_status": anti_cheat_status,
                 "calculator_run": calculator_run,
+                "formula_ready_status": formula_ready_status,
                 "lineage_status": "missing",
                 "workbook": str(workbook),
                 "out_dir": str(out_dir),
                 "generated_files": generated_files,
                 "key_totals": _extract_result_summary(result_data),
+                "formula_ready_summary": formula_ready_summary,
                 "lineage_summary": _extract_lineage_summary(lineage_data),
                 "steps": steps,
                 "errors": errors,
             }
-            _save_text(full_report_md, _render_markdown(summary))
-            _save_json(full_report_json, _build_json_summary(summary))
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
             return summary
     else:
         errors.append("normalized review json is missing; calculator input step skipped")
@@ -453,17 +509,18 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
                 "verdict": "failed",
                 "anti_cheat_status": anti_cheat_status,
                 "calculator_run": calculator_run,
+                "formula_ready_status": formula_ready_status,
                 "lineage_status": lineage_status,
                 "workbook": str(workbook),
                 "out_dir": str(out_dir),
                 "generated_files": generated_files,
                 "key_totals": _extract_result_summary(result_data),
+                "formula_ready_summary": formula_ready_summary,
                 "lineage_summary": _extract_lineage_summary(lineage_data),
                 "steps": steps,
                 "errors": errors,
             }
-            _save_text(full_report_md, _render_markdown(summary))
-            _save_json(full_report_json, _build_json_summary(summary))
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
             return summary
     elif skip_calculator:
         steps.append(
@@ -490,7 +547,85 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             }
         )
 
-    # Step 5: anti-cheat
+    # Step 5: formula-ready output
+    formula_ready_path = calculation_result_dir / "result.json"
+    if (
+        not skip_calculator
+        and not skip_lineage
+        and calculator_input.exists()
+        and lineage_json.exists()
+        and formula_ready_path.exists()
+    ):
+        formula_cmd = [
+            PYTHON,
+            str(BUILD_FORMULA_READY_RESULT),
+            "--calculator-input",
+            str(calculator_input),
+            "--calculation-result",
+            str(formula_ready_path),
+            "--lineage-report",
+            str(lineage_json),
+            "--out",
+            str(formula_ready_json),
+            "--report",
+            str(formula_ready_md),
+        ]
+        formula_step = _run_command("formula_ready", formula_cmd, REPO_ROOT)
+        record_step(formula_step)
+        formula_ready_status = formula_step["status"]
+        formula_ready_data = _load_if_exists(formula_ready_json)
+        if formula_ready_data is not None:
+            formula_ready_summary = _extract_formula_ready_summary(formula_ready_data)
+        if formula_step["status"] == "failed" and not keep_going:
+            result_data = _load_if_exists(calculation_result_dir / "result.json")
+            lineage_data = _load_if_exists(lineage_json)
+            anti_cheat_status = "skipped"
+            generated_files = _extract_generated_files(out_dir)
+            summary = {
+                "verdict": "failed",
+                "anti_cheat_status": anti_cheat_status,
+                "calculator_run": calculator_run,
+                "formula_ready_status": formula_ready_status,
+                "lineage_status": lineage_status,
+                "workbook": str(workbook),
+                "out_dir": str(out_dir),
+                "generated_files": generated_files,
+                "key_totals": _extract_result_summary(result_data),
+                "formula_ready_summary": formula_ready_summary,
+                "lineage_summary": _extract_lineage_summary(lineage_data),
+                "steps": steps,
+                "errors": errors,
+            }
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+            return summary
+    elif skip_calculator or skip_lineage:
+        steps.append(
+            {
+                "name": "formula_ready",
+                "command": [],
+                "command_display": "skipped: calculator or lineage skipped",
+                "status": "skipped",
+                "returncode": None,
+                "stdout": "",
+                "stderr": "",
+            }
+        )
+        formula_ready_status = "skipped"
+    else:
+        steps.append(
+            {
+                "name": "formula_ready",
+                "command": [],
+                "command_display": "skipped: prerequisites missing",
+                "status": "skipped",
+                "returncode": None,
+                "stdout": "",
+                "stderr": "",
+            }
+        )
+        formula_ready_status = "missing"
+
+    # Step 6: anti-cheat
     anti_cheat_cmd = [
         PYTHON,
         str(ANTI_CHEAT),
@@ -503,12 +638,17 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         anti_cheat_cmd.extend(["--calculation-result-dir", str(calculation_result_dir)])
     if lineage_json.exists():
         anti_cheat_cmd.extend(["--lineage-report", str(lineage_json)])
+    if formula_ready_json.exists():
+        anti_cheat_cmd.extend(["--formula-ready-result", str(formula_ready_json)])
     anti_cheat_step = _run_command("anti_cheat", anti_cheat_cmd, REPO_ROOT)
     record_step(anti_cheat_step)
     anti_cheat_status = anti_cheat_step["status"]
 
     result_data = _load_if_exists(calculation_result_dir / "result.json")
     lineage_data = _load_if_exists(lineage_json)
+    if formula_ready_json.exists():
+        formula_ready_data = _load_if_exists(formula_ready_json)
+        formula_ready_summary = _extract_formula_ready_summary(formula_ready_data)
     generated_files = _extract_generated_files(out_dir)
 
     verdict = "clean"
@@ -516,11 +656,14 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         verdict = "failed"
     if anti_cheat_status != "ok":
         verdict = "failed"
+    if formula_ready_status not in {"ok", "skipped"}:
+        verdict = "failed"
 
     summary = {
         "verdict": verdict,
         "anti_cheat_status": "clean" if anti_cheat_status == "ok" else "failed",
         "calculator_run": calculator_run,
+        "formula_ready_status": formula_ready_status,
         "lineage_status": (
             "clean"
             if lineage_status == "ok" and lineage_json.exists()
@@ -532,13 +675,13 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         "out_dir": str(out_dir),
         "generated_files": generated_files,
         "key_totals": _extract_result_summary(result_data),
+        "formula_ready_summary": formula_ready_summary,
         "lineage_summary": _extract_lineage_summary(lineage_data),
         "steps": steps,
         "errors": errors,
     }
 
-    _save_text(full_report_md, _render_markdown(summary))
-    _save_json(full_report_json, _build_json_summary(summary))
+    summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
     return summary
 
 
@@ -555,8 +698,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    workbook = Path(args.workbook)
-    out_dir = Path(args.out_dir)
+    workbook = Path(args.workbook).resolve()
+    out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     summary = _run_flow(
