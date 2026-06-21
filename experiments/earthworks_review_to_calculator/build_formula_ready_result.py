@@ -22,7 +22,11 @@ LAYOUT_MODEL = {
     },
     "helper_zone": {
         "columns": ["P", "Q", "R", "S", "T", "U", "V"],
-        "purpose": "row-level control fields",
+        "purpose": "row-level control fields (numeric values and formulas only)",
+    },
+    "comms_mini_table_zone": {
+        "columns": ["W", "AA+"],
+        "purpose": "per-pipe communications breakdown mini-table",
     },
 }
 
@@ -100,6 +104,94 @@ def _formula_roundup_to_step(value_ref: str | dict[str, Any], step_ref: str | di
         "type": "roundup_to_step",
         "value_ref": _formula_operand(value_ref),
         "step_ref": _formula_operand(step_ref),
+    }
+
+
+def _build_communications_mini_table(
+    calculator_input: dict[str, Any],
+    warnings: list[str],
+) -> dict[str, Any] | None:
+    pipe_items = calculator_input.get("communications_pipe_items", []) or []
+    included = [p for p in pipe_items if p.get("include_in_communications", True)]
+    if not included:
+        return None
+
+    pipe_labels = [f"Тр-{i + 1}" for i in range(len(included))]
+    pipe_lengths = [float(p.get("total_length_m") or 0) for p in included]
+    pipe_total = round(sum(pipe_lengths), 6)
+
+    return {
+        "pipe_labels": pipe_labels,
+        "pipe_lengths": pipe_lengths,
+        "pipe_total": pipe_total,
+        "pipe_count": len(included),
+        "value_rows": {
+            "communications_work": pipe_lengths + [pipe_total],
+        },
+        "start_col": "W",
+    }
+
+
+def _build_trench_routes_mini_table(
+    calculator_input: dict[str, Any],
+    warnings: list[str],
+) -> dict[str, Any] | None:
+    routes = calculator_input.get("trench_routes", []) or []
+    if not routes:
+        return None
+    trench_volume_m3 = _number(calculator_input.get("trench_volume_m3"))
+    labels = []
+    for r in routes:
+        name = cell_text(r.get("name")) or cell_text(r.get("route_code")) or ""
+        labels.append(name if name else f"М-{len(labels) + 1}")
+    volumes = [float(r.get("volume_m3") or 0) for r in routes]
+    routes_total = round(sum(volumes), 6)
+    if trench_volume_m3 is not None and abs(routes_total - trench_volume_m3) > 0.05:
+        warnings.append(
+            f"trench routes total {routes_total} != trench_volume_m3 {trench_volume_m3} "
+            f"(diff={abs(routes_total - trench_volume_m3):.3f}) — расшифровка расходится с параметром"
+        )
+    return {
+        "route_labels": labels,
+        "route_volumes": volumes,
+        "route_total": routes_total,
+        "route_count": len(routes),
+        "header_row": "excavator_jcb",
+        "value_row": "manual_excavation",
+        "start_col": "W",
+    }
+
+
+def _build_helper_data_audit(
+    calculator_input: dict[str, Any],
+    volume_result: dict[str, Any],
+) -> dict[str, Any]:
+    routes = calculator_input.get("trench_routes", []) or []
+    pipe_items = calculator_input.get("communications_pipe_items", []) or []
+    included_pipes = [p for p in pipe_items if p.get("include_in_communications", True)]
+    routes_total = round(sum(float(r.get("volume_m3") or 0) for r in routes), 6) if routes else None
+    pipes_total = round(sum(float(p.get("total_length_m") or 0) for p in included_pipes), 6) if included_pipes else None
+    case_meta = calculator_input.get("case_meta", {}) or {}
+    comms_eff = _number(case_meta.get("communications_length_m_effective")) or _number(volume_result.get("communications_length_m"))
+    trench_volume_m3 = _number(calculator_input.get("trench_volume_m3"))
+    routes_match = (
+        routes_total is not None
+        and trench_volume_m3 is not None
+        and abs(routes_total - trench_volume_m3) <= 0.05
+    )
+    return {
+        "trench_volume_m3": trench_volume_m3,
+        "trench_volume_source": volume_result.get("trench_volume_source"),
+        "manual_excavation_calc_method": calculator_input.get("manual_excavation_calc_method"),
+        "trench_routes_count": len(routes),
+        "trench_routes_total_volume_m3": routes_total,
+        "trench_routes_match_trench_volume_m3": routes_match,
+        "communications_pipe_items_count": len(included_pipes),
+        "communications_length_m_effective": comms_eff,
+        "communications_pipe_items_total_length_m": pipes_total,
+        "geotextile_laying_area_m2": _number(calculator_input.get("geotextile_laying_area_m2")),
+        "geotextile_area_m2": _number(calculator_input.get("geotextile_area_m2")),
+        "sand_base_volume_m3": _number(calculator_input.get("sand_base_volume_m3")),
     }
 
 
@@ -442,33 +534,16 @@ def _build_formula_ready(
         line = _estimate_line_by_code(result_lines, "axis_marking", errors)
         if line is None:
             return missing_row("axis_marking", "смена")
-        axis_source = traced_source(
-            "axis_marking_shifts",
-            fallback_source_type="GENERIC_CALCULATOR_DEFAULTS",
-            fallback_source_path="GENERIC_CALCULATOR_DEFAULTS.axis_marking_shifts",
-            fallback_source_note="default shift count for axis marking",
-        )
         quantity_value = _number(line.get("quantity"))
-        helper_cells = [
-            _helper_cell(
-                "axis_marking_shifts",
-                "P",
-                "Смены выноса осей",
-                calculator_input.get("axis_marking_shifts"),
-                source_type=axis_source["source_type"],
-                source_path=axis_source["source_path"],
-                source_note=axis_source["source_note"],
-            )
-        ]
         return _build_row(
             code="axis_marking",
             estimate_line=line["name"],
             unit=line["unit"],
             quantity_value=quantity_value,
-            quantity_formula_model=_formula_ref("helper_zone.axis_marking_shifts"),
-            quantity_source_type="derived_from_normalized_details",
-            quantity_source_path="helper_zone.axis_marking_shifts",
-            quantity_source_note="row quantity mirrors helper shift count",
+            quantity_formula_model=None,
+            quantity_source_type="GENERIC_CALCULATOR_DEFAULTS",
+            quantity_source_path="GENERIC_CALCULATOR_DEFAULTS.axis_marking_shifts",
+            quantity_source_note="fixed shift count",
             material_unit_price_value=_number(line.get("material_unit_price")) or 0.0,
             material_unit_price_key=None,
             material_unit_price_source=None,
@@ -477,7 +552,7 @@ def _build_formula_ready(
             work_unit_price_key="axis_marking_work_unit_price",
             work_unit_price_source=price_source("axis_marking_work_unit_price"),
             work_total_value=_number(line.get("work_total")) or 0.0,
-            helper_cells=helper_cells,
+            helper_cells=[],
             row_total_value=_number(line.get("line_total")),
         )
 
@@ -934,7 +1009,18 @@ def _build_formula_ready(
         line = _estimate_line_by_code(result_lines, "sand_material", errors)
         if line is None:
             return missing_row("sand_material", "м3")
-        helpers = sand_helper_cells()
+        order_value = _number(volume_result.get("sand_order_volume_m3"))
+        helpers = [
+            _helper_cell(
+                "sand_order_volume_m3",
+                "P",
+                "Заказной объем песка",
+                order_value,
+                source_type="derived_from_normalized_details",
+                source_path="roundup_to_step(sand_total_m3, sand_truck_step_m3)",
+                source_note="ordered sand volume — полная цепочка в строке Отсыпки",
+            )
+        ]
         return _build_row(
             code="sand_material",
             estimate_line=line["name"],
@@ -960,13 +1046,30 @@ def _build_formula_ready(
         line = _estimate_line_by_code(result_lines, "sand_manual_moving", errors)
         if line is None:
             return missing_row("sand_manual_moving", "м3")
-        helpers = sand_helper_cells()
+        work_price = _number(line.get("work_unit_price")) or 0.0
+        if work_price > 0:
+            order_value = _number(volume_result.get("sand_order_volume_m3"))
+            helpers = [
+                _helper_cell(
+                    "sand_order_volume_m3",
+                    "P",
+                    "Заказной объем песка",
+                    order_value,
+                    source_type="derived_from_normalized_details",
+                    source_path="sand_order_volume_m3",
+                    source_note="ordered sand volume",
+                )
+            ]
+            qty_formula_model: dict[str, Any] | None = _formula_ref("helper_zone.sand_order_volume_m3")
+        else:
+            helpers = []
+            qty_formula_model = None
         return _build_row(
             code="sand_manual_moving",
             estimate_line=line["name"],
             unit=line["unit"],
             quantity_value=_number(line.get("quantity")),
-            quantity_formula_model=_formula_ref("helper_zone.sand_order_volume_m3"),
+            quantity_formula_model=qty_formula_model,
             quantity_source_type="derived_from_normalized_details",
             quantity_source_path="helper_zone.sand_order_volume_m3",
             quantity_source_note="row quantity mirrors helper ordered volume",
@@ -974,7 +1077,7 @@ def _build_formula_ready(
             material_unit_price_key=None,
             material_unit_price_source=None,
             material_total_value=_number(line.get("material_total")) or 0.0,
-            work_unit_price_value=_number(line.get("work_unit_price")) or 0.0,
+            work_unit_price_value=work_price,
             work_unit_price_key="sand_manual_moving_work_unit_price",
             work_unit_price_source=price_source("sand_manual_moving_work_unit_price"),
             work_total_value=_number(line.get("work_total")) or 0.0,
@@ -994,21 +1097,17 @@ def _build_formula_ready(
         )
         pipe_items = calculator_input.get("communications_pipe_items", []) or []
         included_count = sum(1 for item in pipe_items if item.get("include_in_communications", item.get("included", True)))
+        case_meta = calculator_input.get("case_meta", {}) or {}
+        comms_length = (
+            case_meta.get("communications_length_m_effective")
+            or _number(volume_result.get("communications_length_m"))
+        )
         helpers = [
             _helper_cell(
-                "communications_pipe_items_count",
-                "P",
-                "Включенные позиции труб",
-                included_count,
-                source_type="normalized.details.communications_pipe_items",
-                source_path="details.communications_pipe_items",
-                source_note="count of included communications pipe rows",
-            ),
-            _helper_cell(
                 "communications_total_length_m",
-                "Q",
+                "P",
                 "Суммарная длина коммуникаций",
-                _number(volume_result.get("communications_length_m")),
+                comms_length,
                 source_type=communications_source["source_type"],
                 source_path=communications_source["source_path"],
                 source_note=communications_source["source_note"],
@@ -1016,16 +1115,19 @@ def _build_formula_ready(
                 excel_formula_exportable=False,
                 reason="value comes from calculator result / derived details",
             ),
-            _helper_cell(
-                "communications_length_calc_method",
-                "R",
-                "Метод расчета длины",
-                calculator_input.get("communications_length_calc_method"),
-                source_type="GENERIC_CALCULATOR_DEFAULTS",
-                source_path="GENERIC_CALCULATOR_DEFAULTS.communications_length_calc_method",
-                source_note="generic communications length method",
-            ),
         ]
+        if code == "communications_work":
+            helpers.append(
+                _helper_cell(
+                    "communications_pipe_items_count",
+                    "Q",
+                    "Включенные позиции труб",
+                    included_count,
+                    source_type="normalized.details.communications_pipe_items",
+                    source_path="details.communications_pipe_items",
+                    source_note="count of included communications pipe rows",
+                )
+            )
         return _build_row(
             code=code,
             estimate_line=line["name"],
@@ -1051,54 +1153,25 @@ def _build_formula_ready(
         line = _estimate_line_by_code(result_lines, "consumables", errors)
         if line is None:
             return missing_row("consumables", "комплект")
-        consumables_source = price_source("consumables_amount")
-        helper_cells = [
-            _helper_cell(
-                "consumables_quantity",
-                "P",
-                "Количество комплекта",
-                1,
-                source_type="literal_system_metadata",
-                source_path="literal_quantity_1",
-                source_note="fixed consumables line quantity",
-            ),
-            _helper_cell(
-                "calc_price_key",
-                "Q",
-                "Ключ цены",
-                "consumables_amount",
-                source_type=consumables_source["source_type"],
-                source_path=consumables_source["source_path"],
-                source_note=consumables_source["source_note"],
-            ),
-            _helper_cell(
-                "consumables_amount",
-                "R",
-                "Фиксированная сумма",
-                calculator_input.get("consumables_amount"),
-                source_type=consumables_source["source_type"],
-                source_path=consumables_source["source_path"],
-                source_note=consumables_source["source_note"],
-            ),
-        ]
+        cons_source = price_source("consumables_amount")
         return _build_row(
             code="consumables",
             estimate_line=line["name"],
             unit=line["unit"],
             quantity_value=_number(line.get("quantity")),
-            quantity_formula_model=_formula_ref("helper_zone.consumables_quantity"),
+            quantity_formula_model=None,
             quantity_source_type="literal_system_metadata",
             quantity_source_path="literal_quantity_1",
             quantity_source_note="fixed consumables quantity",
             material_unit_price_value=_number(line.get("material_unit_price")) or 0.0,
             material_unit_price_key="consumables_amount",
-            material_unit_price_source=consumables_source,
+            material_unit_price_source=cons_source,
             material_total_value=_number(line.get("material_total")) or 0.0,
             work_unit_price_value=_number(line.get("work_unit_price")) or 0.0,
             work_unit_price_key=None,
             work_unit_price_source=None,
             work_total_value=_number(line.get("work_total")) or 0.0,
-            helper_cells=helper_cells,
+            helper_cells=[],
             row_total_value=_number(line.get("line_total")),
         )
 
@@ -1115,6 +1188,10 @@ def _build_formula_ready(
         communications_row("communications_material"),
         consumables_row(),
     ]
+
+    comms_mini_table = _build_communications_mini_table(calculator_input, warnings)
+    trench_routes_mini_table = _build_trench_routes_mini_table(calculator_input, warnings)
+    helper_data_audit = _build_helper_data_audit(calculator_input, volume_result)
 
     rows_with_formula_model = sum(1 for row in rows if row["calc_zone"]["row_total"].get("formula_model"))
     rows_with_control_fields = sum(1 for row in rows if row["helper_zone"].get("cells"))
@@ -1138,6 +1215,9 @@ def _build_formula_ready(
         "section_title": SECTION_TITLE,
         "excel_export_ready": excel_export_ready,
         "layout_model": LAYOUT_MODEL,
+        "communications_mini_table": comms_mini_table,
+        "trench_routes_mini_table": trench_routes_mini_table,
+        "helper_data_audit": helper_data_audit,
         "supported_formula_types": SUPPORTED_FORMULA_TYPES,
         "source_files": {
             "calculator_input": None,
