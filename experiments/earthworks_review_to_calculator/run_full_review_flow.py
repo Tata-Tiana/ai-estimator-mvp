@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import shlex
 import shutil
@@ -11,6 +12,12 @@ from pathlib import Path
 from typing import Any
 
 from normalization import display_number
+from export_formula_ready_to_excel import (
+    build_workbook as _excel_build_workbook,
+    build_report as _excel_build_report,
+    DEFAULT_LOGO_PATH as _EXCEL_DEFAULT_LOGO_PATH,
+    SHEET_NAME as _EXCEL_SHEET_NAME,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -47,6 +54,8 @@ GENERATED_FILES_TO_CLEAN = (
     "formula_ready_report.md",
     "calculation_result_report.md",
     "hardcode_audit_report.md",
+    "earthworks_formula_review.xlsx",
+    "excel_formula_export_report.md",
     "full_review_flow_report.md",
     "full_review_flow_report.json",
 )
@@ -214,6 +223,8 @@ def _extract_generated_files(out_dir: Path) -> list[str]:
         out_dir / "calculation_result" / "earthworks_result.json",
         out_dir / "calculation_result" / "earthworks_result.md",
         out_dir / "calculation_result_report.md",
+        out_dir / "earthworks_formula_review.xlsx",
+        out_dir / "excel_formula_export_report.md",
         out_dir / "full_review_flow_report.md",
         out_dir / "full_review_flow_report.json",
     ]
@@ -259,6 +270,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
             f"- layout_model: {'yes' if summary['formula_ready_summary']['layout_model_present'] else 'no'}",
             f"- row_count_note: {_format_display(summary['formula_ready_summary']['row_count_note'])}",
             f"- errors: {_format_display(summary['formula_ready_summary']['errors'])}",
+            f"- excel_export: {summary.get('excel_export_status', 'missing')}",
             "",
             "## Data lineage summary",
             f"- untraced_fields: {_format_display(summary['lineage_summary']['untraced_fields'])}",
@@ -304,6 +316,7 @@ def _build_json_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "generated_files": summary["generated_files"],
         "key_totals": summary["key_totals"],
         "formula_ready_status": summary["formula_ready_status"],
+        "excel_export_status": summary.get("excel_export_status", "missing"),
         "formula_ready_summary": summary["formula_ready_summary"],
         "lineage_summary": summary["lineage_summary"],
         "anti_cheat_status": summary["anti_cheat_status"],
@@ -324,7 +337,108 @@ def _write_full_flow_report(summary: dict[str, Any], md_path: Path, json_path: P
     return current_summary
 
 
-def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool) -> dict[str, Any]:
+def _run_excel_export(
+    formula_ready_json: Path,
+    out_dir: Path,
+    section_number: int | str | None,
+    estimate_date: str | None,
+) -> dict[str, Any]:
+    xlsx_path = out_dir / "earthworks_formula_review.xlsx"
+    report_path = out_dir / "excel_formula_export_report.md"
+    step_name = "excel_export"
+
+    skipped = {
+        "name": step_name,
+        "command": [],
+        "command_display": "skipped: formula_ready_result.json missing",
+        "status": "skipped",
+        "returncode": None,
+        "stdout": "",
+        "stderr": "",
+    }
+
+    if not formula_ready_json.exists():
+        return skipped
+
+    step: dict[str, Any] = {
+        "name": step_name,
+        "command": [],
+        "command_display": f"build_workbook({formula_ready_json.name}) → {xlsx_path.name}",
+        "status": "failed",
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "",
+    }
+
+    try:
+        data = _load_json(formula_ready_json)
+
+        if not data.get("excel_export_ready"):
+            step["stderr"] = "formula_ready_result.json not marked excel_export_ready=true"
+            print(f"[{step_name}] failed")
+            return step
+
+        raw_address = (
+            (data.get("meta") or {}).get("project_address")
+            or (data.get("project_meta") or {}).get("project_address")
+        )
+        address = raw_address or "Адрес объекта: —"
+        address_missing = not raw_address
+
+        sn = section_number if section_number is not None else 2
+
+        ed = (
+            estimate_date
+            or (data.get("meta") or {}).get("estimate_date")
+            or (data.get("project_meta") or {}).get("estimate_date")
+        )
+        sheet_title = str(ed) if ed else datetime.date.today().strftime("%d.%m.%Y")
+
+        print(f"[{step_name}] $ build_workbook(section={sn}, sheet={sheet_title!r})")
+
+        wb, row_stats, warnings, total_formula_count = _excel_build_workbook(
+            data, _EXCEL_DEFAULT_LOGO_PATH, address, sn, sheet_title=sheet_title,
+        )
+
+        if address_missing:
+            warnings.append("project address missing in formula_ready_result — showing fallback")
+
+        wb.save(str(xlsx_path))
+
+        section_title = data.get("section_title", _EXCEL_SHEET_NAME)
+        report_text = _excel_build_report(
+            out_path=xlsx_path,
+            formula_ready_path=formula_ready_json,
+            row_stats=row_stats,
+            warnings=warnings,
+            total_formula_count=total_formula_count,
+            section_title=section_title,
+            helper_data_audit=data.get("helper_data_audit"),
+            sheet_title=sheet_title,
+        )
+        report_path.write_text(report_text, encoding="utf-8")
+
+        rows_count = len(row_stats)
+        stdout = (
+            f"excel: {xlsx_path}\n"
+            f"report: {report_path}\n"
+            f"rows_exported: {rows_count}\n"
+            f"formulas_created: {total_formula_count}\n"
+        )
+        print(stdout, end="")
+        step["status"] = "ok"
+        step["returncode"] = 0
+        step["stdout"] = stdout
+        print(f"[{step_name}] ok")
+    except Exception as exc:
+        step["stderr"] = f"error: {exc}"
+        print(f"[{step_name}] error: {exc}", file=sys.stderr)
+        print(f"[{step_name}] failed")
+
+    return step
+
+
+def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool, section_number: int | str | None = None, estimate_date: str | None = None) -> dict[str, Any]:
     if not skip_clean:
         _clean_generated_outputs(out_dir)
 
@@ -644,6 +758,11 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
     record_step(anti_cheat_step)
     anti_cheat_status = anti_cheat_step["status"]
 
+    # Step 7: Excel export
+    excel_step = _run_excel_export(formula_ready_json, out_dir, section_number, estimate_date)
+    record_step(excel_step)
+    excel_export_status = excel_step["status"]
+
     result_data = _load_if_exists(calculation_result_dir / "result.json")
     lineage_data = _load_if_exists(lineage_json)
     if formula_ready_json.exists():
@@ -658,12 +777,15 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         verdict = "failed"
     if formula_ready_status not in {"ok", "skipped"}:
         verdict = "failed"
+    if excel_export_status not in {"ok", "skipped"}:
+        verdict = "failed"
 
     summary = {
         "verdict": verdict,
         "anti_cheat_status": "clean" if anti_cheat_status == "ok" else "failed",
         "calculator_run": calculator_run,
         "formula_ready_status": formula_ready_status,
+        "excel_export_status": excel_export_status,
         "lineage_status": (
             "clean"
             if lineage_status == "ok" and lineage_json.exists()
@@ -687,8 +809,10 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the full local earthworks review flow")
-    parser.add_argument("--workbook", required=True, help="Path to local review_workbook.xlsx")
+    parser.add_argument("--review-workbook", required=True, help="Path to local review_workbook.xlsx")
     parser.add_argument("--out-dir", required=True, help="Directory for generated outputs")
+    parser.add_argument("--section-number", type=int, default=2, help="Section number in the estimate (default: 2)")
+    parser.add_argument("--estimate-date", default=None, help="Estimate date DD.MM.YYYY for Excel tab name (default: today)")
     parser.add_argument("--skip-clean", action="store_true", help="Skip cleaning generated outputs first")
     parser.add_argument("--skip-calculator", action="store_true", help="Skip running the calculator step")
     parser.add_argument("--skip-lineage", action="store_true", help="Skip building the input lineage report")
@@ -698,7 +822,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    workbook = Path(args.workbook).resolve()
+    workbook = Path(args.review_workbook).resolve()
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -709,6 +833,8 @@ def main(argv: list[str] | None = None) -> int:
         skip_calculator=args.skip_calculator,
         skip_lineage=args.skip_lineage,
         keep_going=args.keep_going,
+        section_number=args.section_number,
+        estimate_date=args.estimate_date,
     )
 
     return 0 if summary["verdict"] == "clean" else 1
