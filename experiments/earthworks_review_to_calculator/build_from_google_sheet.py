@@ -7,9 +7,11 @@ import os
 import shlex
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
+from job_state import init_or_update_from_stage1, save_job_state, update_after_build
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BASE_DIR = Path(__file__).resolve().parent
@@ -21,19 +23,6 @@ DOWNLOAD_FILENAME = "downloaded_review_workbook.xlsx"
 
 RUN_FULL_FLOW = BASE_DIR / "run_full_review_flow.py"
 
-
-def _load_metadata(stage1_job_dir: Path) -> dict:
-    metadata_path = stage1_job_dir / "google" / "google_sheet_metadata.json"
-    if not metadata_path.exists():
-        raise FileNotFoundError(f"google_sheet_metadata.json not found: {metadata_path}")
-    data = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if not data.get("spreadsheet_id"):
-        raise ValueError(f"spreadsheet_id is empty in {metadata_path}")
-    if data.get("status") != "published":
-        raise ValueError(
-            f"Google Sheet metadata status is not published (got: {data.get('status')!r})"
-        )
-    return data
 
 
 def _build_credentials():
@@ -159,8 +148,18 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[download] reading metadata from {stage1_job_dir / 'google' / 'google_sheet_metadata.json'}")
-    metadata = _load_metadata(stage1_job_dir)
+    print(f"[job_state] initialising from Stage1 metadata")
+    state = init_or_update_from_stage1(stage1_job_dir)
+    started_at = datetime.now().isoformat(timespec="seconds")
+    state["last_build"] = {
+        "status": "running",
+        "started_at": started_at,
+        "out_dir": str(out_dir),
+    }
+    save_job_state(stage1_job_dir, state)
+    print(f"[job_state] ok — {stage1_job_dir / 'job_state.json'}")
+
+    metadata = state["google_sheet"]
     spreadsheet_id = metadata["spreadsheet_id"]
     print(f"[download] spreadsheet_id = {spreadsheet_id}")
     print(f"[download] url = {metadata.get('url', '—')}")
@@ -188,10 +187,14 @@ def main(argv: list[str] | None = None) -> int:
         data_start_row=args.data_start_row,
     )
 
+    print()
+    update_after_build(stage1_job_dir, out_dir, returncode=rc, started_at=started_at)
+    print(f"[job_state] updated — {stage1_job_dir / 'job_state.json'}")
+
     if rc != 0:
-        print(f"\n[build_from_google_sheet] FAIL (full_flow returncode={rc})", file=sys.stderr)
+        print(f"[build_from_google_sheet] FAIL (full_flow returncode={rc})", file=sys.stderr)
         return rc
-    print("\n[build_from_google_sheet] PASS")
+    print(f"[build_from_google_sheet] PASS")
     return 0
 
 

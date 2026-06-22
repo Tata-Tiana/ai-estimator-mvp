@@ -1,0 +1,149 @@
+from __future__ import annotations
+
+import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+JOB_STATE_FILENAME = "job_state.json"
+SCHEMA_VERSION = 1
+
+
+def _rel_to_repo(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def _extract_project_name(job_id: str) -> str:
+    marker = "_earthworks_stage1_"
+    if marker in job_id:
+        return job_id.split(marker)[0].upper()
+    return job_id
+
+
+def load_job_state(stage1_job_dir: Path) -> dict[str, Any]:
+    path = stage1_job_dir / JOB_STATE_FILENAME
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    return {}
+
+
+def save_job_state(stage1_job_dir: Path, state: dict[str, Any]) -> None:
+    path = stage1_job_dir / JOB_STATE_FILENAME
+    path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def init_or_update_from_stage1(stage1_job_dir: Path) -> dict[str, Any]:
+    state = load_job_state(stage1_job_dir)
+    job_id = stage1_job_dir.name
+
+    metadata_path = stage1_job_dir / "google" / "google_sheet_metadata.json"
+    if not metadata_path.exists():
+        raise FileNotFoundError(f"google_sheet_metadata.json not found: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+
+    spreadsheet_id = metadata.get("spreadsheet_id", "")
+    if not spreadsheet_id:
+        raise ValueError(f"spreadsheet_id is empty in {metadata_path}")
+
+    project_name = state.get("project_name") or _extract_project_name(job_id)
+
+    state["schema_version"] = SCHEMA_VERSION
+    state["job_id"] = job_id
+    state["project_name"] = project_name
+    state["section_code"] = "earthworks"
+    state["section_title"] = "Земляные работы"
+    state["stage1"] = {
+        "job_dir": _rel_to_repo(stage1_job_dir),
+        "status": "prepared",
+        "summary_json": "reports/stage1_summary.json",
+    }
+    state["google_sheet"] = {
+        "status": metadata.get("status", "unknown"),
+        "spreadsheet_id": spreadsheet_id,
+        "url": metadata.get("url", ""),
+        "sharing": metadata.get("sharing", {"mode": "owner_only", "type": None, "role": None, "status": "skipped"}),
+        "metadata_json": "google/google_sheet_metadata.json",
+        "local_review_workbook": "google/review_workbook.xlsx",
+    }
+
+    if "last_build" not in state:
+        state["last_build"] = {"status": "not_built"}
+
+    return state
+
+
+def update_after_build(
+    stage1_job_dir: Path,
+    out_dir: Path,
+    returncode: int,
+    started_at: str,
+) -> dict[str, Any]:
+    state = load_job_state(stage1_job_dir)
+    now = datetime.now().isoformat(timespec="seconds")
+    out_dir_rel = _rel_to_repo(out_dir)
+
+    if returncode != 0:
+        state["last_build"] = {
+            "status": "failed",
+            "started_at": started_at,
+            "failed_at": now,
+            "out_dir": out_dir_rel,
+            "returncode": returncode,
+            "error": "full flow failed",
+            "full_flow_report": "full_review_flow_report.json",
+            "excel_validation_report": "excel_validation_report.md",
+        }
+        save_job_state(stage1_job_dir, state)
+        return state
+
+    totals: dict[str, Any] = {}
+    key_values: dict[str, Any] = {}
+    result_path = out_dir / "calculation_result" / "result.json"
+    if result_path.exists():
+        result_data = json.loads(result_path.read_text(encoding="utf-8"))
+        it = result_data.get("internal_totals") or {}
+        vr = result_data.get("volume_result") or {}
+        inp = result_data.get("inputs") or {}
+        totals = {
+            "materials": it.get("internal_materials_total"),
+            "works": it.get("internal_works_total"),
+            "section_total": it.get("internal_section_total"),
+        }
+        key_values = {
+            "pit_area_m2": inp.get("pit_area_m2"),
+            "consumables_amount": inp.get("consumables_amount"),
+            "manual_excavation_total_m3": vr.get("manual_excavation_total_m3"),
+            "excavator_shifts": vr.get("excavator_shifts"),
+        }
+
+    excel_validation = "unknown"
+    full_report_path = out_dir / "full_review_flow_report.json"
+    if full_report_path.exists():
+        full_report = json.loads(full_report_path.read_text(encoding="utf-8"))
+        val_status = full_report.get("excel_validation_status", "")
+        if val_status == "ok":
+            excel_validation = "PASS"
+        elif val_status == "failed":
+            excel_validation = "FAIL"
+        else:
+            excel_validation = val_status or "unknown"
+
+    state["last_build"] = {
+        "status": "passed",
+        "started_at": started_at,
+        "built_at": now,
+        "out_dir": out_dir_rel,
+        "downloaded_review_workbook": "downloaded_review_workbook.xlsx",
+        "final_excel": "earthworks_formula_review.xlsx",
+        "excel_validation": excel_validation,
+        "full_flow_report": "full_review_flow_report.json",
+        "excel_validation_report": "excel_validation_report.md",
+        "totals": totals,
+        "key_values": key_values,
+    }
+    save_job_state(stage1_job_dir, state)
+    return state
