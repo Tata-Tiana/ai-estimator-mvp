@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from job_locator import resolve_stage1_job_dir
 from job_state import JOB_STATE_FILENAME, load_job_state
 
 
@@ -59,19 +60,37 @@ def print_status(state: dict) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Show earthworks job status")
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "--stage1-job-dir",
-        required=True,
         help="Path to Stage1 job directory (contains job_state.json)",
+    )
+    group.add_argument(
+        "--job-id",
+        help="Job ID (folder name inside jobs root)",
+    )
+    parser.add_argument(
+        "--jobs-root",
+        default=None,
+        help="Override default jobs root directory",
     )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    stage1_job_dir = Path(args.stage1_job_dir).resolve()
-    job_state_path = stage1_job_dir / JOB_STATE_FILENAME
 
+    if args.stage1_job_dir:
+        stage1_job_dir = Path(args.stage1_job_dir).resolve()
+    else:
+        jobs_root = Path(args.jobs_root).resolve() if args.jobs_root else None
+        try:
+            stage1_job_dir = resolve_stage1_job_dir(args.job_id, jobs_root)
+        except (FileNotFoundError, NotADirectoryError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+
+    job_state_path = stage1_job_dir / JOB_STATE_FILENAME
     if not job_state_path.exists():
         print(f"job_state.json not found. Run build_from_google_sheet.py first.")
         print(f"Expected: {job_state_path}")
