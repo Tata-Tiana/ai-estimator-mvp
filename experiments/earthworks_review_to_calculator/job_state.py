@@ -100,6 +100,43 @@ def update_source_and_parser(
     return state
 
 
+def update_after_recreate(
+    stage1_job_dir: Path,
+    old_google_sheet: dict[str, Any],
+    new_metadata: dict[str, Any],
+    archive_dir_rel: str,
+    reason: str,
+    recreated_at: str,
+) -> dict[str, Any]:
+    """Archive old Google Sheet reference and write new one into job_state."""
+    state = load_job_state(stage1_job_dir)
+
+    history: list[dict[str, Any]] = state.get("google_sheet_history", [])
+    if old_google_sheet.get("spreadsheet_id"):
+        history.append({
+            "archived_at": recreated_at,
+            "spreadsheet_id": old_google_sheet.get("spreadsheet_id", ""),
+            "spreadsheet_url": old_google_sheet.get("url", ""),
+            "local_archive_dir": archive_dir_rel,
+            "reason": reason,
+        })
+    state["google_sheet_history"] = history
+
+    state["google_sheet"] = {
+        "status": new_metadata.get("status", "unknown"),
+        "spreadsheet_id": new_metadata.get("spreadsheet_id", ""),
+        "url": new_metadata.get("url", ""),
+        "sharing": new_metadata.get("sharing", {"mode": "owner_only", "type": None, "role": None, "status": "skipped"}),
+        "metadata_json": "google/google_sheet_metadata.json",
+        "local_review_workbook": "google/review_workbook.xlsx",
+        "recreated_at": recreated_at,
+        "recreate_reason": reason,
+    }
+
+    save_job_state(stage1_job_dir, state)
+    return state
+
+
 def update_after_build(
     stage1_job_dir: Path,
     out_dir: Path,
