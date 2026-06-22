@@ -12,6 +12,16 @@ FORBIDDEN_SOURCE_STRINGS = [
     "normalize_price_registry_sheet",
 ]
 
+# Drawing titles that legitimately contain communication pipe specs.
+# Different projects name this sheet differently.
+VALID_COMMUNICATION_SCHEME_TITLES = {
+    "Схема коммуникаций",
+    "Схема ввода инженерных сетей",
+    "Схема инженерных сетей",
+    "Схема наружных инженерных сетей",
+    "Схема наружных сетей",
+}
+
 EXPECTED_05_HEADERS = [
     "Параметр",
     "technical_key",
@@ -174,8 +184,10 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
                         errors.append(f"{technical_key}: must point fragment to 03_Детали объемов when found.")
                     if str(ws.cell(row, header_map.get("confidence", 12)).value or "") not in ("high", "medium"):
                         errors.append(f"{technical_key}: must have high or medium confidence when found.")
-                    if technical_key == "communications_pipe_items" and "Схема коммуникаций" not in str(ws.cell(row, header_map.get("Источник", 6)).value or ""):
-                        errors.append("communications_pipe_items must source from `Схема коммуникаций` when found.")
+                    if technical_key == "communications_pipe_items":
+                        src_val = str(ws.cell(row, header_map.get("Источник", 6)).value or "")
+                        if not any(t in src_val for t in VALID_COMMUNICATION_SCHEME_TITLES):
+                            errors.append("communications_pipe_items must source from a valid communication scheme when found.")
 
             comm_len_row = rows_by_key.get("communications_length_m")
             if comm_len_row:
@@ -225,8 +237,8 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
                 if "Таблица траншей" not in str(ws05.cell(row, 12).value or ""):
                     errors.append("05_Кандидаты parser: `trench_routes` fragment must mention `Таблица траншей` when found.")
             if technical_key == "communications_pipe_items" and str(ws05.cell(row, 9).value or ""):
-                if str(ws05.cell(row, 8).value or "") != "Схема коммуникаций":
-                    errors.append("05_Кандидаты parser: `communications_pipe_items` must source from `Схема коммуникаций` when found.")
+                if str(ws05.cell(row, 8).value or "") not in VALID_COMMUNICATION_SCHEME_TITLES:
+                    errors.append("05_Кандидаты parser: `communications_pipe_items` must source from a valid communication scheme when found.")
                 if str(ws05.cell(row, 9).value or "") != "communications_scheme":
                     errors.append("05_Кандидаты parser: `communications_pipe_items` must use `communications_scheme` when found.")
 
@@ -362,8 +374,8 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
             name = str(row[1] or "")
             included = str(row[10] or "")
             source = str(row[11] or "")
-            if source and "Схема коммуникаций" not in source:
-                errors.append(f"{name}: communication source must mention `Схема коммуникаций`.")
+            if source and not any(t in source for t in VALID_COMMUNICATION_SCHEME_TITLES):
+                errors.append(f"{name}: communication source must mention a valid communication scheme.")
             if included and included != "да":
                 errors.append(f"{name}: communication `Включено` must be `да`, got {included}")
 
