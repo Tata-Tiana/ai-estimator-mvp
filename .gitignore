@@ -18,6 +18,10 @@ experiments/demo_usv_app/output/*
 !experiments/demo_usv_app/output/.gitkeep
 experiments/demo_usv_app/assets/brick_house_logo_raw.png
 
+# Telegram bot uploads and logs
+experiments/earthworks_review_to_calculator/data/telegram_uploads/
+experiments/earthworks_review_to_calculator/data/telegram_logs/
+
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*
 !experiments/meeting_analysis/input/README.md

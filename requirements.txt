@@ -7,3 +7,4 @@ pdfplumber
 pytest
 openai
 streamlit
+pyTelegramBotAPI>=4.34.0
