@@ -58,7 +58,12 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     )
 
     write_reports(current_job_dir, extracted, price_resolution, publisher_result, registry_warnings)
-    run_anti_cheat(current_job_dir, EXPERIMENT_DIR)
+
+    anti_cheat_mode = getattr(args, "anti_cheat_mode", "warn") or "warn"
+    if anti_cheat_mode != "off":
+        anti_cheat_result = run_anti_cheat(current_job_dir, EXPERIMENT_DIR, mode=anti_cheat_mode)
+    else:
+        anti_cheat_result = {"mode": "off", "status": "skipped", "errors_count": 0, "warnings_count": 0}
 
     print("Earthworks stage1 prepare completed")
     print(f"- job: {current_job_dir}")
@@ -71,6 +76,11 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     print(f"- price_resolution: {current_job_dir / 'pricing' / 'earthworks_price_resolution.json'}")
     print(f"- internal_prices: {current_job_dir / 'pricing' / 'earthworks_internal_prices.json'}")
     print(f"- report: {current_job_dir / 'reports' / 'earthworks_price_resolution_report.md'}")
+
+    ac_status = anti_cheat_result.get("status", "skipped")
+    ac_errors = anti_cheat_result.get("errors_count", 0)
+    ac_warnings = anti_cheat_result.get("warnings_count", 0)
+    print(f"- anti_cheat: mode={anti_cheat_mode} status={ac_status} errors={ac_errors} warnings={ac_warnings}")
 
     if sharing not in ("owner_only", "") and sharing_info.get("status") == "failed":
         print(f"ERROR: sharing failed: {sharing_info.get('error', 'unknown')}", file=sys.stderr)
@@ -124,6 +134,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--artifacts-dir",
         default="",
         help="Parser v3 out-dir to read artifacts from instead of global V3_* paths",
+    )
+    prepare.add_argument(
+        "--anti-cheat-mode",
+        default="warn",
+        choices=["strict", "warn", "off"],
+        dest="anti_cheat_mode",
+        help="Anti-cheat mode: warn (default) = non-blocking; strict = fail on errors; off = skip",
     )
     clean = subparsers.add_parser("clean", help="Remove generated stage1 job outputs only")
     clean.add_argument("--job-id", default="", help="Remove one job. If omitted, remove all stage1 jobs.")

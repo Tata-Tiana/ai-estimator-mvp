@@ -191,7 +191,10 @@ def handle_document(message: telebot.types.Message) -> None:
     url      = data.get("spreadsheet_url", "нет")
     pr       = data.get("parser_run", {})
     cands    = pr.get("candidates_count", "?")
-    errors   = pr.get("errors", [])
+    parser_errors = pr.get("errors", [])
+    ac       = data.get("anti_cheat", {})
+    ac_status = ac.get("status", "")
+    ac_errors = ac.get("errors_count", 0)
 
     text = (
         f"Готово ✅\n\n"
@@ -199,8 +202,10 @@ def handle_document(message: telebot.types.Message) -> None:
         f"Таблица для проверки:\n{url}\n\n"
         f"Парсер нашёл кандидатов: {cands}"
     )
-    if errors:
-        text += f"\n⚠️ Ошибки парсера: {len(errors)}"
+    if parser_errors:
+        text += f"\n⚠️ Ошибки парсера: {len(parser_errors)}"
+    if ac_status == "warnings" and ac_errors > 0:
+        text += f"\n\nℹ️ Автопроверка нашла {ac_errors} замечани{'е' if ac_errors == 1 else 'я' if ac_errors < 5 else 'й'} — это не блокирует работу. Проверьте Google Sheet вручную."
     text += f"\n\nПроверьте и заполните Google Sheet.\nПосле проверки отправьте:\n/build {job_id}"
 
     bot.reply_to(message, text)

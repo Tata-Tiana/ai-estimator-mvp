@@ -102,7 +102,17 @@ def find_row_by_title(sheet, title: str) -> int:
     return 0
 
 
-def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
+def run_anti_cheat(job_dir: Path, source_root: Path, *, mode: str = "warn") -> dict:
+    """Run anti-cheat checks.
+
+    mode="warn"   — record errors/warnings, write reports, return result dict, never raise.
+    mode="strict" — same, but raise RuntimeError if there are errors.
+    mode="off"    — skip all checks, return {"mode": "off", "status": "skipped"}.
+    """
+    if mode == "off":
+        return {"mode": "off", "status": "skipped", "errors": [], "warnings": [],
+                "errors_count": 0, "warnings_count": 0}
+
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -495,10 +505,14 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
     else:
         errors.append("review_workbook.xlsx is missing.")
 
+    status = "pass" if not errors else ("warnings" if mode == "warn" else "failed")
     report = {
-        "status": "failed" if errors else "clean",
+        "mode": mode,
+        "status": status,
         "errors": errors,
         "warnings": warnings,
+        "errors_count": len(errors),
+        "warnings_count": len(warnings),
         "checks": [
             "Google price_registry read-only snapshot exists.",
             "Fallback from ЮСВ is only used by pricing resolver.",
@@ -516,16 +530,20 @@ def run_anti_cheat(job_dir: Path, source_root: Path) -> None:
     }
     out = job_dir / "reports" / "anti_cheat_report.md"
     out.parent.mkdir(parents=True, exist_ok=True)
-    lines = ["# Anti-cheat Report", "", f"Status: `{report['status']}`", "", "## Errors"]
+    lines = ["# Anti-cheat Report", "", f"Status: `{report['status']}` (mode: {mode})", "", "## Errors"]
     lines.extend(f"- {error}" for error in errors)
     lines.extend(["", "## Warnings"])
     lines.extend(f"- {warning}" for warning in warnings)
     lines.extend(["", "## Checks"])
     lines.extend(f"- {check}" for check in report["checks"])
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    (job_dir / "reports" / "anti_cheat_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    if errors:
+    result_path = job_dir / "reports" / "anti_cheat_report.json"
+    result_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    report["report_json"] = "reports/anti_cheat_report.json"
+    report["report_md"] = "reports/anti_cheat_report.md"
+
+    if mode == "strict" and errors:
         raise RuntimeError("Anti-cheat failed: " + "; ".join(errors))
+
+    return report

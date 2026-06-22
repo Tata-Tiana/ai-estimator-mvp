@@ -122,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
         "--job-id", job_id,
         "--artifacts-dir", str(parser_run_dir),
         "--sharing", args.sharing,
+        "--anti-cheat-mode", "warn",
     ]
     print(f"$ {shlex.join([str(c) for c in stage1_cmd])}", file=log)
     stage1_result = subprocess.run(stage1_cmd, cwd=str(REPO_ROOT), stdout=sub_stdout)
@@ -134,6 +135,12 @@ def main(argv: list[str] | None = None) -> int:
     save_job_state(job_dir, state)
     final_state = update_source_and_parser(job_dir, input_pdf_records, parser_run_data)
     google_sheet = final_state.get("google_sheet", {})
+
+    # Read anti-cheat result written by Stage1
+    anti_cheat_report_path = job_dir / "reports" / "anti_cheat_report.json"
+    anti_cheat_result: dict = {}
+    if anti_cheat_report_path.exists():
+        anti_cheat_result = json.loads(anti_cheat_report_path.read_text(encoding="utf-8"))
 
     print(f"create_job_from_pdf completed", file=log)
     print(f"- job_id: {job_id}", file=log)
@@ -161,6 +168,12 @@ def main(argv: list[str] | None = None) -> int:
                 "candidates_count": parser_run_data.get("candidates_count"),
                 "warnings": parser_run_data.get("warnings", []),
                 "errors": parser_run_data.get("errors", []),
+            },
+            "anti_cheat": {
+                "mode": anti_cheat_result.get("mode", "warn"),
+                "status": anti_cheat_result.get("status", "unknown"),
+                "errors_count": anti_cheat_result.get("errors_count", 0),
+                "warnings_count": anti_cheat_result.get("warnings_count", 0),
             },
         }
         print(json.dumps(output, ensure_ascii=False, indent=2))

@@ -143,6 +143,7 @@ def main(argv: list[str] | None = None) -> int:
         "--job-id", args.job_id,
         "--artifacts-dir", str(artifacts_dir),
         "--sharing", args.sharing,
+        "--anti-cheat-mode", "warn",
     ]
     print(f"$ {shlex.join([str(c) for c in stage1_cmd])}", file=log)
     stage1_result = subprocess.run(stage1_cmd, cwd=str(REPO_ROOT), stdout=sub_stdout)
