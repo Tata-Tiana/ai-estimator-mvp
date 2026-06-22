@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-19`.
+Дата актуализации: `2026-06-22`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -484,37 +484,92 @@ experiments/earthworks_parser_google_stage1/
 
 ## 0.10. Earthworks Review To Calculator
 
-Следующий локальный мост между stage1 и расчётным контуром:
+Полный сквозной контур сборки сметы земляных работ от Google Sheet до подписанного Excel:
 
 ```text
 experiments/earthworks_review_to_calculator/
 ```
 
-Назначение слоя:
+### Что уже сделано
 
-- читать локальный `review_workbook.xlsx`;
-- собирать `review_values_normalized.json`;
-- строить `earthworks_calculation_input.json`;
-- строить `input_lineage_report.md/json`;
-- запускать существующий `earthworks_calculator` на review input;
-- делать `full_review_flow_report.md/json`;
-- держать diagnostic comparison как отдельную диагностику, а не как production dependency.
+**8-шаговый full flow** (`run_full_review_flow.py`):
 
-Что уже сделано:
+```text
+1. review_reader      — читает листы 01–03 review_workbook.xlsx → review_values_normalized.json
+2. calculator_input   — собирает earthworks_calculation_input.json
+3. lineage_report     — строит input_lineage_report.md/json
+4. calculator         — запускает earthworks_calculator → calculation_result/result.json
+5. formula_ready      — собирает formula_ready_result.json
+6. anti_cheat         — cross-check всех слоёв
+7. excel_export       — генерирует earthworks_formula_review.xlsx с живыми формулами
+8. excel_validation   — layout-aware валидация Excel (section_row / data_start_row)
+```
 
-- review reader читает листы 01–03 и технические листы stage1;
-- sheet 02 использует `calc_price_key` как source of truth для цен;
-- builder input использует `GENERIC_CALCULATOR_DEFAULTS`, а не старый fixture;
-- lineages показывают происхождение project quantities, prices и defaults;
-- full local flow запускается одной командой `run_full_review_flow.py`;
-- anti-cheat умеет проверять normalized JSON, calculator input, result, lineage report и comparison report.
+**Google Sheet интеграция** (`build_from_google_sheet.py`):
 
-Что специально не входит в этот контур:
+- скачивает Google Sheet через Drive API → xlsx;
+- восстанавливает скрытые колонки K:N в `02_Цены себестоимости` из локальной копии (Google Sheets обрезает их при экспорте);
+- запускает full flow;
+- обновляет `job_state.json`.
 
-- Google API;
-- изменение stage1;
-- изменение `earthworks_calculator`;
-- back-write в `price_registry`.
+**Sharing Google Sheet** (Stage1 `--sharing`):
+
+- `owner_only`, `anyone_reader`, `anyone_writer`;
+- устанавливается через `drive.permissions().create()`.
+
+**Job state** (`job_state.py`, `job_state.json` в Stage1 job dir):
+
+- паспорт заказа: `job_id`, `project_name`, `google_sheet`, `last_build`;
+- `last_build` содержит `excel_validation`, `totals`, `key_values`, `final_excel`;
+- пути хранятся относительно `REPO_ROOT`.
+
+**Job ID команды** (Шаг 6):
+
+- `job_locator.py` — точный резолвер `job_id → Path`;
+- `build_job.py` — обёртка с `--job-id`, создаёт timestamped out-dir `outputs/jobs/<job_id>/build_YYYYMMDD_HHMMSS/`;
+- `show_job_status.py` — принимает `--job-id` или `--stage1-job-dir`.
+
+### Проверенный demo job
+
+```text
+job_id: юсв_earthworks_stage1_20260622_191437
+sharing: anyone_writer / applied / writer
+full_flow_status: clean
+excel_validation: PASS
+section_total: 848 699
+```
+
+### Что специально не входит
+
+- Google API изменения вне download/sharing;
+- изменения `earthworks_calculator`;
+- изменения Stage1 parser core;
+- back-write в `price_registry`;
+- Telegram, n8n, Supabase, web-server.
+
+### Команды
+
+```bash
+# создать Stage1 job с sharing
+python experiments/earthworks_parser_google_stage1/run_stage1.py prepare \
+  --sharing anyone_writer
+
+# собрать смету по job_id
+python experiments/earthworks_review_to_calculator/build_job.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437" \
+  --section-number 2 \
+  --estimate-date 21.06.2026
+
+# посмотреть статус
+python experiments/earthworks_review_to_calculator/show_job_status.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437"
+```
+
+Отчёт:
+
+```text
+docs/report_earthworks_review_to_calculator.md
+```
 
 ## 1. Цель проекта
 

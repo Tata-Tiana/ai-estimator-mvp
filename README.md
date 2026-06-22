@@ -27,6 +27,7 @@ docs/change_log.md
 ```text
 docs/report_pdf_parser.md
 docs/report_earthworks_parser_google_stage1.md
+docs/report_earthworks_review_to_calculator.md
 docs/report_earthworks_calculator.md
 docs/report_foundation_slab_calculator.md
 docs/report_floor_slab_1_calculator.md
@@ -40,12 +41,12 @@ docs/report_load_bearing_walls_lintels_calculator.md
 ## Последняя расчётная контрольная точка
 
 ```text
-branch: feature/ai-project-card
-commit: see latest git log entry after pricing-layer commit
-date: 2026-05-31
+branch: feature/foundation-slab-calculator-standards
+commit: 9aee252 Add job id commands for earthworks builds
+date: 2026-06-22
 ```
 
-Это актуальная зафиксированная расчётная база проекта: экспериментальные калькуляторы, единые `price_code`, подготовленный `price_registry_v3`, pricing-layer с fallback и handoff-документация сохранены в git.
+Это актуальная зафиксированная расчётная база проекта: полный сквозной контур земляных работ от Google Sheet до Excel-сметы с job_state, sharing и job_id командами сохранён в git.
 
 ## Что сейчас работает
 
@@ -119,17 +120,30 @@ experiments/earthworks_review_to_calculator/
 
 Назначение:
 
-- читать локальный `review_workbook.xlsx` из stage1;
+- скачивать проверенную Google Sheet Елены как xlsx;
 - собирать `review_values_normalized.json` и `earthworks_calculation_input.json`;
 - строить отчёт происхождения данных (`input_lineage_report.*`);
 - запускать существующий `earthworks_calculator` на review input;
-- делать локальный full flow report и diagnostic comparison как диагностику, а не как production-зависимость.
+- генерировать Excel-смету с живыми формулами (`earthworks_formula_review.xlsx`);
+- валидировать Excel по layout (section_row / data_start_row);
+- вести `job_state.json` — паспорт заказа с totals и статусом проверки.
+
+Запуск по job_id:
+
+```bash
+python experiments/earthworks_review_to_calculator/build_job.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437" \
+  --section-number 2 \
+  --estimate-date 21.06.2026
+```
 
 Важно:
 
-- этот слой не трогает Google API;
 - этот слой не меняет stage1 и не меняет `earthworks_calculator`;
+- скачивает Google Sheet через Drive API с восстановлением скрытых колонок;
 - полный локальный контур запускается одной командой через `run_full_review_flow.py`.
+
+Отчёт: `docs/report_earthworks_review_to_calculator.md`.
 
 ### Калькулятор фундаментной плиты
 

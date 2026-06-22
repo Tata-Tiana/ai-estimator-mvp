@@ -1,6 +1,6 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-19`.
+Дата актуализации: `2026-06-22`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
 
@@ -128,30 +128,64 @@ experiments/earthworks_parser_google_stage1/
 
 ### Earthworks Review To Calculator
 
-Следующий локальный мост после stage1:
+Полный сквозной контур от Google Sheet до подписанного Excel-файла сметы:
 
 ```text
 experiments/earthworks_review_to_calculator/
 ```
 
-Он нужен, чтобы взять проверенный `review_workbook.xlsx` и дойти до расчётного результата без Google API и без изменений в `earthworks_calculator`.
+8-шаговый full flow (`run_full_review_flow.py`):
 
-Что уже сделано:
+```text
+1. review_reader    — читает листы 01–03 review_workbook.xlsx
+2. calculator_input — собирает earthworks_calculation_input.json
+3. lineage_report   — строит input_lineage_report.md/json
+4. calculator       — запускает earthworks_calculator
+5. formula_ready    — собирает formula_ready_result.json
+6. anti_cheat       — cross-check всех слоёв
+7. excel_export     — генерирует earthworks_formula_review.xlsx с формулами
+8. excel_validation — layout-aware валидация Excel (section_row / data_start_row)
+```
 
-- `review_workbook.xlsx` читается в `review_values_normalized.json`;
-- `calc_price_key` используется для сборки `earthworks_calculation_input.json`;
-- строится `input_lineage_report.md/json`, чтобы видно было, откуда взялся каждый input;
-- существующий `earthworks_calculator` запускается через review input;
-- full flow собирается одной локальной командой `run_full_review_flow.py`;
-- diagnostic comparison остаётся отдельной диагностикой и не является production dependency.
+Google Sheet интеграция (`build_from_google_sheet.py`):
 
-Что здесь принципиально не меняется:
+- скачивает Google Sheet через Drive API → xlsx;
+- восстанавливает скрытые колонки K:N в `02_Цены себестоимости` из локального `review_workbook.xlsx` (Google Sheets обрезает их при экспорте);
+- запускает full flow;
+- обновляет `job_state.json`.
 
-- stage1 review-flow;
-- `parser core`;
+Job ID команды:
+
+- `job_locator.py` — точный резолвер `job_id → Path`;
+- `build_job.py` — `--job-id`, создаёт timestamped out-dir;
+- `show_job_status.py` — `--job-id` или `--stage1-job-dir`.
+
+Ключевые команды:
+
+```bash
+# создать stage1 job с sharing
+python experiments/earthworks_parser_google_stage1/run_stage1.py prepare \
+  --sharing anyone_writer
+
+# собрать смету по job_id
+python experiments/earthworks_review_to_calculator/build_job.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437" \
+  --section-number 2 \
+  --estimate-date 21.06.2026
+
+# статус
+python experiments/earthworks_review_to_calculator/show_job_status.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437"
+```
+
+Проверенный demo job: `юсв_earthworks_stage1_20260622_191437`, sharing `anyone_writer`, `excel_validation = PASS`, `section_total = 848699`.
+
+Что принципиально не меняется:
+
 - `earthworks_calculator`;
-- Google API;
-- back-write в `price_registry`.
+- stage1 parser core;
+- `price_registry`;
+- back-write данных куда-либо.
 
 После этого создан первый безопасный слой `box_calculator`:
 

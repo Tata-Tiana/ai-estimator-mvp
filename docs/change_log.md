@@ -43,6 +43,138 @@ git status
 
 ## Контрольные точки
 
+### 2026-06-22 — Добавлены job_id команды для сборки сметы земляных работ
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: `9aee252 Add job id commands for earthworks builds`
+
+Что добавлено:
+
+- создан `job_locator.py` — резолвер `job_id → Path` без fuzzy search;
+- создан `build_job.py` — тонкая обёртка над `build_from_google_sheet.py`;
+  - принимает `--job-id` и опциональные `--jobs-root`, `--out-root`, `--section-row`, `--data-start-row`;
+  - создаёт timestamped out-dir `outputs/jobs/<job_id>/build_YYYYMMDD_HHMMSS/`;
+  - вызывает `build_from_google_sheet.py` в подпроцессе и возвращает его exit code;
+- `show_job_status.py` теперь принимает `--job-id` или `--stage1-job-dir` (mutually exclusive), а также опциональный `--jobs-root`.
+
+Теперь вместо длинного `--stage1-job-dir` достаточно:
+
+```bash
+python experiments/earthworks_review_to_calculator/build_job.py \
+  --job-id "юсв_earthworks_stage1_20260622_191437" \
+  --section-number 2 \
+  --estimate-date 21.06.2026
+```
+
+Проверки:
+
+```text
+py_compile -> ok
+show_job_status --stage1-job-dir -> ok (старый режим не сломан)
+show_job_status --job-id -> ok
+build_job --job-id -> exit 0
+full_flow_status -> clean
+excel_validation -> PASS
+job_state.json обновился
+```
+
+Что не изменялось:
+
+- `build_from_google_sheet.py`;
+- `run_full_review_flow.py`;
+- `job_state.py`;
+- Stage1 и earthworks_calculator.
+
+### 2026-06-22 — Добавлен job_state.json и паспорт заказа, создан demo job с anyone_writer
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: `e7fd363 Add job state for earthworks estimate builds`
+
+Что добавлено:
+
+- создан `job_state.py` с функциями `init_or_update_from_stage1`, `save_job_state`, `update_after_build`;
+- `job_state.json` сохраняется в Stage1 job dir (`google/`, `reports/`, `pricing/` — рядом);
+- пути в `job_state.json` хранятся относительно `REPO_ROOT`, не абсолютно;
+- `build_from_google_sheet.py` создаёт `job_state.json` в начале и обновляет по завершению;
+- `update_after_build` читает `calculation_result/result.json` для totals и key_values;
+- создан `show_job_status.py`.
+
+Что хранит `job_state.json`:
+
+```text
+job_id, project_name, section_title
+google_sheet: status, spreadsheet_id, url, sharing
+last_build: status, excel_validation, totals, key_values, final_excel, timestamp
+```
+
+Создан свежий demo job:
+
+```text
+job_id: юсв_earthworks_stage1_20260622_191437
+sharing: anyone_writer / applied / writer
+section_total: 848699
+excel_validation: PASS
+```
+
+### 2026-06-22 — Build earthworks estimate from Google Sheet и sharing
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммиты: `8d3c0a7`, `ed34c26`
+
+Что добавлено в `build_from_google_sheet.py`:
+
+- скачивание Google Sheet через Drive API `files().export_media()`;
+- восстановление скрытых колонок K:N в листе `02_Цены себестоимости` из локального `review_workbook.xlsx`;
+  - Google Sheets при экспорте в xlsx обрезает скрытые колонки;
+  - `_restore_hidden_columns()` копирует значения из локальной копии и переставляет `hidden=True`;
+- вызов `run_full_review_flow.py` в подпроцессе;
+- `GOOGLE_TOKEN_PATH` из `.env` резолвится относительно `REPO_ROOT`, если не абсолютный.
+
+Что добавлено в Stage1:
+
+- аргумент `--sharing` с choices `owner_only / anyone_reader / anyone_writer`;
+- `_apply_sharing()` в `google_sheet_publisher.py` вызывает `drive.permissions().create()`;
+- scope `drive.file` достаточен: приложение управляет правами файлов, которые само создало;
+- sharing info сохраняется в `google_sheet_metadata.json`.
+
+Проверки:
+
+```text
+full_flow_status -> clean
+excel_validation -> PASS
+Drive API permission type=anyone role=writer -> verified
+```
+
+### 2026-06-22 — Добавлена layout-aware Excel валидация в full review flow
+
+- Ветка: `feature/foundation-slab-calculator-standards`
+- Коммит: `456d813 Run Excel validator in earthworks review flow`
+
+Что добавлено:
+
+- `validate_estimate_excel_workbook.py` подключён как Step 8 в `run_full_review_flow.py`;
+- добавлены CLI аргументы `--section-row` (default 11) и `--data-start-row` (default 12);
+- результат валидации сохраняется в `excel_validation_report.md`;
+- `excel_validation_status` попадает в `full_review_flow_report.json`;
+- если статус не `ok` и не `skipped`, verdict flow = `failed`.
+
+Что проверяет валидатор:
+
+- заголовок листа совпадает с `estimate_date`;
+- строка секции содержит правильный номер и код раздела;
+- строки данных имеют формульные ячейки в нужных колонках;
+- итоги Excel совпадают с `formula_ready_result.json`;
+- нет hardcoded числовых значений там, где должна быть формула.
+
+Layout-proof доказан: при `--section-row 20 --data-start-row 21` получается 60+ ошибок. При правильных параметрах — PASS.
+
+Что не изменялось:
+
+- `validate_estimate_excel_workbook.py` (только подключён, не переписан);
+- `export_formula_ready_to_excel.py`;
+- `earthworks_calculator`;
+- Stage1.
+
 ### 2026-06-19 — Изолирован stage1 review-flow для земляных работ и Google Sheet проверки
 
 - Ветка: `feature/foundation-slab-calculator-standards`
