@@ -18,6 +18,7 @@ from export_formula_ready_to_excel import (
     DEFAULT_LOGO_PATH as _EXCEL_DEFAULT_LOGO_PATH,
     SHEET_NAME as _EXCEL_SHEET_NAME,
 )
+from validate_estimate_excel_workbook import validate as _excel_validate
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -56,6 +57,7 @@ GENERATED_FILES_TO_CLEAN = (
     "hardcode_audit_report.md",
     "earthworks_formula_review.xlsx",
     "excel_formula_export_report.md",
+    "excel_validation_report.md",
     "full_review_flow_report.md",
     "full_review_flow_report.json",
 )
@@ -225,6 +227,7 @@ def _extract_generated_files(out_dir: Path) -> list[str]:
         out_dir / "calculation_result_report.md",
         out_dir / "earthworks_formula_review.xlsx",
         out_dir / "excel_formula_export_report.md",
+        out_dir / "excel_validation_report.md",
         out_dir / "full_review_flow_report.md",
         out_dir / "full_review_flow_report.json",
     ]
@@ -271,6 +274,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
             f"- row_count_note: {_format_display(summary['formula_ready_summary']['row_count_note'])}",
             f"- errors: {_format_display(summary['formula_ready_summary']['errors'])}",
             f"- excel_export: {summary.get('excel_export_status', 'missing')}",
+            f"- excel_validation: {summary.get('excel_validation_status', 'missing')}",
             "",
             "## Data lineage summary",
             f"- untraced_fields: {_format_display(summary['lineage_summary']['untraced_fields'])}",
@@ -317,6 +321,7 @@ def _build_json_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "key_totals": summary["key_totals"],
         "formula_ready_status": summary["formula_ready_status"],
         "excel_export_status": summary.get("excel_export_status", "missing"),
+        "excel_validation_status": summary.get("excel_validation_status", "missing"),
         "formula_ready_summary": summary["formula_ready_summary"],
         "lineage_summary": summary["lineage_summary"],
         "anti_cheat_status": summary["anti_cheat_status"],
@@ -438,7 +443,7 @@ def _run_excel_export(
     return step
 
 
-def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool, section_number: int | str | None = None, estimate_date: str | None = None) -> dict[str, Any]:
+def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool, section_number: int | str | None = None, estimate_date: str | None = None, section_row: int = 11, data_start_row: int = 12) -> dict[str, Any]:
     if not skip_clean:
         _clean_generated_outputs(out_dir)
 
@@ -763,6 +768,66 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
     record_step(excel_step)
     excel_export_status = excel_step["status"]
 
+    # Step 8: Excel validation
+    excel_path = out_dir / "earthworks_formula_review.xlsx"
+    validation_report_path = out_dir / "excel_validation_report.md"
+    excel_validation_status = "skipped"
+
+    if excel_export_status == "ok" and excel_path.exists() and formula_ready_json.exists():
+        val_step_name = "excel_validation"
+        print(f"[{val_step_name}] $ validate({excel_path.name}, section_row={section_row}, data_start_row={data_start_row})")
+        try:
+            _calc_result_path = calculation_result_dir / "result.json"
+            val_report = _excel_validate(
+                wb_path=excel_path,
+                formula_ready_path=formula_ready_json,
+                calc_result_path=_calc_result_path if _calc_result_path.exists() else None,
+                section_row=section_row,
+                data_start_row=data_start_row,
+                expected_sheet_title=estimate_date,
+                section_code_arg="earthworks",
+                section_number_arg=str(section_number) if section_number is not None else "2",
+                section_title_arg="Земляные работы",
+            )
+            _save_text(validation_report_path, val_report.render_markdown())
+            is_pass = val_report.is_pass()
+            val_status = "ok" if is_pass else "failed"
+            print(f"[{val_step_name}] {val_status}")
+            val_step: dict[str, Any] = {
+                "name": val_step_name,
+                "command": [],
+                "command_display": f"validate({excel_path.name}, section_row={section_row}, data_start_row={data_start_row})",
+                "status": val_status,
+                "returncode": 0 if is_pass else 1,
+                "stdout": f"report: {validation_report_path}\n",
+                "stderr": "",
+            }
+        except Exception as exc:
+            val_status = "failed"
+            print(f"[{val_step_name}] error: {exc}", file=sys.stderr)
+            print(f"[{val_step_name}] failed")
+            val_step = {
+                "name": val_step_name,
+                "command": [],
+                "command_display": f"validate({excel_path.name})",
+                "status": "failed",
+                "returncode": 1,
+                "stdout": "",
+                "stderr": f"error: {exc}",
+            }
+        record_step(val_step)
+        excel_validation_status = val_status
+    else:
+        steps.append({
+            "name": "excel_validation",
+            "command": [],
+            "command_display": "skipped: excel export not ok or prerequisites missing",
+            "status": "skipped",
+            "returncode": None,
+            "stdout": "",
+            "stderr": "",
+        })
+
     result_data = _load_if_exists(calculation_result_dir / "result.json")
     lineage_data = _load_if_exists(lineage_json)
     if formula_ready_json.exists():
@@ -779,6 +844,8 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         verdict = "failed"
     if excel_export_status not in {"ok", "skipped"}:
         verdict = "failed"
+    if excel_validation_status not in {"ok", "skipped"}:
+        verdict = "failed"
 
     summary = {
         "verdict": verdict,
@@ -786,6 +853,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         "calculator_run": calculator_run,
         "formula_ready_status": formula_ready_status,
         "excel_export_status": excel_export_status,
+        "excel_validation_status": excel_validation_status,
         "lineage_status": (
             "clean"
             if lineage_status == "ok" and lineage_json.exists()
@@ -813,6 +881,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-dir", required=True, help="Directory for generated outputs")
     parser.add_argument("--section-number", type=int, default=2, help="Section number in the estimate (default: 2)")
     parser.add_argument("--estimate-date", default=None, help="Estimate date DD.MM.YYYY for Excel tab name (default: today)")
+    parser.add_argument("--section-row", type=int, default=11, help="Row number of the section header in the Excel layout (default: 11)")
+    parser.add_argument("--data-start-row", type=int, default=12, help="First data row in the Excel layout (default: 12)")
     parser.add_argument("--skip-clean", action="store_true", help="Skip cleaning generated outputs first")
     parser.add_argument("--skip-calculator", action="store_true", help="Skip running the calculator step")
     parser.add_argument("--skip-lineage", action="store_true", help="Skip building the input lineage report")
@@ -835,6 +905,8 @@ def main(argv: list[str] | None = None) -> int:
         keep_going=args.keep_going,
         section_number=args.section_number,
         estimate_date=args.estimate_date,
+        section_row=args.section_row,
+        data_start_row=args.data_start_row,
     )
 
     return 0 if summary["verdict"] == "clean" else 1
