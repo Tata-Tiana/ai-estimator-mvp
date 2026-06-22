@@ -42,10 +42,12 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     resolved = resolve_earthworks_prices(current_job_dir, registry_rows)
     price_resolution = resolved["resolution"]
 
+    sharing = getattr(args, "sharing", "owner_only") or "owner_only"
     workbook_path = build_review_workbook(current_job_dir, extracted, price_resolution, project_name)
     publisher_result = publish_workbook_if_configured(
         workbook_path,
         f"Земляные работы — parser stage1 — {project_name} — {HUMAN_REVIEW_VERSION}",
+        sharing=sharing,
     )
     (current_job_dir / "google").mkdir(parents=True, exist_ok=True)
     (current_job_dir / "google" / "google_sheet_metadata.json").write_text(
@@ -62,9 +64,15 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     print(f"- google_status: {publisher_result.get('status')}")
     if publisher_result.get("url"):
         print(f"- google_sheet: {publisher_result['url']}")
+    sharing_info = publisher_result.get("sharing", {})
+    print(f"- sharing: {sharing_info.get('mode', 'owner_only')} / {sharing_info.get('status', 'skipped')}")
     print(f"- price_resolution: {current_job_dir / 'pricing' / 'earthworks_price_resolution.json'}")
     print(f"- internal_prices: {current_job_dir / 'pricing' / 'earthworks_internal_prices.json'}")
     print(f"- report: {current_job_dir / 'reports' / 'earthworks_price_resolution_report.md'}")
+
+    if sharing not in ("owner_only", "") and sharing_info.get("status") == "failed":
+        print(f"ERROR: sharing failed: {sharing_info.get('error', 'unknown')}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -104,6 +112,12 @@ def build_parser() -> argparse.ArgumentParser:
     prepare = subparsers.add_parser("prepare", help="Build earthworks review sheet and price resolution")
     prepare.add_argument("--project-name", default=DEFAULT_PROJECT_NAME)
     prepare.add_argument("--job-id", default="")
+    prepare.add_argument(
+        "--sharing",
+        default="owner_only",
+        choices=["owner_only", "anyone_reader", "anyone_writer"],
+        help="Google Sheet sharing policy after publish (default: owner_only)",
+    )
     clean = subparsers.add_parser("clean", help="Remove generated stage1 job outputs only")
     clean.add_argument("--job-id", default="", help="Remove one job. If omitted, remove all stage1 jobs.")
     return parser
