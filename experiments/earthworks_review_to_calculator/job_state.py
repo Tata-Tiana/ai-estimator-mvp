@@ -100,6 +100,76 @@ def update_source_and_parser(
     return state
 
 
+def update_after_rerun(
+    stage1_job_dir: Path,
+    old_parser_block: dict[str, Any],
+    new_run_name: str,
+    new_run_rel: str,
+    new_parser_run: dict[str, Any],
+    old_google_sheet: dict[str, Any],
+    new_metadata: dict[str, Any],
+    archive_dir_rel: str,
+    reason: str,
+    rerun_at: str,
+) -> dict[str, Any]:
+    """Switch active parser run, preserve old run in history, update Google Sheet."""
+    state = load_job_state(stage1_job_dir)
+
+    # Archive old parser block
+    parser_history: list[dict[str, Any]] = state.get("parser_history", [])
+    if old_parser_block.get("active_run"):
+        parser_history.append({
+            "archived_at": rerun_at,
+            "run": old_parser_block["active_run"],
+            "artifacts_dir": old_parser_block.get("active_artifacts_dir", ""),
+            "status": old_parser_block.get("status", ""),
+            "reason": "replaced_by_rerun",
+        })
+    state["parser_history"] = parser_history
+
+    # Set new active parser
+    errors = new_parser_run.get("errors", [])
+    state["parser"] = {
+        "active_run": new_run_name,
+        "active_artifacts_dir": new_run_rel,
+        "status": "completed" if not errors else "completed_with_errors",
+        "pages_count": new_parser_run.get("pages_count"),
+        "tables_count": new_parser_run.get("tables_count"),
+        "logical_pages_count": new_parser_run.get("logical_pages_count"),
+        "candidates_count": new_parser_run.get("candidates_count"),
+        "warnings": new_parser_run.get("warnings", []),
+        "errors": errors,
+        "rerun_at": rerun_at,
+        "rerun_reason": reason,
+    }
+
+    # Archive old Google Sheet reference
+    gs_history: list[dict[str, Any]] = state.get("google_sheet_history", [])
+    if old_google_sheet.get("spreadsheet_id"):
+        gs_history.append({
+            "archived_at": rerun_at,
+            "spreadsheet_id": old_google_sheet.get("spreadsheet_id", ""),
+            "spreadsheet_url": old_google_sheet.get("url", ""),
+            "local_archive_dir": archive_dir_rel,
+            "reason": f"parser_rerun",
+        })
+    state["google_sheet_history"] = gs_history
+
+    # Set new Google Sheet
+    state["google_sheet"] = {
+        "status": new_metadata.get("status", "unknown"),
+        "spreadsheet_id": new_metadata.get("spreadsheet_id", ""),
+        "url": new_metadata.get("url", ""),
+        "sharing": new_metadata.get("sharing", {"mode": "owner_only", "type": None, "role": None, "status": "skipped"}),
+        "metadata_json": "google/google_sheet_metadata.json",
+        "local_review_workbook": "google/review_workbook.xlsx",
+        "created_from_parser_run": new_run_name,
+    }
+
+    save_job_state(stage1_job_dir, state)
+    return state
+
+
 def update_after_recreate(
     stage1_job_dir: Path,
     old_google_sheet: dict[str, Any],
