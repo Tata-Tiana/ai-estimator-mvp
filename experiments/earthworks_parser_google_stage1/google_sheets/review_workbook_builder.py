@@ -284,8 +284,8 @@ def parameter_short_fragment(key: str, parameter: dict[str, Any], extracted: dic
         items = parameter_pipe_items(extracted or {}) if extracted is not None else []
         lengths = [format_number_for_cell(item.get("total_length_m")) for item in items if item.get("total_length_m") not in (None, "")]
         if lengths:
-            return f"Рассчитано из 4 позиций труб: {' + '.join(lengths)} = {format_number_for_cell(value)} м."
-        return f"Рассчитано из 4 позиций труб = {format_number_for_cell(value)} м."
+            return f"Рассчитано из {len(items)} позиций труб: {' + '.join(lengths)} = {format_number_for_cell(value)} м."
+        return f"Рассчитано из {len(items)} позиций труб = {format_number_for_cell(value)} м."
     if key in {"geotextile_area_m2", "geotextile_laying_area_m2"}:
         return clean_fragment_for_human(raw_context)
     return clean_fragment_for_human(raw_context)
@@ -306,13 +306,13 @@ def parameter_comment(key: str, parameter: dict[str, Any]) -> str:
 
 
 def candidate_status(key: str, parameter: dict[str, Any]) -> str:
-    if parameter.get("value") is None:
+    if _value_is_empty(key, parameter):
         return "не найдено"
     return SUMMARY_STATUSES.get(key, "выбран")
 
 
 def candidate_confidence(key: str, parameter: dict[str, Any]) -> str:
-    if parameter.get("value") is None:
+    if _value_is_empty(key, parameter):
         return ""
     return SUMMARY_CONFIDENCE.get(key, (parameter.get("evidence") or {}).get("confidence", "") or "")
 
@@ -322,9 +322,23 @@ def candidate_rule(key: str, parameter: dict[str, Any]) -> str:
 
 
 def raw_status_for_parameter(key: str, parameter: dict[str, Any]) -> str:
+    if _value_is_empty(key, parameter):
+        return "missing"
     if key in RAW_STATUS:
         return RAW_STATUS[key]
-    return "found" if parameter.get("value") is not None else "missing"
+    return "found"
+
+
+def _value_is_empty(key: str, parameter: dict[str, Any]) -> bool:
+    """True when the parameter carries no usable value: None, empty list, or zero-length communications."""
+    value = parameter.get("value")
+    if value is None:
+        return True
+    if isinstance(value, list) and not value:
+        return True
+    if key == "communications_length_m" and value == 0:
+        return True
+    return False
 
 
 def created_at_from_job_id(job_id: str) -> str:
@@ -372,9 +386,8 @@ def extract_pipe_diameter_mm(item: dict[str, Any]) -> str:
 
 
 def status_for_parameter(key: str, parameter: dict[str, Any]) -> str:
-    value = parameter.get("value")
     confidence = (parameter.get("evidence") or {}).get("confidence") or ""
-    if value is None:
+    if _value_is_empty(key, parameter):
         return "🟥 Не найдено"
     if key in {
         "pit_excavation_depth_m",
@@ -419,11 +432,10 @@ def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
             fragment = "См. лист 03_Детали объемов."
         elif key == "communications_length_m":
             source = "Рассчитано из труб коммуникаций"
-            fragment = "рассчитано из 4 позиций труб"
+            pipe_items = parameter_pipe_items(extracted)
+            fragment = f"рассчитано из {len(pipe_items)} позиций труб"
         else:
             fragment = clean_fragment_for_human(evidence.get("raw_context", ""))
-        if key == "communications_pipe_items" and not source:
-            source = "Схема коммуникаций / источник: usv_2026_kr1.pdf, стр. 7"
         rows.append(
             {
                 "Что проверяем": label,
@@ -436,17 +448,8 @@ def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
                 "Исправить / ввести значение": "",
                 "Комментарий Елены": "",
                 "technical_key": key,
-                "extraction_status": "auto_calculated"
-                if key == "communications_length_m"
-                else ("found" if parameter.get("value") is not None else "missing"),
-                "confidence": (
-                    "high"
-                    if key == "communications_length_m"
-                    else (
-                        evidence.get("confidence", "")
-                        or ("high" if key in {"trench_routes", "trench_volume_m3", "communications_pipe_items"} else "")
-                    )
-                ),
+                "extraction_status": raw_status_for_parameter(key, parameter),
+                "confidence": candidate_confidence(key, parameter),
             }
         )
     return rows
@@ -920,12 +923,7 @@ def build_review_workbook(
                 page.get("logical_sheet_type", ""),
                 page.get("section_code") or "unknown",
                 page.get("confidence", "") or ("high" if (page.get("section_code") == SECTION_CODE) else ""),
-                page.get("matched_terms", "")
-                or (
-                    "котлован, траншеи, песок"
-                    if "Котлован" in str(page.get("logical_sheet_title") or page.get("preliminary_page_title") or "")
-                    else ("коммуникации, труба" if "коммуникац" in str(page.get("logical_sheet_title") or page.get("preliminary_page_title") or "").lower() else "")
-                ),
+                page.get("matched_terms", ""),
                 "да" if page.get("section_code") == SECTION_CODE else "нет",
                 "используется в текущем stage1" if page.get("section_code") == SECTION_CODE else "",
             ]

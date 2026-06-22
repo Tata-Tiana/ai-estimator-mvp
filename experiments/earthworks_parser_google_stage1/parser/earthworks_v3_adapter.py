@@ -262,7 +262,7 @@ def extract_earthworks_parameters(artifacts_dir: Path | None = None) -> dict[str
     evidence_index = candidates_by_evidence()
     warnings: list[str] = []
     if not earthworks:
-        warnings.append(f"Не найден v3 earthworks output: {V3_EARTHWORKS_PATH}")
+        warnings.append(f"Не найден v3 earthworks output: {_v3_path('earthworks', V3_EARTHWORKS_PATH)}")
 
     sand = earthworks.get("sand") or {}
     trenches = earthworks.get("trenches") or {}

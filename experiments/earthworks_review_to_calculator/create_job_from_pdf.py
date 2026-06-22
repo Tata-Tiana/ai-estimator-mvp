@@ -49,23 +49,36 @@ def _python() -> str:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Create earthworks Stage1 job from PDF files")
     p.add_argument("--project-name", required=True, help="Human-readable project name (used for job_id slug)")
-    p.add_argument("--pdf", nargs="+", required=True, type=Path, dest="pdfs", help="PDF file(s) to parse")
+    p.add_argument(
+        "--pdf",
+        action="append",
+        nargs="+",
+        type=Path,
+        dest="pdfs",
+        metavar="PDF",
+        help="PDF file(s). Repeatable: --pdf f1.pdf --pdf f2.pdf  or  --pdf f1.pdf f2.pdf",
+    )
     p.add_argument(
         "--sharing",
         default="anyone_writer",
         choices=["owner_only", "anyone_reader", "anyone_writer"],
         help="Google Sheet sharing policy (default: anyone_writer)",
     )
-    p.add_argument("--jobs-root", type=Path, default=None, help="Override Stage1 jobs root directory")
-    p.add_argument("--json", action="store_true", dest="json_output", help="Print result as JSON")
+    p.add_argument("--json", action="store_true", dest="json_output", help="Print result JSON to stdout; all logs go to stderr")
     args = p.parse_args(argv)
 
-    pdfs = [Path(pdf).resolve() for pdf in args.pdfs]
+    if not args.pdfs:
+        p.error("at least one --pdf is required")
+
+    log = sys.stderr if args.json_output else sys.stdout
+    sub_stdout = sys.stderr if args.json_output else None
+
+    # Flatten --pdf groups: [[f1, f2], [f3]] → [f1, f2, f3]
+    pdfs = [Path(pdf).resolve() for group in args.pdfs for pdf in group]
     _validate_pdfs(pdfs)
 
-    jobs_root = Path(args.jobs_root).resolve() if args.jobs_root else _DEFAULT_JOBS_ROOT
     job_id = _make_job_id(args.project_name)
-    job_dir = jobs_root / job_id
+    job_dir = _DEFAULT_JOBS_ROOT / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
 
     # Copy PDFs to job_dir/input_pdfs/
@@ -90,8 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         "--out-dir", str(parser_run_dir),
         "--json",
     ]
-    print(f"$ {shlex.join([str(c) for c in v3_cmd])}")
-    v3_result = subprocess.run(v3_cmd, cwd=str(REPO_ROOT))
+    print(f"$ {shlex.join([str(c) for c in v3_cmd])}", file=log)
+    v3_result = subprocess.run(v3_cmd, cwd=str(REPO_ROOT), stdout=sub_stdout)
     if v3_result.returncode != 0:
         print(f"ERROR: parser v3 failed with exit code {v3_result.returncode}", file=sys.stderr)
         return v3_result.returncode
@@ -110,36 +123,43 @@ def main(argv: list[str] | None = None) -> int:
         "--artifacts-dir", str(parser_run_dir),
         "--sharing", args.sharing,
     ]
-    print(f"$ {shlex.join([str(c) for c in stage1_cmd])}")
-    stage1_result = subprocess.run(stage1_cmd, cwd=str(REPO_ROOT))
+    print(f"$ {shlex.join([str(c) for c in stage1_cmd])}", file=log)
+    stage1_result = subprocess.run(stage1_cmd, cwd=str(REPO_ROOT), stdout=sub_stdout)
     if stage1_result.returncode != 0:
         print(f"ERROR: Stage1 prepare failed with exit code {stage1_result.returncode}", file=sys.stderr)
         return stage1_result.returncode
 
-    # Update job_state
+    # Save state from Stage1 first, then layer in source+parser on top
     state = init_or_update_from_stage1(job_dir)
-    update_source_and_parser(job_dir, input_pdf_records, parser_run_data)
+    save_job_state(job_dir, state)
+    final_state = update_source_and_parser(job_dir, input_pdf_records, parser_run_data)
+    google_sheet = final_state.get("google_sheet", {})
 
-    print(f"create_job_from_pdf completed")
-    print(f"- job_id: {job_id}")
-    print(f"- job_dir: {job_dir}")
-    print(f"- parser_run: {parser_run_json_path}")
-    print(f"- input_pdfs: {len(input_pdf_records)}")
-    print(f"- candidates: {parser_run_data.get('candidates_count')}")
-    print(f"- parser_errors: {parser_run_data.get('errors', [])}")
+    print(f"create_job_from_pdf completed", file=log)
+    print(f"- job_id: {job_id}", file=log)
+    print(f"- job_dir: {job_dir}", file=log)
+    print(f"- parser_run: {parser_run_json_path}", file=log)
+    print(f"- input_pdfs: {len(input_pdf_records)}", file=log)
+    print(f"- candidates: {parser_run_data.get('candidates_count')}", file=log)
+    print(f"- parser_errors: {parser_run_data.get('errors', [])}", file=log)
 
     if args.json_output:
         output = {
             "job_id": job_id,
             "job_dir": str(job_dir),
             "project_name": args.project_name,
-            "sharing": args.sharing,
+            "spreadsheet_id": google_sheet.get("spreadsheet_id", ""),
+            "spreadsheet_url": google_sheet.get("url", ""),
+            "google_sheet_status": google_sheet.get("status", ""),
+            "google_sheet_sharing": google_sheet.get("sharing", {}),
             "input_pdfs": input_pdf_records,
             "parser_run": {
+                "status": parser_run_data.get("status"),
                 "pages_count": parser_run_data.get("pages_count"),
                 "tables_count": parser_run_data.get("tables_count"),
                 "logical_pages_count": parser_run_data.get("logical_pages_count"),
                 "candidates_count": parser_run_data.get("candidates_count"),
+                "warnings": parser_run_data.get("warnings", []),
                 "errors": parser_run_data.get("errors", []),
             },
         }
