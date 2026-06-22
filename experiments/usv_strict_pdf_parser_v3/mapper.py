@@ -4,16 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-EXTRACTED_DIR = DATA_DIR / "extracted"
-MAPPED_DIR = DATA_DIR / "mapped"
-EARTHWORKS_PATH = EXTRACTED_DIR / "earthworks.json"
-REBAR_ITEMS_PATH = EXTRACTED_DIR / "rebar_items.json"
-BEAM_ITEMS_PATH = EXTRACTED_DIR / "beam_items.json"
-FINAL_DRAFT_PATH = MAPPED_DIR / "final_project_parameters_draft.json"
-MAPPED_PARAMETERS_PATH = MAPPED_DIR / "mapped_parameters.json"
+import parser_paths
 
 
 def load_json(path: Path) -> Any:
@@ -25,10 +16,10 @@ def evidence_payload(value: Any, unit: str, evidence_id: str) -> dict[str, Any]:
 
 
 def build_mapping() -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    MAPPED_DIR.mkdir(parents=True, exist_ok=True)
-    earth = load_json(EARTHWORKS_PATH)
-    rebar = load_json(REBAR_ITEMS_PATH)
-    beams = load_json(BEAM_ITEMS_PATH)
+    parser_paths.mapped_dir().mkdir(parents=True, exist_ok=True)
+    earth = load_json(parser_paths.earthworks_path())
+    rebar = load_json(parser_paths.rebar_items_path())
+    beams = load_json(parser_paths.beam_items_path())
     mapped = []
     sections = {
         "earthworks": {},
@@ -99,15 +90,15 @@ def build_mapping() -> tuple[list[dict[str, Any]], dict[str, Any]]:
         },
         "not_ready": not_ready,
     }
-    MAPPED_PARAMETERS_PATH.write_text(json.dumps(mapped, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    FINAL_DRAFT_PATH.write_text(json.dumps(draft, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.mapped_parameters_path().write_text(json.dumps(mapped, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.final_draft_path().write_text(json.dumps(draft, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return mapped, draft
 
 
 def main() -> int:
     mapped, draft = build_mapping()
-    print(f"mapped_parameters: {MAPPED_PARAMETERS_PATH} ({len(mapped)})")
-    print(f"final_project_parameters_draft: {FINAL_DRAFT_PATH}")
+    print(f"mapped_parameters: {parser_paths.mapped_parameters_path()} ({len(mapped)})")
+    print(f"final_project_parameters_draft: {parser_paths.final_draft_path()}")
     return 0
 
 

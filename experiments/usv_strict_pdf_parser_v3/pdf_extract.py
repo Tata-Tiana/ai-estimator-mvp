@@ -6,13 +6,7 @@ from typing import Any
 
 import pdfplumber
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-PDF_DIR = DATA_DIR / "input_pdfs"
-RAW_DIR = DATA_DIR / "raw"
-PAGES_TEXT_PATH = RAW_DIR / "pages_text.json"
-TABLES_PATH = RAW_DIR / "tables.json"
+import parser_paths
 
 
 def normalize_cell(value: Any) -> str:
@@ -30,10 +24,10 @@ def preliminary_title(text: str) -> str:
 
 
 def extract_pdf_data() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    parser_paths.raw_dir().mkdir(parents=True, exist_ok=True)
     pages: list[dict[str, Any]] = []
     tables: list[dict[str, Any]] = []
-    for pdf_path in sorted(PDF_DIR.glob("*.pdf")):
+    for pdf_path in sorted(parser_paths.input_dir().glob("*.pdf")):
         with pdfplumber.open(pdf_path) as pdf:
             for page_number, page in enumerate(pdf.pages, start=1):
                 text = page.extract_text(x_tolerance=1, y_tolerance=3) or ""
@@ -56,15 +50,15 @@ def extract_pdf_data() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                             "rows": [[normalize_cell(cell) for cell in row] for row in table],
                         }
                     )
-    PAGES_TEXT_PATH.write_text(json.dumps(pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    TABLES_PATH.write_text(json.dumps(tables, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.pages_text_path().write_text(json.dumps(pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.tables_path().write_text(json.dumps(tables, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return pages, tables
 
 
 def main() -> int:
     pages, tables = extract_pdf_data()
-    print(f"pages_text: {PAGES_TEXT_PATH} ({len(pages)})")
-    print(f"tables: {TABLES_PATH} ({len(tables)})")
+    print(f"pages_text: {parser_paths.pages_text_path()} ({len(pages)})")
+    print(f"tables: {parser_paths.tables_path()} ({len(tables)})")
     return 0
 
 

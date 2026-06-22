@@ -5,11 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-EXTRACTED_DIR = DATA_DIR / "extracted"
-CANDIDATES_PATH = EXTRACTED_DIR / "candidates.json"
+import parser_paths
 
 
 def evidence_id(payload: dict[str, Any]) -> str:
@@ -47,11 +43,13 @@ class CandidateStore:
         for row in rows:
             self.add(**row)
 
-    def write(self, path: Path = CANDIDATES_PATH) -> Path:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self.items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        return path
+    def write(self, path: Path | None = None) -> Path:
+        dest = path if path is not None else parser_paths.candidates_path()
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(self.items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return dest
 
 
-def load_candidates(path: Path = CANDIDATES_PATH) -> list[dict[str, Any]]:
-    return json.loads(path.read_text(encoding="utf-8"))
+def load_candidates(path: Path | None = None) -> list[dict[str, Any]]:
+    src = path if path is not None else parser_paths.candidates_path()
+    return json.loads(src.read_text(encoding="utf-8"))

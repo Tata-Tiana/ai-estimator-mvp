@@ -76,6 +76,30 @@ def init_or_update_from_stage1(stage1_job_dir: Path) -> dict[str, Any]:
     return state
 
 
+def update_source_and_parser(
+    stage1_job_dir: Path,
+    input_pdfs: list[dict[str, Any]],
+    parser_run: dict[str, Any],
+) -> dict[str, Any]:
+    """Add source (PDF info) and parser (run stats) blocks to job_state."""
+    state = load_job_state(stage1_job_dir)
+    state["source"] = {
+        "input_pdfs": input_pdfs,
+    }
+    state["parser"] = {
+        "active_run": "run_001",
+        "active_artifacts_dir": parser_run.get("out_dir", ""),
+        "status": "ok" if not parser_run.get("errors") else "errors",
+        "pages_count": parser_run.get("pages_count"),
+        "tables_count": parser_run.get("tables_count"),
+        "logical_pages_count": parser_run.get("logical_pages_count"),
+        "candidates_count": parser_run.get("candidates_count"),
+        "errors": parser_run.get("errors", []),
+    }
+    save_job_state(stage1_job_dir, state)
+    return state
+
+
 def update_after_build(
     stage1_job_dir: Path,
     out_dir: Path,

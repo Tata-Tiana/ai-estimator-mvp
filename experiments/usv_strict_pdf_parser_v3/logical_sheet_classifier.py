@@ -5,13 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-RAW_DIR = DATA_DIR / "raw"
-PAGES_TEXT_PATH = RAW_DIR / "pages_text.json"
-DRAWING_INDEX_PATH = RAW_DIR / "drawing_index.json"
-LOGICAL_PAGES_PATH = RAW_DIR / "logical_pages.json"
+import parser_paths
 
 
 def norm(text: Any) -> str:
@@ -67,8 +61,9 @@ def section_code(sheet_type: str) -> str:
 
 
 def classify_pages() -> list[dict[str, Any]]:
-    pages = json.loads(PAGES_TEXT_PATH.read_text(encoding="utf-8"))
-    drawing_index = json.loads(DRAWING_INDEX_PATH.read_text(encoding="utf-8")) if DRAWING_INDEX_PATH.exists() else []
+    pages = json.loads(parser_paths.pages_text_path().read_text(encoding="utf-8"))
+    drawing_index_file = parser_paths.drawing_index_path()
+    drawing_index = json.loads(drawing_index_file.read_text(encoding="utf-8")) if drawing_index_file.exists() else []
     index_by_pdf_title = defaultdict_index(drawing_index)
     logical_pages: list[dict[str, Any]] = []
     for page in pages:
@@ -91,7 +86,7 @@ def classify_pages() -> list[dict[str, Any]]:
                 "drawing_sheet_number": drawing_number,
             }
         )
-    LOGICAL_PAGES_PATH.write_text(json.dumps(logical_pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.logical_pages_path().write_text(json.dumps(logical_pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return logical_pages
 
 
@@ -104,7 +99,7 @@ def defaultdict_index(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, An
 
 def main() -> int:
     rows = classify_pages()
-    print(f"logical_pages: {LOGICAL_PAGES_PATH} ({len(rows)})")
+    print(f"logical_pages: {parser_paths.logical_pages_path()} ({len(rows)})")
     return 0
 
 

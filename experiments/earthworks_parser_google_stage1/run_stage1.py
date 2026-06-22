@@ -5,6 +5,7 @@ import json
 import shutil
 import sys
 from datetime import datetime
+from pathlib import Path
 
 from config import DATA_DIR, DEFAULT_PROJECT_NAME, EXPERIMENT_DIR
 from google_sheets.google_sheet_publisher import publish_workbook_if_configured
@@ -31,7 +32,8 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     current_job_dir = job_dir(args.job_id or make_job_id(project_name))
     current_job_dir.mkdir(parents=True, exist_ok=True)
 
-    extracted = extract_earthworks_parameters()
+    artifacts_dir = Path(args.artifacts_dir).resolve() if args.artifacts_dir else None
+    extracted = extract_earthworks_parameters(artifacts_dir=artifacts_dir)
     (current_job_dir / "extracted").mkdir(parents=True, exist_ok=True)
     (current_job_dir / "extracted" / "earthworks_extracted_parameters.json").write_text(
         json.dumps(extracted, ensure_ascii=False, indent=2) + "\n",
@@ -43,7 +45,7 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     price_resolution = resolved["resolution"]
 
     sharing = getattr(args, "sharing", "owner_only") or "owner_only"
-    workbook_path = build_review_workbook(current_job_dir, extracted, price_resolution, project_name)
+    workbook_path = build_review_workbook(current_job_dir, extracted, price_resolution, project_name, artifacts_dir=artifacts_dir)
     publisher_result = publish_workbook_if_configured(
         workbook_path,
         f"Земляные работы — parser stage1 — {project_name} — {HUMAN_REVIEW_VERSION}",
@@ -117,6 +119,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="owner_only",
         choices=["owner_only", "anyone_reader", "anyone_writer"],
         help="Google Sheet sharing policy after publish (default: owner_only)",
+    )
+    prepare.add_argument(
+        "--artifacts-dir",
+        default="",
+        help="Parser v3 out-dir to read artifacts from instead of global V3_* paths",
     )
     clean = subparsers.add_parser("clean", help="Remove generated stage1 job outputs only")
     clean.add_argument("--job-id", default="", help="Remove one job. If omitted, remove all stage1 jobs.")

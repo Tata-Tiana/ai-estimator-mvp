@@ -7,6 +7,14 @@ from typing import Any
 
 from source_paths import V3_CANDIDATES_PATH, V3_EARTHWORKS_PATH, V3_LOGICAL_PAGES_PATH, V3_TABLES_PATH
 
+_override_paths: dict[str, Path] | None = None
+
+
+def _v3_path(key: str, fallback: Path) -> Path:
+    if _override_paths is not None and key in _override_paths:
+        return _override_paths[key]
+    return fallback
+
 
 NUMBER_RE = r"\d+(?:[ \u00a0]\d{3})+|\d+(?:[,.]\d+)?"
 NUMBER_GROUP_RE = rf"(?:{NUMBER_RE})"
@@ -50,12 +58,12 @@ def blank_evidence(raw_context: str = "") -> dict[str, Any]:
 
 
 def candidates_by_evidence() -> dict[str, dict[str, Any]]:
-    candidates = read_json(V3_CANDIDATES_PATH, [])
+    candidates = read_json(_v3_path("candidates", V3_CANDIDATES_PATH), [])
     return {candidate["evidence_id"]: candidate for candidate in candidates if candidate.get("evidence_id")}
 
 
 def logical_pages() -> list[dict[str, Any]]:
-    return read_json(V3_LOGICAL_PAGES_PATH, [])
+    return read_json(_v3_path("logical_pages", V3_LOGICAL_PAGES_PATH), [])
 
 
 def earthworks_page_text(sheet_type: str) -> str:
@@ -148,7 +156,7 @@ def extract_geotextile_area() -> dict[str, Any]:
             },
         }
 
-    tables = read_json(V3_TABLES_PATH, [])
+    tables = read_json(_v3_path("tables", V3_TABLES_PATH), [])
     page = first_page_for("earthworks_pit_plan") or {}
     for table in tables:
         if table.get("source_pdf") != page.get("source_pdf"):
@@ -238,8 +246,19 @@ def normalize_communication_items(
     return normalized
 
 
-def extract_earthworks_parameters() -> dict[str, Any]:
-    earthworks = read_json(V3_EARTHWORKS_PATH, {})
+def extract_earthworks_parameters(artifacts_dir: Path | None = None) -> dict[str, Any]:
+    global _override_paths
+    if artifacts_dir is not None:
+        _override_paths = {
+            "candidates": artifacts_dir / "extracted" / "candidates.json",
+            "earthworks": artifacts_dir / "extracted" / "earthworks.json",
+            "logical_pages": artifacts_dir / "raw" / "logical_pages.json",
+            "tables": artifacts_dir / "raw" / "tables.json",
+        }
+    else:
+        _override_paths = None
+
+    earthworks = read_json(_v3_path("earthworks", V3_EARTHWORKS_PATH), {})
     evidence_index = candidates_by_evidence()
     warnings: list[str] = []
     if not earthworks:

@@ -8,14 +8,7 @@ from typing import Any
 from candidate_store import CandidateStore
 from spec_row_parser import NUMBER_RE, parse_number, table_row_objects
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-RAW_DIR = DATA_DIR / "raw"
-EXTRACTED_DIR = DATA_DIR / "extracted"
-LOGICAL_PAGES_PATH = RAW_DIR / "logical_pages.json"
-TABLES_PATH = RAW_DIR / "tables.json"
-REBAR_ITEMS_PATH = EXTRACTED_DIR / "rebar_items.json"
+import parser_paths
 
 ALLOWED_SHEETS = {
     "foundation_slab_spec",
@@ -128,8 +121,8 @@ def parse_rebar_row(row: dict[str, Any], store: CandidateStore) -> dict[str, Any
 
 
 def parse_rebar(store: CandidateStore) -> dict[str, Any]:
-    logical_pages = load_json(LOGICAL_PAGES_PATH)
-    tables = load_json(TABLES_PATH)
+    logical_pages = load_json(parser_paths.logical_pages_path())
+    tables = load_json(parser_paths.tables_path())
     rows = table_row_objects(tables, logical_pages)
     items = []
     excluded_pipe_like = 0
@@ -145,7 +138,7 @@ def parse_rebar(store: CandidateStore) -> dict[str, Any]:
         "low_confidence_rebar_items": [item for item in items if item["confidence"] == "low"],
         "excluded_pipe_like_rows": excluded_pipe_like,
     }
-    REBAR_ITEMS_PATH.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.rebar_items_path().write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return result
 
 
@@ -153,7 +146,7 @@ def main() -> int:
     store = CandidateStore()
     result = parse_rebar(store)
     store.write()
-    print(f"rebar_items: {REBAR_ITEMS_PATH}")
+    print(f"rebar_items: {parser_paths.rebar_items_path()}")
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

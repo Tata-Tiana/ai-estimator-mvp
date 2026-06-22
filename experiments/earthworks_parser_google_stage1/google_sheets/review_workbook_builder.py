@@ -14,6 +14,16 @@ from config import DEFAULT_PROJECT_NAME, SECTION_CODE, SECTION_NAME_RU
 from source_paths import V3_CANDIDATES_PATH, V3_LOGICAL_PAGES_PATH, V3_TABLES_PATH
 
 
+def _v3_paths(artifacts_dir: Path | None) -> tuple[Path, Path, Path]:
+    if artifacts_dir is not None:
+        return (
+            artifacts_dir / "raw" / "logical_pages.json",
+            artifacts_dir / "extracted" / "candidates.json",
+            artifacts_dir / "raw" / "tables.json",
+        )
+    return V3_LOGICAL_PAGES_PATH, V3_CANDIDATES_PATH, V3_TABLES_PATH
+
+
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
 FILL_FOUND = PatternFill("solid", fgColor="D9EAD3")
@@ -646,6 +656,7 @@ def build_review_workbook(
     extracted: dict[str, Any],
     price_resolution: dict[str, Any],
     project_name: str = DEFAULT_PROJECT_NAME,
+    artifacts_dir: Path | None = None,
 ) -> Path:
     wb = Workbook()
 
@@ -862,9 +873,10 @@ def build_review_workbook(
     )
 
     ws = wb.create_sheet("06_Сырые данные parser")
-    logical_pages = read_json(V3_LOGICAL_PAGES_PATH, [])
-    raw_candidates = read_json(V3_CANDIDATES_PATH, [])
-    raw_tables = read_json(V3_TABLES_PATH, [])
+    lp_path, cand_path, tbl_path = _v3_paths(artifacts_dir)
+    logical_pages = read_json(lp_path, [])
+    raw_candidates = read_json(cand_path, [])
+    raw_tables = read_json(tbl_path, [])
     pages_count = len(logical_pages)
     created_at = created_at_from_job_id(job_dir.name)
     stage1_summary_path = str(job_dir / "reports" / "stage1_summary.json")

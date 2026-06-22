@@ -5,19 +5,14 @@ import re
 from pathlib import Path
 from typing import Any
 
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-RAW_DIR = DATA_DIR / "raw"
-PAGES_TEXT_PATH = RAW_DIR / "pages_text.json"
-DRAWING_INDEX_PATH = RAW_DIR / "drawing_index.json"
+import parser_paths
 
 
 INDEX_LINE_RE = re.compile(r"(?P<num>\d{1,3})\s+(?P<title>(?:План|Схема|Спецификация|Разрез|Узлы|Ведомость).{3,120})", re.IGNORECASE)
 
 
 def load_pages() -> list[dict[str, Any]]:
-    return json.loads(PAGES_TEXT_PATH.read_text(encoding="utf-8"))
+    return json.loads(parser_paths.pages_text_path().read_text(encoding="utf-8"))
 
 
 def build_drawing_index() -> list[dict[str, Any]]:
@@ -45,13 +40,13 @@ def build_drawing_index() -> list[dict[str, Any]]:
                     "evidence_text": line.strip(),
                 }
             )
-    DRAWING_INDEX_PATH.write_text(json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    parser_paths.drawing_index_path().write_text(json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return rows
 
 
 def main() -> int:
     rows = build_drawing_index()
-    print(f"drawing_index: {DRAWING_INDEX_PATH} ({len(rows)})")
+    print(f"drawing_index: {parser_paths.drawing_index_path()} ({len(rows)})")
     return 0
 
 

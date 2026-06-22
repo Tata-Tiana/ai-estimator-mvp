@@ -4,17 +4,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+import parser_paths
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-EXTRACTED_DIR = DATA_DIR / "extracted"
-MAPPED_DIR = DATA_DIR / "mapped"
-RAW_DIR = DATA_DIR / "raw"
-REPORTS_DIR = DATA_DIR / "reports"
-CANDIDATES_PATH = EXTRACTED_DIR / "candidates.json"
-FINAL_DRAFT_PATH = MAPPED_DIR / "final_project_parameters_draft.json"
-LOGICAL_PAGES_PATH = RAW_DIR / "logical_pages.json"
-INTEGRITY_REPORT_PATH = REPORTS_DIR / "integrity_report.md"
+
+# Scans the parser module directory for forbidden tokens — must stay as __file__-relative path.
+_PARSER_DIR = Path(__file__).resolve().parent
 
 
 def token(*parts: str) -> str:
@@ -37,11 +31,14 @@ def load_json(path: Path) -> Any:
 
 
 def check_integrity() -> dict[str, Any]:
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    parser_paths.reports_dir().mkdir(parents=True, exist_ok=True)
     errors = []
-    candidates = load_json(CANDIDATES_PATH) if CANDIDATES_PATH.exists() else []
-    final = load_json(FINAL_DRAFT_PATH) if FINAL_DRAFT_PATH.exists() else {}
-    logical_pages = load_json(LOGICAL_PAGES_PATH) if LOGICAL_PAGES_PATH.exists() else []
+    candidates_path = parser_paths.candidates_path()
+    final_path = parser_paths.final_draft_path()
+    logical_path = parser_paths.logical_pages_path()
+    candidates = load_json(candidates_path) if candidates_path.exists() else []
+    final = load_json(final_path) if final_path.exists() else {}
+    logical_pages = load_json(logical_path) if logical_path.exists() else []
 
     for item in candidates:
         if not item.get("logical_sheet_type"):
@@ -49,7 +46,7 @@ def check_integrity() -> dict[str, Any]:
         if not item.get("evidence_id"):
             errors.append("candidate without evidence_id")
 
-    for path in BASE_DIR.glob("*.py"):
+    for path in _PARSER_DIR.glob("*.py"):
         if path.name == "integrity_checks.py":
             continue
         text = path.read_text(encoding="utf-8")
@@ -84,18 +81,7 @@ def check_integrity() -> dict[str, Any]:
         "",
     ]
     lines.extend([f"- {error}" for error in errors] or ["- Нет."])
-    INTEGRITY_REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    parser_paths.integrity_report_path().write_text("\n".join(lines) + "\n", encoding="utf-8")
     if errors:
         raise ValueError("Integrity failed:\n" + "\n".join(errors))
     return report
-
-
-def main() -> int:
-    report = check_integrity()
-    print(f"integrity_report: {INTEGRITY_REPORT_PATH}")
-    print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
