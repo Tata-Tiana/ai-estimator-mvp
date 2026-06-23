@@ -94,9 +94,11 @@ def _safe_rmtree(path: Path) -> None:
     shutil.rmtree(path, ignore_errors=True)
 
 
-def _clean_generated_outputs(out_dir: Path) -> None:
+def _clean_generated_outputs(out_dir: Path, excel_filename: str = "earthworks_formula_review.xlsx") -> None:
     for name in GENERATED_FILES_TO_CLEAN:
         _safe_unlink(out_dir / name)
+    if excel_filename != "earthworks_formula_review.xlsx":
+        _safe_unlink(out_dir / excel_filename)
     _safe_rmtree(out_dir / "calculation_result")
     for pycache in BASE_DIR.rglob("__pycache__"):
         _safe_rmtree(pycache)
@@ -210,7 +212,7 @@ def _extract_formula_ready_summary(formula_ready_data: dict[str, Any] | None) ->
     }
 
 
-def _extract_generated_files(out_dir: Path) -> list[str]:
+def _extract_generated_files(out_dir: Path, excel_filename: str = "earthworks_formula_review.xlsx") -> list[str]:
     candidates = [
         out_dir / "review_values_normalized.json",
         out_dir / "review_reader_report.md",
@@ -225,7 +227,7 @@ def _extract_generated_files(out_dir: Path) -> list[str]:
         out_dir / "calculation_result" / "earthworks_result.json",
         out_dir / "calculation_result" / "earthworks_result.md",
         out_dir / "calculation_result_report.md",
-        out_dir / "earthworks_formula_review.xlsx",
+        out_dir / excel_filename,
         out_dir / "excel_formula_export_report.md",
         out_dir / "excel_validation_report.md",
         out_dir / "full_review_flow_report.md",
@@ -334,7 +336,7 @@ def _write_full_flow_report(summary: dict[str, Any], md_path: Path, json_path: P
     current_summary = dict(summary)
     _save_text(md_path, _render_markdown(current_summary))
     _save_json(json_path, _build_json_summary(current_summary))
-    final_generated_files = _extract_generated_files(out_dir)
+    final_generated_files = _extract_generated_files(out_dir, excel_filename)
     if final_generated_files != current_summary.get("generated_files", []):
         current_summary["generated_files"] = final_generated_files
         _save_text(md_path, _render_markdown(current_summary))
@@ -347,8 +349,9 @@ def _run_excel_export(
     out_dir: Path,
     section_number: int | str | None,
     estimate_date: str | None,
+    excel_filename: str = "earthworks_formula_review.xlsx",
 ) -> dict[str, Any]:
-    xlsx_path = out_dir / "earthworks_formula_review.xlsx"
+    xlsx_path = out_dir / excel_filename
     report_path = out_dir / "excel_formula_export_report.md"
     step_name = "excel_export"
 
@@ -387,6 +390,14 @@ def _run_excel_export(
             (data.get("meta") or {}).get("project_address")
             or (data.get("project_meta") or {}).get("project_address")
         )
+        if not raw_address:
+            norm_path = out_dir / "review_values_normalized.json"
+            if norm_path.exists():
+                try:
+                    norm = _load_json(norm_path)
+                    raw_address = (norm.get("project_address") or {}).get("effective_value") or ""
+                except Exception:
+                    pass
         address = raw_address or "Адрес объекта: —"
         address_missing = not raw_address
 
@@ -443,9 +454,9 @@ def _run_excel_export(
     return step
 
 
-def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool, section_number: int | str | None = None, estimate_date: str | None = None, section_row: int = 11, data_start_row: int = 12) -> dict[str, Any]:
+def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: bool, skip_lineage: bool, keep_going: bool, section_number: int | str | None = None, estimate_date: str | None = None, section_row: int = 11, data_start_row: int = 12, excel_filename: str = "earthworks_formula_review.xlsx") -> dict[str, Any]:
     if not skip_clean:
-        _clean_generated_outputs(out_dir)
+        _clean_generated_outputs(out_dir, excel_filename)
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -489,7 +500,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         lineage_data = None
         calculator_run = False
         anti_cheat_status = "skipped"
-        generated_files = _extract_generated_files(out_dir)
+        generated_files = _extract_generated_files(out_dir, excel_filename)
         summary = {
             "verdict": "failed",
             "anti_cheat_status": anti_cheat_status,
@@ -529,7 +540,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             lineage_data = None
             calculator_run = False
             anti_cheat_status = "skipped"
-            generated_files = _extract_generated_files(out_dir)
+            generated_files = _extract_generated_files(out_dir, excel_filename)
             summary = {
                 "verdict": "failed",
                 "anti_cheat_status": anti_cheat_status,
@@ -623,7 +634,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             result_data = _load_if_exists(calculation_result_dir / "result.json")
             lineage_data = _load_if_exists(lineage_json)
             anti_cheat_status = "skipped"
-            generated_files = _extract_generated_files(out_dir)
+            generated_files = _extract_generated_files(out_dir, excel_filename)
             summary = {
                 "verdict": "failed",
                 "anti_cheat_status": anti_cheat_status,
@@ -699,7 +710,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             result_data = _load_if_exists(calculation_result_dir / "result.json")
             lineage_data = _load_if_exists(lineage_json)
             anti_cheat_status = "skipped"
-            generated_files = _extract_generated_files(out_dir)
+            generated_files = _extract_generated_files(out_dir, excel_filename)
             summary = {
                 "verdict": "failed",
                 "anti_cheat_status": anti_cheat_status,
@@ -764,12 +775,12 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
     anti_cheat_status = anti_cheat_step["status"]
 
     # Step 7: Excel export
-    excel_step = _run_excel_export(formula_ready_json, out_dir, section_number, estimate_date)
+    excel_step = _run_excel_export(formula_ready_json, out_dir, section_number, estimate_date, excel_filename)
     record_step(excel_step)
     excel_export_status = excel_step["status"]
 
     # Step 8: Excel validation
-    excel_path = out_dir / "earthworks_formula_review.xlsx"
+    excel_path = out_dir / excel_filename
     validation_report_path = out_dir / "excel_validation_report.md"
     excel_validation_status = "skipped"
 
@@ -833,7 +844,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
     if formula_ready_json.exists():
         formula_ready_data = _load_if_exists(formula_ready_json)
         formula_ready_summary = _extract_formula_ready_summary(formula_ready_data)
-    generated_files = _extract_generated_files(out_dir)
+    generated_files = _extract_generated_files(out_dir, excel_filename)
 
     verdict = "clean"
     if errors:
@@ -887,6 +898,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-calculator", action="store_true", help="Skip running the calculator step")
     parser.add_argument("--skip-lineage", action="store_true", help="Skip building the input lineage report")
     parser.add_argument("--keep-going", action="store_true", help="Continue after a failed step when possible")
+    parser.add_argument("--excel-filename", default="earthworks_formula_review.xlsx", help="Output Excel filename (default: earthworks_formula_review.xlsx)")
     return parser
 
 
@@ -907,6 +919,7 @@ def main(argv: list[str] | None = None) -> int:
         estimate_date=args.estimate_date,
         section_row=args.section_row,
         data_start_row=args.data_start_row,
+        excel_filename=args.excel_filename,
     )
 
     return 0 if summary["verdict"] == "clean" else 1

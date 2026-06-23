@@ -81,6 +81,32 @@ def first_page_for(sheet_type: str) -> dict[str, Any] | None:
     return None
 
 
+def extract_project_address() -> dict[str, Any]:
+    all_text = "\n".join(
+        (page.get("raw_page_text") or page.get("text") or "")
+        for page in logical_pages()
+    )
+    stop = r"(?:КР[-–]?\d|АР\b|Стадия|Лист\b|Ведомость|Пояснительная\s+записка|ГАП\b|г\.Москва)"
+    candidates: list[str] = []
+    for pattern in [
+        r"по\s+адресу\s*[:\-–—]\s*(.+?)(?=\n|\r|" + stop + r"|$)",
+        r"адрес(?:а|у)?\s*(?:объекта)?\s*[:\-–—]\s*(.+?)(?=\n|\r|" + stop + r"|$)",
+    ]:
+        for m in re.finditer(pattern, all_text, re.IGNORECASE):
+            raw = re.sub(r"\s+", " ", m.group(1)).strip().strip("\"'«»")
+            if raw and len(raw) > 3:
+                candidates.append(raw)
+    if not candidates:
+        return {"value": "", "source": "missing", "confidence": "missing"}
+    seen: set[str] = set()
+    unique: list[str] = []
+    for c in candidates:
+        if c.lower() not in seen:
+            seen.add(c.lower())
+            unique.append(c)
+    return {"value": max(unique, key=len), "source": "parser", "confidence": "medium"}
+
+
 def extract_pit_area() -> dict[str, Any]:
     text = earthworks_page_text("earthworks_pit_plan")
     match = re.search(
@@ -293,6 +319,7 @@ def extract_earthworks_parameters(artifacts_dir: Path | None = None) -> dict[str
     geotextile = extract_geotextile_area()
     return {
         "warnings": warnings,
+        "project_address": extract_project_address(),
         "parameters": {
             "pit_area_m2": extract_pit_area(),
             "pit_excavation_depth_m": extract_pit_depth(),

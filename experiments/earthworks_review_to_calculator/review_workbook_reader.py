@@ -119,6 +119,32 @@ def read_parameters_sheet(wb) -> tuple[dict[str, dict[str, Any]], list[str]]:
     return parameters, warnings
 
 
+def read_project_address_from_sheet(wb) -> dict[str, str]:
+    ws = wb[SHEET_01_NAME]
+    try:
+        header_row = find_header_row(ws, ["technical_key"])
+    except ValueError:
+        return {"parser_value": "", "manual_value": "", "effective_value": "", "source": "missing"}
+    col_map = header_map(ws, header_row)
+    col_a = col_map.get("Что проверяем", 1)
+    col_b = col_map.get("Найдено в проекте", 2)
+    col_h = col_map.get("Исправить / ввести значение", 8)
+    for row_idx in range(header_row + 1, ws.max_row + 1):
+        label = cell_text(ws.cell(row_idx, col_a).value)
+        if label == "Адрес объекта":
+            parser_value = cell_text(ws.cell(row_idx, col_b).value)
+            manual_value = cell_text(ws.cell(row_idx, col_h).value)
+            effective = manual_value if manual_value.strip() else parser_value
+            source = "manual_override" if manual_value.strip() else ("parser" if parser_value.strip() else "missing")
+            return {
+                "parser_value": parser_value,
+                "manual_value": manual_value,
+                "effective_value": effective,
+                "source": source,
+            }
+    return {"parser_value": "", "manual_value": "", "effective_value": "", "source": "missing"}
+
+
 def build_price_row(ws, row_idx: int, col_map: dict[str, int]) -> dict[str, Any] | None:
     estimate_line = sheet_row_as_text(ws, row_idx, col_map, "Строка сметы")
     if not estimate_line:
@@ -406,6 +432,7 @@ def build_review_data(workbook_path: str | Path) -> dict[str, Any]:
     parameters, parameter_warnings = read_parameters_sheet(wb)
     prices = read_prices_sheet(wb)
     details = read_details_sheet(wb)
+    project_address = read_project_address_from_sheet(wb)
 
     data = {
         "meta": {
@@ -415,6 +442,7 @@ def build_review_data(workbook_path: str | Path) -> dict[str, Any]:
             "section_name": SECTION_NAME_RU,
             "created_at": datetime.now().isoformat(timespec="seconds"),
         },
+        "project_address": project_address,
         "parameters": parameters,
         "prices": prices,
         "details": details,

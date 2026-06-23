@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -97,6 +98,12 @@ def _restore_hidden_columns(downloaded_path: Path, local_path: Path) -> None:
     dl_wb.save(str(downloaded_path))
 
 
+def _sanitize_job_id(job_id: str) -> str:
+    safe = re.sub(r"[^\w\-]", "_", job_id, flags=re.UNICODE)
+    safe = re.sub(r"_+", "_", safe).strip("_")
+    return safe or "job"
+
+
 def _run_full_flow(
     review_workbook: Path,
     out_dir: Path,
@@ -104,6 +111,7 @@ def _run_full_flow(
     estimate_date: str | None,
     section_row: int,
     data_start_row: int,
+    excel_filename: str = "earthworks_formula_review.xlsx",
 ) -> int:
     python = sys.executable
     cmd = [
@@ -114,6 +122,7 @@ def _run_full_flow(
         "--section-number", str(section_number),
         "--section-row", str(section_row),
         "--data-start-row", str(data_start_row),
+        "--excel-filename", excel_filename,
     ]
     if estimate_date:
         cmd.extend(["--estimate-date", estimate_date])
@@ -178,6 +187,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[patch] WARNING: local review_workbook.xlsx not found — skipping hidden-column restore", file=sys.stderr)
 
     print()
+    job_id = stage1_job_dir.name
+    excel_filename = f"{_sanitize_job_id(job_id)}.xlsx"
+    print(f"[excel] output filename: {excel_filename}")
+
     rc = _run_full_flow(
         review_workbook=xlsx_path,
         out_dir=out_dir,
@@ -185,10 +198,11 @@ def main(argv: list[str] | None = None) -> int:
         estimate_date=args.estimate_date,
         section_row=args.section_row,
         data_start_row=args.data_start_row,
+        excel_filename=excel_filename,
     )
 
     print()
-    update_after_build(stage1_job_dir, out_dir, returncode=rc, started_at=started_at)
+    update_after_build(stage1_job_dir, out_dir, returncode=rc, started_at=started_at, excel_filename=excel_filename)
     print(f"[job_state] updated — {stage1_job_dir / 'job_state.json'}")
 
     if rc != 0:

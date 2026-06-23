@@ -212,6 +212,7 @@ def update_after_build(
     out_dir: Path,
     returncode: int,
     started_at: str,
+    excel_filename: str = "earthworks_formula_review.xlsx",
 ) -> dict[str, Any]:
     state = load_job_state(stage1_job_dir)
     now = datetime.now().isoformat(timespec="seconds")
@@ -269,7 +270,7 @@ def update_after_build(
         "built_at": now,
         "out_dir": out_dir_rel,
         "downloaded_review_workbook": "downloaded_review_workbook.xlsx",
-        "final_excel": "earthworks_formula_review.xlsx",
+        "final_excel": excel_filename,
         "excel_validation": excel_validation,
         "full_flow_report": "full_review_flow_report.json",
         "excel_validation_report": "excel_validation_report.md",

@@ -422,6 +422,28 @@ def action_for_parameter(key: str, parameter: dict[str, Any], status: str) -> st
 
 def project_review_rows(extracted: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
+    addr = extracted.get("project_address") or {}
+    addr_value = (addr.get("value") or "").strip()
+    addr_status = "🟧 Проверьте" if addr_value else "🟥 Не найдено"
+    addr_action = (
+        "Проверьте адрес объекта. При необходимости исправьте в колонке «Исправить / ввести значение»."
+        if addr_value
+        else "Адрес не найден парсером; введите вручную в колонку «Исправить / ввести значение»."
+    )
+    rows.append({
+        "Что проверяем": "Адрес объекта",
+        "Найдено в проекте": addr_value,
+        "Ед.": "",
+        "Статус": addr_status,
+        "Что нужно сделать": addr_action,
+        "Источник": addr.get("source") or "" if addr_value else "",
+        "Фрагмент проекта": "",
+        "Исправить / ввести значение": "",
+        "Комментарий Елены": "",
+        "technical_key": "",
+        "extraction_status": "found" if addr_value else "missing",
+        "confidence": addr.get("confidence") or "" if addr_value else "missing",
+    })
     for key, (label, unit) in PARAM_META.items():
         parameter = extracted["parameters"].get(key, {})
         status = status_for_parameter(key, parameter)
