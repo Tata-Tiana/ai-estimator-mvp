@@ -332,7 +332,7 @@ def _build_json_summary(summary: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _write_full_flow_report(summary: dict[str, Any], md_path: Path, json_path: Path, out_dir: Path) -> dict[str, Any]:
+def _write_full_flow_report(summary: dict[str, Any], md_path: Path, json_path: Path, out_dir: Path, excel_filename: str = "earthworks_formula_review.xlsx") -> dict[str, Any]:
     current_summary = dict(summary)
     _save_text(md_path, _render_markdown(current_summary))
     _save_json(json_path, _build_json_summary(current_summary))
@@ -516,7 +516,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
             "steps": steps,
             "errors": errors,
         }
-        summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+        summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir, excel_filename)
         return summary
 
     # Step 2: calculator input
@@ -556,7 +556,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
                 "steps": steps,
                 "errors": errors,
             }
-            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir, excel_filename)
             return summary
     else:
         errors.append("normalized review json is missing; calculator input step skipped")
@@ -650,7 +650,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
                 "steps": steps,
                 "errors": errors,
             }
-            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir, excel_filename)
             return summary
     elif skip_calculator:
         steps.append(
@@ -726,7 +726,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
                 "steps": steps,
                 "errors": errors,
             }
-            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+            summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir, excel_filename)
             return summary
     elif skip_calculator or skip_lineage:
         steps.append(
@@ -882,7 +882,7 @@ def _run_flow(workbook: Path, out_dir: Path, skip_clean: bool, skip_calculator: 
         "errors": errors,
     }
 
-    summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir)
+    summary = _write_full_flow_report(summary, full_report_md, full_report_json, out_dir, excel_filename)
     return summary
 
 
