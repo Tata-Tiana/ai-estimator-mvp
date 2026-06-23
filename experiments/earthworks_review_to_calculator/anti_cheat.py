@@ -309,7 +309,12 @@ def validate_calculator_input(
 
     expected_excavator_method = DEFAULT_EXCAVATOR_SHIFTS_METHOD
     expected_manual_method = DEFAULT_MANUAL_EXCAVATION_METHOD
-    expected_communications_method = DEFAULT_COMMUNICATIONS_METHOD
+    # legacy_direct_length is valid when there are no pipe specs but manual length > 0
+    _pipe_items_in_review = details.get("communications_pipe_items", [])
+    if not _pipe_items_in_review and (communications_value or 0.0) > 0.0:
+        expected_communications_method = "legacy_direct_length"
+    else:
+        expected_communications_method = DEFAULT_COMMUNICATIONS_METHOD
 
     if calculator_input.get("project_name") in {None, ""}:
         errors.append("project_name is required")
@@ -326,9 +331,10 @@ def validate_calculator_input(
             )
 
     communications_quantity_mode = case_meta.get("communications_quantity_mode") if isinstance(case_meta, dict) else None
-    if communications_quantity_mode != expected_communications_method:
+    if communications_quantity_mode not in {DEFAULT_COMMUNICATIONS_METHOD, "legacy_direct_length"}:
         errors.append(
-            f"case_meta.communications_quantity_mode must be {expected_communications_method!r}, "
+            f"case_meta.communications_quantity_mode must be one of "
+            f"{[DEFAULT_COMMUNICATIONS_METHOD, 'legacy_direct_length']!r}, "
             f"got {communications_quantity_mode!r}"
         )
 
@@ -369,9 +375,9 @@ def validate_calculator_input(
     if expected_communications_method == DEFAULT_COMMUNICATIONS_METHOD:
         if _as_number(calculator_input.get("communications_length_m")) not in {0.0, 0}:
             errors.append("communications_length_m must be 0 in pipe_items mode")
-    else:
+    elif expected_communications_method == "legacy_direct_length":
         if _as_number(calculator_input.get("communications_length_m")) != communications_value:
-            errors.append("communications_length_m must match normalized review value")
+            errors.append("communications_length_m must match normalized review value in legacy_direct_length mode")
 
     if expected_manual_method == DEFAULT_MANUAL_EXCAVATION_METHOD:
         if calculator_input.get("manual_excavation_quantity_for_estimate_m3") is not None:
@@ -536,6 +542,13 @@ def validate_calculation_result(
             for row in normalized_data.get("details", {}).get("communications_pipe_items", [])
             if _as_boolish(row.get("included")) is True
         )
+    # In legacy_direct_length mode (no pipe specs, manual length entered), the calculator
+    # uses the manual value from sheet 01, not the pipe-items sum (which is 0).
+    _norm_params = normalized_data.get("parameters", {})
+    _comm_value = _as_number((_norm_params.get("communications_length_m") or {}).get("value")) or 0.0
+    _pipe_items_in_norm = normalized_data.get("details", {}).get("communications_pipe_items", [])
+    if not _pipe_items_in_norm and _comm_value > 0.0:
+        expected_communications_length = _comm_value
     if communications_length is None:
         errors.append("calculation result communications_length_m must be numeric")
     elif abs(communications_length - expected_communications_length) > 0.001:
