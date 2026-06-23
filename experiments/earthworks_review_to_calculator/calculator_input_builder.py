@@ -280,12 +280,17 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
     payload["geotextile_overlap_coeff"] = defaults["geotextile_overlap_coeff"]
     payload["geotextile_roll_area_m2"] = defaults["geotextile_roll_area_m2"]
 
-    payload["communications_length_calc_method"] = defaults.get(
-        "communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD
-    )
-    # Technical field required by the calculator in pipe_items mode; kept as 0.0 (legacy input).
-    # The actual length used for estimate lines is communications_length_m_effective below.
-    payload["communications_length_m"] = 0.0
+    # If no pipe items but user entered length manually, use legacy_direct_length so the
+    # calculator doesn't crash requiring a pipe list that doesn't exist.
+    if not communications_pipe_items and (communications_length_m_from_review or 0.0) > 0.0:
+        payload["communications_length_calc_method"] = "legacy_direct_length"
+        payload["communications_length_m"] = float(communications_length_m_from_review)
+    else:
+        payload["communications_length_calc_method"] = defaults.get(
+            "communications_length_calc_method", DEFAULT_COMMUNICATIONS_METHOD
+        )
+        # Technical field required by the calculator in pipe_items mode; kept as 0.0 (legacy input).
+        payload["communications_length_m"] = 0.0
     payload["communications_pipe_items"] = communications_pipe_items
     # Audit/lineage fields — stored in case_meta so the calculator ignores them.
     payload["case_meta"]["communications_quantity_mode"] = communications_quantity_mode

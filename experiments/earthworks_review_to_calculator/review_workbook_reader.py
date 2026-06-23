@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -200,9 +201,16 @@ def build_communication_item(ws, row_idx: int, col_map: dict[str, int]) -> dict[
         return None
 
     included_raw = sheet_row_as_text(ws, row_idx, col_map, "Включено")
+    name = sheet_row_as_text(ws, row_idx, col_map, "Наименование")
+    diameter_mm = int(parse_number(sheet_row_as_text(ws, row_idx, col_map, "Диаметр, мм")) or 0)
+    if diameter_mm == 0 and name:
+        # Extract diameter from pipe name: Ф110, ф110, Ø110, D110, 110мм
+        m = re.search(r"[ФфØD][\s]?(\d+)|(\d+)\s*мм", name, re.IGNORECASE)
+        if m:
+            diameter_mm = int(m.group(1) or m.group(2))
     return {
-        "name": sheet_row_as_text(ws, row_idx, col_map, "Наименование"),
-        "diameter_mm": int(parse_number(sheet_row_as_text(ws, row_idx, col_map, "Диаметр, мм")) or 0),
+        "name": name,
+        "diameter_mm": diameter_mm,
         "pipe_length_m": parse_number(sheet_row_as_text(ws, row_idx, col_map, "Длина одной, м")),
         "quantity": parse_number(sheet_row_as_text(ws, row_idx, col_map, "Количество")),
         "total_length_m": parse_number(sheet_row_as_text(ws, row_idx, col_map, "Итоговая длина, м")),
