@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
 sys.path.insert(0, str(BASE_DIR))
 
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR     = BASE_DIR / "data"
 UPLOADS_DIR  = DATA_DIR / "telegram_uploads"
 LOGS_DIR     = DATA_DIR / "telegram_logs"
 SESSIONS_DIR = DATA_DIR / "telegram_sessions"
@@ -45,6 +46,9 @@ TIMEOUTS = {
     "status":      120,
 }
 
+# Seconds of silence after last PDF before parser fires
+QUIET_SECONDS = 5
+
 # ── config ─────────────────────────────────────────────────────────────────
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 if not TOKEN:
@@ -62,6 +66,19 @@ if not ALLOWED_CHAT_IDS:
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
 
+# ── per-chat locks ─────────────────────────────────────────────────────────
+# Protects the SESSION_LOCKS dict itself
+_LOCKS_MUTEX: threading.Lock = threading.Lock()
+SESSION_LOCKS: dict[int, threading.Lock] = {}
+
+
+def get_chat_lock(chat_id: int) -> threading.Lock:
+    with _LOCKS_MUTEX:
+        if chat_id not in SESSION_LOCKS:
+            SESSION_LOCKS[chat_id] = threading.Lock()
+        return SESSION_LOCKS[chat_id]
+
+
 # ── session management ─────────────────────────────────────────────────────
 
 def _session_path(chat_id: int) -> Path:
@@ -75,7 +92,14 @@ def _load_session(chat_id: int) -> dict:
             return json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             pass
-    return {"chat_id": chat_id, "pdfs": []}
+    return {
+        "chat_id": chat_id,
+        "pdfs": [],
+        "done_requested": False,
+        "done_requested_at": None,
+        "processing_started": False,
+        "last_pdf_added_at": None,
+    }
 
 
 def _save_session(chat_id: int, session: dict) -> None:
@@ -172,93 +196,60 @@ def _find_spreadsheet_url(job_id: str) -> str | None:
         return None
 
 
-# ── /start ─────────────────────────────────────────────────────────────────
-@bot.message_handler(commands=["start"])
-def cmd_start(message: telebot.types.Message) -> None:
-    if not _allowed(message.chat.id):
-        return
-    bot.reply_to(message,
-        "Пришлите один или несколько PDF проекта.\n\n"
-        "Когда все файлы проекта отправлены, напишите:\n\n"
-        "/done\n\n"
-        "Я создам заказ, запущу парсер и пришлю ссылку на Google Sheet для проверки."
-    )
+# ── quiet-window processing ────────────────────────────────────────────────
+
+def schedule_process_after_quiet(chat_id: int) -> None:
+    """Fire try_process_done_session after QUIET_SECONDS."""
+    t = threading.Timer(QUIET_SECONDS, try_process_done_session, args=(chat_id,))
+    t.daemon = True
+    t.start()
 
 
-# ── PDF ────────────────────────────────────────────────────────────────────
-@bot.message_handler(content_types=["document"])
-def handle_document(message: telebot.types.Message) -> None:
-    if not _allowed(message.chat.id):
-        return
+def try_process_done_session(chat_id: int) -> None:
+    """
+    Called after quiet window. If enough time has passed since the last PDF
+    and done was requested, launch the parser. Otherwise reschedule.
+    """
+    lock = get_chat_lock(chat_id)
+    with lock:
+        session = _load_session(chat_id)
 
-    doc = message.document
-    if not (doc.file_name or "").lower().endswith(".pdf"):
-        bot.reply_to(message, "Пожалуйста, отправьте PDF-файл.")
-        return
+        if not session.get("done_requested"):
+            return
+        if session.get("processing_started"):
+            return
+        if not session.get("pdfs"):
+            return
 
-    session = _load_session(message.chat.id)
+        last_pdf_str = session.get("last_pdf_added_at")
+        if last_pdf_str:
+            last_pdf_dt = datetime.fromisoformat(last_pdf_str)
+            elapsed = (datetime.now() - last_pdf_dt).total_seconds()
+            if elapsed < QUIET_SECONDS:
+                # Still within quiet window — reschedule
+                remaining = QUIET_SECONDS - elapsed + 0.5
+                session_copy = None  # don't need to pass session
+        else:
+            elapsed = QUIET_SECONDS  # no timestamp → proceed
 
-    # Use one upload folder per session
-    if not session.get("session_id"):
-        session["session_id"] = datetime.now().strftime("%Y%m%d_%H%M%S")
-        session["created_at"] = datetime.now().isoformat(timespec="seconds")
+        if last_pdf_str and elapsed < QUIET_SECONDS:
+            # Release lock and reschedule
+            t = threading.Timer(remaining, try_process_done_session, args=(chat_id,))
+            t.daemon = True
+            t.start()
+            return
 
-    upload_dir = UPLOADS_DIR / str(message.chat.id) / session["session_id"]
-    upload_dir.mkdir(parents=True, exist_ok=True)
+        # Quiet window passed — mark as started and proceed
+        session["processing_started"] = True
+        _save_session(chat_id, session)
+        pdfs = list(session["pdfs"])
+        project_name = session.get("project_name") or "Проект"
 
-    pdf_path = upload_dir / doc.file_name
-    file_info = bot.get_file(doc.file_id)
-    raw = bot.download_file(file_info.file_path)
-    pdf_path.write_bytes(raw)
-
-    sha256 = hashlib.sha256(raw).hexdigest()
-
-    # Set project_name from first PDF
-    if not session.get("project_name"):
-        session["project_name"] = _normalize_project_name(doc.file_name)
-
-    pdfs: list = session.setdefault("pdfs", [])
-    pdfs.append({
-        "filename": doc.file_name,
-        "local_path": str(pdf_path),
-        "sha256": sha256,
-    })
-
-    _save_session(message.chat.id, session)
-
-    count = len(pdfs)
-    if count == 1:
-        hint = "Пришлите остальные PDF этого проекта.\nКогда все файлы проекта отправлены, напишите:\n\n/done"
-    else:
-        hint = "Когда все файлы проекта отправлены, напишите:\n\n/done"
-
-    bot.reply_to(message,
-        f"PDF добавлен ✅\n\n"
-        f"Сейчас в заказе: {count} PDF.\n\n"
-        f"{hint}"
-    )
+    # Lock released — run parser outside lock
+    _run_create_job(chat_id, pdfs, project_name)
 
 
-# ── /done ──────────────────────────────────────────────────────────────────
-@bot.message_handler(commands=["done"])
-def cmd_done(message: telebot.types.Message) -> None:
-    if not _allowed(message.chat.id):
-        return
-
-    session = _load_session(message.chat.id)
-    pdfs = session.get("pdfs", [])
-
-    if not pdfs:
-        bot.reply_to(message,
-            "Пока нет PDF для обработки.\n\n"
-            "Сначала отправьте один или несколько PDF проекта.\n"
-            "Когда все файлы будут отправлены — напишите /done."
-        )
-        return
-
-    project_name = session.get("project_name") or "Проект"
-    bot.reply_to(message, "Запускаю парсер...")
-
+def _run_create_job(chat_id: int, pdfs: list, project_name: str) -> None:
     cmd = [
         _python(), str(CREATE_JOB),
         "--project-name", project_name,
@@ -271,17 +262,19 @@ def cmd_done(message: telebot.types.Message) -> None:
     try:
         result = _run(cmd, TIMEOUTS["create_job"])
     except subprocess.TimeoutExpired:
-        _log(message.chat.id, "create_job", -1, "", "timeout")
-        bot.reply_to(message,
-            "⚠️ Превышено время ожидания (20 мин).\n\n"
+        _log(chat_id, "create_job", -1, "", "timeout")
+        _reset_session_after_failure(chat_id)
+        bot.send_message(chat_id,
+            "Не удалось создать заказ ⚠️\n\n"
             "PDF-набор сохранён.\nМожно попробовать ещё раз: /done"
         )
         return
 
-    _log(message.chat.id, "create_job", result.returncode, result.stdout, result.stderr)
+    _log(chat_id, "create_job", result.returncode, result.stdout, result.stderr)
 
     if result.returncode != 0:
-        bot.reply_to(message,
+        _reset_session_after_failure(chat_id)
+        bot.send_message(chat_id,
             "Не удалось создать заказ ⚠️\n\n"
             "PDF-набор сохранён.\nМожно попробовать ещё раз: /done"
         )
@@ -289,14 +282,15 @@ def cmd_done(message: telebot.types.Message) -> None:
 
     data = _parse_json(result.stdout)
     if data is None:
-        bot.reply_to(message,
+        _reset_session_after_failure(chat_id)
+        bot.send_message(chat_id,
             "Не удалось создать заказ ⚠️\n\n"
             "PDF-набор сохранён.\nМожно попробовать ещё раз: /done"
         )
         return
 
     # Success — clear session
-    _clear_session(message.chat.id)
+    _clear_session(chat_id)
 
     job_id = data.get("job_id", "?")
     url    = data.get("spreadsheet_url", "нет")
@@ -324,7 +318,132 @@ def cmd_done(message: telebot.types.Message) -> None:
         text += f"\n\nℹ️ Автопроверка нашла {n} замечани{suffix} — это не блокирует работу."
     text += f"\n\nПроверьте и заполните Google Sheet.\nПосле проверки отправьте:\n\n/build {job_id}"
 
-    bot.reply_to(message, text)
+    bot.send_message(chat_id, text)
+
+
+def _reset_session_after_failure(chat_id: int) -> None:
+    lock = get_chat_lock(chat_id)
+    with lock:
+        session = _load_session(chat_id)
+        session["processing_started"] = False
+        session["done_requested"] = False
+        session["done_requested_at"] = None
+        _save_session(chat_id, session)
+
+
+# ── /start ─────────────────────────────────────────────────────────────────
+@bot.message_handler(commands=["start"])
+def cmd_start(message: telebot.types.Message) -> None:
+    if not _allowed(message.chat.id):
+        return
+    bot.reply_to(message,
+        "Пришлите один или несколько PDF проекта.\n\n"
+        "Когда все файлы проекта отправлены, напишите:\n\n"
+        "/done\n\n"
+        "Я создам заказ, запущу парсер и пришлю ссылку на Google Sheet для проверки."
+    )
+
+
+# ── PDF ────────────────────────────────────────────────────────────────────
+@bot.message_handler(content_types=["document"])
+def handle_document(message: telebot.types.Message) -> None:
+    if not _allowed(message.chat.id):
+        return
+
+    doc = message.document
+    if not (doc.file_name or "").lower().endswith(".pdf"):
+        bot.reply_to(message, "Пожалуйста, отправьте PDF-файл.")
+        return
+
+    # Download PDF before taking the lock
+    file_info = bot.get_file(doc.file_id)
+    raw = bot.download_file(file_info.file_path)
+    sha256 = hashlib.sha256(raw).hexdigest()
+
+    lock = get_chat_lock(message.chat.id)
+    with lock:
+        session = _load_session(message.chat.id)
+
+        if session.get("processing_started"):
+            bot.reply_to(message,
+                "Парсер уже запущен для текущего набора.\n"
+                "Дождитесь результата, затем отправьте PDF для нового заказа."
+            )
+            return
+
+        if not session.get("session_id"):
+            session["session_id"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+            session["created_at"] = datetime.now().isoformat(timespec="seconds")
+
+        upload_dir = UPLOADS_DIR / str(message.chat.id) / session["session_id"]
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        pdf_path = upload_dir / doc.file_name
+        pdf_path.write_bytes(raw)
+
+        if not session.get("project_name"):
+            session["project_name"] = _normalize_project_name(doc.file_name)
+
+        session.setdefault("pdfs", []).append({
+            "filename": doc.file_name,
+            "local_path": str(pdf_path),
+            "sha256": sha256,
+        })
+        session["last_pdf_added_at"] = datetime.now().isoformat(timespec="seconds")
+
+        _save_session(message.chat.id, session)
+        count = len(session["pdfs"])
+
+    if count == 1:
+        hint = "Пришлите остальные PDF этого проекта.\nКогда все файлы проекта отправлены, напишите:\n\n/done"
+    else:
+        hint = "Когда все файлы проекта отправлены, напишите:\n\n/done"
+
+    bot.reply_to(message,
+        f"PDF добавлен ✅\n\n"
+        f"Сейчас в заказе: {count} PDF.\n\n"
+        f"{hint}"
+    )
+
+
+# ── /done ──────────────────────────────────────────────────────────────────
+@bot.message_handler(commands=["done"])
+def cmd_done(message: telebot.types.Message) -> None:
+    if not _allowed(message.chat.id):
+        return
+
+    lock = get_chat_lock(message.chat.id)
+    with lock:
+        session = _load_session(message.chat.id)
+        pdfs = session.get("pdfs", [])
+
+        if not pdfs:
+            bot.reply_to(message,
+                "Пока нет PDF для обработки.\n\n"
+                "Сначала отправьте один или несколько PDF проекта.\n"
+                "Когда все файлы будут отправлены — напишите /done."
+            )
+            return
+
+        if session.get("processing_started"):
+            bot.reply_to(message, "Парсер уже запущен, дождитесь результата.")
+            return
+
+        if session.get("done_requested"):
+            bot.reply_to(message, "Команда /done уже принята, дождитесь результата.")
+            return
+
+        session["done_requested"] = True
+        session["done_requested_at"] = datetime.now().isoformat(timespec="seconds")
+        _save_session(message.chat.id, session)
+
+    bot.reply_to(message,
+        "Принято ✅\n\n"
+        "Проверяю, что все PDF успели загрузиться.\n"
+        f"Если новых файлов не будет, через {QUIET_SECONDS} секунд запущу парсер."
+    )
+
+    schedule_process_after_quiet(message.chat.id)
 
 
 # ── /status ────────────────────────────────────────────────────────────────
