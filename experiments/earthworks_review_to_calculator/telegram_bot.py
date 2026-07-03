@@ -35,8 +35,9 @@ SESSIONS_DIR = DATA_DIR / "telegram_sessions"
 EVENTS_DIR   = LOGS_DIR / "events"
 SESSION_BACKUPS_DIR = BASE_DIR / "backups" / "telegram_sessions"
 ADMIN_EXPORTS_DIR   = DATA_DIR / "admin_exports"
+USER_JOBS_DIR       = DATA_DIR / "telegram_user_jobs"
 
-for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR, ADMIN_EXPORTS_DIR):
+for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR, ADMIN_EXPORTS_DIR, USER_JOBS_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 CREATE_JOB  = BASE_DIR / "create_job_from_pdf.py"
@@ -302,6 +303,86 @@ def _clear_session(chat_id: int) -> None:
     p = _session_path(chat_id)
     if p.exists():
         p.unlink()
+
+
+# ── user job registry ───────────────────────────────────────────────────────
+_MAX_USER_JOBS = 20
+
+
+def _user_jobs_path(chat_id: int) -> Path:
+    return USER_JOBS_DIR / f"{chat_id}.json"
+
+
+def _register_user_job(
+    chat_id: int,
+    job_id: str,
+    project_name: str,
+    spreadsheet_url: str,
+    pdf_count: int,
+) -> None:
+    path = _user_jobs_path(chat_id)
+    try:
+        existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    except Exception:
+        existing = {}
+    jobs: list[dict] = existing.get("jobs", [])
+    jobs = [j for j in jobs if j.get("job_id") != job_id]
+    jobs.insert(0, {
+        "job_id": job_id,
+        "project_name": project_name or "",
+        "spreadsheet_url": spreadsheet_url or "",
+        "pdf_count": pdf_count,
+        "created_at": _now(),
+        "last_action_at": _now(),
+    })
+    jobs = jobs[:_MAX_USER_JOBS]
+    payload = {"chat_id": chat_id, "jobs": jobs}
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _update_user_job_url(chat_id: int, job_id: str, spreadsheet_url: str) -> None:
+    path = _user_jobs_path(chat_id)
+    if not path.exists():
+        return
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    jobs: list[dict] = data.get("jobs", [])
+    for job in jobs:
+        if job.get("job_id") == job_id:
+            job["spreadsheet_url"] = spreadsheet_url or ""
+            job["last_action_at"] = _now()
+            break
+    data["jobs"] = jobs
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _user_can_access_job(chat_id: int, job_id: str) -> bool:
+    if chat_id in ADMIN_CHAT_IDS:
+        return True
+    path = _user_jobs_path(chat_id)
+    if not path.exists():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    return any(j.get("job_id") == job_id for j in data.get("jobs", []))
+
+
+def _deny_job_access(message: telebot.types.Message, job_id: str) -> None:
+    bot.reply_to(message, "У вас нет доступа к этому заказу.")
+    _log_event(
+        "job_access_denied",
+        chat_id=message.chat.id,
+        safe_message="User denied access to job",
+        job_id=job_id,
+    )
 
 
 def _set_status(session: dict, status: str) -> None:
@@ -674,7 +755,14 @@ def _run_create_job(chat_id: int, pdfs: list, project_name: str) -> None:
         n = ac_errors
         suffix = "е" if n == 1 else ("я" if n < 5 else "й")
         text += f"\n\nℹ️ Автопроверка нашла {n} замечани{suffix} — это не блокирует работу."
-    text += f"\n\nПроверьте и заполните Google Sheet.\nПосле проверки отправьте:\n\n/build {job_id}"
+    text += (
+        f"\n\nПроверьте и заполните Google Sheet.\nПосле проверки отправьте:\n\n"
+        f"/build {job_id}\n\n"
+        f"Если таблица потерялась или сломалась:\n"
+        f"/recreate {job_id}\n\n"
+        f"Если PDF распознался плохо и нужно запустить парсер заново:\n"
+        f"/rerun {job_id}"
+    )
 
     lock = get_chat_lock(chat_id)
     with lock:
@@ -697,6 +785,13 @@ def _run_create_job(chat_id: int, pdfs: list, project_name: str) -> None:
         _archive_session(chat_id, session, "completed")
         _clear_session(chat_id)
 
+    _register_user_job(
+        chat_id,
+        job_id=job_id,
+        project_name=project_name,
+        spreadsheet_url=url,
+        pdf_count=len(pdfs),
+    )
     bot.send_message(chat_id, text)
 
 
@@ -764,15 +859,11 @@ def cmd_start(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/start"):
         return
     bot.reply_to(message,
-        "Пришлите один или несколько PDF проекта.\n\n"
-        "Когда все файлы проекта отправлены, напишите:\n\n"
-        "/done\n\n"
-        "Я создам заказ, запущу парсер и пришлю ссылку на Google Sheet для проверки.\n\n"
-        "Полезные команды:\n"
-        "/help — инструкция\n"
-        "/status — текущая загрузка\n"
-        "/cancel — отменить текущую загрузку до запуска обработки\n"
-        "/build <job_id> — собрать Excel после проверки Google Sheet"
+        "1. Пришлите PDF проекта.\n"
+        "2. Когда все PDF отправлены — /done.\n"
+        "3. Проверьте Google Sheet.\n"
+        "4. После проверки — /build <job_id>.\n\n"
+        "Все команды: /help"
     )
 
 
@@ -781,13 +872,13 @@ def cmd_help(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/help"):
         return
     text = (
-        "Отправьте один или несколько PDF.\n"
-        "Если PDF несколько — отправьте все.\n"
-        "Когда все PDF отправлены — напишите /done.\n"
-        "Бот создаст Google Sheet для проверки.\n"
-        "После проверки данных отправьте /build <job_id>.\n\n"
-        "Проверить текущую загрузку: /status\n"
-        "Отменить загрузку до запуска обработки: /cancel"
+        "Основные команды:\n"
+        "/done — запустить создание Google Sheet после загрузки PDF\n"
+        "/cancel — отменить текущую загрузку до запуска обработки\n"
+        "/build <job_id> — собрать Excel после проверки Google Sheet\n\n"
+        "Если что-то пошло не так:\n"
+        "/recreate <job_id> — создать новую Google Sheet по уже найденным данным\n"
+        "/rerun <job_id> — запросить повторное чтение PDF; бот попросит подтверждение"
     )
     if _admin_allowed(message.chat.id):
         text += "\n\nАдминские команды: /admin_help"
@@ -961,40 +1052,6 @@ def cmd_done(message: telebot.types.Message) -> None:
 
 
 # ── /status ────────────────────────────────────────────────────────────────
-@bot.message_handler(commands=["status"])
-def cmd_status(message: telebot.types.Message) -> None:
-    if not _require_user_access(message, "/status"):
-        return
-    parts = message.text.strip().split(maxsplit=1)
-    if len(parts) < 2:
-        lock = get_chat_lock(message.chat.id)
-        with lock:
-            path = _session_path(message.chat.id)
-            if not path.exists():
-                bot.reply_to(message, _format_session_status(None))
-                return
-            session = _load_session(message.chat.id)
-            session = _recover_stale_session_locked(message.chat.id, session)
-            if session is None:
-                bot.reply_to(message, _format_session_status(None))
-                return
-            _save_session(message.chat.id, session)
-        bot.reply_to(message, _format_session_status(session))
-        return
-    job_id = parts[1].strip()
-
-    cmd = [_python(), str(SHOW_STATUS), "--job-id", job_id]
-    try:
-        result = _run(cmd, TIMEOUTS["status"])
-    except subprocess.TimeoutExpired:
-        bot.reply_to(message, "⏱ Превышено время ожидания.")
-        return
-
-    _log(message.chat.id, "status", result.returncode, result.stdout, result.stderr)
-    output = result.stdout.strip() or result.stderr.strip() or "Нет данных."
-    bot.reply_to(message, output[:4000])
-
-
 # ── /cancel ────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["cancel"])
 def cmd_cancel(message: telebot.types.Message) -> None:
@@ -1044,6 +1101,10 @@ def cmd_build(message: telebot.types.Message) -> None:
         bot.reply_to(message, "Укажите job_id: /build <job_id>")
         return
     job_id = parts[1].strip()
+
+    if not _user_can_access_job(message.chat.id, job_id):
+        _deny_job_access(message, job_id)
+        return
 
     bot.reply_to(message, "Собираю смету... Это может занять несколько минут.")
 
@@ -1301,16 +1362,19 @@ def cmd_admin_help(message: telebot.types.Message) -> None:
         return
     _admin_started(message, "/admin_help")
     bot.reply_to(message,
-        "/admin_status — общее состояние бота\n"
-        "/sessions — активные Telegram sessions\n"
+        "/admin_status — состояние процесса бота\n"
+        "/sessions — сводка по чатам пользователей\n"
+        "/sessions <chat_id> — подробности по конкретному чату\n"
+        "/active_sessions — только активные загрузки PDF\n"
         "/reset_session <chat_id> — аварийно архивировать и сбросить session\n"
         "/recover_sessions — вручную запустить recovery старых sessions\n"
         "/logs — последние события\n"
         "/tail_errors — последние ошибки\n"
-        "/job_status <job_id> — подробный статус job\n"
-        "/export_logs [today|yesterday|7d|all] — выгрузить диагностику в Excel\n"
-        "/recreate <job_id> — пересоздать Google Sheet без перепарсинга\n"
-        "/rerun <job_id> — заново запустить parser"
+        "/job_status <job_id> — статус конкретного job\n"
+        "/export_logs [today|yesterday|7d|all] — Excel-диагностика\n"
+        "/recreate <job_id> — пересоздать Google Sheet, пользователь может только свой job\n"
+        "/rerun <job_id> — запросить перепарсинг, пользователь может только свой job\n"
+        "/confirm_rerun <job_id> — подтвердить перепарсинг"
     )
     _admin_completed(message, "/admin_help")
 
@@ -1360,20 +1424,285 @@ def cmd_admin_status(message: telebot.types.Message) -> None:
     _admin_completed(message, "/admin_status")
 
 
+@bot.message_handler(commands=["active_sessions"])
+def cmd_active_sessions(message: telebot.types.Message) -> None:
+    if not _require_admin_access(message, "/active_sessions"):
+        return
+    _admin_started(message, "/active_sessions")
+    rows, total = _session_rows(limit=20)
+    if not rows:
+        text = "Активных загрузок PDF сейчас нет."
+    else:
+        text = "Активные загрузки PDF:\n" + "\n".join(rows)
+        if total > 20:
+            text += f"\n\nПоказаны первые 20 из {total}."
+    bot.reply_to(message, text[:4000])
+    _admin_completed(message, "/active_sessions", total_sessions=total)
+
+
+# ── /sessions helpers ───────────────────────────────────────────────────────
+
+def _session_pdf_count(session: dict) -> int:
+    pdfs = session.get("pdfs")
+    if isinstance(pdfs, list):
+        return len(pdfs)
+    return int(session.get("pdf_count") or 0)
+
+
+_CHAT_STATE_MAP: dict[str, str] = {
+    "collecting": "active_upload",
+    "done_requested": "done_requested",
+    "queued": "queued",
+    "processing": "processing",
+    "failed": "failed",
+    "cancelled": "cancelled",
+    "stale": "stale",
+    "completed": "idle",
+}
+
+_NEXT_ACTION: dict[str, str] = {
+    "active_upload":      "пользователь отправляет PDF, ждём /done",
+    "done_requested":     "команда /done принята, ждём запуск обработки",
+    "queued":             "команда /done принята, ждём запуск обработки",
+    "processing":         "парсер работает",
+    "waiting_for_review": "ждём проверку Google Sheet, потом /build",
+    "failed":             "ошибка, смотреть /tail_errors или /export_logs",
+    "cancelled":          "загрузка отменена",
+    "stale":              "session устарела/заархивирована",
+    "idle":               "нет активной работы",
+}
+
+
+def _archive_latest_by_chat() -> dict[int, tuple[datetime, dict]]:
+    """Return {chat_id: (archive_dt, session_data)} for the latest archive per chat."""
+    latest: dict[int, tuple[datetime, dict]] = {}
+    for path in SESSION_BACKUPS_DIR.glob("*.json"):
+        parts = path.stem.split("_")
+        try:
+            chat_id = int(parts[0])
+        except (ValueError, IndexError):
+            continue
+        try:
+            archive_dt = datetime.strptime(parts[-2] + parts[-1], "%Y%m%d%H%M%S")
+        except (ValueError, IndexError):
+            archive_dt = datetime.fromtimestamp(path.stat().st_mtime)
+        if chat_id not in latest or archive_dt > latest[chat_id][0]:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                continue
+            if isinstance(data, dict):
+                latest[chat_id] = (archive_dt, data)
+    return latest
+
+
+def _events_last_ts_by_chat() -> dict[int, datetime]:
+    """Return {chat_id: latest_event_datetime} from all JSONL event files."""
+    result: dict[int, datetime] = {}
+    for jsonl_path in sorted(EVENTS_DIR.glob("*.jsonl")):
+        try:
+            text = jsonl_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            try:
+                chat_id = int(ev.get("chat_id") or 0)
+            except (ValueError, TypeError):
+                continue
+            if not chat_id:
+                continue
+            ts = _parse_dt(ev.get("timestamp"))
+            if ts and (chat_id not in result or ts > result[chat_id]):
+                result[chat_id] = ts
+    return result
+
+
+def _build_chat_summary() -> list[dict]:
+    """
+    Collect per-chat state from active sessions, archives, and events.
+    Returns list sorted by last_activity_at desc.
+    """
+    chats: dict[int, dict] = {}
+
+    # Active sessions (highest priority)
+    for path in SESSIONS_DIR.glob("*.json"):
+        cid, session, error = _read_session_file_for_admin(path)
+        if cid is None:
+            continue
+        if error == "corrupt" or not session:
+            chats[cid] = {"chat_id": cid, "state": "corrupt", "last_activity_at": None,
+                          "project_name": "", "pdf_count": 0, "job_id": "",
+                          "spreadsheet_url": "", "last_error_type": "", "last_error": ""}
+            continue
+        status = session.get("status", "collecting")
+        state = _CHAT_STATE_MAP.get(status, status)
+        chats[cid] = {
+            "chat_id": cid,
+            "state": state,
+            "last_activity_at": _parse_dt(session.get("updated_at") or session.get("status_changed_at")),
+            "project_name": session.get("project_name") or "",
+            "pdf_count": _session_pdf_count(session),
+            "job_id": session.get("job_id") or "",
+            "spreadsheet_url": session.get("spreadsheet_url") or "",
+            "last_error_type": session.get("last_error_type") or "",
+            "last_error": session.get("last_error") or "",
+        }
+
+    # Latest archived sessions (for chats not already in active)
+    for cid, (archive_dt, data) in _archive_latest_by_chat().items():
+        if cid in chats:
+            continue
+        status = data.get("status", "")
+        if status == "completed" and (data.get("job_id") or data.get("spreadsheet_url")):
+            state = "waiting_for_review"
+        else:
+            state = _CHAT_STATE_MAP.get(status, "idle")
+        chats[cid] = {
+            "chat_id": cid,
+            "state": state,
+            "last_activity_at": archive_dt,
+            "project_name": data.get("project_name") or "",
+            "pdf_count": _session_pdf_count(data),
+            "job_id": data.get("job_id") or "",
+            "spreadsheet_url": data.get("spreadsheet_url") or "",
+            "last_error_type": data.get("last_error_type") or "",
+            "last_error": data.get("last_error") or "",
+        }
+
+    # Events: fill in chats not seen in files, and update missing last_activity_at
+    for cid, ts in _events_last_ts_by_chat().items():
+        if cid not in chats:
+            chats[cid] = {"chat_id": cid, "state": "idle", "last_activity_at": ts,
+                          "project_name": "", "pdf_count": 0, "job_id": "",
+                          "spreadsheet_url": "", "last_error_type": "", "last_error": ""}
+        elif chats[cid]["last_activity_at"] is None:
+            chats[cid]["last_activity_at"] = ts
+
+    return sorted(chats.values(), key=lambda c: c["last_activity_at"] or datetime.min, reverse=True)
+
+
+def _format_chat_card(cid: int) -> str:
+    """Detailed card for a single chat_id."""
+    lines: list[str] = [f"chat_id={cid}"]
+
+    # Active session
+    active: dict | None = None
+    apath = _session_path(cid)
+    if apath.exists():
+        _, active, _ = _read_session_file_for_admin(apath)
+
+    if active:
+        status = active.get("status", "unknown")
+        lines += [
+            f"active_session: yes (status={status})",
+            f"updated_at: {active.get('updated_at') or 'нет'}",
+            f"project_name: {active.get('project_name') or 'не задан'}",
+            f"pdf_count: {_session_pdf_count(active)}",
+            f"job_id: {active.get('job_id') or 'нет'}",
+            f"spreadsheet_url: {active.get('spreadsheet_url') or 'нет'}",
+            f"last_error_type: {active.get('last_error_type') or 'нет'}",
+        ]
+        if active.get("last_error"):
+            lines.append(f"last_error: {str(active['last_error'])[:200]}")
+    else:
+        lines.append("active_session: нет")
+
+    # Latest archived session
+    archive_map = _archive_latest_by_chat()
+    if cid in archive_map:
+        arc_dt, arc = archive_map[cid]
+        arc_status = arc.get("status", "unknown")
+        lines += [
+            "",
+            f"last archived: status={arc_status}",
+            f"archive_time: {arc_dt.isoformat(timespec='seconds')}",
+            f"project_name: {arc.get('project_name') or 'не задан'}",
+            f"pdf_count: {_session_pdf_count(arc)}",
+            f"job_id: {arc.get('job_id') or 'нет'}",
+            f"spreadsheet_url: {arc.get('spreadsheet_url') or 'нет'}",
+            f"last_error_type: {arc.get('last_error_type') or 'нет'}",
+        ]
+        if arc.get("last_error"):
+            lines.append(f"last_error: {str(arc['last_error'])[:200]}")
+    else:
+        lines += ["", "last archived: нет"]
+
+    # State and next action
+    summary = _build_chat_summary()
+    chat_data = next((c for c in summary if c["chat_id"] == cid), None)
+    if chat_data:
+        state = chat_data["state"]
+        last = chat_data["last_activity_at"]
+        last_str = last.strftime("%Y-%m-%d %H:%M") if last else "нет"
+        lines += [
+            "",
+            f"state: {state}",
+            f"last_activity_at: {last_str}",
+            f"next: {_NEXT_ACTION.get(state, state)}",
+        ]
+
+    return "\n".join(lines)
+
+
 @bot.message_handler(commands=["sessions"])
 def cmd_sessions(message: telebot.types.Message) -> None:
     if not _require_admin_access(message, "/sessions"):
         return
     _admin_started(message, "/sessions")
-    rows, total = _session_rows(limit=20)
-    if not rows:
-        text = "Активных Telegram sessions нет."
-    else:
-        text = "Активные Telegram sessions:\n" + "\n".join(rows)
-        if total > 20:
-            text += f"\n\nПоказаны первые 20 из {total}."
-    bot.reply_to(message, text[:4000])
-    _admin_completed(message, "/sessions", total_sessions=total)
+
+    parts = message.text.strip().split(maxsplit=1)
+
+    if len(parts) > 1:
+        # Detailed card for one chat_id
+        try:
+            target = int(parts[1].strip())
+        except ValueError:
+            bot.reply_to(message, "chat_id должен быть числом.")
+            _admin_failed(message, "/sessions", "invalid chat_id")
+            return
+        text = _format_chat_card(target)
+        bot.reply_to(message, text[:4000])
+        _admin_completed(message, "/sessions", target_chat_id=target)
+        return
+
+    # Summary list
+    chats = _build_chat_summary()
+    MAX_CHATS = 20
+    if not chats:
+        bot.reply_to(message, "Данных по чатам нет.")
+        _admin_completed(message, "/sessions", total_chats=0)
+        return
+
+    lines = ["Чаты пользователей:"]
+    for i, c in enumerate(chats[:MAX_CHATS], 1):
+        last = c["last_activity_at"]
+        last_str = last.strftime("%Y-%m-%d %H:%M") if last else "нет"
+        line = (
+            f"{i}. chat_id={c['chat_id']}\n"
+            f"   state={c['state']}\n"
+            f"   last={last_str}"
+        )
+        if c["project_name"]:
+            line += f"\n   project={c['project_name']}"
+        if c["pdf_count"]:
+            line += f"\n   pdfs={c['pdf_count']}"
+        if c["job_id"]:
+            line += f"\n   job={c['job_id']}"
+        line += f"\n   next={_NEXT_ACTION.get(c['state'], c['state'])}"
+        lines.append(line)
+
+    if len(chats) > MAX_CHATS:
+        lines.append(f"\nПоказаны первые {MAX_CHATS} из {len(chats)}.")
+
+    bot.reply_to(message, "\n".join(lines)[:4000])
+    _admin_completed(message, "/sessions", total_chats=len(chats))
 
 
 @bot.message_handler(commands=["reset_session"])
@@ -1519,16 +1848,20 @@ def cmd_job_status(message: telebot.types.Message) -> None:
 # ── /recreate ──────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["recreate"])
 def cmd_recreate(message: telebot.types.Message) -> None:
-    if not _require_admin_access(message, "/recreate"):
+    if not _require_user_access(message, "/recreate"):
         return
-    _admin_started(message, "/recreate")
     parts = message.text.strip().split(maxsplit=1)
     if len(parts) < 2:
         bot.reply_to(message, "Укажите job_id: /recreate <job_id>")
-        _admin_failed(message, "/recreate", "missing job_id")
         return
     job_id = parts[1].strip()
 
+    if not _user_can_access_job(message.chat.id, job_id):
+        _deny_job_access(message, job_id)
+        return
+
+    _log_event("recreate_started", chat_id=message.chat.id,
+               safe_message="Recreate started", job_id=job_id)
     bot.reply_to(message, "Пересоздаю Google Sheet...")
 
     cmd = [
@@ -1542,14 +1875,17 @@ def cmd_recreate(message: telebot.types.Message) -> None:
         result = _run(cmd, TIMEOUTS["recreate"])
     except subprocess.TimeoutExpired:
         bot.reply_to(message, "⏱ Превышено время ожидания (10 мин).")
-        _admin_failed(message, "/recreate", "timeout", job_id=job_id)
+        _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                   safe_message="Recreate timeout", job_id=job_id, error="timeout")
         return
 
     _log(message.chat.id, "recreate", result.returncode, result.stdout, result.stderr)
 
     if result.returncode != 0:
         bot.reply_to(message, f"Ошибка: {(result.stderr or result.stdout)[-500:]}")
-        _admin_failed(message, "/recreate", "command failed", job_id=job_id, returncode=result.returncode)
+        _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                   safe_message="Recreate command failed", job_id=job_id,
+                   returncode=result.returncode)
         return
 
     data = _parse_json(result.stdout)
@@ -1557,23 +1893,53 @@ def cmd_recreate(message: telebot.types.Message) -> None:
     bot.reply_to(message,
         f"Новая Google Sheet создана ✅\n{url}\n\nПарсер не запускался заново."
     )
-    _admin_completed(message, "/recreate", job_id=job_id, returncode=result.returncode)
+    _update_user_job_url(message.chat.id, job_id, url)
+    _log_event("recreate_completed", chat_id=message.chat.id,
+               safe_message="Recreate completed", job_id=job_id,
+               returncode=result.returncode)
 
 
 # ── /rerun ─────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["rerun"])
 def cmd_rerun(message: telebot.types.Message) -> None:
-    if not _require_admin_access(message, "/rerun"):
+    if not _require_user_access(message, "/rerun"):
         return
-    _admin_started(message, "/rerun")
     parts = message.text.strip().split(maxsplit=1)
     if len(parts) < 2:
         bot.reply_to(message, "Укажите job_id: /rerun <job_id>")
-        _admin_failed(message, "/rerun", "missing job_id")
         return
     job_id = parts[1].strip()
 
-    bot.reply_to(message, "Перезапускаю парсер... Это может занять несколько минут.")
+    if not _user_can_access_job(message.chat.id, job_id):
+        _deny_job_access(message, job_id)
+        return
+
+    bot.reply_to(message,
+        f"Вы хотите заново запустить парсер для заказа:\n{job_id}\n\n"
+        "Это может занять несколько минут и создаст новую Google Sheet.\n\n"
+        "Для подтверждения отправьте:\n"
+        f"/confirm_rerun {job_id}"
+    )
+
+
+# ── /confirm_rerun ──────────────────────────────────────────────────────────
+@bot.message_handler(commands=["confirm_rerun"])
+def cmd_confirm_rerun(message: telebot.types.Message) -> None:
+    if not _require_user_access(message, "/confirm_rerun"):
+        return
+    parts = message.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        bot.reply_to(message, "Укажите job_id: /confirm_rerun <job_id>")
+        return
+    job_id = parts[1].strip()
+
+    if not _user_can_access_job(message.chat.id, job_id):
+        _deny_job_access(message, job_id)
+        return
+
+    _log_event("rerun_started", chat_id=message.chat.id,
+               safe_message="Rerun confirmed and started", job_id=job_id)
+    bot.reply_to(message, "Запускаю парсер заново... Это может занять несколько минут.")
 
     cmd = [
         _python(), str(RERUN),
@@ -1586,7 +1952,8 @@ def cmd_rerun(message: telebot.types.Message) -> None:
         result = _run(cmd, TIMEOUTS["rerun"])
     except subprocess.TimeoutExpired:
         bot.reply_to(message, "⏱ Превышено время ожидания (20 мин).")
-        _admin_failed(message, "/rerun", "timeout", job_id=job_id)
+        _log_event("rerun_failed", chat_id=message.chat.id, level="ERROR",
+                   safe_message="Rerun timeout", job_id=job_id, error="timeout")
         return
 
     _log(message.chat.id, "rerun", result.returncode, result.stdout, result.stderr)
@@ -1600,7 +1967,9 @@ def cmd_rerun(message: telebot.types.Message) -> None:
             )
         else:
             bot.reply_to(message, f"Ошибка: {(result.stderr or result.stdout)[-500:]}")
-        _admin_failed(message, "/rerun", "command failed", job_id=job_id, returncode=result.returncode)
+        _log_event("rerun_failed", chat_id=message.chat.id, level="ERROR",
+                   safe_message="Rerun command failed", job_id=job_id,
+                   returncode=result.returncode)
         return
 
     data = _parse_json(result.stdout) or {}
@@ -1611,7 +1980,10 @@ def cmd_rerun(message: telebot.types.Message) -> None:
         f"Новый parser_run: {new_run}\n"
         f"Новая Google Sheet:\n{url}"
     )
-    _admin_completed(message, "/rerun", job_id=job_id, returncode=result.returncode)
+    _update_user_job_url(message.chat.id, job_id, url)
+    _log_event("rerun_completed", chat_id=message.chat.id,
+               safe_message="Rerun completed", job_id=job_id,
+               returncode=result.returncode)
 
 
 # ── /export_logs ───────────────────────────────────────────────────────────
