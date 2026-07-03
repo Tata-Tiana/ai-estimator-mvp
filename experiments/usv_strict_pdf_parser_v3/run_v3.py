@@ -15,6 +15,8 @@ from beam_table_parser import parse_beams
 from candidate_store import CandidateStore
 from drawing_index import build_drawing_index
 from earthworks_parser import parse_earthworks
+from evidence_layer import build_evidence_layer
+from generic_candidate_extractor import extract_generic_candidates
 from integrity_checks import check_integrity
 from logical_sheet_classifier import classify_pages
 from mapper import build_mapping
@@ -27,6 +29,10 @@ def run() -> dict:
     pages, tables = extract_pdf_data()
     build_drawing_index()
     logical_pages = classify_pages()
+    # Build universal evidence layer and generic candidates (additive, does not
+    # affect legacy ЮСВ extractor results below)
+    evidence = build_evidence_layer()
+    generic_candidates = extract_generic_candidates()
     store = CandidateStore()
     earth = parse_earthworks(store)
     rebar = parse_rebar(store)
@@ -46,6 +52,8 @@ def run() -> dict:
         "tables_count": len(tables),
         "logical_pages_count": len(logical_pages),
         "candidates_count": len(store.items),
+        "evidence_count": len(evidence),
+        "generic_candidates_count": len(generic_candidates),
     }
 
 

@@ -90,3 +90,11 @@ def debug_report_path() -> Path:
 
 def integrity_report_path() -> Path:
     return reports_dir() / "integrity_report.md"
+
+
+def evidence_path() -> Path:
+    return extracted_dir() / "evidence.json"
+
+
+def generic_candidates_path() -> Path:
+    return extracted_dir() / "generic_candidates.json"
