@@ -34,8 +34,9 @@ LOGS_DIR     = DATA_DIR / "telegram_logs"
 SESSIONS_DIR = DATA_DIR / "telegram_sessions"
 EVENTS_DIR   = LOGS_DIR / "events"
 SESSION_BACKUPS_DIR = BASE_DIR / "backups" / "telegram_sessions"
+ADMIN_EXPORTS_DIR   = DATA_DIR / "admin_exports"
 
-for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR):
+for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR, ADMIN_EXPORTS_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 CREATE_JOB  = BASE_DIR / "create_job_from_pdf.py"
@@ -1307,6 +1308,7 @@ def cmd_admin_help(message: telebot.types.Message) -> None:
         "/logs — последние события\n"
         "/tail_errors — последние ошибки\n"
         "/job_status <job_id> — подробный статус job\n"
+        "/export_logs [today|yesterday|7d|all] — выгрузить диагностику в Excel\n"
         "/recreate <job_id> — пересоздать Google Sheet без перепарсинга\n"
         "/rerun <job_id> — заново запустить parser"
     )
@@ -1610,6 +1612,74 @@ def cmd_rerun(message: telebot.types.Message) -> None:
         f"Новая Google Sheet:\n{url}"
     )
     _admin_completed(message, "/rerun", job_id=job_id, returncode=result.returncode)
+
+
+# ── /export_logs ───────────────────────────────────────────────────────────
+_EXPORT_LOGS_PERIODS = ("today", "yesterday", "7d", "all")
+
+
+@bot.message_handler(commands=["export_logs"])
+def cmd_export_logs(message: telebot.types.Message) -> None:
+    if not _require_admin_access(message, "/export_logs"):
+        return
+
+    parts = message.text.strip().split(maxsplit=1)
+    period = parts[1].strip().lower() if len(parts) > 1 else "today"
+
+    if period not in _EXPORT_LOGS_PERIODS:
+        bot.reply_to(message,
+            "Неизвестный период. Используйте:\n"
+            "/export_logs today\n"
+            "/export_logs yesterday\n"
+            "/export_logs 7d\n"
+            "/export_logs all"
+        )
+        return
+
+    _log_event(
+        "export_logs_started",
+        chat_id=message.chat.id,
+        safe_message="Admin export_logs started",
+        admin_chat_id=message.chat.id,
+        period=period,
+    )
+    bot.reply_to(message, f"Готовлю выгрузку логов ({period})...")
+
+    try:
+        from log_exporter import export_logs_to_xlsx
+        xlsx_path = export_logs_to_xlsx(
+            period=period,
+            events_dir=EVENTS_DIR,
+            sessions_dir=SESSIONS_DIR,
+            backups_dir=SESSION_BACKUPS_DIR,
+            logs_dir=LOGS_DIR,
+            output_dir=ADMIN_EXPORTS_DIR,
+        )
+        with open(xlsx_path, "rb") as f:
+            bot.send_document(
+                message.chat.id, f,
+                caption=f"Готово ✅\nВыгрузка логов: {period}"
+            )
+        _log_event(
+            "export_logs_completed",
+            chat_id=message.chat.id,
+            safe_message="Admin export_logs completed",
+            admin_chat_id=message.chat.id,
+            period=period,
+            output_path=str(xlsx_path),
+        )
+    except Exception as exc:
+        err_short = str(exc)[:300]
+        bot.reply_to(message, f"Не удалось выгрузить логи ⚠️\n{err_short}")
+        _log_event(
+            "export_logs_failed",
+            chat_id=message.chat.id,
+            level="ERROR",
+            safe_message="Admin export_logs failed",
+            admin_chat_id=message.chat.id,
+            period=period,
+            error=str(exc)[:1000],
+        )
 
 
 def _send_message_safely(chat_id: int, text: str, event: str, session: dict | None = None) -> None:
