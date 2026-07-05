@@ -451,3 +451,26 @@ def test_diameter_only_has_low_confidence() -> None:
     dspecs = [c for c in cands if c['candidate_type'] == 'diameter_spec']
     if dspecs:
         assert dspecs[0]['confidence'] < 0.5
+
+
+# ── A4.2.5.1: pipe_item eligibility guard ─────────────────────────────────────
+
+def test_pipe_keyword_with_diameter_only_becomes_diameter_spec() -> None:
+    """'Труба Ø110 мм' (no length or count) must not create pipe_item.
+
+    Pipe keyword triggers the pipe_item branch, but without a useful primary
+    quantity (п.м, шт — not bare мм) it must be downgraded to diameter_spec."""
+    cands = _candidates_from_text('Труба Ø110 мм')
+    types = [c['candidate_type'] for c in cands]
+    assert 'pipe_item' not in types, (
+        f'"Труба Ø110 мм" with no п.м/шт must not create pipe_item. Got: {types}'
+    )
+
+
+def test_pipe_keyword_with_count_stays_pipe_item() -> None:
+    """'Труба Ø110 мм 15 шт' — has count → must stay pipe_item, not diameter_spec."""
+    cands = _candidates_from_text('Труба Ø110 мм 15 шт')
+    types = [c['candidate_type'] for c in cands]
+    assert 'pipe_item' in types, (
+        f'"Труба Ø110 мм 15 шт" with count must produce pipe_item. Got: {types}'
+    )

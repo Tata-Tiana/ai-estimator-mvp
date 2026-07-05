@@ -609,6 +609,22 @@ def test_cross_section_candidate_gets_penalty() -> None:
     assert result_scored['confidence'] < result_off['confidence']
 
 
+def test_cross_section_selected_candidate_marks_needs_review() -> None:
+    """A cross-section candidate selected as best must set needs_review=True."""
+    hints = {'expected_unit': 'm2', 'candidate_types': ['label_value_quantity']}
+    cand = _cand('c1', 'label_value_quantity', 'площадь 100 м2', 'площадь', [
+        _val('100', 100.0, 'm2'),
+    ], confidence=0.80)
+    cand['section_code'] = 'flat_roof'  # cross-section from earthworks POV
+
+    result = resolve(_param('pit_area', hints), [cand],
+                     param_section_code='earthworks', section_scope_mode='scored')
+    assert result['status'] == 'found'
+    assert result['needs_review'] is True, (
+        'Cross-section candidate selected as best must flag needs_review'
+    )
+
+
 def test_same_section_wins_over_cross_section() -> None:
     """When same-section and cross-section candidates both pass, same-section wins."""
     hints = {'expected_unit': 'm2', 'candidate_types': ['label_value_quantity']}
@@ -627,3 +643,60 @@ def test_same_section_wins_over_cross_section() -> None:
                      param_section_code='earthworks', section_scope_mode='scored')
     assert result['status'] == 'found'
     assert result['source_candidate_id'] == 'same'
+
+
+# ── A4.2.5.1: Resolver eligibility guard ─────────────────────────────────────
+
+def test_resolver_ignores_elevation_marker_by_default() -> None:
+    """elevation_marker must never be selected as primary value.
+
+    Even when it is the only candidate and has matching unit/context, the
+    resolver must return 'missing' — elevation values are auxiliary annotations,
+    not parameter quantities."""
+    hints = {
+        'expected_unit': 'm',
+        'candidate_types': ['elevation_marker', 'label_value_quantity'],
+    }
+    el_cand = _cand('el1', 'elevation_marker', 'отм. +3,250', '',
+                    [_val('+3.250', 3.25, 'm', kind='elevation')],
+                    confidence=0.20)
+    result = resolve(_param('depth_param', hints), [el_cand])
+    assert result['status'] == 'missing', (
+        f'elevation_marker must be excluded from resolution. Got: {result}'
+    )
+
+
+def test_resolver_ignores_diameter_spec_by_default() -> None:
+    """diameter_spec must never be selected as primary value.
+
+    Even when it is the only candidate, the resolver must return 'missing' —
+    a diameter attribute is not a usable primary parameter quantity."""
+    hints = {
+        'expected_unit': 'mm',
+        'candidate_types': ['diameter_spec', 'pipe_item'],
+    }
+    diam_cand = _cand('d1', 'diameter_spec', 'труба ø110 мм', '',
+                      [_val('110', 110.0, 'mm', kind='diameter')],
+                      confidence=0.25)
+    result = resolve(_param('pipe_diameter', hints), [diam_cand])
+    assert result['status'] == 'missing', (
+        f'diameter_spec must be excluded from resolution. Got: {result}'
+    )
+
+
+def test_resolver_uses_normal_candidate_alongside_auxiliary() -> None:
+    """When a legitimate candidate exists alongside auxiliary ones, it is selected."""
+    hints = {
+        'expected_unit': 'm2',
+        'candidate_types': ['label_value_quantity', 'elevation_marker'],
+        'positive_context': [r'площадь'],
+    }
+    el_cand = _cand('el1', 'elevation_marker', 'отм. +3,250', '',
+                    [_val('+3.250', 3.25, 'm', kind='elevation')],
+                    confidence=0.20)
+    good_cand = _cand('g1', 'label_value_quantity', 'площадь котлована 100 м2', '',
+                      [_val('100', 100.0, 'm2')], confidence=0.75)
+    result = resolve(_param('pit_area', hints), [el_cand, good_cand])
+    assert result['status'] == 'found'
+    assert result['source_candidate_id'] == 'g1'
+    assert result['value_decimal'] == 100.0

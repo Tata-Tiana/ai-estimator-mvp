@@ -279,6 +279,9 @@ def _classify_evidence(
 
     # ── 2. pipe_item: pipe keyword + length unit ───────────────────────────
     if _PIPE_KW.search(norm) and has_qty:
+        # Diameter-only ("Труба Ø110 мм" without п.м or шт) → not a usable pipe qty
+        if not _has_useful_primary_quantity(quantities):
+            return _make_diameter_spec(ev, cand_id, quantities, raw, norm, src)
         pipe_match = _PIPE_KW.search(norm)
         subject_parts = []
         if pipe_match:

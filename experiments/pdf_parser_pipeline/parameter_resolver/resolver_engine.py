@@ -9,6 +9,12 @@ from .validation import find_matching_value, extract_collect_field
 # floor_slab_unknown means we found a floor slab but couldn't determine which floor.
 _AMBIGUOUS_SECTIONS: frozenset[str] = frozenset({'unknown', '', 'floor_slab_unknown'})
 
+# Candidate types that carry auxiliary information only and must never be selected
+# as primary parameter values unless a parameter explicitly requests them.
+# elevation_marker (conf 0.20): survey elevation tags (+3,250 м).
+# diameter_spec   (conf 0.25): pipe/element diameter without primary quantity.
+_AUXILIARY_TYPES: frozenset[str] = frozenset({'elevation_marker', 'diameter_spec'})
+
 
 def resolve(
     param: dict[str, Any],
@@ -32,6 +38,10 @@ def resolve(
 
     if not hints:
         return _missing(code, 'no resolver_hints defined')
+
+    # Strip auxiliary candidate types before any scoring.
+    # elevation_marker and diameter_spec are never eligible as primary values.
+    candidates = [c for c in candidates if c.get('candidate_type') not in _AUXILIARY_TYPES]
 
     if hints.get('aggregation') == 'collect_all':
         return _resolve_collect_all(code, hints, candidates, param_section_code, section_scope_mode)
@@ -61,10 +71,10 @@ def _apply_section_scoring(
     if cand_section in _AMBIGUOUS_SECTIONS:
         return score, True  # usable but ambiguous
 
-    # Different known section
+    # Different known section — penalise AND flag regardless of allow_cross_section
     if hints.get('allow_cross_section', False):
-        return score, True  # explicitly allowed, still flag
-    return max(0.0, score - 0.15), False
+        return score, True
+    return max(0.0, score - 0.15), True
 
 
 # ── pick_best ──────────────────────────────────────────────────────────────
