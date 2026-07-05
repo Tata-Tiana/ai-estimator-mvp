@@ -12,6 +12,18 @@ def _row_text(cells: list[str]) -> str:
     return ' | '.join(c.strip() for c in cells if c and c.strip())
 
 
+def _section_fields(page: dict[str, Any]) -> dict[str, Any]:
+    """Extract section attribution fields from a logical_page dict."""
+    sc = page.get('section_code') or ''
+    known = bool(sc)
+    return {
+        'section_code': sc if known else 'unknown',
+        'page_section_code': sc if known else 'unknown',
+        'section_confidence': 1.0 if known else 0.0,
+        'section_source': 'page' if known else 'unknown',
+    }
+
+
 def _build_evidence_from_data(
     logical_pages: list[dict[str, Any]],
     tables: list[dict[str, Any]],
@@ -48,6 +60,8 @@ def _build_evidence_from_data(
             'source_kind': 'page_text',
             'raw_text': raw,
             'normalized_text': normalize_text(raw),
+            'table_context_title': '',
+            **_section_fields(page),
             'meta': {
                 'table_headers': [],
                 'neighbor_cells': [],
@@ -56,7 +70,7 @@ def _build_evidence_from_data(
             },
         })
 
-    # ── 2. Logical sheet titles (separate evidence for title-only keyword hits) ─
+    # ── 2. Logical sheet titles ─────────────────────────────────────────────
     seen_titles: set[tuple[str, str]] = set()
     for page in logical_pages:
         title = (page.get('logical_sheet_title') or '').strip()
@@ -79,6 +93,8 @@ def _build_evidence_from_data(
             'source_kind': 'logical_sheet_title',
             'raw_text': title,
             'normalized_text': normalize_text(title),
+            'table_context_title': '',
+            **_section_fields(page),
             'meta': {
                 'table_headers': [],
                 'neighbor_cells': [],
@@ -88,8 +104,6 @@ def _build_evidence_from_data(
         })
 
     # ── 3. Table row evidence ───────────────────────────────────────────────
-    # Critical: tables are the primary source when page text is empty (e.g. CAD PDFs
-    # that encode text only in table structures, not in the page text stream).
     for table in tables:
         src_pdf = table['source_pdf']
         page_num = table['physical_page_number']
@@ -100,6 +114,11 @@ def _build_evidence_from_data(
         logical_title = meta_page.get('logical_sheet_title') or ''
         logical_type = meta_page.get('logical_sheet_type') or 'unknown'
         drawing_num = meta_page.get('drawing_sheet_number') or ''
+
+        # table_context_title: use the logical_sheet_title of the page as proxy.
+        # When a dedicated table-header extractor is added in A4.2.3+, it can
+        # override this field with a more specific title found in the page text.
+        table_context_title = logical_title
 
         # First non-empty row used as potential header context
         headers: list[str] = []
@@ -130,6 +149,8 @@ def _build_evidence_from_data(
                 'source_kind': 'table_row',
                 'raw_text': raw,
                 'normalized_text': normalize_text(raw),
+                'table_context_title': table_context_title,
+                **_section_fields(meta_page),
                 'meta': {
                     'table_headers': headers,
                     'neighbor_cells': [c.strip() for c in row],
@@ -156,6 +177,11 @@ def _build_evidence_from_data(
             'source_kind': 'drawing_index',
             'raw_text': text,
             'normalized_text': normalize_text(text),
+            'table_context_title': '',
+            'section_code': 'unknown',
+            'page_section_code': 'unknown',
+            'section_confidence': 0.0,
+            'section_source': 'unknown',
             'meta': {
                 'table_headers': [],
                 'neighbor_cells': [],
@@ -169,10 +195,7 @@ def _build_evidence_from_data(
 
 def build_evidence_layer() -> list[dict[str, Any]]:
     """Read logical_pages.json, tables.json and drawing_index.json (if present),
-    produce evidence.json in the extracted/ directory.
-
-    Tables are treated as a primary source – if page text is empty but tables
-    exist, evidence is still created from table rows."""
+    produce evidence.json in the extracted/ directory."""
     logical_pages_path = parser_paths.logical_pages_path()
     tables_path = parser_paths.tables_path()
     drawing_index_path = parser_paths.drawing_index_path()

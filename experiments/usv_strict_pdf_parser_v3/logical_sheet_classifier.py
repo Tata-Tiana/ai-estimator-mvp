@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
 from typing import Any
 
 import parser_paths
@@ -15,31 +14,94 @@ def norm(text: Any) -> str:
 
 
 def classify(text: str, title: str, source_pdf: str) -> str:
+    """Classify a logical sheet into a sheet_type using generic construction keywords.
+
+    Rules use only domain vocabulary — no project names, no page numbers,
+    no hardcoded elevation values (+3.480 / +4.680 etc.).
+    Order matters: more specific patterns before broader ones.
+    """
     hay = norm(title + " " + text)
+
+    # drawing index
     if "ведомость" in hay and "чертеж" in hay:
         return "drawing_index"
-    if "план котлована" in hay or ("котлован" in hay and "песок" in hay):
+
+    # schiedel — unambiguous brand name, check early
+    if "schiedel" in hay or "вентканал" in hay or "вентиляционный канал" in hay:
+        return "schiedel_vent_spec"
+
+    # earthworks
+    if "план котлован" in hay or "схема котлован" in hay:
         return "earthworks_pit_plan"
-    if "схема коммуникац" in hay or ("труба" in hay and "ф110" in hay):
+    if "котлован" in hay and "песок" in hay:
+        return "earthworks_pit_plan"
+    if ("схема коммуникац" in hay
+            or ("труба" in hay and "ф110" in hay)
+            or "трасса к1" in hay or "трасса к2" in hay
+            or "трасса к3" in hay):
         return "communications_scheme"
+    if "дренаж" in hay and ("труб" in hay or "схем" in hay):
+        return "communications_scheme"
+
+    # waterproofing — needs "гидроизоляц" + qualifier to avoid false positives
+    if "гидроизоляц" in hay and (
+        "отсечн" in hay or "вертикальн" in hay or "обмазочн" in hay
+    ):
+        return "cutoff_waterproofing_scheme"
+
+    # flat roof — check before foundation
+    if "кровл" in hay and (
+        "logicroof" in hay or "пароизоляц" in hay
+        or "примыкани" in hay or "парапет" in hay or "аэратор" in hay
+    ):
+        return "flat_roof_spec"
+    if "план кровл" in hay:
+        return "flat_roof_spec"
+    if "спецификац" in hay and "кровл" in hay:
+        return "flat_roof_spec"
+
+    # foundation slab — broadened rules cover missed pages
     if "фундаментн" in hay and "спецификац" in hay:
+        return "foundation_slab_spec"
+    if "план фундаментной плит" in hay:
+        return "foundation_slab_spec"
+    if "общий вид фундамент" in hay:
+        return "foundation_slab_spec"
+    if "фундаментная плит" in hay:
         return "foundation_slab_spec"
     if "термовстав" in hay:
         return "thermal_inserts_plan"
-    if "отсечн" in hay and "гидроизоляц" in hay:
-        return "cutoff_waterproofing_scheme"
-    if "спецификация по газобетон" in hay or ("газобетонный блок" in hay and "перегород" in hay):
+
+    # walls / lintels
+    if ("спецификация по газобетон" in hay
+            or ("газобетонный блок" in hay and "перегород" in hay)
+            or "армирование кладки" in hay):
         return "walls_blocks_spec"
     if "перемыч" in hay:
         return "lintels_plan"
-    if "плите перекрытия" in hay and ("+3.480" in hay or "+3. 480" in hay or "3.480" in hay):
+    if "кладочный план" in hay:
+        return "walls_layout_plan"
+    if "план этажа" in hay:
+        return "walls_layout_plan"
+
+    # floor slabs — explicit floor-number keywords only, NO elevation values
+    if (
+        "перекрытие 1 этаж" in hay or "перекрытия 1 этаж" in hay
+        or "перекрытие над 1 этаж" in hay
+        or ("плит" in hay and "перекрыт" in hay
+            and ("1 этаж" in hay or "первого этаж" in hay))
+    ):
         return "floor_slab_1_spec"
-    if "плиты перекрытия" in hay and ("+4.680" in hay or "+4. 680" in hay or "4.680" in hay):
+    if (
+        "перекрытие 2 этаж" in hay or "перекрытия 2 этаж" in hay
+        or "перекрытие над 2 этаж" in hay
+        or ("плит" in hay and "перекрыт" in hay
+            and ("2 этаж" in hay or "второго этаж" in hay))
+    ):
         return "floor_slab_2_spec"
-    if "кровл" in hay and ("logicroof" in hay or "пароизоля" in hay or "примыкания" in hay):
-        return "flat_roof_spec"
-    if "schiedel" in hay or "вентканал" in hay or "вентиляционный канал" in hay:
-        return "schiedel_vent_spec"
+    if "плита перекрытия" in hay or "плите перекрытия" in hay or "плиты перекрытия" in hay:
+        return "floor_slab_unknown_spec"
+
     return "unknown"
 
 
@@ -52,8 +114,10 @@ def section_code(sheet_type: str) -> str:
         "cutoff_waterproofing_scheme": "waterproofing",
         "walls_blocks_spec": "load_bearing_walls_lintels",
         "lintels_plan": "load_bearing_walls_lintels",
+        "walls_layout_plan": "load_bearing_walls_lintels",
         "floor_slab_1_spec": "floor_slab_1",
         "floor_slab_2_spec": "floor_slab_2",
+        "floor_slab_unknown_spec": "floor_slab_unknown",
         "flat_roof_spec": "flat_roof",
         "schiedel_vent_spec": "schiedel_vent_channels",
     }

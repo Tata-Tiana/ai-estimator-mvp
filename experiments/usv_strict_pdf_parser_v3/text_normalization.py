@@ -32,8 +32,8 @@ _WORD_SPLITS: list[tuple[re.Pattern[str], str]] = [
 ]
 
 # ── Diameter normalization ─────────────────────────────────────────────────
-_DIAM_F = re.compile(r'\b[ФфF](\d+)', re.UNICODE)          # Ф110 → Ø110
-_DIAM_D = re.compile(r'\b[Dd]=?\s*(\d+)', re.UNICODE)       # D110, d=110 → Ø110
+_DIAM_F = re.compile(r'\b[Фф](\d+)', re.UNICODE)            # Ф110 → Ø110 (Latin F excluded: F150 = frost grade)
+_DIAM_D = re.compile(r'\b[Dd]=\s*(\d+)', re.UNICODE)        # D=110, d=110 → Ø110 (bare D400/D500 = gas-concrete density, not diameter)
 _DIAM_OHM_SPACE = re.compile(r'[Øø]\s*(\d+)', re.UNICODE)  # Ø 110 → Ø110
 _LETTER_BEFORE_OHM = re.compile(r'([А-ЯЁа-яёA-Za-z])\s*([Øø])', re.UNICODE)  # трубаØ → труба Ø
 
@@ -64,13 +64,18 @@ _MERGED_PCS = re.compile(
     rf'({_NUM})\s*(шт\.?|ед\.?|компл\.?)',
     re.IGNORECASE | re.UNICODE,
 )
+_MERGED_KG = re.compile(
+    rf'({_NUM})\s*(кг\.?)',
+    re.IGNORECASE | re.UNICODE,
+)
 
 # ── Route label normalization ──────────────────────────────────────────────
 # Standard Russian engineering network labels (not project-specific values):
 # К1/К2/К3 = sewer/storm/drainage-related routes depending on project notation,
 # В1 = water supply, ЭО = electrical equipment/electrical route.
 # They are used as generic domain vocabulary for evidence/candidate detection.
-_ROUTE = re.compile(r'\b([КкВв])\s*[-/]?\s*([0-9]+)\b', re.UNICODE)
+# Uppercase only: lowercase к/в are Russian prepositions and must not be altered.
+_ROUTE = re.compile(r'\b([КВ])\s*[-/]?\s*([0-9]+)\b', re.UNICODE)
 
 
 def normalize_text(raw_text: str) -> str:
@@ -98,12 +103,13 @@ def normalize_text(raw_text: str) -> str:
     text = _MERGED_MM.sub(r'\1 \2', text)
     text = _MERGED_M_ALONE.sub(r'\1 \2', text)
     text = _MERGED_PCS.sub(r'\1 \2', text)
+    text = _MERGED_KG.sub(r'\1 \2', text)
 
     # 4. Normalize multiplication separator (300х300 → 300 × 300)
     text = _MULT.sub(r'\1 × \2', text)
 
     # 5. Normalize route labels (К-1 → К1, К 1 → К1, В-1 → В1)
-    text = _ROUTE.sub(lambda m: m.group(1).upper() + m.group(2), text)
+    text = _ROUTE.sub(r'\1\2', text)
 
     # 6. Collapse multiple spaces
     text = re.sub(r'[ \t]+', ' ', text)
@@ -236,6 +242,20 @@ def parse_quantities(text: str) -> list[dict[str, Any]]:
             'value_decimal': _parse_decimal(m.group(1)),
             'raw_unit': m.group(2).strip(' .'),
             'normalized_unit': 'pcs',
+        })
+
+    # Weight (кг)
+    for m in re.finditer(
+        rf'({_NUM})\s*(кг\.?)',
+        text, re.IGNORECASE | re.UNICODE,
+    ):
+        results.append({
+            'kind': 'weight',
+            'raw': m.group(0).strip(),
+            'raw_value': m.group(1),
+            'value_decimal': _parse_decimal(m.group(1)),
+            'raw_unit': m.group(2).strip(' .'),
+            'normalized_unit': 'kg',
         })
 
     # Negative elevations / depths (-0,500, отм. -0,500, Глубина -0,5м)

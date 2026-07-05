@@ -181,3 +181,86 @@ def test_table_row_inherits_page_logical_type() -> None:
     assert row_ev
     assert row_ev[0]['logical_sheet_type'] == 'earthworks_pit_plan'
     assert row_ev[0]['logical_sheet_title'] == 'План котлована'
+
+
+# ── A4.2.2: section_code propagation ──────────────────────────────────────
+
+def _make_page_with_section(
+    pdf: str = 'test.pdf',
+    page: int = 1,
+    text: str = 'Площадь 100 м2',
+    title: str = 'Тест',
+    sheet_type: str = 'earthworks_pit_plan',
+    section: str = 'earthworks',
+) -> dict:
+    return {
+        'source_pdf': pdf,
+        'physical_page_number': page,
+        'raw_page_text': text,
+        'logical_sheet_title': title,
+        'logical_sheet_type': sheet_type,
+        'drawing_sheet_number': '',
+        'section_code': section,
+    }
+
+
+def test_section_code_propagated_to_page_evidence() -> None:
+    """page_text evidence must carry section_code from the logical_page."""
+    pages = [_make_page_with_section(section='earthworks')]
+    evidence = _build_evidence_from_data(pages, [])
+    page_ev = [e for e in evidence if e['source_kind'] == 'page_text']
+    assert page_ev
+    assert page_ev[0]['section_code'] == 'earthworks'
+    assert page_ev[0]['page_section_code'] == 'earthworks'
+    assert page_ev[0]['section_source'] == 'page'
+    assert page_ev[0]['section_confidence'] == 1.0
+
+
+def test_section_code_propagated_to_table_evidence() -> None:
+    """table_row evidence must carry section_code from the page it lives on."""
+    pages = [_make_page_with_section(page=1, section='foundation_slab')]
+    tables = [_make_table(page=1, rows=[['Бетон', '42', 'м3']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    assert row_ev[0]['section_code'] == 'foundation_slab'
+    assert row_ev[0]['section_source'] == 'page'
+
+
+def test_unknown_section_page_produces_unknown_in_evidence() -> None:
+    """Page with empty section_code → evidence gets section_code='unknown'."""
+    pages = [_make_page_with_section(section='')]
+    evidence = _build_evidence_from_data(pages, [])
+    page_ev = [e for e in evidence if e['source_kind'] == 'page_text']
+    assert page_ev
+    assert page_ev[0]['section_code'] == 'unknown'
+    assert page_ev[0]['section_source'] == 'unknown'
+    assert page_ev[0]['section_confidence'] == 0.0
+
+
+def test_missing_section_code_field_produces_unknown() -> None:
+    """Page dict without section_code key → evidence gets 'unknown' (backward compat)."""
+    page = _make_page(page=1, text='Площадь 100 м2')  # no section_code key
+    evidence = _build_evidence_from_data([page], [])
+    page_ev = [e for e in evidence if e['source_kind'] == 'page_text']
+    assert page_ev
+    assert page_ev[0]['section_code'] == 'unknown'
+
+
+def test_table_context_title_is_logical_sheet_title() -> None:
+    """table_row evidence must have table_context_title = logical_sheet_title of the page."""
+    pages = [_make_page_with_section(page=1, title='Спецификация к фундаментной плите')]
+    tables = [_make_table(page=1, rows=[['Бетон', '42', 'м3']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    assert row_ev[0]['table_context_title'] == 'Спецификация к фундаментной плите'
+
+
+def test_page_text_evidence_has_empty_table_context_title() -> None:
+    """page_text evidence table_context_title must be empty string."""
+    pages = [_make_page_with_section()]
+    evidence = _build_evidence_from_data(pages, [])
+    page_ev = [e for e in evidence if e['source_kind'] == 'page_text']
+    assert page_ev
+    assert page_ev[0]['table_context_title'] == ''

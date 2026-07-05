@@ -5,6 +5,7 @@ import re
 from typing import Any
 
 import parser_paths
+from construction_vocabulary import MATERIALS_RE, SUBJECTS_RE
 from text_normalization import normalize_text, parse_quantities
 
 
@@ -17,8 +18,25 @@ from text_normalization import normalize_text, parse_quantities
 # В1 = water supply, ЭО = electrical equipment/electrical route.
 # They are used as generic domain vocabulary for evidence/candidate detection.
 _ROUTE_LABEL = re.compile(
-    r'\b(К[0-9]?|В[0-9]?|ЭО[0-9]?|Дренаж|Др\.?|ЛК)\b',
-    re.UNICODE | re.IGNORECASE,
+    # К1/К2/К3/В1/ЭО are standard Russian engineering network labels,
+    # not project-specific values. Single letters "К"/"В" without a digit
+    # are too ambiguous — they are common Russian prepositions and OCR noise.
+    # IGNORECASE is safe here because К/В require a trailing digit (К1, В1…),
+    # so bare lowercase к/в cannot match.
+    r'\b('
+    r'К[0-9]+'                      # К1, К2, К3 — digit required
+    r'|В[0-9]+(?![.,][0-9])'         # В1, В2 route labels — not В22,5 concrete class
+    r'|ЭО[0-9]?'                    # ЭО, ЭО1 — digit optional
+    r'|ЛК'                           # ЛК abbreviation
+    r'|Дренаж\w*'                   # Дренаж, Дренажная…
+    r'|Др\.?'                        # Др. short form
+    r'|Ливнев\w+'                   # Ливневка, Ливневая…
+    r'|Канализаци\w+'               # Канализация…
+    r'|Водоснабжен\w+'              # Водоснабжение…
+    r'|Эл\.?\s*кабел\w*'            # Эл. кабель, Эл.кабель
+    r'|Электрическ\w+\s+кабел\w*'  # Электрический кабель
+    r')\b',
+    re.IGNORECASE | re.UNICODE,
 )
 _ITOGO = re.compile(r'\bитого\b', re.IGNORECASE | re.UNICODE)
 
@@ -35,10 +53,7 @@ _LENGTH_KW = re.compile(r'длин|протяжен|трасс', re.IGNORECASE |
 _VOLUME_KW = re.compile(r'объ[её]м|v\s*=', re.IGNORECASE | re.UNICODE)
 _WIDTH_KW = re.compile(r'ширин', re.IGNORECASE | re.UNICODE)
 
-_MATERIAL_KW = re.compile(
-    r'песок|геотекстил|щебен|ЭППС|Плантер|мембран|гидроизол|рубемаст|утеплит|пенопол',
-    re.IGNORECASE | re.UNICODE,
-)
+_MATERIAL_KW = MATERIALS_RE
 _PIPE_KW = re.compile(
     r'труб|ПНД|ПВХ|гофр|трубопровод',
     re.IGNORECASE | re.UNICODE,
@@ -48,12 +63,7 @@ _PIPE_FITTING_KW = re.compile(
     re.IGNORECASE | re.UNICODE,
 )
 # Any keyword suggesting an engineering subject
-_ANY_SUBJECT_KW = re.compile(
-    r'котлован|яма|выемк|глубин|площадь|площад|траншей|трасс|труб|ПНД|ПВХ|гофр'
-    r'|песок|геотекстил|щебен|ЭППС|Плантер|мембран|колен|муфт|тройник|дождеприём'
-    r'|дождеприем|ревизи|длин|объ[её]м|ширин|глубин|итого|К[0-9]|В[0-9]|ЭО',
-    re.IGNORECASE | re.UNICODE,
-)
+_ANY_SUBJECT_KW = SUBJECTS_RE
 
 # Label–value separator pattern for label_value_quantity detection
 _LABEL_SEP_VALUE = re.compile(
@@ -61,7 +71,7 @@ _LABEL_SEP_VALUE = re.compile(
     r'(?P<sep>[-–—:=])\s*'
     r'(?P<value>\d+(?:[.,]\d+)?)\s*'
     r'(?P<unit>м²|м³|м\^2|м\^3|кв\.?\s*м\.?|м\.?\s*кв\.?|куб\.?\s*м\.?|м\.?\s*куб\.?'
-    r'|п(?:ог)?\.?\s*м\.?|м\.?\s*п\.?|м/п|мм\.?|см\.?|м2|м3|шт\.?|ед\.?|компл\.?'
+    r'|п(?:ог)?\.?\s*м\.?|м\.?\s*п\.?|м/п|мм\.?|см\.?|м2|м3|шт\.?|ед\.?|компл\.?|кг\.?'
     r'|(?<!\w)м(?!\w))',
     re.IGNORECASE | re.UNICODE,
 )
@@ -70,7 +80,7 @@ _LABEL_SEP_VALUE = re.compile(
 def _has_any_quantity(text: str) -> bool:
     return bool(re.search(
         r'\d+(?:[.,]\d+)?\s*(?:м²|м³|м\^2|м\^3|м2|м3|п\.?\s*м|пог\.?\s*м|м\.?\s*п'
-        r'|мм|см|шт|ед|компл|(?<!\w)м(?!\w))',
+        r'|мм|см|шт|ед|компл|кг|(?<!\w)м(?!\w))',
         text, re.IGNORECASE | re.UNICODE,
     ))
 
@@ -100,11 +110,29 @@ def _value_candidates_from_quantities(quantities: list[dict[str, Any]]) -> list[
             'value_decimal': q.get('value_decimal'),
             'raw_unit': q.get('raw_unit', ''),
             'normalized_unit': q.get('normalized_unit', ''),
+            'kind': q.get('kind', ''),
             'canonical_value': q.get('canonical_value'),
             'canonical_unit': q.get('canonical_unit'),
             'source': 'evidence_text',
         })
     return result
+
+
+def _ev_source_fields(ev: dict[str, Any]) -> dict[str, Any]:
+    """Extract section/page provenance fields from an evidence item."""
+    return {
+        'section_code': ev.get('section_code', 'unknown'),
+        'page_section_code': ev.get('page_section_code', 'unknown'),
+        'section_confidence': ev.get('section_confidence', 0.0),
+        'section_source': ev.get('section_source', 'unknown'),
+        'logical_sheet_title': ev.get('logical_sheet_title', ''),
+        'logical_sheet_type': ev.get('logical_sheet_type', 'unknown'),
+        'table_context_title': ev.get('table_context_title', ''),
+        'source_pdf': ev.get('source_pdf', ''),
+        'physical_page_number': ev.get('physical_page_number'),
+        'table_index': ev.get('table_index'),
+        'row_index': ev.get('row_index'),
+    }
 
 
 def _classify_evidence(
@@ -116,6 +144,7 @@ def _classify_evidence(
     Returns a candidate dict or None if the evidence is not relevant."""
     norm = ev.get('normalized_text') or normalize_text(ev.get('raw_text', ''))
     raw = ev.get('raw_text', '')
+    src = _ev_source_fields(ev)
 
     if not _has_any_quantity(norm) and not _ANY_SUBJECT_KW.search(norm):
         return None
@@ -153,6 +182,7 @@ def _classify_evidence(
             'confidence': confidence,
             'reason': '; '.join(reason_parts),
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 2. pipe_item: pipe keyword + length unit ───────────────────────────
@@ -181,6 +211,7 @@ def _classify_evidence(
             'confidence': confidence,
             'reason': 'pipe keyword + quantity',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 3. pipe_piece_qty: pipe fitting keywords + quantity ────────────────
@@ -200,6 +231,7 @@ def _classify_evidence(
             'confidence': 0.75,
             'reason': 'pipe fitting keyword + quantity',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 4. label_value_quantity: "Label - value unit" ─────────────────────
@@ -226,6 +258,7 @@ def _classify_evidence(
             'confidence': confidence,
             'reason': f'label "{label}" + separator + value+unit',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 5. material_quantity: material keyword + any quantity ──────────────
@@ -246,6 +279,7 @@ def _classify_evidence(
             'confidence': 0.75,
             'reason': 'material keyword + quantity',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 6. table_quantity_row: table row with engineering subject + quantity ─
@@ -264,6 +298,7 @@ def _classify_evidence(
             'confidence': 0.55,
             'reason': 'table row: engineering keyword + quantity',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     # ── 7. unknown_relevant_quantity: catch-all for relevant strings ────────
@@ -282,6 +317,7 @@ def _classify_evidence(
             'confidence': 0.35,
             'reason': 'engineering keyword + quantity, type unclear',
             'extractor': 'generic_candidate_extractor',
+            **src,
         }
 
     return None

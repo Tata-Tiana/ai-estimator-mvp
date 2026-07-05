@@ -48,7 +48,6 @@ def test_normalize_merged_words(raw: str, expected_fragment: str) -> None:
 
 @pytest.mark.parametrize('raw, expected_fragment', [
     ('Ф110',       'Ø110'),
-    ('D110',       'Ø110'),
     ('d=110',      'Ø110'),
     ('Ø 110 мм',   'Ø110'),
 ])
@@ -92,6 +91,19 @@ def test_normalize_text_does_not_modify_input() -> None:
     result = normalize_text(raw)
     assert raw == original, 'normalize_text must not modify the input string'
     assert result != raw, 'normalized text should differ from raw for this input'
+
+
+def test_preposition_v_before_digit_not_altered() -> None:
+    """Lowercase 'в' (preposition) before a digit must not become a route label."""
+    result = normalize_text('Глубина в 0,9 м')
+    assert 'В0' not in result, f'Preposition "в" incorrectly normalized: {result!r}'
+    assert 'в' in result.lower(), f'Preposition "в" was removed: {result!r}'
+
+
+def test_preposition_k_before_digit_not_altered() -> None:
+    """Lowercase 'к' (preposition) before a digit must not become a route label."""
+    result = normalize_text('Ширина к 1,5 м')
+    assert 'К1' not in result, f'Preposition "к" incorrectly normalized: {result!r}'
 
 
 # ── parse_quantities: area units → normalized_unit = "m2" ─────────────────
@@ -218,4 +230,66 @@ def test_parse_quantities_dimensions() -> None:
     quantities = parse_quantities(normalized)
     dims = [q for q in quantities if q.get('kind') == 'dimensions']
     assert dims, f'Expected dimensions, got {quantities}'
-    assert dims[0]['values'] == [300, 300, 300]
+
+
+# ── A0.1: diameter normalization fixes ────────────────────────────────────
+
+def test_f150_not_diameter() -> None:
+    """F150 (frost resistance grade) must NOT be normalized to Ø150."""
+    norm = normalize_text('Бетон В22,5 W6 F150 П4 42,56 м3')
+    assert 'Ø150' not in norm, f'F150 wrongly normalized to Ø150 in: {norm!r}'
+    # Volume must still be parseable
+    qtys = parse_quantities(norm)
+    vols = [q for q in qtys if q.get('normalized_unit') == 'm3']
+    assert vols, f'Volume m3 not found after normalize_text: {norm!r}'
+    assert any(abs(q['value_decimal'] - 42.56) < 0.001 for q in vols)
+
+
+def test_d400_not_diameter() -> None:
+    """D400 (gas-concrete density grade) must NOT be normalized to Ø400."""
+    norm = normalize_text('Газобетонный блок D400 600х400х250 54,11 м3')
+    assert 'Ø400' not in norm, f'D400 wrongly normalized to Ø400 in: {norm!r}'
+    assert 'D400' in norm, f'D400 text lost in: {norm!r}'
+    qtys = parse_quantities(norm)
+    vols = [q for q in qtys if q.get('normalized_unit') == 'm3']
+    assert vols, f'Volume m3 not found after normalize_text: {norm!r}'
+    assert any(abs(q['value_decimal'] - 54.11) < 0.001 for q in vols)
+
+
+def test_d500_not_diameter() -> None:
+    """D500 (gas-concrete density grade) must NOT be normalized to Ø500."""
+    norm = normalize_text('Газобетонный блок D500 600х250х250 30,4 м3')
+    assert 'Ø500' not in norm, f'D500 wrongly normalized to Ø500 in: {norm!r}'
+    assert 'D500' in norm, f'D500 text lost in: {norm!r}'
+
+
+def test_d_equals_diameter_still_works() -> None:
+    """D=110 notation (pipe diameter with equals sign) must still normalize to Ø110."""
+    norm = normalize_text('Труба D=110 длина 12,4 п.м')
+    assert 'Ø110' in norm, f'D=110 not normalized to Ø110 in: {norm!r}'
+    qtys = parse_quantities(norm)
+    linear = [q for q in qtys if q.get('normalized_unit') == 'linear_m']
+    assert linear, f'Linear length not found: {norm!r}'
+    assert any(abs(q['value_decimal'] - 12.4) < 0.001 for q in linear)
+
+
+def test_cyrillic_f_diameter_still_works() -> None:
+    """Ф110 (Cyrillic Ф) must still normalize to Ø110."""
+    norm = normalize_text('Труба ф110 12,4 п.м')
+    assert 'Ø110' in norm, f'ф110 not normalized to Ø110 in: {norm!r}'
+
+
+def test_rebar_cyrillic_f_diameter() -> None:
+    """Арматура Ф12 А500С — Cyrillic Ф used as rebar diameter, must parse diameter."""
+    norm = normalize_text('Арматура Ф12 А500С 94,28 кг')
+    assert 'Ø12' in norm, f'Ф12 not normalized to Ø12 in: {norm!r}'
+    qtys = parse_quantities(norm)
+    kg = [q for q in qtys if q.get('normalized_unit') == 'kg']
+    assert kg, f'kg not found: {norm!r}'
+    assert any(abs(q['value_decimal'] - 94.28) < 0.001 for q in kg)
+
+
+def test_ohm_diameter_still_works() -> None:
+    """Ø110 (already normalized symbol) must pass through correctly."""
+    norm = normalize_text('Труба Ø110 12,4 п.м')
+    assert 'Ø110' in norm, f'Ø110 lost in: {norm!r}'

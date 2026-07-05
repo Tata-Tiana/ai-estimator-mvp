@@ -172,6 +172,22 @@ def test_no_candidates_for_irrelevant_text() -> None:
     assert not cands, f'Expected no candidates for irrelevant text, got: {cands}'
 
 
+# ── no false route_summary for Russian prepositions в/к ───────────────────
+
+def test_no_route_summary_for_preposition_lowercase_v() -> None:
+    """Lowercase 'в' (Russian preposition) must not produce route_summary."""
+    cands = _candidates_from_text('Глубина в 0,9 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert not routes, f'Preposition "в" must not become route_summary: {routes}'
+
+
+def test_no_route_summary_for_preposition_lowercase_k() -> None:
+    """Lowercase 'к' (Russian preposition) must not produce route_summary."""
+    cands = _candidates_from_text('Доступ к котловану 50 м2')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert not routes, f'Preposition "к" must not become route_summary: {routes}'
+
+
 # ── no project-specific hardcoding (structural check) ────────────────────
 
 def test_no_trc_specific_logic() -> None:
@@ -181,3 +197,175 @@ def test_no_trc_specific_logic() -> None:
     cands = _candidates_from_text('В2 ИТОГО длина 35,0 п.м объем 14,0 м3')
     route = [c for c in cands if c['candidate_type'] == 'route_summary']
     assert route, 'Extractor must work for any route label, not just one specific project'
+
+
+# ── false positives: combined prepositions and garbled text ──────────────
+
+def test_no_route_summary_for_sentence_with_both_prepositions() -> None:
+    """Sentence with prepositions 'в' and 'к' but no route label must not
+    produce route_summary with subject_hint 'в' or 'к'."""
+    cands = _candidates_from_text('в месте прохода к дому глубина 0,5 м')
+    bad = [
+        c for c in cands
+        if c['candidate_type'] == 'route_summary'
+        and c.get('subject_hint', '').strip().lower() in ('в', 'к')
+    ]
+    assert not bad, f'Prepositions must not become route labels: {bad}'
+
+
+def test_no_route_summary_for_garbled_text() -> None:
+    """Garbled/repeated characters with a quantity must not produce route_summary."""
+    cands = _candidates_from_text('ВВВннн вввооодддоооссстттоооккк 0,5 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert not routes, f'Garbled text must not produce route_summary: {routes}'
+
+
+# ── new словесные route labels ────────────────────────────────────────────
+
+def test_route_summary_livnevka() -> None:
+    cands = _candidates_from_text('Ливневка ИТОГО длина 55,0 п.м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'Ливневка must produce route_summary'
+
+
+def test_route_summary_kanalizatsiya() -> None:
+    cands = _candidates_from_text('Канализация длина 30,0 п.м глубина 1,0 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'Канализация must produce route_summary'
+
+
+def test_route_summary_vodosnabzhenie() -> None:
+    cands = _candidates_from_text('Водоснабжение длина 22,0 п.м глубина 1,2 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'Водоснабжение must produce route_summary'
+
+
+def test_route_summary_el_kabel() -> None:
+    cands = _candidates_from_text('Эл. кабель длина 18,0 п.м глубина 0,7 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'Эл. кабель must produce route_summary'
+
+
+# ── spec confirmation tests (synthetic values) ───────────────────────────
+
+def test_route_summary_k1_spec_values() -> None:
+    cands = _candidates_from_text('К1 ИТОГО длина 28,4 п.м объем 12,49 м3')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'К1 must produce route_summary'
+    assert any('К1' in c.get('subject_hint', '') for c in routes)
+
+
+def test_route_summary_v1_pipe_context() -> None:
+    cands = _candidates_from_text('В1 труба ПНД Ø110 мм 12,4 п.м')
+    hits = [c for c in cands
+            if c['candidate_type'] in ('route_summary', 'pipe_item')]
+    assert hits, 'В1 with pipe context must produce route_summary or pipe_item'
+
+
+def test_route_summary_eo_trassa() -> None:
+    cands = _candidates_from_text('ЭО трасса кабеля 15 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'ЭО without digit must produce route_summary'
+    assert any('ЭО' in c.get('subject_hint', '').upper() for c in routes)
+
+
+def test_route_summary_drenazh_itogo() -> None:
+    cands = _candidates_from_text('Дренаж ИТОГО длина 40 п.м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'Дренаж must produce route_summary'
+
+
+# ── new vocabulary: concrete, rebar, masonry, roofing, ventilation ────────
+
+def test_material_quantity_concrete() -> None:
+    cands = _candidates_from_text('Бетон В22,5 W6 F150 П4 55,0 м3')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Бетон must produce material_quantity'
+    # Only m3 should be the meaningful quantity — not the class digits
+    kg_vals = [
+        vc for c in mats for vc in c['value_candidates']
+        if vc.get('normalized_unit') == 'kg'
+    ]
+    assert not kg_vals, 'Concrete class digits must not produce kg candidates'
+
+
+def test_material_quantity_rebar_weight_kg() -> None:
+    # Rebar class A500 + weight in kg (typical spec line, synthetic values)
+    cands = _candidates_from_text('А500С ф12 200 кг')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'А500С must produce material_quantity'
+    kg_vals = [
+        vc for c in mats for vc in c['value_candidates']
+        if vc.get('normalized_unit') == 'kg'
+    ]
+    assert kg_vals, 'Rebar line with кг must produce a kg value_candidate'
+    assert kg_vals[0]['value_decimal'] == 200.0
+
+
+def test_material_quantity_rebar_class_a240() -> None:
+    cands = _candidates_from_text('А240 ф6 хомуты 45,0 кг')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'А240 must produce material_quantity'
+
+
+def test_material_quantity_gas_block() -> None:
+    cands = _candidates_from_text('Газобетонный блок 600х400х250 90,0 м3')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Газобетонный must produce material_quantity'
+
+
+def test_material_quantity_masonry_lintel() -> None:
+    cands = _candidates_from_text('Перемычка в U-блоке 2,5 м3')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Перемычка must produce material_quantity'
+
+
+def test_material_quantity_logicroof() -> None:
+    cands = _candidates_from_text('LOGICROOF V-RP мембрана 300 м2')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'LOGICROOF must produce material_quantity'
+
+
+def test_material_quantity_schiedel() -> None:
+    cands = _candidates_from_text('Schiedel VENT 30 шт')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Schiedel must produce material_quantity'
+
+
+def test_material_quantity_mastic_kg() -> None:
+    cands = _candidates_from_text('Мастика битумная 50 кг')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Мастика must produce material_quantity'
+    kg_vals = [
+        vc for c in mats for vc in c['value_candidates']
+        if vc.get('normalized_unit') == 'kg'
+    ]
+    assert kg_vals, 'Мастика with кг must produce a kg value_candidate'
+
+
+def test_material_quantity_thermal_insert() -> None:
+    cands = _candidates_from_text('Термовставки 50 мм 20 п.м')
+    mats = [c for c in cands if c['candidate_type'] == 'material_quantity']
+    assert mats, 'Термовставки must produce material_quantity'
+
+
+def test_value_candidate_kind_weight() -> None:
+    # value_candidates must carry kind='weight' for kg quantities
+    cands = _candidates_from_text('А500С ф10 150 кг')
+    all_vcs = [vc for c in cands for vc in c.get('value_candidates', [])]
+    kg_vcs = [vc for vc in all_vcs if vc.get('normalized_unit') == 'kg']
+    assert kg_vcs, 'Expected kg value_candidate'
+    assert all(vc.get('kind') == 'weight' for vc in kg_vcs), (
+        f'kg value_candidates must have kind=weight, got: {[vc.get("kind") for vc in kg_vcs]}'
+    )
+
+
+def test_value_candidate_kind_volume() -> None:
+    # value_candidates must carry kind='volume' for m3 quantities
+    cands = _candidates_from_text('Бетон 42,0 м3')
+    all_vcs = [vc for c in cands for vc in c.get('value_candidates', [])]
+    m3_vcs = [vc for vc in all_vcs if vc.get('normalized_unit') == 'm3']
+    assert m3_vcs, 'Expected m3 value_candidate'
+    assert all(vc.get('kind') == 'volume' for vc in m3_vcs), (
+        f'm3 value_candidates must have kind=volume, got: {[vc.get("kind") for vc in m3_vcs]}'
+    )
