@@ -77,6 +77,25 @@ _LABEL_SEP_VALUE = re.compile(
 )
 
 
+def _all_elevation(quantities: list[dict[str, Any]]) -> bool:
+    """True when every parsed quantity is an elevation marker (kind='elevation')."""
+    return bool(quantities) and all(q.get('kind') == 'elevation' for q in quantities)
+
+
+def _has_useful_primary_quantity(quantities: list[dict[str, Any]]) -> bool:
+    """True when at least one quantity is usable as a primary route quantity.
+
+    Excludes diameter, elevation, and bare millimetre size measurements.
+    A 'length' kind with unit 'mm'/'мм' is typically a diameter attribute
+    (Ø110 мм) parsed redundantly alongside the diameter kind — not a route qty.
+    """
+    return any(
+        q.get('kind') not in ('diameter', 'elevation')
+        and q.get('normalized_unit') not in ('mm', 'мм')
+        for q in quantities
+    )
+
+
 def _has_any_quantity(text: str) -> bool:
     return bool(re.search(
         r'\d+(?:[.,]\d+)?\s*(?:м²|м³|м\^2|м\^3|м2|м3|п\.?\s*м|пог\.?\s*м|м\.?\s*п'
@@ -118,6 +137,64 @@ def _value_candidates_from_quantities(quantities: list[dict[str, Any]]) -> list[
     return result
 
 
+def _make_elevation_marker(
+    ev: dict[str, Any],
+    cand_id: int,
+    quantities: list[dict[str, Any]],
+    raw: str,
+    norm: str,
+    src: dict[str, Any],
+) -> dict[str, Any]:
+    """Elevation values (+3,250, -0,300) stored as markers, not ordinary quantities.
+
+    Resolver ignores these unless the parameter explicitly expects kind=elevation.
+    """
+    return {
+        'candidate_id': f'cand_{cand_id:06d}',
+        'candidate_type': 'elevation_marker',
+        'subject_hint': '',
+        'property_hint': 'elevation',
+        'value_candidates': _value_candidates_from_quantities(quantities),
+        'unit_candidates': [],
+        'evidence_id': ev['evidence_id'],
+        'raw_text': raw,
+        'normalized_text': norm,
+        'confidence': 0.20,
+        'reason': 'elevation-only values — not an ordinary quantity',
+        'extractor': 'generic_candidate_extractor',
+        **src,
+    }
+
+
+def _make_diameter_spec(
+    ev: dict[str, Any],
+    cand_id: int,
+    quantities: list[dict[str, Any]],
+    raw: str,
+    norm: str,
+    src: dict[str, Any],
+) -> dict[str, Any]:
+    """Diameter-only values (Ø110, ф315) stored as diameter_spec attributes.
+
+    Not usable as primary length/volume candidates by the resolver.
+    """
+    return {
+        'candidate_id': f'cand_{cand_id:06d}',
+        'candidate_type': 'diameter_spec',
+        'subject_hint': '',
+        'property_hint': 'diameter',
+        'value_candidates': _value_candidates_from_quantities(quantities),
+        'unit_candidates': list({q.get('normalized_unit', '') for q in quantities if q.get('normalized_unit')}),
+        'evidence_id': ev['evidence_id'],
+        'raw_text': raw,
+        'normalized_text': norm,
+        'confidence': 0.25,
+        'reason': 'diameter-only — not a useful primary quantity',
+        'extractor': 'generic_candidate_extractor',
+        **src,
+    }
+
+
 def _ev_source_fields(ev: dict[str, Any]) -> dict[str, Any]:
     """Extract section/page provenance fields from an evidence item."""
     return {
@@ -125,6 +202,9 @@ def _ev_source_fields(ev: dict[str, Any]) -> dict[str, Any]:
         'page_section_code': ev.get('page_section_code', 'unknown'),
         'section_confidence': ev.get('section_confidence', 0.0),
         'section_source': ev.get('section_source', 'unknown'),
+        'table_section_code': ev.get('table_section_code', ''),
+        'table_section_confidence': ev.get('table_section_confidence', 0.0),
+        'table_section_source': ev.get('table_section_source', 'none'),
         'logical_sheet_title': ev.get('logical_sheet_title', ''),
         'logical_sheet_type': ev.get('logical_sheet_type', 'unknown'),
         'table_context_title': ev.get('table_context_title', ''),
@@ -146,9 +226,6 @@ def _classify_evidence(
     raw = ev.get('raw_text', '')
     src = _ev_source_fields(ev)
 
-    if not _has_any_quantity(norm) and not _ANY_SUBJECT_KW.search(norm):
-        return None
-
     # For table_row evidence the cells are joined with " | " by evidence_layer,
     # so "150 | м2" doesn't match adjacent number+unit patterns.  Strip pipes
     # before quantity parsing; normalized_text in the candidate still keeps them.
@@ -156,8 +233,23 @@ def _classify_evidence(
     quantities = parse_quantities(qty_text)
     has_qty = bool(quantities)
 
+    # Elevation-only values must be checked before the main gate because elevation
+    # text (e.g. "+3,250") has no unit suffix, so _has_any_quantity() would miss it.
+    if _all_elevation(quantities):
+        return _make_elevation_marker(ev, cand_id, quantities, raw, norm, src)
+
+    if not _has_any_quantity(norm) and not _ANY_SUBJECT_KW.search(norm):
+        return None
+
     # ── 1. route_summary: route label + ИТОГО or length/volume/depth keywords ──
     if _ROUTE_LABEL.search(norm) and has_qty:
+        # Elevation-only: store as marker, not a useful route quantity
+        if _all_elevation(quantities):
+            return _make_elevation_marker(ev, cand_id, quantities, raw, norm, src)
+        # Diameter-only: no useful primary quantity → store as diameter_spec
+        if not _has_useful_primary_quantity(quantities):
+            return _make_diameter_spec(ev, cand_id, quantities, raw, norm, src)
+
         route_match = _ROUTE_LABEL.search(norm)
         subject = (route_match.group(0) if route_match else '').strip()
         confidence = 0.85 if _ITOGO.search(norm) else 0.70
@@ -303,6 +395,9 @@ def _classify_evidence(
 
     # ── 7. unknown_relevant_quantity: catch-all for relevant strings ────────
     if _ANY_SUBJECT_KW.search(norm) and has_qty:
+        # Elevation-only values are markers, not ordinary quantities
+        if _all_elevation(quantities):
+            return _make_elevation_marker(ev, cand_id, quantities, raw, norm, src)
         prop = _property_hint_from_text(norm)
         return {
             'candidate_id': f'cand_{cand_id:06d}',

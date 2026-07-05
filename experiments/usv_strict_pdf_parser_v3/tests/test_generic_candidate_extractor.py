@@ -369,3 +369,85 @@ def test_value_candidate_kind_volume() -> None:
     assert all(vc.get('kind') == 'volume' for vc in m3_vcs), (
         f'm3 value_candidates must have kind=volume, got: {[vc.get("kind") for vc in m3_vcs]}'
     )
+
+
+# ── A4.2.5: elevation_marker ─────────────────────��─────────────────────────
+
+def test_elevation_value_creates_elevation_marker_not_ordinary() -> None:
+    """'+3,250' alone must produce elevation_marker, not unknown_relevant_quantity."""
+    cands = _candidates_from_text('Отм. +3,250')
+    types = [c['candidate_type'] for c in cands]
+    assert 'unknown_relevant_quantity' not in types, (
+        f'Elevation must not become unknown_relevant_quantity. Got: {types}'
+    )
+    assert 'elevation_marker' in types, (
+        f'Elevation must produce elevation_marker. Got: {types}'
+    )
+
+
+def test_elevation_marker_has_low_confidence() -> None:
+    """elevation_marker must have low confidence so resolver ignores it by default."""
+    cands = _candidates_from_text('Отм. +6,700')
+    markers = [c for c in cands if c['candidate_type'] == 'elevation_marker']
+    assert markers
+    assert markers[0]['confidence'] < 0.5, (
+        f'elevation_marker confidence must be < 0.5, got {markers[0]["confidence"]}'
+    )
+
+
+def test_ordinary_depth_is_not_elevation_marker() -> None:
+    """'Глубина котлована 1,2 м' must NOT become elevation_marker — it is a real depth."""
+    cands = _candidates_from_text('Глубина котлована 1,2 м')
+    types = [c['candidate_type'] for c in cands]
+    assert 'elevation_marker' not in types, (
+        f'Real depth must not become elevation_marker. Got: {types}'
+    )
+
+
+def test_route_with_elevation_only_becomes_elevation_marker() -> None:
+    """Route label + elevation-only value must produce elevation_marker, not route_summary."""
+    cands = _candidates_from_text('К1 трасса на отм. +3,250')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Route+elevation-only must not be route_summary. Got: {types}'
+    )
+
+
+# ── A4.2.5: diameter_spec ──────────────────────────────────────────────���──
+
+def test_diameter_only_route_becomes_diameter_spec() -> None:
+    """'К1 Ø110 мм' with no length must not create route_summary."""
+    cands = _candidates_from_text('К1 труба Ø110 мм')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Diameter-only route must not be route_summary. Got: {types}'
+    )
+
+
+def test_route_with_length_creates_route_summary() -> None:
+    """'К1 12,4 п.м' with real length must still create route_summary."""
+    cands = _candidates_from_text('К1 трасса итого 12,4 п.м')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' in types, (
+        f'Route+length must produce route_summary. Got: {types}'
+    )
+
+
+def test_pipe_with_diameter_and_length_gives_length_as_primary() -> None:
+    """'ПНД труба Ø110 12,4 п.м' — primary value must be length, not diameter."""
+    cands = _candidates_from_text('ПНД труба Ø110 12,4 п.м')
+    pipe = [c for c in cands if c['candidate_type'] == 'pipe_item']
+    assert pipe, f'Expected pipe_item, got: {[c["candidate_type"] for c in cands]}'
+    length_vals = [
+        vc for c in pipe for vc in c.get('value_candidates', [])
+        if vc.get('normalized_unit') == 'linear_m'
+    ]
+    assert length_vals, 'pipe_item must include length value_candidate'
+
+
+def test_diameter_only_has_low_confidence() -> None:
+    """diameter_spec must have low confidence so resolver ignores it for length params."""
+    cands = _candidates_from_text('К1 Ø315 мм')
+    dspecs = [c for c in cands if c['candidate_type'] == 'diameter_spec']
+    if dspecs:
+        assert dspecs[0]['confidence'] < 0.5

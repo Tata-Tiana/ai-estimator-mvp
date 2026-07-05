@@ -31,13 +31,17 @@ def _make_table(
     page: int = 1,
     t_idx: int = 1,
     rows: list | None = None,
+    table_title: str | None = None,
 ) -> dict:
-    return {
+    t: dict = {
         'source_pdf': pdf,
         'physical_page_number': page,
         'table_index': t_idx,
         'rows': rows or [],
     }
+    if table_title is not None:
+        t['table_title'] = table_title
+    return t
 
 
 # ── evidence_id uniqueness ─────────────────────────────────────────────────
@@ -264,3 +268,72 @@ def test_page_text_evidence_has_empty_table_context_title() -> None:
     page_ev = [e for e in evidence if e['source_kind'] == 'page_text']
     assert page_ev
     assert page_ev[0]['table_context_title'] == ''
+
+
+# ── A4.2.5: mixed-page table_override ─────────────────────────────────────────
+
+def test_table_override_when_page_known_but_table_strongly_disagrees() -> None:
+    """page=waterproofing, table_title='Спецификация к фундаментной плите'
+    → section_code=foundation_slab, section_source=table_override.
+
+    table_title must be set explicitly: infer_table_context_title() falls back
+    to logical_sheet_title only when the table dict has no 'table_title' key."""
+    pages = [_make_page_with_section(page=1, section='waterproofing',
+                                      sheet_type='cutoff_waterproofing_scheme',
+                                      title='Схема гидроизоляции')]
+    tables = [_make_table(page=1,
+                          table_title='Спецификация к фундаментной плите',
+                          rows=[['Бетон B25', '42', 'м3']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    assert row_ev[0]['section_code'] == 'foundation_slab', (
+        f'Table title override must win. Got: {row_ev[0]["section_code"]}'
+    )
+    assert row_ev[0]['section_source'] == 'table_override'
+
+
+def test_no_override_when_table_only_has_generic_materials() -> None:
+    """page=waterproofing, table rows have only generic terms (бетон, арматура)
+    without a strong title/header signal → page section must be kept."""
+    pages = [_make_page_with_section(page=1, section='waterproofing',
+                                      title='Схема гидроизоляции')]
+    tables = [_make_table(page=1, rows=[['Поз.', 'Наименование', 'Кол.'],
+                                         ['Бетон B25', '42', 'м3'],
+                                         ['Арматура А500С', '1850', 'кг']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    assert row_ev[0]['section_code'] == 'waterproofing', (
+        f'Generic material rows must not override known page. Got: {row_ev[0]["section_code"]}'
+    )
+    assert row_ev[0]['section_source'] == 'page'
+
+
+def test_table_override_source_page_unknown_stays_table_not_table_override() -> None:
+    """page=unknown, table classifies → section_source must be 'table', not 'table_override'."""
+    pages = [_make_page_with_section(page=1, section='',
+                                      title='Спецификация к плану кровли')]
+    tables = [_make_table(page=1, rows=[['Спецификаци�� кровли'],
+                                         ['LOGICROOF', '250', 'м2']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    assert row_ev[0]['section_source'] == 'table', (
+        f'Page=unknown should give section_source=table, not table_override. '
+        f'Got: {row_ev[0]["section_source"]}'
+    )
+
+
+def test_no_override_when_page_and_table_agree() -> None:
+    """page=flat_roof, table also classifies as flat_roof → ordinary 'page' source kept."""
+    pages = [_make_page_with_section(page=1, section='flat_roof',
+                                      title='Спецификация кровли')]
+    tables = [_make_table(page=1, rows=[['Спецификация кровли'],
+                                         ['LOGICROOF', '250', 'м2']])]
+    evidence = _build_evidence_from_data(pages, tables)
+    row_ev = [e for e in evidence if e['source_kind'] == 'table_row']
+    assert row_ev
+    # table confirms page — no override needed, page wins
+    assert row_ev[0]['section_code'] == 'flat_roof'
+    assert row_ev[0]['section_source'] in ('page', 'table')
