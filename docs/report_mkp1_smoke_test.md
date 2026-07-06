@@ -112,9 +112,85 @@ subject_hint вида `В0`, `В505`, `В1`, `В0029` — это **не** мар
 бетона) — фиксирую как возможный кандидат для A4.2.8, отдельно от
 concrete-grade и door-schedule коллизий.
 
+### Независимая проверка закрытия A4.2.7.1 (2026-07-06)
+
+Внешний ревью (GPT) предложил 7 тестов на закрытие A4.2.7.1. Проверка
+показала: 6 из 7 уже проходили на уже закоммиченном коде без единой
+правки. Седьмой ("ЭО1 ввод электрического кабеля" — route ожидался) не
+проходил не из-за бага route-label guard'а, а потому что в строке нет ни
+одной цифры вообще — без количества никакой candidate_type не создаётся,
+это общее правило, а не специфика A4.2.7.1. С добавленным числом
+("...15 м") ведёт себя корректно (route_summary).
+
+Правки экстрактора не потребовались. Добавлено 3 теста-подтверждения
+(hyphenated "В-25", К1 канализация, ЭО1 с количеством) как явное
+регрессионное покрытие уже верного поведения. Тесты: 220 + 35, все
+зелёные. **A4.2.7.1 закрыт.**
+
+## Разделение A4.2.8 / A4.2.9 (финально зафиксировано, 2026-07-06)
+
+Названия шагов менялись дважды в обсуждении — зафиксировано окончательно,
+больше не переименовывать:
+
+- **A4.2.8 = row-level strong signals / unknown classification
+  improvement.** Статус: **backlog / deferred**. Сейчас не делаем.
+  Не блокер: unknown-кандидаты не теряются технически (см. ниже), это
+  вопрос полноты классификации, не корректности данных.
+- **A4.2.9 = parser freeze / final parser handoff.** Статус: **делается
+  сейчас**. Зафиксировать финальные метрики после A4.2.7 + A4.2.7.1,
+  записать known limitations, объявить parser layer достаточным для
+  перехода к A4.3. Без новых extraction rules, без чистки unknown до нуля.
+
+### Про unknown и "review table" — точная формулировка
+
+`resolver_engine.py` не блокирует `section_code=unknown` жёстко —
+`_apply_section_scoring()` для `unknown`/`floor_slab_unknown` возвращает
+`(score, needs_review=True)`, то есть такой кандидат может быть выбран
+resolver'ом как значение параметра, просто с пометкой на проверку.
+
+Но: **это пока design intent, а не факт.** Ни одна таблица, которую видит
+человек (Елена), сейчас не подключена к этому evidence/candidate/resolver
+слою — см. п.0.12 `current_project_state.md`. Правильная формулировка:
+
+- unknown-кандидаты не потеряны технически — они лежат в JSON и могут быть
+  выбраны resolver'ом с `needs_review=True`;
+- но пока не построен A5 (review table), человек их не видит;
+- **требование к A5**: review table обязана явно показывать
+  resolved unknown-section кандидатов как строки `needs_review`, а не
+  молча их прятать.
+
+### Границы: старый Google Sheet / Telegram-flow (0.11) не трогаем
+
+Экспериментальный evidence/candidate/resolver слой (0.12) — параллельный
+контур. На этом шаге и далее, пока явно не решено иначе:
+
+- не меняем структуру существующей Google-таблицы земляных работ, формулы,
+  ручной flow;
+- не меняем `earthworks_v3_adapter.py` и действующий production
+  Telegram-flow (0.11);
+- можно менять/добавлять только в новом слое: candidates, raw_text/source/
+  evidence, resolver output, новые отчёты.
+
+Будущая all-sections review table (A5) — отдельный новый экспорт, не
+замена текущей Google-таблицы на этом шаге.
+
 ## Следующие шаги
 
-- A4.2.8 — аудит оставшихся unknown-кандидатов (после вычета out-of-scope)
-  и, отдельно, аудит оставшихся "В+число" route_summary ложных срабатываний
-  (искажённый текст генплана / оси чертежа) — не смешивать с concrete-grade
-  фиксом A4.2.7.1.
+- A4.2.9 (делаем сейчас) — parser freeze / final parser handoff:
+  зафиксировать финальные метрики после A4.2.7 + A4.2.7.1, записать known
+  limitations, объявить parser layer достаточным для перехода к A4.3.
+- A4.3 (следующий шаг после A4.2.9) — source-category audit: по каждому
+  параметру всех 8 разделов `section_schema.py` определить категорию
+  источника (PDF_PROJECT / PDF_DERIVED / MANUAL_REVIEW / CALCULATED /
+  PRICE / DEFAULT_STANDARD / CONTROL_ONLY / INTERNAL_SERVICE). Результат —
+  CSV/MD/JSON аудит (section_code, parameter_code, display_name, unit,
+  current input_type, has_resolver_hints, proposed_source_category,
+  resolver_required, review_table_required, reason, confidence, notes).
+  Не меняет calculator logic, не расширяет resolver_hints массово —
+  сначала только аудит и карта источников.
+- A4.2.8 (backlog, отложено) — row-level strong signals: аудит оставшихся
+  unknown-кандидатов (после вычета out-of-scope) и "В+число" route_summary
+  ложных срабатываний (искажённый текст генплана / оси чертежа). Вернуться
+  к этому точечно, если в A4.3/A5 выяснится, что unknown реально мешает
+  собрать таблицу.
+- A5 (после A4.3) — all-sections review table.

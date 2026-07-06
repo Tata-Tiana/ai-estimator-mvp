@@ -2,7 +2,7 @@
 
 Этот файл — живая карта проекта `ai-estimator-mvp`. Он фиксирует текущую архитектуру, рабочие папки, что уже сделано и куда двигаться дальше.
 
-Дата актуализации: `2026-06-22`.
+Дата актуализации: `2026-07-05`.
 
 ## 0. Последняя расчётная контрольная точка
 
@@ -545,7 +545,9 @@ section_total: 848 699
 - изменения `earthworks_calculator`;
 - изменения Stage1 parser core;
 - back-write в `price_registry`;
-- Telegram, n8n, Supabase, web-server.
+- web-server.
+
+> Обновление: Telegram-бот из списка "не входит" выше был реализован после этой контрольной точки — см. 0.11.
 
 ### Команды
 
@@ -570,6 +572,78 @@ python experiments/earthworks_review_to_calculator/show_job_status.py \
 ```text
 docs/report_earthworks_review_to_calculator.md
 ```
+
+## 0.11. Telegram-бот для сборки сметы земляных работ
+
+После контрольной точки 0.10 добавлен production-контур приёма проекта от пользователя через Telegram:
+
+```text
+experiments/earthworks_review_to_calculator/telegram_bot.py   (~2170 строк)
+```
+
+Бот оборачивает уже существующий full review flow (0.10) интерфейсом для конечного пользователя (не только для разработчика с CLI):
+
+- пользователь присылает PDF-файлы боту; после `QUIET_SECONDS` (5с) тишины или явной команды `/done` бот запускает `create_job_from_pdf.py` и весь 8-шаговый flow;
+- батчинг PDF с защитой от гонки состояний (несколько файлов подряд не запускают parser дважды);
+- восстановление сессии после падения/перезапуска бота (`telegram_sessions/`, backups в `backups/telegram_sessions/`);
+- пользователь может пересобрать (`recreate_review_sheet.py`) или перезапустить парсинг (`rerun_parser.py`) для своих же job'ов без участия разработчика;
+- админ-доступ: экспорт лога всех job'ов в Excel (`admin_exports/`), команда очистки тестовых job'ов;
+- извлечение адреса проекта и уникальное имя Excel-файла по `job_id` (чтобы разные проекты не перетирали друг друга);
+- anti_cheat сделан non-blocking для продакшн-потока (раньше мог полностью останавливать сборку) и принимает альтернативные названия чертежей схем коммуникаций;
+- fallback на ручную длину и извлечение диаметра из названия трубы, когда pipe specs отсутствуют.
+
+Хранилища бота:
+
+```text
+experiments/earthworks_review_to_calculator/data/telegram_uploads/
+experiments/earthworks_review_to_calculator/data/telegram_logs/
+experiments/earthworks_review_to_calculator/data/telegram_sessions/
+experiments/earthworks_review_to_calculator/data/telegram_user_jobs/
+experiments/earthworks_review_to_calculator/data/admin_exports/
+```
+
+(`telegram_uploads/` и `telegram_logs/` игнорируются git — см. `.gitignore`.)
+
+Запуск бота требует `TELEGRAM_BOT_TOKEN` в `.env` (см. `.env.example`) и пакет `pyTelegramBotAPI`.
+
+## 0.12. PDF Parser v3 — Evidence Layer + Generic Candidate Extractor + Parameter Resolver (серия A4)
+
+Параллельно с Telegram-ботом ведётся отдельная экспериментальная ветка внутри диагностического парсера:
+
+```text
+experiments/usv_strict_pdf_parser_v3/     — evidence_layer.py, generic_candidate_extractor.py, text_normalization.py
+experiments/pdf_parser_pipeline/parameter_resolver/   — resolver_engine.py, context_scorer.py, validation.py
+```
+
+**Важно:** это отдельный, ещё не подключённый к продакшену контур. Действующий Telegram-flow (0.11) читает старый `V3_CANDIDATES_PATH` через `earthworks_v3_adapter.py` и не использует `evidence.json` / `generic_candidates.json` / resolver. Цель серии A4 — постепенно заменить project-specific regex-парсинг обобщённым слоем evidence → typed candidates → resolver, который работает на любом похожем на USV проекте, а не только на известных значениях.
+
+Пайплайн:
+
+1. `evidence_layer.py` строит `evidence.json` из текста страниц, названий листов, строк таблиц и drawing index; таблицы — первичный источник, поэтому CAD PDF с пустым текстом страницы всё равно даёт evidence.
+2. `generic_candidate_extractor.py` классифицирует evidence в типизированные кандидаты (`route_summary`, `pipe_item`, `pipe_piece_qty`, `label_value_quantity`, `material_quantity`, `table_quantity_row`, `unknown_relevant_quantity`, `elevation_marker`, `diameter_spec`) — только по стандартной русской инженерной лексике, без project-specific имён файлов/номеров страниц/захардкоженных значений.
+3. `resolver_engine.py` (в `pdf_parser_pipeline/`) резолвит кандидатов в значение параметра по `resolver_hints` из `section_schema.py`: scoring по контексту, section-aware bonus/penalty (+0.10 та же секция, −0.15 чужая секция), конфликт при расхождении значений >10%, `collect_all` для агрегации списков.
+
+Хронология (коммиты `afa7395` → `4b62d69` → `0a03893` → `63b7f3c`):
+
+- **A4 + A4.2.2** — resolver слой (`resolve()`/`resolve_all()`) + пропагация `section_code` от страницы через evidence до кандидата; same-section scoring bonus; `section_code` заполненность выросла с 0% до 84% (127/151 кандидатов).
+- **A4.2.5** — типы `elevation_marker` (координатные отметки, напр. `+3,250`) и `diameter_spec` (голый диаметр без полезной величины, напр. `Ø110 мм` без п.м/шт) выделены как отдельные типы кандидатов, а не игнорировались/не путались с длиной.
+- **A4.2.5.1** (текущая точка, `63b7f3c`) — **eligibility guard**: `resolver_engine._AUXILIARY_TYPES = {'elevation_marker', 'diameter_spec'}` — эти типы теперь отфильтровываются до любого scoring, то есть отметки и голые диаметры труб физически не могут быть выбраны resolver'ом как значение параметра сметы (раньше был риск, что `+3,250` или `Ø110 мм` "выигрывали" как длина/глубина).
+
+Статистика после guard (239 тестов зелёных: 206 + 33 новых):
+
+```text
+              candidates   resolver_eligible   auxiliary
+USV                  168          125 (74%)     43 (37 elevation_marker + 6 diameter_spec)
+TRC                  511          304 (60%)     207 (192 elevation_marker + 15 diameter_spec)
+```
+
+97 unknown-кандидатов по TRC разобраны: 58 — elevation_marker с координатных рамок чертежей (не приоритет), 3 pipe_item + 3 pipe_piece_qty — реальные дренажные трубы (ГОСТ + Ø110 + шт) на неклассифицированных страницах, кандидат на следующий шаг.
+
+**Ближайший следующий шаг (не начат):** A4.2.8 — аудит unknown-кандидатов / обучение classifier row-level сигналам вида "ГОСТ + Ø110 + труба + шт/м.п + дренаж/ливневая канализация" → earthworks/communications, через generic-сигналы, а не конкретные значения.
+
+**Обновление (2026-07-05 — 2026-07-06):** после `63b7f3c` добавлен третий smoke-проект MKP1 (первый АР+КР документ, не только КР — см. `docs/report_mkp1_smoke_test.md`) и два generic-бага исправлены отдельными коммитами: **A4.2.2** (`1192286`, table-level section classification / `table_override` — было реализовано и протестировано раньше, но не закоммичено, найдено и довнесено при подготовке следующего коммита), **A4.2.7** (`6596f76`, dimensions-filter gap + route-label/АР-код коллизия) и **A4.2.7.1** (`a25ca6b`, марка бетона В22/В25 vs route label В1/В2). Независимая проверка от 2026-07-06 подтвердила: A4.2.7.1 закрыт корректно, без нужды в доп. правках экстрактора.
+
+**Финальное именование (2026-07-06, больше не переименовывать):** **A4.2.8** = row-level strong signals / unknown classification improvement — статус **backlog / deferred**, сейчас не делаем. **A4.2.9** = parser freeze / final parser handoff — статус **делается сейчас**. Подробности, обоснование и границы (Google Sheet/Telegram-flow не трогаем, требование к будущему A5 явно показывать unknown как needs_review) — см. `docs/report_mkp1_smoke_test.md`.
 
 ## 1. Цель проекта
 
@@ -700,7 +774,7 @@ experiments/pdf_tests/projects/<project_name>/
 Запуск:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_tests/run_pdf_parser.py
+.venv/bin/python3 experiments/pdf_tests/run_pdf_parser.py
 ```
 
 Скрипт спрашивает:
@@ -753,7 +827,7 @@ experiments/pdf_parser_pipeline/output/mvp_usv_demo/
 Запуск:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
 ```
 
 Текущий результат:
@@ -826,7 +900,7 @@ experiments/ai_tests/projects/<project_name>/
 Запуск:
 
 ```bash
-../.venv/bin/python3 experiments/ai_tests/run_project_card.py
+.venv/bin/python3 experiments/ai_tests/run_project_card.py
 ```
 
 Скрипт теперь спрашивает имя проекта и сохраняет результат в `experiments/ai_tests/projects/<project_name>/output/`.
@@ -920,13 +994,13 @@ experiments/earthworks_calculator/
 Запуск одного кейса:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/horoshevka_14
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/horoshevka_14
 ```
 
 Запуск всех кейсов:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
+.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
 ```
 
 Текущий результат:
@@ -1441,6 +1515,8 @@ experiments/pricing/output/required_codes_coverage_report.md
 - хранить единый `price_code` в строках готовых калькуляторов.
 - проверять покрытие `price_code` через `experiments/pricing/`.
 - распределять доставку арматуры/металла на уровне `experiments/box_calculator/` как recommended allocation без прибавления поверх legacy totals.
+- принимать PDF проекта от пользователя через Telegram-бота и вести пользователя по всему review flow земляных работ (`experiments/earthworks_review_to_calculator/telegram_bot.py`) — см. 0.11.
+- в отдельном экспериментальном контуре (не подключён к продакшену) извлекать типизированные кандидаты значений из PDF (evidence → generic candidates → resolver) и резолвить их в значения параметров с section-aware scoring — см. 0.12.
 
 При этом:
 
@@ -1473,7 +1549,8 @@ experiments/pricing/output/required_codes_coverage_report.md
 - рабочий pipeline `PDF parser artifacts -> review cards -> reviewed_parameters.xlsx`;
 - первый слой `box_calculator` для распределения доставки металла по общему весу коробки;
 - формат кейсов `input.json`, `expected.json`, `notes.md`;
-- агрегированный запуск `run_all_cases.py`.
+- агрегированный запуск `run_all_cases.py`;
+- production Telegram-бот приёма PDF и сборки сметы земляных работ (0.11) — реально используется пользователем, не демо.
 
 ## 10. Что остаётся экспериментом
 
@@ -1486,7 +1563,8 @@ experiments/pricing/output/required_codes_coverage_report.md
 - дальнейшее развитие `box_calculator` в полноценный агрегатор всех разделов;
 - расчёт следующих разделов сметы;
 - матчинг материалов с УНИКМА;
-- перенос расчётной логики в `app/`.
+- перенос расчётной логики в `app/`;
+- evidence → generic candidate → resolver слой (серия A4, 0.12) — диагностический, ещё не заменил project-specific extraction в продакшн-flow.
 
 ## 11. Ближайшие разумные шаги
 
@@ -1497,6 +1575,11 @@ experiments/pricing/output/required_codes_coverage_report.md
 5. Постепенно превратить удачные экспериментальные структуры в стабильные модули `app/`.
 6. Позже подключить УНИКМА к материалам, но не смешивать это с расчётной логикой.
 7. После каждого крупного этапа обновлять `docs/assistant_handoff.md`, `docs/current_project_state.md` и `docs/change_log.md`.
+8. A4.2.9 (делаем сейчас) — parser freeze / final parser handoff: зафиксировать финальные метрики после A4.2.7/A4.2.7.1, записать known limitations, объявить parser layer достаточным для перехода к A4.3. Без новых extraction rules, без чистки unknown до нуля.
+9. A4.3 (следующий шаг после A4.2.9) — source-category audit: по каждому параметру всех 8 разделов `section_schema.py` определить категорию источника — `PDF_PROJECT` (должен быть напрямую в проектной документации), `PDF_DERIVED` (вычисляется из PDF-данных), `MANUAL_REVIEW` (требует ручного ввода/подтверждения), `CALCULATED` (считается калькулятором, не ищется в PDF), `PRICE` (из прайса), `DEFAULT_STANDARD` (нормативная константа), `CONTROL_ONLY` (только для проверки, не для расчёта), `INTERNAL_SERVICE` (служебный параметр калькулятора). Результат — CSV/MD/JSON аудит с колонками: `section_code`, `parameter_code`/`input_key`, `display_name`, `unit`, текущий input_type (если есть), `has_resolver_hints`, `proposed_source_category`, `resolver_required` (yes/no), `review_table_required` (yes/no), `reason`, `confidence`, `notes`. A4.3 не меняет calculator logic и не расширяет resolver_hints массово — сначала только аудит и карта источников.
+10. A4.2.8 (backlog, отложено) — аудит unknown-кандидатов TRC/USV/MKP1 в resolver-слое, обучение classifier row-level сигналам (ГОСТ + Ø + труба + шт/м.п + дренаж/ливневая канализация → earthworks/communications). Добавляет новые правила. Не блокер для A4.3/A5 — вернуться точечно, если выяснится, что unknown реально мешает.
+11. A5 (после A4.3) — all-sections review table. Обязана явно показывать resolved unknown-section кандидатов как строки `needs_review`, а не молча их скрывать. Отдельный новый экспорт — не замена существующей Google-таблицы земляных работ.
+12. Решить, когда и как evidence/candidate/resolver слой (0.12) заменит или дополнит текущий `earthworks_v3_adapter.py`, который продакшн Telegram-flow (0.11) использует сейчас — пока не трогать ни старый Google Sheet, ни `earthworks_v3_adapter.py`, ни действующий production Telegram-flow.
 
 ## 12. Практическое правило
 

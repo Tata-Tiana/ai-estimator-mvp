@@ -596,3 +596,33 @@ def test_water_supply_route_with_length_depth_still_works() -> None:
     cands = _candidates_from_text('В1 длина 12 м глубина 1,9 м')
     routes = [c for c in cands if c['candidate_type'] == 'route_summary']
     assert routes, 'В1 with длина/глубина context must produce route_summary'
+
+
+def test_concrete_grade_hyphenated_is_not_route_summary() -> None:
+    """'ГОСТ 26633-2015 Бетон В-25 0,75 м3' — hyphenated grade notation
+    ("В-25") is not even matched by _ROUTE_LABEL_CODE (no digit right after
+    В), so it was never at risk — confirmed explicitly as regression
+    coverage rather than left implicit."""
+    cands = _candidates_from_text('ГОСТ 26633-2015 Бетон В-25 0,75 м3')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Hyphenated concrete grade must not become route_summary. Got: {types}'
+    )
+
+
+def test_sewer_route_with_length_still_works() -> None:
+    """'К1 трасса канализации длина 20 м' — real sewer route must still
+    produce route_summary."""
+    cands = _candidates_from_text('К1 трасса канализации длина 20 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'К1 with трасса/канализации context must produce route_summary'
+
+
+def test_electrical_route_with_quantity_still_works() -> None:
+    """'ЭО1 ввод электрического кабеля 15 м' — real electrical route with an
+    actual quantity attached must still produce route_summary. (Without any
+    number at all no candidate is created regardless of type — that's
+    unrelated to the route-label guard.)"""
+    cands = _candidates_from_text('ЭО1 ввод электрического кабеля 15 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'ЭО1 with ввод context and a quantity must produce route_summary'
