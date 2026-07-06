@@ -13,22 +13,11 @@ from text_normalization import normalize_text, parse_quantities
 # These are generic construction terms used as semantic signals for candidate
 # detection. They are NOT project-specific values, filenames, or page numbers.
 
-# Standard Russian engineering network labels (not project-specific values):
-# К1/К2/К3 = sewer/storm/drainage-related routes depending on project notation,
-# В1 = water supply, ЭО = electrical equipment/electrical route.
-# They are used as generic domain vocabulary for evidence/candidate detection.
-_ROUTE_LABEL = re.compile(
-    # К1/К2/К3/В1/ЭО are standard Russian engineering network labels,
-    # not project-specific values. Single letters "К"/"В" without a digit
-    # are too ambiguous — they are common Russian prepositions and OCR noise.
-    # IGNORECASE is safe here because К/В require a trailing digit (К1, В1…),
-    # so bare lowercase к/в cannot match.
+# Unambiguous route-label vocabulary: full descriptive words that cannot mean
+# anything else in a construction PDF. No extra context required.
+_ROUTE_LABEL_WORD = re.compile(
     r'\b('
-    r'К[0-9]+'                      # К1, К2, К3 — digit required
-    r'|В[0-9]+(?![.,][0-9])'         # В1, В2 route labels — not В22,5 concrete class
-    r'|ЭО[0-9]?'                    # ЭО, ЭО1 — digit optional
-    r'|ЛК'                           # ЛК abbreviation
-    r'|Дренаж\w*'                   # Дренаж, Дренажная…
+    r'Дренаж\w*'                   # Дренаж, Дренажная…
     r'|Др\.?'                        # Др. short form
     r'|Ливнев\w+'                   # Ливневка, Ливневая…
     r'|Канализаци\w+'               # Канализация…
@@ -38,6 +27,42 @@ _ROUTE_LABEL = re.compile(
     r')\b',
     re.IGNORECASE | re.UNICODE,
 )
+
+# Ambiguous short-code route labels (A4.2.7): К1/К2/К3 = sewer/storm/drainage
+# routes, В1 = water supply, ЭО = electrical route, ЛК = abbreviation. These
+# codes collide with unrelated numbering schemes on the same PDFs — most
+# notably АР door/window opening marks (ОК-1, ДН-1, ДВ-1, "В-1" as an opening
+# code). They only count as route labels when engineering context is present
+# nearby (see _match_route_label) and never next to opening-schedule context.
+# IGNORECASE is safe here because К/В require a trailing digit (К1, В1…),
+# so bare lowercase к/в (Russian prepositions) cannot match.
+_ROUTE_LABEL_CODE = re.compile(
+    r'\b('
+    r'К[0-9]+'                      # К1, К2, К3 — digit required
+    r'|В[0-9]+(?![.,][0-9])'         # В1, В2 route labels — not В22,5 concrete class
+    r'|ЭО[0-9]?'                    # ЭО, ЭО1 — digit optional
+    r'|ЛК'                           # ЛК abbreviation
+    r')\b',
+    re.IGNORECASE | re.UNICODE,
+)
+
+# Engineering context required for ambiguous short codes (A4.2.7).
+_ROUTE_ENGINEERING_CONTEXT_RE = re.compile(
+    r'трасса|канализаци|водоснабжен|ливнев|дренаж|труб|ввод|'
+    r'инженерные сети|коммуникаци',
+    re.IGNORECASE | re.UNICODE,
+)
+
+# АР (architectural) opening-schedule context that must suppress a route
+# label match regardless of engineering context elsewhere on the same row
+# (A4.2.7): door/window opening marks and their schedules reuse short
+# alphanumeric codes that otherwise look like route labels.
+_AR_OPENING_CONTEXT_RE = re.compile(
+    r'ведомость дверных|ведомость оконных|габариты проемов|фасад|'
+    r'\bок-|\bдн-|\bдв-',
+    re.IGNORECASE | re.UNICODE,
+)
+
 _ITOGO = re.compile(r'\bитого\b', re.IGNORECASE | re.UNICODE)
 
 _EARTHWORKS_KW = re.compile(
@@ -82,18 +107,62 @@ def _all_elevation(quantities: list[dict[str, Any]]) -> bool:
     return bool(quantities) and all(q.get('kind') == 'elevation' for q in quantities)
 
 
-def _has_useful_primary_quantity(quantities: list[dict[str, Any]]) -> bool:
-    """True when at least one quantity is usable as a primary route quantity.
+def _has_useful_primary_quantity(value_candidates: list[dict[str, Any]]) -> bool:
+    """True when at least one value is usable as a primary route quantity.
 
     Excludes diameter, elevation, and bare millimetre size measurements.
     A 'length' kind with unit 'mm'/'мм' is typically a diameter attribute
     (Ø110 мм) parsed redundantly alongside the diameter kind — not a route qty.
+
+    IMPORTANT (A4.2.7 fix): must be called with the *post-filter*
+    value_candidates (i.e. after _value_candidates_from_quantities), not the
+    raw parse_quantities() output. Raw quantities can include kind='dimensions'
+    entries (e.g. "90х195") that satisfy this predicate but then get dropped
+    by _value_candidates_from_quantities — leaving a candidate that passed
+    the gate with no genuinely useful value stored at all.
     """
     return any(
         q.get('kind') not in ('diameter', 'elevation')
         and q.get('normalized_unit') not in ('mm', 'мм')
-        for q in quantities
+        for q in value_candidates
     )
+
+
+def _match_route_label(norm: str, ev: dict[str, Any]) -> re.Match[str] | None:
+    """Route label detection with context guards (A4.2.7).
+
+    Unambiguous full words (Дренаж, Канализация, Водоснабжение…) match with no
+    extra context — they cannot mean anything else.
+
+    Ambiguous short codes (К1, В1, ЭО, ЛК) only count as route labels when
+    engineering context (трасса/канализация/водоснабжение/дренаж/труба/ввод/
+    инженерные сети/коммуникации — or an already-established length/depth/
+    volume/area/итого signal) is present on the same row/page text. They never
+    count next to an АР opening-schedule context (ведомость дверных/оконных
+    проемов, габариты проемов, фасад, ОК-/ДН-/ДВ- codes), which reuses the
+    same short alphanumeric shape for door/window marks.
+    """
+    ar_context = ' '.join(filter(None, [
+        norm, ev.get('table_context_title', ''), ev.get('logical_sheet_title', ''),
+    ]))
+    if _AR_OPENING_CONTEXT_RE.search(ar_context):
+        return None
+
+    word_match = _ROUTE_LABEL_WORD.search(norm)
+    if word_match:
+        return word_match
+
+    code_match = _ROUTE_LABEL_CODE.search(norm)
+    if code_match and (
+        _ROUTE_ENGINEERING_CONTEXT_RE.search(norm)
+        or _ITOGO.search(norm)
+        or _LENGTH_KW.search(norm)
+        or _DEPTH_KW.search(norm)
+        or _VOLUME_KW.search(norm)
+        or _AREA_KW.search(norm)
+    ):
+        return code_match
+    return None
 
 
 def _has_any_quantity(text: str) -> bool:
@@ -242,16 +311,19 @@ def _classify_evidence(
         return None
 
     # ── 1. route_summary: route label + ИТОГО or length/volume/depth keywords ──
-    if _ROUTE_LABEL.search(norm) and has_qty:
+    route_match = _match_route_label(norm, ev)
+    if route_match and has_qty:
         # Elevation-only: store as marker, not a useful route quantity
         if _all_elevation(quantities):
             return _make_elevation_marker(ev, cand_id, quantities, raw, norm, src)
-        # Diameter-only: no useful primary quantity → store as diameter_spec
-        if not _has_useful_primary_quantity(quantities):
+        value_candidates = _value_candidates_from_quantities(quantities)
+        # Diameter-only (or only-dimensions-then-filtered): no useful primary
+        # quantity actually survives → store as diameter_spec (A4.2.7 fix:
+        # check the post-filter value_candidates, not raw quantities).
+        if not _has_useful_primary_quantity(value_candidates):
             return _make_diameter_spec(ev, cand_id, quantities, raw, norm, src)
 
-        route_match = _ROUTE_LABEL.search(norm)
-        subject = (route_match.group(0) if route_match else '').strip()
+        subject = route_match.group(0).strip()
         confidence = 0.85 if _ITOGO.search(norm) else 0.70
         prop = _property_hint_from_text(norm)
         reason_parts = ['route label found']
@@ -266,7 +338,7 @@ def _classify_evidence(
             'candidate_type': 'route_summary',
             'subject_hint': subject,
             'property_hint': prop,
-            'value_candidates': _value_candidates_from_quantities(quantities),
+            'value_candidates': value_candidates,
             'unit_candidates': list({q.get('normalized_unit', '') for q in quantities if q.get('normalized_unit')}),
             'evidence_id': ev['evidence_id'],
             'raw_text': raw,
@@ -279,8 +351,10 @@ def _classify_evidence(
 
     # ── 2. pipe_item: pipe keyword + length unit ───────────────────────────
     if _PIPE_KW.search(norm) and has_qty:
-        # Diameter-only ("Труба Ø110 мм" without п.м or шт) → not a usable pipe qty
-        if not _has_useful_primary_quantity(quantities):
+        value_candidates = _value_candidates_from_quantities(quantities)
+        # Diameter-only ("Труба Ø110 мм" without п.м or шт) → not a usable pipe
+        # qty. A4.2.7 fix: check post-filter value_candidates, not raw quantities.
+        if not _has_useful_primary_quantity(value_candidates):
             return _make_diameter_spec(ev, cand_id, quantities, raw, norm, src)
         pipe_match = _PIPE_KW.search(norm)
         subject_parts = []
@@ -291,14 +365,14 @@ def _classify_evidence(
             if diam_match:
                 subject_parts.append(diam_match.group(0))
         subject = ' '.join(subject_parts).strip()
-        linear_qtys = [q for q in quantities if q.get('normalized_unit') == 'linear_m']
+        linear_qtys = [q for q in value_candidates if q.get('normalized_unit') == 'linear_m']
         confidence = 0.85 if linear_qtys else 0.65
         return {
             'candidate_id': f'cand_{cand_id:06d}',
             'candidate_type': 'pipe_item',
             'subject_hint': subject,
             'property_hint': 'length',
-            'value_candidates': _value_candidates_from_quantities(quantities),
+            'value_candidates': value_candidates,
             'unit_candidates': list({q.get('normalized_unit', '') for q in quantities if q.get('normalized_unit')}),
             'evidence_id': ev['evidence_id'],
             'raw_text': raw,
@@ -358,6 +432,14 @@ def _classify_evidence(
 
     # ── 5. material_quantity: material keyword + any quantity ──────────────
     if _MATERIAL_KW.search(norm) and has_qty:
+        value_candidates = _value_candidates_from_quantities(quantities)
+        # A4.2.7 fix: if nothing useful survives filtering (only
+        # diameter/elevation/bare-mm entries remain, e.g. dimensions like
+        # "90х195" got dropped), this is not a resolver-eligible material
+        # quantity. No natural fallback type exists for material_quantity
+        # (unlike route_summary/pipe_item → diameter_spec), so drop it.
+        if not _has_useful_primary_quantity(value_candidates):
+            return None
         mat_match = _MATERIAL_KW.search(norm)
         subject = norm[mat_match.start():mat_match.end() + 20].split()[0] if mat_match else ''
         prop = _property_hint_from_text(norm)
@@ -366,7 +448,7 @@ def _classify_evidence(
             'candidate_type': 'material_quantity',
             'subject_hint': subject,
             'property_hint': prop,
-            'value_candidates': _value_candidates_from_quantities(quantities),
+            'value_candidates': value_candidates,
             'unit_candidates': list({q.get('normalized_unit', '') for q in quantities if q.get('normalized_unit')}),
             'evidence_id': ev['evidence_id'],
             'raw_text': raw,

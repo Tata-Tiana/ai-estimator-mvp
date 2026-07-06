@@ -474,3 +474,83 @@ def test_pipe_keyword_with_count_stays_pipe_item() -> None:
     assert 'pipe_item' in types, (
         f'"Труба Ø110 мм 15 шт" with count must produce pipe_item. Got: {types}'
     )
+
+
+# ── A4.2.7: dimensions-filter gap (found via MKP1 smoke, reproducible on any project) ──
+#
+# _has_useful_primary_quantity() used to be called with raw parse_quantities()
+# output, which can include a kind='dimensions' entry (e.g. "90х195"). That
+# entry satisfies the predicate (not diameter/elevation, unit isn't mm) so the
+# gate passed — but _value_candidates_from_quantities() then drops dimensions
+# entries entirely, leaving the stored candidate with no genuinely useful
+# value at all while still being resolver_eligible.
+
+def test_route_label_with_only_dimensions_becomes_diameter_spec() -> None:
+    """Route label + a dimensions-only value (no real length/qty) must not
+    become route_summary just because 'dimensions' passed the old pre-filter
+    gate check."""
+    cands = _candidates_from_text('К1 трасса Балки 90х195')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Dimensions-only value must not create route_summary. Got: {types}'
+    )
+
+
+def test_pipe_keyword_with_only_dimensions_becomes_diameter_spec() -> None:
+    """Pipe keyword + a dimensions-only value must not become pipe_item."""
+    cands = _candidates_from_text('Труба ПНД 90х195')
+    types = [c['candidate_type'] for c in cands]
+    assert 'pipe_item' not in types, (
+        f'Dimensions-only value must not create pipe_item. Got: {types}'
+    )
+
+
+def test_material_keyword_with_only_dimensions_is_dropped() -> None:
+    """Material keyword + a dimensions-only value has no useful primary value
+    and no natural fallback type — must be dropped, not kept as
+    material_quantity with an empty value_candidates list."""
+    cands = _candidates_from_text('Газобетон 90х195')
+    types = [c['candidate_type'] for c in cands]
+    assert 'material_quantity' not in types, (
+        f'Dimensions-only value must not create material_quantity. Got: {types}'
+    )
+
+
+# ── A4.2.7: В-1/К1/ЭО route-label collision with АР opening codes ─────────
+
+def test_ambiguous_code_without_engineering_context_is_not_route_summary() -> None:
+    """A bare short code (В1) with a length value but no engineering context
+    word at all must not become route_summary — too ambiguous on its own."""
+    cands = _candidates_from_text('В1 22,0 п.м')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'В1 with no engineering context must not become route_summary. Got: {types}'
+    )
+
+
+def test_ambiguous_code_with_engineering_context_still_works() -> None:
+    """К1/В1 + an explicit engineering-context word (канализация/труба/
+    водоснабжение/…) must still produce route_summary."""
+    cands = _candidates_from_text('К1 канализация труба 5,0 п.м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'К1 with канализация/труба context must produce route_summary'
+
+
+def test_ambiguous_code_suppressed_near_door_schedule() -> None:
+    """'В-1' as a door-schedule opening code (АР) must not be read as the
+    water-supply route label, even though it has a quantity attached."""
+    cands = _candidates_from_text('Ведомость дверных проемов В-1 4 700×3 250 1 шт')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'В-1 next to a door-opening schedule must not become route_summary. Got: {types}'
+    )
+
+
+def test_unambiguous_word_label_also_suppressed_near_opening_schedule() -> None:
+    """Even an unambiguous word label (Дренаж) must not create route_summary
+    if it sits right next to a door/window opening schedule context."""
+    cands = _candidates_from_text('Ведомость дверных проемов дренаж 5,0 п.м')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Route label near door-opening schedule must not become route_summary. Got: {types}'
+    )

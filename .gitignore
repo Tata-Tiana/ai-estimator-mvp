@@ -3,6 +3,9 @@
 __pycache__/
 *.pyc
 
+# Session snapshot zips (file handoff between chats/agents) — repo root only
+/*.zip
+
 data/input/
 data/output/
 data/reference/unikma/*.json
@@ -21,6 +24,10 @@ experiments/demo_usv_app/assets/brick_house_logo_raw.png
 # Telegram bot uploads and logs
 experiments/earthworks_review_to_calculator/data/telegram_uploads/
 experiments/earthworks_review_to_calculator/data/telegram_logs/
+
+# MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
+# Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
+experiments/usv_strict_pdf_parser_v3/data_mkp1/
 
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*
