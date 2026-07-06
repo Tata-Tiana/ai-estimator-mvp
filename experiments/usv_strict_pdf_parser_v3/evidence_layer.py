@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import parser_paths
+from table_section_classifier import classify_table_section, infer_table_context_title
 from text_normalization import normalize_text
 
 
@@ -115,10 +116,8 @@ def _build_evidence_from_data(
         logical_type = meta_page.get('logical_sheet_type') or 'unknown'
         drawing_num = meta_page.get('drawing_sheet_number') or ''
 
-        # table_context_title: use the logical_sheet_title of the page as proxy.
-        # When a dedicated table-header extractor is added in A4.2.3+, it can
-        # override this field with a more specific title found in the page text.
-        table_context_title = logical_title
+        # table_context_title: infer from table data, falling back to sheet title.
+        table_context_title = infer_table_context_title(table, meta_page)
 
         # First non-empty row used as potential header context
         headers: list[str] = []
@@ -127,6 +126,34 @@ def _build_evidence_from_data(
             if candidate_headers:
                 headers = candidate_headers
                 break
+
+        # Table-level section classification.
+        # Only overrides page-level when table is more confident or page is unknown.
+        data_rows = [r for r in rows[1:] if any(c and c.strip() for c in r)]
+        tbl_cls = classify_table_section(
+            table_context_title, headers, data_rows[:3],
+            page_section_code=meta_page.get('section_code', ''),
+        )
+        page_sc = meta_page.get('section_code') or ''
+        page_conf = 1.0 if page_sc else 0.0
+        tbl_sc = tbl_cls['section_code']
+        tbl_conf = tbl_cls['confidence']
+
+        if tbl_sc and tbl_conf > page_conf:
+            # page=unknown → table wins straightforwardly
+            eff_section_code = tbl_sc
+            eff_section_conf = tbl_conf
+            eff_section_source = 'table'
+        elif tbl_sc and page_sc and tbl_sc != page_sc and tbl_conf >= 0.75:
+            # Mixed-page: table strongly disagrees with known page section.
+            # Only strong signals qualify (title 0.90 or headers 0.75 — not row 0.55).
+            eff_section_code = tbl_sc
+            eff_section_conf = tbl_conf
+            eff_section_source = 'table_override'
+        else:
+            eff_section_code = page_sc if page_sc else 'unknown'
+            eff_section_conf = page_conf
+            eff_section_source = 'page' if page_sc else 'unknown'
 
         for row_idx, row in enumerate(rows):
             raw = _row_text(row)
@@ -150,7 +177,13 @@ def _build_evidence_from_data(
                 'raw_text': raw,
                 'normalized_text': normalize_text(raw),
                 'table_context_title': table_context_title,
-                **_section_fields(meta_page),
+                'section_code': eff_section_code,
+                'page_section_code': page_sc if page_sc else 'unknown',
+                'section_confidence': eff_section_conf,
+                'section_source': eff_section_source,
+                'table_section_code': tbl_cls['section_code'],
+                'table_section_confidence': tbl_cls['confidence'],
+                'table_section_source': tbl_cls['source'],
                 'meta': {
                     'table_headers': headers,
                     'neighbor_cells': [c.strip() for c in row],
