@@ -63,6 +63,17 @@ _AR_OPENING_CONTEXT_RE = re.compile(
     re.IGNORECASE | re.UNICODE,
 )
 
+# Concrete grade notation (ГОСТ 26633: Бетон В22,5, В25 — compressive
+# strength class) must never be read as a В1/В2 water-supply route label
+# (A4.2.7.1). The "not followed by ,5" lookahead in _ROUTE_LABEL_CODE only
+# catches the comma-decimal form (В22,5); a bare "В25" still needs this
+# context check, and concrete spec rows commonly mention м3 volume, which
+# would otherwise satisfy _ROUTE_ENGINEERING_CONTEXT_RE's neighbours.
+_CONCRETE_GRADE_CONTEXT_RE = re.compile(
+    r'бетон|гост\s*26633|\bw\d+\b|\bf\d+\b|\bп\d\b',
+    re.IGNORECASE | re.UNICODE,
+)
+
 _ITOGO = re.compile(r'\bитого\b', re.IGNORECASE | re.UNICODE)
 
 _EARTHWORKS_KW = re.compile(
@@ -153,7 +164,17 @@ def _match_route_label(norm: str, ev: dict[str, Any]) -> re.Match[str] | None:
         return word_match
 
     code_match = _ROUTE_LABEL_CODE.search(norm)
-    if code_match and (
+    if not code_match:
+        return None
+
+    # A4.2.7.1: "В22"/"В25" concrete grade (ГОСТ 26633) must never be read as
+    # a В1/В2 water-supply route label, even though concrete spec rows often
+    # also carry a м3 volume that would otherwise satisfy the context check
+    # below.
+    if code_match.group(0)[0] in ('В', 'в') and _CONCRETE_GRADE_CONTEXT_RE.search(norm):
+        return None
+
+    if (
         _ROUTE_ENGINEERING_CONTEXT_RE.search(norm)
         or _ITOGO.search(norm)
         or _LENGTH_KW.search(norm)

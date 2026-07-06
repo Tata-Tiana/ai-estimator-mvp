@@ -554,3 +554,45 @@ def test_unambiguous_word_label_also_suppressed_near_opening_schedule() -> None:
     assert 'route_summary' not in types, (
         f'Route label near door-opening schedule must not become route_summary. Got: {types}'
     )
+
+
+# ── A4.2.7.1: concrete grade (ГОСТ 26633) vs В1/В2 route-label collision ───
+#
+# Found via real USV/TRC data: "Бетон В22,5 W6 F150 П4 ... м3" rows satisfy
+# the engineering-context requirement through the м3 volume alone, so В22/В25
+# concrete class notation was still being read as a route label.
+
+def test_concrete_grade_with_full_notation_is_not_route_summary() -> None:
+    """'Бетон В22,5 W6 F150 П4 ...' — full ГОСТ 26633 grade notation must
+    not become route_summary."""
+    cands = _candidates_from_text('Бетон В22,5 W6 F150 П4 42,56 м3')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Concrete grade notation must not become route_summary. Got: {types}'
+    )
+
+
+def test_concrete_grade_bare_is_not_route_summary() -> None:
+    """'Бетон В25 46,2 м3' — bare grade (no W/F/П suffixes) must still not
+    become route_summary; "Бетон" alone is enough context to suppress it."""
+    cands = _candidates_from_text('Бетон В25 46,2 м3')
+    types = [c['candidate_type'] for c in cands]
+    assert 'route_summary' not in types, (
+        f'Bare concrete grade must not become route_summary. Got: {types}'
+    )
+
+
+def test_water_supply_route_with_context_still_works() -> None:
+    """'В1 трасса водоснабжения длина 12 м' — real route label with explicit
+    context must still produce route_summary."""
+    cands = _candidates_from_text('В1 трасса водоснабжения длина 12 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'В1 with трасса/водоснабжения context must produce route_summary'
+
+
+def test_water_supply_route_with_length_depth_still_works() -> None:
+    """'В1 длина 12 м глубина 1,9 м' — length/depth context (no "Бетон"
+    nearby) must still produce route_summary."""
+    cands = _candidates_from_text('В1 длина 12 м глубина 1,9 м')
+    routes = [c for c in cands if c['candidate_type'] == 'route_summary']
+    assert routes, 'В1 with длина/глубина context must produce route_summary'
