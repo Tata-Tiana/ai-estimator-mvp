@@ -73,8 +73,8 @@ Step report:
 
 ### Step 2 — Common Section Contract Format
 
-- [ ] Design `section_contract.yaml` schema.
-- [ ] Include required blocks:
+- [x] Design `section_contract.yaml` schema.
+- [x] Include required blocks:
   - section metadata;
   - review parameters;
   - detail tables;
@@ -86,13 +86,17 @@ Step report:
   - estimate lines;
   - formula-ready/helper fields;
   - validation checks.
-- [ ] Create a report describing the schema and acceptance checks.
-- [ ] Do not yet implement every section.
-- [ ] Commit step 2 separately.
+- [x] Create a report describing the schema and acceptance checks.
+- [x] Do not yet implement every section.
+- [x] Commit step 2 separately.
 
 Suggested report:
 
 - `reports/step_02_section_contract_format.md`
+
+Template:
+
+- `templates/section_contract.template.yaml`
 
 ### Step 3 — WaterProofing Contract
 
@@ -260,9 +264,10 @@ Before committing:
 Completed:
 
 - Step 1 reference report was created.
+- Step 2 common section contract format was defined.
 
 Next:
 
-- Step 2: define the common `section_contract.yaml` format.
+- Step 3: create the first real section contract for `waterproofing`.
 
 Do not start coding all 8 sections at once.

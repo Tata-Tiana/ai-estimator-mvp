@@ -1,0 +1,228 @@
+# Section contract template for full_estimate_review_pipeline.
+#
+# Purpose:
+#   Describe one estimate section end-to-end:
+#   review workbook inputs -> normalized JSON -> calculator input -> calculator
+#   result -> formula-ready rows -> final estimate workbook.
+#
+# This is a template, not a complete section.
+
+contract_version: 0.1
+
+section:
+  code: example_section
+  name_ru: "Раздел сметы"
+  calculator_module: "experiments/example_calculator/example_calculator.py"
+  status: draft
+  owner_notes: ""
+
+source_files:
+  calculator: ""
+  calculator_readme: ""
+  existing_cases:
+    - ""
+  related_docs:
+    - ""
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+# Rows shown on sheet 01_Проверка проекта.
+# These are inputs or review decisions, not final estimate rows.
+review_parameters:
+  - key: example_project_value_m2
+    label_ru: "Проектный параметр"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: ""
+    calculator_input_path: "example_project_value_m2"
+    normalized_json_path: "sections.example_section.parameters.example_project_value_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м2"
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте значение; при необходимости заполните исправление."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: ""
+
+# Repeating structured data shown on sheet 03_Детали объемов.
+detail_tables:
+  - key: example_items
+    label_ru: "Детализация"
+    source_class: DETAIL_TABLE
+    required: false
+    review_sheet: "03_Детали объемов"
+    normalized_json_path: "sections.example_section.details.example_items"
+    calculator_input_path: "example_items"
+    columns:
+      - key: name
+        label_ru: "Наименование"
+        unit: ""
+        value_kind: string
+        required: true
+      - key: quantity
+        label_ru: "Количество"
+        unit: "шт"
+        value_kind: number
+        required: true
+    parser_mapping:
+      group_codes: []
+      expected_context: []
+      notes: ""
+    validation:
+      min_rows: 0
+      sum_checks: []
+    notes: ""
+
+# Rows shown on sheet 02_Цены себестоимости.
+price_keys:
+  - key: example_work_unit_price
+    estimate_line_code: example_estimate_line
+    label_ru: "Работа"
+    price_kind: work
+    unit: "м2"
+    required: true
+    default_source: fallback
+    registry_code: ""
+    fallback_key: "fallback.example_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+# Inputs not asked from the project because they are defaults/modes/catalog constants.
+defaults:
+  - key: example_coeff
+    label_ru: "Коэффициент"
+    source_class: DEFAULT
+    value: 1.0
+    unit: ""
+    calculator_input_path: "example_coeff"
+    source_note: "generic section default"
+    allow_override_later: false
+    notes: ""
+
+# Values derived by adapter/calculator/formula-ready, not copied from project.
+auto_calculated:
+  - key: example_derived_quantity
+    label_ru: "Расчетное количество"
+    source_class: AUTO_CALCULATED
+    formula: "example_project_value_m2 * example_coeff"
+    leaf_inputs:
+      - ref: review_parameters.example_project_value_m2
+        source_class: AUTO_PROJECT
+      - ref: defaults.example_coeff
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+# External inputs that cannot be derived from PDF/calculator and are not local defaults.
+supplier_inputs:
+  - key: example_supplier_volume_m3
+    label_ru: "Объем по раскладке поставщика"
+    source_class: SUPPLIER_INPUT
+    unit: "м3"
+    required: false
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "example_supplier_volume_m3"
+    notes: ""
+
+# Deterministic adapter rules: normalized review JSON -> calculator input.
+calculator_input_mapping:
+  - input_path: "example_project_value_m2"
+    from:
+      ref: "review_parameters.example_project_value_m2"
+      source_class: AUTO_PROJECT
+    required: true
+    transform: identity
+    fallback: null
+    notes: ""
+  - input_path: "example_coeff"
+    from:
+      ref: "defaults.example_coeff"
+      source_class: DEFAULT
+    required: true
+    transform: identity
+    fallback: 1.0
+    notes: ""
+
+# Final estimate rows produced by the calculator/formula-ready layer.
+# These are not rows of sheet 01_Проверка проекта.
+estimate_lines:
+  - code: example_estimate_line
+    name_ru: "Строка сметы"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=example_estimate_line]"
+    quantity:
+      formula: "example_project_value_m2 * example_coeff"
+      formula_model:
+        type: multiply
+        operands:
+          - ref: "helper_zone.example_project_value_m2"
+          - ref: "helper_zone.example_coeff"
+      leaf_inputs:
+        - ref: "review_parameters.example_project_value_m2"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.example_coeff"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: example_work_unit_price
+      fixed_amount_key: null
+    helper_cells:
+      - helper_id: example_project_value_m2
+        label_ru: "Проектный параметр"
+        source_ref: "review_parameters.example_project_value_m2"
+        source_class: AUTO_PROJECT
+        target_col_role: P
+      - helper_id: example_coeff
+        label_ru: "Коэффициент"
+        source_ref: "defaults.example_coeff"
+        source_class: DEFAULT
+        target_col_role: Q
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+
+workbook_layout:
+  review_workbook:
+    include_on_constructor: true
+    project_sheet: "01_Проверка проекта"
+    price_sheet: "02_Цены себестоимости"
+    details_sheet: "03_Детали объемов"
+    candidates_sheet: "05_Кандидаты parser"
+    raw_sheet: "06_Сырые данные parser"
+  final_estimate_workbook:
+    section_order: null
+    section_row_name: "Раздел сметы"
+    white_zone: "A:I"
+    calc_zone: "J:O"
+    helper_zone: "P:V"
+    mini_table_zone: "W:AA+"
+
+checks:
+  required_source_classes:
+    - AUTO_PROJECT
+    - DETAIL_TABLE
+    - DEFAULT
+    - AUTO_CALCULATED
+    - PRICE
+    - SUPPLIER_INPUT
+    - MANUAL_REVIEW
+  fail_if:
+    - "estimate line has no quantity formula or explicit non-formula reason"
+    - "leaf input has unknown source_class"
+    - "price used by estimate line has no price_key or explicit zero/fixed reason"
+    - "review row cannot be classified as parameter/detail/price/default/auto/supplier/manual"
+    - "formula-ready row count differs from calculator estimate line count without explanation"
