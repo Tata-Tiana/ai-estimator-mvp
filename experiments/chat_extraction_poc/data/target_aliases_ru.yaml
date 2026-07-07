@@ -1,0 +1,952 @@
+_meta:
+  purpose: "A6.4 universal Russian aliases for mapping PDF table rows to calculator target codes in chat extraction."
+  rules:
+    - "Use this dictionary after extracting raw_table_rows from the PDF."
+    - "Do not map a target_code by English/internal name alone."
+    - "Do not use project-specific values, page numbers, or known benchmark answers."
+    - "If aliases match more than one target, keep candidates and set needs_review=true."
+    - "expected_unit is mandatory: do not map m3 material volume to m2 formwork area."
+
+earthworks:
+  section_code: earthworks
+  ru_label: "Земляные работы"
+  pdf_aliases: ["земляные работы", "план котлована", "схема коммуникаций", "траншеи коммуникаций"]
+  expected_unit: null
+  table_hints: ["план котлована", "ведомость объемов", "экспликация траншей", "спецификация коммуникаций"]
+  required_context: ["котлован|транше|песок|геотекстил|PLANTER|коммуникац|труба"]
+  negative_context: ["кровля", "перекрытие", "перемычки"]
+  value_column_hint: ["кол-во", "количество", "объем", "площадь", "длина"]
+  unit_column_hint: ["ед. изм.", "ед.", "м3", "м2", "м.п.", "шт"]
+  notes: "Section header only; use child target codes for values."
+
+sand_volume:
+  section_code: earthworks
+  ru_label: "Объем песка для подушки"
+  pdf_aliases: ["Песок", "Песок под плиту", "Песчаная подушка", "Песок подушка", "Песок Купл", "Песок уплотненный"]
+  expected_unit: m3
+  table_hints: ["План котлована", "Спецификация материалов", "Ведомость объемов"]
+  required_context: ["песок|песчан"]
+  negative_context: ["кровля", "раствор", "цемент", "перемычк"]
+  value_column_hint: ["объем", "кол-во", "количество", "итого"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "This is a material volume; do not confuse with pit area or trench route volume."
+
+geotextile_area:
+  section_code: earthworks
+  ru_label: "Площадь геотекстиля как материала"
+  pdf_aliases: ["Геотекстиль", "Геотекстиль под плиту", "Геотекстиль под песчаную подушку", "Полотно геотекстильное"]
+  expected_unit: m2
+  table_hints: ["План котлована", "Спецификация материалов", "Ведомость материалов"]
+  required_context: ["геотекстил"]
+  negative_context: ["кровля", "стеклохолст", "мембрана", "опалубка"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Material-ordering area. If the PDF has only one geotextile area, it may also support geotextile_laying_area, but keep the same raw source and explain in notes."
+
+geotextile_laying_area:
+  section_code: earthworks
+  ru_label: "Площадь укладки геотекстиля"
+  pdf_aliases: ["Укладка геотекстиля", "Площадь укладки геотекстиля", "Геотекстиль", "Устройство геотекстиля", "Расстил геотекстиля"]
+  expected_unit: m2
+  table_hints: ["План котлована", "Ведомость объемов работ", "Спецификация материалов"]
+  required_context: ["геотекстил"]
+  negative_context: ["кровля", "стеклохолст", "мембрана", "опалубка"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Work/installation area. Do not invent it if only material quantity is shown; reuse the source only with needs_review=true unless the row explicitly means laying/installation."
+
+planter_membrane_area:
+  section_code: earthworks
+  ru_label: "Площадь профилированной мембраны PLANTER"
+  pdf_aliases: ["Профилированная мембрана PLANTER", "PLANTER", "Мембрана профилированная", "Профилированная мембрана"]
+  expected_unit: m2
+  table_hints: ["План котлована", "Спецификация материалов", "Основное сечение по фундаменту"]
+  required_context: ["PLANTER|профилирован", "мембран"]
+  negative_context: ["LOGICROOF", "ПВХ", "кровля", "пароизоляц"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Foundation/earthworks membrane, not roof PVC membrane."
+
+pit_area:
+  section_code: earthworks
+  ru_label: "Площадь котлована"
+  pdf_aliases: ["Площадь котлована", "Площадь разработки котлована", "Площадь основания котлована", "Котлован площадь"]
+  expected_unit: m2
+  table_hints: ["План котлована", "Ведомость объемов"]
+  required_context: ["площад", "котлован"]
+  negative_context: ["площадь кровли", "площадь опалубки", "площадь плиты", "площадь помещений", "площадь застройки"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Do not confuse with foundation slab area, roof area, or formwork area."
+
+pit_excavation_depth:
+  section_code: earthworks
+  ru_label: "Глубина разработки котлована"
+  pdf_aliases: ["Глубина котлована", "Глубина разработки", "Отметка дна котлована", "Дно котлована", "Глубина выемки"]
+  expected_unit: m
+  table_hints: ["План котлована", "Разрез котлована", "Основное сечение по фундаменту"]
+  required_context: ["глубин|дно|отметк", "котлован"]
+  negative_context: ["траншея", "кровля", "вентканал", "высота"]
+  value_column_hint: ["глубина", "отметка", "значение"]
+  unit_column_hint: ["м"]
+  notes: "If the source is an elevation mark, keep raw sign in raw_text and set needs_review=true."
+
+trench_volume_total:
+  section_code: earthworks
+  ru_label: "Готовый итоговый объем траншей"
+  pdf_aliases: ["Итого объем траншей", "Объем траншей итого", "Объем траншеи", "Траншеи объем", "Итого по траншеям"]
+  expected_unit: m3
+  table_hints: ["Таблица траншей", "Ведомость объемов траншей", "План котлована"]
+  required_context: ["транше"]
+  negative_context: ["песок", "котлован", "бетон", "обратная засыпка"]
+  value_column_hint: ["объем", "итого", "кол-во"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Only use an explicit total row/cell. Still extract trench_routes raw rows separately."
+
+manual_excavation_quantity_for_estimate:
+  section_code: earthworks
+  ru_label: "Объем ручной доработки грунта"
+  pdf_aliases: ["Ручная доработка грунта", "Доработка котлована вручную", "Ручная разработка", "Доработка грунта"]
+  expected_unit: m3
+  table_hints: ["Ведомость объемов работ", "Пояснительная записка"]
+  required_context: ["ручн|доработк|разработк"]
+  negative_context: ["механизирован", "экскаватор", "стоимость", "смена"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Often calculated by the estimator rather than present in PDF; return null if not explicit."
+
+trench_routes:
+  section_code: earthworks
+  ru_label: "Маршруты траншей и коммуникаций"
+  pdf_aliases: ["К1", "К2", "К3", "В1", "Вода", "Эл. кабель", "Дренаж", "Траншея", "Трасса коммуникаций"]
+  expected_unit: null
+  table_hints: ["План котлована", "Таблица траншей", "Схема коммуникаций"]
+  required_context: ["транше|трасс|длина|глубина|объем"]
+  negative_context: ["арматура", "балка", "перемычка"]
+  value_column_hint: ["длина", "глубина", "ширина", "объем", "маршрут"]
+  unit_column_hint: ["м", "м.п.", "м3"]
+  notes: "Extract as raw_table_rows and group items. Do not calculate missing route values unless explicitly shown."
+
+communications_pipe_items:
+  section_code: earthworks
+  ru_label: "Позиции труб коммуникаций"
+  pdf_aliases: ["Труба", "ПНД", "ПВХ", "гофрированная труба", "Канализация", "Водоснабжение", "Дренажная труба", "ливневая канализация"]
+  expected_unit: null
+  table_hints: ["Спецификация коммуникаций", "Схема коммуникаций", "Ведомость труб"]
+  required_context: ["труб|ПНД|ПВХ|гофр|дренаж|канализац"]
+  negative_context: ["арматура", "вентканал Schiedel", "водосточная воронка"]
+  value_column_hint: ["наименование", "диаметр", "длина", "кол-во", "количество"]
+  unit_column_hint: ["мм", "м", "м.п.", "шт"]
+  notes: "Do not output communications_length_m directly. Extract pipe rows with diameter, length, and quantity."
+
+foundation_slab:
+  section_code: foundation_slab
+  ru_label: "Фундаментная плита"
+  pdf_aliases: ["фундаментная плита", "плита фундамента", "спецификация к плану фундаментной плиты", "план фундаментной плиты"]
+  expected_unit: null
+  table_hints: ["Спецификация к плану фундаментной плиты", "План фундаментной плиты", "Основное сечение по фундаменту", "План термовставок"]
+  required_context: ["фундамент|плита"]
+  negative_context: ["перекрытие", "кровля"]
+  value_column_hint: ["кол-во", "количество", "объем", "площадь", "масса"]
+  unit_column_hint: ["ед. изм.", "м3", "м2", "м.п.", "кг"]
+  notes: "Section header only; use child target codes for values."
+
+concrete_project_volume:
+  section_code: foundation_slab
+  ru_label: "Бетон фундаментной плиты"
+  pdf_aliases: ["Бетон фундаментной плиты", "Бетон плиты фундамента", "Бетон В22,5", "Бетон В 22,5", "Ж/б плита фундамента", "Бетонная смесь для фундаментной плиты"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плану фундаментной плиты", "Основное сечение по фундаменту"]
+  required_context: ["бетон"]
+  negative_context: ["перемычк", "балк", "перекрыти", "стяжк", "ростверк"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Foundation slab concrete only; not lintel concrete and not floor slab concrete."
+
+eps_50_under_slab_volume:
+  section_code: foundation_slab
+  ru_label: "ЭППС 50 мм под фундаментной плитой"
+  pdf_aliases: ["ЭППС 50 мм низ плиты", "ЭППС 50мм под плитой", "Утепление под плитой ЭППС 50", "ЭППС-50мм низ", "ЭППС 50 мм"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плану фундаментной плиты", "Основное сечение по фундаменту"]
+  required_context: ["ЭППС", "50"]
+  negative_context: ["100 мм", "торец", "кровля", "перекрытие", "термовстав"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Volume of insulation below slab; do not confuse with m2 area or 100 mm edge insulation."
+
+eps_100_edge_volume:
+  section_code: foundation_slab
+  ru_label: "ЭППС 100 мм торец фундаментной плиты"
+  pdf_aliases: ["ЭППС 100 мм торец плиты", "ЭППС-100мм торец", "Утепление торца плиты ЭППС 100", "Вертикальное утепление плиты", "ЭППС 100 мм вертикальные поверхности"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плану фундаментной плиты", "Основное сечение по фундаменту"]
+  required_context: ["ЭППС", "100"]
+  negative_context: ["50 мм", "низ плиты", "кровля", "опалубка", "м2"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Material volume. Do not map formwork area or edge perimeter to this target."
+
+slab_side_formwork_area:
+  section_code: foundation_slab
+  ru_label: "Площадь опалубки бортов фундаментной плиты"
+  pdf_aliases: ["Опалубка бортов", "Площадь опалубки бортов", "Опалубка вертикальных поверхностей фундаментной плиты", "Бортовая опалубка", "Опалубка торца фундаментной плиты"]
+  expected_unit: m2
+  table_hints: ["Спецификация к плану фундаментной плиты", "Ведомость опалубки", "Основное сечение по фундаменту"]
+  required_context: ["опалубк"]
+  negative_context: ["фанер", "низ плиты", "горизонтальная", "перекрытие", "ЭППС", "утепление"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Formwork area in m2, not EPS volume in m3."
+
+thermal_insert_50_length:
+  section_code: foundation_slab
+  ru_label: "Длина термовставок 50 мм"
+  pdf_aliases: ["Термовставка 50 мм", "Термовставки 50мм", "Длина термовставок 50", "Термовкладыш 50 мм"]
+  expected_unit: linear_m
+  table_hints: ["План термовставок", "Спецификация термовставок"]
+  required_context: ["термовстав|термовкладыш", "50"]
+  negative_context: ["100 мм", "м3", "объем", "материал"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Length for work quantity, not material volume."
+
+thermal_insert_100_length:
+  section_code: foundation_slab
+  ru_label: "Длина термовставок 100 мм"
+  pdf_aliases: ["Термовставка 100 мм", "Термовставки 100мм", "Длина термовставок 100", "Термовкладыш 100 мм"]
+  expected_unit: linear_m
+  table_hints: ["План термовставок", "Спецификация термовставок"]
+  required_context: ["термовстав|термовкладыш", "100"]
+  negative_context: ["50 мм", "м3", "объем", "материал"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Length for work quantity, not material volume."
+
+thermal_insert_50_material_spec_qty:
+  section_code: foundation_slab
+  ru_label: "Материал термовставок 50 мм"
+  pdf_aliases: ["Материал термовставок 50 мм", "Термовставка 50 мм объем", "Термовкладыш 50 мм объем", "ЭППС термовставка 50"]
+  expected_unit: m3
+  table_hints: ["Спецификация термовставок", "План термовставок"]
+  required_context: ["термовстав|термовкладыш", "50"]
+  negative_context: ["100 мм", "м.п.", "длина", "работ"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Material volume, not length."
+
+thermal_insert_100_material_spec_qty:
+  section_code: foundation_slab
+  ru_label: "Материал термовставок 100 мм"
+  pdf_aliases: ["Материал термовставок 100 мм", "Термовставка 100 мм объем", "Термовкладыш 100 мм объем", "ЭППС термовставка 100"]
+  expected_unit: m3
+  table_hints: ["Спецификация термовставок", "План термовставок"]
+  required_context: ["термовстав|термовкладыш", "100"]
+  negative_context: ["50 мм", "м.п.", "длина", "работ"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Material volume, not length."
+
+foundation_rebar_items:
+  section_code: foundation_slab
+  ru_label: "Арматура фундаментной плиты"
+  pdf_aliases: ["Арматура фундаментной плиты", "Сетка фундаментной плиты", "Армирование фундаментной плиты", "A500C", "А500С", "А240"]
+  expected_unit: null
+  accepted_units: ["linear_m", "kg"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  table_hints: ["Спецификация к плану фундаментной плиты", "Ведомость арматуры", "План армирования"]
+  required_context: ["арматур|A500|А500|A240|А240|ф\\d|Ø"]
+  negative_context: ["перемычк", "перекрыти", "кладк"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
+  notes: "Extract row-by-row with diameter and steel class. Primary PDF quantity is often length in м/п plus mass_per_m_kg; weight_kg is null unless the PDF explicitly gives kg."
+
+waterproofing:
+  section_code: waterproofing
+  ru_label: "Гидроизоляция"
+  pdf_aliases: ["гидроизоляция", "вертикальная гидроизоляция", "отсечная гидроизоляция", "битумная мастика"]
+  expected_unit: null
+  table_hints: ["Основное сечение по фундаменту", "Спецификация гидроизоляционных материалов", "Пояснительная записка"]
+  required_context: ["гидроизоляц|мастик|отсеч"]
+  negative_context: ["кровля", "LOGICROOF"]
+  value_column_hint: ["кол-во", "количество", "площадь", "объем"]
+  unit_column_hint: ["м2", "м3", "шт"]
+  notes: "Section header only; use child target codes for values."
+
+waterproofing_eps_100_edge_volume:
+  section_code: waterproofing
+  ru_label: "ЭППС 100 мм для вертикального утепления в разделе гидроизоляции"
+  pdf_aliases: ["ЭППС 100 мм торец", "ЭППС 100 мм вертикальное утепление", "ЭППС-100мм утепление вертикальных поверхностей", "Утепление торца плиты"]
+  expected_unit: m3
+  table_hints: ["Основное сечение по фундаменту", "Спецификация гидроизоляции"]
+  required_context: ["ЭППС", "100"]
+  negative_context: ["50 мм", "низ плиты", "опалубка", "кровля", "м2"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Same physical row may also be relevant to foundation_slab eps_100_edge_volume; keep source explicit."
+
+load_bearing_walls_lintels:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Несущие стены и перемычки"
+  pdf_aliases: ["несущие стены", "кладочный план", "перемычки", "спецификация перемычек", "спецификация стен"]
+  expected_unit: null
+  table_hints: ["Кладочный план", "План перемычек", "Спецификация перемычек", "Спецификация газобетонных блоков"]
+  required_context: ["стен|кладк|перемычк|газобетон|блок"]
+  negative_context: ["кровля", "фундаментная плита", "плита перекрытия"]
+  value_column_hint: ["кол-во", "количество", "объем", "масса", "длина"]
+  unit_column_hint: ["м3", "кг", "м.п.", "шт"]
+  notes: "Section header only; use child target codes for values."
+
+gas_block_d400_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Газобетонный блок 600x400x250"
+  pdf_aliases: ["Газобетонный блок 600х400х250", "ГБ блок 600х400х250", "Блок 400 мм", "Наружные стены 400 мм", "КС_Блок 400"]
+  expected_unit: m3
+  table_hints: ["Спецификация газобетонных блоков", "Спецификация наружных стен"]
+  required_context: ["газобетон|ГБ|блок", "400"]
+  negative_context: ["600х250х250", "600х150х250", "парапет", "вентканал"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Main wall block volume; not vent-channel cladding block."
+
+gas_block_d500_250_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Газобетонный блок 600x250x250"
+  pdf_aliases: ["Газобетонный блок 600х250х250", "ГБ блок 600х250х250", "Блок 250 мм", "Внутренние стены 250 мм"]
+  expected_unit: m3
+  table_hints: ["Спецификация газобетонных блоков", "Спецификация внутренних стен"]
+  required_context: ["газобетон|ГБ|блок", "250"]
+  negative_context: ["600х400х250", "600х150х250", "вентканал", "парапет"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Wall block volume; table row adjacency can be tricky, preserve raw_table_rows."
+
+gas_block_d500_150_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Газобетонный блок 600x150x250"
+  pdf_aliases: ["Газобетонный блок 600х150х250", "ГБ блок 600х150х250", "Блок 150 мм", "Обкладка вентканалов"]
+  expected_unit: m3
+  table_hints: ["Спецификация газобетонных блоков", "Разрез по вентканалам"]
+  required_context: ["газобетон|ГБ|блок", "150"]
+  negative_context: ["600х400х250", "600х250х250"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "May belong to Schiedel cladding context; if so also map schiedel_gas_block_150_volume with same raw source."
+
+masonry_rebar_a500_d10_weight:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Арматура ф10 А500С для армирования кладки"
+  pdf_aliases: ["ф10 А500С армирование кладки", "Ø10 А500С кладка", "Арматура кладки ф10", "Блок 400мм армирование", "Блок 250мм армирование"]
+  expected_unit: null
+  accepted_units: ["linear_m", "kg"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  table_hints: ["Спецификация стен", "Узлы армирования кладки", "Пояснительная записка"]
+  required_context: ["ф10|Ø10", "А500|A500", "кладк|стен"]
+  negative_context: ["перемычк", "фундамент", "перекрыти", "балк"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
+  notes: "Несмотря на target_code с weight, первичное PDF-значение обычно в м/п. Не вычислять вес в GPT/Claude. Вернуть length_m и mass_per_m_kg; вес считает код. Do not confuse with floor slab or foundation rebar of the same diameter."
+
+lintel_concrete_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Бетон перемычек"
+  pdf_aliases: ["Бетон перемычек", "Бетон для перемычек", "Перемычка бетон", "Бетон В22,5 перемычки", "U-блок перемычка бетон"]
+  expected_unit: m3
+  table_hints: ["План перемычек", "Спецификация перемычек"]
+  required_context: ["бетон", "перемычк"]
+  negative_context: ["фундамент", "перекрыти", "плита", "балка"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Lintel concrete only; not slab concrete or beam concrete."
+
+main_wall_external_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Длина наружных несущих стен"
+  pdf_aliases: ["Длина наружных стен", "Периметр наружных стен", "Наружные несущие стены длина", "Кладка наружных стен"]
+  expected_unit: linear_m
+  table_hints: ["Кладочный план", "Ведомость стен"]
+  required_context: ["наружн", "стен", "длин|периметр"]
+  negative_context: ["перемычк", "перегород", "парапет", "кровля"]
+  value_column_hint: ["длина", "периметр", "кол-во"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "External load-bearing walls only."
+
+main_wall_reinforcement_rows:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Количество армированных рядов кладки"
+  pdf_aliases: ["армирование кладки ряд", "армированные ряды кладки", "каждый ряд армирования", "ряд армирования кладки"]
+  expected_unit: pcs
+  table_hints: ["Пояснительная записка", "Узлы армирования кладки", "Фасад/схема армирования кладки"]
+  required_context: ["кладк", "ряд|нит"]
+  negative_context: ["перемычк", "плита", "перекрытие", "фундамент", "вентканал", "обкладка"]
+  value_column_hint: ["кол-во", "количество", "ряд"]
+  unit_column_hint: ["шт", "ряд"]
+  notes: "Often appears as a note, not a clean table row; keep candidates if ambiguous."
+
+main_wall_400_reinforcement_threads:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Количество нитей армирования кладки для стены 400 мм"
+  pdf_aliases: ["стена 400 мм нитей армирования", "400 мм армирование кладки", "наружная стена 400 армирование", "блок 400 мм нитки"]
+  expected_unit: pcs
+  table_hints: ["Узлы армирования кладки", "Пояснительная записка"]
+  required_context: ["400", "нит|армирован"]
+  negative_context: ["250 мм", "перемычк", "плита", "вентканал", "обкладка"]
+  value_column_hint: ["кол-во", "количество", "нитей"]
+  unit_column_hint: ["шт"]
+  notes: "Thread count, not wall length and not rebar weight."
+
+main_wall_250_reinforcement_threads:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Количество нитей армирования кладки для стены 250 мм"
+  pdf_aliases: ["стена 250 мм нитей армирования", "250 мм армирование кладки", "внутренняя стена 250 армирование", "блок 250 мм нитки"]
+  expected_unit: pcs
+  table_hints: ["Узлы армирования кладки", "Пояснительная записка"]
+  required_context: ["250", "нит|армирован"]
+  negative_context: ["400 мм", "перемычк", "плита", "вентканал", "обкладка"]
+  value_column_hint: ["кол-во", "количество", "нитей"]
+  unit_column_hint: ["шт"]
+  notes: "Thread count, not wall length and not rebar weight."
+
+parapet_masonry_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Объем кладки парапетов"
+  pdf_aliases: ["Парапеты", "Кладка парапета", "Блок парапеты", "Парапет кладка", "Газобетон парапеты"]
+  expected_unit: m3
+  table_hints: ["Спецификация газобетонных блоков", "Схема фасада", "План кровли"]
+  required_context: ["парапет"]
+  negative_context: ["металлический отлив", "примыкание", "воронка", "перемычк"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Masonry volume for parapets, not parapet flashing length or roof abutment length."
+
+lintel_items:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Позиции перемычек"
+  pdf_aliases: ["Пм-", "Перемычка", "План перемычек", "Ведомость перемычек"]
+  expected_unit: null
+  table_hints: ["План перемычек", "Спецификация перемычек", "Ведомость перемычек"]
+  required_context: ["перемычк|Пм"]
+  negative_context: ["плита перекрытия", "балка перекрытия"]
+  value_column_hint: ["марка", "длина", "кол-во", "количество"]
+  unit_column_hint: ["м", "м.п.", "шт"]
+  notes: "Extract row-by-row with length and count."
+
+lintel_rebar_items:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Арматура перемычек"
+  pdf_aliases: ["Арматура перемычек", "ф12 А500С перемычки", "ф6 А240 хомуты", "Хомуты перемычек"]
+  expected_unit: null
+  accepted_units: ["linear_m", "kg"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  table_hints: ["Спецификация перемычек", "План перемычек"]
+  required_context: ["перемычк", "арматур|ф|Ø|А500|А240"]
+  negative_context: ["фундамент", "перекрытие", "кладка"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
+  notes: "Do not mix with masonry reinforcement. weight_kg is only for explicit kg rows; otherwise preserve length_m and mass_per_m_kg."
+
+vent_chimney_cladding_segments:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Сегменты обкладки вентканалов"
+  pdf_aliases: ["Обкладка вентканалов", "Кладка вентканалов", "Газобетонная обкладка", "Вентканал обкладка"]
+  expected_unit: null
+  table_hints: ["Разрез по вентканалам", "Спецификация вентканалов"]
+  required_context: ["вентканал|обкладк"]
+  negative_context: ["Schiedel VENT 2", "Schiedel VENT 3"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м", "м.п.", "шт"]
+  notes: "Segments for cladding work; not Schiedel block piece counts."
+
+floor_slab_1:
+  section_code: floor_slab_1
+  ru_label: "Плита перекрытия 1-го этажа"
+  pdf_aliases: ["плита перекрытия 1 этажа", "перекрытие 1-го этажа", "плита перекрытия на отм.", "спецификация к плите перекрытия 1 этажа"]
+  expected_unit: null
+  table_hints: ["План плиты перекрытия 1 этажа", "Спецификация к плите перекрытия 1 этажа", "Ведомость деталей плиты перекрытия 1 этажа"]
+  required_context: ["перекрыти|плита"]
+  negative_context: ["фундамент", "кровля", "2 этажа"]
+  value_column_hint: ["кол-во", "количество", "объем", "площадь", "масса"]
+  unit_column_hint: ["м3", "м2", "кг", "м.п."]
+  notes: "Section header only; use child target codes for values."
+
+floor_slab_1_concrete_volume:
+  section_code: floor_slab_1
+  ru_label: "Бетон плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Бетон плиты перекрытия 1 этажа", "Бетон ж/б плиты перекрытия", "Бетон перекрытия", "Бетон В22,5 плита перекрытия"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плите перекрытия 1 этажа"]
+  required_context: ["бетон", "перекрыти|плита"]
+  negative_context: ["балк", "перемычк", "фундамент", "2 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Concrete of the slab body only; if beams have separate concrete, extract separately as outside target or beam context with needs_review."
+
+floor_slab_1_eps100_volume:
+  section_code: floor_slab_1
+  ru_label: "ЭППС 100 мм для торца и низа плиты перекрытия 1-го этажа"
+  pdf_aliases: ["ЭППС 100 мм торец и низ плиты", "ЭППС-100мм утепление плиты перекрытия", "Утепление вертикальных поверхностей плиты", "Утепление под плитой перекрытия 1 этажа"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плите перекрытия 1 этажа", "Спецификация утепления"]
+  required_context: ["ЭППС", "100"]
+  negative_context: ["опалубка", "м2", "фундамент", "кровля", "2 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "EPS material volume in m3. Do not confuse with m2 formwork under slab or vertical formwork."
+
+floor_slab_1_under_slab_formwork_area:
+  section_code: floor_slab_1
+  ru_label: "Площадь опалубки под плитой перекрытия 1-го этажа"
+  pdf_aliases: ["Горизонтальная опалубка под плиту перекрытия", "Опалубка под плитой", "Площадь опалубки под плитой", "Горизонтальная опалубка"]
+  expected_unit: m2
+  table_hints: ["Ведомость опалубки плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
+  required_context: ["опалубк", "плит|перекрыти"]
+  negative_context: ["ЭППС", "утепление", "торец", "вертикальн", "балк", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Alias-only helper for chat extraction; not in compact targets, but prevents EPS/formwork confusion."
+
+floor_slab_1_edge_formwork_area:
+  section_code: floor_slab_1
+  ru_label: "Площадь опалубки торца плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Опалубка вертикальных поверхностей плиты", "Опалубка торца плиты", "Вертикальная опалубка плиты перекрытия", "Ведомость вертикальных поверхностей"]
+  expected_unit: m2
+  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
+  required_context: ["опалубк", "вертикальн|торц"]
+  negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Alias-only helper; keep separate from EPS 100 mm edge volume in m3."
+
+floor_slab_1_rebar_items:
+  section_code: floor_slab_1
+  ru_label: "Арматура плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Арматура плиты перекрытия 1 этажа", "Фоновое армирование", "Дополнительное армирование", "ф10 А500С", "ф12 А500С", "ф16 А500С", "ф25 А500С", "ф6 А240", "ф8 А240"]
+  expected_unit: null
+  accepted_units: ["linear_m", "kg"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  table_hints: ["Спецификация к плите перекрытия 1 этажа", "Ведомость деталей плиты перекрытия 1 этажа"]
+  required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
+  negative_context: ["кладк", "перемычк", "фундамент", "2 этажа"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
+  notes: "Extract rows by diameter and steel class; preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg."
+
+beam_items:
+  section_code: floor_slab_1
+  ru_label: "Ж/Б балки плиты перекрытия"
+  pdf_aliases: ["Балка Б-", "Ж/Б балка", "Б-1", "Б-2", "Б-3", "Ведомость балок", "Железобетонная балка"]
+  expected_unit: null
+  table_hints: ["Ведомость деталей плиты перекрытия", "План плиты перекрытия", "Спецификация балок"]
+  required_context: ["балк|Б-"]
+  negative_context: ["итого", "арматура", "перемычка", "стропильная"]
+  value_column_hint: ["марка", "длина", "ширина", "высота", "кол-во"]
+  unit_column_hint: ["мм", "м", "шт"]
+  notes: "Extract each beam row with dimensions. Do not use 'Итого' row as a beam item."
+
+floor_slab_1_beam_concrete_volume:
+  section_code: floor_slab_1
+  ru_label: "Бетон Ж/Б балок плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Бетон балок", "Бетон ж/б балок", "Объем бетона балок", "Итого бетон по балкам"]
+  expected_unit: m3
+  table_hints: ["Ведомость балок", "Спецификация балок"]
+  required_context: ["бетон", "балк"]
+  negative_context: ["плита перекрытия", "фундамент", "перемычк", "арматура"]
+  value_column_hint: ["объем", "итого", "кол-во"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Alias-only helper. Keep separate from floor_slab_1_concrete_volume and from total beam table row."
+
+floor_slab_1_beam_table_total:
+  section_code: floor_slab_1
+  ru_label: "Итого по таблице Ж/Б балок"
+  pdf_aliases: ["Итого по балкам", "Итого Ж/Б балки", "Всего балки", "Итого по ведомости балок"]
+  expected_unit: null
+  table_hints: ["Ведомость балок", "Спецификация балок"]
+  required_context: ["итого|всего", "балк"]
+  negative_context: ["бетон плиты", "арматура плиты", "перемычк"]
+  value_column_hint: ["итого", "всего", "объем", "кол-во"]
+  unit_column_hint: ["м3", "м2", "м.п.", "шт"]
+  notes: "Control row only; do not map automatically to slab concrete or beam items."
+
+floor_slab_2:
+  section_code: floor_slab_2
+  ru_label: "Плита перекрытия 2-го этажа"
+  pdf_aliases: ["плита перекрытия 2 этажа", "перекрытие 2-го этажа", "спецификация материалов на устройство ж/б плиты", "плита перекрытия на отм."]
+  expected_unit: null
+  table_hints: ["План плиты перекрытия 2 этажа", "Спецификация плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей плиты перекрытия 2 этажа"]
+  required_context: ["перекрыти|плита"]
+  negative_context: ["фундамент", "кровля", "1 этажа"]
+  value_column_hint: ["кол-во", "количество", "объем", "площадь", "масса"]
+  unit_column_hint: ["м3", "м2", "кг", "м.п."]
+  notes: "Section header only; use child target codes for values."
+
+floor_slab_2_concrete_volume:
+  section_code: floor_slab_2
+  ru_label: "Бетон плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Бетон плиты перекрытия 2 этажа", "Бетон ж/б плиты 2 этажа", "Бетон перекрытия 2 этажа", "Бетон плиты на отм."]
+  expected_unit: m3
+  table_hints: ["Спецификация плиты перекрытия 2 этажа"]
+  required_context: ["бетон", "перекрыти|плита"]
+  negative_context: ["балк", "перемычк", "фундамент", "1 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Slab concrete only; do not mix with roof or first-floor slab."
+
+floor_slab_2_eps100_edge_volume:
+  section_code: floor_slab_2
+  ru_label: "ЭППС 100 мм торец плиты перекрытия 2-го этажа"
+  pdf_aliases: ["ЭППС 100мм утепление вертикальных поверхностей плиты", "ЭППС 100 мм торец плиты", "Утепление торца плиты перекрытия 2 этажа", "ЭППС-100мм"]
+  expected_unit: m3
+  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Ведомость утепления"]
+  required_context: ["ЭППС", "100", "торц|вертикальн|утеплен"]
+  negative_context: ["опалубка", "м2", "горизонтальная", "фундамент", "кровля", "1 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Critical: m3 material volume. Never map m2 formwork area here."
+
+floor_slab_2_slab_edge_perimeter:
+  section_code: floor_slab_2
+  ru_label: "Периметр торца плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Периметр торца плиты", "Длина торца плиты", "Торец плиты периметр", "Периметр вертикальных поверхностей"]
+  expected_unit: linear_m
+  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
+  required_context: ["периметр|длина", "торц|вертикальн"]
+  negative_context: ["опалубка", "ЭППС", "площадь", "м2", "1 этажа", "фундамент"]
+  value_column_hint: ["длина", "периметр", "кол-во"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Linear perimeter, not area and not insulation volume."
+
+floor_slab_2_main_formwork_area:
+  section_code: floor_slab_2
+  ru_label: "Площадь опалубки под плитой перекрытия 2-го этажа"
+  pdf_aliases: ["Горизонтальная опалубка под плиту перекрытия 2 этажа", "Основная площадь опалубки", "Опалубка под плитой перекрытия", "Горизонтальная опалубка"]
+  expected_unit: m2
+  table_hints: ["Ведомость опалубки плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
+  required_context: ["опалубк", "плит|перекрыти"]
+  negative_context: ["торц", "вертикальн", "ЭППС", "утепление", "балк", "лестниц", "кровля", "1 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Critical: m2 horizontal/main formwork. Do not mix with roof area or another slab level."
+
+floor_slab_2_edge_formwork_area:
+  section_code: floor_slab_2
+  ru_label: "Площадь опалубки торца плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Опалубка под вертикальные поверхности ж/б плиты перекрытия 2 этажа", "Опалубка торца плиты 2 этажа", "Вертикальная опалубка плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей"]
+  expected_unit: m2
+  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
+  required_context: ["опалубк", "вертикальн|торц"]
+  negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "лестниц", "1 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Alias-only helper. Keep separate from EPS 100 mm edge volume."
+
+floor_slab_2_edge_insulation_height:
+  section_code: floor_slab_2
+  ru_label: "Высота утепления торца плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Высота утепления торца", "Высота торца плиты", "Толщина/высота вертикального утепления", "Утепление торца высота"]
+  expected_unit: m
+  table_hints: ["Разрез плиты перекрытия", "Ведомость вертикальных поверхностей"]
+  required_context: ["утеплен|торц|вертикальн", "высот|h"]
+  negative_context: ["площадь", "объем", "м2", "м3", "фундамент", "1 этажа"]
+  value_column_hint: ["высота", "значение", "h"]
+  unit_column_hint: ["м", "мм"]
+  notes: "Height/linear dimension only. If source is in mm, normalize but keep raw unit."
+
+floor_slab_2_rebar_items:
+  section_code: floor_slab_2
+  ru_label: "Арматура плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Арматура плиты перекрытия 2 этажа", "Фоновое армирование", "Дополнительное армирование", "ф10 А500С", "ф12 А500С", "ф16 А500С"]
+  expected_unit: null
+  accepted_units: ["linear_m", "kg"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Ведомость деталей плиты перекрытия 2 этажа"]
+  required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
+  negative_context: ["кладк", "перемычк", "фундамент", "1 этажа"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
+  notes: "Extract rows by diameter and steel class; keep main/additional rows as separate candidates when the same diameter appears several times. Do not calculate kg from linear meters in the chat."
+
+flat_roof:
+  section_code: flat_roof
+  ru_label: "Плоская кровля"
+  pdf_aliases: ["план кровли", "спецификация к плану кровли", "узлы кровли", "кровельное покрытие", "плоская кровля"]
+  expected_unit: null
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["кровл|парапет|воронк|мембран|LOGICROOF"]
+  negative_context: ["фундамент", "перекрытие"]
+  value_column_hint: ["кол-во", "количество", "площадь", "длина", "объем"]
+  unit_column_hint: ["м2", "м3", "м.п.", "шт"]
+  notes: "Section header only; use child target codes for values."
+
+project_spec_roof_area:
+  section_code: flat_roof
+  ru_label: "Площадь кровли по спецификации"
+  pdf_aliases: ["Площадь кровли", "Площадь кровли по спецификации", "Площадь кровли на отм.", "Кровля площадь"]
+  expected_unit: m2
+  table_hints: ["План кровли", "Спецификация к плану кровли"]
+  required_context: ["площад", "кровл"]
+  negative_context: ["пароизоляц", "мембран", "стеклохолст", "Биполь", "площадь помещений", "площадь застройки", "опалубка"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Roof area itself, not area of roof material layers."
+
+roof_eps_main_volume:
+  section_code: flat_roof
+  ru_label: "Объем ЭППС кровли"
+  pdf_aliases: ["ЭППС кровли", "ЭППС ТехноНИКОЛЬ", "Экструзионный пенополистирол кровля", "Теплоизоляция кровли"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плану кровли", "Пирог кровли"]
+  required_context: ["ЭППС|пенополистирол", "кровл|ТехноНИКОЛЬ"]
+  negative_context: ["фундамент", "перекрытие", "термовставка", "торец плиты", "м2"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Roof insulation volume; not slab EPS."
+
+roof_pvc_membrane_area:
+  section_code: flat_roof
+  ru_label: "Площадь ПВХ мембраны кровли"
+  pdf_aliases: ["Полимерная мембрана LOGICROOF", "ПВХ мембрана", "LOGICROOF V-RP", "Кровельная ПВХ-мембрана", "Армированная полимерная мембрана"]
+  expected_unit: m2
+  table_hints: ["Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["мембран|LOGICROOF|ПВХ"]
+  negative_context: ["PLANTER", "профилированная", "фундамент"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Roof PVC membrane, not foundation membrane."
+
+roof_internal_drains_count:
+  section_code: flat_roof
+  ru_label: "Количество воронок внутреннего водостока"
+  pdf_aliases: ["Воронка внутреннего водостока", "Водоприемная воронка", "Листвоуловитель с воронкой внутреннего водостока", "Воронка с листвоуловителем"]
+  expected_unit: pcs
+  table_hints: ["Спецификация к плану кровли", "План кровли", "Узлы кровли"]
+  required_context: ["воронк", "внутренн|водосток|водоприем"]
+  negative_context: ["парапетная"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Internal drain count; not parapet drains."
+
+roof_parapet_drains_count:
+  section_code: flat_roof
+  ru_label: "Количество парапетных воронок"
+  pdf_aliases: ["Парапетная воронка", "Воронка парапетная", "Парапетный водосток"]
+  expected_unit: pcs
+  table_hints: ["Спецификация к плану кровли", "План кровли", "Узлы кровли"]
+  required_context: ["воронк", "парапет"]
+  negative_context: ["внутреннего водостока", "листвоуловитель"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Parapet drain count; not internal roof drains."
+
+roof_area_level_1:
+  section_code: flat_roof
+  ru_label: "Площадь кровли уровня 1"
+  pdf_aliases: ["Площадь кровли на отм.", "Площадь кровли уровень", "Площадь кровли нижнего уровня", "Площадь кровли 1 уровня"]
+  expected_unit: m2
+  table_hints: ["План кровли", "Спецификация к плану кровли"]
+  required_context: ["площад", "кровл"]
+  negative_context: ["пароизоляц", "мембран", "стеклохолст", "опалубка", "помещен", "застройк"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Level numbering is project-dependent. If several roof areas exist, return candidates and set needs_review=true."
+
+roof_area_level_2:
+  section_code: flat_roof
+  ru_label: "Площадь кровли уровня 2"
+  pdf_aliases: ["Площадь кровли на отм.", "Площадь кровли уровень", "Площадь кровли верхнего уровня", "Площадь кровли 2 уровня"]
+  expected_unit: m2
+  table_hints: ["План кровли", "Спецификация к плану кровли"]
+  required_context: ["площад", "кровл"]
+  negative_context: ["пароизоляц", "мембран", "стеклохолст", "опалубка", "помещен", "застройк"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Do not copy a different level silently. If levels are unclear, return both as candidates."
+
+parapet_length_level_1:
+  section_code: flat_roof
+  ru_label: "Длина парапета уровня 1"
+  pdf_aliases: ["Длина парапета", "Парапет длина", "Металлический отлив парапетов", "Оцинкованный отлив парапета"]
+  expected_unit: linear_m
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["парапет"]
+  negative_context: ["примыкание", "вентканал", "воронка", "кладка парапета"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Parapet/flashing length, not parapet masonry volume."
+
+parapet_length_level_2:
+  section_code: flat_roof
+  ru_label: "Длина парапета уровня 2"
+  pdf_aliases: ["Длина парапета", "Парапет длина", "Металлический отлив парапетов", "Оцинкованный отлив парапета"]
+  expected_unit: linear_m
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["парапет"]
+  negative_context: ["примыкание", "вентканал", "воронка", "кладка парапета"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "If multiple levels are present, return candidates instead of forcing one."
+
+vent_wall_abutment_level_1:
+  section_code: flat_roof
+  ru_label: "Длина примыкания кровли к стенам уровня 1"
+  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
+  expected_unit: linear_m
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["примыкан", "стен|вертикальн"]
+  negative_context: ["парапет", "вентканал", "воронка"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Abutment to walls, not parapet length."
+
+vent_wall_abutment_level_2:
+  section_code: flat_roof
+  ru_label: "Длина примыкания кровли к стенам уровня 2"
+  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
+  expected_unit: linear_m
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
+  required_context: ["примыкан", "стен|вертикальн"]
+  negative_context: ["парапет", "вентканал", "воронка"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "If several levels are present, keep candidates."
+
+vent_shaft_abutment_count:
+  section_code: flat_roof
+  ru_label: "Количество примыканий к вентшахтам"
+  pdf_aliases: ["Примыкания к вентшахтам", "Примыкание к вентканалам", "Примыкания к вентканалам", "Вентшахта примыкание"]
+  expected_unit: pcs
+  table_hints: ["План кровли", "Узлы кровли"]
+  required_context: ["примыкан", "вентшахт|вентканал"]
+  negative_context: ["стены", "парапет"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Count of abutments, not linear length unless target outside list is added separately."
+
+roof_aerators_count:
+  section_code: flat_roof
+  ru_label: "Количество кровельных аэраторов"
+  pdf_aliases: ["Кровельный аэратор", "Аэратор кровли", "Аэраторы", "Аэратор"]
+  expected_unit: pcs
+  table_hints: ["Спецификация к плану кровли", "План кровли"]
+  required_context: ["аэратор"]
+  negative_context: ["воронка", "вентканал"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Piece count only."
+
+gas_block_wall_holes_count:
+  section_code: flat_roof
+  ru_label: "Количество отверстий в стенах из газоблока"
+  pdf_aliases: ["Отверстия в стенах из газоблока", "Отверстия в газобетоне", "Проходки через газоблок", "Отверстия под вентканалы"]
+  expected_unit: pcs
+  table_hints: ["Узлы кровли", "План кровли", "Пояснительная записка"]
+  required_context: ["отверсти|проходк", "газоблок|газобетон|стен"]
+  negative_context: ["воронка", "аэратор"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Piece count only."
+
+internal_drain_height_per_drain:
+  section_code: flat_roof
+  ru_label: "Высота внутреннего водостока на одну воронку"
+  pdf_aliases: ["Высота внутреннего водостока", "Высота стояка внутреннего водостока", "Внутренний водосток высота", "Воронка внутреннего водостока высота"]
+  expected_unit: m
+  table_hints: ["Узлы кровли", "Разрез кровли", "План кровли"]
+  required_context: ["водосток|воронк", "высот"]
+  negative_context: ["парапетная", "количество", "шт"]
+  value_column_hint: ["высота", "длина", "значение"]
+  unit_column_hint: ["м"]
+  notes: "Linear height per drain, not drain count."
+
+schiedel_vent_channels:
+  section_code: schiedel_vent_channels
+  ru_label: "Вентиляционные каналы Schiedel"
+  pdf_aliases: ["Schiedel", "VENT", "вентиляционные каналы", "разрез по вентканалам", "спецификация вентиляционных каналов"]
+  expected_unit: null
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["Schiedel|VENT|вентканал|вентиляц"]
+  negative_context: ["кровельная воронка", "водосток"]
+  value_column_hint: ["кол-во", "количество", "высота", "объем"]
+  unit_column_hint: ["шт", "м", "м3"]
+  notes: "Section header only; use child target codes for values."
+
+schiedel_vent_channel_2x_count:
+  section_code: schiedel_vent_channels
+  ru_label: "Количество Schiedel VENT 2"
+  pdf_aliases: ["Schiedel VENT 2", "VENT 2", "Вентиляционный канал Schiedel VENT 2", "Вентканал VENT 2"]
+  expected_unit: pcs
+  table_hints: ["Спецификация вентиляционных каналов", "Разрез по вентканалам"]
+  required_context: ["Schiedel|VENT", "2"]
+  negative_context: ["VENT 3", "газобетон", "обкладка"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Piece count for product type, not height."
+
+schiedel_vent_channel_3x_count:
+  section_code: schiedel_vent_channels
+  ru_label: "Количество Schiedel VENT 3"
+  pdf_aliases: ["Schiedel VENT 3", "VENT 3", "Вентиляционный канал Schiedel VENT 3", "Вентканал VENT 3"]
+  expected_unit: pcs
+  table_hints: ["Спецификация вентиляционных каналов", "Разрез по вентканалам"]
+  required_context: ["Schiedel|VENT", "3"]
+  negative_context: ["VENT 2", "газобетон", "обкладка"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Piece count for product type, not height."
+
+schiedel_gas_block_150_volume:
+  section_code: schiedel_vent_channels
+  ru_label: "Газобетонный блок 600x150x250 для обкладки вентканалов"
+  pdf_aliases: ["Газобетонный блок 600х150х250 обкладка вентканалов", "ГБ блок 600х150х250 вентканалы", "Блок 150 мм обкладка", "Газобетон обкладка вентканалов"]
+  expected_unit: m3
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["газобетон|ГБ|блок", "150|вентканал|обкладк"]
+  negative_context: ["600х400х250", "600х250х250", "наружные стены"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "May share the same source as load_bearing_walls_lintels gas_block_d500_150_volume if the section uses wall calculator input."
+
+vent_channel_1_height:
+  section_code: schiedel_vent_channels
+  ru_label: "Высота вентканала 1"
+  pdf_aliases: ["Высота вентканала", "Разрез по вентканалам", "Вентканал ВК-1", "ВК-1", "канал 1 высота"]
+  expected_unit: linear_m
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["вентканал|канал|ВК", "высот|разрез"]
+  negative_context: ["газобетон", "обкладка", "шт", "количество"]
+  value_column_hint: ["высота", "длина", "значение"]
+  unit_column_hint: ["м", "м.п.", "п.м."]
+  notes: "Channel numbering is project-dependent; return candidates if more than one height exists."
+
+vent_channel_2_height:
+  section_code: schiedel_vent_channels
+  ru_label: "Высота вентканала 2"
+  pdf_aliases: ["Высота вентканала", "Разрез по вентканалам", "Вентканал ВК-2", "ВК-2", "канал 2 высота"]
+  expected_unit: linear_m
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["вентканал|канал|ВК", "высот|разрез"]
+  negative_context: ["газобетон", "обкладка", "шт", "количество"]
+  value_column_hint: ["высота", "длина", "значение"]
+  unit_column_hint: ["м", "м.п.", "п.м."]
+  notes: "Channel numbering is project-dependent; keep alternatives if unclear."
+
+vent_channel_2_count:
+  section_code: schiedel_vent_channels
+  ru_label: "Количество вентканалов типа 2"
+  pdf_aliases: ["Количество вентканалов", "Вентканал тип 2", "ВК-2 количество", "VENT 2 количество"]
+  expected_unit: pcs
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["вентканал|VENT|ВК", "колич|шт"]
+  negative_context: ["высота", "газобетон", "обкладка"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["шт", "шт."]
+  notes: "Count only, not height."

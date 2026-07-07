@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+dist/
+input_pdfs/
+
+outputs/*
+!outputs/.gitkeep
+!outputs/README.md
+
+reports/*
+!reports/.gitkeep
+!reports/*.md
