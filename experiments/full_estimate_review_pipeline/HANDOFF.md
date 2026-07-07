@@ -59,6 +59,24 @@ Lesson: earthworks review input is small; the calculator/formula-ready layer exp
 
 ## Step Checklist
 
+### Step 0 — Pipeline Architecture
+
+- [x] Document the canonical pipeline:
+  - chat extraction / parser output;
+  - review Google workbook;
+  - normalized review JSON;
+  - calculator inputs;
+  - calculator results;
+  - formula_ready rows;
+  - final estimate workbook.
+- [x] State that review workbook and final estimate workbook are different entities.
+- [x] State that review workbook checks inputs and final estimate workbook shows estimate rows.
+- [x] Commit step 0 separately.
+
+Step report:
+
+- `reports/step_00_architecture.md`
+
 ### Step 1 — Earthworks Reference
 
 - [x] Identify earthworks reference files.
