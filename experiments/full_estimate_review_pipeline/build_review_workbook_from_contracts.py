@@ -97,6 +97,66 @@ CANONICAL_SECTIONS = [
     ("schiedel_vent_channels", "Schiedel / вентканалы"),
 ]
 
+GENERIC_DETAIL_TEMPLATES = [
+    {
+        "title": "Арматура",
+        "detail_table_key": "rebar_items",
+        "type": "Арматура",
+        "name": "Марка / позиция арматуры",
+        "diameter": "Диаметр, мм",
+        "length_one": "Длина, м/п",
+        "quantity": "Количество",
+        "total_length": "Итоговая длина, м/п",
+        "fragment": "Для foundation/floor slabs/load-bearing/lintels: spec_length_m является первичной единицей, если PDF дает м/п.",
+    },
+    {
+        "title": "Балки",
+        "detail_table_key": "beam_items",
+        "type": "Балка",
+        "name": "Балка / позиция",
+        "length": "Длина, м",
+        "depth": "Высота, м",
+        "width": "Ширина, м",
+        "quantity": "Количество",
+        "fragment": "Для плит перекрытия с балками: геометрия балки и/или строка спецификации Ж/Б балок.",
+    },
+    {
+        "title": "Перемычки",
+        "detail_table_key": "lintel_items",
+        "type": "Перемычка",
+        "name": "Перемычка / U-блок",
+        "length": "Длина, м",
+        "quantity": "Количество",
+        "total_length": "Итоговая длина, м",
+        "fragment": "Для load_bearing_walls_lintels: длины перемычек и арматуры перемычек.",
+    },
+    {
+        "title": "Вентканалы / сегменты",
+        "detail_table_key": "vent_chimney_cladding_segments",
+        "type": "Вентканал",
+        "name": "Сегмент / канал",
+        "length": "Длина, м",
+        "quantity": "Количество",
+        "fragment": "Для Schiedel и обкладки вентканалов, если PDF дает повторяющиеся сегменты.",
+    },
+    {
+        "title": "Спецификация материалов",
+        "detail_table_key": "material_spec_rows",
+        "type": "Материал",
+        "name": "Материал / строка спецификации",
+        "volume": "Объем, м3",
+        "quantity": "Количество",
+        "fragment": "Для ЭППС, бетона, опалубки, мембран и других строк спецификаций, которые не являются отдельной геометрией.",
+    },
+    {
+        "title": "Сырые строки таблиц",
+        "detail_table_key": "raw_table_rows",
+        "type": "Raw row",
+        "name": "Сырая строка PDF",
+        "fragment": "Raw table row from chat extraction before mapping to target_code.",
+    },
+]
+
 
 def load_yaml_contract(path: Path) -> dict[str, Any]:
     ruby = (
@@ -161,6 +221,45 @@ def restyle_section_bands(ws) -> None:
             for cell in row:
                 cell.fill = FILL_SECTION
                 cell.font = Font(name=FONT_NAME, bold=True, color="FFFFFF", size=10)
+
+
+def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
+    for col in range(1, max_col + 1):
+        cell = ws.cell(row_idx, col)
+        cell.fill = FILL_TECH
+        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+        cell.alignment = Alignment(wrap_text=True, vertical="center")
+        cell.border = BORDER_THIN
+
+
+def append_block(ws, title: str, headers: list[str], rows: list[list[Any]]) -> None:
+    if ws.max_row == 1 and not ws.cell(1, 1).value:
+        ws.cell(1, 1).value = title
+    else:
+        ws.append([])
+        ws.append([title])
+    style_block_title_row(ws, ws.max_row, max(len(headers), 1))
+    ws.append(headers)
+    style_header_row(ws, ws.max_row, len(headers))
+    for row in rows:
+        ws.append(row)
+
+
+def restyle_block_sheet(ws) -> None:
+    for row_idx in range(1, ws.max_row + 1):
+        first_value = cell_text(ws.cell(row_idx, 1).value)
+        if first_value.startswith("Блок "):
+            style_block_title_row(ws, row_idx, ws.max_column)
+            if row_idx + 1 <= ws.max_row:
+                style_header_row(ws, row_idx + 1, ws.max_column)
+
+
+def block_header_rows(ws) -> set[int]:
+    rows = set()
+    for row_idx in range(1, ws.max_row + 1):
+        if cell_text(ws.cell(row_idx, 1).value).startswith("Блок ") and row_idx + 1 <= ws.max_row:
+            rows.add(row_idx + 1)
+    return rows
 
 
 def section_name(contract: dict[str, Any]) -> str:
@@ -297,6 +396,7 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("02_Цены себестоимости")
     ws.append(PRICE_HEADERS)
     for contract in contracts:
+        append_section_band(ws, [section_name(contract)], len(PRICE_HEADERS))
         for price in contract.get("price_keys") or []:
             ws.append([
                 price.get("label_ru", ""),
@@ -319,6 +419,7 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
                 cell.fill = FILL_PRICE
 
     apply_table_style(ws)
+    restyle_section_bands(ws)
     set_widths(ws, {
         "A": 38,
         "B": 24,
@@ -369,6 +470,27 @@ def detail_template_row(contract: dict[str, Any], table: dict[str, Any]) -> list
     ]
 
 
+def generic_detail_row(template: dict[str, Any]) -> list[Any]:
+    return [
+        template.get("type", ""),
+        template.get("name", ""),
+        template.get("length", ""),
+        template.get("depth", ""),
+        template.get("width", ""),
+        template.get("volume", ""),
+        template.get("diameter", ""),
+        template.get("length_one", ""),
+        template.get("quantity", ""),
+        template.get("total_length", ""),
+        "",
+        "",
+        template.get("fragment", ""),
+        "",
+        "template",
+        template.get("detail_table_key", ""),
+    ]
+
+
 def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("03_Детали объемов")
     ws.append(DETAIL_HEADERS)
@@ -381,6 +503,12 @@ def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
             ws.append(detail_template_row(contract, table))
             for cell in ws[ws.max_row]:
                 cell.fill = FILL_DETAIL
+    append_section_band(ws, ["Будущие detail-шаблоны"], len(DETAIL_HEADERS))
+    for template in GENERIC_DETAIL_TEMPLATES:
+        append_section_band(ws, [template["title"]], len(DETAIL_HEADERS))
+        ws.append(generic_detail_row(template))
+        for cell in ws[ws.max_row]:
+            cell.fill = FILL_DETAIL
 
     apply_table_style(ws)
     restyle_section_bands(ws)
@@ -425,19 +553,31 @@ def build_instruction_sheet(wb: Workbook) -> None:
 
 def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("05_Кандидаты parser")
-    ws.append([
-        "section_code",
-        "section_name",
-        "review_parameters",
-        "price_keys",
-        "detail_tables",
-        "defaults",
-        "auto_calculated",
-        "estimate_lines",
-        "source_files",
-    ])
+    total_review = sum(len(contract.get("review_parameters") or []) for contract in contracts)
+    total_prices = sum(len(contract.get("price_keys") or []) for contract in contracts)
+    total_detail = sum(len(contract.get("detail_tables") or []) for contract in contracts)
+    total_defaults = sum(len(contract.get("defaults") or []) for contract in contracts)
+    total_auto = sum(len(contract.get("auto_calculated") or []) for contract in contracts)
+
+    append_block(
+        ws,
+        "Блок 0: Summary запуска",
+        ["Показатель", "Значение", "Комментарий"],
+        [
+            ["source", "section_contracts", "workbook собран локально из section_contract.yaml"],
+            ["sections_count", len(contracts), "сколько section contracts загружено"],
+            ["review_parameters_count", total_review, "сколько строк проверки проекта"],
+            ["price_rows_count", total_prices, "сколько строк цен"],
+            ["detail_templates_count", total_detail + len(GENERIC_DETAIL_TEMPLATES), "сколько detail-шаблонов"],
+            ["defaults_count", total_defaults, "числовые default/ручные параметры остаются в contracts"],
+            ["auto_calculated_count", total_auto, "поля, которые должны считаться кодом, а не извлекаться из PDF"],
+            ["parser_candidates_connected", "нет", "будет заполнено на шаге extraction JSON -> workbook"],
+        ],
+    )
+
+    contract_rows = []
     for contract in contracts:
-        ws.append([
+        contract_rows.append([
             section_code(contract),
             section_name(contract),
             len(contract.get("review_parameters") or []),
@@ -448,26 +588,81 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
             len(contract.get("estimate_lines") or []),
             json.dumps(contract.get("source_files") or {}, ensure_ascii=False),
         ])
+    append_block(
+        ws,
+        "Блок 1: section contracts",
+        [
+            "section_code",
+            "section_name",
+            "review_parameters",
+            "price_keys",
+            "detail_tables",
+            "defaults",
+            "auto_calculated",
+            "estimate_lines",
+            "source_files",
+        ],
+        contract_rows,
+    )
+
+    detail_rows = []
+    for contract in contracts:
+        for table in contract.get("detail_tables") or []:
+            detail_rows.append([
+                table.get("key", ""),
+                table.get("label_ru", ""),
+                "contract",
+                section_code(contract),
+                "детальная таблица уже описана в section_contract.yaml",
+            ])
+    for template in GENERIC_DETAIL_TEMPLATES:
+        detail_rows.append([
+            template.get("detail_table_key", ""),
+            template.get("title", ""),
+            template.get("type", ""),
+            "future sections",
+            template.get("fragment", ""),
+        ])
+    append_block(
+        ws,
+        "Блок 2: planned detail groups",
+        ["detail_table_key", "title", "type", "used_for", "comment"],
+        detail_rows,
+    )
+
     apply_table_style(ws)
+    restyle_block_sheet(ws)
     set_widths(ws, {
         "A": 24,
         "B": 34,
-        "C": 18,
-        "D": 12,
-        "E": 14,
-        "F": 10,
-        "G": 16,
-        "H": 14,
+        "C": 28,
+        "D": 22,
+        "E": 34,
+        "F": 18,
+        "G": 22,
+        "H": 18,
         "I": 100,
     })
-    for row in ws.iter_rows(min_row=2):
+    header_rows = block_header_rows(ws)
+    for row in ws.iter_rows(min_row=1):
         for cell in row:
-            cell.fill = FILL_TECH
+            if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
+                cell.fill = FILL_TECH
 
 
 def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("06_Сырые данные parser")
-    ws.append(["section_code", "block", "json"])
+    append_block(
+        ws,
+        "Блок 0: Summary запуска",
+        ["Показатель", "Значение", "Комментарий"],
+        [
+            ["source", "section_contracts", "сырые parser/chat данные подключаются следующим шагом"],
+            ["sections_count", len(contracts), "сколько section contracts загружено"],
+            ["raw_parser_json_connected", "нет", "пока лист показывает сырье contracts для диагностики"],
+        ],
+    )
+    raw_rows = []
     for contract in contracts:
         for block in [
             "section",
@@ -478,16 +673,20 @@ def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> 
             "auto_calculated",
             "estimate_lines",
         ]:
-            ws.append([
+            raw_rows.append([
                 section_code(contract),
                 block,
                 json.dumps(contract.get(block), ensure_ascii=False, indent=2),
             ])
+    append_block(ws, "Блок 1: raw contract blocks", ["section_code", "block", "json"], raw_rows)
     apply_table_style(ws)
+    restyle_block_sheet(ws)
     set_widths(ws, {"A": 24, "B": 24, "C": 120})
-    for row in ws.iter_rows(min_row=2):
+    header_rows = block_header_rows(ws)
+    for row in ws.iter_rows(min_row=1):
         for cell in row:
-            cell.fill = FILL_TECH
+            if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
+                cell.fill = FILL_TECH
 
 
 def build_workbook(contract_paths: list[Path], output_path: Path) -> dict[str, Any]:

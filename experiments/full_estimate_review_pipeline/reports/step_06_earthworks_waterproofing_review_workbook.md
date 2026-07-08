@@ -63,10 +63,10 @@ The generated workbook contains:
 06_Сырые данные parser
 ```
 
-Sheets `05` and `06` are technical sheets, named to match the existing Google review workbook convention. In this contract-only prototype they contain contract-level diagnostics:
+Sheets `05` and `06` are technical sheets, named to match the existing Google review workbook convention. In this contract-only prototype they use block-style diagnostics:
 
-- `05_Кандидаты parser`: counts and source files per section until real parser candidates are connected;
-- `06_Сырые данные parser`: raw JSON form of contract blocks until real raw parser data is connected.
+- `05_Кандидаты parser`: run summary, section contract counts, and planned detail groups until real parser candidates are connected;
+- `06_Сырые данные parser`: run summary and raw JSON form of contract blocks until real raw parser data is connected.
 
 ## 4. Counts
 
@@ -76,10 +76,10 @@ Builder output:
 |---|---:|
 | project parameter rows | 9 |
 | price rows | 18 |
-| detail table templates | 2 |
+| detail table templates | 8 |
 | `01_Проверка проекта` max row | 15 |
 | `02_Цены себестоимости` max row | 21 |
-| `03_Детали объемов` max row | 4 |
+| `03_Детали объемов` max row | 17 |
 
 Expected:
 
@@ -90,6 +90,7 @@ Expected:
 - waterproofing price rows: 6;
 - total price rows: 18;
 - earthworks detail tables: `trench_routes`, `communications_pipe_items`;
+- generic future detail templates: `rebar_items`, `beam_items`, `lintel_items`, `vent_chimney_cladding_segments`, `material_spec_rows`, `raw_table_rows`;
 - waterproofing detail tables: none.
 
 ## 5. Layout Decisions
@@ -105,6 +106,19 @@ Rows are grouped by section:
 ```
 
 This matches the estimate-like grouping requested for the review workbook, while keeping the review workbook separate from the final estimate workbook.
+
+`02_Цены себестоимости` is also grouped by section, so Elena can review prices in the same mental order as the estimate sections. The visible price sheet keeps only user-facing columns; technical keys remain hidden.
+
+`03_Детали объемов` now contains the two earthworks reference detail tables plus empty future templates for the repeated PDF/table structures we already know will be needed:
+
+- trenches;
+- communications;
+- rebar;
+- beams;
+- lintels;
+- Schiedel / vent-channel segments;
+- material specification rows;
+- raw PDF table rows before target mapping.
 
 Visual rule:
 
@@ -138,7 +152,7 @@ Result:
 {
   "project_parameter_rows": 9,
   "price_rows": 18,
-  "detail_template_rows": 2
+  "detail_template_rows": 8
 }
 ```
 
