@@ -1,0 +1,402 @@
+contract_version: 0.1
+
+section:
+  code: flat_roof
+  name_ru: "Кровля"
+  calculator_module: "experiments/flat_roof_calculator/calculator.py"
+  status: draft
+  owner_notes: "Production contract: detailed project geometry plus supplier/manual inputs; no old fixture values or Excel-match overrides."
+
+source_files:
+  calculator: "experiments/flat_roof_calculator/calculator.py"
+  calculator_readme: "experiments/flat_roof_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "docs/report_flat_roof_calculator.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: roof_area_level_1_m2
+    label_ru: "Площадь кровли уровня 1"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_area_level_1"
+    calculator_input_path: "roof_area_level_1_m2"
+    normalized_json_path: "sections.flat_roof.parameters.roof_area_level_1_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_area_level_1", "project_spec_roof_area"]
+      aliases_ru: ["площадь кровли уровень 1", "площадь кровли нижнего уровня", "площадь кровли на отм."]
+      expected_unit: "м2"
+      notes: "Level numbering is project-dependent; keep candidates when ambiguous."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь кровли первого уровня."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with PVC membrane/geotextile material areas."
+
+  - key: roof_area_level_2_m2
+    label_ru: "Площадь кровли уровня 2"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_area_level_2"
+    calculator_input_path: "roof_area_level_2_m2"
+    normalized_json_path: "sections.flat_roof.parameters.roof_area_level_2_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_area_level_2", "project_spec_roof_area"]
+      aliases_ru: ["площадь кровли уровень 2", "площадь кровли верхнего уровня", "площадь кровли на отм."]
+      expected_unit: "м2"
+      notes: "Use 0 only if the project has no second roof level and this is confirmed."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь кровли второго уровня или подтвердите 0."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: project_spec_roof_area_m2
+    label_ru: "Площадь кровли по спецификации, контроль"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "project_spec_roof_area"
+    calculator_input_path: "project_spec_roof_area_m2"
+    normalized_json_path: "sections.flat_roof.parameters.project_spec_roof_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["project_spec_roof_area"]
+      aliases_ru: ["площадь кровли по спецификации", "площадь кровли", "кровля площадь"]
+      expected_unit: "м2"
+      notes: "Control value only; detailed roof level areas are production source."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если есть отдельная итоговая площадь кровли, проверьте ее как контроль."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not use automatically instead of detailed roof areas."
+
+  - key: parapet_length_level_1_m
+    label_ru: "Длина парапета уровня 1"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_length_level_1"
+    calculator_input_path: "parapet_length_level_1_m"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_length_level_1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_length_level_1", "roof_parapet_length"]
+      aliases_ru: ["длина парапета уровень 1", "парапет кровли длина", "периметр парапета"]
+      expected_unit: "мп"
+      notes: "Linear length, not parapet masonry volume."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину парапета первого уровня."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: parapet_length_level_2_m
+    label_ru: "Длина парапета уровня 2"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_length_level_2"
+    calculator_input_path: "parapet_length_level_2_m"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_length_level_2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_length_level_2", "roof_parapet_length"]
+      aliases_ru: ["длина парапета уровень 2", "парапет кровли длина", "периметр парапета"]
+      expected_unit: "мп"
+      notes: "Use 0 only if this level is absent and confirmed."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину парапета второго уровня или подтвердите 0."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: vent_wall_abutment_level_1_m
+    label_ru: "Длина примыканий к вентшахтам уровня 1"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_vent_wall_abutment_level_1"
+    calculator_input_path: "vent_wall_abutment_level_1_m"
+    normalized_json_path: "sections.flat_roof.parameters.vent_wall_abutment_level_1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_vent_wall_abutment_level_1", "roof_vent_wall_abutment_length"]
+      aliases_ru: ["примыкание к вентшахтам уровень 1", "длина примыканий вентшахт", "вентшахта примыкание"]
+      expected_unit: "мп"
+      notes: "Linear abutment length."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину примыканий к вентшахтам первого уровня."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: vent_wall_abutment_level_2_m
+    label_ru: "Длина примыканий к вентшахтам уровня 2"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_vent_wall_abutment_level_2"
+    calculator_input_path: "vent_wall_abutment_level_2_m"
+    normalized_json_path: "sections.flat_roof.parameters.vent_wall_abutment_level_2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_vent_wall_abutment_level_2", "roof_vent_wall_abutment_length"]
+      aliases_ru: ["примыкание к вентшахтам уровень 2", "длина примыканий вентшахт", "вентшахта примыкание"]
+      expected_unit: "мп"
+      notes: "Use 0 only if this level is absent and confirmed."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину примыканий к вентшахтам второго уровня или подтвердите 0."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: roof_aerators_count
+    label_ru: "Аэраторы кровельные"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_aerators_count"
+    calculator_input_path: "roof_aerators_count"
+    normalized_json_path: "sections.flat_roof.parameters.roof_aerators_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_aerators_count"]
+      aliases_ru: ["аэратор кровельный", "аэраторы кровли"]
+      expected_unit: "шт"
+      notes: "Count of roof aerators."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте количество кровельных аэраторов."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: parapet_roof_drains_count
+    label_ru: "Парапетные воронки"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_drains_count"
+    calculator_input_path: "parapet_roof_drains_count"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_roof_drains_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_drains_count"]
+      aliases_ru: ["парапетная воронка", "воронка парапетная", "парапетный водосток"]
+      expected_unit: "шт"
+      notes: "Parapet drain count; not internal roof drains."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте количество парапетных воронок."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: internal_roof_drains_count
+    label_ru: "Воронки внутреннего водостока"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_internal_drains_count"
+    calculator_input_path: "internal_roof_drains_count"
+    normalized_json_path: "sections.flat_roof.parameters.internal_roof_drains_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_internal_drains_count"]
+      aliases_ru: ["воронка внутреннего водостока", "водоприемная воронка", "внутренний водосток"]
+      expected_unit: "шт"
+      notes: "Internal drain count; not parapet drains."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте количество воронок внутреннего водостока."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: internal_drain_height_per_drain_m
+    label_ru: "Высота внутреннего водостока на одну воронку"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_internal_drain_height_per_drain"
+    calculator_input_path: "internal_drain_height_per_drain_m"
+    normalized_json_path: "sections.flat_roof.parameters.internal_drain_height_per_drain_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_internal_drain_height_per_drain"]
+      aliases_ru: ["внутренний водосток высота", "длина стояка водостока", "ПВХ Ф110 высота"]
+      expected_unit: "м"
+      notes: "Project input, not permanent default."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте высоту/длину внутреннего водостока на одну воронку."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+supplier_inputs:
+  - {key: roof_work_coeff, label_ru: "Коэффициент работ кровли", unit: "", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_work_coeff", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_work_coeff.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте коэффициент работ кровли."}, notes: "Project/business parameter; do not hardcode."}
+  - {key: eps50_supplier_required_volume_m3, label_ru: "ЭППС 50 мм, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "eps50_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.eps50_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем ЭППС 50 мм от поставщика/Технониколь."}, notes: "Slope/EPS supplier volume; not geometry-derived."}
+  - {key: slope_plate_a_supplier_required_volume_m3, label_ru: "SLOPE плиты A, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_a_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_a_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит A от поставщика."}, notes: ""}
+  - {key: slope_plate_b_supplier_required_volume_m3, label_ru: "SLOPE плиты B, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_b_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_b_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит B от поставщика."}, notes: ""}
+  - {key: slope_plate_j_supplier_required_volume_m3, label_ru: "SLOPE плиты J, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_j_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_j_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит J от поставщика."}, notes: ""}
+  - {key: slope_plate_k_supplier_required_volume_m3, label_ru: "SLOPE плиты K, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_k_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_k_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит K от поставщика."}, notes: ""}
+  - {key: vent_shaft_abutment_count, label_ru: "Примыкания к вентшахтам, количество", unit: "шт", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "vent_shaft_abutment_count", normalized_json_path: "sections.flat_roof.supplier_inputs.vent_shaft_abutment_count.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте количество примыканий к вентшахтам."}, notes: ""}
+  - {key: gas_block_wall_holes_count, label_ru: "Отверстия в стенах из газоблока", unit: "шт", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "gas_block_wall_holes_count", normalized_json_path: "sections.flat_roof.supplier_inputs.gas_block_wall_holes_count.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте количество отверстий в газоблоке."}, notes: "May differ from parapet drain count."}
+  - {key: roof_crane_lifting_shifts, label_ru: "Подъем материалов автокраном", unit: "смена", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_crane_lifting_shifts", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_crane_lifting_shifts.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите смены автокрана для кровли."}, notes: ""}
+  - {key: roof_consumables_total_raw, label_ru: "Расходные материалы кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_consumables_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_consumables_total_raw.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите сумму расходников кровли или будущую формулу."}, notes: "Manual/fixed pending formula confirmation."}
+  - {key: roof_waste_removal_trucks, label_ru: "Вывоз мусора кровли", unit: "маш", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_waste_removal_trucks", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_waste_removal_trucks.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите количество машин вывоза мусора по кровле."}, notes: ""}
+  - {key: roof_logistics_and_supply_total_raw, label_ru: "Логистика и снабжение кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_logistics_and_supply_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_logistics_and_supply_total_raw.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите сумму логистики и снабжения кровли или будущую формулу."}, notes: "Manual/fixed pending formula confirmation."}
+  - {key: technical_supervision_work_total, label_ru: "Технический надзор кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "technical_supervision_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.technical_supervision_work_total.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите технический надзор по кровле."}, notes: ""}
+  - {key: procurement_storage_work_total, label_ru: "Заготовительно-складские расходы кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "procurement_storage_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.procurement_storage_work_total.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите заготовительно-складские расходы по кровле."}, notes: ""}
+
+detail_tables:
+  - key: roof_raw_material_spec_rows
+    label_ru: "Сырые строки спецификации кровли"
+    source_class: DETAIL_TABLE
+    required: false
+    review_sheet: "03_Детали объемов"
+    normalized_json_path: "sections.flat_roof.detail_tables.roof_raw_material_spec_rows.rows"
+    columns:
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: quantity, label_ru: "Количество", unit: "", value_kind: number}
+      - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
+      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
+      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    notes: "Diagnostics only; calculator inputs are scalar geometry/project/supplier fields."
+
+price_keys:
+  - {key: vapor_barrier_work_rate_per_m2, estimate_line_code: vapor_barrier_installation, label_ru: "Пароизоляция основания пленкой ПВХ", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_installation_work_m2", fallback_key: "vapor_barrier_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: vapor_barrier_film_unit_price_per_m2, estimate_line_code: vapor_barrier_film_technonikol_120mk, label_ru: "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_film_technonikol_120mk_m2", fallback_key: "vapor_barrier_film_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: eps_insulation_work_rate_per_m2, estimate_line_code: eps_roof_insulation_installation, label_ru: "Утепление кровельного покрытия ЭППС", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps_insulation_installation_work_m2", fallback_key: "eps_insulation_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: eps100_unit_price_per_m3, estimate_line_code: eps100_technonikol_carbon_eco, label_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps100_technonikol_carbon_eco_m3", fallback_key: "eps100_unit_price_per_m3", allow_manual_override: true, notes: ""}
+  - {key: eps50_unit_price_per_m3, estimate_line_code: eps50_technonikol_carbon_eco, label_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps50_technonikol_carbon_eco_m3", fallback_key: "eps50_unit_price_per_m3", allow_manual_override: true, notes: ""}
+  - {key: slope_plate_unit_price_per_m3, estimate_line_code: eps_slope_plate_items, label_ru: "SLOPE плиты ТехноНИКОЛЬ", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps_slope_<type>_m3", fallback_key: "slope_plate_items.unit_price_per_m3", allow_manual_override: true, notes: "Resolved for A/B/J/K rows."}
+  - {key: geotextile_flat_unit_price_per_m2, estimate_line_code: geotextile_prof_300_flat, label_ru: "Геотекстиль PROF 300", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_geotextile_technonikol_prof_300_m2", fallback_key: "geotextile_flat_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: geotextile_parapet_unit_price_per_m2, estimate_line_code: geotextile_prof_150_parapet, label_ru: "Геотекстиль PROF 150", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_geotextile_technonikol_prof_150_m2", fallback_key: "geotextile_parapet_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_installation_work_rate_per_m2, estimate_line_code: pvc_membrane_flat_installation, label_ru: "Укладка ПВХ мембраны", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_installation_work_m2", fallback_key: "pvc_membrane_installation_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_abutment_work_rate_per_m, estimate_line_code: pvc_membrane_abutment_installation, label_ru: "Монтаж примыкания ПВХ мембраны", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_abutment_work_m", fallback_key: "pvc_membrane_abutment_work_rate_per_m", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_unit_price_per_roll_display, estimate_line_code: pvc_membrane_logicroof_vrp_1_5mm_gray, label_ru: "ПВХ мембрана Logicroof V-RP 1,5 мм", price_kind: material, unit: "рул", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll", fallback_key: "pvc_membrane_unit_price_per_roll_display", allow_manual_override: true, notes: ""}
+  - {key: pressure_rail_unit_price_per_m, estimate_line_code: aluminum_pressure_rail_3m, label_ru: "Рейка прижимная алюминиевая", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_aluminum_pressure_rail_m", fallback_key: "pressure_rail_unit_price_per_m", allow_manual_override: true, notes: ""}
+  - {key: edge_rail_unit_price_per_m, estimate_line_code: aluminum_edge_rail_3m, label_ru: "Рейка краевая алюминиевая", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_aluminum_edge_rail_m", fallback_key: "edge_rail_unit_price_per_m", allow_manual_override: true, notes: ""}
+  - {key: roof_aerator_unit_price, estimate_line_code: roof_pvc_aerator_75x375, label_ru: "Аэратор кровельный PVC", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_aerator_75x375_item", fallback_key: "roof_aerator_unit_price", allow_manual_override: true, notes: ""}
+  - {key: roof_aerator_installation_rate, estimate_line_code: roof_pvc_aerator_75x375, label_ru: "Установка аэратора кровельного", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_aerator_75x375_installation_item", fallback_key: "roof_aerator_installation_rate", allow_manual_override: true, notes: ""}
+  - {key: parapet_roof_drain_unit_price, estimate_line_code: parapet_roof_drain_installation, label_ru: "Воронка парапетная", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_parapet_drain_item", fallback_key: "parapet_roof_drain_unit_price", allow_manual_override: true, notes: ""}
+  - {key: internal_roof_drain_unit_price, estimate_line_code: internal_roof_drain_with_heating, label_ru: "Воронка кровельная внутренняя с обогревом", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_internal_drain_with_heating_item", fallback_key: "internal_roof_drain_unit_price", allow_manual_override: true, notes: ""}
+  - {key: roof_crane_lifting_unit_price_per_shift, estimate_line_code: roof_crane_lifting, label_ru: "Подъем материалов автокраном", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "roof_crane_lifting_shift", fallback_key: "roof_crane_lifting_unit_price_per_shift", allow_manual_override: true, notes: ""}
+
+defaults:
+  - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Filled from job metadata.", allow_override_later: false, notes: ""}
+  - {key: roof_geometry_calc_method, label_ru: "Метод геометрии кровли", source_class: DEFAULT, value: "detailed_project_geometry", unit: "", calculator_input_path: "roof_geometry_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: vapor_barrier_film_overlap_coeff, label_ru: "Коэффициент нахлеста пароизоляции", source_class: DEFAULT, value: 1.15, unit: "", calculator_input_path: "vapor_barrier_film_overlap_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: vapor_barrier_film_roll_area_m2, label_ru: "Площадь рулона пароизоляции", source_class: DEFAULT, value: 150, unit: "м2", calculator_input_path: "vapor_barrier_film_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: eps_main_thickness_m, label_ru: "Основная толщина ЭППС кровли", source_class: DEFAULT, value: 0.2, unit: "м", calculator_input_path: "eps_main_thickness_m", source_note: "Formula/default for two 100 mm layers.", allow_override_later: true, notes: ""}
+  - {key: eps_insulation_waste_coeff, label_ru: "Коэффициент запаса ЭППС кровли", source_class: DEFAULT, value: 1.03, unit: "", calculator_input_path: "eps_insulation_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_flat_coeff, label_ru: "Коэффициент геотекстиля по плоскости", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_flat_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_parapet_coeff, label_ru: "Коэффициент геотекстиля по парапетам", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_parapet_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_flat_roll_area_m2, label_ru: "Рулон геотекстиля PROF 300", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_flat_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_parapet_roll_area_m2, label_ru: "Рулон геотекстиля PROF 150", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_parapet_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_flat_coeff, label_ru: "Коэффициент ПВХ мембраны по плоскости", source_class: DEFAULT, value: 1.15, unit: "", calculator_input_path: "pvc_membrane_flat_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_parapet_coeff, label_ru: "Коэффициент ПВХ мембраны по примыканиям", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "pvc_membrane_parapet_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_roll_width_m, label_ru: "Ширина рулона ПВХ мембраны", source_class: DEFAULT, value: 2.1, unit: "м", calculator_input_path: "pvc_membrane_roll_width_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_roll_length_m, label_ru: "Длина рулона ПВХ мембраны", source_class: DEFAULT, value: 20, unit: "м", calculator_input_path: "pvc_membrane_roll_length_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: rail_piece_length_m, label_ru: "Длина рейки", source_class: DEFAULT, value: 3, unit: "м", calculator_input_path: "rail_piece_length_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+
+calculator_input_mapping:
+  - input_path: "*"
+    from:
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
+      source_class: MIXED
+    required: true
+    transform: build_flat_roof_input
+    fallback: null
+    notes: "Adapter must fill calculator input without old fixture values or Excel-match overrides."
+
+estimate_lines:
+  - code: vapor_barrier_installation
+    name_ru: "Пароизоляция основания пленкой ПВХ"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=vapor_barrier_installation]"
+    quantity:
+      formula: "roof_area_level_1_m2 + roof_area_level_2_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.roof_area_level_1_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.roof_area_level_2_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: vapor_barrier_work_rate_per_m2, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: eps100_technonikol_carbon_eco
+    name_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 100 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps100_technonikol_carbon_eco]"
+    quantity:
+      formula: "ceil(roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.roof_area_level_1_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.roof_area_level_2_m2", source_class: AUTO_PROJECT}
+        - {ref: "defaults.eps_main_thickness_m", source_class: DEFAULT}
+        - {ref: "defaults.eps_insulation_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: eps100_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Roof EPS volume, not slab/foundation EPS."
+
+  - code: pvc_membrane_logicroof_vrp_1_5mm_gray
+    name_ru: "ПВХ мембрана Logicroof V-RP 1,5 мм"
+    unit: "рул"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=pvc_membrane_logicroof_vrp_1_5mm_gray]"
+    quantity:
+      formula: "ceil((roof_area_total_m2 * pvc_membrane_flat_coeff + parapet_and_abutment_total_length_m * pvc_membrane_parapet_coeff) / roll_area)"
+      leaf_inputs:
+        - {ref: "review_parameters.roof_area_level_1_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.roof_area_level_2_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.parapet_length_level_1_m", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.parapet_length_level_2_m", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.vent_wall_abutment_level_1_m", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.vent_wall_abutment_level_2_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: pvc_membrane_unit_price_per_roll_display, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
