@@ -1,0 +1,705 @@
+contract_version: 0.1
+
+section:
+  code: waterproofing
+  name_ru: "Гидроизоляция фундаментной плиты"
+  calculator_module: "experiments/waterproofing_calculator/waterproofing_calculator.py"
+  status: draft
+  owner_notes: "Production contract: no old project values, fixture totals, or Excel-match overrides."
+
+source_files:
+  calculator: "experiments/waterproofing_calculator/waterproofing_calculator.py"
+  calculator_readme: "experiments/waterproofing_calculator/README.md"
+  existing_cases:
+    - "experiments/waterproofing_calculator/cases/test_waterproofing_spec_area"
+  related_docs:
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: waterproofing_area_m2
+    label_ru: "Площадь гидроизоляции фундаментной плиты"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "waterproofing_area_m2"
+    calculator_input_path: "waterproofing_area_m2"
+    normalized_json_path: "sections.waterproofing.parameters.waterproofing_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "waterproofing_area_m2"
+      aliases_ru:
+        - "площадь гидроизоляции"
+        - "площадь гидроизоляции фундаментной плиты"
+        - "гидроизоляция фундаментной плиты"
+      expected_unit: "м2"
+      notes: "Use specification area in production; do not reconstruct from old perimeter/height fixtures."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь гидроизоляции из спецификации."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Maps to calculator production mode `spec_area`."
+
+  - key: eps100_wall_volume_m3
+    label_ru: "ЭППС 100 мм по торцу фундаментной плиты, объем"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "eps100_wall_volume_m3"
+    calculator_input_path: "eps100_wall_volume_m3"
+    normalized_json_path: "sections.waterproofing.parameters.eps100_wall_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "eps100_wall_volume_m3"
+      aliases_ru:
+        - "эппс 100 мм торец плиты"
+        - "утепление торца плиты эппс 100 мм объем"
+        - "пеноплэкс гео 100 мм торец плиты"
+      expected_unit: "м3"
+      notes: "Must stay volume in m3. Do not confuse with EPS work area in m2."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте объем ЭППС 100 мм по торцу фундаментной плиты."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Calculator derives EPS work area as volume / thickness."
+
+detail_tables: []
+
+price_keys:
+  - key: waterproofing_work_unit_price
+    estimate_line_code: waterproofing_bitumen_mastic_work
+    label_ru: "Гидроизоляция битумной мастикой, работа"
+    price_kind: work
+    unit: "м2"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "bitumen_waterproofing_work_m2"
+    fallback_key: "waterproofing_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: primer_unit_price
+    estimate_line_code: bitumen_primer_aquamast_18l
+    label_ru: "Праймер битумный AquaMast, 18 л"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "bitumen_primer_aquamast_18l_item"
+    fallback_key: "primer_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: mastic_unit_price
+    estimate_line_code: bitumen_mastic_aquamast_18kg
+    label_ru: "Мастика гидроизоляционная AquaMast, 18 кг"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "bitumen_mastic_aquamast_18kg_item"
+    fallback_key: "mastic_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: eps100_wall_insulation_work_unit_price
+    estimate_line_code: eps100_wall_insulation_work
+    label_ru: "Утепление торца плиты ЭППС 100 мм, работа"
+    price_kind: work
+    unit: "м2"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "eps_wall_insulation_work_m2"
+    fallback_key: "eps100_wall_insulation_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: eps100_unit_price
+    estimate_line_code: eps100_wall_penoplex_geo_material
+    label_ru: "Пеноплэкс ГЕО 100 мм"
+    price_kind: material
+    unit: "м3"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "eps_geo_100_m3"
+    fallback_key: "eps100_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: glue_foam_unit_price
+    estimate_line_code: eps_glue_foam
+    label_ru: "Клей-пена для ЭППС"
+    price_kind: material
+    unit: "баллон"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "eps_foam_glue_can"
+    fallback_key: "glue_foam_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+defaults:
+  - key: project_name
+    label_ru: "Название проекта"
+    source_class: DEFAULT
+    value: null
+    unit: ""
+    calculator_input_path: "project_name"
+    source_note: "Set by job/project metadata, not extracted from section table."
+    allow_override_later: true
+    notes: ""
+
+  - key: waterproofing_area_calc_method
+    label_ru: "Метод расчета площади гидроизоляции"
+    source_class: DEFAULT
+    value: "spec_area"
+    unit: ""
+    calculator_input_path: "waterproofing_area_calc_method"
+    source_note: "Production mode; legacy perimeter-height mode is not a production default."
+    allow_override_later: false
+    notes: ""
+
+  - key: eps100_wall_thickness_m
+    label_ru: "Толщина ЭППС 100 мм"
+    source_class: DEFAULT
+    value: 0.1
+    unit: "м"
+    calculator_input_path: "eps100_wall_thickness_m"
+    source_note: "Material thickness default from calculator production method."
+    allow_override_later: true
+    notes: ""
+
+  - key: primer_consumption_l_per_m2
+    label_ru: "Расход праймера"
+    source_class: DEFAULT
+    value: null
+    unit: "л/м2"
+    calculator_input_path: "primer_consumption_l_per_m2"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: primer_canister_volume_l
+    label_ru: "Объем канистры праймера"
+    source_class: DEFAULT
+    value: null
+    unit: "л"
+    calculator_input_path: "primer_canister_volume_l"
+    source_note: "Catalog/package default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: mastic_consumption_kg_per_m2_per_layer
+    label_ru: "Расход мастики на слой"
+    source_class: DEFAULT
+    value: null
+    unit: "кг/м2/слой"
+    calculator_input_path: "mastic_consumption_kg_per_m2_per_layer"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: mastic_layers
+    label_ru: "Количество слоев мастики"
+    source_class: DEFAULT
+    value: null
+    unit: "слой"
+    calculator_input_path: "mastic_layers"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: mastic_bucket_weight_kg
+    label_ru: "Вес ведра мастики"
+    source_class: DEFAULT
+    value: null
+    unit: "кг"
+    calculator_input_path: "mastic_bucket_weight_kg"
+    source_note: "Catalog/package default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: eps_waste_coeff
+    label_ru: "Коэффициент запаса ЭППС"
+    source_class: DEFAULT
+    value: null
+    unit: ""
+    calculator_input_path: "eps_waste_coeff"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: eps100_pack_volume_m3
+    label_ru: "Объем пачки ЭППС 100 мм"
+    source_class: DEFAULT
+    value: null
+    unit: "м3"
+    calculator_input_path: "eps100_pack_volume_m3"
+    source_note: "Catalog/package default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: glue_foam_coverage_m2_per_can
+    label_ru: "Покрытие клей-пены"
+    source_class: DEFAULT
+    value: null
+    unit: "м2/баллон"
+    calculator_input_path: "glue_foam_coverage_m2_per_can"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: glue_foam_min_units
+    label_ru: "Минимальное количество клей-пены"
+    source_class: DEFAULT
+    value: null
+    unit: "баллон"
+    calculator_input_path: "glue_foam_min_units"
+    source_note: "Business/material default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: waterproofing_logistics_coeff
+    label_ru: "Коэффициент логистики"
+    source_class: DEFAULT
+    value: null
+    unit: ""
+    calculator_input_path: "waterproofing_logistics_coeff"
+    source_note: "Business default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+  - key: waterproofing_consumables_coeff
+    label_ru: "Коэффициент расходников"
+    source_class: DEFAULT
+    value: null
+    unit: ""
+    calculator_input_path: "waterproofing_consumables_coeff"
+    source_note: "Business default required before adapter run."
+    allow_override_later: true
+    notes: ""
+
+auto_calculated:
+  - key: eps100_wall_insulation_area_m2
+    label_ru: "Площадь работ по ЭППС 100 мм торца"
+    source_class: AUTO_CALCULATED
+    formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+    leaf_inputs:
+      - ref: review_parameters.eps100_wall_volume_m3
+        source_class: AUTO_PROJECT
+      - ref: defaults.eps100_wall_thickness_m
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: "Work area in m2; not a project volume."
+
+  - key: primer_units
+    label_ru: "Количество канистр праймера"
+    source_class: AUTO_CALCULATED
+    formula: "ceil(waterproofing_area_m2 * primer_consumption_l_per_m2 / primer_canister_volume_l)"
+    leaf_inputs:
+      - ref: review_parameters.waterproofing_area_m2
+        source_class: AUTO_PROJECT
+      - ref: defaults.primer_consumption_l_per_m2
+        source_class: DEFAULT
+      - ref: defaults.primer_canister_volume_l
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+  - key: mastic_units
+    label_ru: "Количество ведер мастики"
+    source_class: AUTO_CALCULATED
+    formula: "ceil(waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers / mastic_bucket_weight_kg)"
+    leaf_inputs:
+      - ref: review_parameters.waterproofing_area_m2
+        source_class: AUTO_PROJECT
+      - ref: defaults.mastic_consumption_kg_per_m2_per_layer
+        source_class: DEFAULT
+      - ref: defaults.mastic_layers
+        source_class: DEFAULT
+      - ref: defaults.mastic_bucket_weight_kg
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+  - key: eps100_wall_order_volume_m3
+    label_ru: "Закупочный объем ЭППС 100 мм"
+    source_class: AUTO_CALCULATED
+    formula: "ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+    leaf_inputs:
+      - ref: review_parameters.eps100_wall_volume_m3
+        source_class: AUTO_PROJECT
+      - ref: defaults.eps_waste_coeff
+        source_class: DEFAULT
+      - ref: defaults.eps100_pack_volume_m3
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: "Quantity stays m3."
+
+  - key: glue_foam_units
+    label_ru: "Количество баллонов клей-пены"
+    source_class: AUTO_CALCULATED
+    formula: "max(glue_foam_min_units, ceil(eps100_wall_insulation_area_m2 / glue_foam_coverage_m2_per_can))"
+    leaf_inputs:
+      - ref: auto_calculated.eps100_wall_insulation_area_m2
+        source_class: AUTO_CALCULATED
+      - ref: defaults.glue_foam_coverage_m2_per_can
+        source_class: DEFAULT
+      - ref: defaults.glue_foam_min_units
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+  - key: waterproofing_logistics_amount
+    label_ru: "Логистика и снабжение"
+    source_class: AUTO_CALCULATED
+    formula: "waterproofing_base_subtotal * waterproofing_logistics_coeff"
+    leaf_inputs:
+      - ref: calculator_result.waterproofing_base_subtotal
+        source_class: AUTO_CALCULATED
+      - ref: defaults.waterproofing_logistics_coeff
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+  - key: waterproofing_consumables_amount
+    label_ru: "Расходные материалы и амортизация инструмента"
+    source_class: AUTO_CALCULATED
+    formula: "waterproofing_base_subtotal * waterproofing_consumables_coeff"
+    leaf_inputs:
+      - ref: calculator_result.waterproofing_base_subtotal
+        source_class: AUTO_CALCULATED
+      - ref: defaults.waterproofing_consumables_coeff
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+supplier_inputs: []
+
+calculator_input_mapping:
+  - input_path: "project_name"
+    from:
+      ref: "defaults.project_name"
+      source_class: DEFAULT
+    required: true
+    transform: job_metadata_project_name
+    fallback: null
+    notes: ""
+
+  - input_path: "waterproofing_area_calc_method"
+    from:
+      ref: "defaults.waterproofing_area_calc_method"
+      source_class: DEFAULT
+    required: true
+    transform: identity
+    fallback: "spec_area"
+    notes: ""
+
+  - input_path: "waterproofing_area_m2"
+    from:
+      ref: "review_parameters.waterproofing_area_m2"
+      source_class: AUTO_PROJECT
+    required: true
+    transform: number_m2
+    fallback: null
+    notes: ""
+
+  - input_path: "eps100_wall_volume_m3"
+    from:
+      ref: "review_parameters.eps100_wall_volume_m3"
+      source_class: AUTO_PROJECT
+    required: true
+    transform: number_m3
+    fallback: null
+    notes: ""
+
+  - input_path: "*"
+    from:
+      ref: "defaults + price_keys"
+      source_class: DEFAULT
+    required: true
+    transform: fill_remaining_calculator_fields
+    fallback: null
+    notes: "Adapter must fill calculator defaults and resolved price fields without copying old fixture values."
+
+estimate_lines:
+  - code: waterproofing_bitumen_mastic_work
+    name_ru: "Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=waterproofing_bitumen_mastic_work]"
+    quantity:
+      formula: "waterproofing_area_m2"
+      formula_model:
+        type: reference
+        ref: "review_parameters.waterproofing_area_m2"
+      leaf_inputs:
+        - ref: "review_parameters.waterproofing_area_m2"
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: waterproofing_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+
+  - code: bitumen_primer_aquamast_18l
+    name_ru: "Праймер битумный AquaMast, 18 л"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=bitumen_primer_aquamast_18l]"
+    quantity:
+      formula: "ceil(waterproofing_area_m2 * primer_consumption_l_per_m2 / primer_canister_volume_l)"
+      formula_model:
+        type: ceil_divide_product
+        numerator_refs:
+          - "review_parameters.waterproofing_area_m2"
+          - "defaults.primer_consumption_l_per_m2"
+        denominator_ref: "defaults.primer_canister_volume_l"
+      leaf_inputs:
+        - ref: "review_parameters.waterproofing_area_m2"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.primer_consumption_l_per_m2"
+          source_class: DEFAULT
+        - ref: "defaults.primer_canister_volume_l"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: primer_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+
+  - code: bitumen_mastic_aquamast_18kg
+    name_ru: "Мастика гидроизоляционная битумная для фундаментов AquaMast, 18 кг"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=bitumen_mastic_aquamast_18kg]"
+    quantity:
+      formula: "ceil(waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers / mastic_bucket_weight_kg)"
+      formula_model:
+        type: ceil_divide_product
+        numerator_refs:
+          - "review_parameters.waterproofing_area_m2"
+          - "defaults.mastic_consumption_kg_per_m2_per_layer"
+          - "defaults.mastic_layers"
+        denominator_ref: "defaults.mastic_bucket_weight_kg"
+      leaf_inputs:
+        - ref: "review_parameters.waterproofing_area_m2"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.mastic_consumption_kg_per_m2_per_layer"
+          source_class: DEFAULT
+        - ref: "defaults.mastic_layers"
+          source_class: DEFAULT
+        - ref: "defaults.mastic_bucket_weight_kg"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: mastic_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+
+  - code: eps100_wall_insulation_work
+    name_ru: "Утепление стен плиты ЭППС 100 мм"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps100_wall_insulation_work]"
+    quantity:
+      formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+      formula_model:
+        type: divide
+        numerator_ref: "review_parameters.eps100_wall_volume_m3"
+        denominator_ref: "defaults.eps100_wall_thickness_m"
+      leaf_inputs:
+        - ref: "review_parameters.eps100_wall_volume_m3"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.eps100_wall_thickness_m"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: eps100_wall_insulation_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "This is work area in m2, not EPS volume."
+
+  - code: eps100_wall_penoplex_geo_material
+    name_ru: "Пеноплэкс ГЕО 100 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps100_wall_penoplex_geo_material]"
+    quantity:
+      formula: "ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+      formula_model:
+        type: round_up_to_pack
+        required_volume_ref: "review_parameters.eps100_wall_volume_m3"
+        waste_coeff_ref: "defaults.eps_waste_coeff"
+        pack_volume_ref: "defaults.eps100_pack_volume_m3"
+      leaf_inputs:
+        - ref: "review_parameters.eps100_wall_volume_m3"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.eps_waste_coeff"
+          source_class: DEFAULT
+        - ref: "defaults.eps100_pack_volume_m3"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: eps100_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "This remains material volume in m3."
+
+  - code: eps_glue_foam
+    name_ru: "Клей-пена для ЭППС"
+    unit: "баллон"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_glue_foam]"
+    quantity:
+      formula: "max(glue_foam_min_units, ceil((eps100_wall_volume_m3 / eps100_wall_thickness_m) / glue_foam_coverage_m2_per_can))"
+      formula_model:
+        type: max_min_ceil_coverage
+        area_ref: "auto_calculated.eps100_wall_insulation_area_m2"
+        coverage_ref: "defaults.glue_foam_coverage_m2_per_can"
+        min_ref: "defaults.glue_foam_min_units"
+      leaf_inputs:
+        - ref: "review_parameters.eps100_wall_volume_m3"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.eps100_wall_thickness_m"
+          source_class: DEFAULT
+        - ref: "defaults.glue_foam_coverage_m2_per_can"
+          source_class: DEFAULT
+        - ref: "defaults.glue_foam_min_units"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: glue_foam_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+
+  - code: waterproofing_logistics_and_supply
+    name_ru: "Логистика и снабжение"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=waterproofing_logistics_and_supply]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs:
+        - ref: "calculator_result.waterproofing_base_subtotal"
+          source_class: AUTO_CALCULATED
+        - ref: "defaults.waterproofing_logistics_coeff"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: waterproofing_logistics_amount
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Amount is calculated as base subtotal times logistics coefficient."
+
+  - code: waterproofing_consumables_tool_amortization
+    name_ru: "Расходные материалы, амортизация инструмента"
+    unit: "комплект"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=waterproofing_consumables_tool_amortization]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs:
+        - ref: "calculator_result.waterproofing_base_subtotal"
+          source_class: AUTO_CALCULATED
+        - ref: "defaults.waterproofing_consumables_coeff"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: waterproofing_consumables_amount
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Amount is calculated as base subtotal times consumables coefficient."
+
+workbook_layout:
+  review_workbook:
+    include_on_constructor: true
+    project_sheet: "01_Проверка проекта"
+    price_sheet: "02_Цены себестоимости"
+    details_sheet: "03_Детали объемов"
+    candidates_sheet: "05_Кандидаты parser"
+    raw_sheet: "06_Сырые данные parser"
+  final_estimate_workbook:
+    section_order: 2
+    section_row_name: "ГИДРОИЗОЛЯЦИЯ ФУНДАМЕНТНОЙ ПЛИТЫ"
+    white_zone: "A:I"
+    calc_zone: "J:O"
+    helper_zone: "P:V"
+    mini_table_zone: "W:AA+"
+
+checks:
+  required_source_classes:
+    - AUTO_PROJECT
+    - DETAIL_TABLE
+    - DEFAULT
+    - AUTO_CALCULATED
+    - PRICE
+    - SUPPLIER_INPUT
+    - MANUAL_REVIEW
+  required_review_parameters:
+    - waterproofing_area_m2
+    - eps100_wall_volume_m3
+  forbidden_production_inputs:
+    - slab_formwork_perimeter_m
+    - slab_edge_height_m
+    - non_insulated_edge_lengths_m
+    - old_fixture_values
+    - expected_totals
+    - display_quantity_overrides
+  expected_estimate_line_count: 8
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    expected_totals_allowed: false
+  notes: "Production adapter must fail if required defaults or prices are missing; it must not copy old case input values."

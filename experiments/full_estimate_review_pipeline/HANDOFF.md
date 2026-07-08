@@ -183,11 +183,11 @@ Step report:
 
 ### Step 5 — WaterProofing Contract
 
-- [ ] Read `experiments/waterproofing_calculator/`.
-- [ ] Read `reports/step_03_all_sections_quantity_matrix.md`.
-- [ ] Create draft contract for `waterproofing`.
-- [ ] Run contract checks manually in the report.
-- [ ] Commit step 5 separately.
+- [x] Read `experiments/waterproofing_calculator/`.
+- [x] Read `reports/step_03_all_sections_quantity_matrix.md`.
+- [x] Create draft contract for `waterproofing`.
+- [x] Run contract checks manually in the report.
+- [x] Commit step 5 separately.
 
 Suggested files:
 
@@ -365,9 +365,10 @@ Completed:
 - Step 3 all new sections quantity matrix was drafted.
 - Step 3b production contamination audit was documented.
 - Step 4 section order was selected.
+- Step 5 waterproofing section contract was drafted.
 
 Next:
 
-- Step 5: create the first real section contract for `waterproofing`.
+- Step 6: build the `earthworks + waterproofing` review workbook prototype.
 
 Do not start coding all 8 sections at once.
