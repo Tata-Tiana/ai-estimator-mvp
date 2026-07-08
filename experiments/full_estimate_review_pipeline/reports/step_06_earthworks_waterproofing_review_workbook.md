@@ -59,14 +59,14 @@ The generated workbook contains:
 02_Цены себестоимости
 03_Детали объемов
 04_Инструкция
-05_Контракты
-06_Raw contracts
+05_Кандидаты parser
+06_Сырые данные parser
 ```
 
-Sheets `05` and `06` are technical sheets. They replace ad hoc debug output with contract-level diagnostics:
+Sheets `05` and `06` are technical sheets, named to match the existing Google review workbook convention. In this contract-only prototype they contain contract-level diagnostics:
 
-- `05_Контракты`: counts and source files per section;
-- `06_Raw contracts`: raw JSON form of contract blocks.
+- `05_Кандидаты parser`: counts and source files per section until real parser candidates are connected;
+- `06_Сырые данные parser`: raw JSON form of contract blocks until real raw parser data is connected.
 
 ## 4. Counts
 
@@ -113,6 +113,8 @@ Visual rule:
   - found = green;
   - review/check = peach;
   - missing = red.
+- header filter arrows are not enabled in the local workbook; Google Sheets may show its own UI controls only if filters are later turned on manually.
+- `04_Инструкция` keeps a narrow numeric first column to avoid spreadsheet "number stored as text" indicators.
 
 Hidden technical columns are kept for deterministic readers:
 

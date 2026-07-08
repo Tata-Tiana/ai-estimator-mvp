@@ -8,7 +8,6 @@ from typing import Any
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 
@@ -51,7 +50,6 @@ PROJECT_HEADERS = [
 ]
 
 PRICE_HEADERS = [
-    "Раздел",
     "Строка сметы",
     "Что это за цена",
     "Ед.",
@@ -137,7 +135,6 @@ def style_header_row(ws, row_idx: int, max_col: int) -> None:
 def apply_table_style(ws, header_row: int = 1) -> None:
     style_header_row(ws, header_row, ws.max_column)
     ws.freeze_panes = f"A{header_row + 1}"
-    ws.auto_filter.ref = f"A{header_row}:{get_column_letter(ws.max_column)}{ws.max_row}"
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
         for cell in row:
             cell.font = Font(name=FONT_NAME, bold=cell.font.bold, size=cell.font.sz or 10)
@@ -300,10 +297,8 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("02_Цены себестоимости")
     ws.append(PRICE_HEADERS)
     for contract in contracts:
-        append_section_band(ws, [section_name(contract), section_code(contract)], len(PRICE_HEADERS))
         for price in contract.get("price_keys") or []:
             ws.append([
-                section_name(contract),
                 price.get("label_ru", ""),
                 price_role_ru(str(price.get("price_kind", ""))),
                 price.get("unit", ""),
@@ -324,26 +319,24 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
                 cell.fill = FILL_PRICE
 
     apply_table_style(ws)
-    restyle_section_bands(ws)
     set_widths(ws, {
-        "A": 30,
-        "B": 42,
-        "C": 22,
-        "D": 12,
+        "A": 38,
+        "B": 24,
+        "C": 10,
+        "D": 16,
         "E": 16,
-        "F": 16,
+        "F": 18,
         "G": 18,
-        "H": 18,
-        "I": 30,
-        "J": 16,
-        "K": 58,
-        "L": 20,
+        "H": 38,
+        "I": 16,
+        "J": 66,
+        "K": 20,
+        "L": 30,
         "M": 30,
         "N": 30,
-        "O": 30,
-        "P": 22,
+        "O": 22,
     })
-    for column in ["L", "M", "N", "O", "P"]:
+    for column in ["K", "L", "M", "N", "O"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -417,21 +410,21 @@ def build_instruction_sheet(wb: Workbook) -> None:
     ws = wb.create_sheet("04_Инструкция")
     ws.append(["Раздел", "Инструкция"])
     rows = [
-        ("00", "Выберите разделы, которые входят в смету."),
-        ("01", "Проверьте проектные параметры. Пустые значения должны быть заполнены parser/chat JSON или вручную."),
-        ("02", "Проверьте себестоимость. Цена для расчета должна прийти из price registry, fallback или ручной правки."),
-        ("03", "Проверьте детальные таблицы. Это проектные строки, а не строки финальной сметы."),
-        ("05", "Технический лист показывает, из каких контрактов собрана таблица."),
-        ("06", "Raw contracts нужен разработчику для диагностики структуры."),
+        (0, "Выберите разделы, которые входят в смету."),
+        (1, "Проверьте проектные параметры. Пустые значения должны быть заполнены parser/chat JSON или вручную."),
+        (2, "Проверьте себестоимость. Цена для расчета должна прийти из price registry, fallback или ручной правки."),
+        (3, "Проверьте детальные таблицы. Это проектные строки, а не строки финальной сметы."),
+        (5, "Технический лист показывает, из каких контрактов собрана таблица."),
+        (6, "Сырые данные parser нужны разработчику для диагностики структуры."),
     ]
     for row in rows:
         ws.append(row)
     apply_table_style(ws)
-    set_widths(ws, {"A": 14, "B": 120})
+    set_widths(ws, {"A": 8, "B": 120})
 
 
 def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
-    ws = wb.create_sheet("05_Контракты")
+    ws = wb.create_sheet("05_Кандидаты parser")
     ws.append([
         "section_code",
         "section_name",
@@ -473,7 +466,7 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
 
 
 def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
-    ws = wb.create_sheet("06_Raw contracts")
+    ws = wb.create_sheet("06_Сырые данные parser")
     ws.append(["section_code", "block", "json"])
     for contract in contracts:
         for block in [
@@ -531,7 +524,7 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
 
     price_rows = 0
     for row_idx in range(2, ws_prices.max_row + 1):
-        if cell_text(ws_prices.cell(row_idx, 13).value):
+        if cell_text(ws_prices.cell(row_idx, 12).value):
             price_rows += 1
 
     detail_template_rows = 0
