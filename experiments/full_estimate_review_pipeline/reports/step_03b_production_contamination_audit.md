@@ -90,13 +90,26 @@ Updated the handoff and step reports so every future step must check:
 - can this run from a fresh chat/parser JSON for a different project?
 - are all leaf inputs classified as `AUTO_PROJECT`, `DETAIL_TABLE`, `DEFAULT`, `AUTO_CALCULATED`, `PRICE`, `SUPPLIER_INPUT`, or `MANUAL_REVIEW`?
 - did we avoid copying fixture/result values as production quantities?
+- did we keep confirmed numeric `DEFAULT` coefficients/catalog values that formulas require?
+- did we check June Elena/manual review materials before deleting or nulling numeric constants?
 - did we avoid hardcoded expected totals and display quantities?
 - did we keep review workbook inputs separate from final estimate rows?
+
+Important distinction:
+
+- Removing old project quantities, totals, display values, and legacy overrides is required.
+- Removing formula defaults just because they are numeric is a bug.
+
+Future section contracts must audit numeric calculator fields against the June Elena/manual review
+pack and calculator change reports. A number can stay in production if it is a method default,
+business coefficient, catalog/package value, or formula coefficient. It must not be extracted from
+PDF/chat JSON unless its source class is truly `AUTO_PROJECT` or `DETAIL_TABLE`.
 
 ## 5. Acceptance Checks
 
 - [x] Full-estimate docs no longer contain direct old project name markers.
 - [x] Handoff now states the universal production rule.
+- [x] Handoff now states the numeric defaults rule for all future section contracts.
 - [x] Steps 0, 1, 2, and 3 now include contamination guardrails.
 - [x] Calculator source risks are listed for future contract work.
 - [x] No calculator code was changed in this audit.

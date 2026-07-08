@@ -47,6 +47,29 @@ Allowed:
 - representative line counts used only for coverage checks;
 - default/catalog values explicitly marked as defaults.
 
+### Numeric Defaults Rule
+
+Do not delete numeric defaults just because they are numbers.
+
+For every numeric constant or coefficient in a calculator, first check the June Elena/manual review
+materials and section reports (`elena_parameter_review_pack`, paid calculator change reports,
+calculator README/report files). Then classify it:
+
+- `AUTO_PROJECT` / `DETAIL_TABLE`: project quantity from parser/chat JSON or reviewed workbook;
+- `PRICE`: price registry/project price/reviewed price row;
+- `DEFAULT`: formula default, method constant, business coefficient, or catalog/package value;
+- `AUTO_CALCULATED`: derived by adapter/calculator/formula-ready;
+- `SUPPLIER_INPUT`: external supplier layout/quote input;
+- `MANUAL_REVIEW`: real human decision that is not a default and not in the project JSON.
+
+Production contracts must keep confirmed `DEFAULT` numeric values when formulas require them.
+Otherwise the calculator input adapter will produce incomplete inputs and formulas will fail.
+
+Only remove or null a number when it is project-specific, fixture-only, an old expected total,
+a display quantity copied from an old workbook, or a legacy override. If unsure, leave it out of
+project extraction but document the uncertainty as `MANUAL_REVIEW` or `DEFAULT` pending confirmation;
+do not silently drop a formula coefficient.
+
 Forbidden in production contracts, adapters, review workbook builders, normalized JSON, and formula-ready builders:
 
 - project-specific volumes, areas, lengths, counts, prices, totals, display quantities, page numbers, or filenames;
@@ -257,6 +280,20 @@ Question: Am I building a review workbook or a final estimate workbook?
 Fail if a review row is treated as a final estimate line without passing through calculator/formula-ready.
 
 ### 2. Source Class Check
+
+For each leaf input and numeric coefficient, confirm its source class against the June Elena/manual
+review materials before removing it from the contract.
+
+Ask:
+
+- Is this value extracted from the new project JSON?
+- Is this value a price?
+- Is this value a formula default/catalog package/business coefficient that formulas need?
+- Is this value calculated downstream?
+- Is this value a real manual/supplier decision?
+- Is this value only an old project fixture or expected-total artifact?
+
+Fail if a required formula coefficient is dropped just because it is numeric.
 
 Every leaf input must be one of:
 

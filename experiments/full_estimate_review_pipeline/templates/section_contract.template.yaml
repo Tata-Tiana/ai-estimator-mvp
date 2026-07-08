@@ -100,6 +100,10 @@ price_keys:
     notes: ""
 
 # Inputs not asked from the project because they are defaults/modes/catalog constants.
+# Numeric defaults are allowed and often required. Before nulling/removing a number,
+# classify it against the June Elena/manual review materials:
+# DEFAULT = formula/method/business/catalog value needed by calculator;
+# forbidden = project-specific fixture quantity, old total, display value, or legacy override.
 defaults:
   - key: example_coeff
     label_ru: "Коэффициент"
@@ -223,6 +227,8 @@ checks:
   fail_if:
     - "estimate line has no quantity formula or explicit non-formula reason"
     - "leaf input has unknown source_class"
+    - "numeric formula default was removed without checking June Elena/manual review materials"
+    - "calculator input requires a DEFAULT coefficient but contract leaves it unresolved"
     - "price used by estimate line has no price_key or explicit zero/fixed reason"
     - "review row cannot be classified as parameter/detail/price/default/auto/supplier/manual"
     - "formula-ready row count differs from calculator estimate line count without explanation"
