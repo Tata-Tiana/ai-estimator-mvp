@@ -51,6 +51,10 @@ Final estimate workbook:
 
 ## 4. Guardrails
 
+- This is a universal production pipeline: it must accept a fresh chat/parser JSON for any project.
+- Old calculator fixtures and old project runs are audit evidence only.
+- Do not hardcode project-specific volumes, areas, lengths, counts, prices, totals, display quantities, page numbers, filenames, or expected Excel totals.
+- Do not let legacy reconstruction modes become production defaults when the correct source is a reviewed project/specification value.
 - Do not confuse `AUTO_PROJECT` calculator parameters with final estimate rows.
 - Do not copy all calculator parameters into the review workbook just because they exist.
 - Ask from the project only the leaf inputs that cannot be computed safely.
@@ -81,6 +85,7 @@ Reference documentation:
 - [x] One canonical pipeline is documented.
 - [x] Review workbook and final estimate workbook are described as separate entities.
 - [x] Each layer has one clear responsibility.
+- [x] Universal production rule forbids project-specific quantities/totals from old runs.
 - [x] Guardrails explain why `AUTO_PROJECT` does not equal final estimate rows.
 - [x] Earthworks is named as the reference implementation.
 

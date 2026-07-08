@@ -15,6 +15,10 @@ It answers three questions before we build any workbook:
 - what should stay as default/catalog/price/manual input;
 - what the calculator must calculate by itself.
 
+This is not a source of production values. Calculator cases and old result JSON files are used here only
+to discover line codes and formulas. Per-section contracts must use source fields and formulas, never
+old fixture quantities, prices, display quantities, totals, filenames, or expected Excel-match values.
+
 ## 1. Scope
 
 Earthworks is excluded from this step because it is already documented as the reference section in
@@ -57,9 +61,11 @@ New sections covered here:
   - under-slab/deck formwork area vs edge/beam formwork area;
   - rebar specification length in `мп`, not primary PDF weight.
 - [x] Review workbook and final estimate workbook remain separate concepts.
+- [x] Old fixture/result values are treated as audit evidence only.
 
 Fail condition for the next step: do not build a review workbook row if this matrix says the value is
 `DEFAULT`, `AUTO_CALCULATED`, or final estimate output only.
+Also fail if a future contract copies any old fixture/result value as a production default.
 
 ## 4. Waterproofing
 
@@ -308,7 +314,7 @@ Primary project inputs:
 | `construction_waste_removal` | `waste_removal_trucks` | trucks | `MANUAL_REVIEW` | `waste_removal_truck` |
 | `walls_technical_supervision` | `1` fixed amount | amount | `MANUAL_REVIEW` | `technical_supervision_fixed` |
 
-Production direction: prefer spec modes (`spec_area`, `spec_total_length`, `spec_volume`, `spec_length_items`, `floor_2_spec_volume`) over legacy USV reconstruction.
+Production direction: prefer spec modes (`spec_area`, `spec_total_length`, `spec_volume`, `spec_length_items`, `floor_2_spec_volume`) over legacy reconstruction from one old project.
 
 ## 11. Next-Step Implications
 

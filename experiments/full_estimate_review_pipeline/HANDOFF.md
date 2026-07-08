@@ -8,6 +8,8 @@ If the user says "прочитай инструкцию и продолжай", 
 
 Build a Google review workbook for all 8 estimate sections, then make it flow into calculators and final estimate export the same way the earthworks flow already does.
 
+This is a universal production pipeline. It must accept a new chat/parser JSON for any project and produce review/calculator/final-estimate artifacts from that JSON. Old calculator fixtures and old project runs are reference behavior only; they are not allowed to provide production quantities, prices, display quantities, totals, or hidden overrides.
+
 The important distinction:
 
 - Review workbook = human-checkable inputs, prices, details, parser evidence.
@@ -31,6 +33,30 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+## Universal Production Rule
+
+Every step must protect against project-specific contamination.
+
+Allowed:
+
+- source field names;
+- formulas;
+- source classes;
+- unit normalization rules;
+- calculator code paths;
+- representative line counts used only for coverage checks;
+- default/catalog values explicitly marked as defaults.
+
+Forbidden in production contracts, adapters, review workbook builders, normalized JSON, and formula-ready builders:
+
+- project-specific volumes, areas, lengths, counts, prices, totals, display quantities, page numbers, or filenames;
+- copying values from old fixtures, old result JSON, old Excel snapshots, screenshots, or old parser outputs;
+- hardcoded "expected total" or "Excel match" values;
+- treating legacy reconstruction modes as production defaults when a specification/project value should be read from JSON;
+- using any old project name as logic, filter, path convention, or data source.
+
+Before committing any future step, run a text search for old project names and known fixture-only phrases in the files touched by that step. If a match remains, it must be either removed or explicitly documented as non-production reference evidence.
+
 ## Reference Earthworks Flow
 
 Start with:
@@ -39,7 +65,7 @@ Start with:
 
 Earthworks reference files:
 
-- review workbook: `experiments/earthworks_parser_google_stage1/data/jobs/юсв__11_earthworks_stage1_20260623_230131/google/review_workbook.xlsx`
+- review workbook: project-specific reference workbook, exact path documented only in the step report if needed for audit.
 - review reader: `experiments/earthworks_review_to_calculator/review_workbook_reader.py`
 - calculator input adapter: `experiments/earthworks_review_to_calculator/calculator_input_builder.py`
 - calculator: `experiments/earthworks_calculator/earthworks_calculator.py`
@@ -71,6 +97,7 @@ Lesson: earthworks review input is small; the calculator/formula-ready layer exp
   - final estimate workbook.
 - [x] State that review workbook and final estimate workbook are different entities.
 - [x] State that review workbook checks inputs and final estimate workbook shows estimate rows.
+- [x] State that the pipeline is universal and cannot depend on old project values.
 - [x] Commit step 0 separately.
 
 Step report:
@@ -83,6 +110,7 @@ Step report:
 - [x] Measure baseline counts.
 - [x] List review parameters, price keys, detail groups, estimate lines.
 - [x] Define guardrails for the next sections.
+- [x] Mark the earthworks run as reference behavior, not production data.
 - [x] Commit step 1 separately.
 
 Step report:
@@ -106,6 +134,7 @@ Step report:
   - validation checks.
 - [x] Create a report describing the schema and acceptance checks.
 - [x] Do not yet implement every section.
+- [x] Include project-specific contamination checks in the contract rules.
 - [x] Commit step 2 separately.
 
 Suggested report:
@@ -122,6 +151,7 @@ Template:
 - [x] Build "estimate line -> quantity formula -> leaf inputs -> source class" matrix.
 - [x] Identify what must come from project, what is default/price/supplier/manual, and what is calculated.
 - [x] Do not write new calculator code.
+- [x] Flag old fixture/result values as audit evidence only, not production inputs.
 - [x] Commit step 3 separately.
 
 Step report:
@@ -259,7 +289,20 @@ Every price used by a calculator line must have a `calc_price_key` or explicit z
 
 Fail if price mapping depends only on a Russian row label.
 
-### 8. Dirty Worktree Check
+### 8. Project-Specific Contamination Check
+
+Question: can this step run from a fresh chat/parser JSON for a different project?
+
+Fail if touched production files contain:
+
+- old project names or old job path fragments;
+- fixture-only values copied as quantities, totals, display quantities, or prices;
+- hardcoded expected totals used to force old Excel equality;
+- old parser/page/table evidence treated as a universal rule.
+
+Allowed only in reports: old project references used to explain why a legacy calculator mode is risky. They must never become contract defaults or adapter output.
+
+### 9. Dirty Worktree Check
 
 Before commits:
 
@@ -297,6 +340,7 @@ Completed:
 - Step 1 reference report was created.
 - Step 2 common section contract format was defined.
 - Step 3 all new sections quantity matrix was drafted.
+- Step 3b production contamination audit was documented.
 
 Next:
 

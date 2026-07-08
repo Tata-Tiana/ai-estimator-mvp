@@ -311,6 +311,27 @@ Allowed values:
 
 ## 5. Workbook Construction Semantics
 
+### Universal Production Semantics
+
+Every `section_contract.yaml` must be reusable with a fresh chat/parser JSON for a different project.
+
+The contract may contain:
+
+- field names;
+- aliases;
+- expected units;
+- formula dependencies;
+- source classes;
+- default/catalog references;
+- validation rules.
+
+The contract must not contain:
+
+- old project quantities, prices, totals, display quantities, page numbers, filenames, or expected Excel totals;
+- fixture values copied from calculator cases;
+- hardcoded old workbook values used to force equality with a previous estimate;
+- old project names used as logic or path filters.
+
 ### Review Workbook
 
 The review workbook is built from:
@@ -376,6 +397,7 @@ This satisfies the Step 1 lesson: small review contract, richer calculator/formu
 - [x] Price mapping uses explicit `price_key` fields, not Russian labels alone.
 - [x] Detail tables declare columns and calculator input path.
 - [x] Contract keeps review workbook and final estimate workbook separate.
+- [x] Contract forbids project-specific values from old fixtures/runs.
 - [x] Earthworks can be represented by this format.
 - [x] Fail conditions are present in the template.
 
@@ -389,13 +411,16 @@ Do not proceed to Step 3 for a section if:
 - a review row cannot be classified as parameter/detail/price/default/auto/supplier/manual;
 - there is no deterministic path from review JSON to calculator input;
 - formula-ready row count differs from calculator result estimate-line count without explanation;
-- a section contract uses old fixture values instead of reviewed/derived values.
+- a section contract uses old fixture values instead of reviewed/derived values;
+- the contract contains project-specific quantities, prices, totals, display quantities, page numbers, filenames, or expected Excel totals from old runs.
 
 ## 9. Next Step
 
-Step 3: apply this format to `waterproofing`.
+Step 3: build the all-sections quantity matrix.
 
-Required work for Step 3:
+Step 4: apply this format to `waterproofing`.
+
+Required work before the waterproofing contract:
 
 1. Read `experiments/waterproofing_calculator/`.
 2. Read waterproofing docs/reports.
@@ -406,5 +431,5 @@ estimate line -> quantity formula -> leaf inputs -> source class
 ```
 
 4. Create `sections/waterproofing/section_contract.yaml`.
-5. Write `reports/step_03_waterproofing_contract.md`.
+5. Write `reports/step_04_waterproofing_contract.md`.
 6. Run the Step 2 checks manually against the waterproofing contract.

@@ -6,14 +6,16 @@ Goal: фиксируем раздел `earthworks` как эталонный п�
 
 ## 1. Source Files
 
-Reference job:
+Reference job artifacts:
 
-- review workbook: `experiments/earthworks_parser_google_stage1/data/jobs/юсв__11_earthworks_stage1_20260623_230131/google/review_workbook.xlsx`
-- normalized review JSON: `experiments/earthworks_review_to_calculator/outputs/jobs/юсв__11_earthworks_stage1_20260623_230131/build_20260623_231525/review_values_normalized.json`
-- calculator input: `experiments/earthworks_review_to_calculator/outputs/jobs/юсв__11_earthworks_stage1_20260623_230131/build_20260623_231525/earthworks_calculation_input.json`
-- calculator result: `experiments/earthworks_review_to_calculator/outputs/jobs/юсв__11_earthworks_stage1_20260623_230131/build_20260623_231525/calculation_result/earthworks_result.json`
-- formula-ready result: `experiments/earthworks_review_to_calculator/outputs/jobs/юсв__11_earthworks_stage1_20260623_230131/build_20260623_231525/formula_ready_result.json`
-- exported estimate workbook: `experiments/earthworks_review_to_calculator/outputs/jobs/юсв__11_earthworks_stage1_20260623_230131/build_20260623_231525/юсв_11_earthworks_stage1_20260623_230131.xlsx`
+- review workbook from an old project-specific run;
+- normalized review JSON from that run;
+- calculator input from that run;
+- calculator result from that run;
+- formula-ready result from that run;
+- exported estimate workbook from that run.
+
+The exact old job path is deliberately not used as a production instruction. It can be recovered from git history or local job folders only when auditing the reference behavior. It must not become a path convention, data source, or filter in new pipeline code.
 
 Code path:
 
@@ -27,6 +29,7 @@ Code path:
 ## 2. Observed Counts
 
 These are measured from the reference job and are the current baseline.
+They are artifact counts, not reusable project quantities.
 
 | Artifact | Count |
 |---|---:|
@@ -111,6 +114,14 @@ This is the central lesson: estimate rows are produced by calculator/formula-rea
 ## 5. Guardrails For All Next Sections
 
 Every new section must pass these checks before we call it production-like.
+
+### 0. Universal Production Check
+
+The next section must work from a fresh chat/parser JSON for a different project.
+
+Fail condition: contract, adapter, workbook builder, or formula-ready code copies a project-specific quantity, price, total, display quantity, old filename, old page/table evidence, or old expected Excel total from a reference run.
+
+Allowed: use the reference run to understand shape, line counts, formulas, and code paths.
 
 ### A. Contract Shape Check
 
@@ -204,6 +215,7 @@ Fail condition: formula-ready row count differs from calculator estimate line co
 - [x] Review contract listed.
 - [x] Estimate lines listed.
 - [x] Guardrails for next sections defined.
+- [x] Reference run marked as non-production data.
 - [ ] Next section contract created.
 
 ## 7. Next Step
