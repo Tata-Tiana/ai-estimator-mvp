@@ -158,28 +158,51 @@ Step report:
 
 - `reports/step_03_all_sections_quantity_matrix.md`
 
-### Step 4 — WaterProofing Contract
+### Step 4 — Section Order
+
+- [x] Choose low-risk section order.
+- [x] Start with `earthworks` as reference behavior.
+- [x] Use `waterproofing` as the first new contract.
+- [x] Keep the hardest sections for later.
+- [x] Commit step 4 separately.
+
+Selected order:
+
+1. `earthworks`
+2. `waterproofing`
+3. `schiedel_vent_channels`
+4. `foundation_slab`
+5. `floor_slab_2`
+6. `floor_slab_1`
+7. `flat_roof`
+8. `load_bearing_walls_lintels`
+
+Step report:
+
+- `reports/step_04_section_order.md`
+
+### Step 5 — WaterProofing Contract
 
 - [ ] Read `experiments/waterproofing_calculator/`.
 - [ ] Read `reports/step_03_all_sections_quantity_matrix.md`.
 - [ ] Create draft contract for `waterproofing`.
 - [ ] Run contract checks manually in the report.
-- [ ] Commit step 4 separately.
+- [ ] Commit step 5 separately.
 
 Suggested files:
 
 - `sections/waterproofing/section_contract.yaml`
-- `reports/step_04_waterproofing_contract.md`
+- `reports/step_05_waterproofing_contract.md`
 
-### Step 5 — Earthworks + Waterproofing Review Workbook Prototype
+### Step 6 — Earthworks + Waterproofing Review Workbook Prototype
 
 - [ ] Reuse earthworks reference behavior without rewriting it blindly.
 - [ ] Build a review workbook from section contracts for `earthworks + waterproofing`.
 - [ ] Keep review workbook separate from final estimate workbook.
 - [ ] Verify sheet counts and key rows.
-- [ ] Commit step 5 separately.
+- [ ] Commit step 6 separately.
 
-### Step 6 — Multi-Section Normalized Review JSON
+### Step 7 — Multi-Section Normalized Review JSON
 
 - [ ] Read prototype workbook.
 - [ ] Produce normalized JSON shaped by section:
@@ -194,23 +217,23 @@ Suggested files:
 ```
 
 - [ ] Prove that manual overrides are preserved.
-- [ ] Commit step 6 separately.
+- [ ] Commit step 7 separately.
 
-### Step 7 — Waterproofing Review-To-Calculator Adapter
+### Step 8 — Waterproofing Review-To-Calculator Adapter
 
 - [ ] Convert normalized waterproofing review data into calculator input.
 - [ ] Add defaults and prices deterministically.
 - [ ] Run existing waterproofing calculator.
-- [ ] Commit step 7 separately.
+- [ ] Commit step 8 separately.
 
-### Step 8 — Waterproofing Formula-Ready
+### Step 9 — Waterproofing Formula-Ready
 
 - [ ] Convert waterproofing calculator result into formula-ready rows.
 - [ ] Each estimate line must have quantity, prices, formula model or explicit reason.
 - [ ] Formula-ready row count must match calculator estimate line count.
-- [ ] Commit step 8 separately.
+- [ ] Commit step 9 separately.
 
-### Step 9 — Repeat Section By Section
+### Step 10 — Repeat Section By Section
 
 Recommended order:
 
@@ -341,9 +364,10 @@ Completed:
 - Step 2 common section contract format was defined.
 - Step 3 all new sections quantity matrix was drafted.
 - Step 3b production contamination audit was documented.
+- Step 4 section order was selected.
 
 Next:
 
-- Step 4: create the first real section contract for `waterproofing`.
+- Step 5: create the first real section contract for `waterproofing`.
 
 Do not start coding all 8 sections at once.
