@@ -13,7 +13,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = ROOT / "experiments" / "full_estimate_review_pipeline"
-DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_09_load_bearing_walls_lintels_review_template.xlsx"
+DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_10_floor_slab_1_review_template.xlsx"
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
