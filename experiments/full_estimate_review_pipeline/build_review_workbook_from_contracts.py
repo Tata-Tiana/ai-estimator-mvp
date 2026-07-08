@@ -654,7 +654,7 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
     for row in ws.iter_rows(min_row=1):
         for cell in row:
             if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
-                cell.fill = FILL_TECH
+                cell.fill = FILL_WHITE
 
 
 def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
@@ -693,7 +693,7 @@ def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> 
     for row in ws.iter_rows(min_row=1):
         for cell in row:
             if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
-                cell.fill = FILL_TECH
+                cell.fill = FILL_WHITE
 
 
 def build_workbook(contract_paths: list[Path], output_path: Path) -> dict[str, Any]:
