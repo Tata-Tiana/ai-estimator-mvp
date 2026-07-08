@@ -13,7 +13,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = ROOT / "experiments" / "full_estimate_review_pipeline"
-DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_07_earthworks_waterproofing_schiedel_review.xlsx"
+DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_08_foundation_slab_review_template.xlsx"
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
@@ -173,11 +173,12 @@ def load_yaml_contract(path: Path) -> dict[str, Any]:
 
 
 def default_contract_paths() -> list[Path]:
-    return [
-        PIPELINE_DIR / "sections" / "earthworks" / "section_contract.yaml",
-        PIPELINE_DIR / "sections" / "waterproofing" / "section_contract.yaml",
-        PIPELINE_DIR / "sections" / "schiedel_vent_channels" / "section_contract.yaml",
-    ]
+    paths = []
+    for code, _name in CANONICAL_SECTIONS:
+        path = PIPELINE_DIR / "sections" / code / "section_contract.yaml"
+        if path.exists():
+            paths.append(path)
+    return paths
 
 
 def cell_text(value: Any) -> str:
@@ -334,7 +335,8 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
 
 def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("01_Проверка проекта")
-    ws.append(["Разбор проекта:\nземляные работы + гидроизоляция + Schiedel", "", "", "", "", "", "", "", "", "", "", "", ""])
+    project_title = "Разбор проекта:\n" + " + ".join(section_name(contract) for contract in contracts)
+    ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", ""])
     review_count = sum(len(review_rows_for_contract(contract)) for contract in contracts)
     ws.append([
         "Найдено уверенно: 0",

@@ -1,0 +1,338 @@
+contract_version: 0.1
+
+section:
+  code: foundation_slab
+  name_ru: "Фундаментная плита"
+  calculator_module: "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
+  status: draft
+  owner_notes: "Production contract: spec areas/volumes/lengths only; no old fixture values or Excel-match overrides."
+
+source_files:
+  calculator: "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
+  calculator_readme: "experiments/foundation_slab_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "docs/report_foundation_slab_calculator.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: membrane_area_m2
+    label_ru: "Площадь мембраны PLANTER под фундаментной плитой"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "membrane_area_m2"
+    calculator_input_path: "membrane_area_m2"
+    normalized_json_path: "sections.foundation_slab.parameters.membrane_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["membrane_area_m2"]
+      aliases_ru: ["мембрана PLANTER", "площадь мембраны", "профилированная мембрана"]
+      expected_unit: "м2"
+      notes: "Membrane work/material base area."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь мембраны под фундаментной плитой."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: slab_side_formwork_area_m2
+    label_ru: "Площадь опалубки бортов фундаментной плиты"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "slab_side_formwork_area"
+    calculator_input_path: "slab_side_formwork_area_m2"
+    normalized_json_path: "sections.foundation_slab.parameters.slab_side_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["slab_side_formwork_area"]
+      aliases_ru: ["опалубка бортов", "площадь опалубки бортов", "опалубка торца фундаментной плиты"]
+      expected_unit: "м2"
+      notes: "Production uses spec area. Do not reconstruct from perimeter and edge height."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь опалубки бортов по спецификации."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with EPS 100 mm edge volume."
+
+  - key: eps50_under_slab_volume_m3
+    label_ru: "ЭППС 50 мм под фундаментной плитой, объем"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "eps_50_under_slab_volume"
+    calculator_input_path: "eps50_under_slab_volume_m3"
+    normalized_json_path: "sections.foundation_slab.parameters.eps50_under_slab_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["eps_50_under_slab_volume"]
+      aliases_ru: ["ЭППС 50 мм под плитой", "ЭППС 50 мм низ плиты", "утепление под плитой ЭППС 50"]
+      expected_unit: "м3"
+      notes: "Volume below slab; laying area is calculated as volume / thickness."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте объем ЭППС 50 мм под фундаментной плитой."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with m2 laying area."
+
+  - key: concrete_project_volume_m3
+    label_ru: "Проектный объем бетона фундаментной плиты"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "concrete_project_volume"
+    calculator_input_path: "concrete_project_volume_m3"
+    normalized_json_path: "sections.foundation_slab.parameters.concrete_project_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["concrete_project_volume"]
+      aliases_ru: ["бетон фундаментной плиты", "бетон плиты фундамента", "бетон В22,5 фундаментная плита"]
+      expected_unit: "м3"
+      notes: "Foundation slab concrete only."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте проектный объем бетона фундаментной плиты."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not merge with floor slab, beam, lintel, or wall concrete."
+
+  - key: thermal_insert_50_length_m
+    label_ru: "Термовставка 50 мм, длина"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "thermal_insert_50_length"
+    calculator_input_path: "thermal_insert_50_length_m"
+    normalized_json_path: "sections.foundation_slab.parameters.thermal_insert_50_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["thermal_insert_50_length"]
+      aliases_ru: ["термовставка 50 мм длина", "термовставки 50 мм", "термовкладыш 50 мм длина"]
+      expected_unit: "мп"
+      notes: "Work length, not material volume."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину термовставок 50 мм."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: thermal_insert_100_length_m
+    label_ru: "Термовставка 100 мм, длина"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "thermal_insert_100_length"
+    calculator_input_path: "thermal_insert_100_length_m"
+    normalized_json_path: "sections.foundation_slab.parameters.thermal_insert_100_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["thermal_insert_100_length"]
+      aliases_ru: ["термовставка 100 мм длина", "термовставки 100 мм", "термовкладыш 100 мм длина"]
+      expected_unit: "мп"
+      notes: "Work length, not material volume."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину термовставок 100 мм."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: thermal_insert_50_material_spec_qty
+    label_ru: "Термовставка 50 мм, материал по спецификации"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "thermal_insert_50_material_spec_qty"
+    calculator_input_path: "thermal_insert_50_material_spec_qty"
+    normalized_json_path: "sections.foundation_slab.parameters.thermal_insert_50_material_spec_qty.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["thermal_insert_50_material_spec_qty"]
+      aliases_ru: ["термовставка 50 мм объем", "материал термовставок 50 мм", "ЭППС термовставка 50"]
+      expected_unit: "м3"
+      notes: "Material quantity, not work length."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте материал термовставок 50 мм по спецификации."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: thermal_insert_100_material_spec_qty
+    label_ru: "Термовставка 100 мм, материал по спецификации"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "thermal_insert_100_material_spec_qty"
+    calculator_input_path: "thermal_insert_100_material_spec_qty"
+    normalized_json_path: "sections.foundation_slab.parameters.thermal_insert_100_material_spec_qty.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["thermal_insert_100_material_spec_qty"]
+      aliases_ru: ["термовставка 100 мм объем", "материал термовставок 100 мм", "ЭППС термовставка 100"]
+      expected_unit: "м3"
+      notes: "Material quantity, not work length."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте материал термовставок 100 мм по спецификации."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+detail_tables:
+  - key: foundation_rebar_items
+    label_ru: "Арматура фундаментной плиты"
+    source_class: DETAIL_TABLE
+    required: true
+    review_sheet: "03_Детали объемов"
+    normalized_json_path: "sections.foundation_slab.detail_tables.foundation_rebar_items.rows"
+    columns:
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
+      - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
+      - {key: source_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
+      - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
+      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    notes: "Production primary PDF unit is m.п.; do not require PDF total weight."
+
+price_keys:
+  - {key: membrane_installation_work_unit_price, estimate_line_code: planter_membrane_installation, label_ru: "Монтаж мембраны PLANTER стандарт", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "planter_membrane_installation_work_m2", fallback_key: "membrane_installation_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: planter_standard_roll_unit_price, estimate_line_code: planter_standard_material, label_ru: "Planter Standard Технониколь", price_kind: material, unit: "рулон", required: true, default_source: price_registry_with_fallback, registry_code: "planter_standard_roll", fallback_key: "planter_standard_roll_unit_price", allow_manual_override: true, notes: ""}
+  - {key: planterband_unit_price, estimate_line_code: planterband_material, label_ru: "PLANTERBAND 10м х 10см", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "planterband_item", fallback_key: "planterband_unit_price", allow_manual_override: true, notes: ""}
+  - {key: formwork_installation_work_unit_price, estimate_line_code: formwork_installation, label_ru: "Монтаж опалубки бортов фундаментной плиты", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "timber_formwork_installation_work_m2", fallback_key: "formwork_installation_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: plywood_unit_price, estimate_line_code: formwork_plywood, label_ru: "Фанера ФК 1,52 x 1,52 толщиной 18 мм", price_kind: material, unit: "лист", required: true, default_source: price_registry_with_fallback, registry_code: "plywood_1520x1520_18mm_sheet", fallback_key: "plywood_unit_price", allow_manual_override: true, notes: ""}
+  - {key: timber_unit_price, estimate_line_code: formwork_timber, label_ru: "Пиломатериал обрезной хвойных пород ГОСТ", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "timber_unit_price", allow_manual_override: true, notes: ""}
+  - {key: eps50_laying_work_unit_price, estimate_line_code: eps50_laying_under_slab, label_ru: "Укладка ЭППС 50 мм под плитой", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "eps_laying_work_m2", fallback_key: "eps50_laying_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: eps50_unit_price, estimate_line_code: eps50_penoplex_geo_material, label_ru: "Пеноплэкс ГЕО 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_geo_50_m3", fallback_key: "eps50_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_50_work_unit_price, estimate_line_code: thermal_insert_50_installation, label_ru: "Устройство и монтаж термовставок 50 мм", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_installation_work_m", fallback_key: "thermal_insert_50_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_100_work_unit_price, estimate_line_code: thermal_insert_100_installation, label_ru: "Устройство и монтаж термовставок 100 мм", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_installation_work_m", fallback_key: "thermal_insert_100_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_50_material_unit_price, estimate_line_code: thermal_insert_50_material, label_ru: "Материал термовставок 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_material_m3", fallback_key: "thermal_insert_50_material_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_100_material_unit_price, estimate_line_code: thermal_insert_100_material, label_ru: "Материал термовставок 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_material_m3", fallback_key: "thermal_insert_100_material_unit_price", allow_manual_override: true, notes: ""}
+  - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of foundation_rebar_items."}
+  - {key: concreting_work_unit_price, estimate_line_code: foundation_slab_concreting_work, label_ru: "Бетонирование фундаментной плиты", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_placing_work_m3", fallback_key: "concreting_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: concrete_unit_price, estimate_line_code: concrete_b22_5_m300_material, label_ru: "Бетон В22,5 М300", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_b22_5_m3", fallback_key: "concrete_unit_price", allow_manual_override: true, notes: ""}
+  - {key: concrete_delivery_unit_price, estimate_line_code: concrete_delivery, label_ru: "Доставка бетона", price_kind: material, unit: "рейс", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_delivery_trip", fallback_key: "concrete_delivery_unit_price", allow_manual_override: true, notes: ""}
+  - {key: concrete_pump_unit_price, estimate_line_code: concrete_pump_32m, label_ru: "Работа бетононасоса 32м", price_kind: work, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_pump_32m_shift", fallback_key: "concrete_pump_unit_price", allow_manual_override: true, notes: ""}
+  - {key: formwork_dismantling_work_unit_price, estimate_line_code: formwork_dismantling, label_ru: "Демонтаж опалубки", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_dismantling_work_m2", fallback_key: "formwork_dismantling_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: rebar_crane_unit_price, estimate_line_code: rebar_crane_supply, label_ru: "Подача арматуры автокраном", price_kind: work, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "crane_shift", fallback_key: "rebar_crane_unit_price", allow_manual_override: true, notes: ""}
+  - {key: rebar_metal_delivery_unit_price, estimate_line_code: rebar_metal_delivery, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "metal_delivery_truck", fallback_key: "rebar_metal_delivery_unit_price", allow_manual_override: true, notes: ""}
+  - {key: technical_supervision_amount, estimate_line_code: technical_supervision, label_ru: "Технический надзор", price_kind: fixed, unit: "комплект", required: true, default_source: fallback_manual_review, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: ""}
+
+defaults:
+  - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Set by job/project metadata.", allow_override_later: true, notes: ""}
+  - {key: formwork_calc_method, label_ru: "Метод расчета опалубки", source_class: DEFAULT, value: "spec_area", unit: "", calculator_input_path: "formwork_calc_method", source_note: "Production standard: use spec area.", allow_override_later: false, notes: ""}
+  - {key: plywood_calc_method, label_ru: "Метод расчета фанеры", source_class: DEFAULT, value: "actual_area_with_waste", unit: "", calculator_input_path: "plywood_calc_method", source_note: "Production standard.", allow_override_later: false, notes: ""}
+  - {key: thermal_insert_mode, label_ru: "Метод термовставок", source_class: DEFAULT, value: "standard_50_100", unit: "", calculator_input_path: "thermal_insert_mode", source_note: "Production standard: separate 50/100 mm rows.", allow_override_later: false, notes: ""}
+  - {key: rebar_calc_method, label_ru: "Метод расчета арматуры", source_class: DEFAULT, value: "spec_length_m", unit: "", calculator_input_path: "rebar_calc_method", source_note: "Production standard: PDF primary unit is m.п.", allow_override_later: false, notes: ""}
+  - {key: membrane_overlap_coeff, label_ru: "Коэффициент нахлеста мембраны", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "membrane_overlap_coeff", source_note: "Business/material coefficient; not PDF extraction.", allow_override_later: true, notes: ""}
+  - {key: membrane_roll_area_m2, label_ru: "Площадь рулона мембраны", source_class: DEFAULT, value: 40, unit: "м2", calculator_input_path: "membrane_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: planterband_per_membrane_roll, label_ru: "PLANTERBAND на рулон", source_class: DEFAULT, value: 4, unit: "шт/рулон", calculator_input_path: "planterband_per_membrane_roll", source_note: "Confirmed Elena rule.", allow_override_later: true, notes: ""}
+  - {key: plywood_sheet_width_m, label_ru: "Ширина листа фанеры", source_class: DEFAULT, value: 1.52, unit: "м", calculator_input_path: "plywood_sheet_width_m", source_note: "Production standard.", allow_override_later: true, notes: ""}
+  - {key: plywood_sheet_height_m, label_ru: "Высота листа фанеры", source_class: DEFAULT, value: 1.52, unit: "м", calculator_input_path: "plywood_sheet_height_m", source_note: "Production standard.", allow_override_later: true, notes: ""}
+  - {key: plywood_waste_coeff, label_ru: "Запас фанеры", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "plywood_waste_coeff", source_note: "Production standard.", allow_override_later: true, notes: ""}
+  - {key: timber_thickness_m, label_ru: "Толщина пиломатериала", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "timber_thickness_m", source_note: "Confirmed rule: timber volume = formwork area * 0.05.", allow_override_later: true, notes: ""}
+  - {key: eps50_thickness_m, label_ru: "Толщина ЭППС 50 мм", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "eps50_thickness_m", source_note: "Material thickness default.", allow_override_later: true, notes: ""}
+  - {key: eps_waste_coeff, label_ru: "Коэффициент запаса ЭППС", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "eps_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: eps50_pack_volume_m3, label_ru: "Объем пачки ЭППС 50 мм", source_class: DEFAULT, value: null, unit: "м3", calculator_input_path: "eps50_pack_volume_m3", source_note: "Catalog/package value, not PDF extraction.", allow_override_later: true, notes: "Must be filled from catalog/price registry before calculator run."}
+  - {key: thermal_insert_material_waste_coeff, label_ru: "Запас материала термовставок", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "thermal_insert_material_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: thermal_insert_50_pack_multiple_qty, label_ru: "Кратность пачки термовставки 50 мм", source_class: DEFAULT, value: null, unit: "м3", calculator_input_path: "thermal_insert_50_pack_multiple_qty", source_note: "Catalog/package value.", allow_override_later: true, notes: ""}
+  - {key: thermal_insert_100_pack_multiple_qty, label_ru: "Кратность пачки термовставки 100 мм", source_class: DEFAULT, value: null, unit: "м3", calculator_input_path: "thermal_insert_100_pack_multiple_qty", source_note: "Catalog/package value.", allow_override_later: true, notes: ""}
+  - {key: rebar_waste_coeff, label_ru: "Коэффициент запаса арматуры", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "rebar_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: rod_length_m, label_ru: "Длина хлыста арматуры", source_class: DEFAULT, value: 11.7, unit: "м", calculator_input_path: "rebar_items[*].rod_length_m", source_note: "Catalog default unless item overrides.", allow_override_later: true, notes: ""}
+  - {key: concrete_waste_coeff, label_ru: "Коэффициент запаса бетона", source_class: DEFAULT, value: 1.02, unit: "", calculator_input_path: "concrete_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: concrete_round_step_m3, label_ru: "Шаг округления бетона", source_class: DEFAULT, value: 0.5, unit: "м3", calculator_input_path: "concrete_round_step_m3", source_note: "Delivery/order rounding default.", allow_override_later: true, notes: ""}
+  - {key: concrete_mixer_volume_m3, label_ru: "Объем миксера бетона", source_class: DEFAULT, value: 7, unit: "м3", calculator_input_path: "concrete_mixer_volume_m3", source_note: "Logistics default.", allow_override_later: true, notes: ""}
+  - {key: box_metal_delivery_capacity_kg, label_ru: "Вместимость доставки металла", source_class: DEFAULT, value: 10000, unit: "кг", calculator_input_path: "box_metal_delivery_capacity_kg", source_note: "Box-level logistics default.", allow_override_later: true, notes: ""}
+
+supplier_inputs:
+  - {key: rebar_crane_shifts, label_ru: "Подача арматуры автокраном, смены", unit: "смена", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "rebar_crane_shifts", normalized_json_path: "sections.foundation_slab.supplier_inputs.rebar_crane_shifts.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите смены крана для подачи арматуры."}, notes: ""}
+  - {key: rebar_metal_delivery_trucks, label_ru: "Доставка арматуры и металла, машины", unit: "маш", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "rebar_metal_delivery_trucks", normalized_json_path: "sections.foundation_slab.supplier_inputs.rebar_metal_delivery_trucks.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите количество машин доставки арматуры/металла."}, notes: "Suggested value is box-level, but actual line remains manual."}
+  - {key: box_total_metal_weight_kg, label_ru: "Общий вес металла коробки для контроля доставки", unit: "кг", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "box_total_metal_weight_kg", normalized_json_path: "sections.foundation_slab.supplier_inputs.box_total_metal_weight_kg.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите общий вес металла коробки для контроля доставки."}, notes: "Should later be provided by box-level aggregator."}
+  - {key: concrete_pump_shifts, label_ru: "Работа бетононасоса, смены", unit: "смена", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "concrete_pump_shifts", normalized_json_path: "sections.foundation_slab.supplier_inputs.concrete_pump_shifts.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите смены бетононасоса."}, notes: ""}
+  - {key: logistics_and_supply_amount, label_ru: "Логистика и снабжение", unit: "руб", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "logistics_and_supply_amount", normalized_json_path: "sections.foundation_slab.supplier_inputs.logistics_and_supply_amount.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите фиксированную сумму логистики и снабжения."}, notes: ""}
+  - {key: consumables_tool_amortization_amount, label_ru: "Расходные материалы, амортизация инструмента", unit: "руб", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "consumables_tool_amortization_amount", normalized_json_path: "sections.foundation_slab.supplier_inputs.consumables_tool_amortization_amount.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите фиксированную сумму расходников и амортизации."}, notes: ""}
+
+auto_calculated:
+  - {key: eps50_laying_area_m2, label_ru: "Площадь укладки ЭППС 50 мм", source_class: AUTO_CALCULATED, formula: "eps50_under_slab_volume_m3 / eps50_thickness_m", leaf_inputs: [{ref: review_parameters.eps50_under_slab_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.eps50_thickness_m, source_class: DEFAULT}], calculator_input_path: "", notes: "Work area, not PDF input."}
+  - {key: plywood_sheets, label_ru: "Количество листов фанеры", source_class: AUTO_CALCULATED, formula: "ceil(slab_side_formwork_area_m2 * plywood_waste_coeff / (plywood_sheet_width_m * plywood_sheet_height_m))", leaf_inputs: [{ref: review_parameters.slab_side_formwork_area_m2, source_class: AUTO_PROJECT}, {ref: defaults.plywood_waste_coeff, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+  - {key: concrete_order_volume_m3, label_ru: "Заказной объем бетона", source_class: AUTO_CALCULATED, formula: "round_up_to_step(concrete_project_volume_m3 * concrete_waste_coeff, concrete_round_step_m3)", leaf_inputs: [{ref: review_parameters.concrete_project_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.concrete_waste_coeff, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+  - {key: rebar_frame_assembly_quantity_m, label_ru: "Закупочная длина арматуры", source_class: AUTO_CALCULATED, formula: "sum(round_up(spec_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m)", leaf_inputs: [{ref: detail_tables.foundation_rebar_items, source_class: DETAIL_TABLE}, {ref: defaults.rebar_waste_coeff, source_class: DEFAULT}, {ref: defaults.rod_length_m, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+
+calculator_input_mapping:
+  - {input_path: "project_name", from: {ref: "defaults.project_name", source_class: DEFAULT}, required: true, transform: job_metadata_project_name, fallback: null, notes: ""}
+  - {input_path: "membrane_area_m2", from: {ref: "review_parameters.membrane_area_m2", source_class: AUTO_PROJECT}, required: true, transform: number_m2, fallback: null, notes: ""}
+  - {input_path: "slab_side_formwork_area_m2", from: {ref: "review_parameters.slab_side_formwork_area_m2", source_class: AUTO_PROJECT}, required: true, transform: number_m2, fallback: null, notes: ""}
+  - {input_path: "eps50_under_slab_volume_m3", from: {ref: "review_parameters.eps50_under_slab_volume_m3", source_class: AUTO_PROJECT}, required: true, transform: number_m3, fallback: null, notes: ""}
+  - {input_path: "concrete_project_volume_m3", from: {ref: "review_parameters.concrete_project_volume_m3", source_class: AUTO_PROJECT}, required: true, transform: number_m3, fallback: null, notes: ""}
+  - {input_path: "rebar_items", from: {ref: "detail_tables.foundation_rebar_items", source_class: DETAIL_TABLE}, required: true, transform: foundation_rebar_rows_to_calculator_items, fallback: null, notes: ""}
+  - {input_path: "*", from: {ref: "defaults + price_keys + supplier_inputs", source_class: DEFAULT}, required: true, transform: fill_remaining_calculator_fields, fallback: null, notes: "Adapter must not copy old fixture values."}
+
+estimate_lines:
+  - {code: planter_membrane_installation, name_ru: "Монтаж мембраны PLANTER стандарт", unit: "м2", enabled_by_default: true, calculator_result_path: "estimate_lines[code=planter_membrane_installation]", quantity: {formula: "membrane_area_m2", leaf_inputs: [{ref: review_parameters.membrane_area_m2, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: null, work_unit_price_key: membrane_installation_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: ""}
+  - {code: formwork_installation, name_ru: "Монтаж опалубки бортов фундаментной плиты", unit: "м2", enabled_by_default: true, calculator_result_path: "estimate_lines[code=formwork_installation]", quantity: {formula: "slab_side_formwork_area_m2", leaf_inputs: [{ref: review_parameters.slab_side_formwork_area_m2, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: null, work_unit_price_key: formwork_installation_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: ""}
+  - {code: eps50_laying_under_slab, name_ru: "Укладка ЭППС 50 мм под плитой", unit: "м2", enabled_by_default: true, calculator_result_path: "estimate_lines[code=eps50_laying_under_slab]", quantity: {formula: "eps50_under_slab_volume_m3 / eps50_thickness_m", leaf_inputs: [{ref: review_parameters.eps50_under_slab_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.eps50_thickness_m, source_class: DEFAULT}]}, prices: {material_unit_price_key: null, work_unit_price_key: eps50_laying_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: "Area in m2 calculated from m3 volume."}
+  - {code: foundation_slab_concreting_work, name_ru: "Бетонирование фундаментной плиты", unit: "м3", enabled_by_default: true, calculator_result_path: "estimate_lines[code=foundation_slab_concreting_work]", quantity: {formula: "concrete_project_volume_m3", leaf_inputs: [{ref: review_parameters.concrete_project_volume_m3, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: null, work_unit_price_key: concreting_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: ""}
+  - {code: rebar_items, name_ru: "Арматура фундаментной плиты по диаметрам", unit: "мп", enabled_by_default: true, calculator_result_path: "estimate_lines[code startswith rebar_]", quantity: {formula: "per foundation_rebar_items row", leaf_inputs: [{ref: detail_tables.foundation_rebar_items, source_class: DETAIL_TABLE}]}, prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: "Expands to one estimate line per rebar item."}
+
+workbook_layout:
+  review_workbook:
+    include_on_constructor: true
+    project_sheet: "01_Проверка проекта"
+    price_sheet: "02_Цены себестоимости"
+    details_sheet: "03_Детали объемов"
+    candidates_sheet: "05_Кандидаты parser"
+    raw_sheet: "06_Сырые данные parser"
+  final_estimate_workbook:
+    section_order: 2
+    section_row_name: "ФУНДАМЕНТНАЯ ПЛИТА"
+    white_zone: "A:I"
+    calc_zone: "J:O"
+    helper_zone: "P:V"
+    mini_table_zone: "W:AA+"
+
+checks:
+  required_source_classes: [AUTO_PROJECT, DETAIL_TABLE, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_review_parameters:
+    - membrane_area_m2
+    - slab_side_formwork_area_m2
+    - eps50_under_slab_volume_m3
+    - concrete_project_volume_m3
+  forbidden_production_inputs:
+    - old_fixture_values
+    - old_expected_result_values
+    - display_quantity_overrides
+    - legacy_perimeter_height
+    - legacy_weight_to_length
+  expected_estimate_line_count: 30
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "This is the first production contract pass; legacy compatibility inputs remain outside review workbook."
