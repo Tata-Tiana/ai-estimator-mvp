@@ -17,7 +17,7 @@ DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_06_earthworks_waterproofing_rev
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
-FILL_SECTION = PatternFill("solid", fgColor="666666")
+FILL_SECTION = PatternFill("solid", fgColor="E7E6E6")
 FILL_FOUND = PatternFill("solid", fgColor="D9EAD3")
 FILL_REVIEW = PatternFill("solid", fgColor="FCE4D6")
 FILL_MISSING = PatternFill("solid", fgColor="F4CCCC")
@@ -212,22 +212,22 @@ def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
     row_idx = ws.max_row
     for cell in ws[row_idx]:
         cell.fill = FILL_SECTION
-        cell.font = Font(name=FONT_NAME, bold=True, color="FFFFFF", size=10)
+        cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
 
 
 def restyle_section_bands(ws) -> None:
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
-        if row[0].fill.fgColor.rgb == "00666666":
+        if row[0].fill.fgColor.rgb == "00E7E6E6":
             for cell in row:
                 cell.fill = FILL_SECTION
-                cell.font = Font(name=FONT_NAME, bold=True, color="FFFFFF", size=10)
+                cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
 
 
 def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
     for col in range(1, max_col + 1):
         cell = ws.cell(row_idx, col)
         cell.fill = FILL_TECH
-        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+        cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
         cell.alignment = Alignment(wrap_text=True, vertical="center")
         cell.border = BORDER_THIN
 
@@ -494,21 +494,28 @@ def generic_detail_row(template: dict[str, Any]) -> list[Any]:
 def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("03_Детали объемов")
     ws.append(DETAIL_HEADERS)
+    has_detail_block = False
     for contract in contracts:
         tables = contract.get("detail_tables") or []
         if not tables:
             continue
+        if has_detail_block:
+            ws.append([])
         append_section_band(ws, [section_name(contract)], len(DETAIL_HEADERS))
+        has_detail_block = True
         for table in tables:
             ws.append(detail_template_row(contract, table))
             for cell in ws[ws.max_row]:
-                cell.fill = FILL_DETAIL
+                cell.fill = FILL_WHITE
+    if has_detail_block:
+        ws.append([])
     append_section_band(ws, ["Будущие detail-шаблоны"], len(DETAIL_HEADERS))
     for template in GENERIC_DETAIL_TEMPLATES:
+        ws.append([])
         append_section_band(ws, [template["title"]], len(DETAIL_HEADERS))
         ws.append(generic_detail_row(template))
         for cell in ws[ws.max_row]:
-            cell.fill = FILL_DETAIL
+            cell.fill = FILL_WHITE
 
     apply_table_style(ws)
     restyle_section_bands(ws)

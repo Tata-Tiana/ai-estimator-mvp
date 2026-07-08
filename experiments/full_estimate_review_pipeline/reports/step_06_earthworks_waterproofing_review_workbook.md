@@ -79,7 +79,7 @@ Builder output:
 | detail table templates | 8 |
 | `01_Проверка проекта` max row | 15 |
 | `02_Цены себестоимости` max row | 21 |
-| `03_Детали объемов` max row | 17 |
+| `03_Детали объемов` max row | 24 |
 
 Expected:
 
@@ -122,13 +122,16 @@ This matches the estimate-like grouping requested for the review workbook, while
 
 Visual rule:
 
-- section title rows are dark gray;
+- table header rows are light gray (`D9D9D9`), with black bold Arial 10;
+- section/block title rows are the same light gray used by the earthworks review workbook (`E7E6E6`), with black bold Arial 10;
+- normal data rows use Arial 11;
 - status/attention colors are reserved for real row status only:
   - found = green;
   - review/check = peach;
   - missing = red.
 - header filter arrows are not enabled in the local workbook; Google Sheets may show its own UI controls only if filters are later turned on manually.
 - `04_Инструкция` keeps a narrow numeric first column to avoid spreadsheet "number stored as text" indicators.
+- `03_Детали объемов` follows the earthworks reference layout: gray block rows, white data rows, and a blank row between detail blocks.
 
 Hidden technical columns are kept for deterministic readers:
 
