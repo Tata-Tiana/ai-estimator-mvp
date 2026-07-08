@@ -35,8 +35,19 @@ The Google review table stage is split into two checkable substeps:
    `section_contract.yaml -> review workbook .xlsx`.
 2. Google publish:
    reviewed local `.xlsx -> Google Sheet`.
+3. Review download:
+   `Google Sheet with Elena edits -> downloaded .xlsx -> normalized review JSON -> calculator inputs`.
 
-Step 6 completes substep 1. Substep 2 should be checked separately after the local workbook structure is approved, because publishing tests OAuth/network/sheet behavior while the local builder tests architecture and layout.
+Step 6 completes substep 1. Substeps 2 and 3 should be checked separately after the local workbook structure is approved, because publishing tests OAuth/network/sheet behavior, while downloading back tests the real production handoff: Elena's corrections must be read from the downloaded workbook and then passed into calculators.
+
+Hidden technical columns are part of that download-back check, but they are not the whole point. The real acceptance condition is:
+
+```text
+Elena edits Google Sheet
+-> system downloads the edited workbook
+-> reader builds normalized review JSON from the downloaded workbook
+-> calculator adapters use those reviewed values
+```
 
 ## 3. Workbook Sheets
 
@@ -95,6 +106,14 @@ Rows are grouped by section:
 
 This matches the estimate-like grouping requested for the review workbook, while keeping the review workbook separate from the final estimate workbook.
 
+Visual rule:
+
+- section title rows are dark gray;
+- status/attention colors are reserved for real row status only:
+  - found = green;
+  - review/check = peach;
+  - missing = red.
+
 Hidden technical columns are kept for deterministic readers:
 
 - `01_Проверка проекта`: section/technical/source fields;
@@ -138,7 +157,15 @@ experiments/full_estimate_review_pipeline/output/step_06_earthworks_waterproofin
 After visual approval, add a separate Google publish step:
 
 ```text
-local review workbook .xlsx -> Google Sheet -> downloaded workbook -> same row/count checks
+local review workbook .xlsx
+-> Google Sheet
+-> Elena edits/checks values
+-> downloaded workbook
+-> normalized review JSON
+-> calculator input
 ```
 
-That publish step should confirm that Google Sheets did not drop hidden technical columns needed by the reader.
+That publish/download step should confirm both things:
+
+- Elena's corrections in visible columns are read back and override parser values;
+- Google Sheets did not drop hidden technical columns needed by the reader.

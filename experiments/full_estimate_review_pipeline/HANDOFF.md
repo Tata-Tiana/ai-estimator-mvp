@@ -233,7 +233,13 @@ Local workbook:
 
 - `output/step_06_earthworks_waterproofing_review.xlsx`
 
-Step 6 builds the local `.xlsx` review workbook from contracts. Publishing that workbook to a real Google Sheet is the next separate checkpoint, because it tests OAuth/Google export behavior and hidden technical columns. Do not merge the local builder check with the Google publish check.
+Step 6 builds the local `.xlsx` review workbook from contracts. Publishing that workbook to a real Google Sheet is the next separate checkpoint, and downloading it back after Elena edits is the checkpoint after that. The downloaded workbook is the source of truth for normalized review JSON and calculator inputs. Hidden technical columns must survive, but the main check is that visible user corrections are read from the downloaded Google Sheet and used by calculators.
+
+Do not merge these checks:
+
+1. local workbook builder check;
+2. Google publish check;
+3. downloaded edited workbook -> normalized JSON -> calculator input check.
 
 Step report:
 

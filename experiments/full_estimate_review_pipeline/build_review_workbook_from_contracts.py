@@ -18,8 +18,11 @@ DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_06_earthworks_waterproofing_rev
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
-FILL_SECTION = PatternFill("solid", fgColor="F4CCCC")
-FILL_INPUT = PatternFill("solid", fgColor="D9EAD3")
+FILL_SECTION = PatternFill("solid", fgColor="666666")
+FILL_FOUND = PatternFill("solid", fgColor="D9EAD3")
+FILL_REVIEW = PatternFill("solid", fgColor="FCE4D6")
+FILL_MISSING = PatternFill("solid", fgColor="F4CCCC")
+FILL_INPUT = FILL_REVIEW
 FILL_PRICE = PatternFill("solid", fgColor="D9EAD3")
 FILL_DETAIL = PatternFill("solid", fgColor="DAE8FC")
 FILL_TECH = PatternFill("solid", fgColor="E7E6E6")
@@ -32,7 +35,6 @@ BORDER_THIN = Border(
 )
 
 PROJECT_HEADERS = [
-    "Раздел",
     "Что проверяем",
     "Найдено в проекте",
     "Ед.",
@@ -68,8 +70,6 @@ PRICE_HEADERS = [
 ]
 
 DETAIL_HEADERS = [
-    "Раздел",
-    "Таблица",
     "Тип",
     "Наименование",
     "Длина, м",
@@ -86,6 +86,17 @@ DETAIL_HEADERS = [
     "Комментарий Елены",
     "section_code",
     "detail_table_key",
+]
+
+CANONICAL_SECTIONS = [
+    ("earthworks", "Земляные работы"),
+    ("foundation_slab", "Фундаментная плита"),
+    ("waterproofing", "Гидроизоляция"),
+    ("load_bearing_walls_lintels", "Стены и перемычки"),
+    ("floor_slab_1", "Перекрытие 1 этажа"),
+    ("floor_slab_2", "Перекрытие 2 этажа"),
+    ("flat_roof", "Кровля"),
+    ("schiedel_vent_channels", "Schiedel / вентканалы"),
 ]
 
 
@@ -144,7 +155,15 @@ def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
     row_idx = ws.max_row
     for cell in ws[row_idx]:
         cell.fill = FILL_SECTION
-        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+        cell.font = Font(name=FONT_NAME, bold=True, color="FFFFFF", size=10)
+
+
+def restyle_section_bands(ws) -> None:
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
+        if row[0].fill.fgColor.rgb == "00666666":
+            for cell in row:
+                cell.fill = FILL_SECTION
+                cell.font = Font(name=FONT_NAME, bold=True, color="FFFFFF", size=10)
 
 
 def section_name(contract: dict[str, Any]) -> str:
@@ -166,29 +185,36 @@ def price_role_ru(price_kind: str) -> str:
 def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.active
     ws.title = "00_Конструктор сметы"
+    contracts_by_code = {section_code(contract): contract for contract in contracts}
     headers = [
         "Раздел сметы",
         "Код раздела",
         "Включить в смету",
         "Статус готовности",
-        "Строк проверки",
-        "Цены",
-        "Детализации",
-        "Строк сметы",
+        "Что сейчас проверяется",
         "Комментарий",
     ]
     ws.append(headers)
-    for contract in contracts:
+    for code, name in CANONICAL_SECTIONS:
+        contract = contracts_by_code.get(code)
+        enabled = "да" if contract is not None else "нет"
+        status = contract["section"].get("status", "") if contract else "позже"
+        current_check = ""
+        comment = ""
+        if contract:
+            current_check = "проверка проектных данных, цен и деталей"
+            comment = (
+                f"строки проверки: {len(contract.get('review_parameters') or [])}; "
+                f"цены: {len(contract.get('price_keys') or [])}; "
+                f"детали: {len(contract.get('detail_tables') or [])}"
+            )
         ws.append([
-            section_name(contract),
-            section_code(contract),
-            "да",
-            contract["section"].get("status", ""),
-            len(contract.get("review_parameters") or []),
-            len(contract.get("price_keys") or []),
-            len(contract.get("detail_tables") or []),
-            len(contract.get("estimate_lines") or []),
-            contract["section"].get("owner_notes", ""),
+            name,
+            code,
+            enabled,
+            status,
+            current_check,
+            comment,
         ])
 
     validation = DataValidation(type="list", formula1='"да,нет"', allow_blank=False)
@@ -196,29 +222,23 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
     validation.add(f"C2:C{ws.max_row}")
     apply_table_style(ws)
     set_widths(ws, {
-        "A": 34,
-        "B": 24,
-        "C": 16,
-        "D": 20,
-        "E": 14,
-        "F": 10,
-        "G": 14,
-        "H": 12,
-        "I": 72,
+        "A": 22,
+        "B": 22,
+        "C": 22,
+        "D": 24,
+        "E": 44,
+        "F": 80,
     })
 
 
 def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("01_Проверка проекта")
-    ws.append(["Review workbook: проектные входы из section contracts", "", "", "", "", "", "", "", "", "", "", "", "", ""])
+    ws.append(["Разбор проекта:\nземляные работы + гидроизоляция", "", "", "", "", "", "", "", "", "", "", "", ""])
     ws.append([
-        "Проверочный лист",
-        "Значения здесь должны приходить из parser/chat JSON или ручной правки.",
-        "",
-        "",
-        "",
-        "",
-        "",
+        "Найдено уверенно: 0",
+        "Проверьте: 9",
+        "Не найдено: 0",
+        "Ручной ввод: 0",
         "",
         "",
         "",
@@ -231,15 +251,14 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws.append(PROJECT_HEADERS)
 
     for contract in contracts:
-        append_section_band(ws, [section_name(contract), section_code(contract)], len(PROJECT_HEADERS))
+        append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
         for param in contract.get("review_parameters") or []:
             review_behavior = param.get("review_behavior") or {}
             ws.append([
-                section_name(contract),
                 param.get("label_ru", param.get("key", "")),
                 None,
                 param.get("unit", ""),
-                "Ожидает извлечения",
+                "Проверьте",
                 review_behavior.get("action_ru", "Проверьте значение."),
                 "",
                 "",
@@ -256,24 +275,24 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
     ws.cell(1, 1).fill = FILL_HEADER
     apply_table_style(ws, header_row=4)
+    restyle_section_bands(ws)
     ws.freeze_panes = "A5"
     set_widths(ws, {
         "A": 30,
-        "B": 38,
-        "C": 20,
-        "D": 10,
-        "E": 20,
-        "F": 62,
-        "G": 36,
-        "H": 58,
+        "B": 22,
+        "C": 10,
+        "D": 16,
+        "E": 62,
+        "F": 48,
+        "G": 64,
+        "H": 28,
         "I": 28,
-        "J": 28,
-        "K": 20,
-        "L": 28,
-        "M": 18,
-        "N": 24,
+        "J": 20,
+        "K": 28,
+        "L": 18,
+        "M": 24,
     })
-    for column in ["K", "L", "M", "N"]:
+    for column in ["J", "K", "L", "M"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -305,6 +324,7 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
                 cell.fill = FILL_PRICE
 
     apply_table_style(ws)
+    restyle_section_bands(ws)
     set_widths(ws, {
         "A": 30,
         "B": 42,
@@ -337,9 +357,7 @@ def detail_template_row(contract: dict[str, Any], table: dict[str, Any]) -> list
         return f"{item.get('label_ru', key)}{', ' + unit if unit else ''}"
 
     return [
-        section_name(contract),
         table.get("label_ru", table.get("key", "")),
-        "Шаблон строк",
         label("name") or "Наименование",
         label("length_m"),
         label("depth_m"),
@@ -365,34 +383,33 @@ def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         tables = contract.get("detail_tables") or []
         if not tables:
             continue
-        append_section_band(ws, [section_name(contract), section_code(contract)], len(DETAIL_HEADERS))
+        append_section_band(ws, [section_name(contract)], len(DETAIL_HEADERS))
         for table in tables:
             ws.append(detail_template_row(contract, table))
             for cell in ws[ws.max_row]:
                 cell.fill = FILL_DETAIL
 
     apply_table_style(ws)
+    restyle_section_bands(ws)
     set_widths(ws, {
-        "A": 30,
-        "B": 30,
-        "C": 18,
-        "D": 34,
-        "E": 16,
+        "A": 18,
+        "B": 44,
+        "C": 14,
+        "D": 14,
+        "E": 14,
         "F": 16,
         "G": 16,
-        "H": 16,
-        "I": 16,
+        "H": 18,
+        "I": 14,
         "J": 18,
         "K": 14,
-        "L": 18,
-        "M": 14,
-        "N": 34,
-        "O": 54,
-        "P": 24,
-        "Q": 20,
-        "R": 26,
+        "L": 44,
+        "M": 78,
+        "N": 24,
+        "O": 20,
+        "P": 26,
     })
-    for column in ["Q", "R"]:
+    for column in ["O", "P"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -509,7 +526,7 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
 
     project_rows = 0
     for row_idx in range(5, ws_project.max_row + 1):
-        if cell_text(ws_project.cell(row_idx, 12).value):
+        if cell_text(ws_project.cell(row_idx, 11).value):
             project_rows += 1
 
     price_rows = 0
@@ -519,7 +536,7 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
 
     detail_template_rows = 0
     for row_idx in range(2, ws_details.max_row + 1):
-        if cell_text(ws_details.cell(row_idx, 18).value):
+        if cell_text(ws_details.cell(row_idx, 16).value):
             detail_template_rows += 1
 
     return {
