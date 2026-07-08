@@ -1,0 +1,683 @@
+contract_version: 0.1
+
+section:
+  code: schiedel_vent_channels
+  name_ru: "Вентиляционные каналы Schiedel"
+  calculator_module: "experiments/schiedel_vent_channels_calculator/calculator.py"
+  status: draft
+  owner_notes: "Production contract: no old project values, fixture totals, or control-value overrides."
+
+source_files:
+  calculator: "experiments/schiedel_vent_channels_calculator/calculator.py"
+  calculator_readme: "experiments/schiedel_vent_channels_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "docs/report_schiedel_vent_channels_calculator.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: schiedel_masonry_total_length_m
+    label_ru: "Общая длина кладки вентканалов Schiedel"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "schiedel_masonry_total_length_m"
+    calculator_input_path: "schiedel_masonry_total_length_m"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.schiedel_masonry_total_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "schiedel_masonry_total_length_m"
+        - "vent_channel_1_height"
+        - "vent_channel_2_height"
+      aliases_ru:
+        - "общая высота вентканалов"
+        - "общая длина кладки вентканалов"
+        - "кладку вентблока вести"
+        - "высота вентканалов общая"
+      expected_unit: "мп"
+      notes: "Primary quantity for masonry work. If PDF gives separate heights, keep candidates and calculate only after review."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте общую длину/высоту кладки вентканалов Schiedel."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Do not use old displayed rounded quantity as calculator quantity."
+
+  - key: vent_channel_1_height_m
+    label_ru: "Высота вентканала 1"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "vent_channel_1_height"
+    calculator_input_path: "vent_channel_1_height_m"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_1_height_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "vent_channel_1_height"
+      aliases_ru:
+        - "высота вентканала 1"
+        - "вентканал ВК-1 высота"
+        - "канал 1 высота"
+      expected_unit: "м"
+      notes: "Control value for masonry length; if numbering is unclear, keep alternatives."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_control"
+      action_ru: "Проверьте высоту вентканала 1 как контроль длины кладки."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Control input, not a separate estimate line."
+
+  - key: vent_channel_2_height_m
+    label_ru: "Высота вентканала 2"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "vent_channel_2_height"
+    calculator_input_path: "vent_channel_2_height_m"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_2_height_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "vent_channel_2_height"
+      aliases_ru:
+        - "высота вентканала 2"
+        - "вентканал ВК-2 высота"
+        - "канал 2 высота"
+      expected_unit: "м"
+      notes: "Control value for masonry length; if numbering is unclear, keep alternatives."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_control"
+      action_ru: "Проверьте высоту вентканала 2 как контроль длины кладки."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Control input, not a separate estimate line."
+
+  - key: vent_channel_2_count
+    label_ru: "Количество вентканалов типа 2 для контроля длины"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "vent_channel_2_count"
+    calculator_input_path: "vent_channel_2_count"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_2_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "vent_channel_2_count"
+      aliases_ru:
+        - "количество вентканалов типа 2"
+        - "ВК-2 количество"
+        - "VENT 2 количество"
+      expected_unit: "шт"
+      notes: "Control count for masonry length formula; not the same as Schiedel material purchase count."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_control"
+      action_ru: "Проверьте количество вентканалов типа 2 для контрольной формулы длины."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Do not confuse with schiedel_vent_channel_2x_count supplier input."
+
+detail_tables:
+  - key: vent_chimney_cladding_segments
+    label_ru: "Сегменты / строки спецификации вентканалов"
+    source_class: DETAIL_TABLE
+    required: false
+    review_sheet: "03_Детали объемов"
+    normalized_json_path: "sections.schiedel_vent_channels.detail_tables.vent_chimney_cladding_segments.rows"
+    columns:
+      - key: name
+        label_ru: "Наименование"
+        unit: ""
+        value_kind: string
+      - key: length_m
+        label_ru: "Высота / длина"
+        unit: "м"
+        value_kind: number
+      - key: quantity
+        label_ru: "Количество"
+        unit: "шт"
+        value_kind: number
+      - key: total_length_m
+        label_ru: "Итоговая длина"
+        unit: "м"
+        value_kind: number
+      - key: source
+        label_ru: "Источник"
+        unit: ""
+        value_kind: string
+      - key: fragment
+        label_ru: "Фрагмент проекта"
+        unit: ""
+        value_kind: string
+    notes: "Optional diagnostic table; calculator quantity still comes from reviewed scalar inputs."
+
+price_keys:
+  - key: schiedel_masonry_work_rate_per_m
+    estimate_line_code: schiedel_masonry_work
+    label_ru: "Кладка вентканалов Schiedel"
+    price_kind: work
+    unit: "мп"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_masonry_work_m"
+    fallback_key: "schiedel_masonry_work_rate_per_m"
+    allow_manual_override: true
+    notes: ""
+
+  - key: schiedel_vent_channel_2x_unit_price
+    estimate_line_code: schiedel_vent_channel_2x_36_25
+    label_ru: "Вентиляционный канал 2х,36/25 см Schiedel"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_vent_channel_2x_36_25_item"
+    fallback_key: "schiedel_vent_channel_2x_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: schiedel_vent_channel_3x_unit_price
+    estimate_line_code: schiedel_vent_channel_3x_52_25
+    label_ru: "Вентиляционный канал 3х,52/25 см Schiedel"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_vent_channel_3x_52_25_item"
+    fallback_key: "schiedel_vent_channel_3x_unit_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: schiedel_delivery_truck_price
+    estimate_line_code: schiedel_delivery
+    label_ru: "Доставка вентканалов, машина"
+    price_kind: material
+    unit: "маш"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_delivery_truck"
+    fallback_key: "schiedel_delivery_truck_price"
+    allow_manual_override: true
+    notes: ""
+
+  - key: schiedel_delivery_work_price
+    estimate_line_code: schiedel_delivery
+    label_ru: "Доставка вентканалов, работа"
+    price_kind: work
+    unit: "маш"
+    required: true
+    default_source: fallback_manual_review
+    registry_code: ""
+    fallback_key: "schiedel_delivery_work_price"
+    allow_manual_override: true
+    notes: "No registry code in current calculator; review/fallback price is required."
+
+defaults:
+  - key: project_name
+    label_ru: "Название проекта"
+    source_class: DEFAULT
+    value: null
+    unit: ""
+    calculator_input_path: "project_name"
+    source_note: "Set by job/project metadata, not extracted from section table."
+    allow_override_later: true
+    notes: ""
+
+  - key: consumables_rate
+    label_ru: "Коэффициент расходников и амортизации инструмента"
+    source_class: DEFAULT
+    value: 0.03
+    unit: ""
+    calculator_input_path: "consumables_rate"
+    source_note: "Business coefficient from calculator method; not extracted from project PDF."
+    allow_override_later: true
+    notes: "Applied to direct Schiedel cost base before consumables."
+
+supplier_inputs:
+  - key: schiedel_vent_channel_2x_count
+    label_ru: "Вентиляционный канал 2х,36/25 см Schiedel — количество"
+    unit: "шт"
+    source_class: SUPPLIER_INPUT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "schiedel_vent_channel_2x_count"
+    calculator_input_path: "schiedel_vent_channel_2x_count"
+    normalized_json_path: "sections.schiedel_vent_channels.supplier_inputs.schiedel_vent_channel_2x_count.value"
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Подтвердите закупочное количество Schiedel 2х по спецификации или таблице Елены."
+    notes: "Do not derive automatically from old control values."
+
+  - key: schiedel_vent_channel_3x_count
+    label_ru: "Вентиляционный канал 3х,52/25 см Schiedel — количество"
+    unit: "шт"
+    source_class: SUPPLIER_INPUT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "schiedel_vent_channel_3x_count"
+    calculator_input_path: "schiedel_vent_channel_3x_count"
+    normalized_json_path: "sections.schiedel_vent_channels.supplier_inputs.schiedel_vent_channel_3x_count.value"
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Подтвердите закупочное количество Schiedel 3х по спецификации или таблице Елены."
+    notes: "Do not derive automatically from old control values."
+
+  - key: schiedel_delivery_trips
+    label_ru: "Количество доставок вентканалов"
+    unit: "маш"
+    source_class: MANUAL_REVIEW
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: ""
+    calculator_input_path: "schiedel_delivery_trips"
+    normalized_json_path: "sections.schiedel_vent_channels.supplier_inputs.schiedel_delivery_trips.value"
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Введите или подтвердите количество доставок вентканалов."
+    notes: "Manual logistics input; not extracted from PDF by default."
+
+auto_calculated:
+  - key: schiedel_masonry_control_length_m
+    label_ru: "Контрольная длина кладки вентканалов"
+    source_class: AUTO_CALCULATED
+    formula: "vent_channel_1_height_m + vent_channel_2_height_m * vent_channel_2_count"
+    leaf_inputs:
+      - ref: review_parameters.vent_channel_1_height_m
+        source_class: AUTO_PROJECT
+      - ref: review_parameters.vent_channel_2_height_m
+        source_class: AUTO_PROJECT
+      - ref: review_parameters.vent_channel_2_count
+        source_class: AUTO_PROJECT
+    calculator_input_path: ""
+    notes: "Diagnostic control only; primary calculator quantity is schiedel_masonry_total_length_m."
+
+  - key: schiedel_direct_cost_base_before_consumables
+    label_ru: "База прямых затрат Schiedel до расходников"
+    source_class: AUTO_CALCULATED
+    formula: "masonry work + 2x material + 3x material + delivery"
+    leaf_inputs:
+      - ref: review_parameters.schiedel_masonry_total_length_m
+        source_class: AUTO_PROJECT
+      - ref: supplier_inputs.schiedel_vent_channel_2x_count
+        source_class: SUPPLIER_INPUT
+      - ref: supplier_inputs.schiedel_vent_channel_3x_count
+        source_class: SUPPLIER_INPUT
+      - ref: supplier_inputs.schiedel_delivery_trips
+        source_class: MANUAL_REVIEW
+      - ref: price_keys
+        source_class: PRICE
+    calculator_input_path: ""
+    notes: ""
+
+  - key: schiedel_consumables_amount
+    label_ru: "Расходные материалы, амортизация инструмента"
+    source_class: AUTO_CALCULATED
+    formula: "schiedel_direct_cost_base_before_consumables * consumables_rate"
+    leaf_inputs:
+      - ref: auto_calculated.schiedel_direct_cost_base_before_consumables
+        source_class: AUTO_CALCULATED
+      - ref: defaults.consumables_rate
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: ""
+
+calculator_input_mapping:
+  - input_path: "project_name"
+    from:
+      ref: "defaults.project_name"
+      source_class: DEFAULT
+    required: true
+    transform: job_metadata_project_name
+    fallback: null
+    notes: ""
+
+  - input_path: "schiedel_masonry_total_length_m"
+    from:
+      ref: "review_parameters.schiedel_masonry_total_length_m"
+      source_class: AUTO_PROJECT
+    required: true
+    transform: number_m
+    fallback: null
+    notes: ""
+
+  - input_path: "vent_channel_1_height_m"
+    from:
+      ref: "review_parameters.vent_channel_1_height_m"
+      source_class: AUTO_PROJECT
+    required: false
+    transform: number_m
+    fallback: null
+    notes: "Optional control value."
+
+  - input_path: "vent_channel_2_height_m"
+    from:
+      ref: "review_parameters.vent_channel_2_height_m"
+      source_class: AUTO_PROJECT
+    required: false
+    transform: number_m
+    fallback: null
+    notes: "Optional control value."
+
+  - input_path: "vent_channel_2_count"
+    from:
+      ref: "review_parameters.vent_channel_2_count"
+      source_class: AUTO_PROJECT
+    required: false
+    transform: number_count
+    fallback: null
+    notes: "Optional control value."
+
+  - input_path: "schiedel_vent_channel_2x_count"
+    from:
+      ref: "supplier_inputs.schiedel_vent_channel_2x_count"
+      source_class: SUPPLIER_INPUT
+    required: true
+    transform: number_count
+    fallback: null
+    notes: ""
+
+  - input_path: "schiedel_vent_channel_3x_count"
+    from:
+      ref: "supplier_inputs.schiedel_vent_channel_3x_count"
+      source_class: SUPPLIER_INPUT
+    required: true
+    transform: number_count
+    fallback: null
+    notes: ""
+
+  - input_path: "schiedel_delivery_trips"
+    from:
+      ref: "supplier_inputs.schiedel_delivery_trips"
+      source_class: MANUAL_REVIEW
+    required: true
+    transform: number_count
+    fallback: null
+    notes: ""
+
+  - input_path: "*"
+    from:
+      ref: "defaults + price_keys"
+      source_class: DEFAULT
+    required: true
+    transform: fill_remaining_calculator_fields
+    fallback: null
+    notes: "Adapter must fill defaults and resolved prices without copying old fixture values."
+
+estimate_lines:
+  - code: schiedel_masonry_work
+    name_ru: "Кладка вентканалов Schiedel"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=schiedel_masonry_work]"
+    quantity:
+      formula: "schiedel_masonry_total_length_m"
+      formula_model:
+        type: reference
+        ref: "review_parameters.schiedel_masonry_total_length_m"
+      leaf_inputs:
+        - ref: "review_parameters.schiedel_masonry_total_length_m"
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: schiedel_masonry_work_rate_per_m
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Use raw reviewed length, not rounded display quantity."
+
+  - code: schiedel_vent_channel_2x_36_25
+    name_ru: "Вентиляционный канал 2х,36/25 см Schiedel"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=schiedel_vent_channel_2x_36_25]"
+    quantity:
+      formula: "schiedel_vent_channel_2x_count"
+      formula_model:
+        type: reference
+        ref: "supplier_inputs.schiedel_vent_channel_2x_count"
+      leaf_inputs:
+        - ref: "supplier_inputs.schiedel_vent_channel_2x_count"
+          source_class: SUPPLIER_INPUT
+    prices:
+      material_unit_price_key: schiedel_vent_channel_2x_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Manual/specification quantity; not derived from control values."
+
+  - code: schiedel_vent_channel_3x_52_25
+    name_ru: "Вентиляционный канал 3х,52/25 см Schiedel"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=schiedel_vent_channel_3x_52_25]"
+    quantity:
+      formula: "schiedel_vent_channel_3x_count"
+      formula_model:
+        type: reference
+        ref: "supplier_inputs.schiedel_vent_channel_3x_count"
+      leaf_inputs:
+        - ref: "supplier_inputs.schiedel_vent_channel_3x_count"
+          source_class: SUPPLIER_INPUT
+    prices:
+      material_unit_price_key: schiedel_vent_channel_3x_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Manual/specification quantity; not derived from control values."
+
+  - code: schiedel_delivery
+    name_ru: "Доставка вентканалов"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=schiedel_delivery]"
+    quantity:
+      formula: "schiedel_delivery_trips"
+      formula_model:
+        type: reference
+        ref: "supplier_inputs.schiedel_delivery_trips"
+      leaf_inputs:
+        - ref: "supplier_inputs.schiedel_delivery_trips"
+          source_class: MANUAL_REVIEW
+    prices:
+      material_unit_price_key: schiedel_delivery_truck_price
+      work_unit_price_key: schiedel_delivery_work_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Manual logistics quantity."
+
+  - code: schiedel_consumables_tool_depreciation
+    name_ru: "Расходные материалы, амортизация инструмента"
+    unit: "комплект"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=schiedel_consumables_tool_depreciation]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs:
+        - ref: "auto_calculated.schiedel_direct_cost_base_before_consumables"
+          source_class: AUTO_CALCULATED
+        - ref: "defaults.consumables_rate"
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: schiedel_consumables_amount
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Amount is calculated as direct Schiedel base times consumables rate."
+
+  - code: technical_supervision_zero
+    name_ru: "Технический надзор"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=technical_supervision_zero]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs: []
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Zero Excel structure line."
+
+  - code: procurement_storage_zero
+    name_ru: "Заготовительно-складские расходы"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=procurement_storage_zero]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs: []
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Zero Excel structure line."
+
+  - code: overhead_zero
+    name_ru: "Накладные и общехозяйственные расходы"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=overhead_zero]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs: []
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Zero Excel structure line."
+
+  - code: profit_zero
+    name_ru: "Сметная прибыль"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=profit_zero]"
+    quantity:
+      formula: "1"
+      formula_model:
+        type: fixed_quantity
+        value: 1
+      leaf_inputs: []
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Zero Excel structure line."
+
+workbook_layout:
+  review_workbook:
+    include_on_constructor: true
+    project_sheet: "01_Проверка проекта"
+    price_sheet: "02_Цены себестоимости"
+    details_sheet: "03_Детали объемов"
+    candidates_sheet: "05_Кандидаты parser"
+    raw_sheet: "06_Сырые данные parser"
+  final_estimate_workbook:
+    section_order: 8
+    section_row_name: "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel"
+    white_zone: "A:I"
+    calc_zone: "J:O"
+    helper_zone: "P:V"
+    mini_table_zone: "W:AA+"
+
+checks:
+  required_source_classes:
+    - AUTO_PROJECT
+    - DETAIL_TABLE
+    - DEFAULT
+    - AUTO_CALCULATED
+    - PRICE
+    - SUPPLIER_INPUT
+    - MANUAL_REVIEW
+  required_review_parameters:
+    - schiedel_masonry_total_length_m
+  required_supplier_inputs:
+    - schiedel_vent_channel_2x_count
+    - schiedel_vent_channel_3x_count
+    - schiedel_delivery_trips
+  forbidden_production_inputs:
+    - old_control_blocks_raw
+    - legacy_secondary_control_metrics
+    - old_fixture_values
+    - expected_totals
+    - display_quantity_overrides
+  expected_estimate_line_count: 9
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    expected_totals_allowed: false
+  notes: "Production adapter must fail if supplier/manual quantities are missing; it must not infer Schiedel material counts from legacy control numbers."

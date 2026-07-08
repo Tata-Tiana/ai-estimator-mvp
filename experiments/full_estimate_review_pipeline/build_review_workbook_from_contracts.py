@@ -13,7 +13,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = ROOT / "experiments" / "full_estimate_review_pipeline"
-DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_06_earthworks_waterproofing_review.xlsx"
+DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_07_earthworks_waterproofing_schiedel_review.xlsx"
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
@@ -176,6 +176,7 @@ def default_contract_paths() -> list[Path]:
     return [
         PIPELINE_DIR / "sections" / "earthworks" / "section_contract.yaml",
         PIPELINE_DIR / "sections" / "waterproofing" / "section_contract.yaml",
+        PIPELINE_DIR / "sections" / "schiedel_vent_channels" / "section_contract.yaml",
     ]
 
 
@@ -278,6 +279,10 @@ def price_role_ru(price_kind: str) -> str:
     }.get(price_kind, price_kind)
 
 
+def review_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    return (contract.get("review_parameters") or []) + (contract.get("supplier_inputs") or [])
+
+
 def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.active
     ws.title = "00_Конструктор сметы"
@@ -300,7 +305,7 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
         if contract:
             current_check = "проверка проектных данных, цен и деталей"
             comment = (
-                f"строки проверки: {len(contract.get('review_parameters') or [])}; "
+                f"строки проверки: {len(review_rows_for_contract(contract))}; "
                 f"цены: {len(contract.get('price_keys') or [])}; "
                 f"детали: {len(contract.get('detail_tables') or [])}"
             )
@@ -329,10 +334,11 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
 
 def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("01_Проверка проекта")
-    ws.append(["Разбор проекта:\nземляные работы + гидроизоляция", "", "", "", "", "", "", "", "", "", "", "", ""])
+    ws.append(["Разбор проекта:\nземляные работы + гидроизоляция + Schiedel", "", "", "", "", "", "", "", "", "", "", "", ""])
+    review_count = sum(len(review_rows_for_contract(contract)) for contract in contracts)
     ws.append([
         "Найдено уверенно: 0",
-        "Проверьте: 9",
+        f"Проверьте: {review_count}",
         "Не найдено: 0",
         "Ручной ввод: 0",
         "",
@@ -348,7 +354,7 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
 
     for contract in contracts:
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
-        for param in contract.get("review_parameters") or []:
+        for param in review_rows_for_contract(contract):
             review_behavior = param.get("review_behavior") or {}
             ws.append([
                 param.get("label_ru", param.get("key", "")),
@@ -560,7 +566,7 @@ def build_instruction_sheet(wb: Workbook) -> None:
 
 def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("05_Кандидаты parser")
-    total_review = sum(len(contract.get("review_parameters") or []) for contract in contracts)
+    total_review = sum(len(review_rows_for_contract(contract)) for contract in contracts)
     total_prices = sum(len(contract.get("price_keys") or []) for contract in contracts)
     total_detail = sum(len(contract.get("detail_tables") or []) for contract in contracts)
     total_defaults = sum(len(contract.get("defaults") or []) for contract in contracts)
@@ -573,7 +579,7 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
         [
             ["source", "section_contracts", "workbook собран локально из section_contract.yaml"],
             ["sections_count", len(contracts), "сколько section contracts загружено"],
-            ["review_parameters_count", total_review, "сколько строк проверки проекта"],
+            ["review_rows_count", total_review, "сколько строк проверки проекта, включая supplier/manual inputs"],
             ["price_rows_count", total_prices, "сколько строк цен"],
             ["detail_templates_count", total_detail + len(GENERIC_DETAIL_TEMPLATES), "сколько detail-шаблонов"],
             ["defaults_count", total_defaults, "числовые default/ручные параметры остаются в contracts"],
@@ -587,9 +593,10 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
         contract_rows.append([
             section_code(contract),
             section_name(contract),
-            len(contract.get("review_parameters") or []),
+            len(review_rows_for_contract(contract)),
             len(contract.get("price_keys") or []),
             len(contract.get("detail_tables") or []),
+            len(contract.get("supplier_inputs") or []),
             len(contract.get("defaults") or []),
             len(contract.get("auto_calculated") or []),
             len(contract.get("estimate_lines") or []),
@@ -601,9 +608,10 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
         [
             "section_code",
             "section_name",
-            "review_parameters",
+            "review_rows",
             "price_keys",
             "detail_tables",
+            "supplier_inputs",
             "defaults",
             "auto_calculated",
             "estimate_lines",
@@ -648,7 +656,8 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
         "F": 18,
         "G": 22,
         "H": 18,
-        "I": 100,
+        "I": 18,
+        "J": 100,
     })
     header_rows = block_header_rows(ws)
     for row in ws.iter_rows(min_row=1):
@@ -676,6 +685,7 @@ def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> 
             "review_parameters",
             "price_keys",
             "detail_tables",
+            "supplier_inputs",
             "defaults",
             "auto_calculated",
             "estimate_lines",
