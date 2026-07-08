@@ -47,18 +47,38 @@ Price keys:
 
 Prices must come from price registry/project overrides/reviewed price rows, not from old cases.
 
-## 4. Defaults
+## 4. Defaults And Manual Inputs
 
 Defaults/modes are separated from project extraction:
 
 - production mode: `waterproofing_area_calc_method = spec_area`;
-- material thickness: `eps100_wall_thickness_m`;
-- primer/mastic consumption and package defaults;
-- EPS waste and pack defaults;
-- glue foam coverage/minimum defaults;
-- logistics and consumables coefficients.
+- material thickness: `eps100_wall_thickness_m = 0.1`;
+- primer/mastic consumption and package defaults:
+  `primer_consumption_l_per_m2 = 0.3`,
+  `primer_canister_volume_l = 18`,
+  `mastic_consumption_kg_per_m2_per_layer = 1`,
+  `mastic_layers = 2`,
+  `mastic_bucket_weight_kg = 18`;
+- EPS waste and pack defaults:
+  `eps_waste_coeff = 1.05`,
+  `eps100_pack_volume_m3 = 0.2776`;
+- glue foam coverage/minimum defaults:
+  `glue_foam_coverage_m2_per_can = 10`,
+  `glue_foam_min_units = 1`;
+- business coefficients:
+  `waterproofing_logistics_coeff = 0.02`,
+  `waterproofing_consumables_coeff = 0.03`.
 
-Most numeric defaults are intentionally not copied into this contract. The future adapter must resolve them from a business default/catalog source and fail if they are missing.
+These values are not project quantities and are not extraction targets. They are formula defaults/catalog constants from the waterproofing calculator reports and the June Elena review pack logic: `DEFAULT_VALUE`, `MATERIAL_CATALOG`, `PRICE_DATABASE`, and `AUTO_CALCULATED` should not be requested from Elena for every project.
+
+Manual check for this section:
+
+- `MANUAL_REQUIRED`: none in the June pack audit.
+- `SUPPLIER_INPUT`: none for waterproofing.
+- `AUTO_PROJECT`: only `waterproofing_area_m2` and `eps100_wall_volume_m3`.
+- Legacy geometry fields (`slab_formwork_perimeter_m`, `slab_edge_height_m`, `non_insulated_edge_lengths_m`) stay out of production review.
+
+The defaults still have `allow_override_later: true` where a future business/catalog settings layer may override them deliberately. That is different from asking GPT or the PDF parser to extract them from a project.
 
 ## 5. Formulas
 
@@ -85,6 +105,8 @@ glue_foam_units = max(glue_foam_min_units, ceil(eps100_wall_insulation_area_m2 /
 - [x] Contract keeps review workbook and final estimate workbook separate.
 - [x] Contract contains no old project markers.
 - [x] Contract contains no fixture totals or old expected values.
+- [x] Numeric defaults are kept only when they are method/catalog/business coefficients, not project quantities.
+- [x] June review logic checked: no waterproofing `MANUAL_REQUIRED` rows.
 
 ## 7. Next Step
 

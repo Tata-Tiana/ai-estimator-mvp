@@ -15,6 +15,9 @@ source_files:
   related_docs:
     - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
     - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "docs/report_paid_waterproofing_calculator_changes.md"
+    - "docs/report_waterproofing_calculator.md"
   extraction_targets:
     - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
     - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
@@ -189,112 +192,112 @@ defaults:
   - key: primer_consumption_l_per_m2
     label_ru: "Расход праймера"
     source_class: DEFAULT
-    value: null
+    value: 0.3
     unit: "л/м2"
     calculator_input_path: "primer_consumption_l_per_m2"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Material/method default from waterproofing calculator report; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Used only as formula coefficient for primer units."
 
   - key: primer_canister_volume_l
     label_ru: "Объем канистры праймера"
     source_class: DEFAULT
-    value: null
+    value: 18
     unit: "л"
     calculator_input_path: "primer_canister_volume_l"
-    source_note: "Catalog/package default required before adapter run."
+    source_note: "Catalog/package default for AquaMast primer canister; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Used only for purchase-unit rounding."
 
   - key: mastic_consumption_kg_per_m2_per_layer
     label_ru: "Расход мастики на слой"
     source_class: DEFAULT
-    value: null
+    value: 1
     unit: "кг/м2/слой"
     calculator_input_path: "mastic_consumption_kg_per_m2_per_layer"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Material/method default from waterproofing calculator report; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Used only as formula coefficient for mastic units."
 
   - key: mastic_layers
     label_ru: "Количество слоев мастики"
     source_class: DEFAULT
-    value: null
+    value: 2
     unit: "слой"
     calculator_input_path: "mastic_layers"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Method default: bitumen mastic waterproofing in 2 layers."
     allow_override_later: true
-    notes: ""
+    notes: "Matches estimate line wording; not a PDF extraction target."
 
   - key: mastic_bucket_weight_kg
     label_ru: "Вес ведра мастики"
     source_class: DEFAULT
-    value: null
+    value: 18
     unit: "кг"
     calculator_input_path: "mastic_bucket_weight_kg"
-    source_note: "Catalog/package default required before adapter run."
+    source_note: "Catalog/package default for AquaMast mastic bucket; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Used only for purchase-unit rounding."
 
   - key: eps_waste_coeff
     label_ru: "Коэффициент запаса ЭППС"
     source_class: DEFAULT
-    value: null
+    value: 1.05
     unit: ""
     calculator_input_path: "eps_waste_coeff"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Business/material waste default used across EPS purchase formulas; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Applied to project EPS volume before pack rounding."
 
   - key: eps100_pack_volume_m3
     label_ru: "Объем пачки ЭППС 100 мм"
     source_class: DEFAULT
-    value: null
+    value: 0.2776
     unit: "м3"
     calculator_input_path: "eps100_pack_volume_m3"
-    source_note: "Catalog/package default required before adapter run."
+    source_note: "Catalog/package default from waterproofing calculator report; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Used only for purchase-pack rounding."
 
   - key: glue_foam_coverage_m2_per_can
     label_ru: "Покрытие клей-пены"
     source_class: DEFAULT
-    value: null
+    value: 10
     unit: "м2/баллон"
     calculator_input_path: "glue_foam_coverage_m2_per_can"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Confirmed rule: 1 can per 10 m2, rounded up."
     allow_override_later: true
-    notes: ""
+    notes: "Used only as formula coefficient for glue foam units."
 
   - key: glue_foam_min_units
     label_ru: "Минимальное количество клей-пены"
     source_class: DEFAULT
-    value: null
+    value: 1
     unit: "баллон"
     calculator_input_path: "glue_foam_min_units"
-    source_note: "Business/material default required before adapter run."
+    source_note: "Business/material minimum purchase default."
     allow_override_later: true
-    notes: ""
+    notes: "Formula uses max(min_units, rounded calculated units)."
 
   - key: waterproofing_logistics_coeff
     label_ru: "Коэффициент логистики"
     source_class: DEFAULT
-    value: null
+    value: 0.02
     unit: ""
     calculator_input_path: "waterproofing_logistics_coeff"
-    source_note: "Business default required before adapter run."
+    source_note: "Business coefficient for internal logistics/supply line; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Calculates a final estimate line from the primary waterproofing subtotal."
 
   - key: waterproofing_consumables_coeff
     label_ru: "Коэффициент расходников"
     source_class: DEFAULT
-    value: null
+    value: 0.03
     unit: ""
     calculator_input_path: "waterproofing_consumables_coeff"
-    source_note: "Business default required before adapter run."
+    source_note: "Business coefficient for consumables/tool amortization line; not extracted from project PDF."
     allow_override_later: true
-    notes: ""
+    notes: "Calculates a final estimate line from the primary waterproofing subtotal."
 
 auto_calculated:
   - key: eps100_wall_insulation_area_m2
