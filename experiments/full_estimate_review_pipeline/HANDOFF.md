@@ -219,11 +219,25 @@ Suggested files:
 
 ### Step 6 — Earthworks + Waterproofing Review Workbook Prototype
 
-- [ ] Reuse earthworks reference behavior without rewriting it blindly.
-- [ ] Build a review workbook from section contracts for `earthworks + waterproofing`.
-- [ ] Keep review workbook separate from final estimate workbook.
-- [ ] Verify sheet counts and key rows.
-- [ ] Commit step 6 separately.
+- [x] Reuse earthworks reference behavior without rewriting it blindly.
+- [x] Build a review workbook from section contracts for `earthworks + waterproofing`.
+- [x] Keep review workbook separate from final estimate workbook.
+- [x] Verify sheet counts and key rows.
+- [x] Commit step 6 separately.
+
+Builder:
+
+- `build_review_workbook_from_contracts.py`
+
+Local workbook:
+
+- `output/step_06_earthworks_waterproofing_review.xlsx`
+
+Step 6 builds the local `.xlsx` review workbook from contracts. Publishing that workbook to a real Google Sheet is the next separate checkpoint, because it tests OAuth/Google export behavior and hidden technical columns. Do not merge the local builder check with the Google publish check.
+
+Step report:
+
+- `reports/step_06_earthworks_waterproofing_review_workbook.md`
 
 ### Step 7 — Multi-Section Normalized Review JSON
 
