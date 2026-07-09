@@ -17,7 +17,7 @@ This experiment does not change calculators, formulas, `expected.json`, or `sect
 ## Run
 
 ```bash
-../.venv/bin/python3 experiments/parameter_audit/run_parameter_audit.py experiments/parameter_audit/cases/mvp_usv_demo
+.venv/bin/python3 experiments/parameter_audit/run_parameter_audit.py experiments/parameter_audit/cases/mvp_usv_demo
 ```
 
 Outputs are written to both the case folder and:

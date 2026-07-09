@@ -30,7 +30,7 @@ Production values могут появляться только из:
 ## Run
 
 ```bash
-../.venv/bin/python3 experiments/usv_strict_pdf_parser_v2/run_strict_parser.py
+.venv/bin/python3 experiments/usv_strict_pdf_parser_v2/run_strict_parser.py
 ```
 
 ## Outputs

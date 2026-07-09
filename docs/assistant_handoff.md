@@ -1,8 +1,15 @@
 # Assistant Handoff
 
-Дата актуализации: `2026-06-22`.
+Дата актуализации: `2026-07-05`.
 
 Этот файл — главная точка входа для нового чата/агента. Если нужно быстро понять проект `ai-estimator-mvp`, начинать отсюда.
+
+## Что нового после 2026-06-22 (коротко)
+
+Основной текст ниже не переписан целиком — он описывает состояние на `3682da0`/`fc18cc6`. Два больших трека появились позже; подробности в `docs/current_project_state.md` (0.11, 0.12):
+
+1. **Telegram-бот** (`experiments/earthworks_review_to_calculator/telegram_bot.py`) — production-приём PDF от пользователя и полная сборка сметы земляных работ через уже существующий full review flow, плюс recreate/rerun своих job'ов, admin-экспорт логов, восстановление сессии. Это уже реально используется, не демо.
+2. **Parameter resolver / evidence layer / generic candidate extractor** (серия A4, коммиты `afa7395`…`63b7f3c` в `experiments/usv_strict_pdf_parser_v3/` + `experiments/pdf_parser_pipeline/parameter_resolver/`) — отдельный, ещё **не подключённый к продакшену** экспериментальный слой: типизирует PDF-evidence в кандидаты (route_summary, pipe_item, elevation_marker, diameter_spec, …) и резолвит их в значения параметров по `resolver_hints` с section-aware scoring. Последний коммит `63b7f3c` (A4.2.5.1) исключил `elevation_marker`/`diameter_spec` из scoring — координатные отметки и голые диаметры труб больше не могут "выиграть" как значение параметра. 239 тестов зелёных. Следующий шаг не начат: A4.2.8 (аудит unknown-кандидатов).
 
 ## Последняя расчётная контрольная точка
 
@@ -441,7 +448,7 @@ experiments/pdf_parser_pipeline/output/mvp_usv_demo/
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
 ```
 
 Текущая проверка:
@@ -489,7 +496,7 @@ experiments/input_builder/
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
 ```
 
 Отчёт:
@@ -518,7 +525,7 @@ experiments/calculation_runner/
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/calculation_runner/run_calculation_runner.py experiments/calculation_runner/cases/mvp_usv_demo_fallback
+.venv/bin/python3 experiments/calculation_runner/run_calculation_runner.py experiments/calculation_runner/cases/mvp_usv_demo_fallback
 ```
 
 Отчёт:
@@ -935,69 +942,69 @@ Live `expected.json` не создавались.
 Земляные работы:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
+.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
 ```
 
 Фундаментная плита:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
 ```
 
 Гидроизоляция:
 
 ```bash
-../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
+.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
 ```
 
 Несущие стены и перемычки:
 
 ```bash
-../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
 ```
 
 Плита перекрытия 1-го этажа:
 
 ```bash
-../.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
+.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
 ```
 
 Плита перекрытия 2-го этажа:
 
 ```bash
-../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
+.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
 ```
 
 Плоская кровля:
 
 ```bash
-../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Вентиляционные каналы Schiedel:
 
 ```bash
-../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
+.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
 Pricing-layer:
 
 ```bash
-../.venv/bin/python3 experiments/pricing/validate_price_registry.py
-../.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
-../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
+.venv/bin/python3 experiments/pricing/validate_price_registry.py
+.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
+.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
 ```
 
 PDF parser pipeline:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
 ```
 
 Общий pytest:
 
 ```bash
-../.venv/bin/python3 -m pytest
+.venv/bin/python3 -m pytest
 ```
 
 На момент фиксации `pytest` собирает `0` тестов; основные проверки сейчас идут через CLI калькуляторов.
@@ -1077,11 +1084,13 @@ output/price_registry_mapping_report_v3.md
 
 ## Следующий разумный шаг
 
+Этот раздел описывает план на момент `3682da0`/`fc18cc6` (input_builder → box_calculator, Telegram/n8n отложены). С тех пор Excel export и Telegram-бот уже реализованы (см. "Что нового после 2026-06-22" выше) — не следовать запрету ниже буквально, он устарел.
+
 Следующий большой шаг — сделать `input_builder`, который будет читать проверенный `reviewed_parameters.xlsx` и собирать `input.json` для калькуляторов.
 
 После `input_builder` разумно проектировать `box_calculator` как агрегатор готовых разделов.
 
-Не начинать с Excel export, Telegram/n8n и новых калькуляторов, пока не зафиксирован путь `reviewed_parameters.xlsx -> input.json -> calculators`.
+Актуальные ближайшие шаги (2026-07-05): A4.2.8 (аудит unknown-кандидатов resolver'а) и решение, когда evidence/candidate/resolver слой заменит текущий `earthworks_v3_adapter.py` в продакшн Telegram-flow — см. `docs/current_project_state.md`, раздел 11.
 
 Для новых отдельных разделов по-прежнему использовать схему:
 

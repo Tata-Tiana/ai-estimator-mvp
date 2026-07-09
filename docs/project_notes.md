@@ -329,7 +329,7 @@ usv_yusupovo_village_live_prices -> ok (0/0)
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
+.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
 ```
 
 ## Текущие результаты фундаментной плиты
@@ -344,7 +344,7 @@ internal_section_total = 2538325
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
 ```
 
 Важное:
@@ -367,7 +367,7 @@ internal_section_total = 51216
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
+.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
 ```
 
 Блок сверен со скрином Excel: все видимые строки и итоги совпали.
@@ -387,7 +387,7 @@ internal_section_total = 2672103
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
 ```
 
 Важное:

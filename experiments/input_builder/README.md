@@ -44,13 +44,13 @@ The effective value is calculated in Python. The builder does not rely on Excel 
 ## Run
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
 ```
 
 Demo fallback smoke run:
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo --mode demo_with_template_fallback
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo --mode demo_with_template_fallback
 ```
 
 ## Outputs

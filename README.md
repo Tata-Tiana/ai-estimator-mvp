@@ -329,57 +329,57 @@ missing completely = 0
 Земляные работы:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
+.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
 ```
 
 Фундаментная плита:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
 ```
 
 Плита перекрытия 1-го этажа:
 
 ```bash
-../.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
+.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
 ```
 
 Плита перекрытия 2-го этажа:
 
 ```bash
-../.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
+.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
 ```
 
 Плоская кровля:
 
 ```bash
-../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Вентиляционные каналы Schiedel:
 
 ```bash
-../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
+.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
 Pricing-layer:
 
 ```bash
-../.venv/bin/python3 experiments/pricing/validate_price_registry.py
-../.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
-../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
+.venv/bin/python3 experiments/pricing/validate_price_registry.py
+.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
+.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
 ```
 
 Гидроизоляция:
 
 ```bash
-../.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
+.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
 ```
 
 Несущие стены и перемычки:
 
 ```bash
-../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
 ```
 
 ## Текущий git-статус по смыслу

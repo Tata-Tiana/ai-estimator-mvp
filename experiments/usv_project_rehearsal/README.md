@@ -60,7 +60,7 @@ Production-relevant статусы:
 ## Как запустить
 
 ```bash
-../.venv/bin/python3 experiments/usv_project_rehearsal/run_rehearsal.py
+.venv/bin/python3 experiments/usv_project_rehearsal/run_rehearsal.py
 ```
 
 ## Что создается

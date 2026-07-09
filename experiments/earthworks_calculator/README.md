@@ -25,49 +25,49 @@ output/
 Из корня проекта:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py
 ```
 
 Запуск конкретного кейса:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/usv_yusupovo_village
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/usv_yusupovo_village
 ```
 
 Запуск кейса Хорошевка 14:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/horoshevka_14
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/horoshevka_14
 ```
 
 Запуск теста production-стандарта ручной разработки по трассам:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes
 ```
 
 Запуск теста production-стандарта ручной разработки с готовым объёмом траншей из спецификации:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_manual_excavation_spec_trench_volume
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_manual_excavation_spec_trench_volume
 ```
 
 Запуск теста production-стандарта коммуникаций по трубам:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_communications_pipe_items
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_communications_pipe_items
 ```
 
 Запуск теста production-стандарта смен экскаватора по объёму выемки:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_excavator_shifts_standard
+.venv/bin/python3 experiments/earthworks_calculator/run_earthworks_calc.py experiments/earthworks_calculator/cases/test_excavator_shifts_standard
 ```
 
 Запуск всех кейсов:
 
 ```bash
-../.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
+.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
 ```
 
 Можно передать как папку кейса, так и прямой путь к `input.json`.

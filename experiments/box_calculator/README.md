@@ -15,7 +15,7 @@ recommended_metal_delivery_allocation
 Из корня проекта:
 
 ```bash
-../.venv/bin/python3 experiments/box_calculator/run_box_calculator.py experiments/box_calculator/cases/test_metal_delivery_allocation
+.venv/bin/python3 experiments/box_calculator/run_box_calculator.py experiments/box_calculator/cases/test_metal_delivery_allocation
 ```
 
 ## Правило доставки металла

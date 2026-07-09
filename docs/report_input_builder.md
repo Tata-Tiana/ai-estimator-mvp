@@ -118,19 +118,19 @@ experiments/input_builder/output/mvp_usv_demo/
 Strict:
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo
 ```
 
 Demo fallback:
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo --mode demo_with_template_fallback
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo --mode demo_with_template_fallback
 ```
 
 Compile:
 
 ```bash
-../.venv/bin/python3 -m py_compile \
+.venv/bin/python3 -m py_compile \
 experiments/input_builder/input_builder.py \
 experiments/input_builder/run_input_builder.py \
 experiments/input_builder/section_input_registry.py

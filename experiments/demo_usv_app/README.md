@@ -15,7 +15,7 @@ streamlit run experiments/demo_usv_app/app.py
 Если Streamlit установлен только в проектном venv:
 
 ```bash
-../.venv/bin/streamlit run experiments/demo_usv_app/app.py
+.venv/bin/streamlit run experiments/demo_usv_app/app.py
 ```
 
 После запуска открыть:

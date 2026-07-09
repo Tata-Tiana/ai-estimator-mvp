@@ -162,7 +162,7 @@ experiments/pdf_parser_pipeline/output/mvp_usv_demo/elena_missing_parameters_by_
 Команда:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
 ```
 
 Итог:
@@ -193,7 +193,7 @@ manual_required_total: 69
 Выполнено:
 
 ```bash
-../.venv/bin/python3 -m py_compile experiments/pdf_parser_pipeline/section_schema.py experiments/pdf_parser_pipeline/section_review_card_builder.py experiments/pdf_parser_pipeline/review_sheet_builder.py experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py
+.venv/bin/python3 -m py_compile experiments/pdf_parser_pipeline/section_schema.py experiments/pdf_parser_pipeline/section_review_card_builder.py experiments/pdf_parser_pipeline/review_sheet_builder.py experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py
 ```
 
 Также проверено:

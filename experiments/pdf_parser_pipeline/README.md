@@ -31,7 +31,7 @@ PDF parser artifacts -> section review cards -> reviewed_parameters.xlsx -> бу
 ## Запуск
 
 ```bash
-../.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
+.venv/bin/python3 experiments/pdf_parser_pipeline/run_pdf_parser_pipeline.py experiments/pdf_parser_pipeline/cases/mvp_usv_demo
 ```
 
 ## Не входит в этот слой

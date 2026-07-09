@@ -63,31 +63,31 @@ output/
 Из корня проекта:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
 ```
 
 Новый стандарт термовставок 50/100 мм:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard
 ```
 
 Новый стандарт площади опалубки из спецификации:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_formwork_spec_area
 ```
 
 Новый стандарт фанеры с листом 1.52 x 1.52 м и запасом 5%:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_plywood_standard
 ```
 
 Новый стандарт арматуры из спецификации в м.п.:
 
 ```bash
-../.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length
+.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length
 ```
 
 Можно передать как папку кейса, так и прямой путь к `input.json`.
@@ -95,7 +95,7 @@ output/
 Проверка компиляции:
 
 ```bash
-../.venv/bin/python3 -m py_compile experiments/foundation_slab_calculator/foundation_slab_calculator.py experiments/foundation_slab_calculator/run_foundation_slab_calc.py
+.venv/bin/python3 -m py_compile experiments/foundation_slab_calculator/foundation_slab_calculator.py experiments/foundation_slab_calculator/run_foundation_slab_calc.py
 ```
 
 ## Блоки расчёта

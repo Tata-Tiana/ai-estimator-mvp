@@ -43,6 +43,38 @@ git status
 
 ## Контрольные точки
 
+### 2026-07-05 — A4.2.5.1: eligibility guard для elevation_marker и diameter_spec
+
+- Ветка: `feature/parser-resolver-layer`
+- Коммит: `63b7f3c feat(resolver): A4.2.5.1 — eligibility guard for elevation_marker and diameter_spec`
+
+Что сделано:
+
+- `resolver_engine.py`: кандидаты типов `elevation_marker` и `diameter_spec` отфильтровываются до любого scoring — они больше не могут быть выбраны как значение параметра сметы;
+- `generic_candidate_extractor.py`: "Труба Ø110 мм" без п.м/шт теперь классифицируется как `diameter_spec`, а не `pipe_item`;
+- 5 новых тестов (3 resolver guard + 2 pipe guard), всего 239 тестов зелёных (206+33).
+
+Статистика после guard: USV 168 candidates → 125 resolver_eligible (74%), 43 auxiliary; TRC 511 candidates → 304 resolver_eligible (60%), 207 auxiliary. Из 97 unknown по TRC — 58 elevation_marker (координатные рамки чертежей, не срочно), 3 pipe_item + 3 pipe_piece_qty — реальные дренажные трубы, кандидат на следующий шаг (A4.2.8).
+
+Это последний шаг в серии A4 (см. также `0a03893` A4.2.5, `4b62d69` A4+A4.2.2, `afa7395` evidence layer + generic candidate extractor) — экспериментальный слой evidence → typed candidates → resolver в `experiments/usv_strict_pdf_parser_v3/` + `experiments/pdf_parser_pipeline/parameter_resolver/`. **Не подключён к продакшн Telegram-flow** — тот всё ещё читает старый `V3_CANDIDATES_PATH` через `earthworks_v3_adapter.py`. Подробности: `docs/current_project_state.md`, раздел 0.12.
+
+### 2026-06-23 → 2026-07-05 — Telegram-бот для сборки сметы земляных работ
+
+- Ветка: `main`
+- Коммиты: `1c64260` (первая версия бота) … `fa8beb0` (последний из этой серии) — полный список см. `git log --oneline fc18cc6..63b7f3c`
+
+Добавлен production-контур приёма PDF от пользователя через Telegram (`experiments/earthworks_review_to_calculator/telegram_bot.py`, ~2170 строк), оборачивающий уже существующий full review flow (0.10) интерфейсом для конечного пользователя:
+
+- батчинг PDF с тихим периодом или командой `/done`, защита от гонки состояний;
+- восстановление сессии после падения бота;
+- пользователь может пересобрать/перезапустить парсинг своих job'ов без разработчика;
+- admin-доступ: экспорт лога job'ов в Excel, очистка тестовых job'ов;
+- извлечение адреса проекта, уникальные имена Excel по `job_id`;
+- anti_cheat сделан non-blocking для продакшн-потока, принимает альтернативные названия чертежей;
+- fallback на ручную длину / диаметр из названия трубы, когда pipe specs отсутствуют.
+
+Это отменяет более ранний пункт "не входит: Telegram" из контрольной точки 0.10 (`docs/report_earthworks_review_to_calculator.md`). Подробности: `docs/current_project_state.md`, раздел 0.11.
+
 ### 2026-06-22 — Добавлены job_id команды для сборки сметы земляных работ
 
 - Ветка: `feature/foundation-slab-calculator-standards`

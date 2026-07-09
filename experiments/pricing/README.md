@@ -42,9 +42,9 @@ and a warning. It does not silently fail.
 From the repository root:
 
 ```bash
-../.venv/bin/python3 experiments/pricing/validate_price_registry.py
-../.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
-../.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
+.venv/bin/python3 experiments/pricing/validate_price_registry.py
+.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
+.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
 ```
 
 Generated reports:

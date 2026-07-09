@@ -180,7 +180,7 @@ sum_of_displayed_line_totals = 117890
 Проверка:
 
 ```bash
-../.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
+.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
 ```
 
 Результат:

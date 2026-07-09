@@ -101,7 +101,7 @@ section_total = 51216
 Из корня проекта:
 
 ```bash
-../.venv/bin/python3 experiments/excel_formula_poc_waterproofing/export_waterproofing_formula_excel.py
+.venv/bin/python3 experiments/excel_formula_poc_waterproofing/export_waterproofing_formula_excel.py
 ```
 
 После запуска:

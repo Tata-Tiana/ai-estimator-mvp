@@ -159,7 +159,7 @@ experiments/box_calculator/cases/test_metal_delivery_allocation/
 Проверка:
 
 ```bash
-../.venv/bin/python3 experiments/box_calculator/run_box_calculator.py experiments/box_calculator/cases/test_metal_delivery_allocation
+.venv/bin/python3 experiments/box_calculator/run_box_calculator.py experiments/box_calculator/cases/test_metal_delivery_allocation
 ```
 
 Ожидаемо:

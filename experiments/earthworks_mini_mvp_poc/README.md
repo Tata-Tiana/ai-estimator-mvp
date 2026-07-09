@@ -19,16 +19,16 @@ PDF / strict parser v3 output
 
 ```bash
 # 1. Подготовить таблицу проверки
-../.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py prepare
+.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py prepare
 
 # 2. Открыть data/review/earthworks_parameter_review.xlsx
 #    Проверить значения, заполнить ручные поля, поставить статусы
 
 # 3. Проверить готовность к расчету
-../.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py validate
+.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py validate
 
 # 4. Выполнить расчет
-../.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py calculate
+.venv/bin/python3 experiments/earthworks_mini_mvp_poc/run_mini_mvp.py calculate
 ```
 
 `prepare` не считает.

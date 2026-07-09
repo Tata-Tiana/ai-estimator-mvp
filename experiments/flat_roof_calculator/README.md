@@ -9,7 +9,7 @@
 ## Как запустить
 
 ```bash
-../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Если локальный Python запускается без venv:

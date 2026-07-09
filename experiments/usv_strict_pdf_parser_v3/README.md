@@ -15,7 +15,7 @@ No known USV values are used as data. Numeric values can only come from PDF text
 ## Run
 
 ```bash
-../.venv/bin/python3 experiments/usv_strict_pdf_parser_v3/run_v3.py
+.venv/bin/python3 experiments/usv_strict_pdf_parser_v3/run_v3.py
 ```
 
 ## Outputs

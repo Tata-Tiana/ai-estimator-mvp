@@ -152,7 +152,7 @@ PDF-парсер нужен как первый технический слой:
 Из корня проекта:
 
 ```bash
-../.venv/bin/python3 experiments/pdf_tests/run_pdf_parser.py
+.venv/bin/python3 experiments/pdf_tests/run_pdf_parser.py
 ```
 
 Далее в меню выбирается режим обработки PDF.

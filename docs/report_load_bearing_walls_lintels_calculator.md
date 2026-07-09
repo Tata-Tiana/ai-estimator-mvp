@@ -622,13 +622,13 @@ experiments/load_bearing_walls_lintels_calculator/output/test_load_bearing_walls
 Запуск расчёта:
 
 ```bash
-../.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
+.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
 ```
 
 Проверка компиляции:
 
 ```bash
-../.venv/bin/python3 -m py_compile experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py
+.venv/bin/python3 -m py_compile experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py
 ```
 
 ## Текущий статус

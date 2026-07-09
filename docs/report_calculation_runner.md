@@ -65,13 +65,13 @@ demo_with_template_fallback
 Сначала создаются fallback inputs:
 
 ```bash
-../.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo_fallback
+.venv/bin/python3 experiments/input_builder/run_input_builder.py experiments/input_builder/cases/mvp_usv_demo_fallback
 ```
 
 Затем запускаются расчёты:
 
 ```bash
-../.venv/bin/python3 experiments/calculation_runner/run_calculation_runner.py experiments/calculation_runner/cases/mvp_usv_demo_fallback
+.venv/bin/python3 experiments/calculation_runner/run_calculation_runner.py experiments/calculation_runner/cases/mvp_usv_demo_fallback
 ```
 
 ## Текущий demo-run

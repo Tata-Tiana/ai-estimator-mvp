@@ -268,7 +268,7 @@ sum_of_displayed_line_totals = 2038872
 Проверка:
 
 ```bash
-../.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
+.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
 ```
 
 Результат:

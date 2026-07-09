@@ -370,7 +370,7 @@ Live-кейс `test_load_bearing_walls_lintels_live_prices` оставлен с�
 Дополнительно выполнено:
 
 ```bash
-../.venv/bin/python3 -m py_compile \
+.venv/bin/python3 -m py_compile \
 experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py \
 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py
 ```
