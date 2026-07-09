@@ -217,6 +217,48 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
                   "diameter_mm": {"expected_unit": "mm",       "expected_kind": "diameter"},
               },
           }),
+        # A5.1a: AUTO_PROJECT P0 — was auto-flattened from input.json (no
+        # resolver_hints at all). Promoted to an explicit entry so it can
+        # carry hints, same label/unit as before.
+        p("earthworks_trench_volume_m3", "trench_volume_m3", "trench volume m3", "м3", "parsed", True,
+          [], [],
+          resolver_hints={
+              # This is the ready-made total from a spec line (e.g. "Объем
+              # траншей ... м3"), distinct from trench_routes (collect_all
+              # per-route). If a project has no such summary line, this
+              # legitimately resolves to 'missing' — the calculator already
+              # falls back to summing trench_routes itself in that case.
+              "expected_unit": "m3",
+              "expected_kind": "volume",
+              "candidate_types": ["route_summary", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"транше"],
+              "negative_context": [r"песок", r"котлован", r"бетон"],
+              "value_range": [0.5, 500.0],
+          }),
+        p("earthworks_communications_length_m", "communications_length_m", "communications length m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              # Route/pipe totals are parsed as kind=linear_length with
+              # normalized_unit=linear_m (from "... м.п." suffixes), not
+              # plain "m" — unlike a single-point elevation/depth reading.
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["route_summary", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"коммуникац"],
+              "value_range": [1.0, 2000.0],
+          }),
+        p("earthworks_geotextile_laying_area_m2", "geotextile_laying_area_m2", "geotextile laying area m2", "м2", "parsed", True,
+          [], [],
+          resolver_hints={
+              # Mirrors the existing geotextile_area_m2 hint — in practice
+              # the PDF usually states one geotextile area used for both
+              # material ordering and installation-area bookkeeping.
+              "expected_unit": "m2",
+              "expected_kind": "area",
+              "candidate_types": ["material_quantity", "label_value_quantity"],
+              "positive_context": [r"геотекстил"],
+              "value_range": [10.0, 2000.0],
+          }),
     ],
     "foundation_slab": [
         p("foundation_type", "control.foundation_type", "Тип фундамента", "-", "control_only", False, ["Ж/б плита фундамента"], [r"(?P<value>Ж/б плита фундамента)\s*300\s*мм"]),
@@ -450,6 +492,71 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
               "negative_context": [r"фундамент", r"перекрыти"],
               "value_range": [1.0, 200.0],
           }),
+        # A5.1a: AUTO_PROJECT P0 — promoted from auto-flattened input.json.
+        p("load_bearing_walls_lintels_main_wall_external_length_m", "main_wall_external_length_m",
+          "main wall external length m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["route_summary", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"наружн", r"стен", r"длин"],
+              "negative_context": [r"перемычк", r"перегород"],
+              "value_range": [5.0, 300.0],
+          }),
+        # NOTE: real PDF evidence for masonry row-reinforcement (for example
+        # "14-й ряд (армирование кладки)" on facade elevations) is typed
+        # elevation_marker (tied to a height marking) — an auxiliary type
+        # resolve() always strips before scoring (A4.2.5.1). These 3 params
+        # are therefore expected to legitimately resolve to 'missing' on
+        # these two projects; kept narrow (кладк required) so a wrong
+        # floor-slab rebar match (unrelated "ряд"/"армирование" mentions)
+        # is rejected instead of silently returned.
+        p("load_bearing_walls_lintels_main_wall_reinforcement_rows", "main_wall_reinforcement_rows",
+          "main wall reinforcement rows", "-", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"кладк", r"ряд|нит"],
+              # "обкладка" (vent-channel cladding) contains "кладк" as a
+              # substring — found empirically matching a Schiedel section
+              # drawing. Excluded explicitly rather than switching to a
+              # word-boundary regex, to keep the fix narrow and verified.
+              "negative_context": [r"перемычк", r"плит", r"перекрыти", r"фундамент", r"вентканал", r"обкладк", r"schiedel"],
+              "value_range": [1.0, 30.0],
+          }),
+        p("load_bearing_walls_lintels_main_wall_400_reinforcement_threads", "main_wall_400_reinforcement_threads",
+          "main wall 400 reinforcement threads", "-", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"кладк", r"нит"],
+              "negative_context": [r"перемычк", r"плит", r"перекрыти", r"фундамент", r"вентканал", r"обкладк", r"schiedel"],
+              "value_range": [1.0, 10.0],
+          }),
+        p("load_bearing_walls_lintels_main_wall_250_reinforcement_threads", "main_wall_250_reinforcement_threads",
+          "main wall 250 reinforcement threads", "-", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"кладк", r"нит"],
+              "negative_context": [r"перемычк", r"плит", r"перекрыти", r"фундамент", r"вентканал", r"обкладк", r"schiedel"],
+              "value_range": [1.0, 10.0],
+          }),
+        p("load_bearing_walls_lintels_parapet_masonry_volume_m3", "parapet_masonry_volume_m3",
+          "parapet masonry volume m3", "м3", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m3",
+              "expected_kind": "volume",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"кладк", r"парапет"],
+              "negative_context": [r"перемычк", r"вентканал"],
+              "value_range": [0.1, 50.0],
+          }),
     ],
     "floor_slab_1": [
         p("floor_slab_1_concrete_volume", "total_concrete_volume_from_spec_m3", "Бетон плиты перекрытия +3.480", "м3", "parsed", True,
@@ -555,6 +662,37 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
               "negative_context": [r"перемычк", r"кладк", r"фундамент"],
               "value_range": [50.0, 2000.0],
           }),
+        # A5.1a: AUTO_PROJECT P0 — promoted from auto-flattened input.json.
+        p("floor_slab_2_slab_edge_perimeter_m", "slab_edge_perimeter_m", "Периметр торца плиты", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row", "route_summary"],
+              "positive_context": [r"периметр", r"торц"],
+              "negative_context": [r"фундамент", r"1.{0,3}этаж"],
+              "value_range": [5.0, 300.0],
+          }),
+        p("floor_slab_2_main_formwork_area_m2", "main_formwork_area_m2", "Основная площадь опалубки", "м2", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m2",
+              "expected_kind": "area",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"опалубк"],
+              "negative_context": [r"балк", r"лестниц", r"торц", r"1.{0,3}этаж"],
+              "value_range": [10.0, 500.0],
+          }),
+        p("floor_slab_2_edge_insulation_height_m", "edge_insulation_height_m", "Высота утепления торца", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m",
+              "expected_kind": "length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"утеплен", r"торц"],
+              "negative_context": [r"фундамент"],
+              "value_range": [0.05, 2.0],
+          }),
     ],
     "flat_roof": [
         p("project_spec_roof_area", "project_spec_roof_area_m2", "Площадь кровли по спецификации", "м2", "parsed", False,
@@ -602,6 +740,129 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
               "value_range": [1.0, 20.0],
           }),
         p("roof_geotextile_material", "control.roof_geotextile_material", "Геотекстиль/стеклохолст кровли", "-", "control_only", False, ["Стеклохолст", "Геотекстиль"], [r"(?P<value>Стеклохолст\s*ТЕХНОНИКОЛЬ\s*100\s*г/м2)"]),
+        # A5.1a: AUTO_PROJECT P0 — promoted from auto-flattened input.json.
+        # roof_area_level_1_m2 / roof_area_level_2_m2 share the same hint on
+        # purpose: a PDF states "Площадь кровли на отм. +X" per level with no
+        # generic way to tell "level 1" from "level 2" apart (that would
+        # require a project-specific elevation number, which is forbidden).
+        # Both parameters will pick the same top-scored area; if two
+        # different areas exist as candidates, resolve() already flags a
+        # conflict (needs_review + alternatives) — a human picks correctly.
+        p("flat_roof_roof_area_level_1_m2", "roof_area_level_1_m2", "Площадь кровли уровня 1", "м2", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m2",
+              "expected_kind": "area",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"площад", r"кровл"],
+              # Reject the merged multi-row "Спецификация к плану кровли"
+              # table blob (found empirically: its first m2-unit value is
+              # an unrelated material like vapor barrier/membrane, not the
+              # roof area itself, listed later in the same blob) — this
+              # falls through to the clean atomic "Площадь кровли на отм.
+              # +X | NNN | м2" candidate instead.
+              "negative_context": [
+                  r"застройк", r"помещен", r"террас", r"котлован",
+                  r"пароизоляц", r"биполь", r"стеклохолст", r"мембран",
+              ],
+              "value_range": [5.0, 1000.0],
+          }),
+        p("flat_roof_roof_area_level_2_m2", "roof_area_level_2_m2", "Площадь кровли уровня 2", "м2", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m2",
+              "expected_kind": "area",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"площад", r"кровл"],
+              # Reject the merged multi-row "Спецификация к плану кровли"
+              # table blob (found empirically: its first m2-unit value is
+              # an unrelated material like vapor barrier/membrane, not the
+              # roof area itself, listed later in the same blob) — this
+              # falls through to the clean atomic "Площадь кровли на отм.
+              # +X | NNN | м2" candidate instead.
+              "negative_context": [
+                  r"застройк", r"помещен", r"террас", r"котлован",
+                  r"пароизоляц", r"биполь", r"стеклохолст", r"мембран",
+              ],
+              "value_range": [5.0, 1000.0],
+          }),
+        # Same level-1/level-2 disambiguation limitation as roof_area above.
+        p("flat_roof_parapet_length_level_1_m", "parapet_length_level_1_m", "parapet length level 1 m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"парапет"],
+              "negative_context": [r"примыкан", r"вентканал"],
+              "value_range": [1.0, 300.0],
+          }),
+        p("flat_roof_parapet_length_level_2_m", "parapet_length_level_2_m", "parapet length level 2 m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"парапет"],
+              "negative_context": [r"примыкан", r"вентканал"],
+              "value_range": [1.0, 300.0],
+          }),
+        p("flat_roof_vent_wall_abutment_level_1_m", "vent_wall_abutment_level_1_m", "vent wall abutment level 1 m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"примыкан", r"стен"],
+              "value_range": [1.0, 200.0],
+          }),
+        p("flat_roof_vent_wall_abutment_level_2_m", "vent_wall_abutment_level_2_m", "vent wall abutment level 2 m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"примыкан", r"стен"],
+              "value_range": [1.0, 200.0],
+          }),
+        p("flat_roof_vent_shaft_abutment_count", "vent_shaft_abutment_count", "Количество примыканий к вентшахтам", "шт", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "expected_kind": "quantity",
+              "candidate_types": ["material_quantity", "table_quantity_row", "pipe_piece_qty"],
+              "positive_context": [r"примыкан", r"вентшахт"],
+              "value_range": [1.0, 20.0],
+          }),
+        p("flat_roof_roof_aerators_count", "roof_aerators_count", "Количество кровельных аэраторов", "шт", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "expected_kind": "quantity",
+              "candidate_types": ["material_quantity", "table_quantity_row", "pipe_piece_qty"],
+              "positive_context": [r"аэратор"],
+              "value_range": [1.0, 20.0],
+          }),
+        p("flat_roof_gas_block_wall_holes_count", "gas_block_wall_holes_count", "Количество отверстий в стенах из газоблока", "шт", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "expected_kind": "quantity",
+              "candidate_types": ["material_quantity", "table_quantity_row", "pipe_piece_qty"],
+              "positive_context": [r"отверсти", r"газоблок|газобетон"],
+              "value_range": [1.0, 30.0],
+          }),
+        p("flat_roof_internal_drain_height_per_drain_m", "internal_drain_height_per_drain_m",
+          "Высота внутреннего водостока на одну воронку", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "m",
+              "expected_kind": "length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"водосток", r"воронк"],
+              "negative_context": [r"парапет"],
+              "value_range": [0.1, 10.0],
+          }),
     ],
     "schiedel_vent_channels": [
         p("schiedel_vent_channel_2x_count", "schiedel_vent_channel_2x_count", "Вентиляционный канал Schiedel VENT 2", "шт", "manual", True, ["VENT 2"], [r"VENT\s*2\s*\(360х250\s*мм\)\s*(?P<value>\d+)\s*шт"]),
@@ -615,6 +876,46 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
               "positive_context": [r"газобетон", r"150"],
               "negative_context": [r"600.{1,6}400.{1,6}250", r"600.{1,6}250.{1,6}250"],
               "value_range": [0.1, 20.0],
+          }),
+        # A5.1a: AUTO_PROJECT P0 — promoted from auto-flattened input.json.
+        # vent_channel_1/2_height_m share the same hint on purpose: PDFs
+        # give one height per physical channel run without a generic way
+        # to tell "channel 1" from "channel 2" apart (numbering differs per
+        # project — VENT 2/VENT 3 in one, "1x"/"2x" in another). Same
+        # needs_review/conflict fallback as the flat_roof level-1/2 pair.
+        p("schiedel_vent_channels_vent_channel_1_height_m", "vent_channel_1_height_m",
+          "vent channel 1 height m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"вент", r"канал"],
+              "prefer_context": [r"высот"],
+              "negative_context": [r"газобетон|газоблок"],
+              "value_range": [1.0, 20.0],
+          }),
+        p("schiedel_vent_channels_vent_channel_2_height_m", "vent_channel_2_height_m",
+          "vent channel 2 height m", "м", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "linear_m",
+              "expected_kind": "linear_length",
+              "candidate_types": ["material_quantity", "label_value_quantity", "table_quantity_row"],
+              "positive_context": [r"вент", r"канал"],
+              "prefer_context": [r"высот"],
+              "negative_context": [r"газобетон|газоблок"],
+              "value_range": [1.0, 20.0],
+          }),
+        p("schiedel_vent_channels_vent_channel_2_count", "vent_channel_2_count",
+          "vent channel 2 count", "шт", "parsed", True,
+          [], [],
+          resolver_hints={
+              "expected_unit": "pcs",
+              "expected_kind": "quantity",
+              "candidate_types": ["material_quantity", "table_quantity_row", "pipe_piece_qty"],
+              "positive_context": [r"вент", r"канал"],
+              "value_range": [1.0, 50.0],
           }),
     ],
 }
