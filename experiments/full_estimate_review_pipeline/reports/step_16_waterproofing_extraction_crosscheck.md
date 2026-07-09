@@ -48,16 +48,50 @@ No contract rename is needed.
 
 ## Calculator Display-Quantity Risk
 
-One calculator-level issue remains outside parser/schema alignment:
+One calculator-level issue was found outside parser/schema alignment:
 
 ```text
 eps100_wall_penoplex_geo_material -> display_quantity=1.94
 ```
 
-The calculator still calculates the real EPS100 order volume, but this display override looks like an
-old locked-case/Excel presentation value. It must not be treated as a production quantity by the
-final estimate/export adapter. The section contract already forbids `display_quantity_overrides`, so
-this is recorded as a calculator/export risk, not a parser target mismatch.
+The calculator always calculated the real EPS100 order volume correctly in `quantity`
+(`eps100_wall_order_volume_m3`); `display_quantity` is a separate, cosmetic-only field (verified: it
+never feeds `material_total`/`work_total`/`line_total`, only appears in the exported line dict). The
+literal `1.94` was not an unrelated leaked number — it is exactly `round(1.9432, 2)`, the real
+production test case's own order volume rounded to 2 decimals. So the *value* was correct for this
+one fixture; the *risk* was that it was frozen as a hardcoded literal instead of computed, so a
+different project's EPS100 volume would still have displayed `1.94` regardless of the real number.
+
+**Fix applied 2026-07-09** (calculator code change, explicitly requested and reviewed — this is the
+one exception to the "never touch calculator code" rule for this stage, called out here on purpose so
+it isn't missed on a later read):
+
+`experiments/waterproofing_calculator/waterproofing_calculator.py`, the
+`eps100_wall_penoplex_geo_material` estimate line — changed
+
+```python
+display_quantity=1.94,
+```
+
+to
+
+```python
+display_quantity=_round_decimal(
+    waterproofing["eps100_wall_order_volume_m3"], "0.01"
+),
+```
+
+matching the same live-rounding pattern already used for `display_quantity` elsewhere in the codebase
+(e.g. `foundation_slab_calculator.py`'s EPS50 order volume rounding), instead of inventing a new
+convention.
+
+**Result**: all 3 existing test cases (`test_waterproofing_spec_area`,
+`test_waterproofing_foundation_slab`, `test_waterproofing_foundation_slab_live_prices`) still pass
+with identical output — `display_quantity` still resolves to `1.94` for the current fixture, because
+`round(1.9432, 2) == 1.94`, but it is now computed from the real `eps100_wall_order_volume_m3` on every
+run, so a future project with a different EPS100 volume will display its own correct rounded number
+instead of the frozen `1.94`. No other field changed. `material_total`/`work_total`/`line_total` were
+unaffected in all three cases (they were never derived from `display_quantity` to begin with).
 
 ## Parser-Side Fixes Made
 
@@ -119,5 +153,7 @@ thickness, pack volume, waste coefficient, logistics coefficient, and consumable
 - [x] Shared-source rule documented for side formwork area -> waterproofing area.
 - [x] No calculator code changed.
 - [x] No project-specific quantities or page references added.
-- [ ] Decide separately whether to remove/ignore calculator `display_quantity=1.94` before final
-      production export.
+- [x] `display_quantity=1.94` fixed 2026-07-09 — now computed live from `eps100_wall_order_volume_m3`
+      instead of hardcoded; see "Calculator Display-Quantity Risk" above for the exact change and test
+      results. This was a deliberate, explicitly requested calculator-code edit, not a parser/contract
+      fix.

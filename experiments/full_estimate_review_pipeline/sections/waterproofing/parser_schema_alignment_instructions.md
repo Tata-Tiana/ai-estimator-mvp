@@ -22,10 +22,12 @@ Parser-side targets were aligned to production calculator inputs:
 
 The older name `waterproofing_eps_100_edge_volume` must not be used as the production target code.
 
-Contract/parser target names currently match. One calculator-level risk remains outside parser/schema:
-`waterproofing_calculator.py` still contains a hardcoded `display_quantity=1.94` for the EPS100
-material estimate line. The real calculated quantity is still produced by the calculator, but a final
-estimate/export adapter must not copy or trust old display overrides as production quantities.
+Contract/parser target names currently match. One calculator-level risk was found outside
+parser/schema: `waterproofing_calculator.py` had a hardcoded `display_quantity=1.94` for the EPS100
+material estimate line. Fixed 2026-07-09 — see `reports/step_16_waterproofing_extraction_crosscheck.md`
+("Calculator Display-Quantity Risk") for the exact code change and test results.
+`display_quantity` is now computed live from `eps100_wall_order_volume_m3`, same rounding pattern as
+elsewhere in the codebase; it never fed `material_total`/`work_total`/`line_total` and still doesn't.
 
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
@@ -52,6 +54,6 @@ estimate/export adapter must not copy or trust old display overrides as producti
 2. Confirm prompt includes the allowed reuse rule from foundation slab side formwork area.
 3. Confirm schema can carry both scalar values.
 4. Confirm no legacy perimeter/height reconstruction is used as a production PDF extraction path.
-5. Confirm final estimate/export does not use `display_quantity` as the production quantity for EPS100 material.
+5. ~~Confirm final estimate/export does not use `display_quantity` as the production quantity for EPS100 material.~~ Done 2026-07-09: `display_quantity` is now live-computed, not a frozen literal — see step_16.
 6. Run JSON/YAML validation after edits.
 7. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
