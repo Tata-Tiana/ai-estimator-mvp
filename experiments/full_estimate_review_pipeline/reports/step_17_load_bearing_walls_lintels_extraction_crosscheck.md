@@ -193,3 +193,14 @@ or show manual/default-required status if these are missing before calculator ex
 - [ ] Build the adapter/defaults layer that fills required non-PDF calculator inputs.
 - [ ] Run a real extraction JSON through the multi-section review workbook once the adapter/defaults
       layer exists.
+
+## Future note (2026-07-09, non-blocking — nothing to do now)
+
+`lintel_items` (mark-by-mark diagnostic breakdown: `mark`, `length_m`, `count`, `total_length_m`) is
+correctly kept out of the calculator's production input path — only the scalar `lintel_total_length_m`
+is used while `lintel_length_calc_method = spec_total_length`. Worth remembering for later: if that
+mode is ever deliberately switched to `legacy_length_count_items`, these rows would feed
+`LintelLength.from_dict()`, whose dataclass only declares `length_m`/`count` — the extra `mark`/
+`total_length_m` keys would raise a `TypeError` on `**data` unpacking unless stripped first. Not
+relevant today; just don't forget it if that mode switch ever happens. See the matching note on
+`section_contract.yaml`'s `lintel_items` entry.

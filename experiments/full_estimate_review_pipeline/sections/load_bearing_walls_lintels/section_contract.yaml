@@ -323,7 +323,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Diagnostic source table. Calculator production input is lintel_total_length_m."
+    notes: "Diagnostic source table. Calculator production input is lintel_total_length_m. FUTURE NOTE (2026-07-09, non-blocking, nothing to do now): if `lintel_length_calc_method` is ever deliberately switched to `legacy_length_count_items`, these rows would feed the calculator's `LintelLength.from_dict()`, whose dataclass only declares `length_m`/`count` — the extra `mark`/`total_length_m` keys here would raise a TypeError on `**data` unpacking unless stripped first. Not relevant while `spec_total_length` stays the production mode; just don't forget it if that ever changes."
 
 price_keys:
   - {key: scaffolding_setup_work_unit_price, estimate_line_code: scaffolding_setup_dismantling, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", required: true, default_source: price_registry_with_fallback, registry_code: "scaffolding_setup_dismantling_work_set", fallback_key: "scaffolding_setup_work_unit_price", allow_manual_override: true, notes: ""}
