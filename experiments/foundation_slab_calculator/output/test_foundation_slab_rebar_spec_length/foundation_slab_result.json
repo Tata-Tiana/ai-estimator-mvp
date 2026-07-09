@@ -1,7 +1,7 @@
 {
   "case_name": "test_foundation_slab_rebar_spec_length",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_rebar_spec_length/expected.json",
   "inputs": {
     "project_name": "test_foundation_slab_rebar_spec_length",
     "membrane_area_m2": 320,
