@@ -57,8 +57,9 @@
     "floor_slab_1_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "length_m": "number|null - primary PDF quantity when row unit is м/п", "mass_per_m_kg": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
     "floor_slab_2_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "length_m": "number|null - primary PDF quantity when row unit is м/п", "mass_per_m_kg": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
     "beam_items": {"code": "string|null", "name": "string", "length_m": "number|null", "width_m": "number|null", "height_m": "number|null"},
-    "lintel_items": {"length_m": "number|null", "count": "number|null"},
-    "lintel_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "length_m": "number|null - primary PDF quantity when row unit is м/п", "mass_per_m_kg": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
+    "lintel_items": {"mark": "string|null", "length_m": "number|null", "count": "number|null", "total_length_m": "number|null - only if explicitly present in PDF"},
+    "main_wall_rebar_items": {"floor": "number|null", "component": "load_bearing_walls", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight"},
+    "lintel_rebar_items": {"floor": "number|null", "component": "lintels", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight"},
     "vent_chimney_cladding_segments": {"length_m": "number|null", "count": "number|null"}
   },
   "sections_expected": [

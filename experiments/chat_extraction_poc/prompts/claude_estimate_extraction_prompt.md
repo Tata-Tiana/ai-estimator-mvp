@@ -37,7 +37,7 @@
 Нельзя выбирать `target_code` только по английскому или техническому имени вроде:
 - `main_formwork_area`;
 - `eps100_edge_volume`;
-- `masonry_rebar_a500_d10_weight`.
+- `main_wall_rebar_items`.
 
 Сначала найди строку или ячейку в PDF, затем сопоставь её по:
 - русским алиасам;
@@ -213,18 +213,20 @@ extraction.
 не дублируй имена здесь, чтобы не разойтись с ними):
 
 - `foundation_rebar_items` → `source_length_m`, `kg_per_meter`;
-- `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items`, `lintel_rebar_items` → `length_m`,
-  `mass_per_m_kg` (имена этих трёх групп ещё не сверены с их калькуляторами, могут измениться при
-  следующих проверках Cross-Check Stage — не меняй их по аналогии с `foundation_rebar_items`);
-- `masonry_rebar_a500_d10_weight` → отдельный случай, не построчная группа с длиной/массой на
-  каждую позицию — см. описание этой цели в `calculator_targets_compact.json`.
+- `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items` → см. `group_value_shapes`;
+- `main_wall_rebar_items` → `spec_length_m`, `kg_per_meter`, `component: "load_bearing_walls"`;
+- `lintel_rebar_items` → `spec_length_m`, `kg_per_meter`, `component: "lintels"`.
+
+Для раздела `load_bearing_walls_lintels` не используй старую сводную цель
+`masonry_rebar_a500_d10_weight` в production extraction. Арматуру кладки несущих стен извлекай
+строками в `main_wall_rebar_items`, арматуру перемычек — строками в `lintel_rebar_items`.
+Марки/позиции перемычек (`Пм-1`, `Пм-2` и т.п.) — это `lintel_items`, не арматура.
 
 Во всех случаях: `weight_kg: null`, `unit: "м/п"`, `normalized_unit: "linear_m"`, если строка дана в
 метрах погонных.
 
-Важно:
-даже если `target_code` содержит слово `weight`, но PDF даёт арматуру в м/п, извлекай исходные данные
-(длину в м/п и массу 1 м, если она есть), а не готовый вес.
+Важно: если PDF даёт арматуру в м/п, извлекай исходные данные (длину в м/п и массу 1 м, если она
+есть), а не готовый вес.
 
 ---
 

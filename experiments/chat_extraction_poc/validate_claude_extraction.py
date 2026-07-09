@@ -22,8 +22,14 @@ FORBIDDEN_DIRECT_TARGETS = {"communications_length", "earthworks_communications_
 PRICE_LIKE_TOKENS = ["цена", "стоимост", "price", "unit_price", "тариф", "ставка"]
 
 STEEL_CLASS_TOKENS = ["а240", "a240", "а500", "a500", "вр-1", "вр1"]
-REBAR_GROUP_CODES = {"foundation_rebar_items", "floor_slab_1_rebar_items", "floor_slab_2_rebar_items", "lintel_rebar_items"}
-REBAR_DIRECT_TARGETS = {"masonry_rebar_a500_d10_weight"}
+REBAR_GROUP_CODES = {
+    "foundation_rebar_items",
+    "floor_slab_1_rebar_items",
+    "floor_slab_2_rebar_items",
+    "main_wall_rebar_items",
+    "lintel_rebar_items",
+}
+REBAR_DIRECT_TARGETS: set[str] = set()
 LINEAR_REBAR_UNIT_TOKENS = ["м/п", "м.п", "п.м", "мп", "linear_m"]
 MASS_PER_M_TOKENS = ["масса ед", "масса 1", "кг/м", "кг / м", "кг/п.м", "кг/м.п"]
 
@@ -116,13 +122,18 @@ def check_rebar_item(group_code: str | None, item: dict, path: str, warnings: li
     if steel_class and not any(tok in steel_class for tok in STEEL_CLASS_TOKENS):
         warnings.append(f"{path}: steel_class '{value.get('steel_class')}' doesn't look like a recognized rebar class (А240/А500...)")
 
-    length_m = value.get("length_m")
-    if length_m is not None and not isinstance(length_m, (int, float)):
-        warnings.append(f"{path}: length_m is not numeric: {length_m!r}")
+    length_field = "source_length_m" if value.get("source_length_m") is not None else (
+        "spec_length_m" if value.get("spec_length_m") is not None else "length_m"
+    )
+    mass_per_m_field = "kg_per_meter" if value.get("kg_per_meter") is not None else "mass_per_m_kg"
 
-    mass_per_m_kg = value.get("mass_per_m_kg")
+    length_m = value.get(length_field)
+    if length_m is not None and not isinstance(length_m, (int, float)):
+        warnings.append(f"{path}: {length_field} is not numeric: {length_m!r}")
+
+    mass_per_m_kg = value.get(mass_per_m_field)
     if mass_per_m_kg is not None and not isinstance(mass_per_m_kg, (int, float)):
-        warnings.append(f"{path}: mass_per_m_kg is not numeric: {mass_per_m_kg!r}")
+        warnings.append(f"{path}: {mass_per_m_field} is not numeric: {mass_per_m_kg!r}")
 
     weight_kg = value.get("weight_kg")
     if weight_kg is not None and not isinstance(weight_kg, (int, float)):
@@ -133,11 +144,11 @@ def check_rebar_item(group_code: str | None, item: dict, path: str, warnings: li
 
     if length_m is None:
         warnings.append(
-            f"{path}: rebar row in linear meters should preserve length_m; "
-            "target_code may contain 'weight', but source value is length"
+            f"{path}: rebar row in linear meters should preserve source/spec length; "
+            "source value is length, not calculated weight"
         )
     if _raw_mentions_mass_per_m(item) and mass_per_m_kg is None:
-        warnings.append(f"{path}: rebar row mentions mass per meter but value.mass_per_m_kg is missing")
+        warnings.append(f"{path}: rebar row mentions mass per meter but value.{mass_per_m_field} is missing")
     if weight_kg is not None:
         warnings.append(
             f"{path}: model appears to have calculated rebar weight; "
@@ -216,7 +227,7 @@ def validate(data: dict, unit_guide: dict) -> tuple[list[str], dict[str, int]]:
                 if not mapped:
                     warnings.append(
                         f"{path}: raw rebar row in linear meters has no mapped_target_codes; "
-                        "check that found item preserves length_m and mass_per_m_kg"
+                        "check that found item preserves source/spec length and kg_per_meter/mass_per_m_kg"
                     )
 
         for i, item in enumerate(found_items):

@@ -311,7 +311,31 @@ load_bearing_walls_lintels:
   unit_column_hint: ["м3", "кг", "м.п.", "шт"]
   notes: "Section header only; use child target codes for values."
 
-gas_block_d400_volume:
+floors_count:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Количество этажей"
+  pdf_aliases: ["Количество этажей", "Этажность", "Дом 1 этаж", "Дом 2 этажа", "1-этажный", "2-этажный"]
+  expected_unit: pcs
+  table_hints: ["Пояснительная записка", "Общие данные", "Архитектурные решения", "Кладочный план"]
+  required_context: ["этаж|этажность"]
+  negative_context: ["номер этажа", "отметка", "лист", "страница"]
+  value_column_hint: ["значение", "кол-во", "количество"]
+  unit_column_hint: ["эт.", "этаж", "шт"]
+  notes: "Production scalar for walls calculator. Extract only project-level floor count, not drawing sheet number or floor mark."
+
+cutoff_waterproofing_load_bearing_walls_area:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Отсечная гидроизоляция под несущими стенами"
+  pdf_aliases: ["Отсечная гидроизоляция под стены", "Гидроизоляция под первый ряд блоков", "Гидроизоляция под кладку", "Гидроизоляция под несущие стены", "Рулонная гидроизоляция под стены"]
+  expected_unit: m2
+  table_hints: ["Спецификация гидроизоляции", "Спецификация стен", "Кладочный план", "Ведомость материалов"]
+  required_context: ["гидроизоляц|отсечн", "стен|кладк|блок"]
+  negative_context: ["фундаментная плита", "кровля", "вертикальная гидроизоляция", "перегородк"]
+  value_column_hint: ["площадь", "кол-во", "количество", "объем работ"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Area for load-bearing walls only. Do not include partition cutoff waterproofing unless target explicitly asks for partitions."
+
+main_wall_gas_block_400_spec_volume:
   section_code: load_bearing_walls_lintels
   ru_label: "Газобетонный блок 600x400x250"
   pdf_aliases: ["Газобетонный блок 600х400х250", "ГБ блок 600х400х250", "Блок 400 мм", "Наружные стены 400 мм", "КС_Блок 400"]
@@ -323,7 +347,7 @@ gas_block_d400_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Main wall block volume; not vent-channel cladding block."
 
-gas_block_d500_250_volume:
+main_wall_gas_block_250_spec_volume:
   section_code: load_bearing_walls_lintels
   ru_label: "Газобетонный блок 600x250x250"
   pdf_aliases: ["Газобетонный блок 600х250х250", "ГБ блок 600х250х250", "Блок 250 мм", "Внутренние стены 250 мм"]
@@ -335,7 +359,7 @@ gas_block_d500_250_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Wall block volume; table row adjacency can be tricky, preserve raw_table_rows."
 
-gas_block_d500_150_volume:
+vent_chimney_gas_block_150_volume:
   section_code: load_bearing_walls_lintels
   ru_label: "Газобетонный блок 600x150x250"
   pdf_aliases: ["Газобетонный блок 600х150х250", "ГБ блок 600х150х250", "Блок 150 мм", "Обкладка вентканалов"]
@@ -345,23 +369,35 @@ gas_block_d500_150_volume:
   negative_context: ["600х400х250", "600х250х250"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "May belong to Schiedel cladding context; if so also map schiedel_gas_block_150_volume with same raw source."
+  notes: "Vent/chimney cladding block volume inside load_bearing_walls_lintels. May share the same physical PDF row with schiedel_gas_block_150_volume when the same source is relevant to the Schiedel section."
 
-masonry_rebar_a500_d10_weight:
+main_wall_rebar_items:
   section_code: load_bearing_walls_lintels
-  ru_label: "Арматура ф10 А500С для армирования кладки"
+  ru_label: "Арматура несущих стен"
   pdf_aliases: ["ф10 А500С армирование кладки", "Ø10 А500С кладка", "Арматура кладки ф10", "Блок 400мм армирование", "Блок 250мм армирование"]
   expected_unit: null
-  accepted_units: ["linear_m", "kg"]
+  accepted_units: ["linear_m"]
   primary_pdf_unit: "linear_m"
   calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
   table_hints: ["Спецификация стен", "Узлы армирования кладки", "Пояснительная записка"]
   required_context: ["ф10|Ø10", "А500|A500", "кладк|стен"]
   negative_context: ["перемычк", "фундамент", "перекрыти", "балк"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Несмотря на target_code с weight, первичное PDF-значение обычно в м/п. Не вычислять вес в GPT/Claude. Вернуть length_m и mass_per_m_kg; вес считает код. Do not confuse with floor slab or foundation rebar of the same diameter."
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use legacy masonry_rebar_a500_d10_weight in production extraction."
+
+lintel_total_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Общая длина перемычек"
+  pdf_aliases: ["Общая длина перемычек", "Итого длина перемычек", "Перемычки длина всего", "Суммарная длина перемычек", "Всего перемычек м.п."]
+  expected_unit: linear_m
+  table_hints: ["План перемычек", "Спецификация перемычек", "Ведомость перемычек"]
+  required_context: ["перемычк", "итого|общ|суммар|всего|длина"]
+  negative_context: ["арматур", "бетон", "фундамент", "плита", "балка"]
+  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Production scalar for lintel length. If PDF has only row-by-row lintel_items, keep rows and mark scalar needs_review unless total is explicitly present."
 
 lintel_concrete_volume:
   section_code: load_bearing_walls_lintels
@@ -375,53 +411,17 @@ lintel_concrete_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Lintel concrete only; not slab concrete or beam concrete."
 
-main_wall_external_length:
+floor_2_masonry_volume:
   section_code: load_bearing_walls_lintels
-  ru_label: "Длина наружных несущих стен"
-  pdf_aliases: ["Длина наружных стен", "Периметр наружных стен", "Наружные несущие стены длина", "Кладка наружных стен"]
-  expected_unit: linear_m
-  table_hints: ["Кладочный план", "Ведомость стен"]
-  required_context: ["наружн", "стен", "длин|периметр"]
-  negative_context: ["перемычк", "перегород", "парапет", "кровля"]
-  value_column_hint: ["длина", "периметр", "кол-во"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "External load-bearing walls only."
-
-main_wall_reinforcement_rows:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Количество армированных рядов кладки"
-  pdf_aliases: ["армирование кладки ряд", "армированные ряды кладки", "каждый ряд армирования", "ряд армирования кладки"]
-  expected_unit: pcs
-  table_hints: ["Пояснительная записка", "Узлы армирования кладки", "Фасад/схема армирования кладки"]
-  required_context: ["кладк", "ряд|нит"]
-  negative_context: ["перемычк", "плита", "перекрытие", "фундамент", "вентканал", "обкладка"]
-  value_column_hint: ["кол-во", "количество", "ряд"]
-  unit_column_hint: ["шт", "ряд"]
-  notes: "Often appears as a note, not a clean table row; keep candidates if ambiguous."
-
-main_wall_400_reinforcement_threads:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Количество нитей армирования кладки для стены 400 мм"
-  pdf_aliases: ["стена 400 мм нитей армирования", "400 мм армирование кладки", "наружная стена 400 армирование", "блок 400 мм нитки"]
-  expected_unit: pcs
-  table_hints: ["Узлы армирования кладки", "Пояснительная записка"]
-  required_context: ["400", "нит|армирован"]
-  negative_context: ["250 мм", "перемычк", "плита", "вентканал", "обкладка"]
-  value_column_hint: ["кол-во", "количество", "нитей"]
-  unit_column_hint: ["шт"]
-  notes: "Thread count, not wall length and not rebar weight."
-
-main_wall_250_reinforcement_threads:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Количество нитей армирования кладки для стены 250 мм"
-  pdf_aliases: ["стена 250 мм нитей армирования", "250 мм армирование кладки", "внутренняя стена 250 армирование", "блок 250 мм нитки"]
-  expected_unit: pcs
-  table_hints: ["Узлы армирования кладки", "Пояснительная записка"]
-  required_context: ["250", "нит|армирован"]
-  negative_context: ["400 мм", "перемычк", "плита", "вентканал", "обкладка"]
-  value_column_hint: ["кол-во", "количество", "нитей"]
-  unit_column_hint: ["шт"]
-  notes: "Thread count, not wall length and not rebar weight."
+  ru_label: "Кладка несущих стен 2-го этажа"
+  pdf_aliases: ["Кладка несущих стен 2 этажа", "Несущие стены 2 этажа", "Объем кладки 2 этажа", "Газобетон 2 этажа", "Стены второго этажа"]
+  expected_unit: m3
+  table_hints: ["Спецификация стен", "Спецификация газобетонных блоков", "Кладочный план 2 этажа"]
+  required_context: ["2 этаж|втор", "кладк|стен|газобетон|блок"]
+  negative_context: ["1 этаж", "парапет", "перемычк", "вентканал", "перегородк"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Production scalar used only when floors_count is 2. Do not substitute generic 250 mm block volume unless the PDF row explicitly belongs to second-floor load-bearing masonry."
 
 parapet_masonry_volume:
   section_code: load_bearing_walls_lintels
@@ -452,16 +452,16 @@ lintel_rebar_items:
   ru_label: "Арматура перемычек"
   pdf_aliases: ["Арматура перемычек", "ф12 А500С перемычки", "ф6 А240 хомуты", "Хомуты перемычек"]
   expected_unit: null
-  accepted_units: ["linear_m", "kg"]
+  accepted_units: ["linear_m"]
   primary_pdf_unit: "linear_m"
   calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
   table_hints: ["Спецификация перемычек", "План перемычек"]
   required_context: ["перемычк", "арматур|ф|Ø|А500|А240"]
   negative_context: ["фундамент", "перекрытие", "кладка"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Do not mix with masonry reinforcement. weight_kg is only for explicit kg rows; otherwise preserve length_m and mass_per_m_kg."
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Return row-by-row as lintel_rebar_items with component=lintels, spec_length_m and kg_per_meter. Do not mix with masonry reinforcement. Do not calculate total weight in chat extraction."
 
 vent_chimney_cladding_segments:
   section_code: load_bearing_walls_lintels
@@ -925,7 +925,7 @@ schiedel_gas_block_150_volume:
   negative_context: ["600х400х250", "600х250х250", "наружные стены"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "May share the same source as load_bearing_walls_lintels gas_block_d500_150_volume if the section uses wall calculator input."
+  notes: "May share the same source as load_bearing_walls_lintels vent_chimney_gas_block_150_volume if the section uses wall calculator input."
 
 vent_channel_1_height:
   section_code: schiedel_vent_channels

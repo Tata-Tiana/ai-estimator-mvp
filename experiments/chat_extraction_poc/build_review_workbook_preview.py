@@ -45,14 +45,15 @@ AUTO_PROJECT_ALIASES = {
     ("foundation_slab", "thermal_insert_100_length_m"): ["thermal_insert_100_length"],
     ("foundation_slab", "thermal_insert_50_material_spec_qty"): ["thermal_insert_50_material_spec_qty"],
     ("foundation_slab", "thermal_insert_100_material_spec_qty"): ["thermal_insert_100_material_spec_qty"],
-    ("load_bearing_walls_lintels", "main_wall_reinforcement_rows"): ["main_wall_reinforcement_rows"],
-    ("load_bearing_walls_lintels", "main_wall_400_reinforcement_threads"): ["main_wall_400_reinforcement_threads"],
-    ("load_bearing_walls_lintels", "lintel_total_length_m"): ["lintel_items"],
+    ("load_bearing_walls_lintels", "floors_count"): ["floors_count"],
+    ("load_bearing_walls_lintels", "cutoff_waterproofing_load_bearing_walls_area_m2"): ["cutoff_waterproofing_load_bearing_walls_area", "waterproofing_cutoff_material_area"],
+    ("load_bearing_walls_lintels", "main_wall_gas_block_400_spec_volume_m3"): ["main_wall_gas_block_400_spec_volume"],
+    ("load_bearing_walls_lintels", "main_wall_gas_block_250_spec_volume_m3"): ["main_wall_gas_block_250_spec_volume"],
+    ("load_bearing_walls_lintels", "lintel_total_length_m"): ["lintel_total_length", "lintel_items"],
     ("load_bearing_walls_lintels", "lintel_concrete_spec_volume_m3"): ["lintel_concrete_volume"],
-    ("load_bearing_walls_lintels", "vent_chimney_gas_block_spec_volume_m3"): ["gas_block_d500_150_volume", "vent_chimney_gas_block_spec_volume"],
-    ("load_bearing_walls_lintels", "floor_2_masonry_volume_m3"): ["gas_block_d500_250_volume"],
+    ("load_bearing_walls_lintels", "vent_chimney_gas_block_spec_volume_m3"): ["vent_chimney_gas_block_150_volume", "vent_chimney_gas_block_spec_volume"],
+    ("load_bearing_walls_lintels", "floor_2_masonry_volume_m3"): ["floor_2_masonry_volume"],
     ("load_bearing_walls_lintels", "parapet_masonry_volume_m3"): ["parapet_masonry_volume"],
-    ("load_bearing_walls_lintels", "cutoff_waterproofing_load_bearing_walls_area_m2"): ["waterproofing_cutoff_material_area"],
     ("load_bearing_walls_lintels", "cutoff_waterproofing_partitions_area_m2"): ["waterproofing_cutoff_material_area"],
     ("floor_slab_1", "insulation.total_eps_volume_from_spec_m3"): ["floor_slab_1_eps100_volume"],
     ("floor_slab_1", "main_formwork_area_m2"): ["floor_slab_1_main_formwork_area"],
@@ -145,6 +146,7 @@ DETAIL_GROUP_CODES = {
     "foundation_rebar_items",
     "floor_slab_1_rebar_items",
     "floor_slab_2_rebar_items",
+    "main_wall_rebar_items",
     "lintel_rebar_items",
     "beam_items",
     "lintel_items",
@@ -154,6 +156,7 @@ REBAR_GROUP_CODES = {
     "foundation_rebar_items",
     "floor_slab_1_rebar_items",
     "floor_slab_2_rebar_items",
+    "main_wall_rebar_items",
     "lintel_rebar_items",
 }
 
@@ -488,12 +491,17 @@ def item_code(item: dict[str, Any]) -> str:
 
 def is_rebar_item(item: dict[str, Any]) -> bool:
     code = item_code(item)
-    value = item.get("value")
-    return code in REBAR_GROUP_CODES or (
-        code == "masonry_rebar_a500_d10_weight"
-        and isinstance(value, dict)
-        and value.get("length_m") not in (None, "")
+    return code in REBAR_GROUP_CODES
+
+
+def rebar_length(value: dict[str, Any]) -> Any:
+    return value.get("source_length_m") if value.get("source_length_m") not in (None, "") else (
+        value.get("spec_length_m") if value.get("spec_length_m") not in (None, "") else value.get("length_m")
     )
+
+
+def rebar_mass_per_m(value: dict[str, Any]) -> Any:
+    return value.get("kg_per_meter") if value.get("kg_per_meter") not in (None, "") else value.get("mass_per_m_kg")
 
 
 def is_detail_item(item: dict[str, Any]) -> bool:
@@ -1080,15 +1088,15 @@ def append_details_sheet_earthworks_like(ws, extraction: dict[str, Any], report:
         if not is_rebar_item(item) or not isinstance(item.get("value"), dict):
             continue
         value = item["value"]
-        length = value.get("length_m")
-        mass_per_m = value.get("mass_per_m_kg")
+        length = rebar_length(value)
+        mass_per_m = rebar_mass_per_m(value)
         calculated = ""
         comment = ""
         if length not in (None, "") and mass_per_m not in (None, ""):
             calculated = round(float(length) * float(mass_per_m), 3)
             comment = f"Справочный вес: {display_number(calculated)} кг; не значение из PDF."
         elif value.get("weight_kg") in (None, ""):
-            comment = "Нет mass_per_m_kg/weight_kg; нужна ручная логика перед calculator input."
+            comment = "Нет kg_per_meter/mass_per_m_kg/weight_kg; нужна ручная логика перед calculator input."
         ws.append([
             "Арматура",
             f"{SECTION_NAMES_RU.get(section_code, section_code)} — {value.get('name') or item_code(item)}",
@@ -1168,7 +1176,6 @@ def append_details_sheet_earthworks_like(ws, extraction: dict[str, Any], report:
         "beam_items",
         "floor_slab_1_eps100_volume",
         *REBAR_GROUP_CODES,
-        "masonry_rebar_a500_d10_weight",
     }
     for section_code, item in iter_found_items(extraction, with_section=True):
         code = item_code(item)
@@ -1467,8 +1474,8 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
         "item_name",
         "steel_class",
         "diameter_mm",
-        "length_m",
-        "mass_per_m_kg",
+        "source_or_spec_length_m",
+        "kg_per_meter_or_mass_per_m_kg",
         "calculated_weight_kg",
         "weight_kg_from_pdf",
         "status",
@@ -1481,8 +1488,8 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
         if not is_rebar_item(item) or not isinstance(item.get("value"), dict):
             continue
         value = item["value"]
-        length = value.get("length_m")
-        mass_per_m = value.get("mass_per_m_kg")
+        length = rebar_length(value)
+        mass_per_m = rebar_mass_per_m(value)
         calculated = ""
         status = status_for_item(item)
         comment = ""
@@ -1491,7 +1498,7 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
             comment = "Справочный расчет preview; это не вес из PDF."
         elif value.get("weight_kg") in (None, ""):
             status = "MANUAL_NEEDED" if not item.get("needs_review") else "NEEDS_REVIEW"
-            comment = "Нет mass_per_m_kg или weight_kg_from_pdf; нужна ручная логика/каталог."
+            comment = "Нет kg_per_meter/mass_per_m_kg или weight_kg_from_pdf; нужна ручная логика/каталог."
         ws.append(
             [
                 SECTION_NAMES_RU.get(section_code, section_code),
@@ -1579,7 +1586,6 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
         "beam_items",
         "floor_slab_1_eps100_volume",
         *REBAR_GROUP_CODES,
-        "masonry_rebar_a500_d10_weight",
     }
     for section_code, item in iter_found_items(extraction, with_section=True):
         code = item_code(item)
@@ -1787,7 +1793,7 @@ def build_workbook(
             report["unknown_target_codes"][f"{section_code}:{code}"] += 1
         if is_rebar_item(item) and isinstance(item.get("value"), dict):
             value = item["value"]
-            if value.get("mass_per_m_kg") in (None, "") and value.get("weight_kg") in (None, ""):
+            if rebar_mass_per_m(value) in (None, "") and value.get("weight_kg") in (None, ""):
                 report["manual_logic_needed"].append(f"{section_code}:{code}:{value.get('name') or ''}")
         if item_code(item) in {"roof_parapet_abutment_total_length", "roof_wall_abutment_total_length"}:
             report["manual_logic_needed"].append(f"{section_code}:{item_code(item)}: split by roof level")

@@ -235,7 +235,7 @@ review_parameters:
     required: true
     review_sheet: "01_Проверка проекта"
     target_code: "main_wall_rebar_items"
-    calculator_input_path: "rebar_items"
+    calculator_input_path: "main_wall_rebar_items"
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.main_wall_rebar_items.rows"
     value_kind: repeated_rows
     row_key_field: component

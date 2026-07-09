@@ -74,30 +74,36 @@
       "section_code": "load_bearing_walls_lintels",
       "section_name_ru": "Несущие стены и перемычки",
       "targets": [
-        {"code": "gas_block_d400_volume", "label_ru": "Газобетонный блок 600×400×250 — объём по спецификации", "unit": "m3", "grounded": true},
-        {"code": "gas_block_d500_250_volume", "label_ru": "Газобетонный блок 600×250×250 — объём по спецификации", "unit": "m3", "grounded": false},
-        {"code": "gas_block_d500_150_volume", "label_ru": "Газобетонный блок 600×150×250 — объём по спецификации", "unit": "m3", "grounded": false},
-        {"code": "masonry_rebar_a500_d10_weight", "label_ru": "Арматура ф10 А500С для армирования кладки — вес", "unit": "kg", "grounded": true, "notes": "Технический target_code содержит weight, потому что калькулятору в итоге нужен вес. В PDF может быть дана длина в м/п + масса ед. шт.; тогда извлекать length_m и mass_per_m_kg, не вычислять weight_kg."},
+        {"code": "floors_count", "label_ru": "Количество этажей для расчёта несущих стен", "unit": "pcs", "grounded": true},
+        {"code": "cutoff_waterproofing_load_bearing_walls_area", "label_ru": "Отсечная гидроизоляция под первый ряд несущих стен — площадь", "unit": "m2", "grounded": true},
+        {"code": "main_wall_gas_block_400_spec_volume", "label_ru": "Газобетонный блок 600×400×250 — объём по спецификации", "unit": "m3", "grounded": true},
+        {"code": "main_wall_gas_block_250_spec_volume", "label_ru": "Газобетонный блок 600×250×250 — объём по спецификации", "unit": "m3", "grounded": false},
+        {"code": "lintel_total_length", "label_ru": "Перемычки — общая длина", "unit": "linear_m", "grounded": true},
+        {"code": "vent_chimney_gas_block_150_volume", "label_ru": "Газобетонный блок 600×150×250 для вентканалов — объём по спецификации", "unit": "m3", "grounded": false},
         {"code": "lintel_concrete_volume", "label_ru": "Бетон перемычек — объём", "unit": "m3", "grounded": true},
-        {"code": "main_wall_external_length", "label_ru": "Длина наружных несущих стен (по периметру)", "unit": "linear_m", "grounded": true},
-        {"code": "main_wall_reinforcement_rows", "label_ru": "Количество армированных рядов кладки", "unit": "pcs", "grounded": true},
-        {"code": "main_wall_400_reinforcement_threads", "label_ru": "Количество нитей армирования кладки, стена 400 мм", "unit": "pcs", "grounded": true},
-        {"code": "main_wall_250_reinforcement_threads", "label_ru": "Количество нитей армирования кладки, стена 250 мм", "unit": "pcs", "grounded": true},
+        {"code": "floor_2_masonry_volume", "label_ru": "Кладка несущих стен 2-го этажа — объём по спецификации", "unit": "m3", "grounded": true},
         {"code": "parapet_masonry_volume", "label_ru": "Объём кладки парапета", "unit": "m3", "grounded": true}
       ],
       "extract_groups": [
         {
           "group_code": "lintel_items",
           "description": "Ведомость перемычек — длины и количество одинаковых перемычек.",
-          "fields": ["length_m", "count"],
+          "fields": ["mark", "length_m", "count", "total_length_m"],
           "grounded": false
         },
         {
-          "group_code": "lintel_rebar_items",
-          "description": "Арматура перемычек — обычно 2 строки по диаметру/классу стали.",
-          "fields": ["code", "name", "steel_class", "diameter_mm", "length_m", "mass_per_m_kg", "weight_kg"],
+          "group_code": "main_wall_rebar_items",
+          "description": "Арматура несущих стен — каждая строка спецификации отдельно, в м/п.",
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
           "grounded": false,
-          "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные length_m и mass_per_m_kg; weight_kg оставлять null, вес считает код."
+          "notes": "component должен быть load_bearing_walls. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg."
+        },
+        {
+          "group_code": "lintel_rebar_items",
+          "description": "Арматура перемычек — каждая строка спецификации отдельно, в м/п.",
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
+          "grounded": false,
+          "notes": "component должен быть lintels. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg."
         },
         {
           "group_code": "vent_chimney_cladding_segments",

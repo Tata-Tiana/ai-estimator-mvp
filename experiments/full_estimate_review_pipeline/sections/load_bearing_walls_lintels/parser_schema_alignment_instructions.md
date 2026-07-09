@@ -15,9 +15,16 @@ Purpose: keep the chat extraction files, review workbook contract, and calculato
 
 ## Current status
 
-Contract exists, but this section still needs the same parser/schema cross-check pass that foundation slab already received.
+Parser-side extraction files have received the first production alignment pass in
+`reports/step_17_load_bearing_walls_lintels_extraction_crosscheck.md`.
 
-Known risk: this section has multiple rebar-like repeated groups. Do not reuse foundation slab field names by analogy. Check each calculator item shape directly.
+The active chat extraction targets now use production target codes for the main project quantities
+and production repeated-row shapes for wall/lintel rebar. Legacy wall-geometry rebar targets are not
+active production extraction targets.
+
+Known remaining risk: the calculator still has required non-PDF constants/defaults that the adapter
+must fill from a defaults/catalog layer before a real calculator run. Do not ask GPT/Claude to invent
+those constants from the PDF.
 
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
@@ -78,3 +85,20 @@ Known risk: this section has multiple rebar-like repeated groups. Do not reuse f
 5. Run JSON/YAML validation after edits.
 6. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
 
+## Adapter/defaults still required
+
+The following calculator inputs are not PDF extraction targets. They must come from DEFAULT,
+catalog, price registry, supplier input, or business settings before the adapter can build a valid
+calculator input:
+
+- `gas_block_d400_pallet_volume_m3`
+- `gas_block_d500_250_pallet_volume_m3`
+- `adhesive_consumption_bag_per_m3`
+- `sand_concrete_consumption_kg_per_m2_per_10mm`
+- `sand_concrete_thickness_factor`
+- `gas_block_delivery_truck_capacity_m3`
+- `gas_block_d500_150_pallet_volume_m3`
+- `parapet_chasing_base_length_m`
+- `second_light_chasing_base_length_m`
+- `parapet_rebar_base_length_m`
+- `second_light_rebar_base_length_m`
