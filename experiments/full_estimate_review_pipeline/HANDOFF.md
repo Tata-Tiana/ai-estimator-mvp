@@ -33,6 +33,47 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
+
+**There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**
+It existed in this pipeline's schema/contracts from Step 2 onward and was removed on
+2026-07-09 from the template and all 8 section contracts after the user caught it: it had
+calculator adapters silently reading project quantities from sheet 03 instead of from the
+reviewed sheet 01 row (confirmed as a real, live bug for earthworks
+`communications_length_m`, not just a naming issue — see the fix in
+`sections/earthworks/section_contract.yaml`). If you see `DETAIL_TABLE` anywhere (a stale
+report, a half-finished branch, model memory from before this fix), it is wrong; do not
+recreate it.
+
+The rule, in one paragraph: **every piece of project data extracted from the PDF/chat JSON —
+scalar or repeated-row group (rebar by diameter, trench routes, pipe items, beam items,
+lintel items, ...) — is a row on sheet `01_Проверка проекта`, one row per value or per
+repeated item.** All prices are rows on sheet `02_Цены себестоимости`. **The calculator input
+adapter reads only from sheet 01 and sheet 02** (plus contract `defaults`/`supplier_inputs`,
+which are not project data). Sheet `03_Детали объемов` is a **read-only reference mirror**:
+the workbook builder may copy the same repeated-row groups onto it, formatted like the PDF
+spec table, purely so Elena can eyeball it without opening the PDF — but it is generated FROM
+sheet 01, Elena does not edit it as the primary correction surface, and the adapter must never
+read it back as an independent input.
+
+In `section_contract.yaml` terms:
+
+- A repeated-row group is a `review_parameters` entry with `value_kind: repeated_rows` and a
+  `columns:` list (not a separate `detail_tables:` block).
+- `source_class` stays `AUTO_PROJECT` for repeated-row groups exactly like for scalars — it is
+  still project data from the PDF, just shaped as multiple rows instead of one cell.
+- Set `mirror_to_details_sheet: true` on entries that should also render on sheet 03 for
+  convenience, with a `mirror_notes` field explaining that sheet 03 is a copy, not a source.
+- `calculator_input_mapping` / `auto_calculated` / `estimate_lines` leaf inputs reference
+  `review_parameters.<key>`, never `detail_tables.<key>`.
+
+Known follow-up (not yet done as of 2026-07-09): `build_review_workbook_from_contracts.py`
+still reads `contract.get("detail_tables")` in several places to populate sheet 03
+(`build_review_workbook_from_contracts.py:311,507,573,600,615,627,689`). Now that no contract
+has a `detail_tables` key, sheet 03 will render empty for what used to be detail tables until
+the builder is updated to read `review_parameters` entries with `mirror_to_details_sheet: true`
+instead. Fix the builder before assuming sheet 03 output is complete.
+
 ## Universal Production Rule
 
 Every step must protect against project-specific contamination.
@@ -55,7 +96,9 @@ For every numeric constant or coefficient in a calculator, first check the June 
 materials and section reports (`elena_parameter_review_pack`, paid calculator change reports,
 calculator README/report files). Then classify it:
 
-- `AUTO_PROJECT` / `DETAIL_TABLE`: project quantity from parser/chat JSON or reviewed workbook;
+- `AUTO_PROJECT`: project quantity from parser/chat JSON or reviewed workbook — scalar or
+  repeated-row group, always a sheet-01 row (see the Sheet 01/02/03 Rule above; there is no
+  separate detail-table class);
 - `PRICE`: price registry/project price/reviewed price row;
 - `DEFAULT`: formula default, method constant, business coefficient, or catalog/package value;
 - `AUTO_CALCULATED`: derived by adapter/calculator/formula-ready;
@@ -289,6 +332,151 @@ Recommended order:
 
 Each section gets its own contract, adapter, formula-ready report, and commit.
 
+## Cross-Check Stage — Section Contract vs Real Extraction JSON (No Value Leakage)
+
+Use this stage when the user says "проверяем контракт по [раздел] на реальных данных" or
+"сверяем со сметой [проект]", or when resuming a chat that stopped mid cross-check.
+
+### Why this stage exists
+
+`sections/*/section_contract.yaml` files (through `foundation_slab`, `flat_roof`,
+`load_bearing_walls_lintels`, `floor_slab_1`, `floor_slab_2`, `schiedel_vent_channels`,
+`waterproofing`, `earthworks` — see `reports/step_05..step_12`) were drafted from calculator
+source, calculator docs, `docs/elena_parameter_review_pack_audit.md`, and
+`experiments/chat_extraction_poc/data/{calculator_targets_compact.json,target_aliases_ru.yaml}`.
+They were never checked against a real per-project chat/parser extraction JSON. This stage closes
+that gap, one finished real-project estimate at a time, without repeating the earthworks mistake
+(project-specific numbers silently becoming pipeline expectations — see the Universal Production
+Rule above and `reports/step_03b_production_contamination_audit.md`).
+
+Scope: cost-basis ("себестоимость", the internal/grey estimate) only. The client-facing
+white/markup part of the estimate is out of scope for this stage entirely.
+
+### What the user provides
+
+A finished, hand-built real-project estimate for one section (screenshot or pasted rows: label +
+unit, sometimes a value) for a project this pipeline has real chat-extraction JSON for (currently
+ЮСВ, `experiments/chat_extraction_poc/`). The estimate was built by hand by an estimator and is
+**not** an automated pipeline output — it is only used here as a source of real row labels/units to
+cross-check contract coverage, never as a target value.
+
+### What the assistant does per row
+
+1. Find the matching field in the section's calculator (`experiments/<section>_calculator/*.py`)
+   and in `sections/<section>/section_contract.yaml`. If nothing matches, say so explicitly — that
+   is a real finding, not a search failure.
+2. Classify/confirm its `source_class` per the enum already used in section contracts:
+   `AUTO_PROJECT`, `DEFAULT`, `AUTO_CALCULATED`, `PRICE`, `SUPPLIER_INPUT`, `MANUAL_REVIEW`.
+   A repeated-row group (rebar by diameter, trench routes, pipe items, ...) is still
+   `AUTO_PROJECT` — see the Sheet 01/02/03 Rule above, there is no separate detail-table class.
+   Add a `ZERO_STRUCTURE_LINE` case for rows that exist only as an empty Excel-structure
+   placeholder filled in by hand after export (confirmed pattern in
+   `foundation_slab_calculator.py`, `floor_slab_2_calculator.py`, `flat_roof_calculator.py` for
+   "Технический надзор" / "Заготовительно-складские расходы" / "Накладные и общехозяйственные
+   расходы" / "Сметная прибыль" — earthworks has none of these four rows at all, not even as a
+   placeholder).
+3. If `source_class` is `AUTO_PROJECT` (scalar or repeated-row group), check whether a matching
+   `target_code` / `group_code` actually exists in the real project's chat-extraction JSON
+   (`experiments/chat_extraction_poc/outputs/*.json` when present). Report found / not found /
+   found-but-wrong-shape. This is the check that matters: can the parser realistically supply this
+   field on a real project, not just in the contract's own `parser_mapping.aliases_ru` guess.
+
+### Hard rule: no project values in any written file
+
+The output of this stage is **only**:
+
+- confirmed/corrected `source_class`;
+- confirmed/corrected `parser_mapping` (target codes, aliases, expected unit);
+- found/not-found verdict against the real extraction JSON;
+- missing calculator/contract coverage (row exists in the real estimate, nothing matches it in the
+  contract or the calculator).
+
+A literal number from the user's real project (81, 320, 18.29, etc.) may appear **only inside the
+chat turn itself**, to let the assistant locate the right field. It must never be written into
+`section_contract.yaml`, a `reports/*.md` file, or any other file in this repo — not even in a
+scratch file "to delete later". If the assistant needs working notes across several rows in one
+session, keep them in the chat, not in a file. Do not create a temporary/scratch file for this at
+all; there is nothing in it that survives the session except the structural findings above, and
+those go straight into the real report/contract.
+
+### Naming Alignment Rule (fixed 2026-07-09 — read this before "fixing" any target_code mismatch)
+
+When a cross-check finds that the contract's `parser_mapping.target_codes` (or a repeated-row group's
+`columns` keys) don't match what the parser actually emits, **do not build a translation/bridge inside
+the contract.** Rename the parser-side files instead
+(`experiments/chat_extraction_poc/data/target_aliases_ru.yaml`,
+`data/calculator_targets_compact.json`, `schemas/claude_extraction_output_schema.json`, and the prompt
+if it names the field explicitly) so the parser's `target_code`/field names become **identical** to
+the calculator's real dataclass field names for that section. After the fix, within one section:
+`section_contract.yaml`'s `calculator_input_path` == its `parser_mapping.target_codes` == what the
+parser actually outputs — no separate "bridge" name anywhere.
+
+**Never rename a calculator's own field names to fix this.** Calculators are tested, working
+financial-calculation code; renaming their fields is a real code change with real risk, not a
+config/schema edit. If the calculator's name is awkward or inconsistent with another section, that's
+a separate, deliberate future cleanup (see the naming-divergence note below), not something to fix as
+a side effect of a cross-check.
+
+This replaces the earlier, inconsistent approach (see `step_13`'s `membrane_area_m2` finding, fixed
+by editing the contract, versus its `foundation_rebar_items` finding, fixed by editing the parser) —
+going forward, always fix the parser side, for every section, no exceptions decided case by case.
+
+**Fact, not a bug, to keep in mind while doing this**: different section calculators were built
+independently and do **not** use one shared name for the same physical material/process across
+sections — e.g. rebar's "length from spec" field is `source_length_m` in `foundation_slab_calculator.py`
+but `spec_length_m` in `floor_slab_1_calculator.py`, `floor_slab_2_calculator.py`, and
+`load_bearing_walls_lintels_calculator.py`. This means the parser's canonical field name for "rebar
+length from spec" legitimately differs per section-specific extraction group
+(`foundation_rebar_items` vs `floor_slab_1_rebar_items` etc.) — don't assume one group's fix applies to
+another by analogy; verify each calculator's real field names independently. A shared naming
+dictionary/catalog across all calculators (one name per physical concept, everywhere) would be a good
+future cleanup, but is out of scope for now — it means touching tested calculator code across every
+section, not a config-only change like the fixes in this stage.
+
+### Where findings land
+
+- Structural corrections to an existing section: edit `sections/<section>/section_contract.yaml`
+  directly (only `source_class`, `parser_mapping`, `notes` fields — never add a `default_value` or
+  `example` populated with a real project number). Per the Naming Alignment Rule above, most naming
+  fixes actually land in the parser-side files, not the contract.
+- A running log of the cross-check itself (what was checked, what didn't match, what's missing
+  entirely from the contract or calculator): `reports/step_13_<section>_extraction_crosscheck.md`
+  (bump the number per section if more than one cross-check report is open at once).
+
+### Order
+
+Start with `foundation_slab` (has a contract already — step 8 — but zero real-JSON cross-check).
+Then repeat per section in the Step 10 order once foundation_slab is done. `earthworks` and
+`waterproofing` are also in scope for this stage even though they aren't in the Step 10 list (they
+were built earlier, in steps 1/5/6, before this stage existed) — see `reports/step_15_*` for
+earthworks. Do the cross-check itself before the Step 11 migration below; the migration should build
+on a contract that's already been checked against a real project, not the other way round.
+
+## Step 11 — Earthworks Migration Off Its Own Hardcoded Pipeline
+
+- [ ] Read `experiments/earthworks_review_to_calculator/*.py` and
+      `experiments/earthworks_parser_google_stage1/google_sheets/review_workbook_builder.py` in full;
+      confirm exactly which pieces are earthworks-hardcoded (`PARAM_META`, `SUMMARY_RULES`, and
+      similar dicts) versus reusable logic.
+- [ ] Finish Step 15's earthworks Cross-Check first (`reports/step_15_earthworks_extraction_crosscheck.md`)
+      so the contract itself is correct before anything is built on top of it.
+- [ ] Build (or extend `build_review_workbook_from_contracts.py` with) a real extraction-JSON ingestion
+      path — this does not exist yet for any section (see the "no extraction-JSON input" gap noted for
+      `build_review_workbook_from_contracts.py`'s `parse_args`/`build_project_sheet`), earthworks
+      migration depends on it same as every other section eventually will.
+- [ ] Replace `calculator_input_mapping.transform: earthworks_review_to_calculator_adapter` in
+      `sections/earthworks/section_contract.yaml` with the same generic
+      `review_parameters + defaults + price_keys -> calculator input` mapping style used by the other
+      7 contracts, once the generic adapter can actually produce it correctly (regression check
+      against the existing hardcoded flow's known-good output before retiring it).
+- [ ] Only after the generic path is proven equivalent: retire/archive the earthworks-specific scripts,
+      update `section.status` in the contract away from `reference_ready`, and update the "Reference
+      Earthworks Flow" section above (it currently documents the old flow as canonical).
+- [ ] Commit step 11 separately.
+
+Not started. Recorded 2026-07-09 per explicit user decision to stop treating earthworks as a permanent
+special case and bring it onto the same contract-driven path as the other 7 sections.
+
 ## Guardrails For Every Step
 
 Before marking a step complete, run these checks mentally and, where possible, with scripts.
@@ -317,8 +505,8 @@ Fail if a required formula coefficient is dropped just because it is numeric.
 
 Every leaf input must be one of:
 
-- `AUTO_PROJECT`
-- `DETAIL_TABLE`
+- `AUTO_PROJECT` (scalar or repeated-row group — see the Sheet 01/02/03 Rule; there is no
+  separate `DETAIL_TABLE` class)
 - `DEFAULT`
 - `AUTO_CALCULATED`
 - `PRICE`
@@ -414,18 +602,28 @@ Before committing:
 
 ## Current State
 
-Completed:
+Completed (checklist above under-reports this — verified against files on disk):
 
-- Step 0 pipeline architecture was documented.
-- Step 1 reference report was created.
-- Step 2 common section contract format was defined.
-- Step 3 all new sections quantity matrix was drafted.
-- Step 3b production contamination audit was documented.
-- Step 4 section order was selected.
-- Step 5 waterproofing section contract was drafted.
+- Steps 0–3b as listed in the checklist.
+- Draft `section_contract.yaml` now exists for all 8 sections: `earthworks`, `waterproofing`,
+  `schiedel_vent_channels`, `foundation_slab`, `load_bearing_walls_lintels`, `floor_slab_1`,
+  `floor_slab_2`, `flat_roof` — see `reports/step_05..step_12`.
+- Local review-workbook prototypes were built and re-built incrementally through step 12
+  (`output/step_06_*.xlsx` .. `output/step_12_all_sections_review_template.xlsx`), each adding one
+  more section's contract into the combined workbook.
+- The formal Step Checklist above (steps 6–10 checkboxes) was not kept in sync with this work —
+  treat the checkboxes as stale and the `reports/` + `sections/` file list as the source of truth
+  for what's actually done.
+- None of the 8 contracts have been cross-checked against a real project's chat-extraction JSON yet
+  (they were built from calculator source + docs + `target_aliases_ru.yaml`, not from an actual
+  extraction run). This is a real, open gap, not a formality.
 
 Next:
 
-- Step 6: build the `earthworks + waterproofing` review workbook prototype.
+- Cross-Check Stage (see section above) for `foundation_slab` against the real ЮСВ
+  chat-extraction JSON, row by row, per the no-value-leakage rule.
+- Steps 7 and 9 (multi-section normalized review JSON; waterproofing review-to-calculator adapter)
+  are still genuinely not started — do not assume the contract work above means the
+  adapter/normalized-JSON layer exists too. It doesn't yet.
 
-Do not start coding all 8 sections at once.
+Do not start coding all 8 sections' adapters at once.

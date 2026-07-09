@@ -6,6 +6,9 @@ __pycache__/
 # Session snapshot zips (file handoff between chats/agents) — repo root only
 /*.zip
 
+# Real project source PDFs dropped at repo root (e.g. pasted in for a chat-extraction pass) — never commit these.
+/*.pdf
+
 data/input/
 data/output/
 data/reference/unikma/*.json
@@ -28,6 +31,15 @@ experiments/earthworks_review_to_calculator/data/telegram_logs/
 # MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
 # Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
 experiments/usv_strict_pdf_parser_v3/data_mkp1/
+
+# A6.0 vision PDF parser POC — page renders + vision extraction of real ЮСВ content.
+experiments/vision_pdf_parser_poc/output/
+
+# A6.1 Claude chat extraction POC — real project extraction output/reports and the built pack.
+experiments/chat_extraction_poc/input_pdfs/
+experiments/chat_extraction_poc/outputs/*.json
+experiments/chat_extraction_poc/reports/*.md
+experiments/chat_extraction_poc/dist/
 
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*

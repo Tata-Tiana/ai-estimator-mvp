@@ -55,7 +55,7 @@ geotextile_laying_area:
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Work/installation area. Do not invent it if only material quantity is shown; reuse the source only with needs_review=true unless the row explicitly means laying/installation."
 
-planter_membrane_area:
+membrane_area_m2:
   section_code: earthworks
   ru_label: "Площадь профилированной мембраны PLANTER"
   pdf_aliases: ["Профилированная мембрана PLANTER", "PLANTER", "Мембрана профилированная", "Профилированная мембрана"]
@@ -255,13 +255,13 @@ foundation_rebar_items:
   accepted_units: ["linear_m", "kg"]
   primary_pdf_unit: "linear_m"
   calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай source_length_m и kg_per_meter, weight_kg оставляй null. Не считай общий вес."
   table_hints: ["Спецификация к плану фундаментной плиты", "Ведомость арматуры", "План армирования"]
   required_context: ["арматур|A500|А500|A240|А240|ф\\d|Ø"]
   negative_context: ["перемычк", "перекрыти", "кладк"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract row-by-row with diameter and steel class. Primary PDF quantity is often length in м/п plus mass_per_m_kg; weight_kg is null unless the PDF explicitly gives kg."
+  notes: "Extract row-by-row with diameter and steel class. Primary PDF quantity is often length in м/п plus kg_per_meter; weight_kg is null unless the PDF explicitly gives kg."
 
 waterproofing:
   section_code: waterproofing

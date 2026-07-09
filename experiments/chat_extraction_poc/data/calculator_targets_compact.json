@@ -12,7 +12,7 @@
         {"code": "sand_volume", "label_ru": "Объём песка (подушка)", "unit": "m3", "grounded": true},
         {"code": "geotextile_area", "label_ru": "Площадь геотекстиля (материал)", "unit": "m2", "grounded": true},
         {"code": "geotextile_laying_area", "label_ru": "Площадь укладки геотекстиля", "unit": "m2", "grounded": true, "notes": "В PDF часто одно и то же число, что и geotextile_area — если видишь только одно значение, укажи его в обоих полях и добавь candidates."},
-        {"code": "planter_membrane_area", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true},
+        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true},
         {"code": "pit_area", "label_ru": "Площадь котлована", "unit": "m2", "grounded": true},
         {"code": "pit_excavation_depth", "label_ru": "Глубина котлована", "unit": "m", "grounded": true},
         {"code": "trench_volume_total", "label_ru": "Объём траншей, готовая строка ИТОГО (если есть такая строка в таблице)", "unit": "m3", "grounded": true, "notes": "Извлекай только если в таблице реально есть готовая итоговая ячейка. Если её нет — не считай сама, оставь null, объём посчитается из trench_routes."},
@@ -49,15 +49,15 @@
         {"code": "thermal_insert_100_material_spec_qty", "label_ru": "Материал термовставок 100 мм, объём по спецификации", "unit": "m3", "grounded": true},
         {"code": "sand_volume", "label_ru": "Объём песка (подушка под плиту)", "unit": "m3", "grounded": true, "notes": "Тот же физический показатель, что earthworks.sand_volume — может быть одно и то же число из одной и той же таблицы. Не дублируй как два разных факта, если это явно одна ячейка."},
         {"code": "geotextile_area", "label_ru": "Площадь геотекстиля", "unit": "m2", "grounded": true, "notes": "См. earthworks.geotextile_area — вероятно то же число."},
-        {"code": "planter_membrane_area", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "См. earthworks.planter_membrane_area — вероятно то же число."}
+        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "См. earthworks.membrane_area_m2 — вероятно то же число."}
       ],
       "extract_groups": [
         {
           "group_code": "foundation_rebar_items",
           "description": "Арматура фундаментной плиты (сетка плиты, сетка/армирование термовставок) — обычно несколько строк по диаметру и классу стали.",
-          "fields": ["code", "name", "steel_class", "diameter_mm", "length_m", "mass_per_m_kg", "weight_kg"],
+          "fields": ["code", "name", "steel_class", "diameter_mm", "source_length_m", "kg_per_meter", "weight_kg"],
           "grounded": true,
-          "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные length_m и mass_per_m_kg; weight_kg оставлять null, вес считает код. Если PDF явно даёт кг, тогда можно заполнить weight_kg. Не путай с ценой за метр/кг."
+          "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные source_length_m и kg_per_meter; weight_kg оставлять null, вес считает код. Если PDF явно даёт кг, тогда можно заполнить weight_kg. Не путай с ценой за метр/кг."
         }
       ]
     },
