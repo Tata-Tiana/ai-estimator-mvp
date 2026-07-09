@@ -213,7 +213,8 @@ extraction.
 не дублируй имена здесь, чтобы не разойтись с ними):
 
 - `foundation_rebar_items` → `source_length_m`, `kg_per_meter`;
-- `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items` → см. `group_value_shapes`;
+- `floor_slab_1_rebar_items` → `spec_length_m`, `kg_per_meter`, `floor: 1`, `component: "floor_slab_1"`;
+- `floor_slab_2_rebar_items` → см. `group_value_shapes`;
 - `main_wall_rebar_items` → `spec_length_m`, `kg_per_meter`, `component: "load_bearing_walls"`;
 - `lintel_rebar_items` → `spec_length_m`, `kg_per_meter`, `component: "lintels"`.
 

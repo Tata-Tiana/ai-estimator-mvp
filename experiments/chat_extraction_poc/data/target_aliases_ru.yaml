@@ -489,15 +489,51 @@ floor_slab_1:
 
 floor_slab_1_concrete_volume:
   section_code: floor_slab_1
-  ru_label: "Бетон плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Бетон плиты перекрытия 1 этажа", "Бетон ж/б плиты перекрытия", "Бетон перекрытия", "Бетон В22,5 плита перекрытия"]
+  ru_label: "Бетон плиты перекрытия 1-го этажа, общий объем по спецификации"
+  pdf_aliases: ["Бетон плиты перекрытия 1 этажа", "Бетон ж/б плиты перекрытия", "Бетон перекрытия", "Бетон В22,5 плита перекрытия", "Итого бетон плиты перекрытия", "Общий объем бетона перекрытия"]
   expected_unit: m3
   table_hints: ["Спецификация к плите перекрытия 1 этажа"]
   required_context: ["бетон", "перекрыти|плита"]
-  negative_context: ["балк", "перемычк", "фундамент", "2 этажа"]
+  negative_context: ["перемычк", "фундамент", "2 этажа"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Concrete of the slab body only; if beams have separate concrete, extract separately as outside target or beam context with needs_review."
+  notes: "Production calculator subtracts beam_items concrete internally. Use the total concrete for the floor slab 1 section before beam subtraction if the PDF gives a total. Do not map a beam-only concrete row here."
+
+floor_slab_1_slab_thickness:
+  section_code: floor_slab_1
+  ru_label: "Толщина плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Толщина плиты перекрытия 1 этажа", "Плита перекрытия 180 мм", "Плита перекрытия h", "h плиты перекрытия", "толщ. плиты перекрытия"]
+  expected_unit: m
+  table_hints: ["План плиты перекрытия 1 этажа", "Разрез плиты перекрытия", "Спецификация к плите перекрытия 1 этажа"]
+  required_context: ["толщ|h", "плит|перекрыти"]
+  negative_context: ["фундамент", "кровля", "2 этажа"]
+  value_column_hint: ["толщина", "h", "размер", "значение"]
+  unit_column_hint: ["мм", "м"]
+  notes: "Normalize mm to meters. Used for calculator controls/fallbacks, not as project-specific hardcode."
+
+floor_slab_1_slab_edge_perimeter:
+  section_code: floor_slab_1
+  ru_label: "Периметр/длина торца плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Периметр торца плиты", "Длина торца плиты перекрытия", "Периметр вертикальных поверхностей", "Длина вертикальных поверхностей плиты"]
+  expected_unit: linear_m
+  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
+  required_context: ["торц|вертикальн|периметр|длина", "плит|перекрыти"]
+  negative_context: ["опалубка м2", "ЭППС м3", "фундамент", "2 этажа"]
+  value_column_hint: ["длина", "периметр", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
+  notes: "Linear value only. Do not map m2 formwork area here."
+
+floor_slab_1_edge_formwork_height:
+  section_code: floor_slab_1
+  ru_label: "Высота торцевой опалубки плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Высота торцевой опалубки", "Высота опалубки торца плиты", "Толщина плиты перекрытия", "Плита перекрытия h"]
+  expected_unit: m
+  table_hints: ["Разрез плиты перекрытия", "План плиты перекрытия 1 этажа", "Ведомость опалубки плиты перекрытия 1 этажа"]
+  required_context: ["высот|толщ|h", "опалубк|торц|плит|перекрыти"]
+  negative_context: ["ЭППС", "фундамент", "кровля", "2 этажа"]
+  value_column_hint: ["высота", "толщина", "h", "размер", "значение"]
+  unit_column_hint: ["мм", "м"]
+  notes: "Control geometry for calculator. If PDF has no separate edge formwork height, adapter may use slab_thickness_m; do not hardcode a project value."
 
 floor_slab_1_eps100_volume:
   section_code: floor_slab_1
@@ -521,7 +557,7 @@ floor_slab_1_under_slab_formwork_area:
   negative_context: ["ЭППС", "утепление", "торец", "вертикальн", "балк", "2 этажа"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Alias-only helper for chat extraction; not in compact targets, but prevents EPS/formwork confusion."
+  notes: "Production target. Keep separate from EPS bottom work area and EPS volume."
 
 floor_slab_1_edge_formwork_area:
   section_code: floor_slab_1
@@ -533,7 +569,67 @@ floor_slab_1_edge_formwork_area:
   negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "2 этажа"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Alias-only helper; keep separate from EPS 100 mm edge volume in m3."
+  notes: "Production target. Keep separate from EPS 100 mm edge area/volume."
+
+floor_slab_1_beams_formwork_area:
+  section_code: floor_slab_1
+  ru_label: "Площадь опалубки балок перекрытия 1-го этажа"
+  pdf_aliases: ["Опалубка балок", "Площадь опалубки балок", "Опалубка ж/б балок", "Вертикальная опалубка балок", "Опалубка боковых поверхностей балок"]
+  expected_unit: m2
+  table_hints: ["Ведомость балок", "Спецификация балок", "Ведомость опалубки балок"]
+  required_context: ["опалубк", "балк"]
+  negative_context: ["плита под", "торец плиты", "ЭППС", "перемычк", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Production target for beam formwork area. Do not confuse with beam concrete volume or beam table total."
+
+floor_slab_1_edge_eps_work_length:
+  section_code: floor_slab_1
+  ru_label: "ЭППС 100 мм торец плиты перекрытия 1-го этажа — длина работ"
+  pdf_aliases: ["ЭППС торец плиты длина", "Утепление торца плиты длина", "Длина утепления торца", "Утепление вертикальных поверхностей длина"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
+  required_context: ["ЭППС|утеплен", "торц|вертикальн|длина"]
+  negative_context: ["опалубка", "м2", "м3", "фундамент", "2 этажа"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
+  notes: "Work length for edge EPS. Do not confuse with EPS material area m2 or volume m3."
+
+floor_slab_1_edge_insulation_height:
+  section_code: floor_slab_1
+  ru_label: "Высота утепления торца плиты перекрытия 1-го этажа"
+  pdf_aliases: ["Высота утепления торца", "Торец плиты высота утепления", "ЭППС торца высота", "Высота вертикального утепления"]
+  expected_unit: m
+  table_hints: ["Разрез плиты перекрытия", "Спецификация утепления"]
+  required_context: ["высот|h", "ЭППС|утеплен|торц"]
+  negative_context: ["толщина ЭППС", "опалубка", "фундамент", "2 этажа"]
+  value_column_hint: ["высота", "h", "размер", "значение"]
+  unit_column_hint: ["мм", "м"]
+  notes: "Normalize mm to meters. This is insulation height, not EPS thickness."
+
+floor_slab_1_edge_eps_material_area:
+  section_code: floor_slab_1
+  ru_label: "ЭППС 100 мм торец плиты перекрытия 1-го этажа — площадь материала"
+  pdf_aliases: ["ЭППС торец плиты площадь", "Утепление вертикальных поверхностей плиты", "Площадь материала ЭППС торца", "Площадь утепления торца плиты"]
+  expected_unit: m2
+  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
+  required_context: ["ЭППС|утеплен", "торц|вертикальн|площад"]
+  negative_context: ["опалубка", "м3", "низ плиты", "фундамент", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Material area for EPS edge. Do not confuse with edge formwork area."
+
+floor_slab_1_bottom_eps_work_area:
+  section_code: floor_slab_1
+  ru_label: "ЭППС 100 мм низ плиты перекрытия 1-го этажа — площадь работ"
+  pdf_aliases: ["ЭППС низ плиты площадь", "Утепление низа плиты", "Утепление под плитой перекрытия", "Площадь утепления низа плиты"]
+  expected_unit: m2
+  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
+  required_context: ["ЭППС|утеплен", "низ|под плит"]
+  negative_context: ["опалубка", "м3", "торец", "фундамент", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Work area below slab. Do not confuse with under-slab formwork area."
 
 floor_slab_1_rebar_items:
   section_code: floor_slab_1
@@ -543,13 +639,13 @@ floor_slab_1_rebar_items:
   accepted_units: ["linear_m", "kg"]
   primary_pdf_unit: "linear_m"
   calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter, не считай общий вес."
   table_hints: ["Спецификация к плите перекрытия 1 этажа", "Ведомость деталей плиты перекрытия 1 этажа"]
   required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
   negative_context: ["кладк", "перемычк", "фундамент", "2 этажа"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract rows by diameter and steel class; preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg."
+  notes: "Extract rows by diameter and steel class; set floor=1 and component=floor_slab_1. Preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg."
 
 beam_items:
   section_code: floor_slab_1
@@ -586,6 +682,18 @@ floor_slab_1_beam_table_total:
   value_column_hint: ["итого", "всего", "объем", "кол-во"]
   unit_column_hint: ["м3", "м2", "м.п.", "шт"]
   notes: "Control row only; do not map automatically to slab concrete or beam items."
+
+beam_table_controls:
+  section_code: floor_slab_1
+  ru_label: "Контрольные итоги таблицы Ж/Б балок"
+  pdf_aliases: ["Итого по балкам", "Итого Ж/Б балки", "Всего балки", "Итого по ведомости балок", "Итого"]
+  expected_unit: null
+  table_hints: ["Ведомость балок", "Спецификация балок"]
+  required_context: ["итого|всего", "балк"]
+  negative_context: ["арматура", "перемычк", "фундамент", "2 этажа"]
+  value_column_hint: ["итого", "всего", "объем", "площадь", "кол-во"]
+  unit_column_hint: ["м3", "м2", "м.п.", "шт"]
+  notes: "Diagnostic group only. Keep table totals for review, but do not feed them directly into calculator inputs."
 
 floor_slab_2:
   section_code: floor_slab_2

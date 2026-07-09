@@ -1,7 +1,7 @@
 {
   "_meta": {
     "purpose": "Compact list of what to look for in the PDF for each of the 8 estimate calculators. Generated from experiments/pdf_parser_pipeline/section_schema.py EXPLICIT_PARAMETERS (input_type in {parsed, manual}) — the curated subset, not the full 629-parameter auto-flattened schema.",
-    "grounded_field": "grounded=true means this exact target was checked against real USV/TRC candidate data (A4/A5 series work) and has resolver_hints in the parser. grounded=false means it is schema-derived from the calculator's input.json shape but not independently verified against real PDFs — treat with more skepticism.",
+    "grounded_field": "grounded=true means this exact target was checked against real candidate data (A4/A5 series work) and has resolver_hints in the parser. grounded=false means it is schema-derived from the calculator's input.json shape but not independently verified against real PDFs — treat with more skepticism.",
     "excluded_by_design": ["prices", "calculated totals", "formula outputs", "default/catalog constants (e.g. roll area, rod length)", "legacy/deprecated fields", "internal/debug/service fields", "manual override fields"]
   },
   "sections": [
@@ -117,22 +117,39 @@
       "section_code": "floor_slab_1",
       "section_name_ru": "Плита перекрытия 1-го этажа",
       "targets": [
-        {"code": "floor_slab_1_concrete_volume", "label_ru": "Бетон плиты перекрытия (отм. 1-го этажа) — объём", "unit": "m3", "grounded": true},
+        {"code": "floor_slab_1_concrete_volume", "label_ru": "Бетон плиты перекрытия 1-го этажа — общий объём по спецификации до вычитания балок", "unit": "m3", "grounded": true, "notes": "Production calculator subtracts beam_items concrete internally. Do not map a beam-only concrete row here; use the total concrete for the slab section if present."},
+        {"code": "floor_slab_1_slab_thickness", "label_ru": "Толщина плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Normalize mm to meters. Used for control geometry and fallbacks."},
+        {"code": "floor_slab_1_edge_formwork_height", "label_ru": "Высота торцевой опалубки плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Control geometry. If no separate PDF row exists, adapter may use slab thickness; do not hardcode a project value."},
+        {"code": "floor_slab_1_slab_edge_perimeter", "label_ru": "Периметр/длина торца плиты перекрытия 1-го этажа", "unit": "linear_m", "grounded": false},
+        {"code": "floor_slab_1_under_slab_formwork_area", "label_ru": "Площадь опалубки под плитой перекрытия 1-го этажа", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_1_edge_formwork_area", "label_ru": "Площадь опалубки торца плиты перекрытия 1-го этажа", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_1_beams_formwork_area", "label_ru": "Площадь опалубки балок перекрытия 1-го этажа", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_1_edge_eps_work_length", "label_ru": "ЭППС 100 мм торец плиты перекрытия 1-го этажа — длина работ", "unit": "linear_m", "grounded": false},
+        {"code": "floor_slab_1_edge_insulation_height", "label_ru": "Высота утепления торца плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Normalize mm to meters."},
+        {"code": "floor_slab_1_edge_eps_material_area", "label_ru": "ЭППС 100 мм торец плиты перекрытия 1-го этажа — площадь материала", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_1_bottom_eps_work_area", "label_ru": "ЭППС 100 мм низ плиты перекрытия 1-го этажа — площадь работ", "unit": "m2", "grounded": false},
         {"code": "floor_slab_1_eps100_volume", "label_ru": "ЭППС 100 мм торец и низ плиты — объём", "unit": "m3", "grounded": true}
       ],
       "extract_groups": [
         {
           "group_code": "floor_slab_1_rebar_items",
           "description": "Арматура плиты перекрытия 1-го этажа — несколько строк по диаметру/классу стали.",
-          "fields": ["code", "name", "steel_class", "diameter_mm", "length_m", "mass_per_m_kg", "weight_kg"],
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
           "grounded": true,
-          "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные length_m и mass_per_m_kg; weight_kg оставлять null, вес считает код."
+          "notes": "component должен быть floor_slab_1, floor должен быть 1. В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать spec_length_m и kg_per_meter; не вычислять общий вес."
         },
         {
           "group_code": "beam_items",
           "description": "Балки (Б-1, Б-2, ...) под плитой перекрытия — геометрия каждой балки.",
-          "fields": ["code", "name", "length_m", "width_m", "height_m"],
+          "fields": ["code", "name", "length_m", "width_m", "height_m", "count"],
           "grounded": false
+        },
+        {
+          "group_code": "beam_table_controls",
+          "description": "Контрольные итоговые строки таблицы Ж/Б балок — только для проверки, не для прямого input калькулятора.",
+          "fields": ["label", "value", "unit"],
+          "grounded": false,
+          "notes": "Не маппить строку Итого автоматически в бетон плиты или beam_items."
         }
       ]
     },
