@@ -78,10 +78,10 @@ review_parameters:
     normalized_json_path: "sections.floor_slab_1.parameters.edge_formwork_height_m.value"
     value_kind: scalar
     parser_mapping:
-      target_codes: ["floor_slab_1_edge_formwork_height", "floor_slab_1_slab_thickness"]
+      target_codes: ["floor_slab_1_slab_thickness"]
       aliases_ru: ["высота торцевой опалубки", "высота опалубки торца плиты", "толщина плиты перекрытия"]
       expected_unit: "м"
-      notes: "Control geometry only. If PDF has no separate edge formwork height, adapter may use slab_thickness_m; do not hardcode a project value."
+      notes: "Control geometry only. Adapter should normally use slab_thickness_m; do not ask GPT for a separate production target and do not hardcode a project value."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -410,7 +410,7 @@ price_keys:
   - {key: bottom_slab_insulation_work_rate_per_m2, estimate_line_code: bottom_slab_insulation_work, label_ru: "Утепление низа плиты", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "eps_bottom_slab_insulation_work_m2", fallback_key: "bottom_slab_insulation_work_rate_per_m2", allow_manual_override: true, notes: ""}
   - {key: eps_unit_price_per_m3, estimate_line_code: eps_penoplex_osnova_100mm, label_ru: "Пеноплэкс Основа 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_penoplex_osnova_100_m3", fallback_key: "eps_unit_price_per_m3", allow_manual_override: true, notes: ""}
   - {key: foam_unit_price_per_can, estimate_line_code: eps_glue_foam, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", required: true, default_source: price_registry_with_fallback, registry_code: "eps_foam_glue_can", fallback_key: "foam_unit_price_per_can", allow_manual_override: true, notes: ""}
-  - {key: technical_supervision_amount, estimate_line_code: technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: ""}
+  - {key: technical_supervision_amount, estimate_line_code: technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, calculator_input_path: "manual_lines.technical_supervision_amount", notes: "Price-like manual amount; adapter must place the reviewed value into manual_lines because the current calculator reads it there."}
 
 defaults:
   - {key: formwork_areas_calc_method, label_ru: "Метод площадей опалубки", source_class: DEFAULT, value: "spec_formwork_areas", unit: "", calculator_input_path: "formwork_areas_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
@@ -483,22 +483,6 @@ supplier_inputs:
       status_if_missing: "manual_required"
       action_ru: "Укажите эквивалент листов фанеры для свесов и доборов; не брать проектный fallback как универсальный дефолт."
     notes: "Calculator requires rates.overhang_sheet_equivalent. Existing fallback values look project/template-specific, so keep as manual/supplier input until Elena confirms a universal formula."
-
-  - key: technical_supervision_amount
-    label_ru: "Технический надзор"
-    unit: "-"
-    source_class: SUPPLIER_INPUT
-    required: true
-    review_sheet: "02_Цены себестоимости"
-    calculator_input_path: "manual_lines.technical_supervision_amount"
-    normalized_json_path: "sections.floor_slab_1.supplier_inputs.technical_supervision_amount.value"
-    value_kind: scalar
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Укажите сумму технического надзора для раздела."
-    notes: "Although the value is price-like, the current calculator reads it from manual_lines. Adapter must place it there."
 
 calculator_input_mapping:
   - input_path: "*"
@@ -848,7 +832,7 @@ estimate_lines:
     quantity:
       formula: "1 fixed line"
       leaf_inputs:
-        - {ref: "supplier_inputs.technical_supervision_amount", source_class: SUPPLIER_INPUT}
+        - {ref: "price_keys.technical_supervision_amount", source_class: PRICE}
     prices: {material_unit_price_key: null, work_unit_price_key: technical_supervision_amount, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "Current calculator reads the amount from manual_lines. Adapter must map the reviewed value there."

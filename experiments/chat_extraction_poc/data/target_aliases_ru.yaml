@@ -523,18 +523,6 @@ floor_slab_1_slab_edge_perimeter:
   unit_column_hint: ["м.п.", "м/п", "мп", "м"]
   notes: "Linear value only. Do not map m2 formwork area here."
 
-floor_slab_1_edge_formwork_height:
-  section_code: floor_slab_1
-  ru_label: "Высота торцевой опалубки плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Высота торцевой опалубки", "Высота опалубки торца плиты", "Толщина плиты перекрытия", "Плита перекрытия h"]
-  expected_unit: m
-  table_hints: ["Разрез плиты перекрытия", "План плиты перекрытия 1 этажа", "Ведомость опалубки плиты перекрытия 1 этажа"]
-  required_context: ["высот|толщ|h", "опалубк|торц|плит|перекрыти"]
-  negative_context: ["ЭППС", "фундамент", "кровля", "2 этажа"]
-  value_column_hint: ["высота", "толщина", "h", "размер", "значение"]
-  unit_column_hint: ["мм", "м"]
-  notes: "Control geometry for calculator. If PDF has no separate edge formwork height, adapter may use slab_thickness_m; do not hardcode a project value."
-
 floor_slab_1_eps100_volume:
   section_code: floor_slab_1
   ru_label: "ЭППС 100 мм для торца и низа плиты перекрытия 1-го этажа"

@@ -119,7 +119,6 @@
       "targets": [
         {"code": "floor_slab_1_concrete_volume", "label_ru": "Бетон плиты перекрытия 1-го этажа — общий объём по спецификации до вычитания балок", "unit": "m3", "grounded": true, "notes": "Production calculator subtracts beam_items concrete internally. Do not map a beam-only concrete row here; use the total concrete for the slab section if present."},
         {"code": "floor_slab_1_slab_thickness", "label_ru": "Толщина плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Normalize mm to meters. Used for control geometry and fallbacks."},
-        {"code": "floor_slab_1_edge_formwork_height", "label_ru": "Высота торцевой опалубки плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Control geometry. If no separate PDF row exists, adapter may use slab thickness; do not hardcode a project value."},
         {"code": "floor_slab_1_slab_edge_perimeter", "label_ru": "Периметр/длина торца плиты перекрытия 1-го этажа", "unit": "linear_m", "grounded": false},
         {"code": "floor_slab_1_under_slab_formwork_area", "label_ru": "Площадь опалубки под плитой перекрытия 1-го этажа", "unit": "m2", "grounded": false},
         {"code": "floor_slab_1_edge_formwork_area", "label_ru": "Площадь опалубки торца плиты перекрытия 1-го этажа", "unit": "m2", "grounded": false},
