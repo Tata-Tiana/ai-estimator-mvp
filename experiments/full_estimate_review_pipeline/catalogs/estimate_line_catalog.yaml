@@ -1,0 +1,316 @@
+catalog_version: 0.1
+purpose: "Shared catalog of final estimate rows by section. Stores row identity, formulas, source classes, price keys, and zero policy; does not store project quantities or actual project prices."
+rules:
+  no_project_quantities: true
+  no_price_values: true
+  formulas_are_symbolic: true
+  calculator_code_is_ground_truth_for_existing_lines: true
+
+zero_policy_values:
+  not_expected: "A zero value likely means a missing quantity or price and should be checked."
+  allowed: "A zero result is allowed and the row may remain visible."
+  requires_review_if_zero: "Technically possible, but Elena should verify it."
+  structural_zero: "A structural/form row, not a live calculator money row."
+  disabled_if_zero: "May be omitted when zero if the section rule allows it."
+
+line_kinds:
+  normal: "Regular estimate row returned by calculator."
+  fixed_amount: "Estimate row with quantity 1 and a fixed amount/price key."
+  structural_zero: "Excel/form structure row, often zero."
+  control: "Calculator/formula-ready control row, not necessarily a payable row."
+
+sections:
+  earthworks:
+    status: reference_ready
+    section_title_ru: "ЗЕМЛЯНЫЕ РАБОТЫ (БЕЗ ВЫВОЗА ГРУНТА)"
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/earthworks/section_contract.yaml"
+      - "experiments/earthworks_calculator/earthworks_calculator.py"
+      - "experiments/earthworks_review_to_calculator/build_formula_ready_result.py"
+      - "experiments/full_estimate_review_pipeline/reports/step_01_earthworks_reference.md"
+    calculator_estimate_line_count: 11
+    formula_ready_row_count: 11
+    lines:
+      axis_marking:
+        code: "axis_marking"
+        row_id: "earthworks.axis_marking"
+        name_ru: "Вынос осей фундамента, котлована на участок"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "axis_marking_shifts"
+          leaf_inputs:
+            - ref: "defaults_catalog.sections.earthworks.defaults.axis_marking_shifts"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "axis_marking_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "axis_marking_shift"
+        zero_policy: not_expected
+        notes: "Quantity default is stored in defaults catalog. Unit price is PRICE and must come from price registry/fallback/review."
+
+      excavator_jcb:
+        code: "excavator_jcb"
+        row_id: "earthworks.excavator_jcb"
+        name_ru: "Механизированная разработка грунта, Экскаватор JCB"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "ceil(pit_area_m2 * pit_excavation_depth_m / excavator_productivity_m3_per_shift)"
+          leaf_inputs:
+            - ref: "review_parameters.pit_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.pit_excavation_depth_m"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.earthworks.defaults.excavator_productivity_m3_per_shift"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "excavator_material_unit_price"
+          work_unit_price_key: "excavator_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "excavator_jcb_shift"
+        zero_policy: not_expected
+        notes: "Material side is rental/mechanism price; work side is operator/brigade price."
+
+      manual_excavation:
+        code: "manual_excavation"
+        row_id: "earthworks.manual_excavation"
+        name_ru: "Разработка грунта вручную"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "pit_area_m2 * manual_refinement_depth_m + trench_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.pit_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.earthworks.defaults.manual_refinement_depth_m"
+              source_class: DEFAULT
+            - ref: "review_parameters.trench_volume_m3"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "manual_excavation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "manual_excavation_m3"
+        zero_policy: not_expected
+        notes: "Production path uses calculated manual excavation; legacy manual override is not the default."
+
+      geotextile_laying:
+        code: "geotextile_laying"
+        row_id: "earthworks.geotextile_laying"
+        name_ru: "Укладка геотекстиля"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "geotextile_laying_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.geotextile_laying_area_m2"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "geotextile_laying_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "geotextile_laying_m2"
+        zero_policy: not_expected
+        notes: "Do not confuse laying area with material area."
+
+      geotextile_material:
+        code: "geotextile_material"
+        row_id: "earthworks.geotextile_material"
+        name_ru: "Геотекстиль Дорнит 300 г.м2 (100м2)"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "ceil(geotextile_area_m2 * geotextile_overlap_coeff / geotextile_roll_area_m2) * geotextile_roll_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.geotextile_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.earthworks.defaults.geotextile_overlap_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.earthworks.defaults.geotextile_roll_area_m2"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "geotextile_material_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "geotextile_dornit_300_m2"
+        zero_policy: not_expected
+        notes: "Quantity is purchased roll area, not raw project area."
+
+      sand_filling:
+        code: "sand_filling"
+        row_id: "earthworks.sand_filling"
+        name_ru: "Отсыпка дна котлована, засыпка под плитой песком с трамбованием"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "sand_base_volume_m3 + trench_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.sand_base_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.trench_volume_m3"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "sand_filling_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "sand_filling_work_m3"
+        zero_policy: not_expected
+        notes: "Work quantity uses project sand base plus trench volume."
+
+      sand_material:
+        code: "sand_material"
+        row_id: "earthworks.sand_material"
+        name_ru: "Песок строительный"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "roundup_to_step((sand_base_volume_m3 + trench_volume_m3) * sand_compaction_coeff, sand_truck_step_m3)"
+          leaf_inputs:
+            - ref: "review_parameters.sand_base_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.trench_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.earthworks.defaults.sand_compaction_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.earthworks.defaults.sand_truck_step_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "sand_material_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "sand_m3"
+        zero_policy: not_expected
+        notes: "Material quantity is ordered rounded volume, not raw project sand volume."
+
+      sand_manual_moving:
+        code: "sand_manual_moving"
+        row_id: "earthworks.sand_manual_moving"
+        name_ru: "Перемещение песка вручную"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "sand_base_volume_m3 + trench_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.sand_base_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.trench_volume_m3"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "sand_manual_moving_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "sand_manual_moving_m3"
+        zero_policy: requires_review_if_zero
+        notes: "Can become a zero row if the price is missing or intentionally zero. Do not convert the zero price into a DEFAULT."
+
+      communications_work:
+        code: "communications_work"
+        row_id: "earthworks.communications_work"
+        name_ru: "Закладка технологических входов коммуникаций до границы дома"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "communications_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.communications_length_m"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "communications_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "communications_installation_m"
+        zero_policy: not_expected
+        notes: "Reviewed scalar length is production source unless adapter deliberately uses pipe rows."
+
+      communications_material:
+        code: "communications_material"
+        row_id: "earthworks.communications_material"
+        name_ru: "Материалы для устройства входов коммуникаций"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "communications_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.communications_length_m"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: "communications_material_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "communications_material_m"
+        zero_policy: not_expected
+        notes: "Same quantity as communications work; separate material price key."
+
+      consumables:
+        code: "consumables"
+        row_id: "earthworks.consumables"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_earthworks_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "literal.1"
+              source_class: AUTO_CALCULATED
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: "consumables_amount"
+          price_registry_code: "earthworks_consumables_fixed"
+        zero_policy: requires_review_if_zero
+        notes: "This is a fixed amount/price row. It belongs to sheet 02 / price fallback / manual review, not defaults_catalog."
+
+    structural_rows_from_excel_template:
+      technical_supervision_zero:
+        code: "technical_supervision_zero"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_earthworks_calculator
+        zero_policy: structural_zero
+        source_note: "Seen in old Excel/screenshot structure, but not in current earthworks calculator estimate_lines."
+        action_needed: "Decide at final-estimate layout layer whether this is global section structure, per-section zero row, or a future calculator line."
+
+      procurement_storage_zero:
+        code: "procurement_storage_zero"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_earthworks_calculator
+        zero_policy: structural_zero
+        source_note: "Seen in old Excel/screenshot structure, but not in current earthworks calculator estimate_lines."
+        action_needed: "Classify as global final-estimate structural row before using in production export."
+
+      overhead_zero:
+        code: "overhead_zero"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_earthworks_calculator
+        zero_policy: structural_zero
+        source_note: "Seen in old Excel/screenshot structure, but not in current earthworks calculator estimate_lines."
+        action_needed: "Classify as global final-estimate structural row before using in production export."
+
+      profit_zero:
+        code: "profit_zero"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_earthworks_calculator
+        zero_policy: structural_zero
+        source_note: "Seen in old Excel/screenshot structure, but not in current earthworks calculator estimate_lines."
+        action_needed: "Classify as global final-estimate structural row before using in production export."
+
