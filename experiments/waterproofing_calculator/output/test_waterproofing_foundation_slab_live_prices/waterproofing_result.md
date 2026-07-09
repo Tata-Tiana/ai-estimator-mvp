@@ -93,10 +93,10 @@
 ## Источники цен
 | Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
 | --- | --- | ---: | ---: | --- | --- |
-| Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя | `bitumen_waterproofing_work_m2` | `350` | `350` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя | `bitumen_waterproofing_work_m2` | `350` | `350` | `price_registry` |  |
 | Праймер битумный AquaMast, 18 л | `bitumen_primer_aquamast_18l_item` | `2770` | `2865` | `price_registry` |  |
 | Мастика гидроизоляционная битумная для фундаментов AquaMast, 18 кг | `bitumen_mastic_aquamast_18kg_item` | `2780` | `2828.21` | `price_registry` |  |
-| Утепление стен плиты ЭППС 100 мм | `eps_wall_insulation_work_m2` | `500` | `500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Утепление стен плиты ЭППС 100 мм | `eps_wall_insulation_work_m2` | `500` | `500` | `price_registry` |  |
 | Пеноплэкс ГЕО 100 мм | `eps_geo_100_m3` | `10000` | `8900` | `price_registry` |  |
 | Клей-пена для ЭППС | `eps_foam_glue_can` | `490` | `450` | `price_registry` |  |
 | Логистика и снабжение | `None` | `935.98` | `935.98` | `locked_case_prices` |  |
@@ -106,15 +106,13 @@
 | Показатель | Значение |
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
-| `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `4` |
+| `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
+| `prices_from_price_registry` | `6` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `2` |
-| `warnings_count` | `2` |
+| `prices_from_fallback_input` | `0` |
+| `warnings_count` | `0` |
 
 ## Warnings
-- bitumen_waterproofing_work_m2: price_code not found in price_registry, fallback input price used
-- eps_wall_insulation_work_m2: price_code not found in price_registry, fallback input price used
 
 ## Comparison
 Expected values are not provided for this case.

@@ -1,6 +1,6 @@
 {
   "case_name": "test_waterproofing_foundation_slab_live_prices",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab_live_prices/input.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab_live_prices/input.json",
   "expected_path": null,
   "inputs": {
     "project_name": "test_waterproofing_foundation_slab_live_prices",
@@ -78,10 +78,10 @@
       "work_total": 8505,
       "line_total": 8505,
       "price_code": "bitumen_waterproofing_work_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "350",
       "unit_price_used": "350",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "bitumen_primer_aquamast_18l",
@@ -126,10 +126,10 @@
       "work_total": 8750,
       "line_total": 8750,
       "price_code": "eps_wall_insulation_work_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "500",
       "unit_price_used": "500",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "eps100_wall_penoplex_geo_material",
@@ -205,16 +205,13 @@
   },
   "expected": {},
   "comparison": [],
-  "warnings": [
-    "bitumen_waterproofing_work_m2: price_code not found in price_registry, fallback input price used",
-    "eps_wall_insulation_work_m2: price_code not found in price_registry, fallback input price used"
-  ],
+  "warnings": [],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
-    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 4,
+    "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
+    "prices_from_price_registry": 6,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 2,
-    "warnings_count": 2
+    "prices_from_fallback_input": 0,
+    "warnings_count": 0
   }
 }

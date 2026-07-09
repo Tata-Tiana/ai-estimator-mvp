@@ -1,7 +1,7 @@
 {
   "case_name": "test_waterproofing_spec_area",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/expected.json",
   "inputs": {
     "project_name": "test_waterproofing_spec_area",
     "waterproofing_work_unit_price": 350,
