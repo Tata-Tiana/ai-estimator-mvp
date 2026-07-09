@@ -142,6 +142,285 @@ sections:
         allow_override: true
         notes: "Default quantity for axis marking. The work unit price is PRICE and is not stored in this catalog."
 
+  foundation_slab:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/foundation_slab/section_contract.yaml"
+      - "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
+      - "experiments/foundation_slab_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      formwork_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_calc_method"
+        used_by_estimate_lines:
+          - "foundation_slab.formwork_installation"
+          - "foundation_slab.formwork_plywood"
+          - "foundation_slab.formwork_timber"
+          - "foundation_slab.formwork_dismantling"
+        source_note: "Production mode from foundation slab section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use the PDF/spec side formwork area; do not reconstruct from perimeter and height in production."
+
+      plywood_calc_method:
+        value: "actual_area_with_waste"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "plywood_calc_method"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Production mode from foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Plywood is calculated from the actual side formwork area, sheet dimensions, and waste coefficient."
+
+      thermal_insert_mode:
+        value: "standard_50_100"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "thermal_insert_mode"
+        used_by_estimate_lines:
+          - "foundation_slab.thermal_insert_50_installation"
+          - "foundation_slab.thermal_insert_100_installation"
+          - "foundation_slab.thermal_insert_50_material"
+          - "foundation_slab.thermal_insert_100_material"
+        source_note: "Production mode from foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Separate 50 mm and 100 mm thermal insert work/material rows."
+
+      rebar_calc_method:
+        value: "spec_length_m"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rebar_calc_method"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Production mode from foundation slab section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "PDF primary rebar unit is linear meters; adapter must not use the old weight-to-length mode for production."
+
+      membrane_overlap_coeff:
+        value: 1.10
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "membrane_overlap_coeff"
+        used_by_estimate_lines: ["foundation_slab.planter_standard_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material overlap coefficient; not a project quantity."
+
+      membrane_roll_area_m2:
+        value: 40.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "membrane_roll_area_m2"
+        used_by_estimate_lines: ["foundation_slab.planter_standard_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog roll area for Planter membrane."
+
+      planterband_per_membrane_roll:
+        value: 4.0
+        unit: "pcs/roll"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "planterband_per_membrane_roll"
+        used_by_estimate_lines: ["foundation_slab.planterband_material"]
+        source_note: "Foundation slab section contract, Elena rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Planterband quantity is calculated from purchased membrane rolls."
+
+      plywood_sheet_width_m:
+        value: 1.52
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "plywood_sheet_width_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood sheet catalog dimension."
+
+      plywood_sheet_height_m:
+        value: 1.52
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "plywood_sheet_height_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood sheet catalog dimension."
+
+      plywood_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "plywood_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood waste coefficient."
+
+      timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "timber_thickness_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_timber"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Timber volume is calculated as side formwork area times this thickness."
+
+      eps50_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_thickness_m"
+        used_by_estimate_lines:
+          - "foundation_slab.eps50_laying_under_slab"
+          - "foundation_slab.eps50_penoplex_geo_material"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used to convert EPS 50 volume from PDF into laying area."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.eps50_penoplex_geo_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS material waste coefficient."
+
+      eps50_pack_volume_m3:
+        value: null
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["foundation_slab.eps50_penoplex_geo_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Package volume, not a project quantity. Keep null until a universal catalog value is confirmed."
+
+      thermal_insert_material_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "thermal_insert_material_waste_coeff"
+        used_by_estimate_lines:
+          - "foundation_slab.thermal_insert_50_material"
+          - "foundation_slab.thermal_insert_100_material"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thermal insert material waste coefficient."
+
+      thermal_insert_50_pack_multiple_qty:
+        value: null
+        unit: "m3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "thermal_insert_50_pack_multiple_qty"
+        used_by_estimate_lines: ["foundation_slab.thermal_insert_50_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Purchase rounding multiple for 50 mm thermal insert material."
+
+      thermal_insert_100_pack_multiple_qty:
+        value: null
+        unit: "m3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "thermal_insert_100_pack_multiple_qty"
+        used_by_estimate_lines: ["foundation_slab.thermal_insert_100_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Purchase rounding multiple for 100 mm thermal insert material."
+
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rebar_waste_coeff"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rebar length waste coefficient."
+
+      rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items[*].rod_length_m"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Default rebar rod length unless an item-specific catalog value overrides it."
+
+      concrete_waste_coeff:
+        value: 1.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.concrete_b22_5_m300_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete order waste coefficient."
+
+      concrete_round_step_m3:
+        value: 0.5
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_round_step_m3"
+        used_by_estimate_lines: ["foundation_slab.concrete_b22_5_m300_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete order rounding step."
+
+      concrete_mixer_volume_m3:
+        value: 7.0
+        unit: "m3/trip"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_mixer_volume_m3"
+        used_by_estimate_lines: ["foundation_slab.concrete_delivery"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used to calculate concrete delivery trips from ordered concrete volume."
+
+      box_metal_delivery_capacity_kg:
+        value: 10000.0
+        unit: "kg/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "box_metal_delivery_capacity_kg"
+        used_by_estimate_lines: ["foundation_slab.rebar_metal_delivery"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used only for suggested delivery-truck control; actual delivery line remains manual."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -156,4 +435,24 @@ not_defaults:
       reason: "Work unit price. A missing/zero price may create a zero estimate line, but it is still PRICE, not DEFAULT."
       belongs_to: "price registry / fallback / review sheet 02"
       estimate_line_code: "earthworks.sand_manual_moving"
-
+  foundation_slab:
+    logistics_and_supply_amount:
+      reason: "Fixed estimate-line amount / manual review value, not a formula default."
+      belongs_to: "supplier/manual review or price registry fallback"
+      estimate_line_code: "foundation_slab.logistics_and_supply"
+    consumables_tool_amortization_amount:
+      reason: "Fixed estimate-line amount / manual review value, not a formula default."
+      belongs_to: "supplier/manual review or price registry fallback"
+      estimate_line_code: "foundation_slab.consumables_tool_amortization"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key. It may be displayed as a row with quantity 1, but the amount is not a DEFAULT."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "foundation_slab.technical_supervision"
+    rebar_crane_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "foundation_slab.rebar_crane_supply"
+    concrete_pump_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "foundation_slab.concrete_pump_32m"

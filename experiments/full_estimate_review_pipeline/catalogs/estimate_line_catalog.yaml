@@ -18,6 +18,7 @@ line_kinds:
   fixed_amount: "Estimate row with quantity 1 and a fixed amount/price key."
   structural_zero: "Excel/form structure row, often zero."
   control: "Calculator/formula-ready control row, not necessarily a payable row."
+  legacy_alternative: "Calculator compatibility row returned only by an old/legacy mode; not active production default."
 
 sections:
   earthworks:
@@ -314,3 +315,612 @@ sections:
         source_note: "Seen in old Excel/screenshot structure, but not in current earthworks calculator estimate_lines."
         action_needed: "Classify as global final-estimate structural row before using in production export."
 
+  foundation_slab:
+    status: draft_cataloged
+    section_title_ru: "УСТРОЙСТВО ФУНДАМЕНТНОЙ ПЛИТЫ ДОМА, ТЕРРАСЫ, КРЫЛЬЦА"
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/foundation_slab/section_contract.yaml"
+      - "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
+      - "experiments/foundation_slab_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    calculator_estimate_line_count: "variable: 24 base lines + one row per rebar item + 3 structural rows"
+    formula_ready_row_count: "variable"
+    lines:
+      planter_membrane_installation:
+        code: "planter_membrane_installation"
+        row_id: "foundation_slab.planter_membrane_installation"
+        name_ru: "Монтаж мембраны PLANTER стандарт"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "membrane_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.membrane_area_m2"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "membrane_installation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "planter_membrane_installation_work_m2"
+        zero_policy: not_expected
+        notes: "Work quantity is the project membrane area, not purchased roll area."
+
+      planter_standard_material:
+        code: "planter_standard_material"
+        row_id: "foundation_slab.planter_standard_material"
+        name_ru: "Planter Standard Технониколь"
+        unit: "рул"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "ceil(membrane_area_m2 * membrane_overlap_coeff / membrane_roll_area_m2)"
+          leaf_inputs:
+            - ref: "review_parameters.membrane_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.membrane_overlap_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.membrane_roll_area_m2"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "planter_standard_roll_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "planter_standard_roll"
+        zero_policy: not_expected
+        notes: "Purchased roll count; do not use as membrane work area."
+
+      planterband_material:
+        code: "planterband_material"
+        row_id: "foundation_slab.planterband_material"
+        name_ru: "PLANTERBAND 10м х 10см"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "membrane_rolls * planterband_per_membrane_roll"
+          leaf_inputs:
+            - ref: "auto_calculated.membrane_rolls"
+              source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.planterband_per_membrane_roll"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "planterband_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "planterband_item"
+        zero_policy: not_expected
+        notes: "Quantity is derived from membrane rolls."
+
+      formwork_installation:
+        code: "formwork_installation"
+        row_id: "foundation_slab.formwork_installation"
+        name_ru: "Монтаж опалубки из пиломатериалов для отбортовки плиты"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "slab_side_formwork_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.slab_side_formwork_area_m2"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "formwork_installation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "timber_formwork_installation_work_m2"
+        zero_policy: not_expected
+        notes: "Production mode uses spec area. Do not confuse m2 formwork with EPS100 edge volume in m3."
+
+      formwork_plywood:
+        code: "formwork_plywood"
+        row_id: "foundation_slab.formwork_plywood"
+        name_ru: "Фанера ФК 1,52 * 1,52 толщиной 18 мм"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "ceil(slab_side_formwork_area_m2 * plywood_waste_coeff / (plywood_sheet_width_m * plywood_sheet_height_m))"
+          leaf_inputs:
+            - ref: "review_parameters.slab_side_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.plywood_sheet_width_m"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.plywood_sheet_height_m"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.plywood_waste_coeff"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "plywood_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "plywood_1520x1520_18mm_sheet"
+        zero_policy: not_expected
+        notes: "Purchased sheet count."
+
+      formwork_timber:
+        code: "formwork_timber"
+        row_id: "foundation_slab.formwork_timber"
+        name_ru: "Пиломатериал обрезной хвойных пород ГОСТ"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "slab_side_formwork_area_m2 * timber_thickness_m"
+          leaf_inputs:
+            - ref: "review_parameters.slab_side_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.timber_thickness_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "timber_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "timber_m3"
+        zero_policy: not_expected
+        notes: "Calculator currently has a cosmetic display_quantity override for this line; production quantity is the formula above."
+
+      eps50_laying_under_slab:
+        code: "eps50_laying_under_slab"
+        row_id: "foundation_slab.eps50_laying_under_slab"
+        name_ru: "Укладка ЭППС 50мм под плитой"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "eps50_under_slab_volume_m3 / eps50_thickness_m"
+          leaf_inputs:
+            - ref: "review_parameters.eps50_under_slab_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.eps50_thickness_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "eps50_laying_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "eps_laying_work_m2"
+        zero_policy: not_expected
+        notes: "Do not confuse EPS volume from PDF with laying area."
+
+      thermal_insert_50_installation:
+        code: "thermal_insert_50_installation"
+        row_id: "foundation_slab.thermal_insert_50_installation"
+        name_ru: "Устройство и монтаж термовставок 50 мм"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "thermal_insert_50_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.thermal_insert_50_length_m"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "thermal_insert_50_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "thermal_insert_50_installation_work_m"
+        zero_policy: not_expected
+        notes: "Work length, not material volume."
+
+      thermal_insert_100_installation:
+        code: "thermal_insert_100_installation"
+        row_id: "foundation_slab.thermal_insert_100_installation"
+        name_ru: "Устройство и монтаж термовставок 100 мм"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "thermal_insert_100_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.thermal_insert_100_length_m"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "thermal_insert_100_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "thermal_insert_100_installation_work_m"
+        zero_policy: not_expected
+        notes: "Work length, not material volume."
+
+      eps50_penoplex_geo_material:
+        code: "eps50_penoplex_geo_material"
+        row_id: "foundation_slab.eps50_penoplex_geo_material"
+        name_ru: "Пеноплэкс ГЕО 50 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "ceil((eps50_under_slab_volume_m3 * eps_waste_coeff) / eps50_pack_volume_m3) * eps50_pack_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.eps50_under_slab_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.eps_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.eps50_pack_volume_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "eps50_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "eps_geo_50_m3"
+        zero_policy: not_expected
+        notes: "Purchased rounded EPS 50 volume; pack volume is a catalog value and is still null until confirmed."
+
+      thermal_insert_50_material:
+        code: "thermal_insert_50_material"
+        row_id: "foundation_slab.thermal_insert_50_material"
+        name_ru: "Материал термовставок 50 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "round_up_to_multiple(thermal_insert_50_material_spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)"
+          leaf_inputs:
+            - ref: "review_parameters.thermal_insert_50_material_spec_qty"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.thermal_insert_material_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.thermal_insert_50_pack_multiple_qty"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "thermal_insert_50_material_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "thermal_insert_50_material_m3"
+        zero_policy: not_expected
+        notes: "Material quantity from PDF is separate from work length."
+
+      thermal_insert_100_material:
+        code: "thermal_insert_100_material"
+        row_id: "foundation_slab.thermal_insert_100_material"
+        name_ru: "Материал термовставок 100 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "round_up_to_multiple(thermal_insert_100_material_spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)"
+          leaf_inputs:
+            - ref: "review_parameters.thermal_insert_100_material_spec_qty"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.thermal_insert_material_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.thermal_insert_100_pack_multiple_qty"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "thermal_insert_100_material_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "thermal_insert_100_material_m3"
+        zero_policy: not_expected
+        notes: "Material quantity from PDF is separate from work length."
+
+      thermal_insert_installation:
+        code: "thermal_insert_installation"
+        row_id: "foundation_slab.thermal_insert_installation"
+        name_ru: "Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм"
+        unit: "мп"
+        line_kind: legacy_alternative
+        current_calculator_status: returned_only_in_legacy_thermal_insert_mode
+        quantity:
+          formula: "thermal_insert_length_m"
+          leaf_inputs:
+            - ref: "legacy_inputs.thermal_insert_length_m"
+              source_class: LEGACY
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "thermal_insert_installation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "thermal_insert_installation_work_m"
+        zero_policy: disabled_if_zero
+        notes: "Legacy/screenshot row. Production contract uses separate 50 mm and 100 mm thermal insert rows."
+
+      eps100_penoplex_geo_material:
+        code: "eps100_penoplex_geo_material"
+        row_id: "foundation_slab.eps100_penoplex_geo_material"
+        name_ru: "Пеноплэкс ГЕО 100 мм"
+        unit: "м3"
+        line_kind: legacy_alternative
+        current_calculator_status: returned_only_in_legacy_thermal_insert_mode
+        quantity:
+          formula: "ceil(legacy_eps100_required_volume_m3 / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+          leaf_inputs:
+            - ref: "legacy_inputs.thermal_insert_length_m"
+              source_class: LEGACY
+            - ref: "legacy_defaults.eps100_thickness_m"
+              source_class: LEGACY
+            - ref: "legacy_defaults.eps100_pack_volume_m3"
+              source_class: LEGACY
+        prices:
+          material_unit_price_key: "eps100_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "eps_geo_100_m3"
+        zero_policy: disabled_if_zero
+        notes: "Legacy/screenshot row. Do not mix with production EPS50 under-slab material or with waterproofing EPS100 wall/edge material."
+
+      rebar_crane_supply:
+        code: "rebar_crane_supply"
+        row_id: "foundation_slab.rebar_crane_supply"
+        name_ru: "Подача арматуры автокраном"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "rebar_crane_shifts"
+          leaf_inputs:
+            - ref: "supplier_inputs.rebar_crane_shifts"
+              source_class: MANUAL_REVIEW
+        prices:
+          material_unit_price_key: "rebar_crane_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "crane_shift"
+        zero_policy: requires_review_if_zero
+        notes: "Manual/supplier quantity."
+
+      rebar_frame_assembly:
+        code: "rebar_frame_assembly"
+        row_id: "foundation_slab.rebar_frame_assembly"
+        name_ru: "Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры"
+        unit: "мп"
+        line_kind: control
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "sum(rebar_items[*].order_length_m)"
+          leaf_inputs:
+            - ref: "review_parameters.foundation_rebar_items"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.rebar_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.rod_length_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: null
+        zero_policy: structural_zero
+        notes: "Control/aggregate line; individual payable rebar material rows are generated per rebar item."
+
+      rebar_items:
+        code: "rebar_items"
+        row_id: "foundation_slab.rebar_items"
+        name_ru: "Арматура фундаментной плиты по диаметрам"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: expands_to_one_line_per_foundation_rebar_item
+        quantity:
+          formula: "ceil(source_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.foundation_rebar_items[*].source_length_m"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.foundation_rebar_items[*].kg_per_meter"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.rebar_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.rod_length_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "rebar_items[*].unit_price_per_m"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "rebar_<class>_d<diameter>_m"
+        zero_policy: not_expected
+        notes: "One estimate row per PDF/spec rebar row; do not calculate total weight in extraction."
+
+      rebar_metal_delivery:
+        code: "rebar_metal_delivery"
+        row_id: "foundation_slab.rebar_metal_delivery"
+        name_ru: "Доставка арматуры, металла"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "rebar_metal_delivery_trucks"
+          leaf_inputs:
+            - ref: "supplier_inputs.rebar_metal_delivery_trucks"
+              source_class: MANUAL_REVIEW
+        prices:
+          material_unit_price_key: "rebar_metal_delivery_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "metal_delivery_truck"
+        zero_policy: requires_review_if_zero
+        notes: "Calculator also suggests delivery trucks from box_total_metal_weight_kg / box_metal_delivery_capacity_kg, but the payable line remains manual."
+
+      foundation_slab_concreting_work:
+        code: "foundation_slab_concreting_work"
+        row_id: "foundation_slab.foundation_slab_concreting_work"
+        name_ru: "Бетонирование фундаментной плиты в опалубке бетоном В22,5 (М300)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "concrete_project_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.concrete_project_volume_m3"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "concreting_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "concrete_placing_work_m3"
+        zero_policy: not_expected
+        notes: "Work quantity is project concrete volume, not ordered volume."
+
+      concrete_b22_5_m300_material:
+        code: "concrete_b22_5_m300_material"
+        row_id: "foundation_slab.concrete_b22_5_m300_material"
+        name_ru: "Бетон марки В22,5 (М300)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "round_up_to_step(concrete_project_volume_m3 * concrete_waste_coeff, concrete_round_step_m3)"
+          leaf_inputs:
+            - ref: "review_parameters.concrete_project_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.concrete_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.concrete_round_step_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "concrete_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "concrete_b22_5_m3"
+        zero_policy: not_expected
+        notes: "Material quantity is ordered concrete volume."
+
+      concrete_delivery:
+        code: "concrete_delivery"
+        row_id: "foundation_slab.concrete_delivery"
+        name_ru: "Доставка бетона до объекта"
+        unit: "рейс"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "ceil(concrete_order_volume_m3 / concrete_mixer_volume_m3)"
+          leaf_inputs:
+            - ref: "auto_calculated.concrete_order_volume_m3"
+              source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.concrete_mixer_volume_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "concrete_delivery_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "concrete_delivery_trip"
+        zero_policy: not_expected
+        notes: "Trips are calculated from ordered concrete volume."
+
+      concrete_pump_32m:
+        code: "concrete_pump_32m"
+        row_id: "foundation_slab.concrete_pump_32m"
+        name_ru: "Работа бетононасоса 32м + гаситель"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "concrete_pump_shifts"
+          leaf_inputs:
+            - ref: "supplier_inputs.concrete_pump_shifts"
+              source_class: MANUAL_REVIEW
+        prices:
+          material_unit_price_key: "concrete_pump_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "concrete_pump_32m_shift"
+        zero_policy: requires_review_if_zero
+        notes: "Manual/supplier quantity."
+
+      formwork_dismantling:
+        code: "formwork_dismantling"
+        row_id: "foundation_slab.formwork_dismantling"
+        name_ru: "Демонтаж опалубки после завершения бетонирования"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "slab_side_formwork_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.slab_side_formwork_area_m2"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "formwork_dismantling_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "formwork_dismantling_work_m2"
+        zero_policy: not_expected
+        notes: "Same reviewed formwork area as installation."
+
+      logistics_and_supply:
+        code: "logistics_and_supply"
+        row_id: "foundation_slab.logistics_and_supply"
+        name_ru: "Логистика и снабжение"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "literal.1"
+              source_class: AUTO_CALCULATED
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: "logistics_and_supply_amount"
+          price_registry_code: null
+        zero_policy: requires_review_if_zero
+        notes: "Manual/fixed amount; not a default and not from PDF."
+
+      consumables_tool_amortization:
+        code: "consumables_tool_amortization"
+        row_id: "foundation_slab.consumables_tool_amortization"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "literal.1"
+              source_class: AUTO_CALCULATED
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: "consumables_tool_amortization_amount"
+          price_registry_code: null
+        zero_policy: requires_review_if_zero
+        notes: "Manual/fixed amount; not a default and not from PDF."
+
+      technical_supervision:
+        code: "technical_supervision"
+        row_id: "foundation_slab.technical_supervision"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_foundation_slab_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "literal.1"
+              source_class: AUTO_CALCULATED
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "technical_supervision_amount"
+          fixed_amount_key: null
+          price_registry_code: "technical_supervision_fixed"
+        zero_policy: requires_review_if_zero
+        notes: "Fixed amount / price key; not a formula default."
+
+    structural_rows_from_excel_template:
+      procurement_warehouse_costs_excel_structure:
+        code: "procurement_warehouse_costs_excel_structure"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_foundation_slab_calculator
+        zero_policy: structural_zero
+        source_note: "Returned by calculator as zero_excel_structure_line."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."
+
+      overhead_general_business_costs_excel_structure:
+        code: "overhead_general_business_costs_excel_structure"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_foundation_slab_calculator
+        zero_policy: structural_zero
+        source_note: "Returned by calculator as zero_excel_structure_line."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."
+
+      estimated_profit_excel_structure:
+        code: "estimated_profit_excel_structure"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_foundation_slab_calculator
+        zero_policy: structural_zero
+        source_note: "Returned by calculator as zero_excel_structure_line."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."
