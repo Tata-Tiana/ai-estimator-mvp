@@ -42,9 +42,12 @@ experiments/earthworks_parser_google_stage1/token*.json
 # MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
 # Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
 experiments/usv_strict_pdf_parser_v3/data_mkp1/
+experiments/usv_strict_pdf_parser_v3/data_trc/
+experiments/usv_strict_pdf_parser_v3/data/extracted/evidence.json
 
 # A6.0 vision PDF parser POC — page renders + vision extraction of real ЮСВ content.
 experiments/vision_pdf_parser_poc/output/
+experiments/vision_pdf_parser_poc/reports/
 
 # A6.1 Claude chat extraction POC — real project extraction output/reports and the built pack.
 experiments/chat_extraction_poc/input_pdfs/
