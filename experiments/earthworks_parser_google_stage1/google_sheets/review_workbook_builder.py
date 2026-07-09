@@ -11,7 +11,13 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from config import DEFAULT_PROJECT_NAME, SECTION_CODE, SECTION_NAME_RU
-from source_paths import V3_CANDIDATES_PATH, V3_LOGICAL_PAGES_PATH, V3_TABLES_PATH
+from source_paths import (
+    V3_CANDIDATES_PATH,
+    V3_EVIDENCE_PATH,
+    V3_GENERIC_CANDIDATES_PATH,
+    V3_LOGICAL_PAGES_PATH,
+    V3_TABLES_PATH,
+)
 
 
 def _v3_paths(artifacts_dir: Path | None) -> tuple[Path, Path, Path]:
@@ -22,6 +28,167 @@ def _v3_paths(artifacts_dir: Path | None) -> tuple[Path, Path, Path]:
             artifacts_dir / "raw" / "tables.json",
         )
     return V3_LOGICAL_PAGES_PATH, V3_CANDIDATES_PATH, V3_TABLES_PATH
+
+
+def _v3_evidence_paths(artifacts_dir: Path | None) -> tuple[Path, Path]:
+    """Return (evidence_path, generic_candidates_path) for optional enrichment.
+    Separate from _v3_paths() to preserve its existing tuple contract."""
+    if artifacts_dir is not None:
+        return (
+            artifacts_dir / "extracted" / "evidence.json",
+            artifacts_dir / "extracted" / "generic_candidates.json",
+        )
+    return V3_EVIDENCE_PATH, V3_GENERIC_CANDIDATES_PATH
+
+
+# ── Evidence relevance filter ──────────────────────────────────────────────
+
+_EVIDENCE_RELEVANT_RE = re.compile(
+    r'котлован|глубин|площадь|площад|трасс|траншей'
+    r'|К[0-9]+|В[0-9]+|ЭО[0-9]?'
+    r'|дренаж|ливневк|ливнев|канализаци|водоснабжен'
+    r'|эл\.?\s*кабел|электрическ\w+\s+кабел'
+    r'|труб|ПНД|ПВХ|НПВХ|гофр'
+    r'|[ØФ]|\bD\s*=?\s*\d{2,3}'
+    r'|ИТОГО|всего|длин|ширин|объ[её]м'
+    r'|м[23²³]|п\.?\s*м|пог\.?\s*м|\bшт\b'
+    r'|песок|геотекстил|щебен|ЭППС|[Пп]лантер|мембран',
+    re.IGNORECASE | re.UNICODE,
+)
+
+_EVIDENCE_QUANTITY_UNIT_RE = re.compile(
+    r'\d+(?:[.,]\d+)?\s*(?:м[23²³]|п\.?м|пог\.?м|мм|см|шт\.?|ед\.?|(?<!\w)м(?!\w))',
+    re.IGNORECASE | re.UNICODE,
+)
+
+_EVIDENCE_ROUTE_RE = re.compile(
+    r'\b(?:К[0-9]+|В[0-9]+|ЭО[0-9]?|дренаж\w*|ливнев\w*|канализаци\w*|водоснабжен\w*)\b',
+    re.IGNORECASE | re.UNICODE,
+)
+
+_EVIDENCE_MATERIAL_RE = re.compile(
+    r'песок|геотекстил|щебен|ЭППС|[Пп]лантер|мембран|труб|ПНД|ПВХ|НПВХ|гофр',
+    re.IGNORECASE | re.UNICODE,
+)
+
+_CANDIDATE_TYPE_ORDER: dict[str, int] = {
+    'route_summary': 0,
+    'pipe_item': 1,
+    'label_value_quantity': 2,
+    'material_quantity': 3,
+    'table_quantity_row': 4,
+    'pipe_piece_qty': 5,
+    'unknown_relevant_quantity': 6,
+}
+
+_EV_BLOCK_HEADERS = [
+    'evidence_id', 'source_pdf', 'physical_page_number', 'drawing_sheet_number',
+    'logical_sheet_title', 'logical_sheet_type', 'source_kind',
+    'table_index', 'row_index', 'raw_text', 'normalized_text',
+]
+
+_GC_BLOCK_HEADERS = [
+    'candidate_id', 'candidate_type', 'subject_hint', 'property_hint',
+    'value_candidates', 'unit_candidates', 'evidence_id', 'extractor',
+    'confidence', 'reason', 'source_pdf', 'physical_page_number',
+    'raw_text', 'normalized_text',
+]
+
+
+def _evidence_priority(ev: dict[str, Any]) -> int:
+    """Lower = higher priority: table_row > has_qty_unit > route_label > material > other."""
+    text = str(ev.get('normalized_text') or ev.get('raw_text') or '')
+    score = 30
+    if ev.get('source_kind') == 'table_row':
+        score -= 16
+    if _EVIDENCE_QUANTITY_UNIT_RE.search(text):
+        score -= 8
+    if _EVIDENCE_ROUTE_RE.search(text):
+        score -= 4
+    if _EVIDENCE_MATERIAL_RE.search(text):
+        score -= 2
+    return score
+
+
+def filter_relevant_evidence(
+    evidence: list[dict[str, Any]],
+    limit: int = 500,
+) -> list[dict[str, Any]]:
+    """Return up to `limit` relevant evidence items sorted by priority."""
+    relevant = [
+        ev for ev in evidence
+        if _EVIDENCE_RELEVANT_RE.search(
+            str(ev.get('normalized_text') or ev.get('raw_text') or '')
+        )
+    ]
+    relevant.sort(key=_evidence_priority)
+    return relevant[:limit]
+
+
+def evidence_block_rows(evidence_items: list[dict[str, Any]]) -> list[list[Any]]:
+    rows = []
+    for ev in evidence_items:
+        meta = ev.get('meta') or {}
+        rows.append([
+            ev.get('evidence_id', ''),
+            ev.get('source_pdf', ''),
+            ev.get('physical_page_number', ''),
+            ev.get('drawing_sheet_number') or meta.get('drawing_sheet_number', ''),
+            ev.get('logical_sheet_title', '') or meta.get('logical_sheet_title', ''),
+            ev.get('logical_sheet_type', '') or meta.get('logical_sheet_type', ''),
+            ev.get('source_kind', ''),
+            meta.get('table_index', ''),
+            meta.get('row_index', ''),
+            str(ev.get('raw_text') or '')[:800],
+            str(ev.get('normalized_text') or '')[:800],
+        ])
+    return rows
+
+
+def sort_generic_candidates(
+    candidates: list[dict[str, Any]],
+    limit: int = 500,
+) -> list[dict[str, Any]]:
+    return sorted(
+        candidates,
+        key=lambda c: _CANDIDATE_TYPE_ORDER.get(c.get('candidate_type', ''), 99),
+    )[:limit]
+
+
+def generic_candidate_block_rows(
+    candidates: list[dict[str, Any]],
+    evidence_index: dict[str, dict[str, Any]],
+) -> list[list[Any]]:
+    """Convert candidates to rows, enriching with evidence metadata where available."""
+    rows = []
+    for cand in candidates:
+        ev_id = str(cand.get('evidence_id') or '')
+        ev = evidence_index.get(ev_id, {})
+        source_pdf = cand.get('source_pdf') or ev.get('source_pdf', '')
+        physical_page = cand.get('physical_page_number') or ev.get('physical_page_number', '')
+        raw_text = cand.get('raw_text') or ev.get('raw_text', '')
+        normalized_text = cand.get('normalized_text') or ev.get('normalized_text', '')
+        reason = str(cand.get('reason') or '')
+        if ev_id and not ev:
+            suffix = 'evidence metadata not found'
+            reason = f'{reason}; {suffix}' if reason else suffix
+        rows.append([
+            cand.get('candidate_id', ''),
+            cand.get('candidate_type', ''),
+            cand.get('subject_hint', ''),
+            cand.get('property_hint', ''),
+            json.dumps(cand.get('value_candidates') or [], ensure_ascii=False),
+            json.dumps(cand.get('unit_candidates') or [], ensure_ascii=False),
+            ev_id,
+            cand.get('extractor', ''),
+            cand.get('confidence', ''),
+            reason,
+            str(source_pdf or ''),
+            str(physical_page or ''),
+            str(raw_text or '')[:800],
+            str(normalized_text or '')[:800],
+        ])
+    return rows
 
 
 FONT_NAME = "Arial"
@@ -685,6 +852,28 @@ def build_review_workbook(
 ) -> Path:
     wb = Workbook()
 
+    # ── Optional enrichment (evidence layer + generic candidates) ─────────────
+    # Both files are optional. If absent, empty, or malformed all existing sheets
+    # build exactly as before; only the new enrichment blocks are skipped.
+    _ev_path, _gc_path = _v3_evidence_paths(artifacts_dir)
+    _raw_evidence: list[dict[str, Any]] = []
+    _raw_generic_cands: list[dict[str, Any]] = []
+    if _ev_path.exists():
+        try:
+            _raw_evidence = json.loads(_ev_path.read_text(encoding='utf-8')) or []
+        except Exception:
+            _raw_evidence = []
+    if _gc_path.exists():
+        try:
+            _raw_generic_cands = json.loads(_gc_path.read_text(encoding='utf-8')) or []
+        except Exception:
+            _raw_generic_cands = []
+    _evidence_id_index: dict[str, dict[str, Any]] = {
+        str(ev.get('evidence_id', '')): ev
+        for ev in _raw_evidence
+        if ev.get('evidence_id')
+    }
+
     ws = wb.active
     ws.title = "00_Конструктор сметы"
     constructor_rows = [
@@ -896,6 +1085,15 @@ def build_review_workbook(
             "O": 20,
         },
     )
+    if _raw_generic_cands:
+        sorted_gc = sort_generic_candidates(_raw_generic_cands)
+        write_block_table(
+            ws,
+            'Generic candidates from evidence layer',
+            _GC_BLOCK_HEADERS,
+            generic_candidate_block_rows(sorted_gc, _evidence_id_index),
+            ws.max_row + 2,
+        )
 
     ws = wb.create_sheet("06_Сырые данные parser")
     lp_path, cand_path, tbl_path = _v3_paths(artifacts_dir)
@@ -1081,6 +1279,17 @@ def build_review_workbook(
         full_json_rows,
         row_idx,
     )
+
+    if _raw_evidence:
+        relevant_ev = filter_relevant_evidence(_raw_evidence)
+        if relevant_ev:
+            row_idx = write_block_table(
+                ws,
+                'Блок 5: Relevant evidence from PDF/tables',
+                _EV_BLOCK_HEADERS,
+                evidence_block_rows(relevant_ev),
+                row_idx,
+            )
 
     apply_table_theme(ws)
     set_widths(

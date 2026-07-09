@@ -10,6 +10,8 @@ V3_EARTHWORKS_PATH = V3_DIR / "data" / "extracted" / "earthworks.json"
 V3_CANDIDATES_PATH = V3_DIR / "data" / "extracted" / "candidates.json"
 V3_LOGICAL_PAGES_PATH = V3_DIR / "data" / "raw" / "logical_pages.json"
 V3_TABLES_PATH = V3_DIR / "data" / "raw" / "tables.json"
+V3_EVIDENCE_PATH = V3_DIR / "data" / "extracted" / "evidence.json"
+V3_GENERIC_CANDIDATES_PATH = V3_DIR / "data" / "extracted" / "generic_candidates.json"
 
 LOCAL_PRICE_REGISTRY_PATH = REPO_ROOT / "output" / "price_registry_filled_v3.xlsx"
 FALLBACK_LIVE_INPUT_PATH = (
