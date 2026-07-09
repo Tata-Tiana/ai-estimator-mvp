@@ -15,6 +15,15 @@ data/reference/unikma/*.json
 data/reference/unikma/*.xlsx
 
 # Local project PDF inputs and generated experiment outputs
+experiments/**/output/**/*
+!experiments/**/output/
+!experiments/**/output/.gitkeep
+!experiments/**/output/README.md
+experiments/**/outputs/**/*
+!experiments/**/outputs/
+!experiments/**/outputs/.gitkeep
+!experiments/**/outputs/README.md
+experiments/**/backups/
 experiments/pdf_tests/projects/*/input/*.pdf
 experiments/pdf_tests/projects/*/output/**/*
 experiments/pdf_tests/projects/*/parsed/**/*
@@ -27,6 +36,7 @@ experiments/demo_usv_app/assets/brick_house_logo_raw.png
 # Telegram bot uploads and logs
 experiments/earthworks_review_to_calculator/data/telegram_uploads/
 experiments/earthworks_review_to_calculator/data/telegram_logs/
+experiments/earthworks_parser_google_stage1/token*.json
 
 # MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
 # Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
