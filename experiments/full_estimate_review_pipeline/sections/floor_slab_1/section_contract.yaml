@@ -274,13 +274,17 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not confuse with m2 formwork or m2 work areas."
 
-detail_tables:
   - key: floor_slab_1_rebar_items
-    label_ru: "Арматура плиты перекрытия 1-го этажа"
-    source_class: DETAIL_TABLE
+    label_ru: "Арматура плиты перекрытия 1-го этажа по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.floor_slab_1.detail_tables.rebar_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_rebar_items"
+    calculator_input_path: "rebar_items"
+    normalized_json_path: "sections.floor_slab_1.parameters.floor_slab_1_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: component
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -288,16 +292,32 @@ detail_tables:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["floor_slab_1_rebar_items"]
+      aliases_ru: ["арматура плиты перекрытия 1 этажа", "спецификация арматуры плиты 1 этажа"]
+      expected_unit: "мп"
+      notes: "Primary PDF unit is m.п.; do not require PDF total kg."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры плиты перекрытия 1-го этажа по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Primary PDF unit is m.п.; do not require PDF total kg."
 
   - key: beam_items
     label_ru: "Ж/Б балки плиты перекрытия 1-го этажа"
-    source_class: DETAIL_TABLE
+    unit: "шт"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.floor_slab_1.detail_tables.beam_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "beam_items"
+    calculator_input_path: "beams.items"
+    normalized_json_path: "sections.floor_slab_1.parameters.beam_items.rows"
+    value_kind: repeated_rows
+    row_key_field: code
     columns:
       - {key: code, label_ru: "Код", unit: "", value_kind: string}
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
@@ -305,22 +325,48 @@ detail_tables:
       - {key: width_m, label_ru: "Ширина", unit: "м", value_kind: number}
       - {key: height_m, label_ru: "Высота", unit: "м", value_kind: number}
       - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
+      aliases_ru: ["ведомость балок", "спецификация балок", "балки Б-"]
+      expected_unit: ""
+      notes: "Extract only real beam rows, not the total row of a beam table."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции балок построчно."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Extract only real beam rows, not the total row of a beam table."
 
   - key: beam_table_controls
     label_ru: "Контрольные итоги таблицы Ж/Б балок"
-    source_class: DETAIL_TABLE
+    unit: ""
+    source_class: AUTO_PROJECT
     required: false
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.floor_slab_1.detail_tables.beam_table_controls.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "beam_table_controls"
+    calculator_input_path: ""
+    normalized_json_path: "sections.floor_slab_1.parameters.beam_table_controls.rows"
+    value_kind: repeated_rows
+    row_key_field: label
     columns:
       - {key: label, label_ru: "Строка итога", unit: "", value_kind: string}
       - {key: value, label_ru: "Значение", unit: "", value_kind: number}
       - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      group_codes: ["beam_table_controls"]
+      expected_context: ["итого", "балки"]
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Необязательные контрольные итоги таблицы балок, для справки."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {min_rows: 0, sum_checks: []}
     notes: "Diagnostics only. Do not automatically map total row to slab concrete or beam item."
 
 price_keys:
@@ -398,7 +444,7 @@ supplier_inputs:
 calculator_input_mapping:
   - input_path: "*"
     from:
-      ref: "review_parameters + detail_tables + supplier_inputs + defaults + price_keys"
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
       source_class: MIXED
     required: true
     transform: build_floor_slab_1_input
@@ -428,7 +474,7 @@ estimate_lines:
       formula: "total_concrete_volume_from_spec_m3 - sum(beam_items concrete volumes)"
       leaf_inputs:
         - {ref: "review_parameters.total_concrete_volume_from_spec_m3", source_class: AUTO_PROJECT}
-        - {ref: "detail_tables.beam_items", source_class: DETAIL_TABLE}
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: slab_concreting_work_rate_per_m3, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "Slab concrete only, separate from beam concrete."
@@ -441,7 +487,7 @@ estimate_lines:
     quantity:
       formula: "sum(beam.length_m * beam.width_m * beam.height_m * beam.count)"
       leaf_inputs:
-        - {ref: "detail_tables.beam_items", source_class: DETAIL_TABLE}
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: beam_concreting_work_rate_per_m3, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "Beam concrete only, separate from slab concrete."

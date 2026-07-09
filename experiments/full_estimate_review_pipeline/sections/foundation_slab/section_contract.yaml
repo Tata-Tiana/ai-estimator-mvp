@@ -205,21 +205,36 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
-detail_tables:
   - key: foundation_rebar_items
-    label_ru: "Арматура фундаментной плиты"
-    source_class: DETAIL_TABLE
+    label_ru: "Арматура фундаментной плиты по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.foundation_slab.detail_tables.foundation_rebar_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "foundation_rebar_items"
+    calculator_input_path: "rebar_items"
+    normalized_json_path: "sections.foundation_slab.parameters.foundation_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: name
     columns:
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: source_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["foundation_rebar_items"]
+      aliases_ru: ["арматура фундаментной плиты", "спецификация арматуры плиты", "сетка фундаментной плиты"]
+      expected_unit: "мп"
+      notes: "One row per rebar position (diameter/class); production primary PDF unit is m.п., do not require PDF total weight."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры фундаментной плиты по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator adapter reads sheet 01 (this entry) only, never the mirror."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Production primary PDF unit is m.п.; do not require PDF total weight."
 
 price_keys:
@@ -283,7 +298,7 @@ auto_calculated:
   - {key: eps50_laying_area_m2, label_ru: "Площадь укладки ЭППС 50 мм", source_class: AUTO_CALCULATED, formula: "eps50_under_slab_volume_m3 / eps50_thickness_m", leaf_inputs: [{ref: review_parameters.eps50_under_slab_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.eps50_thickness_m, source_class: DEFAULT}], calculator_input_path: "", notes: "Work area, not PDF input."}
   - {key: plywood_sheets, label_ru: "Количество листов фанеры", source_class: AUTO_CALCULATED, formula: "ceil(slab_side_formwork_area_m2 * plywood_waste_coeff / (plywood_sheet_width_m * plywood_sheet_height_m))", leaf_inputs: [{ref: review_parameters.slab_side_formwork_area_m2, source_class: AUTO_PROJECT}, {ref: defaults.plywood_waste_coeff, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
   - {key: concrete_order_volume_m3, label_ru: "Заказной объем бетона", source_class: AUTO_CALCULATED, formula: "round_up_to_step(concrete_project_volume_m3 * concrete_waste_coeff, concrete_round_step_m3)", leaf_inputs: [{ref: review_parameters.concrete_project_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.concrete_waste_coeff, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
-  - {key: rebar_frame_assembly_quantity_m, label_ru: "Закупочная длина арматуры", source_class: AUTO_CALCULATED, formula: "sum(round_up(spec_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m)", leaf_inputs: [{ref: detail_tables.foundation_rebar_items, source_class: DETAIL_TABLE}, {ref: defaults.rebar_waste_coeff, source_class: DEFAULT}, {ref: defaults.rod_length_m, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+  - {key: rebar_frame_assembly_quantity_m, label_ru: "Закупочная длина арматуры", source_class: AUTO_CALCULATED, formula: "sum(round_up(spec_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m)", leaf_inputs: [{ref: review_parameters.foundation_rebar_items, source_class: AUTO_PROJECT}, {ref: defaults.rebar_waste_coeff, source_class: DEFAULT}, {ref: defaults.rod_length_m, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
 
 calculator_input_mapping:
   - {input_path: "project_name", from: {ref: "defaults.project_name", source_class: DEFAULT}, required: true, transform: job_metadata_project_name, fallback: null, notes: ""}
@@ -291,7 +306,7 @@ calculator_input_mapping:
   - {input_path: "slab_side_formwork_area_m2", from: {ref: "review_parameters.slab_side_formwork_area_m2", source_class: AUTO_PROJECT}, required: true, transform: number_m2, fallback: null, notes: ""}
   - {input_path: "eps50_under_slab_volume_m3", from: {ref: "review_parameters.eps50_under_slab_volume_m3", source_class: AUTO_PROJECT}, required: true, transform: number_m3, fallback: null, notes: ""}
   - {input_path: "concrete_project_volume_m3", from: {ref: "review_parameters.concrete_project_volume_m3", source_class: AUTO_PROJECT}, required: true, transform: number_m3, fallback: null, notes: ""}
-  - {input_path: "rebar_items", from: {ref: "detail_tables.foundation_rebar_items", source_class: DETAIL_TABLE}, required: true, transform: foundation_rebar_rows_to_calculator_items, fallback: null, notes: ""}
+  - {input_path: "rebar_items", from: {ref: "review_parameters.foundation_rebar_items", source_class: AUTO_PROJECT}, required: true, transform: foundation_rebar_rows_to_calculator_items, fallback: null, notes: ""}
   - {input_path: "*", from: {ref: "defaults + price_keys + supplier_inputs", source_class: DEFAULT}, required: true, transform: fill_remaining_calculator_fields, fallback: null, notes: "Adapter must not copy old fixture values."}
 
 estimate_lines:
@@ -299,7 +314,7 @@ estimate_lines:
   - {code: formwork_installation, name_ru: "Монтаж опалубки бортов фундаментной плиты", unit: "м2", enabled_by_default: true, calculator_result_path: "estimate_lines[code=formwork_installation]", quantity: {formula: "slab_side_formwork_area_m2", leaf_inputs: [{ref: review_parameters.slab_side_formwork_area_m2, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: null, work_unit_price_key: formwork_installation_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: ""}
   - {code: eps50_laying_under_slab, name_ru: "Укладка ЭППС 50 мм под плитой", unit: "м2", enabled_by_default: true, calculator_result_path: "estimate_lines[code=eps50_laying_under_slab]", quantity: {formula: "eps50_under_slab_volume_m3 / eps50_thickness_m", leaf_inputs: [{ref: review_parameters.eps50_under_slab_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.eps50_thickness_m, source_class: DEFAULT}]}, prices: {material_unit_price_key: null, work_unit_price_key: eps50_laying_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: "Area in m2 calculated from m3 volume."}
   - {code: foundation_slab_concreting_work, name_ru: "Бетонирование фундаментной плиты", unit: "м3", enabled_by_default: true, calculator_result_path: "estimate_lines[code=foundation_slab_concreting_work]", quantity: {formula: "concrete_project_volume_m3", leaf_inputs: [{ref: review_parameters.concrete_project_volume_m3, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: null, work_unit_price_key: concreting_work_unit_price, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: ""}
-  - {code: rebar_items, name_ru: "Арматура фундаментной плиты по диаметрам", unit: "мп", enabled_by_default: true, calculator_result_path: "estimate_lines[code startswith rebar_]", quantity: {formula: "per foundation_rebar_items row", leaf_inputs: [{ref: detail_tables.foundation_rebar_items, source_class: DETAIL_TABLE}]}, prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: "Expands to one estimate line per rebar item."}
+  - {code: rebar_items, name_ru: "Арматура фундаментной плиты по диаметрам", unit: "мп", enabled_by_default: true, calculator_result_path: "estimate_lines[code startswith rebar_]", quantity: {formula: "per foundation_rebar_items row", leaf_inputs: [{ref: review_parameters.foundation_rebar_items, source_class: AUTO_PROJECT}]}, prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}, helper_cells: [], validation: {formula_ready_required: true, excel_formula_exportable: true}, notes: "Expands to one estimate line per rebar item."}
 
 workbook_layout:
   review_workbook:
@@ -318,7 +333,7 @@ workbook_layout:
     mini_table_zone: "W:AA+"
 
 checks:
-  required_source_classes: [AUTO_PROJECT, DETAIL_TABLE, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_source_classes: [AUTO_PROJECT, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
   required_review_parameters:
     - membrane_area_m2
     - slab_side_formwork_area_m2

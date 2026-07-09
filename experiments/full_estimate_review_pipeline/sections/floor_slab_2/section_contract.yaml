@@ -182,19 +182,34 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not substitute for main_formwork_area_m2 unless confirmed."
 
-detail_tables:
   - key: floor_slab_2_rebar_items
-    label_ru: "Арматура плиты перекрытия 2-го этажа"
-    source_class: DETAIL_TABLE
+    label_ru: "Арматура плиты перекрытия 2-го этажа по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.floor_slab_2.detail_tables.rebar_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_2_rebar_items"
+    calculator_input_path: "rebar_items"
+    normalized_json_path: "sections.floor_slab_2.parameters.floor_slab_2_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: steel_class
     columns:
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["floor_slab_2_rebar_items"]
+      aliases_ru: ["арматура плиты перекрытия 2 этажа", "спецификация арматуры плиты 2 этажа"]
+      expected_unit: "мп"
+      notes: "One row per rebar position (diameter/class); production PDF primary quantity is m.п., kg/m and rod length come from local catalog defaults."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры плиты перекрытия 2-го этажа по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator adapter reads sheet 01 (this entry) only."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Production PDF primary quantity is m.п.; kg/m and rod length come from local catalog."
 
 price_keys:
@@ -270,7 +285,7 @@ supplier_inputs:
 calculator_input_mapping:
   - input_path: "*"
     from:
-      ref: "review_parameters + detail_tables + supplier_inputs + defaults + price_keys"
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
       source_class: MIXED
     required: true
     transform: build_floor_slab_2_input

@@ -144,13 +144,17 @@ review_parameters:
       max_value: null
     notes: "Do not confuse with schiedel_vent_channel_2x_count supplier input."
 
-detail_tables:
   - key: vent_chimney_cladding_segments
     label_ru: "Сегменты / строки спецификации вентканалов"
-    source_class: DETAIL_TABLE
+    unit: "м"
+    source_class: AUTO_PROJECT
     required: false
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.schiedel_vent_channels.detail_tables.vent_chimney_cladding_segments.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "vent_chimney_cladding_segments"
+    calculator_input_path: "vent_chimney_cladding_segments"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_chimney_cladding_segments.rows"
+    value_kind: repeated_rows
+    row_key_field: name
     columns:
       - key: name
         label_ru: "Наименование"
@@ -168,15 +172,19 @@ detail_tables:
         label_ru: "Итоговая длина"
         unit: "м"
         value_kind: number
-      - key: source
-        label_ru: "Источник"
-        unit: ""
-        value_kind: string
-      - key: fragment
-        label_ru: "Фрагмент проекта"
-        unit: ""
-        value_kind: string
-    notes: "Optional diagnostic table; calculator quantity still comes from reviewed scalar inputs."
+    parser_mapping:
+      group_codes: ["vent_chimney_cladding_segments"]
+      expected_context: ["вентканал", "обкладка"]
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_control"
+      action_ru: "Проверьте строки спецификации вентканалов построчно, если есть."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Optional diagnostic breakdown; calculator quantity still comes from reviewed scalar inputs on sheet 01, not from this breakdown."
 
 price_keys:
   - key: schiedel_masonry_work_rate_per_m
@@ -657,7 +665,6 @@ workbook_layout:
 checks:
   required_source_classes:
     - AUTO_PROJECT
-    - DETAIL_TABLE
     - DEFAULT
     - AUTO_CALCULATED
     - PRICE

@@ -6,8 +6,26 @@
 #   result -> formula-ready rows -> final estimate workbook.
 #
 # This is a template, not a complete section.
+#
+# Sheet rule (fixed 2026-07-09, see HANDOFF.md "Sheet 01/02/03 rule"):
+#   - ALL project data from PDF/chat extraction lives on sheet 01_Проверка проекта,
+#     one row per value or per repeated-row item (e.g. one row per rebar diameter).
+#     There is no separate "detail table" source class or block. A group of repeated
+#     rows (rebar by diameter, trench routes, pipe items, beam items, ...) is a
+#     `review_parameters` entry with `value_kind: repeated_rows` — still AUTO_PROJECT,
+#     still lives on sheet 01, still the only thing the calculator adapter reads.
+#   - ALL prices live on sheet 02_Цены себестоимости, one row per price key.
+#   - The calculator input adapter (calculator_input_mapping below) may ONLY read from
+#     review_parameters (sheet 01), price_keys (sheet 02), defaults, supplier_inputs,
+#     and auto_calculated. It must never read from sheet 03.
+#   - Sheet 03_Детали объемов is a read-only reference mirror: it can show the same
+#     repeated-row groups again (formatted as a table, exactly as it looks in the PDF
+#     specification) purely so Elena can eyeball it without opening the PDF. Mark such
+#     a review_parameters entry with `mirror_to_details_sheet: true`. The mirror is
+#     built FROM the sheet-01 rows by the workbook builder; it is not a second input
+#     and the adapter never reads it back.
 
-contract_version: 0.1
+contract_version: 0.2
 
 section:
   code: example_section
@@ -27,9 +45,12 @@ source_files:
     - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
     - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
 
-# Rows shown on sheet 01_Проверка проекта.
-# These are inputs or review decisions, not final estimate rows.
+# Rows shown on sheet 01_Проверка проекта. This is the ONLY sheet the calculator
+# adapter reads project data from (together with price_keys/defaults/supplier_inputs
+# below). Every project value, scalar or repeated-row group, is a review_parameters
+# entry — there is no separate detail-table source.
 review_parameters:
+  # Example 1: a single scalar project value.
   - key: example_project_value_m2
     label_ru: "Проектный параметр"
     unit: "м2"
@@ -56,15 +77,20 @@ review_parameters:
       max_value: null
     notes: ""
 
-# Repeating structured data shown on sheet 03_Детали объемов.
-detail_tables:
+  # Example 2: a repeated-row group (e.g. rebar by diameter, trench routes, pipe
+  # items, beam items). Still AUTO_PROJECT, still sheet 01 — each row is its own
+  # editable line for Elena, not a single cell. `columns` describes the row shape.
   - key: example_items
-    label_ru: "Детализация"
-    source_class: DETAIL_TABLE
+    label_ru: "Позиции по спецификации"
+    unit: "шт"
+    source_class: AUTO_PROJECT
     required: false
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.example_section.details.example_items"
+    review_sheet: "01_Проверка проекта"
+    target_code: ""
     calculator_input_path: "example_items"
+    normalized_json_path: "sections.example_section.parameters.example_items.rows"
+    value_kind: repeated_rows
+    row_key_field: name
     columns:
       - key: name
         label_ru: "Наименование"
@@ -77,9 +103,18 @@ detail_tables:
         value_kind: number
         required: true
     parser_mapping:
+      target_codes: []
       group_codes: []
-      expected_context: []
+      aliases_ru: []
+      expected_unit: ""
       notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции; каждая строка спецификации — отдельная строка на листе 01."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows also shown read-only on 03_Детали объемов so Elena can check against the PDF layout without opening it. Adapter reads sheet 01 only."
     validation:
       min_rows: 0
       sum_checks: []
@@ -141,6 +176,8 @@ supplier_inputs:
     notes: ""
 
 # Deterministic adapter rules: normalized review JSON -> calculator input.
+# `from.ref` may only point into review_parameters / price_keys / defaults /
+# supplier_inputs / auto_calculated. Never into a details-sheet-only source.
 calculator_input_mapping:
   - input_path: "example_project_value_m2"
     from:
@@ -150,6 +187,14 @@ calculator_input_mapping:
     transform: identity
     fallback: null
     notes: ""
+  - input_path: "example_items"
+    from:
+      ref: "review_parameters.example_items"
+      source_class: AUTO_PROJECT
+    required: false
+    transform: identity
+    fallback: null
+    notes: "Repeated-row group read from sheet 01, not from the sheet-03 mirror."
   - input_path: "example_coeff"
     from:
       ref: "defaults.example_coeff"
@@ -218,7 +263,6 @@ workbook_layout:
 checks:
   required_source_classes:
     - AUTO_PROJECT
-    - DETAIL_TABLE
     - DEFAULT
     - AUTO_CALCULATED
     - PRICE
@@ -227,8 +271,9 @@ checks:
   fail_if:
     - "estimate line has no quantity formula or explicit non-formula reason"
     - "leaf input has unknown source_class"
+    - "leaf input or calculator_input_mapping references a details-sheet-only source (there is no such source; repeated rows are AUTO_PROJECT on sheet 01)"
     - "numeric formula default was removed without checking June Elena/manual review materials"
     - "calculator input requires a DEFAULT coefficient but contract leaves it unresolved"
     - "price used by estimate line has no price_key or explicit zero/fixed reason"
-    - "review row cannot be classified as parameter/detail/price/default/auto/supplier/manual"
+    - "review row cannot be classified as parameter (scalar or repeated_rows) / price / default / auto / supplier / manual"
     - "formula-ready row count differs from calculator estimate line count without explanation"

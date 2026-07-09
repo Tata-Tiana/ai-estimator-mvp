@@ -274,6 +274,35 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
+  - key: roof_raw_material_spec_rows
+    label_ru: "Сырые строки спецификации кровли"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_raw_material_spec_rows"
+    calculator_input_path: ""
+    normalized_json_path: "sections.flat_roof.parameters.roof_raw_material_spec_rows.rows"
+    value_kind: repeated_rows
+    row_key_field: name
+    columns:
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: quantity, label_ru: "Количество", unit: "", value_kind: number}
+      - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
+    parser_mapping:
+      group_codes: ["roof_raw_material_spec_rows"]
+      expected_context: ["кровля", "спецификация"]
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Необязательные сырые строки спецификации кровли, для справки."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Diagnostics only; calculator inputs are the scalar geometry/project/supplier fields above, not this breakdown."
+
 supplier_inputs:
   - {key: roof_work_coeff, label_ru: "Коэффициент работ кровли", unit: "", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_work_coeff", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_work_coeff.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте коэффициент работ кровли."}, notes: "Project/business parameter; do not hardcode."}
   - {key: eps50_supplier_required_volume_m3, label_ru: "ЭППС 50 мм, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "eps50_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.eps50_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем ЭППС 50 мм от поставщика/Технониколь."}, notes: "Slope/EPS supplier volume; not geometry-derived."}
@@ -289,21 +318,6 @@ supplier_inputs:
   - {key: roof_logistics_and_supply_total_raw, label_ru: "Логистика и снабжение кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_logistics_and_supply_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_logistics_and_supply_total_raw.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите сумму логистики и снабжения кровли или будущую формулу."}, notes: "Manual/fixed pending formula confirmation."}
   - {key: technical_supervision_work_total, label_ru: "Технический надзор кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "technical_supervision_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.technical_supervision_work_total.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите технический надзор по кровле."}, notes: ""}
   - {key: procurement_storage_work_total, label_ru: "Заготовительно-складские расходы кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "procurement_storage_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.procurement_storage_work_total.value", value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите заготовительно-складские расходы по кровле."}, notes: ""}
-
-detail_tables:
-  - key: roof_raw_material_spec_rows
-    label_ru: "Сырые строки спецификации кровли"
-    source_class: DETAIL_TABLE
-    required: false
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.flat_roof.detail_tables.roof_raw_material_spec_rows.rows"
-    columns:
-      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
-      - {key: quantity, label_ru: "Количество", unit: "", value_kind: number}
-      - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
-    notes: "Diagnostics only; calculator inputs are scalar geometry/project/supplier fields."
 
 price_keys:
   - {key: vapor_barrier_work_rate_per_m2, estimate_line_code: vapor_barrier_installation, label_ru: "Пароизоляция основания пленкой ПВХ", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_installation_work_m2", fallback_key: "vapor_barrier_work_rate_per_m2", allow_manual_override: true, notes: ""}

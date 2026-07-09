@@ -228,13 +228,17 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
-detail_tables:
   - key: main_wall_rebar_items
-    label_ru: "Арматура несущих стен"
-    source_class: DETAIL_TABLE
+    label_ru: "Арматура несущих стен по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.load_bearing_walls_lintels.detail_tables.main_wall_rebar_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "main_wall_rebar_items"
+    calculator_input_path: "rebar_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.main_wall_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: component
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -242,16 +246,32 @@ detail_tables:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["main_wall_rebar_items"]
+      aliases_ru: ["арматура несущих стен", "армирование кладки несущих стен"]
+      expected_unit: "мп"
+      notes: "Primary PDF unit is m.п.; do not compute kg in chat extraction unless kg is explicit in PDF."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры несущих стен по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Primary PDF unit is m.п.; do not compute kg in chat extraction unless kg is explicit in PDF."
 
   - key: lintel_rebar_items
-    label_ru: "Арматура перемычек"
-    source_class: DETAIL_TABLE
+    label_ru: "Арматура перемычек по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.load_bearing_walls_lintels.detail_tables.lintel_rebar_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "lintel_rebar_items"
+    calculator_input_path: "lintel_rebar_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: component
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -259,23 +279,50 @@ detail_tables:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["lintel_rebar_items"]
+      aliases_ru: ["арматура перемычек", "спецификация арматуры перемычек"]
+      expected_unit: "мп"
+      notes: "Do not mix with masonry reinforcement rows."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры перемычек по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not mix with masonry reinforcement rows."
 
   - key: lintel_items
     label_ru: "Позиции перемычек"
-    source_class: DETAIL_TABLE
+    unit: "м"
+    source_class: AUTO_PROJECT
     required: false
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.load_bearing_walls_lintels.detail_tables.lintel_items.rows"
+    review_sheet: "01_Проверка проекта"
+    target_code: "lintel_items"
+    calculator_input_path: ""
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_items.rows"
+    value_kind: repeated_rows
+    row_key_field: mark
     columns:
       - {key: mark, label_ru: "Марка", unit: "", value_kind: string}
       - {key: length_m, label_ru: "Длина одной", unit: "м", value_kind: number}
       - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
       - {key: total_length_m, label_ru: "Итоговая длина", unit: "м", value_kind: number}
-      - {key: source, label_ru: "Источник", unit: "", value_kind: string}
-      - {key: fragment, label_ru: "Фрагмент проекта", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["lintel_total_length", "lintel_items"]
+      aliases_ru: ["ведомость перемычек", "спецификация перемычек"]
+      expected_unit: "м"
+      notes: "Diagnostic breakdown; calculator production input is the lintel_total_length_m scalar above, not this breakdown."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Необязательная разбивка перемычек по маркам, для справки; сверьте с lintel_total_length_m выше."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Diagnostic source table. Calculator production input is lintel_total_length_m."
 
 price_keys:
@@ -423,7 +470,7 @@ calculator_input_mapping:
 
   - input_path: "*"
     from:
-      ref: "review_parameters + detail_tables + supplier_inputs + defaults + price_keys"
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
       source_class: MIXED
     required: true
     transform: build_load_bearing_walls_lintels_input

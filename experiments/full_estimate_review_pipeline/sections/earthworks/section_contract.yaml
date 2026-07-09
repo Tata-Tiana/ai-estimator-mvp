@@ -190,26 +190,29 @@ review_parameters:
       target_codes: ["communications_length_m"]
       aliases_ru: ["длина коммуникаций", "коммуникации"]
       expected_unit: "м"
-      notes: "In production pipe-items mode this is a review/control value; estimate length is calculated from included pipe items."
+      notes: "This is the calculator input. The pipe-items breakdown below is a sheet-01 cross-check row group, not an override source."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Проверьте длину коммуникаций и состав труб на листе деталей."
+      action_ru: "Проверьте длину коммуникаций; сверьте с составом труб ниже."
     validation:
       numeric: true
       min_value: 0
       max_value: null
     notes: ""
 
-detail_tables:
   - key: trench_routes
     label_ru: "Маршруты траншей"
-    source_class: DETAIL_TABLE
+    unit: "м3"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.earthworks.details.trench_routes"
+    review_sheet: "01_Проверка проекта"
+    target_code: "trench_routes"
     calculator_input_path: "trench_routes"
+    normalized_json_path: "sections.earthworks.parameters.trench_routes.rows"
+    value_kind: repeated_rows
+    row_key_field: name
     columns:
       - key: name
         label_ru: "Наименование"
@@ -240,18 +243,27 @@ detail_tables:
       group_codes: ["trench_routes"]
       expected_context: ["траншеи", "котлован"]
       notes: ""
-    validation:
-      min_rows: 0
-      sum_checks: []
-    notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте маршруты траншей построчно; сверьте сумму объемов с trench_volume_m3 выше."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is trench_volume_m3 (scalar above), not this breakdown."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Reference/cross-check breakdown only; does not feed the calculator directly."
 
   - key: communications_pipe_items
     label_ru: "Трубы коммуникаций"
-    source_class: DETAIL_TABLE
+    unit: "м"
+    source_class: AUTO_PROJECT
     required: true
-    review_sheet: "03_Детали объемов"
-    normalized_json_path: "sections.earthworks.details.communications_pipe_items"
+    review_sheet: "01_Проверка проекта"
+    target_code: "communications_pipe_items"
     calculator_input_path: "communications_pipe_items"
+    normalized_json_path: "sections.earthworks.parameters.communications_pipe_items.rows"
+    value_kind: repeated_rows
+    row_key_field: name
     columns:
       - key: name
         label_ru: "Наименование"
@@ -287,10 +299,15 @@ detail_tables:
       group_codes: ["communications_pipe_items"]
       expected_context: ["трубы", "коммуникации"]
       notes: ""
-    validation:
-      min_rows: 0
-      sum_checks: []
-    notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте состав труб построчно; сверьте сумму длин с communications_length_m выше."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is communications_length_m (scalar above), not this breakdown."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Reference/cross-check breakdown only; does not feed the calculator directly. Fixes a real production bug where the adapter previously recomputed communications_length_m from this breakdown instead of reading the reviewed scalar."
 
 price_keys:
   - key: axis_marking_work_unit_price
@@ -541,22 +558,22 @@ auto_calculated:
         source_class: AUTO_PROJECT
     calculator_input_path: "manual_excavation_quantity_for_estimate_m3"
     notes: ""
-  - key: communications_length_m_effective
-    label_ru: "Длина коммуникаций по деталям"
+  - key: communications_length_m_cross_check
+    label_ru: "Длина коммуникаций по деталям (сверка)"
     source_class: AUTO_CALCULATED
     formula: "sum(included communications_pipe_items.total_length_m)"
     leaf_inputs:
-      - ref: detail_tables.communications_pipe_items
-        source_class: DETAIL_TABLE
+      - ref: review_parameters.communications_pipe_items
+        source_class: AUTO_PROJECT
     calculator_input_path: ""
-    notes: ""
+    notes: "Cross-check only, shown next to communications_length_m for Elena to compare. Never wired into calculator_input_mapping or an estimate line — the calculator input is the reviewed review_parameters.communications_length_m scalar. See fix note on communications_pipe_items above."
 
 supplier_inputs: []
 
 calculator_input_mapping:
   - input_path: "*"
     from:
-      ref: "review_parameters + detail_tables + defaults + price_keys"
+      ref: "review_parameters + defaults + price_keys"
       source_class: AUTO_PROJECT
     required: true
     transform: earthworks_review_to_calculator_adapter
@@ -740,10 +757,10 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=communications_work]"
     quantity:
-      formula: "communications_length_m_effective"
+      formula: "communications_length_m"
       leaf_inputs:
-        - ref: auto_calculated.communications_length_m_effective
-          source_class: AUTO_CALCULATED
+        - ref: review_parameters.communications_length_m
+          source_class: AUTO_PROJECT
     prices:
       material_unit_price_key: null
       work_unit_price_key: communications_work_unit_price
@@ -759,10 +776,10 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=communications_material]"
     quantity:
-      formula: "communications_length_m_effective"
+      formula: "communications_length_m"
       leaf_inputs:
-        - ref: auto_calculated.communications_length_m_effective
-          source_class: AUTO_CALCULATED
+        - ref: review_parameters.communications_length_m
+          source_class: AUTO_PROJECT
     prices:
       material_unit_price_key: communications_material_unit_price
       work_unit_price_key: null
@@ -804,7 +821,6 @@ workbook_layout:
 checks:
   required_source_classes:
     - AUTO_PROJECT
-    - DETAIL_TABLE
     - DEFAULT
     - AUTO_CALCULATED
     - PRICE
