@@ -15,6 +15,39 @@ of which are non-project-specific. The "found/missing in a real project's extrac
 (the part that needs the live chat turn with real numbers) is a separate, smaller follow-up once the
 earthworks section of a real extraction pass is pasted into the chat.
 
+## Update Applied
+
+This report was originally written before the Naming Alignment Rule was settled. The old findings
+below are still useful as an audit trail, but the applied fix goes in the current direction:
+
+```text
+parser target/group field names -> calculator/contract production names
+```
+
+Applied in the follow-up pass:
+
+- scalar parser targets renamed to `pit_area_m2`, `pit_excavation_depth_m`,
+  `sand_base_volume_m3`, `trench_volume_m3`, `geotextile_area_m2`,
+  `geotextile_laying_area_m2`, `communications_length_m`;
+- `trench_routes` group shape changed from `route_name` to `route_code` + `name`;
+- `communications_pipe_items` group shape changed from `piece_length_m`/`quantity_pcs` to
+  `code`/`pipe_length_m`/`quantity` with optional `total_length_m`;
+- earthworks contract got `route_code` and pipe `code` columns;
+- diagnostic `trench_routes.width_m`, `trench_routes.volume_m3`, and
+  `communications_pipe_items.total_length_m` were downgraded to non-required where they are not
+  required by the production calculator path;
+- prompt and deterministic review scripts now allow `communications_length_m` only when the PDF
+  explicitly gives a ready total, not when chat calculated a sum from pipe rows.
+- the production review contract now keeps `communications_length_m` as the calculator source by
+  using calculator mode `legacy_direct_length`. The mode name is legacy in the calculator, but this
+  is the correct current mode for a reviewed scalar row from sheet `01_Проверка проекта`;
+- `communications_pipe_items.row_key_field` is now `code`, matching the calculator validation. These
+  detail rows remain a review/cross-check breakdown unless a deliberate adapter mode makes pipe rows
+  the reviewed calculator source.
+- `membrane_area_m2` was removed from active `earthworks` parser targets because the earthworks
+  calculator and contract do not consume it. The same physical PDF row is still extracted for
+  `foundation_slab.membrane_area_m2`, where the calculator actually needs it.
+
 ## Why this section is different from the other 7
 
 `sections/earthworks/section_contract.yaml` already existed before the Cross-Check Stage was defined
@@ -48,11 +81,10 @@ Every `review_parameters` scalar and repeated-row group in the contract, matched
   needed anywhere in this contract, unlike foundation_slab's rebar case.
 - `communications_length_m`'s design (scalar is the real calculator input, `communications_pipe_items`
   is a cross-check-only breakdown, `status_if_missing: manual_required`) is internally consistent with
-  how the parser is actually configured: the parser has no direct target_code for a communications
-  total length at all — only the itemized `communications_pipe_items` group, with an explicit
-  instruction not to output one summed number from the drawing text. This is the same
-  no-silent-aggregation principle documented in `step_13`'s finding 3, applied correctly here by
-  design, not by accident.
+  the updated parser configuration: `communications_length_m` is a scalar target only when the PDF
+  explicitly gives a ready total/general communication length. The itemized `communications_pipe_items`
+  group is still extracted separately, but chat must not silently sum it into
+  `communications_length_m`.
 - `auto_calculated.manual_excavation_quantity_for_estimate_m3` correctly stays `AUTO_CALCULATED` and
   is not expected as a direct parser target — the parser's own target list marks the equivalent code
   `manual_excavation_quantity_for_estimate` as `"grounded": false`, i.e. explicitly not meant to be
@@ -174,36 +206,23 @@ filled in the contract).
 
 ## Verdict
 
-- Calculator input field names for all 7 top-level `review_parameters` are already correct (no
-  calculator-side rename needed anywhere in this contract) — better shape than foundation_slab's rebar
-  case going in.
-- 6 scalar `parser_mapping.target_codes` need correction (finding 1) — safe, mechanical, same pattern
-  as `step_13` finding 1.
-- `trench_routes` has a real blocking gap (finding 2: missing `route_code`) and a real correctness risk
-  under a specific fallback condition (finding 4), both worth the user's attention before this section
-  is trusted in production with the `standard_routes` default.
-- `trench_routes.width_m`/`volume_m3` `required: true` is misleading (finding 3) — cosmetic/UX fix, not
-  blocking.
-- `communications_pipe_items` has a hard-crash-risk gap (finding 5: missing `code`, raw `KeyError`) plus
-  two straightforward naming mismatches.
-- No real per-project extraction JSON was reviewed for this section in this pass — findings above are
-  fully structural (contract vs calculator vs parser config), not "found/not found in a real project."
-  A follow-up found/missing verdict needs the earthworks section of a real extraction pass pasted into
-  the chat (not written to any file, per the hard rule).
+- Calculator input field names for all top-level production review parameters are correct.
+- Parser-side scalar target names are now aligned to calculator/contract names.
+- `trench_routes` now has `route_code`, so it can be safely mirrored and, if deliberately needed,
+  used by calculator fallback without a missing identifier.
+- `communications_pipe_items` now has `code`, `pipe_length_m`, `quantity`, and optional
+  `total_length_m`, matching the calculator's real row shape.
+- The architectural choice remains: `trench_volume_m3` and `communications_length_m` are reviewed
+  scalar calculator inputs; repeated-row groups are extracted onto sheet 01 and mirrored to sheet 03
+  for checking, but should not silently override the reviewed scalar values in the generic flow.
+- No real per-project extraction JSON was reviewed for this section in this pass — findings are
+  structural parser/contract/calculator-name checks, not "found/not found in a real project."
 
-## Next steps (not yet applied — awaiting go-ahead)
+## Next steps
 
-1. Apply finding 1: fix all 6 scalar `parser_mapping.target_codes` in
-   `sections/earthworks/section_contract.yaml`.
-2. Decide and apply finding 2 (`route_code`): add a contract/parser column, or accept `name` as
-   fallback (calculator-code change, separate from this contract-only stage).
-3. Apply finding 3: downgrade `width_m`/`volume_m3` to non-required in `trench_routes.columns`.
-4. User decision on finding 4 (routes-fallback correctness risk): hard-require `trench_volume_m3`, or
-   flag-loudly-on-fallback.
-5. Apply finding 5's naming fixes (`pipe_length_m`/`quantity`) and decide on a `code` convention for
-   `communications_pipe_items`.
-6. Optional: paste the earthworks section of a real extraction pass into the chat to add the
+1. Optional: paste the earthworks section of a real extraction pass into the chat to add the
    found/missing verdict on top of these structural findings.
-7. Separately: `HANDOFF.md` now has a new step recording the plan to move earthworks off its own
-   hardcoded pipeline onto the generic contract-driven adapter (see next section) — that migration is
-   independent of this cross-check and should happen after these contract fixes, not before.
+2. Migrate earthworks off its old hardcoded review-to-calculator pipeline onto the generic
+   contract-driven workbook reader/adapter path.
+3. When building the generic adapter, keep the current architecture rule: calculator inputs come from
+   reviewed sheet 01/02 scalar rows and defaults; sheet 03 is a read-only mirror for visual checking.

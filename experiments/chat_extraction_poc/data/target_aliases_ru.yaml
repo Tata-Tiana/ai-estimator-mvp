@@ -19,7 +19,7 @@ earthworks:
   unit_column_hint: ["ед. изм.", "ед.", "м3", "м2", "м.п.", "шт"]
   notes: "Section header only; use child target codes for values."
 
-sand_volume:
+sand_base_volume_m3:
   section_code: earthworks
   ru_label: "Объем песка для подушки"
   pdf_aliases: ["Песок", "Песок под плиту", "Песчаная подушка", "Песок подушка", "Песок Купл", "Песок уплотненный"]
@@ -31,7 +31,7 @@ sand_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "This is a material volume; do not confuse with pit area or trench route volume."
 
-geotextile_area:
+geotextile_area_m2:
   section_code: earthworks
   ru_label: "Площадь геотекстиля как материала"
   pdf_aliases: ["Геотекстиль", "Геотекстиль под плиту", "Геотекстиль под песчаную подушку", "Полотно геотекстильное"]
@@ -41,9 +41,9 @@ geotextile_area:
   negative_context: ["кровля", "стеклохолст", "мембрана", "опалубка"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Material-ordering area. If the PDF has only one geotextile area, it may also support geotextile_laying_area, but keep the same raw source and explain in notes."
+  notes: "Material-ordering area. If the PDF has only one geotextile area, it may also support geotextile_laying_area_m2, but keep the same raw source and explain in notes."
 
-geotextile_laying_area:
+geotextile_laying_area_m2:
   section_code: earthworks
   ru_label: "Площадь укладки геотекстиля"
   pdf_aliases: ["Укладка геотекстиля", "Площадь укладки геотекстиля", "Геотекстиль", "Устройство геотекстиля", "Расстил геотекстиля"]
@@ -56,18 +56,18 @@ geotextile_laying_area:
   notes: "Work/installation area. Do not invent it if only material quantity is shown; reuse the source only with needs_review=true unless the row explicitly means laying/installation."
 
 membrane_area_m2:
-  section_code: earthworks
+  section_code: foundation_slab
   ru_label: "Площадь профилированной мембраны PLANTER"
   pdf_aliases: ["Профилированная мембрана PLANTER", "PLANTER", "Мембрана профилированная", "Профилированная мембрана"]
   expected_unit: m2
-  table_hints: ["План котлована", "Спецификация материалов", "Основное сечение по фундаменту"]
+  table_hints: ["План фундаментной плиты", "Спецификация к плану фундаментной плиты", "План котлована", "Спецификация материалов", "Основное сечение по фундаменту"]
   required_context: ["PLANTER|профилирован", "мембран"]
   negative_context: ["LOGICROOF", "ПВХ", "кровля", "пароизоляц"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Foundation/earthworks membrane, not roof PVC membrane."
+  notes: "Foundation slab calculator input. The physical row may appear on earthworks/foundation drawings, but target section is foundation_slab. Not roof PVC membrane."
 
-pit_area:
+pit_area_m2:
   section_code: earthworks
   ru_label: "Площадь котлована"
   pdf_aliases: ["Площадь котлована", "Площадь разработки котлована", "Площадь основания котлована", "Котлован площадь"]
@@ -79,7 +79,7 @@ pit_area:
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Do not confuse with foundation slab area, roof area, or formwork area."
 
-pit_excavation_depth:
+pit_excavation_depth_m:
   section_code: earthworks
   ru_label: "Глубина разработки котлована"
   pdf_aliases: ["Глубина котлована", "Глубина разработки", "Отметка дна котлована", "Дно котлована", "Глубина выемки"]
@@ -91,7 +91,7 @@ pit_excavation_depth:
   unit_column_hint: ["м"]
   notes: "If the source is an elevation mark, keep raw sign in raw_text and set needs_review=true."
 
-trench_volume_total:
+trench_volume_m3:
   section_code: earthworks
   ru_label: "Готовый итоговый объем траншей"
   pdf_aliases: ["Итого объем траншей", "Объем траншей итого", "Объем траншеи", "Траншеи объем", "Итого по траншеям"]
@@ -103,17 +103,17 @@ trench_volume_total:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Only use an explicit total row/cell. Still extract trench_routes raw rows separately."
 
-manual_excavation_quantity_for_estimate:
+communications_length_m:
   section_code: earthworks
-  ru_label: "Объем ручной доработки грунта"
-  pdf_aliases: ["Ручная доработка грунта", "Доработка котлована вручную", "Ручная разработка", "Доработка грунта"]
-  expected_unit: m3
-  table_hints: ["Ведомость объемов работ", "Пояснительная записка"]
-  required_context: ["ручн|доработк|разработк"]
-  negative_context: ["механизирован", "экскаватор", "стоимость", "смена"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Often calculated by the estimator rather than present in PDF; return null if not explicit."
+  ru_label: "Итоговая длина коммуникаций"
+  pdf_aliases: ["Итоговая длина коммуникаций", "Длина коммуникаций", "Общая длина коммуникаций", "Суммарная длина коммуникаций", "Технологические вводы коммуникаций"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация коммуникаций", "Схема коммуникаций", "Ведомость труб"]
+  required_context: ["коммуникац|труб|ввод"]
+  negative_context: ["шт", "количество", "арматура", "вентканал"]
+  value_column_hint: ["длина", "итого", "общая длина", "сумма"]
+  unit_column_hint: ["м", "м.п.", "п.м.", "м/п"]
+  notes: "Extract only if a ready total communication length is explicitly present in the PDF. Do not calculate it from pipe rows in chat; pipe rows are extracted as communications_pipe_items."
 
 trench_routes:
   section_code: earthworks
@@ -125,7 +125,7 @@ trench_routes:
   negative_context: ["арматура", "балка", "перемычка"]
   value_column_hint: ["длина", "глубина", "ширина", "объем", "маршрут"]
   unit_column_hint: ["м", "м.п.", "м3"]
-  notes: "Extract as raw_table_rows and group items. Do not calculate missing route values unless explicitly shown."
+  notes: "Extract as raw_table_rows and group items. Use route_code for the visible route id (К1, К2, Вода, Эл. кабель); name may repeat route_code or preserve a longer label. Do not calculate missing route values unless explicitly shown."
 
 communications_pipe_items:
   section_code: earthworks
@@ -137,7 +137,7 @@ communications_pipe_items:
   negative_context: ["арматура", "вентканал Schiedel", "водосточная воронка"]
   value_column_hint: ["наименование", "диаметр", "длина", "кол-во", "количество"]
   unit_column_hint: ["мм", "м", "м.п.", "шт"]
-  notes: "Do not output communications_length_m directly. Extract pipe rows with diameter, length, and quantity."
+  notes: "Extract pipe rows with code, name, diameter, pipe_length_m, quantity, optional total_length_m, and include_in_communications. communications_length_m is a separate scalar only when the PDF explicitly gives a ready total."
 
 foundation_slab:
   section_code: foundation_slab
@@ -275,7 +275,19 @@ waterproofing:
   unit_column_hint: ["м2", "м3", "шт"]
   notes: "Section header only; use child target codes for values."
 
-waterproofing_eps_100_edge_volume:
+waterproofing_area_m2:
+  section_code: waterproofing
+  ru_label: "Площадь гидроизоляции фундаментной плиты битумной мастикой"
+  pdf_aliases: ["Площадь гидроизоляции", "Гидроизоляция фундаментной плиты", "Гидроизоляция битумной мастикой", "Площадь опалубки бортов фундаментной плиты", "Опалубка бортов", "Площадь опалубки бортов", "Бортовая опалубка"]
+  expected_unit: m2
+  table_hints: ["Спецификация к плану фундаментной плиты", "Ведомость опалубки", "Основное сечение по фундаменту", "Спецификация гидроизоляционных материалов"]
+  required_context: ["гидроизоляц|мастик|опалубк|борт"]
+  negative_context: ["кровля", "LOGICROOF", "ЭППС", "м3", "низ плиты", "перекрытие"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Production rule: if PDF has no separate waterproofing area row, use the same raw source and same numeric value as foundation_slab.slab_side_formwork_area/slab_side_formwork_area_m2. Mark needs_review=true and explain that waterproofing area is taken from foundation slab side formwork area by Elena's method."
+
+eps100_wall_volume_m3:
   section_code: waterproofing
   ru_label: "ЭППС 100 мм для вертикального утепления в разделе гидроизоляции"
   pdf_aliases: ["ЭППС 100 мм торец", "ЭППС 100 мм вертикальное утепление", "ЭППС-100мм утепление вертикальных поверхностей", "Утепление торца плиты"]
@@ -285,7 +297,7 @@ waterproofing_eps_100_edge_volume:
   negative_context: ["50 мм", "низ плиты", "опалубка", "кровля", "м2"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Same physical row may also be relevant to foundation_slab eps_100_edge_volume; keep source explicit."
+  notes: "Production input name for waterproofing calculator. Same physical PDF row may also be relevant to foundation_slab.eps_100_edge_volume, but waterproofing output target_code must be eps100_wall_volume_m3."
 
 load_bearing_walls_lintels:
   section_code: load_bearing_walls_lintels

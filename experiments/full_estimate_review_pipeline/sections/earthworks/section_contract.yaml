@@ -212,8 +212,13 @@ review_parameters:
     calculator_input_path: "trench_routes"
     normalized_json_path: "sections.earthworks.parameters.trench_routes.rows"
     value_kind: repeated_rows
-    row_key_field: name
+    row_key_field: route_code
     columns:
+      - key: route_code
+        label_ru: "Код маршрута"
+        unit: ""
+        value_kind: string
+        required: true
       - key: name
         label_ru: "Наименование"
         unit: ""
@@ -233,12 +238,12 @@ review_parameters:
         label_ru: "Ширина"
         unit: "м"
         value_kind: number
-        required: true
+        required: false
       - key: volume_m3
         label_ru: "Объем"
         unit: "м3"
         value_kind: number
-        required: true
+        required: false
     parser_mapping:
       group_codes: ["trench_routes"]
       expected_context: ["траншеи", "котлован"]
@@ -251,7 +256,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is trench_volume_m3 (scalar above), not this breakdown."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; does not feed the calculator directly."
+    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled."
 
   - key: communications_pipe_items
     label_ru: "Трубы коммуникаций"
@@ -263,8 +268,13 @@ review_parameters:
     calculator_input_path: "communications_pipe_items"
     normalized_json_path: "sections.earthworks.parameters.communications_pipe_items.rows"
     value_kind: repeated_rows
-    row_key_field: name
+    row_key_field: code
     columns:
+      - key: code
+        label_ru: "Код позиции"
+        unit: ""
+        value_kind: string
+        required: true
       - key: name
         label_ru: "Наименование"
         unit: ""
@@ -289,7 +299,7 @@ review_parameters:
         label_ru: "Итоговая длина"
         unit: "м"
         value_kind: number
-        required: true
+        required: false
       - key: include_in_communications
         label_ru: "Включено"
         unit: ""
@@ -307,7 +317,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is communications_length_m (scalar above), not this breakdown."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; does not feed the calculator directly. Fixes a real production bug where the adapter previously recomputed communications_length_m from this breakdown instead of reading the reviewed scalar."
+    notes: "Reference/cross-check breakdown only; scalar communications_length_m remains the reviewed calculator quantity. code is required so this group can also feed calculator pipe_items mode safely if that mode is deliberately enabled."
 
 price_keys:
   - key: axis_marking_work_unit_price
@@ -465,12 +475,12 @@ defaults:
   - key: communications_length_calc_method
     label_ru: "Метод расчета длины коммуникаций"
     source_class: DEFAULT
-    value: "pipe_items"
+    value: "legacy_direct_length"
     unit: ""
     calculator_input_path: "communications_length_calc_method"
-    source_note: "Production mode: estimate length comes from detail pipe items."
+    source_note: "Production review mode: calculator uses reviewed scalar communications_length_m. The calculator method name is legacy, but the source is the production review row."
     allow_override_later: false
-    notes: ""
+    notes: "Do not switch to pipe_items unless a deliberate adapter mode makes pipe rows the reviewed calculator source."
   - key: excavator_productivity_m3_per_shift
     label_ru: "Производительность экскаватора"
     source_class: DEFAULT

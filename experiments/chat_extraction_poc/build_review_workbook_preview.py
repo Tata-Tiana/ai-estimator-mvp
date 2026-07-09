@@ -41,10 +41,6 @@ AUDIT_SECTION_CODES = {
 }
 
 AUTO_PROJECT_ALIASES = {
-    ("earthworks", "pit_area_m2"): ["pit_area"],
-    ("earthworks", "trench_volume_m3"): ["trench_volume_total", "trench_routes"],
-    ("earthworks", "communications_length_m"): ["communications_pipe_items"],
-    ("earthworks", "geotextile_laying_area_m2"): ["geotextile_laying_area"],
     ("foundation_slab", "thermal_insert_50_length_m"): ["thermal_insert_50_length"],
     ("foundation_slab", "thermal_insert_100_length_m"): ["thermal_insert_100_length"],
     ("foundation_slab", "thermal_insert_50_material_spec_qty"): ["thermal_insert_50_material_spec_qty"],
@@ -1031,7 +1027,7 @@ def append_details_sheet_earthworks_like(ws, extraction: dict[str, Any], report:
         if item_code(item) != "trench_routes" or not isinstance(item.get("value"), dict):
             continue
         value = item["value"]
-        route_name = value.get("route_name") or value.get("name") or ""
+        route_name = value.get("name") or value.get("route_code") or ""
         ws.append([
             "Траншея",
             route_name,
@@ -1057,23 +1053,20 @@ def append_details_sheet_earthworks_like(ws, extraction: dict[str, Any], report:
         value = item["value"]
         total_length = value.get("total_length_m")
         if total_length in (None, ""):
-            piece = value.get("piece_length_m")
-            qty = value.get("quantity_pcs") or value.get("quantity")
-            linear = value.get("linear_length_m")
+            piece = value.get("pipe_length_m")
+            qty = value.get("quantity")
             if piece not in (None, "") and qty not in (None, ""):
                 total_length = float(piece) * float(qty)
-            elif linear not in (None, ""):
-                total_length = linear
         ws.append([
             "Коммуникация",
-            value.get("name") or "",
+            value.get("name") or value.get("code") or "",
             "",
             "",
             "",
             "",
             excel_value(value.get("diameter_mm")),
-            excel_value(value.get("piece_length_m")),
-            excel_value(value.get("quantity_pcs") or value.get("quantity")),
+            excel_value(value.get("pipe_length_m")),
+            excel_value(value.get("quantity")),
             excel_value(total_length),
             "да" if total_length not in (None, "") else "нет",
             source_label(item),
@@ -1411,7 +1404,7 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
     max_width = 14
 
     append_block_title(ws, "Земляные работы — траншеи", max_width)
-    headers = ["route_name", "length_m", "depth_m", "width_m", "volume_m3", "status", "source", "raw_text", "comment_for_elena"]
+    headers = ["route_code", "name", "length_m", "depth_m", "width_m", "volume_m3", "status", "source", "raw_text", "comment_for_elena"]
     append_header(ws, headers)
     for item in iter_found_items(extraction):
         if item_code(item) != "trench_routes" or not isinstance(item.get("value"), dict):
@@ -1420,7 +1413,8 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
         status = status_for_item(item)
         ws.append(
             [
-                value.get("route_name") or value.get("name") or "",
+                value.get("route_code") or "",
+                value.get("name") or "",
                 value.get("length_m"),
                 value.get("depth_m"),
                 value.get("width_m"),
@@ -1435,7 +1429,7 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
 
     ws.append([])
     append_block_title(ws, "Земляные работы — коммуникации", max_width)
-    headers = ["name", "diameter_mm", "piece_length_m", "quantity_pcs", "linear_length_m", "total_length_m", "unit", "status", "source", "raw_text"]
+    headers = ["code", "name", "diameter_mm", "pipe_length_m", "quantity", "total_length_m", "include_in_communications", "unit", "status", "source", "raw_text"]
     append_header(ws, headers)
     for item in iter_found_items(extraction):
         if item_code(item) != "communications_pipe_items" or not isinstance(item.get("value"), dict):
@@ -1443,22 +1437,20 @@ def append_details_sheet(ws, extraction: dict[str, Any], report: dict[str, Any])
         value = item["value"]
         total_length = value.get("total_length_m")
         if total_length in (None, ""):
-            piece = value.get("piece_length_m")
-            qty = value.get("quantity_pcs") or value.get("quantity")
-            linear = value.get("linear_length_m")
+            piece = value.get("pipe_length_m")
+            qty = value.get("quantity")
             if piece not in (None, "") and qty not in (None, ""):
                 total_length = float(piece) * float(qty)
-            elif linear not in (None, ""):
-                total_length = linear
         status = status_for_item(item)
         ws.append(
             [
+                value.get("code") or "",
                 value.get("name") or "",
                 value.get("diameter_mm"),
-                value.get("piece_length_m"),
-                value.get("quantity_pcs") or value.get("quantity"),
-                value.get("linear_length_m"),
+                value.get("pipe_length_m"),
+                value.get("quantity"),
                 total_length,
+                value.get("include_in_communications"),
                 item.get("unit") or item.get("normalized_unit") or "",
                 status,
                 source_label(item),

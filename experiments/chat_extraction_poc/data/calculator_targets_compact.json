@@ -9,29 +9,28 @@
       "section_code": "earthworks",
       "section_name_ru": "Земляные работы",
       "targets": [
-        {"code": "sand_volume", "label_ru": "Объём песка (подушка)", "unit": "m3", "grounded": true},
-        {"code": "geotextile_area", "label_ru": "Площадь геотекстиля (материал)", "unit": "m2", "grounded": true},
-        {"code": "geotextile_laying_area", "label_ru": "Площадь укладки геотекстиля", "unit": "m2", "grounded": true, "notes": "В PDF часто одно и то же число, что и geotextile_area — если видишь только одно значение, укажи его в обоих полях и добавь candidates."},
-        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true},
-        {"code": "pit_area", "label_ru": "Площадь котлована", "unit": "m2", "grounded": true},
-        {"code": "pit_excavation_depth", "label_ru": "Глубина котлована", "unit": "m", "grounded": true},
-        {"code": "trench_volume_total", "label_ru": "Объём траншей, готовая строка ИТОГО (если есть такая строка в таблице)", "unit": "m3", "grounded": true, "notes": "Извлекай только если в таблице реально есть готовая итоговая ячейка. Если её нет — не считай сама, оставь null, объём посчитается из trench_routes."},
-        {"code": "manual_excavation_quantity_for_estimate", "label_ru": "Объём ручной доработки котлована для сметы", "unit": "m3", "grounded": false}
+        {"code": "sand_base_volume_m3", "label_ru": "Объём песка (подушка)", "unit": "m3", "grounded": true},
+        {"code": "geotextile_area_m2", "label_ru": "Площадь геотекстиля (материал)", "unit": "m2", "grounded": true},
+        {"code": "geotextile_laying_area_m2", "label_ru": "Площадь укладки геотекстиля", "unit": "m2", "grounded": true, "notes": "В PDF часто одно и то же число, что и geotextile_area_m2 — если видишь только одно значение, укажи его в обоих полях и добавь candidates/needs_review."},
+        {"code": "pit_area_m2", "label_ru": "Площадь котлована", "unit": "m2", "grounded": true},
+        {"code": "pit_excavation_depth_m", "label_ru": "Глубина котлована", "unit": "m", "grounded": true},
+        {"code": "trench_volume_m3", "label_ru": "Объём траншей, готовая строка ИТОГО (если есть такая строка в таблице)", "unit": "m3", "grounded": true, "notes": "Извлекай только если в таблице реально есть готовая итоговая ячейка. Если её нет — не считай сама, оставь null/в missing; маршруты траншей нужны для проверки, но scalar trench_volume_m3 должен быть подтверждён отдельно."},
+        {"code": "communications_length_m", "label_ru": "Итоговая длина коммуникаций", "unit": "linear_m", "grounded": true, "notes": "Извлекай только если в PDF явно есть итоговая длина коммуникаций. Если есть только позиции труб, не суммируй сама: извлеки communications_pipe_items и оставь communications_length_m missing/needs_review."}
       ],
       "extract_groups": [
         {
           "group_code": "trench_routes",
           "description": "Маршруты траншей/коммуникаций: К1, К2, К3, Вода, Эл.кабель, Дренаж и т.п. — двумерная таблица (строки: длина/глубина/ширина/объём, столбцы: маршруты).",
-          "fields": ["route_name", "length_m", "depth_m", "width_m", "volume_m3"],
+          "fields": ["route_code", "name", "length_m", "depth_m", "width_m", "volume_m3"],
           "grounded": true,
           "notes": "Сохрани таблицу как есть, по маршрутам. Не считай сумму сама."
         },
         {
           "group_code": "communications_pipe_items",
           "description": "Спецификация труб/фитингов коммуникаций (трубы, тройники, углы, заглушки) — обычно отдельная таблица со своими ГОСТ-номерами.",
-          "fields": ["name", "diameter_mm", "piece_length_m", "quantity_pcs"],
+          "fields": ["code", "name", "diameter_mm", "pipe_length_m", "quantity", "total_length_m", "include_in_communications"],
           "grounded": true,
-          "notes": "ВАЖНО: НЕ выводи одно итоговое число длины коммуникаций из текста. Извлеки именно позиции трубы/фитингов построчно — длина считается кодом как piece_length_m × quantity_pcs, суммой по всем позициям, где единица измерения — метры (не шт)."
+          "notes": "Извлеки позиции трубы/фитингов построчно. code — стабильный идентификатор строки, можно взять из видимого названия/ГОСТ/назначения. Если строка дана как длина одной штуки и количество, заполни pipe_length_m и quantity; total_length_m заполняй только если готовая итоговая длина явно указана в PDF."
         }
       ]
     },
@@ -47,9 +46,9 @@
         {"code": "thermal_insert_100_length", "label_ru": "Длина термовставок 100 мм (по спецификации)", "unit": "linear_m", "grounded": true},
         {"code": "thermal_insert_50_material_spec_qty", "label_ru": "Материал термовставок 50 мм, объём по спецификации", "unit": "m3", "grounded": true},
         {"code": "thermal_insert_100_material_spec_qty", "label_ru": "Материал термовставок 100 мм, объём по спецификации", "unit": "m3", "grounded": true},
-        {"code": "sand_volume", "label_ru": "Объём песка (подушка под плиту)", "unit": "m3", "grounded": true, "notes": "Тот же физический показатель, что earthworks.sand_volume — может быть одно и то же число из одной и той же таблицы. Не дублируй как два разных факта, если это явно одна ячейка."},
-        {"code": "geotextile_area", "label_ru": "Площадь геотекстиля", "unit": "m2", "grounded": true, "notes": "См. earthworks.geotextile_area — вероятно то же число."},
-        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "См. earthworks.membrane_area_m2 — вероятно то же число."}
+        {"code": "sand_volume", "label_ru": "Объём песка (подушка под плиту)", "unit": "m3", "grounded": true, "notes": "Тот же физический показатель, что earthworks.sand_base_volume_m3 — может быть одно и то же число из одной и той же таблицы. Не дублируй как два разных факта, если это явно одна ячейка."},
+        {"code": "geotextile_area", "label_ru": "Площадь геотекстиля", "unit": "m2", "grounded": true, "notes": "См. earthworks.geotextile_area_m2 — вероятно то же число."},
+        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "Foundation slab calculator input. The PDF row may appear on foundation/earthworks drawings, but the active target belongs to foundation_slab."}
       ],
       "extract_groups": [
         {
@@ -65,7 +64,8 @@
       "section_code": "waterproofing",
       "section_name_ru": "Гидроизоляция",
       "targets": [
-        {"code": "eps_100_edge_volume", "label_ru": "ЭППС 100 мм, торец/вертикальное утепление — объём", "unit": "m3", "grounded": true}
+        {"code": "waterproofing_area_m2", "label_ru": "Площадь гидроизоляции фундаментной плиты битумной мастикой", "unit": "m2", "grounded": true, "notes": "По production-методике Елены площадь гидроизоляции равна площади опалубки бортов фундаментной плиты. Если отдельной строки гидроизоляции в PDF нет, но найдена строка slab_side_formwork_area в foundation_slab, укажи то же значение здесь с тем же source/raw_text и needs_review=true."},
+        {"code": "eps100_wall_volume_m3", "label_ru": "ЭППС 100 мм, торец/вертикальное утепление — объём", "unit": "m3", "grounded": true, "notes": "Имя target_code совпадает с production input калькулятора гидроизоляции. Не путать с foundation_slab.eps_100_edge_volume: это может быть та же физическая PDF-строка, но для гидроизоляции parser должен вернуть eps100_wall_volume_m3."}
       ],
       "extract_groups": [],
       "notes": "Раздел тонкий — большинство параметров гидроизоляции в текущей схеме либо control_only (тип гидроизоляции, справочно), либо ещё не выделены в явные параметры с resolver_hints. Если увидишь в PDF таблицу гидроизоляционных материалов (площади, слои) — сохрани как materials в общем JSON, даже если это не входит в список выше."

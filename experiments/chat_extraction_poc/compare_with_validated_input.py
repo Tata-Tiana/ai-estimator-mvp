@@ -16,12 +16,13 @@ MATCH_TOLERANCE = 0.10
 CLOSE_TOLERANCE = 0.25
 
 EARTHWORKS_SCALAR_TARGETS = [
-    {"target_code": "pit_area", "validated_key": "pit_area_m2", "unit": "m2"},
-    {"target_code": "geotextile_area", "validated_key": "geotextile_area_m2", "unit": "m2"},
-    {"target_code": "geotextile_laying_area", "validated_key": "geotextile_laying_area_m2", "unit": "m2"},
-    {"target_code": "sand_volume", "validated_key": "sand_base_volume_m3", "unit": "m3"},
-    {"target_code": "manual_excavation_quantity_for_estimate", "validated_key": "manual_excavation_quantity_for_estimate_m3", "unit": "m3"},
-    {"target_code": "trench_volume_total", "validated_key": "trench_volume_m3", "unit": "m3", "notes": "Only the explicit 'ИТОГО' line, if Claude found one - see trench_volume_m3_from_routes for the computed cross-check."},
+    {"target_code": "pit_area_m2", "validated_key": "pit_area_m2", "unit": "m2"},
+    {"target_code": "pit_excavation_depth_m", "validated_key": "pit_excavation_depth_m", "unit": "m"},
+    {"target_code": "geotextile_area_m2", "validated_key": "geotextile_area_m2", "unit": "m2"},
+    {"target_code": "geotextile_laying_area_m2", "validated_key": "geotextile_laying_area_m2", "unit": "m2"},
+    {"target_code": "sand_base_volume_m3", "validated_key": "sand_base_volume_m3", "unit": "m3"},
+    {"target_code": "trench_volume_m3", "validated_key": "trench_volume_m3", "unit": "m3", "notes": "Only the explicit 'ИТОГО' line, if Claude found one - see trench_volume_m3_from_routes for the computed cross-check."},
+    {"target_code": "communications_length_m", "validated_key": "communications_length_m", "unit": "linear_m", "notes": "Only if explicit total/general communication length exists in PDF."},
 ]
 
 
@@ -77,10 +78,14 @@ def compute_communications_length_from_pipe_items(items: list[dict]) -> tuple[fl
     total = 0.0
     any_value = False
     for it in pipe_items:
-        piece_length_m = it["value"].get("piece_length_m")
-        quantity_pcs = it["value"].get("quantity_pcs")
-        if piece_length_m is not None and quantity_pcs is not None:
-            total += piece_length_m * quantity_pcs
+        total_length_m = it["value"].get("total_length_m")
+        pipe_length_m = it["value"].get("pipe_length_m")
+        quantity = it["value"].get("quantity")
+        if total_length_m is not None:
+            total += total_length_m
+            any_value = True
+        elif pipe_length_m is not None and quantity is not None:
+            total += pipe_length_m * quantity
             any_value = True
     return (round(total, 3) if any_value else None), pipe_items
 
@@ -119,7 +124,7 @@ def build_computed_rows(claude_data: dict, validated_input: dict) -> list[dict]:
             "notes": f"{len(routes)} trench_routes items found",
         },
         {
-            "parameter": "communications_length_m (computed = sum(piece_length_m * quantity_pcs))",
+            "parameter": "communications_length_m_from_pipe_items (computed only for comparison)",
             "unit": "linear_m",
             "validated_reference_value": validated_input.get("communications_length_m"),
             "claude_value": comms_total,
@@ -163,12 +168,12 @@ def render_report(scalar_rows: list[dict], computed_rows: list[dict], routes: li
     lines.append("## Detail: trench_routes found by Claude")
     lines.append("")
     if routes:
-        lines.append("| route_name | length_m | depth_m | width_m | volume_m3 | needs_review |")
-        lines.append("|---|---|---|---|---|---|")
+        lines.append("| route_code | name | length_m | depth_m | width_m | volume_m3 | needs_review |")
+        lines.append("|---|---|---|---|---|---|---|")
         for r in routes:
             v = r["value"]
             lines.append(
-                f"| {v.get('route_name')} | {v.get('length_m')} | {v.get('depth_m')} | "
+                f"| {v.get('route_code')} | {v.get('name')} | {v.get('length_m')} | {v.get('depth_m')} | "
                 f"{v.get('width_m')} | {v.get('volume_m3')} | {r.get('needs_review')} |"
             )
     else:
@@ -178,13 +183,13 @@ def render_report(scalar_rows: list[dict], computed_rows: list[dict], routes: li
     lines.append("## Detail: communications_pipe_items found by Claude")
     lines.append("")
     if pipe_items:
-        lines.append("| name | diameter_mm | piece_length_m | quantity_pcs | needs_review |")
-        lines.append("|---|---|---|---|---|")
+        lines.append("| code | name | diameter_mm | pipe_length_m | quantity | total_length_m | needs_review |")
+        lines.append("|---|---|---|---|---|---|---|")
         for it in pipe_items:
             v = it["value"]
             lines.append(
-                f"| {v.get('name')} | {v.get('diameter_mm')} | {v.get('piece_length_m')} | "
-                f"{v.get('quantity_pcs')} | {it.get('needs_review')} |"
+                f"| {v.get('code')} | {v.get('name')} | {v.get('diameter_mm')} | {v.get('pipe_length_m')} | "
+                f"{v.get('quantity')} | {v.get('total_length_m')} | {it.get('needs_review')} |"
             )
     else:
         lines.append("(none found)")

@@ -449,8 +449,9 @@ Start with `foundation_slab` (has a contract already — step 8 — but zero rea
 Then repeat per section in the Step 10 order once foundation_slab is done. `earthworks` and
 `waterproofing` are also in scope for this stage even though they aren't in the Step 10 list (they
 were built earlier, in steps 1/5/6, before this stage existed) — see `reports/step_15_*` for
-earthworks. Do the cross-check itself before the Step 11 migration below; the migration should build
-on a contract that's already been checked against a real project, not the other way round.
+earthworks and `reports/step_16_waterproofing_extraction_crosscheck.md` for waterproofing. Do the
+cross-check itself before the Step 11 migration below; the migration should build on a contract
+that's already been checked against parser/calculator names, not the other way round.
 
 ## Step 11 — Earthworks Migration Off Its Own Hardcoded Pipeline
 
@@ -614,14 +615,14 @@ Completed (checklist above under-reports this — verified against files on disk
 - The formal Step Checklist above (steps 6–10 checkboxes) was not kept in sync with this work —
   treat the checkboxes as stale and the `reports/` + `sections/` file list as the source of truth
   for what's actually done.
-- None of the 8 contracts have been cross-checked against a real project's chat-extraction JSON yet
-  (they were built from calculator source + docs + `target_aliases_ru.yaml`, not from an actual
-  extraction run). This is a real, open gap, not a formality.
+- Cross-check reports now exist for `foundation_slab`, `earthworks`, and `waterproofing`
+  (`reports/step_13_*`, `reports/step_15_*`, `reports/step_16_*`). Treat each report's scope
+  carefully: some checks are against real extraction JSON, some are structural parser/contract/
+  calculator-name checks. The remaining sections still need the same pass.
 
 Next:
 
-- Cross-Check Stage (see section above) for `foundation_slab` against the real ЮСВ
-  chat-extraction JSON, row by row, per the no-value-leakage rule.
+- Continue Cross-Check Stage for the remaining sections, per the no-value-leakage rule.
 - Steps 7 and 9 (multi-section normalized review JSON; waterproofing review-to-calculator adapter)
   are still genuinely not started — do not assume the contract work above means the
   adapter/normalized-JSON layer exists too. It doesn't yet.

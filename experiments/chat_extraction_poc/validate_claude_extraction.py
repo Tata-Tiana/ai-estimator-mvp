@@ -18,7 +18,7 @@ TOTALS_MISMATCH_TOLERANCE = 0.10
 HIGH_CONFIDENCE_THRESHOLD = 0.8
 MIN_MEANINGFUL_RAW_TEXT_LEN = 8
 
-FORBIDDEN_DIRECT_TARGETS = {"communications_length_m", "communications_length", "earthworks_communications_length_m"}
+FORBIDDEN_DIRECT_TARGETS = {"communications_length", "earthworks_communications_length_m"}
 PRICE_LIKE_TOKENS = ["цена", "стоимост", "price", "unit_price", "тариф", "ставка"]
 
 STEEL_CLASS_TOKENS = ["а240", "a240", "а500", "a500", "вр-1", "вр1"]
@@ -67,11 +67,18 @@ def check_unit(item: dict, path: str, unit_guide: dict, warnings: list[str]) -> 
 
 def check_forbidden_target(item: dict, path: str, warnings: list[str]) -> None:
     code = str(item.get("target_code") or "").lower()
-    if code in FORBIDDEN_DIRECT_TARGETS or "communications_length" in code:
+    if code in FORBIDDEN_DIRECT_TARGETS:
         warnings.append(
             f"{path}: '{item.get('target_code')}' looks like a direct communications_length extraction - "
             "prompt requires pipe_items instead, this value should not be trusted as-is"
         )
+    if code == "communications_length_m":
+        notes = f"{item.get('raw_text') or ''} {item.get('table_context') or ''}".lower()
+        if not any(token in notes for token in ("итого", "общ", "суммар", "total")):
+            warnings.append(
+                f"{path}: communications_length_m is allowed only when PDF has an explicit total/general length; "
+                "do not trust it if it was calculated from pipe rows in chat"
+            )
     name = str(item.get("item_name") or item.get("target_code") or "").lower()
     if any(tok in name for tok in PRICE_LIKE_TOKENS):
         warnings.append(f"{path}: item name/code '{name}' looks price-related, prompt asked not to extract prices")
@@ -157,7 +164,7 @@ def check_group_item(group_code: str, item: dict, path: str, warnings: list[str]
 
 def check_trench_routes_total(found_items: list[dict], warnings: list[str], section_path: str) -> None:
     routes = [it for it in found_items if it.get("group_code") == "trench_routes" and isinstance(it.get("value"), dict)]
-    total_items = [it for it in found_items if it.get("target_code") in ("trench_volume_total", "trench_volume_m3")]
+    total_items = [it for it in found_items if it.get("target_code") in ("trench_volume_m3",)]
     if not routes or not total_items:
         return
     routes_sum = sum(r["value"].get("volume_m3") or 0 for r in routes)
@@ -165,7 +172,7 @@ def check_trench_routes_total(found_items: list[dict], warnings: list[str], sect
         total_value = total_item.get("value")
         if isinstance(total_value, (int, float)) and not approx_equal(routes_sum, total_value, TOTALS_MISMATCH_TOLERANCE):
             warnings.append(
-                f"{section_path}: trench_volume_total={total_value} vs sum(trench_routes.volume_m3)={routes_sum:.2f} "
+                f"{section_path}: trench_volume_m3={total_value} vs sum(trench_routes.volume_m3)={routes_sum:.2f} "
                 f"(>{TOTALS_MISMATCH_TOLERANCE:.0%} off)"
             )
 

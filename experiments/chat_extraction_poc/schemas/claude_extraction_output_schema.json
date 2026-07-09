@@ -51,8 +51,8 @@
     "notes": "string|null"
   },
   "group_value_shapes": {
-    "trench_routes": {"route_name": "string", "length_m": "number|null", "depth_m": "number|null", "width_m": "number|null", "volume_m3": "number|null"},
-    "communications_pipe_items": {"name": "string", "diameter_mm": "number|null", "piece_length_m": "number|null", "quantity_pcs": "number|null"},
+    "trench_routes": {"route_code": "string", "name": "string|null", "length_m": "number|null", "depth_m": "number|null", "width_m": "number|null", "volume_m3": "number|null"},
+    "communications_pipe_items": {"code": "string", "name": "string", "diameter_mm": "number|null", "pipe_length_m": "number|null", "quantity": "number|null", "total_length_m": "number|null - only if explicitly present in PDF", "include_in_communications": "boolean|null"},
     "foundation_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "source_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
     "floor_slab_1_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "length_m": "number|null - primary PDF quantity when row unit is м/п", "mass_per_m_kg": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
     "floor_slab_2_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "length_m": "number|null - primary PDF quantity when row unit is м/п", "mass_per_m_kg": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
