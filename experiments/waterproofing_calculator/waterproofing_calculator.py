@@ -463,7 +463,9 @@ def calculate_primary_estimate_lines(
             name="Пеноплэкс ГЕО 100 мм",
             unit="м3",
             quantity=waterproofing["eps100_wall_order_volume_m3"],
-            display_quantity=1.94,
+            display_quantity=_round_decimal(
+                waterproofing["eps100_wall_order_volume_m3"], "0.01"
+            ),
             material_unit_price=data.eps100_unit_price,
             price_code="eps_geo_100_m3",
         ),
