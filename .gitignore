@@ -15,6 +15,7 @@ data/reference/unikma/*.json
 data/reference/unikma/*.xlsx
 
 # Local project PDF inputs and generated experiment outputs
+experiments/**/input_pdfs/
 experiments/**/output/**/*
 !experiments/**/output/
 !experiments/**/output/.gitkeep
