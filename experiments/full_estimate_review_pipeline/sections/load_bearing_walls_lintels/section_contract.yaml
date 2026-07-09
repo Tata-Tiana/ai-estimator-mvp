@@ -238,7 +238,7 @@ review_parameters:
     calculator_input_path: "main_wall_rebar_items"
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.main_wall_rebar_items.rows"
     value_kind: repeated_rows
-    row_key_field: component
+    row_key_field: code
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -271,7 +271,7 @@ review_parameters:
     calculator_input_path: "lintel_rebar_items"
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_rebar_items.rows"
     value_kind: repeated_rows
-    row_key_field: component
+    row_key_field: code
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}

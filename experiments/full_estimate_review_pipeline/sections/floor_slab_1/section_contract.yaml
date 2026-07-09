@@ -308,7 +308,7 @@ review_parameters:
     calculator_input_path: "rebar_items"
     normalized_json_path: "sections.floor_slab_1.parameters.floor_slab_1_rebar_items.rows"
     value_kind: repeated_rows
-    row_key_field: component
+    row_key_field: code
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
