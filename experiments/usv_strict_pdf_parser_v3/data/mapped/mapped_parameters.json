@@ -19,26 +19,11 @@
   {
     "key": "foundation_slab.rebar_items",
     "found_status": "found_from_pdf",
-    "count": 8
+    "count": 9
   },
   {
     "key": "load_bearing_walls_lintels.rebar_items",
     "found_status": "found_from_pdf",
-    "count": 8
-  },
-  {
-    "key": "floor_slab_1.rebar_items",
-    "found_status": "found_from_pdf",
-    "count": 7
-  },
-  {
-    "key": "floor_slab_2.rebar_items",
-    "found_status": "found_from_pdf",
-    "count": 3
-  },
-  {
-    "key": "floor_slab_1.beam_items",
-    "found_status": "found_from_pdf",
-    "count": 3
+    "count": 4
   }
 ]

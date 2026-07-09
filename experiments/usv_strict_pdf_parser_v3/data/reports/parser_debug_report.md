@@ -26,14 +26,14 @@
 
 ## Арматура
 
-- rebar_items_count: 26
+- rebar_items_count: 13
 - excluded_pipe_like_rows: 18
 - low_confidence_count: 0
 
 ## Балки
 
-- beam_items_count: 3
-- beams_total_length_m: 23.2
-- beams_total_concrete_volume_m3: 3.145
-- beams_total_formwork_area_m2: 22.04
-- parser_failure: None
+- beam_items_count: 0
+- beams_total_length_m: 0
+- beams_total_concrete_volume_m3: 0
+- beams_total_formwork_area_m2: 0
+- parser_failure: Beam table was not recognized as structured B-1/B-2/B-3 rows.

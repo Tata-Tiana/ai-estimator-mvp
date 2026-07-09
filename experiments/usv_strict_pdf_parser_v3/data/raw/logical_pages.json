@@ -8602,8 +8602,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Пояснительная записка",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "cutoff_waterproofing_scheme",
+    "section_code": "waterproofing",
     "drawing_sheet_number": ""
   },
   {
@@ -12827,8 +12827,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема планировочной организации земельного участка",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "communications_scheme",
+    "section_code": "earthworks",
     "drawing_sheet_number": "4"
   },
   {
@@ -42964,8 +42964,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "План фундаментной плиты",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "foundation_slab_spec",
+    "section_code": "foundation_slab",
     "drawing_sheet_number": "9"
   },
   {
@@ -54320,8 +54320,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Общий вид фундамента",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "foundation_slab_spec",
+    "section_code": "foundation_slab",
     "drawing_sheet_number": ""
   },
   {
@@ -63731,8 +63731,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Пояснительная записка",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_blocks_spec",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": ""
   },
   {
@@ -67572,8 +67572,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема планировочной организации земельного участка",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "communications_scheme",
+    "section_code": "earthworks",
     "drawing_sheet_number": ""
   },
   {
@@ -74041,8 +74041,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "План этажа на отм. + 0. 000",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_layout_plan",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": ""
   },
   {
@@ -101373,8 +101373,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "5 900 Кладочный план на отм. + 0. 000",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_layout_plan",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": ""
   },
   {
@@ -104866,8 +104866,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Узлы армирования кладки",
-    "logical_sheet_type": "walls_blocks_spec",
-    "section_code": "load_bearing_walls_lintels",
+    "logical_sheet_type": "cutoff_waterproofing_scheme",
+    "section_code": "waterproofing",
     "drawing_sheet_number": "14"
   },
   {
@@ -107411,8 +107411,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Спецификация по газобетонным блокам",
-    "logical_sheet_type": "walls_blocks_spec",
-    "section_code": "load_bearing_walls_lintels",
+    "logical_sheet_type": "flat_roof_spec",
+    "section_code": "flat_roof",
     "drawing_sheet_number": "15"
   },
   {
@@ -119149,8 +119149,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема фасада 1",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_blocks_spec",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": "17"
   },
   {
@@ -121658,8 +121658,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема фасада 2",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_blocks_spec",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": "18"
   },
   {
@@ -124023,8 +124023,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема фасада 3",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_blocks_spec",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": "19"
   },
   {
@@ -126580,8 +126580,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Схема фасада 4",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "walls_blocks_spec",
+    "section_code": "load_bearing_walls_lintels",
     "drawing_sheet_number": "20"
   },
   {
@@ -137309,8 +137309,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "План плиты перекрытия на отм. + 3. 480",
-    "logical_sheet_type": "floor_slab_1_spec",
-    "section_code": "floor_slab_1",
+    "logical_sheet_type": "floor_slab_unknown_spec",
+    "section_code": "floor_slab_unknown",
     "drawing_sheet_number": "21"
   },
   {
@@ -140274,8 +140274,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "Спецификация к плите перекрытия на отм. +3,480",
-    "logical_sheet_type": "floor_slab_1_spec",
-    "section_code": "floor_slab_1",
+    "logical_sheet_type": "floor_slab_unknown_spec",
+    "section_code": "floor_slab_unknown",
     "drawing_sheet_number": "22"
   },
   {
@@ -153681,8 +153681,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "План плиты перекрытия на отм. + 4. 680",
-    "logical_sheet_type": "floor_slab_2_spec",
-    "section_code": "floor_slab_2",
+    "logical_sheet_type": "schiedel_vent_spec",
+    "section_code": "schiedel_vent_channels",
     "drawing_sheet_number": "25"
   },
   {
@@ -165084,8 +165084,8 @@
     ],
     "extraction_method": "pdfplumber",
     "logical_sheet_title": "План кровли",
-    "logical_sheet_type": "unknown",
-    "section_code": "",
+    "logical_sheet_type": "flat_roof_spec",
+    "section_code": "flat_roof",
     "drawing_sheet_number": "28"
   },
   {

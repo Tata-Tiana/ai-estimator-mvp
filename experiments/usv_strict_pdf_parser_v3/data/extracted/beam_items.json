@@ -1,71 +1,7 @@
 {
-  "normalized_beam_items": [
-    {
-      "code": "Б-1",
-      "raw_numbers": [
-        7.0,
-        0.3,
-        0.25,
-        0.525,
-        3.8
-      ],
-      "length_m": 7.0,
-      "width_m": 0.3,
-      "height_m": 0.25,
-      "concrete_volume_m3": 0.525,
-      "formwork_area_m2": 3.8,
-      "source_pdf": "usv_2026_kr2.pdf",
-      "physical_page_number": 22,
-      "logical_sheet_title": "Спецификация к плите перекрытия на отм. +3,480",
-      "raw_context": "Б-1 7 0,3 0,25 0,525 3,8",
-      "confidence": "medium",
-      "evidence_id": "ev_f8408231b19f259e"
-    },
-    {
-      "code": "Б-2",
-      "raw_numbers": [
-        7.2,
-        0.3,
-        0.68,
-        1.46,
-        10.1
-      ],
-      "length_m": 7.2,
-      "width_m": 0.3,
-      "height_m": 0.68,
-      "concrete_volume_m3": 1.46,
-      "formwork_area_m2": 10.1,
-      "source_pdf": "usv_2026_kr2.pdf",
-      "physical_page_number": 22,
-      "logical_sheet_title": "Спецификация к плите перекрытия на отм. +3,480",
-      "raw_context": "Б-2 7,2 0,3 0,68 1,46 10,1",
-      "confidence": "medium",
-      "evidence_id": "ev_c4c727e080f34331"
-    },
-    {
-      "code": "Б-3",
-      "raw_numbers": [
-        9.0,
-        0.3,
-        0.43,
-        1.16,
-        8.14
-      ],
-      "length_m": 9.0,
-      "width_m": 0.3,
-      "height_m": 0.43,
-      "concrete_volume_m3": 1.16,
-      "formwork_area_m2": 8.14,
-      "source_pdf": "usv_2026_kr2.pdf",
-      "physical_page_number": 22,
-      "logical_sheet_title": "Спецификация к плите перекрытия на отм. +3,480",
-      "raw_context": "Б-3 9 0,3 0,43 1,16 8,14",
-      "confidence": "medium",
-      "evidence_id": "ev_24df9ce902053574"
-    }
-  ],
-  "beams_total_length_m": 23.2,
-  "beams_total_concrete_volume_m3": 3.145,
-  "beams_total_formwork_area_m2": 22.04,
-  "parser_failure": null
+  "normalized_beam_items": [],
+  "beams_total_length_m": 0,
+  "beams_total_concrete_volume_m3": 0,
+  "beams_total_formwork_area_m2": 0,
+  "parser_failure": "Beam table was not recognized as structured B-1/B-2/B-3 rows."
 }
