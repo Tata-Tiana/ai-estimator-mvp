@@ -385,7 +385,7 @@ main_wall_rebar_items:
   negative_context: ["перемычк", "фундамент", "перекрыти", "балк"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use legacy masonry_rebar_a500_d10_weight in production extraction."
+  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use legacy masonry_rebar_a500_d10_weight in production extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
 
 lintel_total_length:
   section_code: load_bearing_walls_lintels
@@ -461,7 +461,7 @@ lintel_rebar_items:
   negative_context: ["фундамент", "перекрытие", "кладка"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Return row-by-row as lintel_rebar_items with component=lintels, spec_length_m and kg_per_meter. Do not mix with masonry reinforcement. Do not calculate total weight in chat extraction."
+  notes: "Return row-by-row as lintel_rebar_items with component=lintels, spec_length_m and kg_per_meter. Do not mix with masonry reinforcement. Do not calculate total weight in chat extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
 
 vent_chimney_cladding_segments:
   section_code: load_bearing_walls_lintels
@@ -633,7 +633,7 @@ floor_slab_1_rebar_items:
   negative_context: ["кладк", "перемычк", "фундамент", "2 этажа"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract rows by diameter and steel class; set floor=1 and component=floor_slab_1. Preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg."
+  notes: "Extract rows by diameter and steel class; set floor=1 and component=floor_slab_1. Preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
 
 beam_items:
   section_code: floor_slab_1
@@ -775,13 +775,13 @@ floor_slab_2_rebar_items:
   accepted_units: ["linear_m", "kg"]
   primary_pdf_unit: "linear_m"
   calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай length_m и mass_per_m_kg, weight_kg оставляй null. Не считай общий вес."
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter, weight_kg оставляй null. Не считай общий вес. Поля переименованы 2026-07-10 (были length_m/mass_per_m_kg) под spec_length_items — калькулятор больше не использует захардкоженный каталог арматуры."
   table_hints: ["Спецификация плиты перекрытия 2 этажа", "Ведомость деталей плиты перекрытия 2 этажа"]
   required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
   negative_context: ["кладк", "перемычк", "фундамент", "1 этажа"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract rows by diameter and steel class; keep main/additional rows as separate candidates when the same diameter appears several times. Do not calculate kg from linear meters in the chat."
+  notes: "Extract rows by diameter and steel class; keep main/additional rows as separate candidates when the same diameter appears several times. Do not calculate kg from linear meters in the chat. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
 
 flat_roof:
   section_code: flat_roof

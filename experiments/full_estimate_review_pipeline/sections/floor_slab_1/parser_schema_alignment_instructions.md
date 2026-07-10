@@ -87,6 +87,32 @@ Two more pre-existing gaps found and fixed in the same pass, unrelated to beams:
 - Keep under-slab formwork area separate from edge formwork and beam formwork.
 - Rebar rows must stay row-by-row; do not ask GPT to calculate total weight unless PDF explicitly gives it.
 
+## Parser/schema crosscheck against the contract (2026-07-10)
+
+Compared every `review_parameters` entry in `section_contract.yaml` against
+`calculator_targets_compact.json`, `target_aliases_ru.yaml`, `claude_extraction_output_schema.json`
+and the extraction prompt. All 11 scalar `target_code`s match exactly (including
+`floor_slab_1_edge_formwork_height`, which is correctly AUTO_CALCULATED and reuses
+`floor_slab_1_slab_thickness` rather than having its own parser target). `beam_items` and
+`beam_table_controls` repeated-row groups also match.
+
+Found one real gap, shared with 3 other sections' rebar groups: `floor_slab_1_rebar_items`'s
+`extract_groups[].fields` in `calculator_targets_compact.json` and its shape in
+`claude_extraction_output_schema.json` were both missing `rod_length_m`, even though the contract's
+own `columns` list already required it (added earlier this session, since the calculator reads
+`item["rod_length_m"]` directly with no fallback). Fixed in both files, plus added a
+`rod_length_m`-usage note to `target_aliases_ru.yaml` and the extraction prompt — it's usually a
+catalog/standard rod length by diameter (e.g. 11.7 m), not something PDFs normally state per row, so
+the parser should only fill it from an explicit rod-length table and otherwise leave it null for a
+catalog/adapter fallback rather than inventing a number.
+
+While fixing this, found the same `rod_length_m` gap on `main_wall_rebar_items`/`lintel_rebar_items`
+(`load_bearing_walls_lintels`, whose contract also gained `rod_length_m` as a required column earlier
+today) and a fully stale `floor_slab_2_rebar_items` entry (`length_m`/`mass_per_m_kg` field names,
+left over from before today's rebar-catalog removal in that calculator) — fixed all of them in the
+same pass since they're the identical class of bug across shared parser files. See
+`floor_slab_2/parser_schema_alignment_instructions.md` for that section's own note.
+
 ## Check before marking section ready
 
 1. Read the calculator input shape directly, especially rebar and beam item dataclasses.

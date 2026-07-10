@@ -223,6 +223,11 @@ extraction.
 строками в `main_wall_rebar_items`, арматуру перемычек — строками в `lintel_rebar_items`.
 Марки/позиции перемычек (`Пм-1`, `Пм-2` и т.п.) — это `lintel_items`, не арматура.
 
+`rod_length_m` (длина прутка) есть в полях у `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items`,
+`main_wall_rebar_items` и `lintel_rebar_items` — это обычно каталожная/стандартная длина прутка по
+диаметру (например, 11.7 м), а не значение из PDF. Извлекай его из PDF только если там явно есть
+таблица длин прутков; иначе оставляй `null` для catalog/adapter-фолбэка, не придумывай значение.
+
 Во всех случаях: `weight_kg: null`, `unit: "м/п"`, `normalized_unit: "linear_m"`, если строка дана в
 метрах погонных.
 

@@ -102,3 +102,23 @@ calculator input:
 - `second_light_chasing_base_length_m`
 - `parapet_rebar_base_length_m`
 - `second_light_rebar_base_length_m`
+
+**All of the above declared in the contract 2026-07-10** — see the dated entry in
+`step_17_load_bearing_walls_lintels_extraction_crosscheck.md` for the full `defaults`/`price_keys`
+build-out (plus 9 more required calculator fields that this list had missed: `rebar_a500_d10_kg_per_m`,
+`rebar_a500_d10_rod_length_m`, `rebar_a500_d10_unit_price_per_m`, and 6 dead-in-production legacy
+wall-geometry fields). Only the contract-level declaration exists; the actual
+`build_load_bearing_walls_lintels_input` adapter function is still not implemented anywhere in the repo.
+
+**Checklist item 2 done 2026-07-10**: `calculator_targets_compact.json`, the extraction schema, and
+`target_aliases_ru.yaml` still used the old flat rebar shape for `main_wall_rebar_items`/
+`lintel_rebar_items` in one respect — both were missing `rod_length_m` as a field, even though the
+contract's own `columns` list already required it (added in the same pass that added the
+adapter/defaults list above, since the calculator reads `item.rod_length_m` with no fallback in
+`spec_length_items` mode). Fixed in all three files, plus the extraction prompt, with guidance that
+`rod_length_m` is usually a catalog/standard value by diameter (e.g. 11.7 m for A500 Ø10) rather than
+something PDFs state per row — only extract it from the PDF if an explicit rod-length table exists,
+otherwise leave it null for an adapter/catalog fallback. The identical gap was found and fixed at the
+same time on `floor_slab_1_rebar_items` and `floor_slab_2_rebar_items` (the latter also had fully
+stale field names left over from that section's rebar-catalog removal) — see those sections' own
+alignment files.

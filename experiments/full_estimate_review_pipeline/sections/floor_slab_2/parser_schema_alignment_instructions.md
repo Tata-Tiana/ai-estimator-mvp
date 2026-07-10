@@ -92,10 +92,29 @@ Related, not done here: `floor_slab_1`'s own contract has the same latent gap `f
 - Rebar rows must stay row-by-row; do not calculate total weight in GPT/Claude unless PDF explicitly gives it and the calculator expects it.
 - Do not assume this floor slab has no beams, or that it must have them — extract a `beam_items` table only if the PDF actually shows one for this specific slab; leave it empty otherwise.
 
+## `floor_slab_2_rebar_items` parser fields fixed (2026-07-10)
+
+Found while doing `floor_slab_1`'s parser/schema crosscheck: `floor_slab_2_rebar_items` in
+`calculator_targets_compact.json` (`extract_groups[].fields`) and
+`claude_extraction_output_schema.json` still had the *pre-rebar-catalog-removal* field names
+(`length_m`, `mass_per_m_kg`, `weight_kg`) — stale since the "Second calculator change" section
+above, which switched the calculator and contract to `spec_length_m`/`kg_per_meter`/`rod_length_m`.
+Fixed both files to the real field names, and dropped `weight_kg` (not read anywhere in
+`spec_length_items` mode). Also fixed `target_aliases_ru.yaml`'s `unit_policy` text, which likewise
+still told the parser to use `length_m`/`mass_per_m_kg`.
+
+`rod_length_m` was missing everywhere (parser had never been told to look for it at all, even before
+today). Added it to `calculator_targets_compact.json`, the schema, `target_aliases_ru.yaml`, and the
+extraction prompt, with the same guidance used for `floor_slab_1_rebar_items`/`main_wall_rebar_items`/
+`lintel_rebar_items` (same class of gap, fixed together): it's usually a catalog/standard rod length
+by diameter (e.g. 11.7 m), not something PDFs normally state per row, so only take it from the PDF if
+an explicit rod-length table is present — otherwise leave it null for an adapter/catalog fallback,
+don't invent a number.
+
 ## Check before marking section ready
 
 1. Read the calculator input shape directly, especially rebar item fields.
-2. Confirm whether parser/schema should use `spec_length_m` for `floor_slab_2_rebar_items`.
+2. Confirm whether parser/schema should use `spec_length_m` for `floor_slab_2_rebar_items` — done, see above.
 3. Compare all scalar target codes with contract and calculator.
 4. Confirm prompt distinguishes EPS edge volume/area from formwork area.
 5. Confirm prompt/schema/aliases cover `beam_items` the same way `floor_slab_1`'s beam group is covered, once that section's parser files are done.

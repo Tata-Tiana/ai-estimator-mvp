@@ -94,16 +94,16 @@
         {
           "group_code": "main_wall_rebar_items",
           "description": "Арматура несущих стен — каждая строка спецификации отдельно, в м/п.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
           "grounded": false,
-          "notes": "component должен быть load_bearing_walls. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg."
+          "notes": "component должен быть load_bearing_walls. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение."
         },
         {
           "group_code": "lintel_rebar_items",
           "description": "Арматура перемычек — каждая строка спецификации отдельно, в м/п.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
           "grounded": false,
-          "notes": "component должен быть lintels. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg."
+          "notes": "component должен быть lintels. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение."
         },
         {
           "group_code": "vent_chimney_cladding_segments",
@@ -133,9 +133,9 @@
         {
           "group_code": "floor_slab_1_rebar_items",
           "description": "Арматура плиты перекрытия 1-го этажа — несколько строк по диаметру/классу стали.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter"],
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
           "grounded": true,
-          "notes": "component должен быть floor_slab_1, floor должен быть 1. В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать spec_length_m и kg_per_meter; не вычислять общий вес."
+          "notes": "component должен быть floor_slab_1, floor должен быть 1. В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать spec_length_m и kg_per_meter; не вычислять общий вес. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение."
         },
         {
           "group_code": "beam_items",
@@ -166,9 +166,9 @@
         {
           "group_code": "floor_slab_2_rebar_items",
           "description": "Арматура плиты перекрытия 2-го этажа — несколько строк по диаметру/классу стали.",
-          "fields": ["code", "name", "steel_class", "diameter_mm", "length_m", "mass_per_m_kg", "weight_kg"],
+          "fields": ["code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
           "grounded": true,
-          "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные length_m и mass_per_m_kg; weight_kg оставлять null, вес считает код."
+          "notes": "Поля переименованы 2026-07-10 под spec_length_items (было length_m/mass_per_m_kg/weight_kg — устарело после удаления захардкоженного каталога арматуры в калькуляторе). В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать spec_length_m и kg_per_meter; не вычислять общий вес. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение."
         }
       ]
     },
