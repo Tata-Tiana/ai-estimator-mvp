@@ -164,7 +164,7 @@ review_parameters:
     label_ru: "Площадь опалубки балок перекрытия 1-го этажа"
     unit: "м2"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "floor_slab_1_beams_formwork_area"
     calculator_input_path: "beams_formwork_area_m2"
@@ -174,12 +174,12 @@ review_parameters:
       target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
       aliases_ru: ["опалубка балок", "площадь опалубки балок", "опалубка ж/б балок"]
       expected_unit: "м2"
-      notes: "May be calculated from beam rows if spec area is absent, but production prefers spec area."
+      notes: "This floor slab may or may not have beams, independently of floor_slab_2. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.formwork_area_m2; production prefers a spec area when the PDF gives one directly."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте площадь опалубки балок."
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у этой плиты есть балки, проверьте площадь опалубки балок; иначе оставьте пустым — она посчитается из позиций балок ниже."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
@@ -316,11 +316,13 @@ review_parameters:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина прутка", unit: "м", value_kind: number}
+      - {key: unit_price_per_m, label_ru: "Цена за метр", unit: "руб/мп", value_kind: number}
     parser_mapping:
       target_codes: ["floor_slab_1_rebar_items"]
       aliases_ru: ["арматура плиты перекрытия 1 этажа", "спецификация арматуры плиты 1 этажа"]
       expected_unit: "мп"
-      notes: "Primary PDF unit is m.п.; do not require PDF total kg."
+      notes: "Primary PDF unit is m.п.; do not require PDF total kg. rod_length_m is a real PDF/spec/catalog value the calculator requires per row (found 2026-07-10 — was missing from this column list even though the calculator has always read it directly, no fallback)."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -329,13 +331,13 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Primary PDF unit is m.п.; do not require PDF total kg."
+    notes: "Primary PDF unit is m.п.; do not require PDF total kg. unit_price_per_m is not a PDF value — adapter-filled from rebar_unit_price_by_item (registry_code rebar_<class>_d<diameter>_m), same as floor_slab_2."
 
   - key: beam_items
     label_ru: "Ж/Б балки плиты перекрытия 1-го этажа"
     unit: "шт"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "beam_items"
     calculator_input_path: "beams.items"
@@ -353,12 +355,12 @@ review_parameters:
       target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
       aliases_ru: ["ведомость балок", "спецификация балок", "балки Б-"]
       expected_unit: ""
-      notes: "Extract only real beam rows, not the total row of a beam table."
+      notes: "This floor slab may have zero, one, or several beams, independently of floor_slab_2. Extract only real beam rows, not the total row of a beam table. Do not invent rows if the PDF has no beam table for this slab."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте позиции балок построчно."
+      status_if_missing: "optional"
+      action_ru: "Если у этой плиты перекрытия есть балки, проверьте их построчно; если балок нет, оставьте пустым."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
@@ -408,8 +410,8 @@ price_keys:
   - {key: concrete_pump_rate, estimate_line_code: concrete_pump_32m, label_ru: "Работа бетононасоса 32 м", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_pump_32m_shift", fallback_key: "concrete_pump_rate", allow_manual_override: true, notes: ""}
   - {key: edge_beam_insulation_work_rate_per_m, estimate_line_code: edge_beam_insulation_work, label_ru: "Утепление торцов плиты и балок", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "edge_insulation_work_m", fallback_key: "edge_beam_insulation_work_rate_per_m", allow_manual_override: true, notes: ""}
   - {key: bottom_slab_insulation_work_rate_per_m2, estimate_line_code: bottom_slab_insulation_work, label_ru: "Утепление низа плиты", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "eps_bottom_slab_insulation_work_m2", fallback_key: "bottom_slab_insulation_work_rate_per_m2", allow_manual_override: true, notes: ""}
-  - {key: eps_unit_price_per_m3, estimate_line_code: eps_penoplex_osnova_100mm, label_ru: "Пеноплэкс Основа 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_penoplex_osnova_100_m3", fallback_key: "eps_unit_price_per_m3", allow_manual_override: true, notes: ""}
-  - {key: foam_unit_price_per_can, estimate_line_code: eps_glue_foam, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", required: true, default_source: price_registry_with_fallback, registry_code: "eps_foam_glue_can", fallback_key: "foam_unit_price_per_can", allow_manual_override: true, notes: ""}
+  - {key: eps_unit_price_per_m3, estimate_line_code: eps_penoplex_osnova_100mm, label_ru: "Пеноплэкс Основа 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_penoplex_osnova_100_m3", fallback_key: "eps_unit_price_per_m3", allow_manual_override: true, calculator_input_path: "insulation.eps_unit_price_per_m3", notes: "Calculator reads this from the insulation sub-dict, not rates like most other prices here (found 2026-07-10) — explicit path needed, same reason as technical_supervision_amount below."}
+  - {key: foam_unit_price_per_can, estimate_line_code: eps_glue_foam, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", required: true, default_source: price_registry_with_fallback, registry_code: "eps_foam_glue_can", fallback_key: "foam_unit_price_per_can", allow_manual_override: true, calculator_input_path: "insulation.foam_unit_price_per_can", notes: "Calculator reads this from the insulation sub-dict, not rates like most other prices here (found 2026-07-10) — explicit path needed, same reason as technical_supervision_amount below."}
   - {key: technical_supervision_amount, estimate_line_code: technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, calculator_input_path: "manual_lines.technical_supervision_amount", notes: "Price-like manual amount; adapter must place the reviewed value into manual_lines because the current calculator reads it there."}
 
 defaults:

@@ -27,6 +27,14 @@ Known risk: do not copy the foundation slab rebar field names blindly. This cont
 
 This makes floor_slab_1 match the same "no beams found by the parser → 0 everywhere, nothing breaks" behavior floor_slab_2 now has, so both sections can be fed the exact same way regardless of which floor (if any) actually has beams on a given project. All 6 existing test cases (which do supply beams) still pass with 0 mismatches; manually verified the no-beams path produces a zero-valued `beam_concreting_work` line and no crash.
 
+**Contract updated 2026-07-10** — the calculator change above made the calculator itself tolerant of missing beams, but the contract still said `beams_formwork_area_m2.required: true` and `beam_items.required: true`, left over from before that fix. Both changed to `required: false` (`beams_formwork_area_m2`: `status_if_missing: optional_default_zero`; `beam_items`: `status_if_missing: optional`), matching `floor_slab_2`'s already-correct pattern.
+
+Two more pre-existing gaps found and fixed in the same pass, unrelated to beams:
+- `floor_slab_1_rebar_items.columns` was missing `rod_length_m` and `unit_price_per_m` — both are real per-row calculator inputs (`item["rod_length_m"]`, `item["unit_price_per_m"]`, no fallback in either), just never declared as columns. Added, matching `floor_slab_2`'s equivalent fix.
+- `price_keys.eps_unit_price_per_m3` and `price_keys.foam_unit_price_per_can` had no explicit `calculator_input_path` — most price keys in this contract implicitly go into the calculator's `rates` sub-dict, but the calculator actually reads these two from `insulation` (`insulation_in["eps_unit_price_per_m3"]`, `insulation_in["foam_unit_price_per_can"]`). Added explicit `calculator_input_path: "insulation.<key>"` to both, same convention this file already used for `technical_supervision_amount` → `manual_lines.technical_supervision_amount`.
+
+**Architectural note, recorded 2026-07-10, not acted on**: while auditing the above, checked all 8 section calculators — `floor_slab_1_calculator.py` is the *only* one whose input is a nested dict-of-dicts (`geometry`, `rates`, `insulation`, `overheads`, `manual_lines`, `beams`). Every other section (including `floor_slab_2` after yesterday's rebar-catalog removal) takes a flat set of top-level fields. The nesting isn't buying anything a flat structure couldn't do just as well, and it directly caused the `eps_unit_price_per_m3`/`foam_unit_price_per_can` gap above (a flat structure has no "wrong sub-dict" to fall into). Best guess: `floor_slab_1` predates the flat convention the other 7 sections converged on, and nobody went back to flatten it. Not fixing now — flattening `floor_slab_1_calculator.py` would be a real refactor (the nested dicts are threaded through most of the file's functions), out of scope for a contract-alignment pass. Worth doing eventually for consistency, on its own, deliberately reviewed pass — not bundled into this one.
+
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
 - `total_concrete_volume_from_spec_m3`
@@ -54,6 +62,8 @@ This makes floor_slab_1 match the same "no beams found by the parser → 0 every
 - `diameter_mm`
 - `spec_length_m`
 - `kg_per_meter`
+- `rod_length_m` (real PDF/spec/catalog value; added 2026-07-10, was missing despite the calculator always requiring it)
+- `unit_price_per_m` (adapter-filled from `rebar_unit_price_by_item`, not a PDF value — do not ask the parser for this)
 
 `beam_items`:
 
