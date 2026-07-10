@@ -161,9 +161,9 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | 7 | `plywood_for_edges` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | шт | 16 | 16 | 23 200 | 0 | 23 200 |
 | 8 | `timber_for_formwork` | Пиломатериал обрезной для устройства опалубки ГОСТ | м3 | 0.36 | 0.36 | 7 783 | 0 | 7 783 |
 | 9 | `rebar_frame_assembly_control` | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры | мп | 2 819.7 | 2 819.7 | 0 | 0 | 0 |
-| 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 105.3 | 105.3 | 8 485 | 0 | 8 485 |
-| 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
-| 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
+| 10 | `rebar_a500_d16` | Арматура класса A500 диаметром 16 мм | мп | 105.3 | 105.3 | 8 485 | 0 | 8 485 |
+| 11 | `rebar_a500_d12` | Арматура класса A500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
+| 12 | `rebar_a500_d10` | Арматура класса A500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
 | 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 0 | 0 | 0 | 0 | 0 |
 | 15 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
@@ -257,7 +257,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 10. Арматура класса А500 диаметром 16 мм
+### 10. Арматура класса A500 диаметром 16 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `105.3` / `105.3`
@@ -265,7 +265,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `8485.074` / `8485`
 
-### 11. Арматура класса А500 диаметром 12 мм
+### 11. Арматура класса A500 диаметром 12 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `35.1` / `35.1`
@@ -273,7 +273,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `1589.679` / `1590`
 
-### 12. Арматура класса А500 диаметром 10 мм
+### 12. Арматура класса A500 диаметром 10 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `2679.3` / `2679.3`
@@ -457,7 +457,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | calculation_blocks | `formwork.formwork_delivery_status` | `formwork.formwork_delivery_status` | calculated | calculated | ok |
 | calculation_blocks | `rebar.rebar_calc_method` | `rebar.rebar_calc_method` | spec_length_items | spec_length_items | ok |
 | calculation_blocks | `rebar.items.0.code` | `rebar.items.0.code` | rebar_a500_d16 | rebar_a500_d16 | ok |
-| calculation_blocks | `rebar.items.0.name` | `rebar.items.0.name` | Арматура класса А500 диаметром 16 мм | Арматура класса А500 диаметром 16 мм | ok |
+| calculation_blocks | `rebar.items.0.name` | `rebar.items.0.name` | Арматура класса A500 диаметром 16 мм | Арматура класса A500 диаметром 16 мм | ok |
 | calculation_blocks | `rebar.items.0.steel_class` | `rebar.items.0.steel_class` | A500 | A500 | ok |
 | calculation_blocks | `rebar.items.0.diameter_mm` | `rebar.items.0.diameter_mm` | 16 | 16 | ok |
 | calculation_blocks | `rebar.items.0.spec_length_m` | `rebar.items.0.spec_length_m` | 90.126582 | 90.126582 | ok |
@@ -468,7 +468,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | calculation_blocks | `rebar.items.0.price_code` | `rebar.items.0.price_code` | rebar_a500_d16_m | rebar_a500_d16_m | ok |
 | calculation_blocks | `rebar.items.0.material_total` | `rebar.items.0.material_total` | 8485 | 8485 | ok |
 | calculation_blocks | `rebar.items.1.code` | `rebar.items.1.code` | rebar_a500_d12 | rebar_a500_d12 | ok |
-| calculation_blocks | `rebar.items.1.name` | `rebar.items.1.name` | Арматура класса А500 диаметром 12 мм | Арматура класса А500 диаметром 12 мм | ok |
+| calculation_blocks | `rebar.items.1.name` | `rebar.items.1.name` | Арматура класса A500 диаметром 12 мм | Арматура класса A500 диаметром 12 мм | ok |
 | calculation_blocks | `rebar.items.1.steel_class` | `rebar.items.1.steel_class` | A500 | A500 | ok |
 | calculation_blocks | `rebar.items.1.diameter_mm` | `rebar.items.1.diameter_mm` | 12 | 12 | ok |
 | calculation_blocks | `rebar.items.1.spec_length_m` | `rebar.items.1.spec_length_m` | 24.774775 | 24.774775 | ok |
@@ -479,7 +479,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | calculation_blocks | `rebar.items.1.price_code` | `rebar.items.1.price_code` | rebar_a500_d12_m | rebar_a500_d12_m | ok |
 | calculation_blocks | `rebar.items.1.material_total` | `rebar.items.1.material_total` | 1590 | 1590 | ok |
 | calculation_blocks | `rebar.items.2.code` | `rebar.items.2.code` | rebar_a500_d10 | rebar_a500_d10 | ok |
-| calculation_blocks | `rebar.items.2.name` | `rebar.items.2.name` | Арматура класса А500 диаметром 10 мм | Арматура класса А500 диаметром 10 мм | ok |
+| calculation_blocks | `rebar.items.2.name` | `rebar.items.2.name` | Арматура класса A500 диаметром 10 мм | Арматура класса A500 диаметром 10 мм | ok |
 | calculation_blocks | `rebar.items.2.steel_class` | `rebar.items.2.steel_class` | A500 | A500 | ok |
 | calculation_blocks | `rebar.items.2.diameter_mm` | `rebar.items.2.diameter_mm` | 10 | 10 | ok |
 | calculation_blocks | `rebar.items.2.spec_length_m` | `rebar.items.2.spec_length_m` | 2551.166937 | 2551.166937 | ok |

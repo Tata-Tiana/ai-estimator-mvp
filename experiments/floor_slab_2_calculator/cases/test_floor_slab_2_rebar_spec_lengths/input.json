@@ -27,18 +27,24 @@
       "steel_class": "A500",
       "diameter_mm": 16,
       "spec_length_m": 90.126582,
+      "kg_per_meter": 1.58,
+      "rod_length_m": 11.7,
       "unit_price_per_m": 80.58
     },
     {
       "steel_class": "A500",
       "diameter_mm": 12,
       "spec_length_m": 24.774775,
+      "kg_per_meter": 0.888,
+      "rod_length_m": 11.7,
       "unit_price_per_m": 45.29
     },
     {
       "steel_class": "A500",
       "diameter_mm": 10,
       "spec_length_m": 2551.166937,
+      "kg_per_meter": 0.617,
+      "rod_length_m": 11.7,
       "unit_price_per_m": 32.72
     }
   ],

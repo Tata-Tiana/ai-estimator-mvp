@@ -7,31 +7,6 @@ from typing import Any
 D0 = Decimal("0")
 D1 = Decimal("1")
 
-REBAR_CATALOG: dict[tuple[str, int], dict[str, Any]] = {
-    ("A500", 16): {
-        "code": "rebar_a500_d16",
-        "name": "Арматура класса А500 диаметром 16 мм",
-        "kg_per_meter": Decimal("1.58"),
-        "rod_length_m": Decimal("11.7"),
-        "price_code": "rebar_a500_d16_m",
-    },
-    ("A500", 12): {
-        "code": "rebar_a500_d12",
-        "name": "Арматура класса А500 диаметром 12 мм",
-        "kg_per_meter": Decimal("0.888"),
-        "rod_length_m": Decimal("11.7"),
-        "price_code": "rebar_a500_d12_m",
-    },
-    ("A500", 10): {
-        "code": "rebar_a500_d10",
-        "name": "Арматура класса А500 диаметром 10 мм",
-        "kg_per_meter": Decimal("0.617"),
-        "rod_length_m": Decimal("11.7"),
-        "price_code": "rebar_a500_d10_m",
-    },
-}
-
-
 def d(value: Any) -> Decimal:
     return value if isinstance(value, Decimal) else Decimal(str(value))
 
@@ -58,16 +33,12 @@ def ceil_to_step(value: Any, step: Any) -> Decimal:
     return d(ceil_decimal(value_dec / step_dec)) * step_dec
 
 
-def rebar_catalog_item(steel_class: Any, diameter_mm: Any) -> dict[str, Any]:
-    normalized_steel_class = str(steel_class).upper()
-    normalized_diameter = int(diameter_mm)
-    catalog_item = REBAR_CATALOG.get((normalized_steel_class, normalized_diameter))
-    if catalog_item is None:
-        raise ValueError(
-            "Unsupported rebar catalog item: "
-            f"steel_class={steel_class}, diameter_mm={diameter_mm}"
-        )
-    return catalog_item
+def make_rebar_code(steel_class: str, diameter_mm: int) -> str:
+    return f"rebar_{steel_class.lower()}_d{diameter_mm}"
+
+
+def make_rebar_name(steel_class: str, diameter_mm: int) -> str:
+    return f"Арматура класса {steel_class} диаметром {diameter_mm} мм"
 
 
 def calculate_rebar_item(
@@ -79,29 +50,23 @@ def calculate_rebar_item(
     diameter_mm = int(item["diameter_mm"])
     waste_coeff = d(item.get("waste_coeff", default_waste_coeff))
     unit_price = d(item["unit_price_per_m"])
+    kg_per_meter = d(item["kg_per_meter"])
+    rod_length = d(item["rod_length_m"])
+    code = item.get("code", make_rebar_code(steel_class, diameter_mm))
+    name = item.get("name", make_rebar_name(steel_class, diameter_mm))
+    price_code = item.get("price_code", f"rebar_{steel_class.lower()}_d{diameter_mm}_m")
 
     if calc_method == "legacy_weight_kg":
         source_weight = d(item["source_weight_kg"])
-        kg_per_meter = d(item["kg_per_meter"])
-        rod_length = d(item["rod_length_m"])
-        code = item["code"]
-        name = item["name"]
-        price_code = item.get("price_code", f"rebar_{steel_class.lower()}_d{diameter_mm}_m")
         raw_length = source_weight / kg_per_meter
         spec_length = None
         weight_with_waste = source_weight * waste_coeff
     elif calc_method == "spec_length_items":
         if item.get("spec_length_m") is None:
             raise ValueError("rebar_items[*].spec_length_m is required for spec_length_items.")
-        catalog_item = rebar_catalog_item(steel_class, diameter_mm)
         spec_length = d(item["spec_length_m"])
         if spec_length < D0:
             raise ValueError("rebar_items[*].spec_length_m must be >= 0.")
-        kg_per_meter = d(catalog_item["kg_per_meter"])
-        rod_length = d(catalog_item["rod_length_m"])
-        code = catalog_item["code"]
-        name = catalog_item["name"]
-        price_code = catalog_item["price_code"]
         source_weight = None
         raw_length = spec_length
         weight_with_waste = None
@@ -574,7 +539,19 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     logistics_total_raw = direct_cost_base_before_addons_raw * d(input_data["logistics_rate"])
     consumables_total_raw = direct_cost_base_before_addons_raw * d(input_data["consumables_rate"])
 
-    rebar_by_code = {item["code"]: item for item in rebar_items}
+    rebar_estimate_lines = [
+        estimate_line(
+            item["code"],
+            item["name"],
+            "мп",
+            "materials",
+            item["order_length_m"],
+            material_unit_price=item["unit_price_per_m"],
+            material_total_raw=item["material_total_raw"],
+            price_code=item["price_code"],
+        )
+        for item in rebar_items
+    ]
 
     lines = [
         estimate_line(
@@ -663,36 +640,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "zero_excel_structure_line",
             total_rebar_order_length,
         ),
-        estimate_line(
-            "rebar_a500_d16",
-            rebar_by_code["rebar_a500_d16"]["name"],
-            "мп",
-            "materials",
-            rebar_by_code["rebar_a500_d16"]["order_length_m"],
-            material_unit_price=rebar_by_code["rebar_a500_d16"]["unit_price_per_m"],
-            material_total_raw=rebar_by_code["rebar_a500_d16"]["material_total_raw"],
-            price_code=rebar_by_code["rebar_a500_d16"]["price_code"],
-        ),
-        estimate_line(
-            "rebar_a500_d12",
-            rebar_by_code["rebar_a500_d12"]["name"],
-            "мп",
-            "materials",
-            rebar_by_code["rebar_a500_d12"]["order_length_m"],
-            material_unit_price=rebar_by_code["rebar_a500_d12"]["unit_price_per_m"],
-            material_total_raw=rebar_by_code["rebar_a500_d12"]["material_total_raw"],
-            price_code=rebar_by_code["rebar_a500_d12"]["price_code"],
-        ),
-        estimate_line(
-            "rebar_a500_d10",
-            rebar_by_code["rebar_a500_d10"]["name"],
-            "мп",
-            "materials",
-            rebar_by_code["rebar_a500_d10"]["order_length_m"],
-            material_unit_price=rebar_by_code["rebar_a500_d10"]["unit_price_per_m"],
-            material_total_raw=rebar_by_code["rebar_a500_d10"]["material_total_raw"],
-            price_code=rebar_by_code["rebar_a500_d10"]["price_code"],
-        ),
+        *rebar_estimate_lines,
         estimate_line(
             "concrete_placing_work",
             "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",

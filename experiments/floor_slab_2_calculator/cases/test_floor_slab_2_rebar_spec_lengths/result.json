@@ -31,18 +31,24 @@
         "steel_class": "A500",
         "diameter_mm": 16,
         "spec_length_m": 90.126582,
+        "kg_per_meter": 1.58,
+        "rod_length_m": 11.7,
         "unit_price_per_m": 80.58
       },
       {
         "steel_class": "A500",
         "diameter_mm": 12,
         "spec_length_m": 24.774775,
+        "kg_per_meter": 0.888,
+        "rod_length_m": 11.7,
         "unit_price_per_m": 45.29
       },
       {
         "steel_class": "A500",
         "diameter_mm": 10,
         "spec_length_m": 2551.166937,
+        "kg_per_meter": 0.617,
+        "rod_length_m": 11.7,
         "unit_price_per_m": 32.72
       }
     ],
@@ -134,7 +140,7 @@
       "items": [
         {
           "code": "rebar_a500_d16",
-          "name": "Арматура класса А500 диаметром 16 мм",
+          "name": "Арматура класса A500 диаметром 16 мм",
           "steel_class": "A500",
           "diameter_mm": 16,
           "kg_per_meter": 1.58,
@@ -154,7 +160,7 @@
         },
         {
           "code": "rebar_a500_d12",
-          "name": "Арматура класса А500 диаметром 12 мм",
+          "name": "Арматура класса A500 диаметром 12 мм",
           "steel_class": "A500",
           "diameter_mm": 12,
           "kg_per_meter": 0.888,
@@ -174,7 +180,7 @@
         },
         {
           "code": "rebar_a500_d10",
-          "name": "Арматура класса А500 диаметром 10 мм",
+          "name": "Арматура класса A500 диаметром 10 мм",
           "steel_class": "A500",
           "diameter_mm": 10,
           "kg_per_meter": 0.617,
@@ -399,7 +405,7 @@
     },
     {
       "code": "rebar_a500_d16",
-      "name": "Арматура класса А500 диаметром 16 мм",
+      "name": "Арматура класса A500 диаметром 16 мм",
       "unit": "мп",
       "line_type": "materials",
       "quantity_raw": 105.3,
@@ -417,7 +423,7 @@
     },
     {
       "code": "rebar_a500_d12",
-      "name": "Арматура класса А500 диаметром 12 мм",
+      "name": "Арматура класса A500 диаметром 12 мм",
       "unit": "мп",
       "line_type": "materials",
       "quantity_raw": 35.1,
@@ -435,7 +441,7 @@
     },
     {
       "code": "rebar_a500_d10",
-      "name": "Арматура класса А500 диаметром 10 мм",
+      "name": "Арматура класса A500 диаметром 10 мм",
       "unit": "мп",
       "line_type": "materials",
       "quantity_raw": 2679.3,
@@ -767,7 +773,7 @@
       "formwork.formwork_delivery_status": "calculated",
       "rebar.rebar_calc_method": "spec_length_items",
       "rebar.items.0.code": "rebar_a500_d16",
-      "rebar.items.0.name": "Арматура класса А500 диаметром 16 мм",
+      "rebar.items.0.name": "Арматура класса A500 диаметром 16 мм",
       "rebar.items.0.steel_class": "A500",
       "rebar.items.0.diameter_mm": 16,
       "rebar.items.0.spec_length_m": 90.126582,
@@ -778,7 +784,7 @@
       "rebar.items.0.price_code": "rebar_a500_d16_m",
       "rebar.items.0.material_total": 8485,
       "rebar.items.1.code": "rebar_a500_d12",
-      "rebar.items.1.name": "Арматура класса А500 диаметром 12 мм",
+      "rebar.items.1.name": "Арматура класса A500 диаметром 12 мм",
       "rebar.items.1.steel_class": "A500",
       "rebar.items.1.diameter_mm": 12,
       "rebar.items.1.spec_length_m": 24.774775,
@@ -789,7 +795,7 @@
       "rebar.items.1.price_code": "rebar_a500_d12_m",
       "rebar.items.1.material_total": 1590,
       "rebar.items.2.code": "rebar_a500_d10",
-      "rebar.items.2.name": "Арматура класса А500 диаметром 10 мм",
+      "rebar.items.2.name": "Арматура класса A500 диаметром 10 мм",
       "rebar.items.2.steel_class": "A500",
       "rebar.items.2.diameter_mm": 10,
       "rebar.items.2.spec_length_m": 2551.166937,
@@ -1109,8 +1115,8 @@
         "scope": "calculation_blocks",
         "code": "rebar.items.0.name",
         "field": "rebar.items.0.name",
-        "expected": "Арматура класса А500 диаметром 16 мм",
-        "actual": "Арматура класса А500 диаметром 16 мм",
+        "expected": "Арматура класса A500 диаметром 16 мм",
+        "actual": "Арматура класса A500 диаметром 16 мм",
         "status": "ok"
       },
       {
@@ -1197,8 +1203,8 @@
         "scope": "calculation_blocks",
         "code": "rebar.items.1.name",
         "field": "rebar.items.1.name",
-        "expected": "Арматура класса А500 диаметром 12 мм",
-        "actual": "Арматура класса А500 диаметром 12 мм",
+        "expected": "Арматура класса A500 диаметром 12 мм",
+        "actual": "Арматура класса A500 диаметром 12 мм",
         "status": "ok"
       },
       {
@@ -1285,8 +1291,8 @@
         "scope": "calculation_blocks",
         "code": "rebar.items.2.name",
         "field": "rebar.items.2.name",
-        "expected": "Арматура класса А500 диаметром 10 мм",
-        "actual": "Арматура класса А500 диаметром 10 мм",
+        "expected": "Арматура класса A500 диаметром 10 мм",
+        "actual": "Арматура класса A500 диаметром 10 мм",
         "status": "ok"
       },
       {
