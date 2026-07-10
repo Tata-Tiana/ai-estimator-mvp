@@ -186,22 +186,28 @@
       "section_name_ru": "Плоская кровля",
       "targets": [
         {"code": "project_spec_roof_area", "label_ru": "Площадь кровли по спецификации", "unit": "m2", "grounded": true},
-        {"code": "roof_eps_main_volume", "label_ru": "ЭППС кровли по спецификации — объём", "unit": "m3", "grounded": true},
-        {"code": "roof_pvc_membrane_area", "label_ru": "Полимерная мембрана (ПВХ, LOGICROOF или аналог) — площадь", "unit": "m2", "grounded": true},
         {"code": "roof_internal_drains_count", "label_ru": "Воронки внутреннего водостока — количество", "unit": "pcs", "grounded": true},
         {"code": "roof_parapet_drains_count", "label_ru": "Парапетные воронки — количество", "unit": "pcs", "grounded": true},
         {"code": "roof_area_level_1", "label_ru": "Площадь кровли, уровень 1", "unit": "m2", "grounded": true},
         {"code": "roof_area_level_2", "label_ru": "Площадь кровли, уровень 2", "unit": "m2", "grounded": true, "notes": "Если в PDF нет явной пометки 'уровень 1'/'уровень 2', а есть просто разные отметки высоты кровли — сохрани оба числа как candidates с их отметками (raw_text), не выбирай сама, какое к какому уровню относится."},
-        {"code": "parapet_length_level_1", "label_ru": "Длина парапета, уровень 1", "unit": "linear_m", "grounded": true},
-        {"code": "parapet_length_level_2", "label_ru": "Длина парапета, уровень 2", "unit": "linear_m", "grounded": true},
-        {"code": "vent_wall_abutment_level_1", "label_ru": "Длина примыкания кровли к стене, уровень 1", "unit": "linear_m", "grounded": true},
-        {"code": "vent_wall_abutment_level_2", "label_ru": "Длина примыкания кровли к стене, уровень 2", "unit": "linear_m", "grounded": true},
+        {"code": "roof_parapet_length_level_1", "label_ru": "Длина парапета, уровень 1", "unit": "linear_m", "grounded": true},
+        {"code": "roof_parapet_length_level_2", "label_ru": "Длина парапета, уровень 2", "unit": "linear_m", "grounded": true},
+        {"code": "roof_vent_wall_abutment_level_1", "label_ru": "Длина примыкания кровли к стене, уровень 1", "unit": "linear_m", "grounded": true},
+        {"code": "roof_vent_wall_abutment_level_2", "label_ru": "Длина примыкания кровли к стене, уровень 2", "unit": "linear_m", "grounded": true},
         {"code": "vent_shaft_abutment_count", "label_ru": "Количество примыканий к вентшахтам", "unit": "pcs", "grounded": true},
         {"code": "roof_aerators_count", "label_ru": "Количество кровельных аэраторов", "unit": "pcs", "grounded": true},
         {"code": "gas_block_wall_holes_count", "label_ru": "Количество отверстий в стенах из газоблока (под вент./кровельные элементы)", "unit": "pcs", "grounded": true},
-        {"code": "internal_drain_height_per_drain", "label_ru": "Высота внутреннего водостока на одну воронку", "unit": "m", "grounded": true}
+        {"code": "roof_internal_drain_height_per_drain", "label_ru": "Высота внутреннего водостока на одну воронку", "unit": "m", "grounded": true}
       ],
-      "extract_groups": []
+      "extract_groups": [
+        {
+          "group_code": "roof_raw_material_spec_rows",
+          "description": "Сырые строки спецификации кровли — диагностическая разбивка, не используется калькулятором напрямую.",
+          "fields": ["name", "quantity", "unit"],
+          "grounded": false,
+          "notes": "Optional; calculator quantities always come from the reviewed scalar geometry/count inputs above, never from this breakdown."
+        }
+      ]
     },
     {
       "section_code": "schiedel_vent_channels",

@@ -831,30 +831,6 @@ project_spec_roof_area:
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Roof area itself, not area of roof material layers."
 
-roof_eps_main_volume:
-  section_code: flat_roof
-  ru_label: "Объем ЭППС кровли"
-  pdf_aliases: ["ЭППС кровли", "ЭППС ТехноНИКОЛЬ", "Экструзионный пенополистирол кровля", "Теплоизоляция кровли"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плану кровли", "Пирог кровли"]
-  required_context: ["ЭППС|пенополистирол", "кровл|ТехноНИКОЛЬ"]
-  negative_context: ["фундамент", "перекрытие", "термовставка", "торец плиты", "м2"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Roof insulation volume; not slab EPS."
-
-roof_pvc_membrane_area:
-  section_code: flat_roof
-  ru_label: "Площадь ПВХ мембраны кровли"
-  pdf_aliases: ["Полимерная мембрана LOGICROOF", "ПВХ мембрана", "LOGICROOF V-RP", "Кровельная ПВХ-мембрана", "Армированная полимерная мембрана"]
-  expected_unit: m2
-  table_hints: ["Спецификация к плану кровли", "Узлы кровли"]
-  required_context: ["мембран|LOGICROOF|ПВХ"]
-  negative_context: ["PLANTER", "профилированная", "фундамент"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Roof PVC membrane, not foundation membrane."
-
 roof_internal_drains_count:
   section_code: flat_roof
   ru_label: "Количество воронок внутреннего водостока"
@@ -903,7 +879,7 @@ roof_area_level_2:
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Do not copy a different level silently. If levels are unclear, return both as candidates."
 
-parapet_length_level_1:
+roof_parapet_length_level_1:
   section_code: flat_roof
   ru_label: "Длина парапета уровня 1"
   pdf_aliases: ["Длина парапета", "Парапет длина", "Металлический отлив парапетов", "Оцинкованный отлив парапета"]
@@ -915,7 +891,7 @@ parapet_length_level_1:
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
   notes: "Parapet/flashing length, not parapet masonry volume."
 
-parapet_length_level_2:
+roof_parapet_length_level_2:
   section_code: flat_roof
   ru_label: "Длина парапета уровня 2"
   pdf_aliases: ["Длина парапета", "Парапет длина", "Металлический отлив парапетов", "Оцинкованный отлив парапета"]
@@ -927,7 +903,7 @@ parapet_length_level_2:
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
   notes: "If multiple levels are present, return candidates instead of forcing one."
 
-vent_wall_abutment_level_1:
+roof_vent_wall_abutment_level_1:
   section_code: flat_roof
   ru_label: "Длина примыкания кровли к стенам уровня 1"
   pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
@@ -939,7 +915,7 @@ vent_wall_abutment_level_1:
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
   notes: "Abutment to walls, not parapet length."
 
-vent_wall_abutment_level_2:
+roof_vent_wall_abutment_level_2:
   section_code: flat_roof
   ru_label: "Длина примыкания кровли к стенам уровня 2"
   pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
@@ -987,7 +963,7 @@ gas_block_wall_holes_count:
   unit_column_hint: ["шт", "шт."]
   notes: "Piece count only."
 
-internal_drain_height_per_drain:
+roof_internal_drain_height_per_drain:
   section_code: flat_roof
   ru_label: "Высота внутреннего водостока на одну воронку"
   pdf_aliases: ["Высота внутреннего водостока", "Высота стояка внутреннего водостока", "Внутренний водосток высота", "Воронка внутреннего водостока высота"]
@@ -998,6 +974,18 @@ internal_drain_height_per_drain:
   value_column_hint: ["высота", "длина", "значение"]
   unit_column_hint: ["м"]
   notes: "Linear height per drain, not drain count."
+
+roof_raw_material_spec_rows:
+  section_code: flat_roof
+  ru_label: "Сырые строки спецификации кровли"
+  pdf_aliases: ["Спецификация к плану кровли", "Ведомость материалов кровли"]
+  expected_unit: null
+  table_hints: ["Спецификация к плану кровли"]
+  required_context: ["кровл", "спецификац|ведомост"]
+  negative_context: ["фундамент", "перекрытие"]
+  value_column_hint: ["наименование", "кол-во", "количество", "ед"]
+  unit_column_hint: ["м2", "м3", "м.п.", "шт"]
+  notes: "Added 2026-07-10 — was missing despite section_contract.yaml declaring roof_raw_material_spec_rows as a repeated_rows target. Optional diagnostic breakdown only; calculator quantities always come from the reviewed scalar geometry/count inputs above, never from this table."
 
 schiedel_vent_channels:
   section_code: schiedel_vent_channels
