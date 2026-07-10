@@ -111,6 +111,29 @@ by diameter (e.g. 11.7 m), not something PDFs normally state per row, so only ta
 an explicit rod-length table is present — otherwise leave it null for an adapter/catalog fallback,
 don't invent a number.
 
+## Remaining scalar targets and beam_items crosschecked (2026-07-10)
+
+Finished the rest of the parser/schema crosscheck against `section_contract.yaml`'s 9
+`target_code`s. Found `calculator_targets_compact.json` and `target_aliases_ru.yaml` both missing
+3 real targets the contract needs — `floor_slab_2_edge_formwork_area` (present in aliases but not
+in `calculator_targets_compact.json`), `floor_slab_2_beams_formwork_area`, and `floor_slab_2_slab_area`
+— plus the entire `floor_slab_2_beam_items` extract_group (contract's own `target_code` for its beam
+group, distinct from `floor_slab_1`'s bare `beam_items` — each section names its own beam group per
+its contract, not a bug, just not shared). Added all 4 to both files, plus a `floor_slab_2_beam_items`
+shape entry in the schema's `group_value_shapes` (schema already had a generic `beam_items` shape,
+which only matches `floor_slab_1`'s group code, not this section's prefixed one).
+
+Also found and removed `floor_slab_2_eps100_edge_volume`, present in both parser files but not
+referenced by any `target_code` in the current contract — verified against `calculator.py` that
+`floor_slab_2`'s EPS100 volume is fully derived (`slab_edge_perimeter_m * edge_insulation_height_m`
++ beam contribution, times thickness/waste/pack-rounding), not taken as a direct PDF total the way
+`floor_slab_1`'s `total_eps_volume_from_spec_m3` is — this section's architecture never asks for an
+EPS volume scalar, so the old target was dead weight from before that design was settled, not a gap.
+
+After this pass, `calculator_targets_compact.json`'s `floor_slab_2` section has exactly the 7 scalar
+targets and 2 extract_groups (`floor_slab_2_beam_items`, `floor_slab_2_rebar_items`) the contract's 9
+`target_code`s require — verified programmatically, 1:1 match, no extras, no gaps.
+
 ## Check before marking section ready
 
 1. Read the calculator input shape directly, especially rebar item fields.

@@ -157,12 +157,21 @@
       "section_name_ru": "Плита перекрытия 2-го этажа",
       "targets": [
         {"code": "floor_slab_2_concrete_volume", "label_ru": "Бетон плиты перекрытия (отм. 2-го этажа) — объём", "unit": "m3", "grounded": true},
-        {"code": "floor_slab_2_eps100_edge_volume", "label_ru": "ЭППС 100 мм торец плиты — объём", "unit": "m3", "grounded": true},
         {"code": "floor_slab_2_slab_edge_perimeter", "label_ru": "Периметр торца плиты", "unit": "linear_m", "grounded": true},
         {"code": "floor_slab_2_main_formwork_area", "label_ru": "Основная площадь опалубки плиты", "unit": "m2", "grounded": true},
-        {"code": "floor_slab_2_edge_insulation_height", "label_ru": "Высота утепления торца плиты", "unit": "m", "grounded": true}
+        {"code": "floor_slab_2_edge_formwork_area", "label_ru": "Площадь опалубки торца плиты", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_2_beams_formwork_area", "label_ru": "Площадь опалубки балок перекрытия 2-го этажа", "unit": "m2", "grounded": false, "notes": "Optional; leave null (not 0) if absent so the calculator falls back to the sum of beam_items.formwork_area_m2."},
+        {"code": "floor_slab_2_edge_insulation_height", "label_ru": "Высота утепления торца плиты", "unit": "m", "grounded": true},
+        {"code": "floor_slab_2_slab_area", "label_ru": "Площадь плиты перекрытия 2-го этажа для контроля", "unit": "m2", "grounded": false, "notes": "Optional control value only; does not feed the calculator directly."}
       ],
       "extract_groups": [
+        {
+          "group_code": "floor_slab_2_beam_items",
+          "description": "Балки (Б-1, Б-2, ...) под плитой перекрытия 2-го этажа — геометрия каждой балки.",
+          "fields": ["code", "name", "length_m", "width_m", "height_m", "count"],
+          "grounded": false,
+          "notes": "Optional; this floor slab may have zero, one, or several beams, independently of floor_slab_1. Do not invent rows if the PDF has no beam table for this slab."
+        },
         {
           "group_code": "floor_slab_2_rebar_items",
           "description": "Арматура плиты перекрытия 2-го этажа — несколько строк по диаметру/классу стали.",

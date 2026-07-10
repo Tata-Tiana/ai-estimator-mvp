@@ -707,18 +707,6 @@ floor_slab_2_concrete_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Slab concrete only; do not mix with roof or first-floor slab."
 
-floor_slab_2_eps100_edge_volume:
-  section_code: floor_slab_2
-  ru_label: "ЭППС 100 мм торец плиты перекрытия 2-го этажа"
-  pdf_aliases: ["ЭППС 100мм утепление вертикальных поверхностей плиты", "ЭППС 100 мм торец плиты", "Утепление торца плиты перекрытия 2 этажа", "ЭППС-100мм"]
-  expected_unit: m3
-  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Ведомость утепления"]
-  required_context: ["ЭППС", "100", "торц|вертикальн|утеплен"]
-  negative_context: ["опалубка", "м2", "горизонтальная", "фундамент", "кровля", "1 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Critical: m3 material volume. Never map m2 formwork area here."
-
 floor_slab_2_slab_edge_perimeter:
   section_code: floor_slab_2
   ru_label: "Периметр торца плиты перекрытия 2-го этажа"
@@ -754,6 +742,42 @@ floor_slab_2_edge_formwork_area:
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Alias-only helper. Keep separate from EPS 100 mm edge volume."
+
+floor_slab_2_beams_formwork_area:
+  section_code: floor_slab_2
+  ru_label: "Площадь опалубки балок перекрытия 2-го этажа"
+  pdf_aliases: ["Опалубка балок перекрытия 2 этажа", "Площадь опалубки балок 2 этажа", "Опалубка ж/б балок"]
+  expected_unit: m2
+  table_hints: ["Ведомость балок", "Спецификация балок"]
+  required_context: ["опалубк", "балк"]
+  negative_context: ["плита под", "торец плиты", "ЭППС", "перемычк", "1 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Optional; this floor slab may or may not have beams, independently of floor_slab_1. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.formwork_area_m2."
+
+floor_slab_2_beam_items:
+  section_code: floor_slab_2
+  ru_label: "Позиции балок плиты перекрытия 2-го этажа"
+  pdf_aliases: ["Балка Б-", "Ж/Б балка", "Ведомость балок плиты перекрытия 2 этажа", "Железобетонная балка"]
+  expected_unit: null
+  table_hints: ["Ведомость деталей плиты перекрытия 2 этажа", "План плиты перекрытия 2 этажа", "Спецификация балок"]
+  required_context: ["балк|Б-"]
+  negative_context: ["итого", "арматура", "перемычка", "стропильная", "1 этажа"]
+  value_column_hint: ["марка", "длина", "ширина", "высота", "кол-во"]
+  unit_column_hint: ["мм", "м", "шт"]
+  notes: "Optional; extract each beam row with dimensions, same shape as floor_slab_1's beam_items. Do not use an 'Итого' row as a beam item."
+
+floor_slab_2_slab_area:
+  section_code: floor_slab_2
+  ru_label: "Площадь плиты перекрытия 2-го этажа для контроля"
+  pdf_aliases: ["Площадь плиты перекрытия 2 этажа", "Площадь перекрытия 2 этажа"]
+  expected_unit: m2
+  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
+  required_context: ["площадь", "плит|перекрыти"]
+  negative_context: ["опалубка", "торец", "1 этажа", "фундамент"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Optional control value only; does not feed the calculator directly, do not substitute for main_formwork_area_m2."
 
 floor_slab_2_edge_insulation_height:
   section_code: floor_slab_2
