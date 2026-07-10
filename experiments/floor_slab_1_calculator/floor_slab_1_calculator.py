@@ -261,7 +261,7 @@ def calculate_insulation_context(
     beams: dict[str, Any] | None,
     slab_thickness: Decimal,
 ) -> tuple[dict[str, Any], list[str]]:
-    method = insulation.get("insulation_calc_method", "legacy_usv_geometry")
+    method = insulation.get("insulation_calc_method")
     if method not in {"legacy_usv_geometry", "spec_work_quantities"}:
         raise ValueError("insulation.insulation_calc_method must be legacy_usv_geometry or spec_work_quantities")
 
@@ -411,7 +411,7 @@ def calculate_formwork_areas_context(
     calculated_beams_formwork_area: Decimal | None,
     warnings: list[str],
 ) -> dict[str, Any]:
-    method = input_data.get("formwork_areas_calc_method", "legacy_calculated_from_geometry")
+    method = input_data.get("formwork_areas_calc_method")
     if method not in {"legacy_calculated_from_geometry", "spec_formwork_areas"}:
         raise ValueError("formwork_areas_calc_method must be legacy_calculated_from_geometry or spec_formwork_areas")
 
@@ -541,7 +541,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     insulation_in = input_data["insulation"]
     overheads_in = input_data["overheads"]
     manual_lines = input_data["manual_lines"]
-    rebar_calc_method = input_data.get("rebar_calc_method", "legacy_weight_parts")
+    rebar_calc_method = input_data.get("rebar_calc_method")
 
     beam_items = []
     for item in (beams_in or {}).get("items") or []:

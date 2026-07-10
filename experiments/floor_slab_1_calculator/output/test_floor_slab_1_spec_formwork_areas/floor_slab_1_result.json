@@ -1023,8 +1023,8 @@
   },
   "warnings": [],
   "case_name": "test_floor_slab_1_spec_formwork_areas",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/expected.json",
   "expected": {
     "calculation_blocks": {
       "formwork": {

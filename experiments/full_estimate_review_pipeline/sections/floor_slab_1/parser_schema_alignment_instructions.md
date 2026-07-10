@@ -35,6 +35,33 @@ Two more pre-existing gaps found and fixed in the same pass, unrelated to beams:
 
 **Architectural note, recorded 2026-07-10, not acted on**: while auditing the above, checked all 8 section calculators — `floor_slab_1_calculator.py` is the *only* one whose input is a nested dict-of-dicts (`geometry`, `rates`, `insulation`, `overheads`, `manual_lines`, `beams`). Every other section (including `floor_slab_2` after yesterday's rebar-catalog removal) takes a flat set of top-level fields. The nesting isn't buying anything a flat structure couldn't do just as well, and it directly caused the `eps_unit_price_per_m3`/`foam_unit_price_per_can` gap above (a flat structure has no "wrong sub-dict" to fall into). Best guess: `floor_slab_1` predates the flat convention the other 7 sections converged on, and nobody went back to flatten it. Not fixing now — flattening `floor_slab_1_calculator.py` would be a real refactor (the nested dicts are threaded through most of the file's functions), out of scope for a contract-alignment pass. Worth doing eventually for consistency, on its own, deliberately reviewed pass — not bundled into this one.
 
+**Calculator change applied 2026-07-10, second pass** (explicitly requested by the user after an
+independent review flagged this as the section's biggest remaining risk — same "explicit exception
+to the never-touch-calculator-code rule" as above): `floor_slab_1_calculator.py` had three separate
+`*_calc_method` fields (`insulation.insulation_calc_method`, `formwork_areas_calc_method`,
+`rebar_calc_method`) that silently defaulted to a legacy mode if the adapter forgot to set them
+explicitly — and the `legacy_usv_geometry` insulation branch contains hardcoded ЮСВ-project geometry
+literals (`d(19) * d(2) + (d(7) + d("13.2")) * d(2) + d("3.2") * d(2)` at what was line 308). A
+forgotten field would silently compute a different project's numbers instead of failing.
+
+All three already had `if method not in {...}: raise ValueError(...)` validation right after the
+`.get(key, <legacy default>)` call — the fix was simply removing the hardcoded default string from
+each `.get()` call (`insulation.get("insulation_calc_method")`, `input_data.get("formwork_areas_calc_method")`,
+`input_data.get("rebar_calc_method")`), so a missing field now hits the *existing* validation and
+raises immediately instead of silently falling back. No new validation logic was added — just removed
+the silent fallback value.
+
+`formwork_areas_calc_method` was relied on implicitly (never set) by 4 of the 7 test fixtures
+(`test_floor_slab_1_direct_formwork_rate`, `test_floor_slab_1_formwork_delivery_threshold`,
+`test_floor_slab_1_insulation_spec_quantities`, `test_floor_slab_1_rebar_spec_lengths`) — added it
+explicitly as `"legacy_calculated_from_geometry"` to each of those 4 `input.json` files to preserve
+their existing tested (deliberately legacy-mode) behavior. `insulation_calc_method` and
+`rebar_calc_method` were already explicit in every fixture, no fixture changes needed for those two.
+All 7 cases still pass 0 mismatches. Manually verified the new failure mode: deleting
+`insulation.insulation_calc_method` from a valid input now raises
+`ValueError: insulation.insulation_calc_method must be legacy_usv_geometry or spec_work_quantities`
+instead of silently computing ЮСВ's geometry.
+
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
 - `total_concrete_volume_from_spec_m3`

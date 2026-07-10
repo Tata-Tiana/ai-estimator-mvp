@@ -5,19 +5,19 @@
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1132538` |
+| `internal_materials_total` | `1129988` |
 | `internal_works_total` | `611926` |
-| `internal_section_total` | `1744464` |
+| `internal_section_total` | `1741914` |
 | `base_subtotal_raw_before_overheads` | `1713968.300518` |
 | `logistics_and_supply_total` | `17140` |
 | `consumables_and_tool_depreciation_total` | `51419` |
 | `technical_supervision_total` | `5000` |
-| `internal_materials_total_raw` | `1132537.784539` |
+| `internal_materials_total_raw` | `1129987.784538741876` |
 | `internal_works_total_raw` | `611926.4` |
-| `internal_section_total_raw` | `1744464.184539` |
-| `sum_of_displayed_line_material_totals` | `1132537` |
+| `internal_section_total_raw` | `1741914.184538741876` |
+| `sum_of_displayed_line_material_totals` | `1129987` |
 | `sum_of_displayed_line_work_totals` | `611926` |
-| `sum_of_displayed_line_totals` | `1744463` |
+| `sum_of_displayed_line_totals` | `1741913` |
 
 ## Comparison Summary
 - status: `ok`
@@ -320,8 +320,8 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 | `formwork_rebar_crane_supply` | Подача опалубки, арматуры автокраном | `2.0` | `2.0` | `смена` | `machinery` | `60000.0` | `60000` | `0.0` | `0` | `60000.0` | `60000` |
 | `formwork_consumables` | Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `1.0` | `1.0` | `-` | `materials_consumables` | `9759.08` | `9759` | `0.0` | `0` | `9759.08` | `9759` |
 | `edge_beam_formwork_installation_control` | Монтаж опалубки из доски 50 мм и фанеры для устройства балок, для отбортовки плиты | `51.592` | `51.59` | `м2` | `zero_control_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
-| `plywood_fk_18mm_for_edges_and_non_multiple_places` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `51.0` | `51.0` | `шт` | `materials` | `73950.0` | `73950` | `0.0` | `0` | `73950.0` | `73950` |
-| `formwork_timber_gost` | Пиломатериал обрезной для устройства опалубки ГОСТ | `2.790846` | `2.79` | `м3` | `materials` | `60003.181518` | `60003` | `0.0` | `0` | `60003.181518` | `60003` |
+| `plywood_fk_18mm_for_edges_and_non_multiple_places` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `51.0` | `51.0` | `шт` | `materials` | `71400.0` | `71400` | `0.0` | `0` | `71400.0` | `71400` |
+| `formwork_timber_gost` | Пиломатериал обрезной для устройства опалубки ГОСТ | `2.790846` | `2.79` | `м3` | `materials` | `60003.181517741876` | `60003` | `0.0` | `0` | `60003.181517741876` | `60003` |
 | `floor_slab_rebar_frame_assembly_control` | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры (в том числе балок) | `7294.8` | `7294.8` | `мп` | `zero_control_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `rebar_a500_d25` | Арматура класса А500 диаметром 25 мм | `46.8` | `46.8` | `мп` | `materials` | `7291.44` | `7291` | `0.0` | `0` | `7291.44` | `7291` |
 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | `81.9` | `81.9` | `мп` | `materials` | `5315.31` | `5315` | `0.0` | `0` | `5315.31` | `5315` |
@@ -349,13 +349,13 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 | Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
 | --- | --- | ---: | ---: | --- | --- |
 | Монтаж опалубки под монолитное перекрытие 1-го этажа | `` | `None` | `None` | `locked_case_prices` |  |
-| Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | `formwork_rental_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Доставка, вывоз опалубки манипулятором | `formwork_delivery_truck` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Подача опалубки, арматуры автокраном | `crane_shift` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `formwork_consumables_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые) | `formwork_rental_m2` | `None` | `600` | `price_registry` |  |
+| Доставка, вывоз опалубки манипулятором | `formwork_delivery_truck` | `None` | `20000` | `price_registry` |  |
+| Подача опалубки, арматуры автокраном | `crane_shift` | `None` | `30000` | `price_registry` |  |
+| Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `formwork_consumables_m2` | `None` | `9759.08` | `price_registry` |  |
 | Монтаж опалубки из доски 50 мм и фанеры для устройства балок, для отбортовки плиты | `` | `None` | `None` | `locked_case_prices` |  |
-| Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `plywood_1520x1520_18mm_sheet` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Пиломатериал обрезной для устройства опалубки ГОСТ | `timber_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `plywood_1520x1520_18mm_sheet` | `None` | `1400` | `price_registry` |  |
+| Пиломатериал обрезной для устройства опалубки ГОСТ | `timber_m3` | `None` | `21499.997319` | `price_registry` |  |
 | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры (в том числе балок) | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура класса А500 диаметром 25 мм | `rebar_a500_d25_m` | `None` | `155.8` | `price_registry` |  |
 | Арматура класса А500 диаметром 16 мм | `rebar_a500_d16_m` | `None` | `64.9` | `price_registry` |  |
@@ -363,48 +363,32 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 | Арматура класса А500 диаметром 10 мм | `rebar_a500_d10_m` | `None` | `27.16` | `price_registry` |  |
 | Арматура класса А240 диаметром 8 мм | `rebar_a240_d8_m` | `None` | `18.5` | `price_registry` |  |
 | Арматура класса А240 диаметром 6 мм | `rebar_a240_d6_m` | `None` | `10.25` | `price_registry` |  |
-| Доставка арматуры, металла | `metal_delivery_truck` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `concrete_placing_work_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Бетонирование балки бетоном марки В22,5 (М300) | `beam_concrete_placing_work_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Бетон марки В22,5 (М300) | `concrete_b22_5_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Доставка бетона до объекта | `concrete_delivery_trip` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Работа бетононасоса 32м + гаситель | `concrete_pump_32m_shift` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Доставка арматуры, металла | `metal_delivery_truck` | `None` | `22000` | `price_registry` |  |
+| Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `concrete_placing_work_m3` | `None` | `12000` | `price_registry` |  |
+| Бетонирование балки бетоном марки В22,5 (М300) | `beam_concrete_placing_work_m3` | `None` | `20000` | `price_registry` |  |
+| Бетон марки В22,5 (М300) | `concrete_b22_5_m3` | `None` | `6400` | `price_registry` |  |
+| Доставка бетона до объекта | `concrete_delivery_trip` | `None` | `7500` | `price_registry` |  |
+| Работа бетононасоса 32м + гаситель | `concrete_pump_32m_shift` | `None` | `38000` | `price_registry` |  |
 | Демонтаж опалубки после завершения бетонирования | `` | `None` | `None` | `locked_case_prices` |  |
-| Устройство утепления по наружной стороне торцов плиты, балок | `edge_insulation_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Устройство утепления низа плиты | `eps_bottom_slab_insulation_work_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
-| Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `eps_penoplex_osnova_100_m3` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Устройство утепления по наружной стороне торцов плиты, балок | `edge_insulation_work_m` | `None` | `450` | `price_registry` |  |
+| Устройство утепления низа плиты | `eps_bottom_slab_insulation_work_m2` | `None` | `900` | `price_registry` |  |
+| Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `eps_penoplex_osnova_100_m3` | `None` | `9020` | `price_registry` |  |
 | Клей-пена для ЭППС | `eps_foam_glue_can` | `None` | `450` | `price_registry` |  |
 | Логистика, и снабжение | `` | `None` | `None` | `locked_case_prices` |  |
 | Расходные материалы, амортизация инструмента | `` | `None` | `None` | `locked_case_prices` |  |
-| Технический надзор | `technical_supervision_fixed` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Технический надзор | `technical_supervision_fixed` | `None` | `5000` | `price_registry` |  |
 
 ## Pricing summary
 | Показатель | Значение |
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
-| `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `7` |
+| `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
+| `prices_from_price_registry` | `23` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `16` |
-| `warnings_count` | `16` |
+| `prices_from_fallback_input` | `0` |
+| `warnings_count` | `0` |
 
 ## Warnings / Notes
-- formwork_rental_m2: price_code not found in price_registry and fallback input price is missing
-- formwork_delivery_truck: price_code not found in price_registry and fallback input price is missing
-- crane_shift: price_code not found in price_registry and fallback input price is missing
-- formwork_consumables_m2: price_code not found in price_registry and fallback input price is missing
-- plywood_1520x1520_18mm_sheet: price_code not found in price_registry and fallback input price is missing
-- timber_m3: price_code not found in price_registry and fallback input price is missing
-- metal_delivery_truck: price_code not found in price_registry and fallback input price is missing
-- concrete_placing_work_m3: price_code not found in price_registry and fallback input price is missing
-- beam_concrete_placing_work_m3: price_code not found in price_registry and fallback input price is missing
-- concrete_b22_5_m3: price_code not found in price_registry and fallback input price is missing
-- concrete_delivery_trip: price_code not found in price_registry and fallback input price is missing
-- concrete_pump_32m_shift: price_code not found in price_registry and fallback input price is missing
-- edge_insulation_work_m: price_code not found in price_registry and fallback input price is missing
-- eps_bottom_slab_insulation_work_m2: price_code not found in price_registry and fallback input price is missing
-- eps_penoplex_osnova_100_m3: price_code not found in price_registry and fallback input price is missing
-- technical_supervision_fixed: price_code not found in price_registry and fallback input price is missing
 - `formwork_delivery_return_manipulator`: До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.
 - `formwork_rebar_crane_supply`: 3-я смена пока только manual_review / override.
 - `formwork_timber_gost`: Сумма считается от quantity_raw, не от отображаемого количества.

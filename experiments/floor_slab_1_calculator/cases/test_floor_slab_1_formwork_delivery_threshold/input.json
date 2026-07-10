@@ -166,5 +166,6 @@
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
     "technical_supervision_amount": 5000
-  }
+  },
+  "formwork_areas_calc_method": "legacy_calculated_from_geometry"
 }

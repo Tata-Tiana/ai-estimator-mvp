@@ -173,7 +173,8 @@
       "formwork_rebar_crane_shifts": 2,
       "concrete_pump_shifts": 1,
       "technical_supervision_amount": 5000
-    }
+    },
+    "formwork_areas_calc_method": "legacy_calculated_from_geometry"
   },
   "calculation_blocks": {
     "geometry": {
@@ -1019,8 +1020,8 @@
   },
   "warnings": [],
   "case_name": "test_floor_slab_1_direct_formwork_rate",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_direct_formwork_rate/expected.json",
   "expected": {
     "totals": {
       "internal_materials_total": 1152721,

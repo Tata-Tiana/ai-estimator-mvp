@@ -1052,8 +1052,8 @@
   },
   "warnings": [],
   "case_name": "test_floor_slab_1",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1/expected.json",
   "expected": {
     "totals": {
       "internal_materials_total": 1175601,
