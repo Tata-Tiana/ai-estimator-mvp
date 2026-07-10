@@ -945,6 +945,310 @@ sections:
         allow_override: true
         notes: "Thickness used to convert vent/chimney block volume into work area."
 
+  floor_slab_1:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/floor_slab_1/section_contract.yaml"
+      - "experiments/floor_slab_1_calculator/floor_slab_1_calculator.py"
+      - "experiments/floor_slab_1_calculator/README.md"
+      - "docs/report_paid_floor_slab_1_calculator_changes.md"
+      - "docs/report_floor_slab_1_insulation_spec_quantities_refactor.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      formwork_areas_calc_method:
+        value: "spec_formwork_areas"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_areas_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.formwork_set_rental_material"
+          - "floor_slab_1.edge_beam_formwork_installation_control"
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use three specification areas: main_formwork_area_m2, edge_formwork_area_m2, beams_formwork_area_m2. Geometry reconstruction is legacy/control only."
+
+      formwork_rate_calc_method:
+        value: "direct_section_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.formwork_rate_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.formwork_set_rental_material"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Do not use legacy supplier quote context with slab 2 area in production."
+
+      formwork_delivery_calc_method:
+        value: "area_threshold"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Delivery trucks are calculated from main formwork area threshold; manual override is an explicit exception."
+
+      metal_delivery_calc_method:
+        value: "section_output_only"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.metal_delivery_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.rebar_metal_delivery"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Section returns rebar delivery weight; final metal delivery should be calculated at box level, not with slab 2 legacy context."
+
+      rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rebar_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.floor_slab_rebar_frame_assembly_control"
+          - "floor_slab_1.floor_slab_1_rebar_items"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "PDF primary rebar unit is linear meters; old weight-based input is legacy only."
+
+      insulation_calc_method:
+        value: "spec_work_quantities"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "insulation.insulation_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.edge_beam_insulation_work"
+          - "floor_slab_1.bottom_slab_insulation_work"
+          - "floor_slab_1.eps_penoplex_osnova_100mm"
+          - "floor_slab_1.eps_glue_foam"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use specification work quantities and EPS volume; old project geometry reconstruction is legacy only."
+
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.concrete_waste_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_1.concrete_b22_5_m300_material"
+          - "floor_slab_1.concrete_delivery"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete material waste coefficient; not a project concrete quantity."
+
+      formwork_delivery_threshold_m2:
+        value: 180.0
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_threshold_m2"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Threshold rule: up to threshold uses 2 trips, above threshold uses 4 trips."
+
+      formwork_delivery_trips_at_or_below_threshold:
+        value: 2.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_trips_at_or_below_threshold"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method value, not a project quantity."
+
+      formwork_delivery_trips_above_threshold:
+        value: 4.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_trips_above_threshold"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method value, not a project quantity."
+
+      plywood_sheet_working_area_m2:
+        value: 2.3
+        unit: "m2/sheet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.plywood_sheet_working_area_m2"
+        used_by_estimate_lines:
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Working sheet area used by calculator formula."
+
+      reserve_plywood_sheets:
+        value: 10.0
+        unit: "sheets"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.reserve_plywood_sheets"
+        used_by_estimate_lines: ["floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Reserve sheets rule for non-multiple places and edges."
+
+      non_multiple_places_coeff:
+        value: 0.2
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.non_multiple_places_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coefficient for non-multiple slab areas; not a PDF quantity."
+
+      timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.timber_thickness_m"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Timber thickness for edge and beam formwork calculation."
+
+      additional_timber_coeff:
+        value: 0.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.additional_timber_coeff"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Additional timber coefficient for overhangs and non-multiple places."
+
+      additional_timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.additional_timber_thickness_m"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness for additional timber formula."
+
+      rebar_rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items.rod_length_m"
+        used_by_estimate_lines: ["floor_slab_1.floor_slab_1_rebar_items"]
+        source_note: "Calculator requires rod_length_m per rebar item; adapter may fill this from shared rebar catalog."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Not a PDF quantity; do not ask GPT to infer rod length from project rows."
+
+      eps_thickness_m:
+        value: 0.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "insulation.eps_thickness_m"
+        used_by_estimate_lines:
+          - "floor_slab_1.edge_beam_insulation_work"
+          - "floor_slab_1.bottom_slab_insulation_work"
+          - "floor_slab_1.eps_penoplex_osnova_100mm"
+        source_note: "Floor slab 1 section contract; EPS 100 mm method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS thickness for 100 mm insulation."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "insulation.eps_waste_coeff"
+        used_by_estimate_lines: ["floor_slab_1.eps_penoplex_osnova_100mm"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS material waste coefficient."
+
+      eps_pack_volume_m3:
+        value: 0.2773
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "insulation.eps_pack_volume_m3"
+        used_by_estimate_lines: ["floor_slab_1.eps_penoplex_osnova_100mm"]
+        source_note: "Floor slab 1 section contract and insulation spec quantities report."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume used for full-pack EPS ordering; not a project EPS volume."
+
+      foam_coverage_m2_per_can:
+        value: 10.0
+        unit: "m2/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "insulation.foam_coverage_m2_per_can"
+        used_by_estimate_lines: ["floor_slab_1.eps_glue_foam"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coverage default for EPS glue foam."
+
+      mixer_capacity_m3:
+        value: 9.0
+        unit: "m3/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.mixer_capacity_m3"
+        used_by_estimate_lines: ["floor_slab_1.concrete_delivery"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Mixer capacity for concrete delivery trips."
+
+      max_rebar_delivery_weight_per_truck_kg:
+        value: 10000.0
+        unit: "kg/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.max_rebar_delivery_weight_per_truck_kg"
+        used_by_estimate_lines: ["floor_slab_1.rebar_metal_delivery"]
+        source_note: "Floor slab 1 calculator README; box-level metal delivery capacity."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Production section exposes metal weight only; final truck count belongs to box-level calculator."
+
+      logistics_and_supply_percent:
+        value: 0.01
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "overheads.logistics_and_supply_percent"
+        used_by_estimate_lines: ["floor_slab_1.logistics_and_supply"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent overhead line calculated from base subtotal."
+
+      consumables_and_tool_percent:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "overheads.consumables_and_tool_percent"
+        used_by_estimate_lines: ["floor_slab_1.consumables_tool_depreciation"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent overhead line calculated from base subtotal."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -1062,3 +1366,68 @@ not_defaults:
       reason: "Fixed amount / price key, not a formula default."
       belongs_to: "price registry / fallback / review sheet 02"
       estimate_line_code: "load_bearing_walls_lintels.walls_technical_supervision"
+  floor_slab_1:
+    total_concrete_volume_from_spec_m3:
+      reason: "Project concrete volume from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.concrete_b22_5_m300_material"
+    main_formwork_area_m2:
+      reason: "Project/spec area of under-slab formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    edge_formwork_area_m2:
+      reason: "Project/spec area of slab edge formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_formwork_installation_control"
+    beams_formwork_area_m2:
+      reason: "Project/spec area of beam formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_formwork_installation_control"
+    slab_outer_edge_eps_work_length_m:
+      reason: "Project/spec EPS edge work length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_insulation_work"
+    bottom_slab_eps_work_area_m2:
+      reason: "Project/spec EPS bottom work area, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.bottom_slab_insulation_work"
+    total_eps_volume_from_spec_m3:
+      reason: "Project/spec EPS material volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.eps_penoplex_osnova_100mm"
+    beam_items:
+      reason: "Project detail rows for beams, not reusable defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.beam_concreting_work"
+    floor_slab_1_rebar_items:
+      reason: "Project/spec rebar rows in linear meters, not defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.floor_slab_1_rebar_items"
+    formwork_supplier_quote_total:
+      reason: "Legacy supplier quote context from an old two-slab scenario, not production default."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    slab_2_formwork_area_for_rate_context_m2:
+      reason: "Legacy slab-2 context. Production floor_slab_1 must not depend on another slab area."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    floor_slab_2_rebar_weight_for_delivery_context_kg:
+      reason: "Legacy slab-2 context. Production metal delivery is box-level, not floor_slab_1 section input."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.rebar_metal_delivery"
+    formwork_rebar_crane_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_1.formwork_rebar_crane_supply"
+    concrete_pump_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_1.concrete_pump_32m"
+    overhang_sheet_equivalent:
+      reason: "Manual/supplier input until a universal formula is confirmed."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_1.formwork_timber_gost"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key, not a formula default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "floor_slab_1.technical_supervision"
