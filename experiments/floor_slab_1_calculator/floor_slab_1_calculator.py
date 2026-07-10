@@ -258,7 +258,7 @@ def calculate_formwork_delivery_context(
 
 def calculate_insulation_context(
     insulation: dict[str, Any],
-    beams: dict[str, Any],
+    beams: dict[str, Any] | None,
     slab_thickness: Decimal,
 ) -> tuple[dict[str, Any], list[str]]:
     method = insulation.get("insulation_calc_method", "legacy_usv_geometry")
@@ -281,7 +281,7 @@ def calculate_insulation_context(
     if total_eps_volume_from_spec < D0:
         raise ValueError("insulation.total_eps_volume_from_spec_m3 must be >= 0")
 
-    beam_items = beams["items"]
+    beam_items = (beams or {}).get("items") or []
     beams_eps_work_length = D0
     beams_eps_material_area = D0
     for beam in beam_items:
@@ -452,7 +452,13 @@ def calculate_formwork_areas_context(
         if edge_formwork_area is None:
             raise ValueError("edge_formwork_area_m2 is required for spec_formwork_areas")
         if beams_formwork_area is None:
-            raise ValueError("beams_formwork_area_m2 is required for spec_formwork_areas")
+            beams_formwork_area = (
+                calculated_beams_formwork_area if calculated_beams_formwork_area is not None else D0
+            )
+            warnings.append(
+                "beams_formwork_area_m2 is not provided; using sum of beams.items formwork_area_m2 "
+                "instead (0 when no beams.items were given)."
+            )
         source = "spec_formwork_areas"
 
     for key, value in {
@@ -529,7 +535,7 @@ def estimate_line(
 def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     case_meta = input_data["case_meta"]
     geometry_in = input_data["geometry"]
-    beams_in = input_data["beams"]
+    beams_in = input_data.get("beams")
     rates = input_data["rates"]
     rebar_items_in = input_data["rebar_items"]
     insulation_in = input_data["insulation"]
@@ -538,7 +544,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     rebar_calc_method = input_data.get("rebar_calc_method", "legacy_weight_parts")
 
     beam_items = []
-    for item in beams_in["items"]:
+    for item in (beams_in or {}).get("items") or []:
         length = d(item["length_m"])
         width = d(item["width_m"])
         height = d(item["height_m"])
@@ -651,6 +657,11 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     bottom_slab_insulation_area = d(insulation_context["bottom_slab_eps_work_area_m2"])
     order_eps_volume = d(insulation_context["order_eps_volume_m3_raw"])
     foam_cans_ordered = d(insulation_context["foam_cans_ordered"])
+
+    if beam_items:
+        beam_concreting_work_rate_per_m3 = d(rates["beam_concreting_work_rate_per_m3"])
+    else:
+        beam_concreting_work_rate_per_m3 = D0
 
     lines = [
         estimate_line(
@@ -794,7 +805,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 beams_concrete_volume,
                 display_decimal(beams_concrete_volume),
                 0,
-                beams_concrete_volume * d(rates["beam_concreting_work_rate_per_m3"]),
+                beams_concrete_volume * beam_concreting_work_rate_per_m3,
                 price_code="beam_concrete_placing_work_m3",
             ),
             estimate_line(

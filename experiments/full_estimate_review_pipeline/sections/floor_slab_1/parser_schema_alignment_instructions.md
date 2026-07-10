@@ -19,6 +19,14 @@ Contract exists, but this section still needs the same parser/schema cross-check
 
 Known risk: do not copy the foundation slab rebar field names blindly. This contract currently expects `floor_slab_1_rebar_items` rows with `spec_length_m` and `kg_per_meter`. Active parser/schema files must be checked and aligned to the calculator, not to old generic names.
 
+**Calculator change applied 2026-07-10** (explicitly requested, out of the usual "never touch calculator code" rule for this stage — recorded here on purpose): `floor_slab_1_calculator.py`'s beam math (formwork area, EPS100 edge insulation length/area, concrete split into slab vs. beam with its own priced work line) was already correct, but the calculator required the caller to explicitly declare "no beams" in three separate places, or it crashed instead of defaulting to 0:
+
+1. `input_data["beams"]` was a hard-required key (`KeyError` if absent) in two read sites (`calculate_floor_slab_1` and `calculate_insulation_context`) — now `input_data.get("beams")`, defaulting `beam_items` to `[]` when absent.
+2. `beams_formwork_area_m2` was hard-required in `spec_formwork_areas` mode (`raise ValueError` if absent) even though the sum-of-`beams.items` fallback value was already computed and passed into the same function — now falls back to that sum (0 when there are no items) instead of raising, matching `floor_slab_2_calculator.py`'s new behavior.
+3. `rates["beam_concreting_work_rate_per_m3"]` was read unconditionally, so it was required even on projects with zero beams — now only read when `beam_items` is non-empty, otherwise the rate is 0.
+
+This makes floor_slab_1 match the same "no beams found by the parser → 0 everywhere, nothing breaks" behavior floor_slab_2 now has, so both sections can be fed the exact same way regardless of which floor (if any) actually has beams on a given project. All 6 existing test cases (which do supply beams) still pass with 0 mismatches; manually verified the no-beams path produces a zero-valued `beam_concreting_work` line and no crash.
+
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
 - `total_concrete_volume_from_spec_m3`
