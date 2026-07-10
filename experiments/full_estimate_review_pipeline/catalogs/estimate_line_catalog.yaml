@@ -924,3 +924,241 @@ sections:
         zero_policy: structural_zero
         source_note: "Returned by calculator as zero_excel_structure_line."
         action_needed: "Keep as final-estimate structure unless business rules later make it payable."
+
+  waterproofing:
+    status: draft_cataloged
+    section_title_ru: "ГИДРОИЗОЛЯЦИЯ, УТЕПЛЕНИЕ БОРТОВ ПЛИТ"
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/waterproofing/section_contract.yaml"
+      - "experiments/waterproofing_calculator/waterproofing_calculator.py"
+      - "experiments/waterproofing_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_16_waterproofing_extraction_crosscheck.md"
+    calculator_estimate_line_count: 8
+    formula_ready_row_count: 8
+    lines:
+      waterproofing_bitumen_mastic_work:
+        code: "waterproofing_bitumen_mastic_work"
+        row_id: "waterproofing.waterproofing_bitumen_mastic_work"
+        name_ru: "Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "waterproofing_area_m2"
+          leaf_inputs:
+            - ref: "review_parameters.waterproofing_area_m2"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "waterproofing_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "bitumen_waterproofing_work_m2"
+        zero_policy: not_expected
+        notes: "Production source is the reviewed specification area. If no direct PDF row exists, parser may reuse foundation slab side formwork area with needs_review."
+
+      bitumen_primer_aquamast_18l:
+        code: "bitumen_primer_aquamast_18l"
+        row_id: "waterproofing.bitumen_primer_aquamast_18l"
+        name_ru: "Праймер битумный AquaMast, 18 л"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "ceil(waterproofing_area_m2 * primer_consumption_l_per_m2 / primer_canister_volume_l)"
+          leaf_inputs:
+            - ref: "review_parameters.waterproofing_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.primer_consumption_l_per_m2"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.primer_canister_volume_l"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "primer_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "bitumen_primer_aquamast_18l_item"
+        zero_policy: not_expected
+        notes: "Purchase units are calculated from area, consumption, and canister volume. Unit price is PRICE, not a default."
+
+      bitumen_mastic_aquamast_18kg:
+        code: "bitumen_mastic_aquamast_18kg"
+        row_id: "waterproofing.bitumen_mastic_aquamast_18kg"
+        name_ru: "Мастика гидроизоляционная битумная для фундаментов AquaMast, 18 кг"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "ceil(waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers / mastic_bucket_weight_kg)"
+          leaf_inputs:
+            - ref: "review_parameters.waterproofing_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.mastic_consumption_kg_per_m2_per_layer"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.mastic_layers"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.mastic_bucket_weight_kg"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "mastic_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "bitumen_mastic_aquamast_18kg_item"
+        zero_policy: not_expected
+        notes: "Mastic layers are a method default; do not copy bucket counts from a project screenshot."
+
+      eps100_wall_insulation_work:
+        code: "eps100_wall_insulation_work"
+        row_id: "waterproofing.eps100_wall_insulation_work"
+        name_ru: "Утепление стен плиты ЭППС 100 мм"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+          leaf_inputs:
+            - ref: "review_parameters.eps100_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps100_wall_thickness_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "eps100_wall_insulation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "eps_wall_insulation_work_m2"
+        zero_policy: not_expected
+        notes: "Work quantity is area in m2 calculated from project EPS volume and EPS thickness."
+
+      eps100_wall_penoplex_geo_material:
+        code: "eps100_wall_penoplex_geo_material"
+        row_id: "waterproofing.eps100_wall_penoplex_geo_material"
+        name_ru: "Пеноплэкс ГЕО 100 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.eps100_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps100_pack_volume_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "eps100_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "eps_geo_100_m3"
+        zero_policy: not_expected
+        notes: "Material quantity remains volume in m3. It must not be confused with EPS work area in m2."
+
+      eps_glue_foam:
+        code: "eps_glue_foam"
+        row_id: "waterproofing.eps_glue_foam"
+        name_ru: "Клей-пена для ЭППС"
+        unit: "баллон"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "max(glue_foam_min_units, ceil((eps100_wall_volume_m3 / eps100_wall_thickness_m) / glue_foam_coverage_m2_per_can))"
+          leaf_inputs:
+            - ref: "review_parameters.eps100_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps100_wall_thickness_m"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.glue_foam_coverage_m2_per_can"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.glue_foam_min_units"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "glue_foam_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "eps_foam_glue_can"
+        zero_policy: not_expected
+        notes: "Quantity is calculated from EPS work area and coverage; unit price is PRICE."
+
+      waterproofing_logistics_and_supply:
+        code: "waterproofing_logistics_and_supply"
+        row_id: "waterproofing.waterproofing_logistics_and_supply"
+        name_ru: "Логистика и снабжение"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "calculator_result.waterproofing_base_subtotal"
+              source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.waterproofing.defaults.waterproofing_logistics_coeff"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: "waterproofing_logistics_amount"
+          price_registry_code: null
+        zero_policy: requires_review_if_zero
+        notes: "Calculator stores the calculated amount as material_unit_price with quantity 1. It is formula-calculated, not a price registry value."
+
+      waterproofing_consumables_tool_amortization:
+        code: "waterproofing_consumables_tool_amortization"
+        row_id: "waterproofing.waterproofing_consumables_tool_amortization"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs:
+            - ref: "calculator_result.waterproofing_base_subtotal"
+              source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.waterproofing.defaults.waterproofing_consumables_coeff"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: "waterproofing_consumables_amount"
+          price_registry_code: null
+        zero_policy: requires_review_if_zero
+        notes: "Calculator stores the calculated amount as material_unit_price with quantity 1. It is formula-calculated, not a price registry value."
+
+    structural_rows_from_excel_template:
+      technical_supervision:
+        code: "technical_supervision"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_waterproofing_calculator
+        zero_policy: structural_zero
+        source_note: "Visible in the final estimate screenshot/template, but not returned by waterproofing_calculator.py."
+        action_needed: "Decide at final-estimate layout layer whether technical supervision is global, per-section, or a future calculator line."
+
+      procurement_warehouse_costs_excel_structure:
+        code: "procurement_warehouse_costs_excel_structure"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_waterproofing_calculator
+        zero_policy: structural_zero
+        source_note: "Visible in the final estimate screenshot/template, but not returned by waterproofing_calculator.py."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."
+
+      overhead_general_business_costs_excel_structure:
+        code: "overhead_general_business_costs_excel_structure"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_waterproofing_calculator
+        zero_policy: structural_zero
+        source_note: "Visible in the final estimate screenshot/template, but not returned by waterproofing_calculator.py."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."
+
+      estimated_profit_excel_structure:
+        code: "estimated_profit_excel_structure"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: not_returned_by_current_waterproofing_calculator
+        zero_policy: structural_zero
+        source_note: "Visible in the final estimate screenshot/template, but not returned by waterproofing_calculator.py."
+        action_needed: "Keep as final-estimate structure unless business rules later make it payable."

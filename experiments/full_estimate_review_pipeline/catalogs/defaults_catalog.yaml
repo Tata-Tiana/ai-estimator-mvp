@@ -421,6 +421,162 @@ sections:
         allow_override: true
         notes: "Used only for suggested delivery-truck control; actual delivery line remains manual."
 
+  waterproofing:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/waterproofing/section_contract.yaml"
+      - "experiments/waterproofing_calculator/waterproofing_calculator.py"
+      - "experiments/waterproofing_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_16_waterproofing_extraction_crosscheck.md"
+    defaults:
+      waterproofing_area_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "waterproofing_area_calc_method"
+        used_by_estimate_lines: ["waterproofing.waterproofing_bitumen_mastic_work"]
+        source_note: "Production mode from waterproofing section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed waterproofing_area_m2; legacy perimeter/height reconstruction is not production."
+
+      eps100_wall_thickness_m:
+        value: 0.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_wall_thickness_m"
+        used_by_estimate_lines:
+          - "waterproofing.eps100_wall_insulation_work"
+          - "waterproofing.eps100_wall_penoplex_geo_material"
+          - "waterproofing.eps_glue_foam"
+        source_note: "Waterproofing section contract and calculator production method for EPS 100 mm."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness used to convert project EPS volume into work area; not a project quantity."
+
+      primer_consumption_l_per_m2:
+        value: 0.3
+        unit: "l/m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "primer_consumption_l_per_m2"
+        used_by_estimate_lines: ["waterproofing.bitumen_primer_aquamast_18l"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption coefficient for primer purchase-unit formula."
+
+      primer_canister_volume_l:
+        value: 18.0
+        unit: "l/canister"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "primer_canister_volume_l"
+        used_by_estimate_lines: ["waterproofing.bitumen_primer_aquamast_18l"]
+        source_note: "AquaMast primer package size from waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size; not a project quantity and not a price."
+
+      mastic_consumption_kg_per_m2_per_layer:
+        value: 1.0
+        unit: "kg/m2/layer"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "mastic_consumption_kg_per_m2_per_layer"
+        used_by_estimate_lines: ["waterproofing.bitumen_mastic_aquamast_18kg"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption coefficient for mastic purchase-unit formula."
+
+      mastic_layers:
+        value: 2.0
+        unit: "layers"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "mastic_layers"
+        used_by_estimate_lines:
+          - "waterproofing.waterproofing_bitumen_mastic_work"
+          - "waterproofing.bitumen_mastic_aquamast_18kg"
+        source_note: "Method default and estimate-line wording: bitumen mastic in 2 layers."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method setting, not extracted from PDF."
+
+      mastic_bucket_weight_kg:
+        value: 18.0
+        unit: "kg/bucket"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "mastic_bucket_weight_kg"
+        used_by_estimate_lines: ["waterproofing.bitumen_mastic_aquamast_18kg"]
+        source_note: "AquaMast mastic package size from waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size; not a project quantity and not a price."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_waste_coeff"
+        used_by_estimate_lines: ["waterproofing.eps100_wall_penoplex_geo_material"]
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Waste coefficient for EPS material purchase volume."
+
+      eps100_pack_volume_m3:
+        value: 0.2776
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_pack_volume_m3"
+        used_by_estimate_lines: ["waterproofing.eps100_wall_penoplex_geo_material"]
+        source_note: "EPS 100 mm package volume from waterproofing section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for purchase-pack rounding; not a project EPS volume."
+
+      glue_foam_coverage_m2_per_can:
+        value: 10.0
+        unit: "m2/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "glue_foam_coverage_m2_per_can"
+        used_by_estimate_lines: ["waterproofing.eps_glue_foam"]
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coverage default for EPS glue foam units."
+
+      glue_foam_min_units:
+        value: 1
+        unit: "can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "glue_foam_min_units"
+        used_by_estimate_lines: ["waterproofing.eps_glue_foam"]
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Minimum purchase quantity for glue foam."
+
+      waterproofing_logistics_coeff:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "waterproofing_logistics_coeff"
+        used_by_estimate_lines: ["waterproofing.waterproofing_logistics_and_supply"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Internal logistics/supply amount is calculated from the primary waterproofing subtotal."
+
+      waterproofing_consumables_coeff:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "waterproofing_consumables_coeff"
+        used_by_estimate_lines: ["waterproofing.waterproofing_consumables_tool_amortization"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumables/tool amortization amount is calculated from the primary waterproofing subtotal."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -456,3 +612,36 @@ not_defaults:
       reason: "Manual/supplier quantity, not a default."
       belongs_to: "review sheet 01 / supplier input"
       estimate_line_code: "foundation_slab.concrete_pump_32m"
+  waterproofing:
+    waterproofing_area_m2:
+      reason: "Project quantity from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.waterproofing_bitumen_mastic_work"
+    eps100_wall_volume_m3:
+      reason: "Project EPS volume from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.eps100_wall_penoplex_geo_material"
+    waterproofing_work_unit_price:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.waterproofing_bitumen_mastic_work"
+    primer_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.bitumen_primer_aquamast_18l"
+    mastic_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.bitumen_mastic_aquamast_18kg"
+    eps100_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.eps100_wall_penoplex_geo_material"
+    glue_foam_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.eps_glue_foam"
+    project_name:
+      reason: "Job metadata, not a formula default for the estimate catalog."
+      belongs_to: "job metadata / adapter context"
+      estimate_line_code: null
