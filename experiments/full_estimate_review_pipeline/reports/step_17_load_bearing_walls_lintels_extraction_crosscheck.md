@@ -190,9 +190,62 @@ or show manual/default-required status if these are missing before calculator ex
 - [x] Review preview aliases updated away from old bridge target names.
 - [x] No calculator code changed.
 - [x] No project-specific quantities or page references added.
-- [ ] Build the adapter/defaults layer that fills required non-PDF calculator inputs.
+- [x] Declare the adapter/defaults layer that fills required non-PDF calculator inputs — done
+      2026-07-10 in `section_contract.yaml`'s `defaults`/`price_keys` (see the new section below).
+      The `build_load_bearing_walls_lintels_input` adapter function itself is still not implemented
+      anywhere in the repo; only the contract-level declaration exists so far.
 - [ ] Run a real extraction JSON through the multi-section review workbook once the adapter/defaults
       layer exists.
+
+## `estimate_lines` build-out and defaults/price_keys gap fix (2026-07-10)
+
+`section_contract.yaml` previously declared only 7 of the calculator's 30 possible production
+`estimate_lines` (23 always-present + up to 7 conditional when `floors_count = 2` and
+`flat_roof_enabled` with positive parapet/vent volumes). Rebuilt the full list by reading
+`load_bearing_walls_lintels_calculator.py` directly (`calculate_lines()`, `calculate_blocks()`,
+`LoadBearingWallsLintelsInput` dataclass) end to end, not from the `catalogs/estimate_line_catalog.yaml`
+draft alone (its own header's `calculator_estimate_line_count: 27` turned out to be stale — real max
+is 30). All 23 missing lines added, including the two dynamic rebar-row lines
+(`main_wall_rebar_items`, `lintel_rebar_items`, one estimate line generated per input row, any
+diameter/class — same convention as `floor_slab_1`/`floor_slab_2`) and the two zero-priced control
+rows (`main_wall_chasing_for_d10_reinforcement`, `lintel_rebar_frame_assembly`).
+
+Also completed the 11-item adapter/defaults gap list from this report's earlier section above (all
+now real `defaults`/`price_keys` entries with catalog-value sourcing, not invented numbers — every
+numeric default was cross-checked against every input.json fixture under
+`experiments/load_bearing_walls_lintels_calculator/cases/`, which agree on all of them), plus found 9
+more required `LoadBearingWallsLintelsInput` fields with no dataclass default that the earlier pass's
+scan had missed entirely: `rebar_a500_d10_kg_per_m`, `rebar_a500_d10_rod_length_m`,
+`rebar_a500_d10_unit_price_per_m` (needed even in production because `calculate_blocks()`
+unconditionally builds the parapet/second-light base-length rebar helper), and 6 legacy
+wall-geometry fields (`main_wall_external_length_m`, `main_wall_internal_250_control_length_m`,
+`main_wall_reinforcement_rows`, `main_wall_400_reinforcement_threads`,
+`main_wall_250_reinforcement_threads`, `main_wall_reinforcement_overlap_coeff`) that are dead in
+production `spec_length_items` mode but still required just to construct the dataclass. The four
+legacy base-length fields and the six legacy geometry fields are documented as safe `0` placeholders
+(neither group is in the calculator's `require_positive` list); the three `rebar_a500_d10_*` fields
+got real catalog values (`0.617` kg/m, `11.7` m rod length — same numbers already used elsewhere in
+this project for A500 Ø10) since two of them are in `require_positive`.
+
+The contract also had no `auto_calculated:` or `checks:` sections at all before this pass — both
+added, following the same structure already used by `foundation_slab`/`floor_slab_2`.
+
+Two real bugs found and fixed purely at the contract-YAML level (no calculator code touched):
+1. `lintel_concrete_b22_5_m300_material`'s formula multiplied `lintel_concrete_spec_volume_m3` by
+   `concrete_waste_coeff` — verified against `calculate_lintel_concrete()` that production
+   `spec_volume` mode never applies this coefficient (only the legacy `legacy_length_section` mode
+   does). Fixed to reference the corrected `auto_calculated.lintel_concrete_order_volume_m3`.
+2. `vent_chimney_gas_block_cladding_work`'s gate said "when flat_roof_enabled" but
+   `calculate_blocks()` requires `flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0`
+   — fixed to match, and mirrored the same `> 0` condition onto the sibling
+   `vent_chimney_gas_block_d500_600x150x250_material` line.
+
+Verified programmatically after every edit: YAML parses, zero duplicate `estimate_lines` codes, zero
+dangling `leaf_inputs` refs across `review_parameters`/`defaults`/`supplier_inputs`/`auto_calculated`/
+`price_keys`, and every `estimate_lines[].prices.*_key` resolves to a real `price_keys` or
+`supplier_inputs` entry. `rebar_a500_d10_unit_price_per_m` is intentionally the only unreferenced
+`price_keys` entry — it feeds `calculate_blocks()` internally but never becomes its own displayed
+`estimate_lines` row in production, as documented in that key's own `notes`.
 
 ## Future note (2026-07-09, non-blocking — nothing to do now)
 

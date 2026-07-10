@@ -246,11 +246,13 @@ review_parameters:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина прутка", unit: "м", value_kind: number}
+      - {key: unit_price_per_m, label_ru: "Цена за метр", unit: "руб/м", value_kind: number}
     parser_mapping:
       target_codes: ["main_wall_rebar_items"]
       aliases_ru: ["арматура несущих стен", "армирование кладки несущих стен"]
       expected_unit: "мп"
-      notes: "Primary PDF unit is m.п.; do not compute kg in chat extraction unless kg is explicit in PDF."
+      notes: "Primary PDF unit is m.п.; do not compute kg in chat extraction unless kg is explicit in PDF. rod_length_m is a catalog/spec value; unit_price_per_m is adapter-filled from rebar_unit_price_by_item, not a PDF value — do not ask the parser for it."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -279,11 +281,13 @@ review_parameters:
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина прутка", unit: "м", value_kind: number}
+      - {key: unit_price_per_m, label_ru: "Цена за метр", unit: "руб/м", value_kind: number}
     parser_mapping:
       target_codes: ["lintel_rebar_items"]
       aliases_ru: ["арматура перемычек", "спецификация арматуры перемычек"]
       expected_unit: "мп"
-      notes: "Do not mix with masonry reinforcement rows."
+      notes: "Do not mix with masonry reinforcement rows. rod_length_m is a catalog/spec value; unit_price_per_m is adapter-filled from rebar_unit_price_by_item, not a PDF value — do not ask the parser for it."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -350,6 +354,7 @@ price_keys:
   - {key: waste_removal_truck_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, машина", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_truck", fallback_key: "waste_removal_truck_unit_price", allow_manual_override: true, notes: ""}
   - {key: waste_removal_work_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, работа", price_kind: work, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_truck", fallback_key: "waste_removal_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: technical_supervision_amount, estimate_line_code: walls_technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: ""}
+  - {key: rebar_a500_d10_unit_price_per_m, estimate_line_code: null, label_ru: "Арматура A500 Ø10 (служебная цена конструктора калькулятора)", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_a500_d10_m", fallback_key: "rebar_a500_d10_unit_price_per_m", allow_manual_override: true, notes: "Found missing 2026-07-10: LoadBearingWallsLintelsInput.rebar_a500_d10_unit_price_per_m has no dataclass default, so the adapter must supply it even in production spec_length_items mode — it is still read unconditionally inside calculate_blocks() for the parapet/second-light base-length rebar helper, even though that helper's own estimate line only appears in legacy_second_light_addon mode. Not shown as its own estimate_lines row in production."}
 
 defaults:
   - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Filled from job metadata.", allow_override_later: false, notes: ""}
@@ -376,6 +381,17 @@ defaults:
   - {key: lintel_section_width_m, label_ru: "Ширина сечения перемычки для legacy режима", source_class: DEFAULT, value: 0.125, unit: "м", calculator_input_path: "lintel_section_width_m", source_note: "Kept for calculator compatibility; production spec_volume is primary.", allow_override_later: true, notes: ""}
   - {key: lintel_section_height_m, label_ru: "Высота сечения перемычки для legacy режима", source_class: DEFAULT, value: 0.125, unit: "м", calculator_input_path: "lintel_section_height_m", source_note: "Kept for calculator compatibility; production spec_volume is primary.", allow_override_later: true, notes: ""}
   - {key: vent_chimney_block_thickness_m, label_ru: "Толщина блока обкладки вентканалов", source_class: DEFAULT, value: 0.15, unit: "м", calculator_input_path: "vent_chimney_block_thickness_m", source_note: "Catalog/formula default for 150 mm block.", allow_override_later: true, notes: ""}
+  - {key: gas_block_d400_pallet_volume_m3, label_ru: "Объем поддона D400 600x400x250", source_class: DEFAULT, value: 2.15, unit: "м3", calculator_input_path: "gas_block_d400_pallet_volume_m3", source_note: "Catalog pallet volume; found missing 2026-07-10 — required by the calculator (no dataclass default) and used by every D400 order-volume line (main, floor_2, parapet). Confirmed identical across all production test cases.", allow_override_later: true, notes: ""}
+  - {key: gas_block_d500_250_pallet_volume_m3, label_ru: "Объем поддона D500 600x250x250", source_class: DEFAULT, value: 1.8, unit: "м3", calculator_input_path: "gas_block_d500_250_pallet_volume_m3", source_note: "Catalog pallet volume; found missing 2026-07-10, same class of gap as gas_block_d400_pallet_volume_m3.", allow_override_later: true, notes: ""}
+  - {key: gas_block_d500_150_pallet_volume_m3, label_ru: "Объем поддона D500 600x150x250 (вентканалы)", source_class: DEFAULT, value: 1.8, unit: "м3", calculator_input_path: "gas_block_d500_150_pallet_volume_m3", source_note: "Catalog pallet volume; found missing 2026-07-10, same class of gap as gas_block_d400_pallet_volume_m3.", allow_override_later: true, notes: ""}
+  - {key: adhesive_consumption_bag_per_m3, label_ru: "Расход клея на м3 кладки", source_class: DEFAULT, value: 1.2, unit: "мешок/м3", calculator_input_path: "adhesive_consumption_bag_per_m3", source_note: "Catalog consumption rate; found missing 2026-07-10 — required by the calculator (no dataclass default), feeds every adhesive line (main, floor_2, parapet/vent).", allow_override_later: true, notes: ""}
+  - {key: sand_concrete_consumption_kg_per_m2_per_10mm, label_ru: "Расход пескобетона на м2 на 10мм толщины", source_class: DEFAULT, value: 19, unit: "кг/м2/10мм", calculator_input_path: "sand_concrete_consumption_kg_per_m2_per_10mm", source_note: "Catalog consumption rate; found missing 2026-07-10 — required by the calculator (no dataclass default) and feeds the unconditional sand_concrete_m300_first_row line.", allow_override_later: true, notes: ""}
+  - {key: sand_concrete_thickness_factor, label_ru: "Коэффициент толщины слоя пескобетона", source_class: DEFAULT, value: 2, unit: "", calculator_input_path: "sand_concrete_thickness_factor", source_note: "Catalog/formula factor; found missing 2026-07-10, same class of gap as sand_concrete_consumption_kg_per_m2_per_10mm.", allow_override_later: true, notes: ""}
+  - {key: gas_block_delivery_truck_capacity_m3, label_ru: "Вместимость машины доставки блоков", source_class: DEFAULT, value: 32, unit: "м3", calculator_input_path: "gas_block_delivery_truck_capacity_m3", source_note: "Catalog/supplier truck capacity; found missing 2026-07-10 — required by the calculator (no dataclass default) and feeds gas_blocks_and_mix_delivery, gas_blocks_unloading_manipulator and the crane-shift threshold line.", allow_override_later: true, notes: ""}
+  - {key: rebar_a500_d10_kg_per_m, label_ru: "Масса 1 м арматуры A500 Ø10", source_class: DEFAULT, value: 0.617, unit: "кг/м", calculator_input_path: "rebar_a500_d10_kg_per_m", source_note: "Physical steel property, same value used elsewhere in this project for A500 Ø10 (e.g. floor slab rebar catalogs). Found missing 2026-07-10 — required by the calculator (no dataclass default) even in production spec_length_items mode, because calculate_blocks() unconditionally builds the parapet/second-light base-length rebar helper.", allow_override_later: true, notes: ""}
+  - {key: rebar_a500_d10_rod_length_m, label_ru: "Длина прутка арматуры A500 Ø10", source_class: DEFAULT, value: 11.7, unit: "м", calculator_input_path: "rebar_a500_d10_rod_length_m", source_note: "Standard supply rod length, same value used elsewhere in this project. Found missing 2026-07-10, same class of gap as rebar_a500_d10_kg_per_m.", allow_override_later: true, notes: ""}
+  - {key: main_wall_legacy_geometry_placeholder_zero, label_ru: "Заглушки геометрии для legacy-метода арматуры несущих стен (не используются в production)", source_class: DEFAULT, value: 0, unit: "", calculator_input_path: "main_wall_external_length_m|main_wall_internal_250_control_length_m|main_wall_reinforcement_rows|main_wall_400_reinforcement_threads|main_wall_250_reinforcement_threads|main_wall_reinforcement_overlap_coeff", source_note: "Found missing 2026-07-10: these 6 fields have no dataclass default and are only mathematically used by main_wall_rebar_calc_method=legacy_wall_geometry, but production uses spec_length_items — the constructor still requires some value. Safe placeholder 0 for all 6 (none are in the calculator's require_positive list, only require_non_negative).", allow_override_later: false, notes: "Single documentation entry covering 6 dead-in-production calculator fields; adapter must still set all 6 individually to 0."}
+  - {key: parapet_second_light_legacy_base_length_placeholder_zero, label_ru: "Заглушки базовой длины для legacy-строк парапета и второго света (не используются в production)", source_class: DEFAULT, value: 0, unit: "м", calculator_input_path: "parapet_chasing_base_length_m|second_light_chasing_base_length_m|parapet_rebar_base_length_m|second_light_rebar_base_length_m", source_note: "Found missing 2026-07-10: these 4 fields have no dataclass default. calculate_blocks() always computes parapet_rebar/second_light_rebar from them via rebar_from_base_length, but the resulting values are only turned into a priced estimate line when upper_floor_calc_method=legacy_second_light_addon (production uses floor_2_spec_volume, so the computed control values are simply unused). Safe placeholder 0 for all 4 (not in require_positive list; rod_length denominator is rebar_a500_d10_rod_length_m, never these fields, so no division-by-zero risk).", allow_override_later: false, notes: "Single documentation entry covering 4 dead-in-production calculator fields; adapter must still set all 4 individually to 0."}
 
 supplier_inputs:
   - key: flat_roof_enabled
@@ -458,6 +474,12 @@ supplier_inputs:
       action_ru: "Укажите фиксированную сумму расходников или замените будущей формулой."
     notes: "Calculator currently keeps this as manual/fixed pending formula confirmation."
 
+auto_calculated:
+  - {key: lintel_concrete_order_volume_m3, label_ru: "Заказной объем бетона перемычек", source_class: AUTO_CALCULATED, formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))", leaf_inputs: [{ref: review_parameters.lintel_concrete_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.lintel_concrete_min_order_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Feeds both lintel_concrete_b22_5_m300_material and manual_concrete_lifting. Production spec_volume mode does NOT apply concrete_waste_coeff (only the legacy_length_section mode does) — found 2026-07-10 that the pre-existing lintel_concrete_b22_5_m300_material line in this contract incorrectly multiplied by concrete_waste_coeff; fixed alongside this entry."}
+  - {key: gas_block_delivery_total_volume_m3, label_ru: "Суммарный закупочный объем блоков для доставки", source_class: AUTO_CALCULATED, formula: "main_gas_block_d400_600x400x250_material.order_volume_m3 + main_gas_block_d500_600x250x250_material.order_volume_m3 + floor_2_gas_block_d400_material.order_volume_m3 + parapet_gas_block_d400_material.order_volume_m3 + vent_chimney_gas_block_d500_600x150x250_material.order_volume_m3", leaf_inputs: [{ref: review_parameters.main_wall_gas_block_400_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.main_wall_gas_block_250_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.floor_2_masonry_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.parapet_masonry_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.vent_chimney_gas_block_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.floors_count, source_class: AUTO_PROJECT}, {ref: supplier_inputs.flat_roof_enabled, source_class: MANUAL_REVIEW}, {ref: defaults.gas_block_waste_coeff, source_class: DEFAULT}, {ref: defaults.gas_block_d400_pallet_volume_m3, source_class: DEFAULT}, {ref: defaults.gas_block_d500_250_pallet_volume_m3, source_class: DEFAULT}, {ref: defaults.gas_block_d500_150_pallet_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "The floor_2/parapet/vent terms are each 0 whenever that group's own estimate lines are disabled (floors_count != 2, or no flat roof) — no special-casing needed in the sum itself."}
+  - {key: gas_block_delivery_trucks, label_ru: "Количество машин доставки блоков", source_class: AUTO_CALCULATED, formula: "ceil(gas_block_delivery_total_volume_m3 / gas_block_delivery_truck_capacity_m3)", leaf_inputs: [{ref: auto_calculated.gas_block_delivery_total_volume_m3, source_class: AUTO_CALCULATED}, {ref: defaults.gas_block_delivery_truck_capacity_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Feeds gas_blocks_and_mix_delivery and gas_blocks_unloading_manipulator (same quantity for both) and the crane-shift threshold below."}
+  - {key: main_walls_crane_shifts, label_ru: "Смены автокрана 25т для несущих стен", source_class: AUTO_CALCULATED, formula: "1 if gas_block_delivery_trucks <= 3 else 2", leaf_inputs: [{ref: auto_calculated.gas_block_delivery_trucks, source_class: AUTO_CALCULATED}], calculator_input_path: "", notes: "Production mode is delivery_trucks_threshold; legacy manual shift count is not production."}
+
 calculator_input_mapping:
   - input_path: "project_name"
     from:
@@ -538,14 +560,225 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=lintel_concrete_b22_5_m300_material]"
     quantity:
-      formula: "max(lintel_concrete_spec_volume_m3 * concrete_waste_coeff, lintel_concrete_min_order_volume_m3)"
+      formula: "lintel_concrete_order_volume_m3"
       leaf_inputs:
-        - {ref: "review_parameters.lintel_concrete_spec_volume_m3", source_class: AUTO_PROJECT}
-        - {ref: "defaults.concrete_waste_coeff", source_class: DEFAULT}
-        - {ref: "defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
+        - {ref: "auto_calculated.lintel_concrete_order_volume_m3", source_class: AUTO_CALCULATED}
     prices: {material_unit_price_key: concrete_m300_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Fixed 2026-07-10: previous formula incorrectly multiplied lintel_concrete_spec_volume_m3 by concrete_waste_coeff. Verified directly against calculate_lintel_concrete() in load_bearing_walls_lintels_calculator.py — the spec_volume branch (production mode) does not apply concrete_waste_coeff at all, only the legacy_length_section branch does. Same order volume also feeds manual_concrete_lifting."
+
+  - code: scaffolding_timber_material
+    name_ru: "Пиломатериал обрезной хвойных пород для устройства лесов, подмостей 2 сорт ГОСТ"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=scaffolding_timber_material]"
+    quantity:
+      formula: "floors_count * scaffolding_timber_m3_per_floor"
+      leaf_inputs:
+        - {ref: "review_parameters.floors_count", source_class: AUTO_PROJECT}
+        - {ref: "defaults.scaffolding_timber_m3_per_floor", source_class: DEFAULT}
+    prices: {material_unit_price_key: scaffolding_timber_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: ""
+
+  - code: main_gas_block_d400_600x400x250_material
+    name_ru: "Газобетонный блок D400 600x400x250 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=main_gas_block_d400_600x400x250_material]"
+    quantity:
+      formula: "ceil_to_pallet(main_wall_gas_block_400_spec_volume_m3 * gas_block_waste_coeff, gas_block_d400_pallet_volume_m3)"
+      leaf_inputs:
+        - {ref: "review_parameters.main_wall_gas_block_400_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d400_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d400_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Purchased volume rounded up to full pallets."
+
+  - code: main_gas_block_d500_600x250x250_material
+    name_ru: "Газобетонный блок D500 600x250x250 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=main_gas_block_d500_600x250x250_material]"
+    quantity:
+      formula: "ceil_to_pallet(main_wall_gas_block_250_spec_volume_m3 * gas_block_waste_coeff, gas_block_d500_250_pallet_volume_m3)"
+      leaf_inputs:
+        - {ref: "review_parameters.main_wall_gas_block_250_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d500_250_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d500_250_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Purchased volume rounded up to full pallets."
+
+  - code: main_gas_block_adhesive
+    name_ru: "Монтажный клей для блоков 25 кг"
+    unit: "мешок"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=main_gas_block_adhesive]"
+    quantity:
+      formula: "ceil((main_wall_gas_block_400_spec_volume_m3 + main_wall_gas_block_250_spec_volume_m3) * adhesive_consumption_bag_per_m3 * adhesive_waste_coeff)"
+      leaf_inputs:
+        - {ref: "review_parameters.main_wall_gas_block_400_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.main_wall_gas_block_250_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.adhesive_consumption_bag_per_m3", source_class: DEFAULT}
+        - {ref: "defaults.adhesive_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: adhesive_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Glue for main load-bearing walls only; floor_2/parapet glue are separate lines."
+
+  - code: sand_concrete_m300_first_row
+    name_ru: "Пескобетон (ЦПС) М300 40 кг"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=sand_concrete_m300_first_row]"
+    quantity:
+      formula: "ceil(cutoff_waterproofing_load_bearing_walls_area_m2 * sand_concrete_consumption_kg_per_m2_per_10mm * sand_concrete_thickness_factor / sand_concrete_bag_weight_kg)"
+      leaf_inputs:
+        - {ref: "review_parameters.cutoff_waterproofing_load_bearing_walls_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "defaults.sand_concrete_consumption_kg_per_m2_per_10mm", source_class: DEFAULT}
+        - {ref: "defaults.sand_concrete_thickness_factor", source_class: DEFAULT}
+        - {ref: "defaults.sand_concrete_bag_weight_kg", source_class: DEFAULT}
+    prices: {material_unit_price_key: sand_concrete_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Leveling layer under first row of blocks."
+
+  - code: u_block_lintel_cutting
+    name_ru: "Резка блока под перемычку (U-блок)"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=u_block_lintel_cutting]"
+    quantity:
+      formula: "lintel_total_length_m / gas_block_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.lintel_total_length_m", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_length_m", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: u_block_cutting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Unit stays pieces; do not convert to meters."
+
+  - code: main_wall_chasing_for_d10_reinforcement
+    name_ru: "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: control_zero_row
+    calculator_result_path: "estimate_lines[code=main_wall_chasing_for_d10_reinforcement]"
+    quantity:
+      formula: "sum(main_wall_rebar_items.spec_length_m)"
+      leaf_inputs:
+        - {ref: "review_parameters.main_wall_rebar_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero-priced control row; payable rebar is the main_wall_rebar_items dynamic rows below."
+
+  - code: main_wall_rebar_items
+    name_ru: "Арматура несущих стен по диаметрам"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: dynamic_material_rows
+    calculator_result_path: "estimate_lines[code=load_bearing_walls_floor_*_rebar_*]"
+    quantity:
+      formula: "ceil(spec_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m per row"
+      leaf_inputs:
+        - {ref: "review_parameters.main_wall_rebar_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.rebar_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "One estimate line per row of main_wall_rebar_items, any diameter/class. Line code/name auto-derived when not supplied in the row, e.g. load_bearing_walls_floor_1_rebar_a500_d10."
+
+  - code: gas_blocks_and_mix_delivery
+    name_ru: "Доставка блоков, смеси"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=gas_blocks_and_mix_delivery]"
+    quantity:
+      formula: "gas_block_delivery_trucks"
+      leaf_inputs:
+        - {ref: "auto_calculated.gas_block_delivery_trucks", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: gas_block_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: gas_blocks_unloading_manipulator
+    name_ru: "Разгрузка блоков, смеси манипулятором"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=gas_blocks_unloading_manipulator]"
+    quantity:
+      formula: "gas_block_delivery_trucks"
+      leaf_inputs:
+        - {ref: "auto_calculated.gas_block_delivery_trucks", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: gas_block_unloading_manipulator_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Same quantity as gas_blocks_and_mix_delivery."
+
+  - code: main_walls_blocks_crane_moving_25t
+    name_ru: "Перемещение блоков, смеси автокраном 25 т"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=main_walls_blocks_crane_moving_25t]"
+    quantity:
+      formula: "main_walls_crane_shifts"
+      leaf_inputs:
+        - {ref: "auto_calculated.main_walls_crane_shifts", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: crane_25t_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Production mode is delivery_trucks_threshold; legacy manual shift count is not production."
+
+  - code: lintel_rebar_frame_assembly
+    name_ru: "Изготовление и монтаж каркаса армирования перемычек"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: control_zero_row
+    calculator_result_path: "estimate_lines[code=lintel_rebar_frame_assembly]"
+    quantity:
+      formula: "sum(lintel_rebar_items.order_length_m)"
+      leaf_inputs:
+        - {ref: "review_parameters.lintel_rebar_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero-priced aggregate row before the dynamic lintel_rebar_items rows."
+
+  - code: lintel_rebar_items
+    name_ru: "Арматура перемычек по диаметрам"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: dynamic_material_rows
+    calculator_result_path: "estimate_lines[code=lintels_floor_*_rebar_*]"
+    quantity:
+      formula: "ceil(spec_length_m * rebar_waste_coeff / rod_length_m) * rod_length_m per row"
+      leaf_inputs:
+        - {ref: "review_parameters.lintel_rebar_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.rebar_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "One estimate line per row of lintel_rebar_items, any diameter/class, e.g. lintels_floor_1_rebar_a500_d12 and lintels_floor_1_rebar_a240_d6."
+
+  - code: lintel_concrete_delivery
+    name_ru: "Доставка бетона до объекта"
+    unit: "рейс"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=lintel_concrete_delivery]"
+    quantity:
+      formula: "concrete_delivery_trips"
+      leaf_inputs:
+        - {ref: "supplier_inputs.concrete_delivery_trips", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: concrete_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Supplier/manual quantity; not a reusable default."
+
+  - code: manual_concrete_lifting
+    name_ru: "Перенос, подъем бетона вручную"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=manual_concrete_lifting]"
+    quantity:
+      formula: "lintel_concrete_order_volume_m3"
+      leaf_inputs:
+        - {ref: "auto_calculated.lintel_concrete_order_volume_m3", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: manual_concrete_lifting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Same ordered volume as lintel_concrete_b22_5_m300_material."
 
   - code: floor_2_masonry_work
     name_ru: "Кладка несущих стен 2-го этажа из газобетонных блоков"
@@ -561,17 +794,162 @@ estimate_lines:
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: ""
 
+  - code: floor_2_gas_block_d400_material
+    name_ru: "Газобетонный блок D400 600x400x250мм для кладки над кухней-гостиной"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_gas_block_d400_material]"
+    quantity:
+      formula: "ceil_to_pallet(floor_2_masonry_volume_m3 * gas_block_waste_coeff, gas_block_d400_pallet_volume_m3) when floors_count = 2"
+      leaf_inputs:
+        - {ref: "review_parameters.floors_count", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_2_masonry_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d400_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d400_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Material row for floor_2/current upper masonry block."
+
+  - code: floor_2_masonry_glue
+    name_ru: "Монтажный клей для блоков 25 кг, кладка над кухней-гостиной"
+    unit: "мешок"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_masonry_glue]"
+    quantity:
+      formula: "ceil(floor_2_masonry_volume_m3 * adhesive_consumption_bag_per_m3 * adhesive_waste_coeff) when floors_count = 2"
+      leaf_inputs:
+        - {ref: "review_parameters.floors_count", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_2_masonry_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.adhesive_consumption_bag_per_m3", source_class: DEFAULT}
+        - {ref: "defaults.adhesive_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: adhesive_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Glue row for floor_2/current upper masonry block."
+
+  - code: parapet_masonry_work
+    name_ru: "Кладка парапета из газобетонных блоков"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_masonry_work]"
+    quantity:
+      formula: "parapet_masonry_volume_m3 when flat_roof_enabled and parapet_masonry_volume_m3 > 0"
+      leaf_inputs:
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "review_parameters.parapet_masonry_volume_m3", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: parapet_masonry_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Parapet is separate from floor_2/current upper masonry."
+
+  - code: parapet_gas_block_d400_material
+    name_ru: "Газобетонный блок D400 600x400x250мм для парапета"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_gas_block_d400_material]"
+    quantity:
+      formula: "ceil_to_pallet(parapet_masonry_volume_m3 * gas_block_waste_coeff, gas_block_d400_pallet_volume_m3) when flat_roof_enabled and parapet_masonry_volume_m3 > 0"
+      leaf_inputs:
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "review_parameters.parapet_masonry_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d400_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d400_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Purchased D400 volume for parapet."
+
   - code: vent_chimney_gas_block_cladding_work
     name_ru: "Обкладка дымохода и вентканалов 150 мм"
     unit: "м2"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=vent_chimney_gas_block_cladding_work]"
     quantity:
-      formula: "vent_chimney_gas_block_spec_volume_m3 / vent_chimney_block_thickness_m when flat_roof_enabled"
+      formula: "vent_chimney_gas_block_spec_volume_m3 / vent_chimney_block_thickness_m when flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0"
       leaf_inputs:
         - {ref: "review_parameters.vent_chimney_gas_block_spec_volume_m3", source_class: AUTO_PROJECT}
         - {ref: "defaults.vent_chimney_block_thickness_m", source_class: DEFAULT}
         - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
     prices: {material_unit_price_key: null, work_unit_price_key: vent_chimney_cladding_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Do not confuse with Schiedel piece counts."
+    notes: "Do not confuse with Schiedel piece counts. Gate corrected 2026-07-10 to match calculate_blocks(): vent_enabled requires both flat_roof_enabled and a positive spec volume, not flat_roof_enabled alone."
+
+  - code: vent_chimney_gas_block_d500_600x150x250_material
+    name_ru: "Газобетонный блок D500 600x150x250мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=vent_chimney_gas_block_d500_600x150x250_material]"
+    quantity:
+      formula: "ceil_to_pallet(vent_chimney_gas_block_spec_volume_m3 * gas_block_waste_coeff, gas_block_d500_150_pallet_volume_m3) when flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0"
+      leaf_inputs:
+        - {ref: "review_parameters.vent_chimney_gas_block_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d500_150_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d500_150_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Material row for vent/chimney cladding."
+
+  - code: walls_consumables_tool_amortization
+    name_ru: "Расходные материалы, амортизация инструмента"
+    unit: "комплект"
+    enabled_by_default: true
+    line_kind: fixed_amount
+    calculator_result_path: "estimate_lines[code=walls_consumables_tool_amortization]"
+    quantity:
+      formula: "1"
+      leaf_inputs:
+        - {ref: "supplier_inputs.walls_consumables_tool_amortization_amount_raw", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: walls_consumables_tool_amortization_amount_raw}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Manual/fixed amount until a universal formula is confirmed; do not store this amount as a reusable default."
+
+  - code: construction_waste_removal
+    name_ru: "Вывоз мусора с объекта"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=construction_waste_removal]"
+    quantity:
+      formula: "waste_removal_trucks"
+      leaf_inputs:
+        - {ref: "supplier_inputs.waste_removal_trucks", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: waste_removal_truck_unit_price, work_unit_price_key: waste_removal_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Manual/supplier quantity and both prices."
+
+  - code: walls_technical_supervision
+    name_ru: "Технический надзор"
+    unit: "-"
+    enabled_by_default: true
+    line_kind: fixed_amount
+    calculator_result_path: "estimate_lines[code=walls_technical_supervision]"
+    quantity:
+      formula: "1"
+      leaf_inputs:
+        - {ref: "price_keys.technical_supervision_amount", source_class: PRICE}
+    prices: {material_unit_price_key: null, work_unit_price_key: technical_supervision_amount, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Fixed amount/price key, not a default."
+
+checks:
+  required_source_classes: [AUTO_PROJECT, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_review_parameters:
+    - floors_count
+    - cutoff_waterproofing_load_bearing_walls_area_m2
+    - main_wall_gas_block_400_spec_volume_m3
+    - main_wall_gas_block_250_spec_volume_m3
+    - lintel_total_length_m
+    - lintel_concrete_spec_volume_m3
+    - main_wall_rebar_items
+    - lintel_rebar_items
+  forbidden_production_inputs:
+    - old_fixture_values
+    - old_expected_result_values
+    - display_quantity_overrides
+    - legacy_second_light_addon
+    - legacy_wall_geometry
+    - legacy_weight_items
+    - legacy_manual_toggle
+  expected_estimate_line_count: 30
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "estimate_lines fully built out 2026-07-10 from catalogs/estimate_line_catalog.yaml, verified directly against load_bearing_walls_lintels_calculator.py line by line (23 always-present lines + up to 7 conditional lines when both floors_count=2 and flat_roof_enabled with parapet/vent volumes > 0 = 30 max simultaneous; the catalog header's calculator_estimate_line_count: 27 was stale/inaccurate, superseded by this direct count). Two real bugs found and fixed during verification, both pure contract-YAML corrections (no calculator code touched): (1) lintel_concrete_b22_5_m300_material incorrectly applied concrete_waste_coeff, which production spec_volume mode never does; (2) vent_chimney_gas_block_cladding_work's gate was missing the vent_chimney_gas_block_spec_volume_m3 > 0 condition alongside flat_roof_enabled. Also found and fixed a structural gap: this contract had no auto_calculated or checks sections at all before this pass, and was missing 9 required LoadBearingWallsLintelsInput dataclass fields with no calculator-side default (added as new defaults/price_keys entries, documented individually with 2026-07-10 dates) — without them the adapter would fail to construct the calculator input at all, in production mode or otherwise."

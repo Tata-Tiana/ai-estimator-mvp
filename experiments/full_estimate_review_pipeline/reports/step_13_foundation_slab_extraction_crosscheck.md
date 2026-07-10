@@ -194,5 +194,27 @@ listed here.
 3. Track finding 5 (null catalog defaults) as a to-do against the planned shared defaults/catalog
    reference; until it exists, treat each section's `null`-valued `defaults` as a manual pre-run
    checklist item.
-4. `foundation_slab` is fully closed out for this stage. Continue Cross-Check Stage for the next
-   section in the agreed order.
+4. `foundation_slab` is closed out for the input side (review_parameters ↔ calculator, parser files)
+   of this stage. Continue Cross-Check Stage for the next section in the agreed order.
+
+## `estimate_lines` build-out (2026-07-10)
+
+Separate from the input-side cross-check above: `section_contract.yaml`'s `estimate_lines` block only
+had 5 of the calculator's real ~29 lines documented, even though `price_keys`/`defaults`/
+`auto_calculated` were already essentially complete. The missing 24 were already drafted in
+`catalogs/estimate_line_catalog.yaml` (26 base lines + 3 structural rows, `status: draft_cataloged`) —
+spot-checked several against `foundation_slab_calculator.py` directly (thermal-insert mode gating,
+structural row codes, the `rebar_items` dynamic expansion) before porting, all confirmed accurate.
+Ported all entries into `section_contract.yaml` in the calculator's real execution order; added one
+missing `auto_calculated.membrane_rolls` entry the ported lines needed; added 2 price keys
+(`thermal_insert_installation_work_unit_price`, `eps100_unit_price`) for the two legacy-only,
+`enabled_by_default: false` thermal-insert lines that don't run in production
+(`thermal_insert_mode=standard_50_100`). `expected_estimate_line_count` in `checks` corrected from the
+old rough estimate of 30 to the verified 29. Zero dangling `leaf_inputs`/price-key references,
+checked programmatically.
+
+Found, not fixed, flagged in the `formwork_timber` line's own notes: the calculator has a hardcoded
+`display_quantity=1.2` for that line — the same category of issue already fixed for waterproofing's
+`display_quantity` (step_16), and explicitly forbidden by this contract's own
+`checks.forbidden_production_inputs: display_quantity_overrides`. Needs the same explicit go-ahead
+before touching calculator code again.
