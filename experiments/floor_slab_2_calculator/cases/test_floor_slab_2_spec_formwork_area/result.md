@@ -94,6 +94,16 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - timber_volume_m3_raw: `0.362`
 - timber_volume_m3_display: `0.36`
 
+### beams
+
+- items: 0 items
+- items_count: `0`
+- items_total_concrete_volume_m3: `0.0`
+- items_total_formwork_area_m2: `0.0`
+- items_total_eps_material_area_m2: `0.0`
+- items_total_eps_work_length_m: `0.0`
+- notes: `['All values are 0 when no beams.items are given. Beam concrete is subtracted from concrete_placing_volume_m3 for the slab work line and priced separately on the beam_concreting_work estimate line. beams_formwork_area_m2 and the insulation length/area both use this data when their own scalar inputs are absent.']`
+
 ### rebar
 
 - rebar_calc_method: `legacy_weight_kg`
@@ -105,6 +115,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 ### concrete
 
 - concrete_placing_volume_m3: `16.5`
+- slab_concrete_volume_m3: `16.5`
+- beams_concrete_volume_m3: `0.0`
 - concrete_volume_with_waste_raw_m3: `17.325`
 - concrete_volume_with_waste_display_m3: `17.33`
 - concrete_order_volume_m3: `17.5`
@@ -117,6 +129,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - edge_insulation_height_m: `0.18`
 - edge_insulation_height_source: `specification`
 - edge_insulation_area_m2: `6.516`
+- edge_and_beam_insulation_area_m2: `6.516`
+- total_insulation_length_m: `36.2`
 - eps100_required_volume_without_waste_m3: `0.6516`
 - eps100_required_volume_with_waste_m3: `0.68418`
 - eps100_packs_raw: `2.467292`
@@ -151,19 +165,20 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
 | 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
-| 14 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
-| 15 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
-| 16 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
-| 17 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
-| 18 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 36.2 | 36.2 | 0 | 16 290 | 16 290 |
-| 19 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
-| 20 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
-| 21 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
-| 22 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
-| 23 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
-| 24 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 25 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 26 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
+| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 0 | 0 | 0 | 0 | 0 |
+| 15 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
+| 16 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
+| 17 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
+| 18 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
+| 19 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 36.2 | 36.2 | 0 | 16 290 | 16 290 |
+| 20 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
+| 21 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
+| 22 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
+| 23 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
+| 24 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
+| 25 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 26 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 27 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
 
 ## Post-Line Explanations
 
@@ -274,7 +289,16 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `198000.0` / `198000`
 - Итого raw/display: `198000.0` / `198000`
 
-### 14. Бетон марки В22,5 (М300)
+### 14. Бетонирование балки бетоном марки В22,5 (М300)
+
+- Тип строки: `work`
+- Количество raw/display: `0.0` / `0.0`
+- Материалы raw/display: `0.0` / `0`
+- Работы raw/display: `0.0` / `0`
+- Итого raw/display: `0.0` / `0`
+- Примечание: Quantity and total are 0 when no beams.items are given for this floor slab.
+
+### 15. Бетон марки В22,5 (М300)
 
 - Тип строки: `materials`
 - Количество raw/display: `17.5` / `17.5`
@@ -282,7 +306,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `112000.0` / `112000`
 
-### 15. Доставка бетона до объекта
+### 16. Доставка бетона до объекта
 
 - Тип строки: `logistics_machinery`
 - Количество raw/display: `2.0` / `2.0`
@@ -290,7 +314,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `15000.0` / `15000`
 
-### 16. Работа бетононасоса 32м + гаситель
+### 17. Работа бетононасоса 32м + гаситель
 
 - Тип строки: `machinery_fixed`
 - Количество raw/display: `1.0` / `1.0`
@@ -298,7 +322,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `38000.0` / `38000`
 
-### 17. Демонтаж опалубки после завершения бетонирования
+### 18. Демонтаж опалубки после завершения бетонирования
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `81.9` / `81.9`
@@ -306,16 +330,16 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 18. Устройство утепления по наружной стороне торцов плиты, балок
+### 19. Устройство утепления по наружной стороне торцов плиты, балок
 
 - Тип строки: `work`
 - Количество raw/display: `36.2` / `36.2`
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `16290.0` / `16290`
 - Итого raw/display: `16290.0` / `16290`
-- Примечание: Line name keeps the source wording; for floor slab 2 the calculation covers slab edges only, without beams.
+- Примечание: Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; equals slab_edge_perimeter_m alone when no beams.items are given.
 
-### 19. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
+### 20. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `0.8319` / `0.83`
@@ -323,7 +347,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `7503.738` / `7504`
 
-### 20. Клей-пена для ЭППС
+### 21. Клей-пена для ЭППС
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
@@ -331,7 +355,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `490.0` / `490`
 
-### 21. Логистика, и снабжение
+### 22. Логистика, и снабжение
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -339,7 +363,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `6894.72487` / `6895`
 
-### 22. Расходные материалы, амортизация инструмента
+### 23. Расходные материалы, амортизация инструмента
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -347,7 +371,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `20684.17461` / `20684`
 
-### 23. Технический надзор
+### 24. Технический надзор
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -355,7 +379,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 24. Заготовительно-складские расходы
+### 25. Заготовительно-складские расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -363,7 +387,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 25. Накладные и общехозяйственные расходы
+### 26. Накладные и общехозяйственные расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -371,7 +395,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 26. Сметная прибыль
+### 27. Сметная прибыль
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -393,7 +417,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 
 ## Warnings
 
-- concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness.
+- concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
 
 ## Comparison

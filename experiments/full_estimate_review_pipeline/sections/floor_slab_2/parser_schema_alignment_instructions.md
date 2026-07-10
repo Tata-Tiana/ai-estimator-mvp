@@ -19,6 +19,18 @@ Contract exists, but this section still needs the same parser/schema cross-check
 
 Known risk: this contract currently expects `floor_slab_2_rebar_items` rows with `spec_length_m`. Active parser/schema files must be checked and aligned to the calculator, not to old generic names.
 
+**Calculator change applied 2026-07-10** (explicitly requested, out of the usual "never touch calculator code" rule for this stage — recorded here on purpose): `experiments/floor_slab_2_calculator/calculator.py` previously hardcoded the assumption "floor slab 2 has no beams" — `beams_formwork_area_m2` silently defaulted to 0 with that exact warning text if not supplied, and there was no way to feed beam geometry at all. Per Elena, a beam may or may not exist on either floor slab independently — it is not tied to which floor. Added an optional `beams: {"items": [...]}` input (same row shape as `floor_slab_1_calculator.py`: `code`, `name`, `length_m`, `width_m`, `height_m`, `count`), applied to all three places beams actually affect the floor_slab_1 calculation (audited by reading `floor_slab_1_calculator.py` in full first, to make sure nothing was missed):
+
+1. **Formwork**: `beams_formwork_area_m2` is derived from the sum of item `formwork_area_m2` when the scalar input is absent; if both are given, the scalar wins with a delta warning past 0.01 m2 — same priority as `floor_slab_1_calculator.py`.
+2. **EPS100 edge insulation**: each beam's `length_m * height_m * count` now adds to the insulation material area (`edge_and_beam_insulation_area_m2`, drives EPS pack count and foam-glue can count), and each beam's `length_m * count` adds to `total_insulation_length_m`, which is now the real quantity on the `edge_insulation_work` estimate line (previously always `slab_edge_perimeter_m` alone, silently ignoring beams).
+3. **Concrete**: `slab_concrete_volume_m3 = concrete_placing_volume_m3 - beams_items_concrete_volume_m3` is now the quantity on `concrete_placing_work` (slab-only work); a new `beam_concreting_work` estimate line prices the beam concrete separately, using a new optional `beam_concreting_work_unit_price` input that is only read when `beams.items` is non-empty (so it is never required on projects without beams).
+
+Backward compatible in every case: no `beams` input at all → every one of the above stays numerically identical to before (0 contribution everywhere, `beam_concreting_work` line present with quantity/total 0, no new required input is read). All 6 existing test cases in `cases/` still pass with 0 mismatches after this change; also manually verified with a synthetic beam that formwork/insulation/concrete all move together consistently.
+
+Rebar is deliberately untouched — floor_slab_1's beam rebar positions are not a separate group, they go into the same flat rebar list differentiated only by diameter/class, and floor_slab_2 already works the same way.
+
+Separately noted, not fixed in this pass: `calculate_rebar_item`'s `spec_length_items` production path hardcodes a 3-entry `REBAR_CATALOG` (A500 ⌀16/12/10 only) and the estimate-line builder unconditionally expects exactly those three codes (`rebar_by_code["rebar_a500_d16"]`, etc.) — a project with a different rebar diameter/class on this slab would crash. This is a real, separate risk from the beams gap; needs its own decision before being touched.
+
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
 - `main_formwork_area_m2`

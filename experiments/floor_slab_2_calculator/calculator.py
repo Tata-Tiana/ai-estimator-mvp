@@ -154,7 +154,54 @@ def round_optional(value: Any, places: str = "0.000001") -> float | None:
     return None if value is None else round_decimal(value, places)
 
 
-def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
+def calculate_beam_items(
+    beams_in: dict[str, Any] | None,
+) -> tuple[list[dict[str, Any]], Decimal, Decimal, Decimal, Decimal]:
+    items_in = (beams_in or {}).get("items") or []
+    beam_items: list[dict[str, Any]] = []
+    for item in items_in:
+        length = d(item["length_m"])
+        width = d(item["width_m"])
+        height = d(item["height_m"])
+        count = d(item.get("count", 1))
+        if length < D0 or width < D0 or height < D0 or count < D0:
+            raise ValueError("beams.items length_m, width_m, height_m and count must be >= 0")
+        concrete_volume = length * width * height * count
+        formwork_area = length * (width + d(2) * height) * count
+        eps_material_area = length * height * count
+        beam_items.append(
+            {
+                "code": item["code"],
+                "name": item["name"],
+                "length_m": round_decimal(length),
+                "width_m": round_decimal(width),
+                "height_m": round_decimal(height),
+                "count": round_decimal(count),
+                "concrete_volume_m3": round_decimal(concrete_volume),
+                "formwork_area_m2": round_decimal(formwork_area),
+                "eps_material_area_m2": round_decimal(eps_material_area),
+            }
+        )
+    beams_concrete_volume = sum((d(item["concrete_volume_m3"]) for item in beam_items), D0)
+    beams_formwork_area = sum((d(item["formwork_area_m2"]) for item in beam_items), D0)
+    beams_eps_material_area = sum((d(item["eps_material_area_m2"]) for item in beam_items), D0)
+    beams_eps_work_length = sum(
+        (d(item["length_m"]) * d(item["count"]) for item in beam_items), D0
+    )
+    return (
+        beam_items,
+        beams_concrete_volume,
+        beams_formwork_area,
+        beams_eps_material_area,
+        beams_eps_work_length,
+    )
+
+
+def calculate_geometry_context(
+    input_data: dict[str, Any],
+    warnings: list[str],
+    beams_items_formwork_area: Decimal | None = None,
+) -> dict[str, Any]:
     method = input_data.get("formwork_area_calc_method", "legacy_dimensions")
     if method not in {"legacy_dimensions", "spec_formwork_area"}:
         raise ValueError(
@@ -224,12 +271,24 @@ def calculate_geometry_context(input_data: dict[str, Any], warnings: list[str]) 
         if edge_formwork_area < D0:
             raise ValueError("edge_formwork_area_m2 must be >= 0.")
         if input_beams_formwork_area is None:
-            beams_formwork_area = D0
-            warnings.append(
-                "beams_formwork_area_m2 is not provided; floor slab 2 has no beams, assumed 0."
-            )
+            if beams_items_formwork_area is not None:
+                beams_formwork_area = beams_items_formwork_area
+                warnings.append(
+                    "beams_formwork_area_m2 is not provided; using sum of beams.items formwork_area_m2 instead."
+                )
+            else:
+                beams_formwork_area = D0
+                warnings.append(
+                    "beams_formwork_area_m2 is not provided and no beams.items were given; assumed 0 for this run."
+                )
         else:
             beams_formwork_area = input_beams_formwork_area
+            if beams_items_formwork_area is not None:
+                beams_formwork_delta = beams_formwork_area - beams_items_formwork_area
+                if abs(beams_formwork_delta) > d("0.01"):
+                    warnings.append(
+                        "beams_formwork_area_m2 differs from sum of beams.items formwork_area_m2 by more than 0.01 m2."
+                    )
         if beams_formwork_area < D0:
             raise ValueError("beams_formwork_area_m2 must be >= 0.")
 
@@ -394,7 +453,18 @@ def estimate_line(
 def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings: list[str] = []
 
-    geometry_context = calculate_geometry_context(input_data, warnings)
+    (
+        beam_items,
+        beams_items_concrete_volume,
+        beams_items_formwork_area,
+        beams_items_eps_material_area,
+        beams_items_eps_work_length,
+    ) = calculate_beam_items(input_data.get("beams"))
+    geometry_context = calculate_geometry_context(
+        input_data,
+        warnings,
+        beams_items_formwork_area=beams_items_formwork_area if beam_items else None,
+    )
     slab_area = geometry_context["slab_area_m2"]
     slab_edge_perimeter = geometry_context["slab_edge_perimeter_m"]
     main_formwork_area = geometry_context["main_formwork_area_m2"]
@@ -441,9 +511,18 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     concrete_placing_volume = d(input_data["concrete_placing_volume_m3"])
     warnings.append(
         "concrete_placing_volume_m3 is a manual/project quantity for this case; "
-        "it is not derived from slab_area_m2 * slab thickness."
+        "it is not derived from slab_area_m2 * slab thickness. If beams exist, this total "
+        "is expected to already include beam concrete, same as floor_slab_1_calculator."
     )
-    concrete_work_total_raw = concrete_placing_volume * d(input_data["concrete_placing_work_unit_price"])
+    slab_concrete_volume = concrete_placing_volume - beams_items_concrete_volume
+    if slab_concrete_volume < D0:
+        raise ValueError("beams.items concrete volume exceeds concrete_placing_volume_m3")
+    concrete_work_total_raw = slab_concrete_volume * d(input_data["concrete_placing_work_unit_price"])
+    if beam_items:
+        beam_concreting_work_unit_price = d(input_data["beam_concreting_work_unit_price"])
+    else:
+        beam_concreting_work_unit_price = D0
+    beam_concrete_work_total_raw = beams_items_concrete_volume * beam_concreting_work_unit_price
     concrete_volume_with_waste = concrete_placing_volume * d(input_data["concrete_waste_coeff"])
     concrete_order_volume = ceil_to_step(concrete_volume_with_waste, input_data["concrete_round_step_m3"])
     concrete_material_total_raw = concrete_order_volume * d(input_data["concrete_unit_price"])
@@ -461,15 +540,17 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         "200 mm in the section title is considered a naming error."
     )
     edge_insulation_area = slab_edge_perimeter * edge_insulation_height
-    eps100_required_without_waste = edge_insulation_area * d(input_data["eps100_thickness_m"])
+    edge_and_beam_insulation_area = edge_insulation_area + beams_items_eps_material_area
+    total_insulation_length = slab_edge_perimeter + beams_items_eps_work_length
+    eps100_required_without_waste = edge_and_beam_insulation_area * d(input_data["eps100_thickness_m"])
     eps100_required_with_waste = eps100_required_without_waste * d(input_data["eps_waste_coeff"])
     eps100_packs_raw = eps100_required_with_waste / d(input_data["eps100_pack_volume_m3"])
     eps100_packs = ceil_decimal(eps100_packs_raw)
     eps100_order_volume = d(eps100_packs) * d(input_data["eps100_pack_volume_m3"])
     eps100_total_raw = eps100_order_volume * d(input_data["eps100_unit_price"])
-    edge_insulation_work_total_raw = slab_edge_perimeter * d(input_data["edge_insulation_work_unit_price_per_m"])
+    edge_insulation_work_total_raw = total_insulation_length * d(input_data["edge_insulation_work_unit_price_per_m"])
 
-    foam_cans_raw = edge_insulation_area / d(input_data["foam_coverage_area_per_can_m2"])
+    foam_cans_raw = edge_and_beam_insulation_area / d(input_data["foam_coverage_area_per_can_m2"])
     foam_cans_ordered = max(int(input_data["foam_min_cans"]), ceil_decimal(foam_cans_raw))
     foam_total_raw = d(foam_cans_ordered) * d(input_data["foam_can_unit_price"])
 
@@ -482,6 +563,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         + timber_total_raw
         + sum((d(item["material_total_raw"]) for item in rebar_items), D0)
         + concrete_work_total_raw
+        + beam_concrete_work_total_raw
         + concrete_material_total_raw
         + concrete_delivery_total_raw
         + concrete_pump_total_raw
@@ -616,10 +698,23 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",
             "м3",
             "work",
-            concrete_placing_volume,
+            slab_concrete_volume,
             work_unit_price=input_data["concrete_placing_work_unit_price"],
             work_total_raw=concrete_work_total_raw,
             price_code="concrete_placing_work_m3",
+        ),
+        estimate_line(
+            "beam_concreting_work",
+            "Бетонирование балки бетоном марки В22,5 (М300)",
+            "м3",
+            "work",
+            beams_items_concrete_volume,
+            work_unit_price=beam_concreting_work_unit_price,
+            work_total_raw=beam_concrete_work_total_raw,
+            notes=[
+                "Quantity and total are 0 when no beams.items are given for this floor slab."
+            ],
+            price_code="beam_concrete_placing_work_m3",
         ),
         estimate_line(
             "concrete_b22_5_m300_material",
@@ -667,11 +762,12 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "Устройство утепления по наружной стороне торцов плиты, балок",
             "мп",
             "work",
-            slab_edge_perimeter,
+            total_insulation_length,
             work_unit_price=input_data["edge_insulation_work_unit_price_per_m"],
             work_total_raw=edge_insulation_work_total_raw,
             notes=[
-                "Line name keeps the source wording; for floor slab 2 the calculation covers slab edges only, without beams."
+                "Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; "
+                "equals slab_edge_perimeter_m alone when no beams.items are given."
             ],
             price_code="edge_insulation_work_m",
         ),
@@ -811,6 +907,20 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "timber_volume_m3_raw": round_decimal(timber_volume),
             "timber_volume_m3_display": display_decimal(timber_volume, "0.01"),
         },
+        "beams": {
+            "items": beam_items,
+            "items_count": len(beam_items),
+            "items_total_concrete_volume_m3": round_decimal(beams_items_concrete_volume),
+            "items_total_formwork_area_m2": round_decimal(beams_items_formwork_area),
+            "items_total_eps_material_area_m2": round_decimal(beams_items_eps_material_area),
+            "items_total_eps_work_length_m": round_decimal(beams_items_eps_work_length),
+            "notes": [
+                "All values are 0 when no beams.items are given. Beam concrete is subtracted from "
+                "concrete_placing_volume_m3 for the slab work line and priced separately on the "
+                "beam_concreting_work estimate line. beams_formwork_area_m2 and the insulation "
+                "length/area both use this data when their own scalar inputs are absent."
+            ],
+        },
         "rebar": {
             "rebar_calc_method": rebar_calc_method,
             "items": rebar_items,
@@ -820,6 +930,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         },
         "concrete": {
             "concrete_placing_volume_m3": round_decimal(concrete_placing_volume),
+            "slab_concrete_volume_m3": round_decimal(slab_concrete_volume),
+            "beams_concrete_volume_m3": round_decimal(beams_items_concrete_volume),
             "concrete_volume_with_waste_raw_m3": round_decimal(concrete_volume_with_waste),
             "concrete_volume_with_waste_display_m3": display_decimal(concrete_volume_with_waste),
             "concrete_order_volume_m3": round_decimal(concrete_order_volume),
@@ -833,6 +945,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "edge_insulation_height_m": round_decimal(edge_insulation_height),
             "edge_insulation_height_source": edge_insulation_height_source,
             "edge_insulation_area_m2": round_decimal(edge_insulation_area),
+            "edge_and_beam_insulation_area_m2": round_decimal(edge_and_beam_insulation_area),
+            "total_insulation_length_m": round_decimal(total_insulation_length),
             "eps100_required_volume_without_waste_m3": round_decimal(eps100_required_without_waste),
             "eps100_required_volume_with_waste_m3": round_decimal(eps100_required_with_waste),
             "eps100_packs_raw": round_decimal(eps100_packs_raw),
