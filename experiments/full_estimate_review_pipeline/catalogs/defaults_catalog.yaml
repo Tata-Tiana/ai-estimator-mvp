@@ -577,6 +577,374 @@ sections:
         allow_override: true
         notes: "Consumables/tool amortization amount is calculated from the primary waterproofing subtotal."
 
+  load_bearing_walls_lintels:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels/section_contract.yaml"
+      - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py"
+      - "experiments/load_bearing_walls_lintels_calculator/README.md"
+      - "docs/report_load_bearing_walls_lintels_calculator.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      scaffolding_calc_method:
+        value: "floors_based"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "scaffolding_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.scaffolding_setup_dismantling"
+          - "load_bearing_walls_lintels.scaffolding_timber_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Scaffolding quantities are calculated from floors_count; legacy direct quantities are not production."
+
+      cutoff_waterproofing_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "cutoff_waterproofing_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.cutoff_waterproofing_under_first_row_blocks"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed spec area under load-bearing walls only; do not reconstruct from wall lengths in production."
+
+      lintel_length_calc_method:
+        value: "spec_total_length"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_length_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.u_block_lintel_cutting"
+          - "load_bearing_walls_lintels.lintel_concreting_work"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Calculator uses lintel_total_length_m from specification; lintel_items are diagnostic only."
+
+      lintel_concrete_calc_method:
+        value: "spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_concrete_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use project concrete volume for lintels; legacy section-by-length reconstruction is not production."
+
+      main_wall_rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "main_wall_rebar_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_chasing_for_d10_reinforcement"
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Wall rebar comes from PDF/spec rows in linear meters, grouped by floor/component/class/diameter."
+
+      lintel_rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_rebar_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_rebar_frame_assembly"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Lintel rebar comes from PDF/spec rows in linear meters; old weight-based rows are legacy only."
+
+      main_walls_crane_calc_method:
+        value: "delivery_trucks_threshold"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "main_walls_crane_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.main_walls_blocks_crane_moving_25t"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Crane shifts are calculated from gas block delivery trucks: up to 3 trucks is 1 shift, 4 or more is 2 shifts."
+
+      upper_floor_calc_method:
+        value: "floor_2_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "upper_floor_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_2_masonry_work"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Current MVP maps the project row 'Кладка над кухней-гостиной' to floor_2_masonry_volume_m3; it does not solve the general full-two-floor case yet."
+
+      parapet_calc_method:
+        value: "flat_roof_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "parapet_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.parapet_masonry_work"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Parapet is enabled by flat_roof_enabled and parapet_masonry_volume_m3."
+
+      vent_chimney_cladding_calc_method:
+        value: "flat_roof_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "vent_chimney_cladding_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Vent/chimney cladding is enabled by flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3."
+
+      vent_chimney_geometry_calc_method:
+        value: "spec_volume_thickness"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "vent_chimney_geometry_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Work area is calculated as spec volume divided by 150 mm block thickness."
+
+      scaffolding_setup_units_per_floor:
+        value: 1.0
+        unit: "set/floor"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "scaffolding_setup_units_per_floor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.scaffolding_setup_dismantling"]
+        source_note: "Calculator README production scaffolding rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Default quantity per floor; not a project quantity."
+
+      scaffolding_timber_m3_per_floor:
+        value: 1.0
+        unit: "m3/floor"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "scaffolding_timber_m3_per_floor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.scaffolding_timber_material"]
+        source_note: "Calculator README production scaffolding rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Default timber quantity per floor; not a project quantity."
+
+      gas_block_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "gas_block_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+          - "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material waste coefficient for gas blocks; prices and project volumes live elsewhere."
+
+      gas_block_d400_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d400_pallet_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D400 blocks."
+
+      gas_block_d500_250_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d500_250_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D500 250 mm blocks."
+
+      gas_block_d500_150_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d500_150_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D500 150 mm blocks."
+
+      adhesive_consumption_bag_per_m3:
+        value: 1.25
+        unit: "bag/m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "adhesive_consumption_bag_per_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_adhesive"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Glue consumption coefficient; not a project quantity."
+
+      adhesive_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "adhesive_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_adhesive"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Glue waste coefficient."
+
+      sand_concrete_consumption_kg_per_m2_per_10mm:
+        value: 18.0
+        unit: "kg/m2/10mm"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "sand_concrete_consumption_kg_per_m2_per_10mm"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption default for sand concrete under first row."
+
+      sand_concrete_thickness_factor:
+        value: 1.0
+        unit: "10mm layers"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "sand_concrete_thickness_factor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness multiplier for sand concrete consumption."
+
+      sand_concrete_bag_weight_kg:
+        value: 40.0
+        unit: "kg/bag"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "sand_concrete_bag_weight_kg"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size for sand concrete."
+
+      gas_block_length_m:
+        value: 0.6
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_length_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.u_block_lintel_cutting"]
+        source_note: "Load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Block length used to convert lintel total length into U-block cutting item count."
+
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rebar_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rebar waste coefficient applied to spec_length_m before rod rounding."
+
+      rebar_a500_d10_rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items.rod_length_m"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Load-bearing walls calculator uses rod_length_m per SpecRebarItem; adapter should fill by diameter/class from shared catalog."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Stored as shared default for adapter fill; not a PDF value."
+
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete waste coefficient before minimum-order rule."
+
+      lintel_concrete_min_order_volume_m3:
+        value: 1.0
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_concrete_min_order_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+        source_note: "Calculator README production rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Minimum concrete order for lintels."
+
+      gas_block_delivery_truck_capacity_m3:
+        value: 30.0
+        unit: "m3/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "gas_block_delivery_truck_capacity_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.gas_blocks_and_mix_delivery"
+          - "load_bearing_walls_lintels.gas_blocks_unloading_manipulator"
+          - "load_bearing_walls_lintels.main_walls_blocks_crane_moving_25t"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Truck capacity used for delivery count and crane threshold; not a project quantity."
+
+      vent_chimney_block_thickness_m:
+        value: 0.15
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "vent_chimney_block_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"]
+        source_note: "Calculator README production rule for 150 mm block."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Thickness used to convert vent/chimney block volume into work area."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -645,3 +1013,52 @@ not_defaults:
       reason: "Job metadata, not a formula default for the estimate catalog."
       belongs_to: "job metadata / adapter context"
       estimate_line_code: null
+  load_bearing_walls_lintels:
+    floors_count:
+      reason: "Project/review parameter controlling scaffolding and optional upper-floor block, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.scaffolding_setup_dismantling"
+    cutoff_waterproofing_load_bearing_walls_area_m2:
+      reason: "Project quantity from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.cutoff_waterproofing_under_first_row_blocks"
+    main_wall_gas_block_400_spec_volume_m3:
+      reason: "Project specification volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+    main_wall_gas_block_250_spec_volume_m3:
+      reason: "Project specification volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+    lintel_total_length_m:
+      reason: "Project/spec total length of lintels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.lintel_concreting_work"
+    lintel_concrete_spec_volume_m3:
+      reason: "Project/spec concrete volume for lintels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+    floor_2_masonry_volume_m3:
+      reason: "Project-specific masonry volume; in the current template this corresponds to the row 'Кладка над кухней-гостиной'."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.floor_2_masonry_work"
+    parapet_masonry_volume_m3:
+      reason: "Project quantity from flat-roof/parapet spec, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.parapet_masonry_work"
+    vent_chimney_gas_block_spec_volume_m3:
+      reason: "Project quantity for vent/chimney cladding, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+    walls_consumables_tool_amortization_amount_raw:
+      reason: "Manual/fixed amount pending business formula confirmation, not a reusable default."
+      belongs_to: "supplier/manual review or future formula"
+      estimate_line_code: "load_bearing_walls_lintels.walls_consumables_tool_amortization"
+    waste_removal_trucks:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "load_bearing_walls_lintels.construction_waste_removal"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key, not a formula default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "load_bearing_walls_lintels.walls_technical_supervision"
