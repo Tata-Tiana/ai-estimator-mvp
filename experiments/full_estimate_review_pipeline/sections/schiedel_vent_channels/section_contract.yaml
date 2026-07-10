@@ -144,15 +144,15 @@ review_parameters:
       max_value: null
     notes: "Do not confuse with schiedel_vent_channel_2x_count supplier input."
 
-  - key: vent_chimney_cladding_segments
+  - key: schiedel_vent_chimney_cladding_segments
     label_ru: "Сегменты / строки спецификации вентканалов"
     unit: "м"
     source_class: AUTO_PROJECT
     required: false
     review_sheet: "01_Проверка проекта"
-    target_code: "vent_chimney_cladding_segments"
-    calculator_input_path: "vent_chimney_cladding_segments"
-    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_chimney_cladding_segments.rows"
+    target_code: "schiedel_vent_chimney_cladding_segments"
+    calculator_input_path: ""
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.schiedel_vent_chimney_cladding_segments.rows"
     value_kind: repeated_rows
     row_key_field: name
     columns:
@@ -173,9 +173,9 @@ review_parameters:
         unit: "м"
         value_kind: number
     parser_mapping:
-      group_codes: ["vent_chimney_cladding_segments"]
+      group_codes: ["schiedel_vent_chimney_cladding_segments"]
       expected_context: ["вентканал", "обкладка"]
-      notes: ""
+      notes: "Renamed 2026-07-10 from vent_chimney_cladding_segments — that bare group_code is already used by a different, calculator-consumed extract_group under load_bearing_walls_lintels (gas-block cladding segments for legacy_segments_rows mode). This section's own version is a different, diagnostic-only concept (Schiedel channel spec table rows) that the calculator never reads at all (verified against calculate_schiedel_vent_channels() — no reference to this field anywhere); the shared bare name was a genuine collision risk in the flat alias namespace, not the same data."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -184,7 +184,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Optional diagnostic breakdown; calculator quantity still comes from reviewed scalar inputs on sheet 01, not from this breakdown."
+    notes: "Optional diagnostic breakdown; calculator quantity still comes from reviewed scalar inputs on sheet 01, not from this breakdown. Never fed into calculate_schiedel_vent_channels() at all — calculator_input_path is intentionally empty."
 
 price_keys:
   - key: schiedel_masonry_work_rate_per_m
@@ -387,8 +387,8 @@ calculator_input_mapping:
       source_class: AUTO_PROJECT
     required: false
     transform: number_m
-    fallback: null
-    notes: "Optional control value."
+    fallback: 0
+    notes: "Optional control value, but calculate_schiedel_vent_channels() reads input_data['vent_channel_1_height_m'] unconditionally (no .get, no calculator-side default) to build the diagnostic masonry_control_length formula — found 2026-07-10. fallback changed from null to 0 (a pure contract-side fix, no calculator code touched) so an adapter with no reviewed value still constructs valid input instead of crashing; 0 is safe since this only feeds a display-only control formula, never the paid schiedel_masonry_work quantity (that always comes from schiedel_masonry_total_length_m)."
 
   - input_path: "vent_channel_2_height_m"
     from:
@@ -396,8 +396,8 @@ calculator_input_mapping:
       source_class: AUTO_PROJECT
     required: false
     transform: number_m
-    fallback: null
-    notes: "Optional control value."
+    fallback: 0
+    notes: "Same unconditional-read gap as vent_channel_1_height_m, found and fixed 2026-07-10 — see that entry's notes."
 
   - input_path: "vent_channel_2_count"
     from:
@@ -405,8 +405,8 @@ calculator_input_mapping:
       source_class: AUTO_PROJECT
     required: false
     transform: number_count
-    fallback: null
-    notes: "Optional control value."
+    fallback: 0
+    notes: "Same unconditional-read gap as vent_channel_1_height_m, found and fixed 2026-07-10 — see that entry's notes."
 
   - input_path: "schiedel_vent_channel_2x_count"
     from:

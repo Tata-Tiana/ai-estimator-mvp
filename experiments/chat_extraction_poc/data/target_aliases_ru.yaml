@@ -1035,17 +1035,29 @@ schiedel_vent_channel_3x_count:
   unit_column_hint: ["шт", "шт."]
   notes: "Piece count for product type, not height."
 
-schiedel_gas_block_150_volume:
+schiedel_masonry_total_length_m:
   section_code: schiedel_vent_channels
-  ru_label: "Газобетонный блок 600x150x250 для обкладки вентканалов"
-  pdf_aliases: ["Газобетонный блок 600х150х250 обкладка вентканалов", "ГБ блок 600х150х250 вентканалы", "Блок 150 мм обкладка", "Газобетон обкладка вентканалов"]
-  expected_unit: m3
+  ru_label: "Общая длина кладки вентканалов Schiedel"
+  pdf_aliases: ["Общая длина кладки вентканалов", "Общая высота вентканалов", "Кладку вентблока вести", "Высота вентканалов общая"]
+  expected_unit: linear_m
   table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
-  required_context: ["газобетон|ГБ|блок", "150|вентканал|обкладк"]
-  negative_context: ["600х400х250", "600х250х250", "наружные стены"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "May share the same source as load_bearing_walls_lintels vent_chimney_gas_block_150_volume if the section uses wall calculator input."
+  required_context: ["вентканал|VENT|ВК", "кладк|длина|высот"]
+  negative_context: ["газобетон", "обкладка", "шт", "количество"]
+  value_column_hint: ["длина", "высота", "кол-во", "количество"]
+  unit_column_hint: ["м", "м.п.", "п.м."]
+  notes: "Found missing from this file 2026-07-10 — primary required quantity for schiedel_masonry_work, the section's single most important target. If PDF gives separate channel heights instead of one ready total, keep candidates and let vent_channel_1_height/vent_channel_2_height/vent_channel_2_count serve as control values; do not calculate the total in chat extraction."
+
+schiedel_vent_chimney_cladding_segments:
+  section_code: schiedel_vent_channels
+  ru_label: "Сегменты / строки спецификации вентканалов Schiedel"
+  pdf_aliases: ["Спецификация вентиляционных каналов", "Разрез по вентканалам", "Ведомость вентканалов Schiedel"]
+  expected_unit: null
+  table_hints: ["Разрез по вентканалам", "Спецификация вентиляционных каналов"]
+  required_context: ["Schiedel|VENT|вентканал"]
+  negative_context: ["газобетон", "обкладка", "несущие стены"]
+  value_column_hint: ["наименование", "длина", "высота", "количество", "итого"]
+  unit_column_hint: ["м", "шт"]
+  notes: "Added 2026-07-10, renamed from a bare vent_chimney_cladding_segments group_code that collided with a different, calculator-consumed group under load_bearing_walls_lintels. Optional diagnostic breakdown only; calculate_schiedel_vent_channels() never reads these rows — the calculator quantity always comes from the reviewed scalar inputs above."
 
 vent_channel_1_height:
   section_code: schiedel_vent_channels

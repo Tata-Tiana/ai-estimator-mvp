@@ -207,14 +207,22 @@
       "section_code": "schiedel_vent_channels",
       "section_name_ru": "Вентиляционные каналы Schiedel",
       "targets": [
+        {"code": "schiedel_masonry_total_length_m", "label_ru": "Общая длина кладки вентканалов Schiedel", "unit": "linear_m", "grounded": true, "notes": "Primary required quantity for schiedel_masonry_work. Found missing from this list 2026-07-10 despite being the section's single most important target."},
         {"code": "schiedel_vent_channel_2x_count", "label_ru": "Вентканал Schiedel VENT 2 — количество", "unit": "pcs", "grounded": false},
         {"code": "schiedel_vent_channel_3x_count", "label_ru": "Вентканал Schiedel VENT 3 — количество", "unit": "pcs", "grounded": false},
-        {"code": "schiedel_gas_block_150_volume", "label_ru": "Газобетонный блок 600×150×250 для вентканалов — объём", "unit": "m3", "grounded": true},
         {"code": "vent_channel_1_height", "label_ru": "Высота вентканала (канал 1)", "unit": "linear_m", "grounded": true},
         {"code": "vent_channel_2_height", "label_ru": "Высота вентканала (канал 2)", "unit": "linear_m", "grounded": true, "notes": "Если в PDF нет явной нумерации каналов 1/2 — сохрани все найденные высоты как candidates, не угадывай, какая к какому каналу."},
         {"code": "vent_channel_2_count", "label_ru": "Количество вентканалов (тип, соответствующий VENT 2 или аналогу)", "unit": "pcs", "grounded": true}
       ],
-      "extract_groups": []
+      "extract_groups": [
+        {
+          "group_code": "schiedel_vent_chimney_cladding_segments",
+          "description": "Сегменты / строки спецификации вентиляционных каналов Schiedel — диагностическая разбивка, не используется калькулятором напрямую.",
+          "fields": ["name", "length_m", "quantity", "total_length_m"],
+          "grounded": false,
+          "notes": "Renamed 2026-07-10 from a bare vent_chimney_cladding_segments group_code, which collided with a different, calculator-consumed group of the same name under load_bearing_walls_lintels. Optional; calculator quantity always comes from the reviewed scalar inputs, not from these rows."
+        }
+      ]
     }
   ]
 }
