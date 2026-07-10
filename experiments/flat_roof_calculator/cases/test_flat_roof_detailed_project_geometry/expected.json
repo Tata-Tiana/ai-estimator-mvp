@@ -1,14 +1,14 @@
 {
   "totals": {
-    "internal_materials_total_raw": "1420802",
-    "internal_materials_total": 1420802,
-    "internal_works_total_raw": "618070",
+    "internal_materials_total_raw": "1420807.508576",
+    "internal_materials_total": 1420808,
+    "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "2038872",
-    "internal_section_total": 2038872,
-    "sum_of_displayed_line_material_totals": 1420802,
+    "internal_section_total_raw": "2038878",
+    "internal_section_total": 2038878,
+    "sum_of_displayed_line_material_totals": 1420808,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 2038872
+    "sum_of_displayed_line_totals": 2038878
   },
   "calculation_blocks": {
     "geometry": {
@@ -121,12 +121,12 @@
       "internal_cost": {
         "material_unit_price": "7326.7",
         "material_total_raw": "377082.389696",
-        "material_total": 377080,
+        "material_total": 377082,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "377082.389696",
-        "line_total": 377080
+        "line_total": 377082
       }
     },
     {
@@ -161,12 +161,12 @@
       "internal_cost": {
         "material_unit_price": "10896",
         "material_total_raw": "41304.5568",
-        "material_total": 41304,
+        "material_total": 41305,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "41304.5568",
-        "line_total": 41304
+        "line_total": 41305
       }
     },
     {
@@ -378,12 +378,12 @@
       "internal_cost": {
         "material_unit_price": "51431",
         "material_total_raw": "565741",
-        "material_total": 565738,
+        "material_total": 565741,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "565741",
-        "line_total": 565738
+        "line_total": 565741
       }
     },
     {

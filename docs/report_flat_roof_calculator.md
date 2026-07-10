@@ -12,6 +12,8 @@
 
 AI в расчёте не используется. Формулы, ручные количества, округления и ожидаемые значения зафиксированы явно в `input.json`, `expected.json` и коде калькулятора.
 
+**Обновление 2026-07-10** (явное разрешение пользователя на правку кода калькулятора — исключение из обычного правила "не трогать код калькулятора"): везде ниже, где этот отчёт описывает "сумма зафиксирована для совпадения с текущей Excel-сметой" (строки ЭППС 100мм = 377080, уклонная плита A = 41304, ПВХ мембрана = 565738), а также поля `pvc_membrane_expected_material_total`/`roof_consumables_total`/`roof_logistics_and_supply_total` и итоговый блок "Текущие итоги" ниже — это устаревшие, захардкоженные в коде калькулятора Excel-match числа, которые молча подменяли реально посчитанные по формуле суммы (и по одной паре полей калькулятор вообще требовал готовое число снаружи вместо расчёта). Убраны из `calculator.py`: теперь `material_total` везде считается по формуле (`round_half_up(material_total_raw)`), без переопределений. Реальные посчитанные суммы отличаются от старых Excel-чисел на 1-3 рубля (округления в исходной Excel-смете): ЭППС 100мм → 377082 (было 377080), плита A → 41305 (было 41304), ПВХ мембрана → 565741 (было 565738). Итоги раздела (`internal_materials_total_raw`/`internal_works_total_raw`) теперь тоже настоящая сумма по строкам, а не копия отображаемых значений — до этой правки код явно приравнивал raw к displayed с комментарием про "intentional raw/display mismatches fixed by Elena's Excel totals". `expected.json` в `cases/test_flat_roof_detailed_project_geometry` и `cases/test_flat_roof_usv` обновлены под новые верные суммы, оба кейса проходят 0 mismatch. Текст ниже по документу (примеры формул, "Текущие итоги") оставлен как есть в качестве исторической записи о прежнем поведении, кроме отдельно помеченных мест.
+
 ## Где находится
 
 ```text
@@ -254,15 +256,19 @@ material_total = 565738
 
 ## Текущие итоги
 
+Обновлено 2026-07-10 после удаления захардкоженных Excel-match переопределений (см. заметку в начале
+файла) — раньше здесь стояли старые числа `internal_materials_total = 1420802` /
+`internal_section_total = 2038872`, включавшие 3 захардкоженных material_total. Текущие верные суммы:
+
 ```text
 test_flat_roof_usv -> ok (460/460)
-internal_materials_total_raw = 1420802
-internal_materials_total = 1420802
-internal_works_total_raw = 618070
+internal_materials_total_raw = 1420807.508576
+internal_materials_total = 1420808
+internal_works_total_raw = 618070.04
 internal_works_total = 618070
-internal_section_total_raw = 2038872
-internal_section_total = 2038872
-sum_of_displayed_line_totals = 2038872
+internal_section_total_raw = 2038878
+internal_section_total = 2038878
+sum_of_displayed_line_totals = 2038878
 ```
 
 Проверка:

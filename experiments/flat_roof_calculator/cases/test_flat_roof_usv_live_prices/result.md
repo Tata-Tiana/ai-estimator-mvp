@@ -127,10 +127,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `51.46688`
 
 Округление и итог:
-- Материалы raw/display: `377082.389696` / `377 082`
+- Материалы raw/display: `379716.9792832` / `379 717`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `377082.389696` / `377 082`
-- Примечание: Expected total fixed to 377080 for current Excel match because raw/display price differs.
+- Итого raw/display: `379716.9792832` / `379 717`
 
 ### 6. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)
 
@@ -149,9 +148,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `4.1064`
 
 Округление и итог:
-- Материалы raw/display: `28361.67288` / `28 362`
+- Материалы raw/display: `29382.688176` / `29 383`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `28361.67288` / `28 362`
+- Итого raw/display: `29382.688176` / `29 383`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
 
 ### 7. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)
@@ -171,11 +170,10 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `3.7908`
 
 Округление и итог:
-- Материалы raw/display: `41304.5568` / `41 305`
+- Материалы raw/display: `37485.970236` / `37 486`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `41304.5568` / `41 305`
+- Итого raw/display: `37485.970236` / `37 486`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
-- Примечание: Expected total fixed for current Excel raw/display match.
 
 ### 8. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)
 
@@ -194,9 +192,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `5.7456`
 
 Округление и итог:
-- Материалы raw/display: `62604.0576` / `62 604`
+- Материалы raw/display: `56816.342352` / `56 816`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `62604.0576` / `62 604`
+- Итого raw/display: `56816.342352` / `56 816`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
 
 ### 9. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)
@@ -216,9 +214,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `1.458`
 
 Округление и итог:
-- Материалы raw/display: `15886.368` / `15 886`
+- Материалы raw/display: `14417.68086` / `14 418`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `15886.368` / `15 886`
+- Итого raw/display: `14417.68086` / `14 418`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
 
 ### 10. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)
@@ -238,9 +236,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `1.6416`
 
 Округление и итог:
-- Материалы raw/display: `17886.8736` / `17 887`
+- Материалы raw/display: `16233.240672` / `16 233`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `17886.8736` / `17 887`
+- Итого raw/display: `16233.240672` / `16 233`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
 
 ### 11. Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м
@@ -281,9 +279,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_area_m2: `200`
 
 Округление и итог:
-- Материалы raw/display: `12868` / `12 868`
+- Материалы raw/display: `11512` / `11 512`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `12868` / `12 868`
+- Итого raw/display: `11512` / `11 512`
 
 ### 13. Укладка ПВХ Мембраны
 
@@ -342,9 +340,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_length_m: `141`
 
 Округление и итог:
-- Материалы raw/display: `13395` / `13 395`
+- Материалы raw/display: `12690` / `12 690`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `13395` / `13 395`
+- Итого raw/display: `12690` / `12 690`
 
 ### 17. Рейка краевая алюминиевая 3м
 
@@ -361,9 +359,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_length_m: `141`
 
 Округление и итог:
-- Материалы raw/display: `13818` / `13 818`
+- Материалы raw/display: `13395` / `13 395`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `13818` / `13 818`
+- Итого raw/display: `13395` / `13 395`
 
 ### 18. Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20
 
@@ -383,10 +381,9 @@ AI не используется для расчёта. Калькулятор �
 - rolls_ordered: `11`
 
 Округление и итог:
-- Материалы raw/display: `565741` / `565 741`
+- Материалы raw/display: `12616.01` / `12 616`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `565741` / `565 741`
-- Примечание: 11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738.
+- Итого raw/display: `12616.01` / `12 616`
 
 ### 19. Аэратор кровельный PVC, 75х375 (без пробивки отверстий)
 
@@ -587,29 +584,13 @@ AI не используется для расчёта. Калькулятор �
 
 ## Warnings
 
-- project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.
+- project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.
 - Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.
 - Temporary door line is case-specific and is not included in this universal base calculator.
 - Roof consumables use provided raw total; base formula is to be confirmed later.
 - Logistics and supply uses provided raw total from the reviewed gray estimate.
 - Technical supervision uses provided gray work total from the reviewed estimate.
 - Procurement/storage uses provided gray work total from the reviewed estimate.
-- Some material totals intentionally keep current Excel raw/display mismatches.
-- roof_eps100_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used
-- roof_eps50_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used
-- roof_eps_slope_2_1_plate_a_m3: price_code not found in price_registry, fallback input price used
-- roof_eps_slope_2_1_plate_b_m3: price_code not found in price_registry, fallback input price used
-- roof_eps_slope_4_2_plate_j_m3: price_code not found in price_registry, fallback input price used
-- roof_eps_slope_4_2_plate_k_m3: price_code not found in price_registry, fallback input price used
-- roof_geotextile_technonikol_prof_300_m2: price_code not found in price_registry, fallback input price used
-- roof_geotextile_technonikol_prof_150_m2: price_code not found in price_registry, fallback input price used
-- roof_aluminum_pressure_rail_m: price_code not found in price_registry, fallback input price used
-- roof_aluminum_edge_rail_m: price_code not found in price_registry, fallback input price used
-- roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll: price_code not found in price_registry, fallback input price used
-- roof_parapet_drain_item: price_code not found in price_registry, fallback input price used
-- roof_internal_drain_with_heating_item: price_code not found in price_registry, fallback input price used
-- roof_internal_drain_pvc_110mm_m: price_code not found in price_registry, fallback input price used
-- roof_crane_lifting_shift: price_code not found in price_registry, fallback input price used
 
 ## Источники цен
 
@@ -619,26 +600,26 @@ AI не используется для расчёта. Калькулятор �
 | Пароизоляция основания плёнкой ПВХ | `` | `77` | `77` | `locked_case_prices` |  |
 | Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул | `roof_vapor_barrier_film_technonikol_120mk_m2` | `35` | `23.12` | `price_registry` |  |
 | Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка) | `` | `770` | `770` | `locked_case_prices` |  |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм) | `roof_eps100_technonikol_carbon_eco_m3` | `7326.7` | `7326.7` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм) | `roof_eps50_technonikol_carbon_eco_m3` | `6906.7` | `6906.7` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A) | `roof_eps_slope_2_1_plate_a_m3` | `10896` | `10896` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B) | `roof_eps_slope_2_1_plate_b_m3` | `10896` | `10896` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J) | `roof_eps_slope_4_2_plate_j_m3` | `10896` | `10896` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K) | `roof_eps_slope_4_2_plate_k_m3` | `10896` | `10896` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м | `roof_geotextile_technonikol_prof_300_m2` | `111.76` | `111.76` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м | `roof_geotextile_technonikol_prof_150_m2` | `64.34` | `64.34` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм) | `roof_eps100_technonikol_carbon_eco_m3` | `7326.7` | `7377.89` | `price_registry` |  |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм) | `roof_eps50_technonikol_carbon_eco_m3` | `6906.7` | `7155.34` | `price_registry` |  |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A) | `roof_eps_slope_2_1_plate_a_m3` | `10896` | `9888.67` | `price_registry` |  |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B) | `roof_eps_slope_2_1_plate_b_m3` | `10896` | `9888.67` | `price_registry` |  |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J) | `roof_eps_slope_4_2_plate_j_m3` | `10896` | `9888.67` | `price_registry` |  |
+| Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K) | `roof_eps_slope_4_2_plate_k_m3` | `10896` | `9888.67` | `price_registry` |  |
+| Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м | `roof_geotextile_technonikol_prof_300_m2` | `111.76` | `111.76` | `price_registry` |  |
+| Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м | `roof_geotextile_technonikol_prof_150_m2` | `64.34` | `57.56` | `price_registry` |  |
 | Укладка ПВХ Мембраны | `` | `740` | `740` | `locked_case_prices` |  |
 | Монтаж примыкания кровли из ПВХ мембраны | `` | `700` | `700` | `locked_case_prices` |  |
 | Монтаж примыкания к вентшахтам | `` | `5000` | `5000` | `locked_case_prices` |  |
-| Рейка прижимная алюминиевая 3м | `roof_aluminum_pressure_rail_m` | `95` | `95` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Рейка краевая алюминиевая 3м | `roof_aluminum_edge_rail_m` | `98` | `98` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20 | `roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll` | `51431` | `51431` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Рейка прижимная алюминиевая 3м | `roof_aluminum_pressure_rail_m` | `95` | `90` | `price_registry` |  |
+| Рейка краевая алюминиевая 3м | `roof_aluminum_edge_rail_m` | `98` | `95` | `price_registry` |  |
+| Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20 | `roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll` | `51431` | `1146.91` | `price_registry` |  |
 | Аэратор кровельный PVC, 75х375 (без пробивки отверстий) | `roof_pvc_aerator_75x375_item` | `587` | `587` | `price_registry` |  |
-| Установка воронки парапетной (без пробивки отверстий) | `roof_parapet_drain_item` | `5000` | `5000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Установка воронки парапетной (без пробивки отверстий) | `roof_parapet_drain_item` | `5000` | `5000` | `price_registry` |  |
 | Пробивка отверстий в стенах из газоблока толщ.400мм | `` | `3000` | `3000` | `locked_case_prices` |  |
-| Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий) | `roof_internal_drain_with_heating_item` | `5000` | `5000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно) | `roof_internal_drain_pvc_110mm_m` | `2500` | `2500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Подъем материалов автокраном | `roof_crane_lifting_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий) | `roof_internal_drain_with_heating_item` | `5000` | `5000` | `price_registry` |  |
+| Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно) | `roof_internal_drain_pvc_110mm_m` | `2500` | `2500` | `price_registry` |  |
+| Подъем материалов автокраном | `roof_crane_lifting_shift` | `30000` | `30000` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `None` | `None` | `locked_case_prices` |  |
 | Вывоз мусора с объекта | `` | `10000` | `10000` | `locked_case_prices` |  |
 | Логистика, и снабжение | `` | `37648.53` | `37648.53` | `locked_case_prices` |  |
@@ -650,20 +631,20 @@ AI не используется для расчёта. Калькулятор �
 ## Pricing summary
 
 - mode: `price_registry_with_fallback`
-- registry_path: `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx`
-- prices_from_price_registry: `2`
+- registry_path: `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx`
+- prices_from_price_registry: `17`
 - prices_from_project_overrides: `0`
-- prices_from_fallback_input: `15`
-- warnings_count: `15`
+- prices_from_fallback_input: `0`
+- warnings_count: `0`
 
 ## Итоги
 
-- Материалы raw/display: `1417243.508576` / `1 417 244`
+- Материалы raw/display: `852561.5015792` / `852 562`
 - Работы raw/display: `618070.04` / `618 070`
-- Итого raw/display: `2035313.548576` / `2 035 314`
-- Сумма отображённых материалов по строкам: `1 417 244`
+- Итого raw/display: `1470631.5415792` / `1 470 632`
+- Сумма отображённых материалов по строкам: `852 562`
 - Сумма отображённых работ по строкам: `618 070`
-- Сумма отображённых итогов по строкам: `2 035 314`
+- Сумма отображённых итогов по строкам: `1 470 632`
 
 ## Проверка
 

@@ -127,10 +127,9 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `51.46688`
 
 Округление и итог:
-- Материалы raw/display: `377082.389696` / `377 080`
+- Материалы raw/display: `377082.389696` / `377 082`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `377082.389696` / `377 080`
-- Примечание: Expected total fixed to 377080 for current Excel match because raw/display price differs.
+- Итого raw/display: `377082.389696` / `377 082`
 
 ### 6. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)
 
@@ -171,11 +170,10 @@ AI не используется для расчёта. Калькулятор �
 - ordered_volume_m3: `3.7908`
 
 Округление и итог:
-- Материалы raw/display: `41304.5568` / `41 304`
+- Материалы raw/display: `41304.5568` / `41 305`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `41304.5568` / `41 304`
+- Итого raw/display: `41304.5568` / `41 305`
 - Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
-- Примечание: Expected total fixed for current Excel raw/display match.
 
 ### 8. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)
 
@@ -383,10 +381,9 @@ AI не используется для расчёта. Калькулятор �
 - rolls_ordered: `11`
 
 Округление и итог:
-- Материалы raw/display: `565741` / `565 738`
+- Материалы raw/display: `565741` / `565 741`
 - Работы raw/display: `0` / `0`
-- Итого raw/display: `565741` / `565 738`
-- Примечание: 11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738.
+- Итого raw/display: `565741` / `565 741`
 
 ### 19. Аэратор кровельный PVC, 75х375 (без пробивки отверстий)
 
@@ -587,23 +584,22 @@ AI не используется для расчёта. Калькулятор �
 
 ## Warnings
 
-- project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.
+- project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.
 - Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.
 - Temporary door line is case-specific and is not included in this universal base calculator.
 - Roof consumables use provided raw total; base formula is to be confirmed later.
 - Logistics and supply uses provided raw total from the reviewed gray estimate.
 - Technical supervision uses provided gray work total from the reviewed estimate.
 - Procurement/storage uses provided gray work total from the reviewed estimate.
-- Some material totals intentionally keep current Excel raw/display mismatches.
 
 ## Итоги
 
-- Материалы raw/display: `1420802` / `1 420 802`
-- Работы raw/display: `618070` / `618 070`
-- Итого raw/display: `2038872` / `2 038 872`
-- Сумма отображённых материалов по строкам: `1 420 802`
+- Материалы raw/display: `1420807.508576` / `1 420 808`
+- Работы raw/display: `618070.04` / `618 070`
+- Итого raw/display: `2038878` / `2 038 878`
+- Сумма отображённых материалов по строкам: `1 420 808`
 - Сумма отображённых работ по строкам: `618 070`
-- Сумма отображённых итогов по строкам: `2 038 872`
+- Сумма отображённых итогов по строкам: `2 038 878`
 
 ## Проверка
 
@@ -613,15 +609,15 @@ AI не используется для расчёта. Калькулятор �
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
-| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 1420802 | 1420802 | ok |
-| totals | `internal_materials_total` | `internal_materials_total` | 1420802 | 1420802 | ok |
-| totals | `internal_works_total_raw` | `internal_works_total_raw` | 618070 | 618070 | ok |
+| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 1420807.508576 | 1420807.508576 | ok |
+| totals | `internal_materials_total` | `internal_materials_total` | 1420808 | 1420808 | ok |
+| totals | `internal_works_total_raw` | `internal_works_total_raw` | 618070.04 | 618070.04 | ok |
 | totals | `internal_works_total` | `internal_works_total` | 618070 | 618070 | ok |
-| totals | `internal_section_total_raw` | `internal_section_total_raw` | 2038872 | 2038872 | ok |
-| totals | `internal_section_total` | `internal_section_total` | 2038872 | 2038872 | ok |
-| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 1420802 | 1420802 | ok |
+| totals | `internal_section_total_raw` | `internal_section_total_raw` | 2038878 | 2038878 | ok |
+| totals | `internal_section_total` | `internal_section_total` | 2038878 | 2038878 | ok |
+| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 1420808 | 1420808 | ok |
 | totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 618070 | 618070 | ok |
-| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 2038872 | 2038872 | ok |
+| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 2038878 | 2038878 | ok |
 | calculation_blocks | `geometry.roof_geometry_calc_method` | `geometry.roof_geometry_calc_method` | detailed_project_geometry | detailed_project_geometry | ok |
 | calculation_blocks | `geometry.roof_area_level_1_m2` | `geometry.roof_area_level_1_m2` | 177.52 | 177.52 | ok |
 | calculation_blocks | `geometry.roof_area_level_2_m2` | `geometry.roof_area_level_2_m2` | 71.4 | 71.4 | ok |
@@ -705,12 +701,12 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `eps100_technonikol_carbon_eco` | `price_code` | roof_eps100_technonikol_carbon_eco_m3 | roof_eps100_technonikol_carbon_eco_m3 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.material_unit_price` | 7326.7 | 7326.7 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.material_total_raw` | 377082.389696 | 377082.389696 | ok |
-| estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.material_total` | 377080 | 377080 | ok |
+| estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.material_total` | 377082 | 377082 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.work_unit_price` | 0 | 0 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.work_total_raw` | 0 | 0 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.work_total` | 0 | 0 | ok |
 | estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.line_total_raw` | 377082.389696 | 377082.389696 | ok |
-| estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.line_total` | 377080 | 377080 | ok |
+| estimate_lines | `eps100_technonikol_carbon_eco` | `internal_cost.line_total` | 377082 | 377082 | ok |
 | estimate_lines | `eps50_technonikol_carbon_eco` | `name` | Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм) | Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм) | ok |
 | estimate_lines | `eps50_technonikol_carbon_eco` | `unit` | м3 | м3 | ok |
 | estimate_lines | `eps50_technonikol_carbon_eco` | `line_type` | materials | materials | ok |
@@ -735,12 +731,12 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `eps_slope_2_1_plate_a` | `price_code` | roof_eps_slope_2_1_plate_a_m3 | roof_eps_slope_2_1_plate_a_m3 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.material_unit_price` | 10896 | 10896 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.material_total_raw` | 41304.5568 | 41304.5568 | ok |
-| estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.material_total` | 41304 | 41304 | ok |
+| estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.material_total` | 41305 | 41305 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.work_unit_price` | 0 | 0 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.work_total_raw` | 0 | 0 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.work_total` | 0 | 0 | ok |
 | estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.line_total_raw` | 41304.5568 | 41304.5568 | ok |
-| estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.line_total` | 41304 | 41304 | ok |
+| estimate_lines | `eps_slope_2_1_plate_a` | `internal_cost.line_total` | 41305 | 41305 | ok |
 | estimate_lines | `eps_slope_2_1_plate_b` | `name` | Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B) | Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B) | ok |
 | estimate_lines | `eps_slope_2_1_plate_b` | `unit` | м3 | м3 | ok |
 | estimate_lines | `eps_slope_2_1_plate_b` | `line_type` | materials | materials | ok |
@@ -897,12 +893,12 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `price_code` | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_unit_price` | 51431 | 51431 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_total_raw` | 565741 | 565741 | ok |
-| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_total` | 565738 | 565738 | ok |
+| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_total` | 565741 | 565741 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.work_unit_price` | 0 | 0 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.work_total_raw` | 0 | 0 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.work_total` | 0 | 0 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.line_total_raw` | 565741 | 565741 | ok |
-| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.line_total` | 565738 | 565738 | ok |
+| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.line_total` | 565741 | 565741 | ok |
 | estimate_lines | `roof_pvc_aerator_75x375` | `name` | Аэратор кровельный PVC, 75х375 (без пробивки отверстий) | Аэратор кровельный PVC, 75х375 (без пробивки отверстий) | ok |
 | estimate_lines | `roof_pvc_aerator_75x375` | `unit` | шт | шт | ok |
 | estimate_lines | `roof_pvc_aerator_75x375` | `line_type` | material_and_work | material_and_work | ok |

@@ -228,21 +228,19 @@
       "internal_cost": {
         "material_unit_price": "7326.7",
         "material_total_raw": "377082.389696",
-        "material_total": 377080,
+        "material_total": 377082,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "377082.389696",
-        "line_total": 377080
+        "line_total": 377082
       },
       "formula": {
         "required_volume_m3": "51.27752",
         "packs_ordered": 188,
         "ordered_volume_m3": "51.46688"
       },
-      "notes": [
-        "Expected total fixed to 377080 for current Excel match because raw/display price differs."
-      ],
+      "notes": [],
       "price_code": "roof_eps100_technonikol_carbon_eco_m3"
     },
     {
@@ -285,12 +283,12 @@
       "internal_cost": {
         "material_unit_price": "10896",
         "material_total_raw": "41304.5568",
-        "material_total": 41304,
+        "material_total": 41305,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "41304.5568",
-        "line_total": 41304
+        "line_total": 41305
       },
       "formula": {
         "supplier_required_volume_m3": "3.63",
@@ -299,8 +297,7 @@
         "ordered_volume_m3": "3.7908"
       },
       "notes": [
-        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.",
-        "Expected total fixed for current Excel raw/display match."
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps_slope_2_1_plate_a_m3"
     },
@@ -569,12 +566,12 @@
       "internal_cost": {
         "material_unit_price": "51431",
         "material_total_raw": "565741",
-        "material_total": 565738,
+        "material_total": 565741,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
         "line_total_raw": "565741",
-        "line_total": 565738
+        "line_total": 565741
       },
       "formula": {
         "flat_area_m2": "286.258",
@@ -583,9 +580,7 @@
         "roll_area_m2": "42",
         "rolls_ordered": 11
       },
-      "notes": [
-        "11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738."
-      ],
+      "notes": [],
       "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll"
     },
     {
@@ -886,37 +881,36 @@
     }
   ],
   "totals": {
-    "internal_materials_total_raw": "1420802",
-    "internal_materials_total": 1420802,
-    "internal_works_total_raw": "618070",
+    "internal_materials_total_raw": "1420807.508576",
+    "internal_materials_total": 1420808,
+    "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "2038872",
-    "internal_section_total": 2038872,
-    "sum_of_displayed_line_material_totals": 1420802,
+    "internal_section_total_raw": "2038878",
+    "internal_section_total": 2038878,
+    "sum_of_displayed_line_material_totals": 1420808,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 2038872
+    "sum_of_displayed_line_totals": 2038878
   },
   "warnings": [
-    "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.",
+    "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
     "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
     "Temporary door line is case-specific and is not included in this universal base calculator.",
     "Roof consumables use provided raw total; base formula is to be confirmed later.",
     "Logistics and supply uses provided raw total from the reviewed gray estimate.",
     "Technical supervision uses provided gray work total from the reviewed estimate.",
-    "Procurement/storage uses provided gray work total from the reviewed estimate.",
-    "Some material totals intentionally keep current Excel raw/display mismatches."
+    "Procurement/storage uses provided gray work total from the reviewed estimate."
   ],
   "expected": {
     "totals": {
-      "internal_materials_total_raw": "1420802",
-      "internal_materials_total": 1420802,
-      "internal_works_total_raw": "618070",
+      "internal_materials_total_raw": "1420807.508576",
+      "internal_materials_total": 1420808,
+      "internal_works_total_raw": "618070.04",
       "internal_works_total": 618070,
-      "internal_section_total_raw": "2038872",
-      "internal_section_total": 2038872,
-      "sum_of_displayed_line_material_totals": 1420802,
+      "internal_section_total_raw": "2038878",
+      "internal_section_total": 2038878,
+      "sum_of_displayed_line_material_totals": 1420808,
       "sum_of_displayed_line_work_totals": 618070,
-      "sum_of_displayed_line_totals": 2038872
+      "sum_of_displayed_line_totals": 2038878
     },
     "estimate_lines": [
       {
@@ -1008,12 +1002,12 @@
         "internal_cost": {
           "material_unit_price": "7326.7",
           "material_total_raw": "377082.389696",
-          "material_total": 377080,
+          "material_total": 377082,
           "work_unit_price": "0",
           "work_total_raw": "0",
           "work_total": 0,
           "line_total_raw": "377082.389696",
-          "line_total": 377080
+          "line_total": 377082
         }
       },
       {
@@ -1048,12 +1042,12 @@
         "internal_cost": {
           "material_unit_price": "10896",
           "material_total_raw": "41304.5568",
-          "material_total": 41304,
+          "material_total": 41305,
           "work_unit_price": "0",
           "work_total_raw": "0",
           "work_total": 0,
           "line_total_raw": "41304.5568",
-          "line_total": 41304
+          "line_total": 41305
         }
       },
       {
@@ -1265,12 +1259,12 @@
         "internal_cost": {
           "material_unit_price": "51431",
           "material_total_raw": "565741",
-          "material_total": 565738,
+          "material_total": 565741,
           "work_unit_price": "0",
           "work_total_raw": "0",
           "work_total": 0,
           "line_total_raw": "565741",
-          "line_total": 565738
+          "line_total": 565741
         }
       },
       {
@@ -1536,24 +1530,24 @@
         "scope": "totals",
         "code": "internal_materials_total_raw",
         "field": "internal_materials_total_raw",
-        "expected": "1420802",
-        "actual": "1420802",
+        "expected": "1420807.508576",
+        "actual": "1420807.508576",
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "internal_materials_total",
         "field": "internal_materials_total",
-        "expected": 1420802,
-        "actual": 1420802,
+        "expected": 1420808,
+        "actual": 1420808,
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "internal_works_total_raw",
         "field": "internal_works_total_raw",
-        "expected": "618070",
-        "actual": "618070",
+        "expected": "618070.04",
+        "actual": "618070.04",
         "status": "ok"
       },
       {
@@ -1568,24 +1562,24 @@
         "scope": "totals",
         "code": "internal_section_total_raw",
         "field": "internal_section_total_raw",
-        "expected": "2038872",
-        "actual": "2038872",
+        "expected": "2038878",
+        "actual": "2038878",
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "internal_section_total",
         "field": "internal_section_total",
-        "expected": 2038872,
-        "actual": 2038872,
+        "expected": 2038878,
+        "actual": 2038878,
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "sum_of_displayed_line_material_totals",
         "field": "sum_of_displayed_line_material_totals",
-        "expected": 1420802,
-        "actual": 1420802,
+        "expected": 1420808,
+        "actual": 1420808,
         "status": "ok"
       },
       {
@@ -1600,8 +1594,8 @@
         "scope": "totals",
         "code": "sum_of_displayed_line_totals",
         "field": "sum_of_displayed_line_totals",
-        "expected": 2038872,
-        "actual": 2038872,
+        "expected": 2038878,
+        "actual": 2038878,
         "status": "ok"
       },
       {
@@ -2136,8 +2130,8 @@
         "scope": "estimate_lines",
         "code": "eps100_technonikol_carbon_eco",
         "field": "internal_cost.material_total",
-        "expected": 377080,
-        "actual": 377080,
+        "expected": 377082,
+        "actual": 377082,
         "status": "ok"
       },
       {
@@ -2176,8 +2170,8 @@
         "scope": "estimate_lines",
         "code": "eps100_technonikol_carbon_eco",
         "field": "internal_cost.line_total",
-        "expected": 377080,
-        "actual": 377080,
+        "expected": 377082,
+        "actual": 377082,
         "status": "ok"
       },
       {
@@ -2376,8 +2370,8 @@
         "scope": "estimate_lines",
         "code": "eps_slope_2_1_plate_a",
         "field": "internal_cost.material_total",
-        "expected": 41304,
-        "actual": 41304,
+        "expected": 41305,
+        "actual": 41305,
         "status": "ok"
       },
       {
@@ -2416,8 +2410,8 @@
         "scope": "estimate_lines",
         "code": "eps_slope_2_1_plate_a",
         "field": "internal_cost.line_total",
-        "expected": 41304,
-        "actual": 41304,
+        "expected": 41305,
+        "actual": 41305,
         "status": "ok"
       },
       {
@@ -3672,8 +3666,8 @@
         "scope": "estimate_lines",
         "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
         "field": "internal_cost.material_total",
-        "expected": 565738,
-        "actual": 565738,
+        "expected": 565741,
+        "actual": 565741,
         "status": "ok"
       },
       {
@@ -3712,8 +3706,8 @@
         "scope": "estimate_lines",
         "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
         "field": "internal_cost.line_total",
-        "expected": 565738,
-        "actual": 565738,
+        "expected": 565741,
+        "actual": 565741,
         "status": "ok"
       },
       {

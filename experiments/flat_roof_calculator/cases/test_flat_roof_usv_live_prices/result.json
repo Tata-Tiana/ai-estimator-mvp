@@ -246,28 +246,26 @@
       "quantity_display": "51.47",
       "quantity_source": "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
       "internal_cost": {
-        "material_unit_price": "7326.7",
-        "material_total_raw": "377082.389696",
-        "material_total": 377082,
+        "material_unit_price": "7377.89",
+        "material_total_raw": "379716.9792832",
+        "material_total": 379717,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "377082.389696",
-        "line_total": 377082
+        "line_total_raw": "379716.9792832",
+        "line_total": 379717
       },
       "formula": {
         "required_volume_m3": "51.27752",
         "packs_ordered": 188,
         "ordered_volume_m3": "51.46688"
       },
-      "notes": [
-        "Expected total fixed to 377080 for current Excel match because raw/display price differs."
-      ],
+      "notes": [],
       "price_code": "roof_eps100_technonikol_carbon_eco_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "7326.7",
-      "unit_price_used": "7326.7",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "7377.89",
+      "price_warning": null
     },
     {
       "code": "eps50_technonikol_carbon_eco",
@@ -278,14 +276,14 @@
       "quantity_display": "4.11",
       "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
       "internal_cost": {
-        "material_unit_price": "6906.7",
-        "material_total_raw": "28361.67288",
-        "material_total": 28362,
+        "material_unit_price": "7155.34",
+        "material_total_raw": "29382.688176",
+        "material_total": 29383,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "28361.67288",
-        "line_total": 28362
+        "line_total_raw": "29382.688176",
+        "line_total": 29383
       },
       "formula": {
         "supplier_required_volume_m3": "3.92",
@@ -297,10 +295,10 @@
         "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps50_technonikol_carbon_eco_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "6906.7",
-      "unit_price_used": "6906.7",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "7155.34",
+      "price_warning": null
     },
     {
       "code": "eps_slope_2_1_plate_a",
@@ -311,14 +309,14 @@
       "quantity_display": "3.79",
       "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
       "internal_cost": {
-        "material_unit_price": "10896",
-        "material_total_raw": "41304.5568",
-        "material_total": 41305,
+        "material_unit_price": "9888.67",
+        "material_total_raw": "37485.970236",
+        "material_total": 37486,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "41304.5568",
-        "line_total": 41305
+        "line_total_raw": "37485.970236",
+        "line_total": 37486
       },
       "formula": {
         "supplier_required_volume_m3": "3.63",
@@ -327,14 +325,13 @@
         "ordered_volume_m3": "3.7908"
       },
       "notes": [
-        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.",
-        "Expected total fixed for current Excel raw/display match."
+        "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps_slope_2_1_plate_a_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10896",
-      "unit_price_used": "10896",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "9888.67",
+      "price_warning": null
     },
     {
       "code": "eps_slope_2_1_plate_b",
@@ -345,14 +342,14 @@
       "quantity_display": "5.75",
       "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
       "internal_cost": {
-        "material_unit_price": "10896",
-        "material_total_raw": "62604.0576",
-        "material_total": 62604,
+        "material_unit_price": "9888.67",
+        "material_total_raw": "56816.342352",
+        "material_total": 56816,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "62604.0576",
-        "line_total": 62604
+        "line_total_raw": "56816.342352",
+        "line_total": 56816
       },
       "formula": {
         "supplier_required_volume_m3": "5.61",
@@ -364,10 +361,10 @@
         "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps_slope_2_1_plate_b_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10896",
-      "unit_price_used": "10896",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "9888.67",
+      "price_warning": null
     },
     {
       "code": "eps_slope_4_2_plate_j",
@@ -378,14 +375,14 @@
       "quantity_display": "1.46",
       "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
       "internal_cost": {
-        "material_unit_price": "10896",
-        "material_total_raw": "15886.368",
-        "material_total": 15886,
+        "material_unit_price": "9888.67",
+        "material_total_raw": "14417.68086",
+        "material_total": 14418,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "15886.368",
-        "line_total": 15886
+        "line_total_raw": "14417.68086",
+        "line_total": 14418
       },
       "formula": {
         "supplier_required_volume_m3": "1.43",
@@ -397,10 +394,10 @@
         "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps_slope_4_2_plate_j_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10896",
-      "unit_price_used": "10896",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "9888.67",
+      "price_warning": null
     },
     {
       "code": "eps_slope_4_2_plate_k",
@@ -411,14 +408,14 @@
       "quantity_display": "1.64",
       "quantity_source": "supplier_required_volume_m3 rounded up to full packs",
       "internal_cost": {
-        "material_unit_price": "10896",
-        "material_total_raw": "17886.8736",
-        "material_total": 17887,
+        "material_unit_price": "9888.67",
+        "material_total_raw": "16233.240672",
+        "material_total": 16233,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "17886.8736",
-        "line_total": 17887
+        "line_total_raw": "16233.240672",
+        "line_total": 16233
       },
       "formula": {
         "supplier_required_volume_m3": "1.5",
@@ -430,10 +427,10 @@
         "supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."
       ],
       "price_code": "roof_eps_slope_4_2_plate_k_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10896",
-      "unit_price_used": "10896",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "9888.67",
+      "price_warning": null
     },
     {
       "code": "geotextile_prof_300_flat",
@@ -461,10 +458,10 @@
       },
       "notes": [],
       "price_code": "roof_geotextile_technonikol_prof_300_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "111.76",
       "unit_price_used": "111.76",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "geotextile_prof_150_parapet",
@@ -475,14 +472,14 @@
       "quantity_display": "200",
       "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
       "internal_cost": {
-        "material_unit_price": "64.34",
-        "material_total_raw": "12868",
-        "material_total": 12868,
+        "material_unit_price": "57.56",
+        "material_total_raw": "11512",
+        "material_total": 11512,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "12868",
-        "line_total": 12868
+        "line_total_raw": "11512",
+        "line_total": 11512
       },
       "formula": {
         "required_area_m2": "152.482",
@@ -492,10 +489,10 @@
       },
       "notes": [],
       "price_code": "roof_geotextile_technonikol_prof_150_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "64.34",
-      "unit_price_used": "64.34",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "57.56",
+      "price_warning": null
     },
     {
       "code": "pvc_membrane_flat_installation",
@@ -581,6 +578,35 @@
       "quantity_display": "141",
       "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
       "internal_cost": {
+        "material_unit_price": "90",
+        "material_total_raw": "12690",
+        "material_total": 12690,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "12690",
+        "line_total": 12690
+      },
+      "formula": {
+        "pieces_ordered": 47,
+        "ordered_length_m": "141"
+      },
+      "notes": [],
+      "price_code": "roof_aluminum_pressure_rail_m",
+      "unit_price_source": "price_registry",
+      "unit_price_original": "95",
+      "unit_price_used": "90",
+      "price_warning": null
+    },
+    {
+      "code": "aluminum_edge_rail_3m",
+      "name": "Рейка краевая алюминиевая 3м",
+      "unit": "мп",
+      "line_type": "materials",
+      "quantity_raw": "141",
+      "quantity_display": "141",
+      "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
+      "internal_cost": {
         "material_unit_price": "95",
         "material_total_raw": "13395",
         "material_total": 13395,
@@ -595,40 +621,11 @@
         "ordered_length_m": "141"
       },
       "notes": [],
-      "price_code": "roof_aluminum_pressure_rail_m",
-      "unit_price_source": "fallback_input",
-      "unit_price_original": "95",
-      "unit_price_used": "95",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
-    },
-    {
-      "code": "aluminum_edge_rail_3m",
-      "name": "Рейка краевая алюминиевая 3м",
-      "unit": "мп",
-      "line_type": "materials",
-      "quantity_raw": "141",
-      "quantity_display": "141",
-      "quantity_source": "parapet_and_abutment_total_length_m rounded to rail pieces",
-      "internal_cost": {
-        "material_unit_price": "98",
-        "material_total_raw": "13818",
-        "material_total": 13818,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "13818",
-        "line_total": 13818
-      },
-      "formula": {
-        "pieces_ordered": 47,
-        "ordered_length_m": "141"
-      },
-      "notes": [],
       "price_code": "roof_aluminum_edge_rail_m",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "98",
-      "unit_price_used": "98",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "95",
+      "price_warning": null
     },
     {
       "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
@@ -639,14 +636,14 @@
       "quantity_display": "11",
       "quantity_source": "flat and abutment membrane areas rounded to rolls",
       "internal_cost": {
-        "material_unit_price": "51431",
-        "material_total_raw": "565741",
-        "material_total": 565741,
+        "material_unit_price": "1146.91",
+        "material_total_raw": "12616.01",
+        "material_total": 12616,
         "work_unit_price": "0",
         "work_total_raw": "0",
         "work_total": 0,
-        "line_total_raw": "565741",
-        "line_total": 565741
+        "line_total_raw": "12616.01",
+        "line_total": 12616
       },
       "formula": {
         "flat_area_m2": "286.258",
@@ -655,14 +652,12 @@
         "roll_area_m2": "42",
         "rolls_ordered": 11
       },
-      "notes": [
-        "11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738."
-      ],
+      "notes": [],
       "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "51431",
-      "unit_price_used": "51431",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "1146.91",
+      "price_warning": null
     },
     {
       "code": "roof_pvc_aerator_75x375",
@@ -711,10 +706,10 @@
       "formula": {},
       "notes": [],
       "price_code": "roof_parapet_drain_item",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "5000",
       "unit_price_used": "5000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "gas_block_wall_hole_drilling",
@@ -764,10 +759,10 @@
       "formula": {},
       "notes": [],
       "price_code": "roof_internal_drain_with_heating_item",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "5000",
       "unit_price_used": "5000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "internal_drain_pvc_110mm",
@@ -792,10 +787,10 @@
         "internal_drain_height_per_drain_m = 3.75 is a project input, not a permanent constant."
       ],
       "price_code": "roof_internal_drain_pvc_110mm_m",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "2500",
       "unit_price_used": "2500",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "roof_crane_lifting",
@@ -818,10 +813,10 @@
       "formula": {},
       "notes": [],
       "price_code": "roof_crane_lifting_shift",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "30000",
       "unit_price_used": "30000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "roof_consumables_tool_depreciation",
@@ -1014,48 +1009,32 @@
     }
   ],
   "totals": {
-    "internal_materials_total_raw": "1417243.508576",
-    "internal_materials_total": 1417244,
+    "internal_materials_total_raw": "852561.5015792",
+    "internal_materials_total": 852562,
     "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "2035313.548576",
-    "internal_section_total": 2035314,
-    "sum_of_displayed_line_material_totals": 1417244,
+    "internal_section_total_raw": "1470631.5415792",
+    "internal_section_total": 1470632,
+    "sum_of_displayed_line_material_totals": 852562,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 2035314
+    "sum_of_displayed_line_totals": 1470632
   },
   "warnings": [
-    "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.",
+    "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
     "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
     "Temporary door line is case-specific and is not included in this universal base calculator.",
     "Roof consumables use provided raw total; base formula is to be confirmed later.",
     "Logistics and supply uses provided raw total from the reviewed gray estimate.",
     "Technical supervision uses provided gray work total from the reviewed estimate.",
-    "Procurement/storage uses provided gray work total from the reviewed estimate.",
-    "Some material totals intentionally keep current Excel raw/display mismatches.",
-    "roof_eps100_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used",
-    "roof_eps50_technonikol_carbon_eco_m3: price_code not found in price_registry, fallback input price used",
-    "roof_eps_slope_2_1_plate_a_m3: price_code not found in price_registry, fallback input price used",
-    "roof_eps_slope_2_1_plate_b_m3: price_code not found in price_registry, fallback input price used",
-    "roof_eps_slope_4_2_plate_j_m3: price_code not found in price_registry, fallback input price used",
-    "roof_eps_slope_4_2_plate_k_m3: price_code not found in price_registry, fallback input price used",
-    "roof_geotextile_technonikol_prof_300_m2: price_code not found in price_registry, fallback input price used",
-    "roof_geotextile_technonikol_prof_150_m2: price_code not found in price_registry, fallback input price used",
-    "roof_aluminum_pressure_rail_m: price_code not found in price_registry, fallback input price used",
-    "roof_aluminum_edge_rail_m: price_code not found in price_registry, fallback input price used",
-    "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll: price_code not found in price_registry, fallback input price used",
-    "roof_parapet_drain_item: price_code not found in price_registry, fallback input price used",
-    "roof_internal_drain_with_heating_item: price_code not found in price_registry, fallback input price used",
-    "roof_internal_drain_pvc_110mm_m: price_code not found in price_registry, fallback input price used",
-    "roof_crane_lifting_shift: price_code not found in price_registry, fallback input price used"
+    "Procurement/storage uses provided gray work total from the reviewed estimate."
   ],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
-    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 2,
+    "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
+    "prices_from_price_registry": 17,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 15,
-    "warnings_count": 15
+    "prices_from_fallback_input": 0,
+    "warnings_count": 0
   },
   "expected": {},
   "comparison": {

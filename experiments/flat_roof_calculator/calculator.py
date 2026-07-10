@@ -248,14 +248,13 @@ def supplier_pack_material_line(
 
 def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings = [
-        "project_spec_roof_area_m2 = 294 is not used without human review; current calculation uses roof geometry totals.",
+        "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
         "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
         "Temporary door line is case-specific and is not included in this universal base calculator.",
         "Roof consumables use provided raw total; base formula is to be confirmed later.",
         "Logistics and supply uses provided raw total from the reviewed gray estimate.",
         "Technical supervision uses provided gray work total from the reviewed estimate.",
         "Procurement/storage uses provided gray work total from the reviewed estimate.",
-        "Some material totals intentionally keep current Excel raw/display mismatches.",
     ]
     geometry = calculate_roof_geometry(input_data, warnings)
     roof_area = geometry["roof_area"]
@@ -335,27 +334,23 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             price_code="roof_eps100_technonikol_carbon_eco_m3",
             material_unit_price=input_data["eps100_unit_price_per_m3"],
             material_total_raw=eps100_ordered * d(input_data["eps100_unit_price_per_m3"]),
-            material_total_override=377080,
             formula={
                 "required_volume_m3": decimal_str(eps100_required),
                 "packs_ordered": eps100_packs,
                 "ordered_volume_m3": decimal_str(eps100_ordered),
             },
-            notes=["Expected total fixed to 377080 for current Excel match because raw/display price differs."],
         )
     )
 
     slope_specs = [
-        ("eps50_technonikol_carbon_eco", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)", "roof_eps50_technonikol_carbon_eco_m3", "eps50", None),
-        ("eps_slope_2_1_plate_a", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)", "roof_eps_slope_2_1_plate_a_m3", "slope_plate_a", 41304),
-        ("eps_slope_2_1_plate_b", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)", "roof_eps_slope_2_1_plate_b_m3", "slope_plate_b", None),
-        ("eps_slope_4_2_plate_j", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)", "roof_eps_slope_4_2_plate_j_m3", "slope_plate_j", None),
-        ("eps_slope_4_2_plate_k", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)", "roof_eps_slope_4_2_plate_k_m3", "slope_plate_k", None),
+        ("eps50_technonikol_carbon_eco", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)", "roof_eps50_technonikol_carbon_eco_m3", "eps50"),
+        ("eps_slope_2_1_plate_a", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)", "roof_eps_slope_2_1_plate_a_m3", "slope_plate_a"),
+        ("eps_slope_2_1_plate_b", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)", "roof_eps_slope_2_1_plate_b_m3", "slope_plate_b"),
+        ("eps_slope_4_2_plate_j", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)", "roof_eps_slope_4_2_plate_j_m3", "slope_plate_j"),
+        ("eps_slope_4_2_plate_k", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)", "roof_eps_slope_4_2_plate_k_m3", "slope_plate_k"),
     ]
-    for code, name, price_code, prefix, expected_total in slope_specs:
+    for code, name, price_code, prefix in slope_specs:
         notes = ["supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."]
-        if expected_total is not None:
-            notes.append("Expected total fixed for current Excel raw/display match.")
         lines.append(
             supplier_pack_material_line(
                 code=code,
@@ -364,7 +359,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 supplier_required_volume=d(input_data[f"{prefix}_supplier_required_volume_m3"]),
                 pack_volume=d(input_data[f"{prefix}_pack_volume_m3"]),
                 unit_price=d(input_data[f"{prefix}_unit_price_per_m3"]),
-                expected_total=expected_total,
                 notes=notes,
             )
         )
@@ -474,7 +468,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             price_code="roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
             material_unit_price=input_data["pvc_membrane_unit_price_per_roll_display"],
             material_total_raw=d(membrane_rolls) * d(input_data["pvc_membrane_unit_price_per_roll_display"]),
-            material_total_override=input_data["pvc_membrane_expected_material_total"],
             formula={
                 "flat_area_m2": decimal_str(membrane_flat_area),
                 "abutment_area_m2": decimal_str(membrane_abutment_area),
@@ -482,7 +475,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 "roll_area_m2": decimal_str(membrane_roll_area),
                 "rolls_ordered": membrane_rolls,
             },
-            notes=["11 * displayed price 51431 = 565741, but current Excel expected material_total is 565738."],
         )
     )
 
@@ -569,7 +561,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             quantity_raw=1,
             quantity_source="provided roof_consumables_total_raw",
             material_total_raw=input_data["roof_consumables_total_raw"],
-            material_total_override=input_data["roof_consumables_total"],
             notes=["temporarily uses provided raw total; base formula to be confirmed later."],
         )
     )
@@ -595,7 +586,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             quantity_source="provided roof_logistics_and_supply_total_raw",
             material_unit_price=input_data["roof_logistics_and_supply_total_raw"],
             material_total_raw=input_data["roof_logistics_and_supply_total_raw"],
-            material_total_override=input_data["roof_logistics_and_supply_total"],
             notes=["Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."],
         )
     )
@@ -637,12 +627,8 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     displayed_works = sum((int(line["internal_cost"]["work_total"]) for line in lines), 0)
     displayed_total = displayed_materials + displayed_works
 
-    # Current flat roof source has several intentional raw/display mismatches
-    # fixed by Elena's Excel totals. Base section totals follow the displayed
-    # line totals from the implemented scope, while per-line raw values remain
-    # visible for review.
-    effective_material_raw = d(displayed_materials)
-    effective_work_raw = d(displayed_works)
+    effective_material_raw = sum((d(line["internal_cost"]["material_total_raw"]) for line in lines), D0)
+    effective_work_raw = sum((d(line["internal_cost"]["work_total_raw"]) for line in lines), D0)
 
     return {
         "section_code": "flat_roof",
