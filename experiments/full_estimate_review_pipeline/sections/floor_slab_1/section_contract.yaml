@@ -838,3 +838,30 @@ estimate_lines:
     prices: {material_unit_price_key: null, work_unit_price_key: technical_supervision_amount, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "Current calculator reads the amount from manual_lines. Adapter must map the reviewed value there."
+
+checks:
+  required_source_classes: [AUTO_PROJECT, AUTO_CALCULATED, DEFAULT, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_review_parameters:
+    - total_concrete_volume_from_spec_m3
+    - slab_thickness_m
+    - edge_formwork_height_m
+    - slab_edge_perimeter_m
+    - main_formwork_area_m2
+    - edge_formwork_area_m2
+    - slab_outer_edge_eps_work_length_m
+    - edge_insulation_height_m
+    - slab_edge_eps_material_area_m2
+    - bottom_slab_eps_work_area_m2
+    - total_eps_volume_from_spec_m3
+    - floor_slab_1_rebar_items
+  forbidden_production_inputs:
+    - old_fixture_values
+    - old_expected_result_values
+    - display_quantity_overrides
+    - legacy_usv_geometry_default
+  expected_estimate_line_count: 24
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "checks block added 2026-07-11 — was missing entirely despite the contract otherwise being complete (beam-optionality, rebar rod_length_m/unit_price_per_m, price_key calculator_input_path gaps all fixed 2026-07-10). expected_estimate_line_count verified against the current 24 declared estimate_lines entries (rebar_items_dynamic represents a variable number of real per-row calculator lines; rebar_metal_delivery is enabled_by_default: false, legacy-only). forbidden_production_inputs lists legacy_usv_geometry_default — the calculator's insulation/formwork/rebar calc_method fields no longer silently default to legacy modes (fixed 2026-07-10/11), but the adapter must still always set them explicitly, since omitting them now raises instead of silently computing wrong numbers."

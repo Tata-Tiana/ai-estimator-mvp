@@ -56,7 +56,7 @@ Do not copy this field naming to other sections by analogy. Other calculators mu
 - `slab_side_formwork_area_m2` is formwork area in m2, not EPS edge volume.
 - `eps50_under_slab_volume_m3` is EPS under slab volume in m3; laying area is calculated later.
 - `concrete_project_volume_m3` is only foundation slab concrete.
-- `eps_100_edge_volume` may be found in PDF, but it is not a production input of the foundation slab calculator today.
+- `eps_100_edge_volume` may be found in PDF, but it is not a production input of the foundation slab calculator today. **Removed from `calculator_targets_compact.json`/`target_aliases_ru.yaml` 2026-07-11** — verified directly against `foundation_slab_calculator.py` that `eps100_required_volume_m3` is always computed geometrically (`thermal_insert_pieces * eps100_thickness_m * piece_height * piece_depth`), never taken as a direct spec volume, so this was dead parser weight, not a gap. Also removed `sand_volume` and `geotextile_area`, two more orphaned targets whose own notes said they duplicate `earthworks.sand_base_volume_m3`/`earthworks.geotextile_area_m2` — those real targets already exist under `earthworks`, nothing lost.
 
 ## Check before marking section ready
 

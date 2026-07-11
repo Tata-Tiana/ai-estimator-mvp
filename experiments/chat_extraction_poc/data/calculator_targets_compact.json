@@ -40,14 +40,11 @@
       "targets": [
         {"code": "concrete_project_volume", "label_ru": "Проектный объём бетона фундаментной плиты", "unit": "m3", "grounded": true},
         {"code": "eps_50_under_slab_volume", "label_ru": "ЭППС 50 мм, низ плиты — объём", "unit": "m3", "grounded": true},
-        {"code": "eps_100_edge_volume", "label_ru": "ЭППС 100 мм, торец плиты — объём", "unit": "m3", "grounded": true},
         {"code": "slab_side_formwork_area", "label_ru": "Площадь опалубки бортов фундаментной плиты (по спецификации)", "unit": "m2", "grounded": true},
         {"code": "thermal_insert_50_length", "label_ru": "Длина термовставок 50 мм (по спецификации)", "unit": "linear_m", "grounded": true},
         {"code": "thermal_insert_100_length", "label_ru": "Длина термовставок 100 мм (по спецификации)", "unit": "linear_m", "grounded": true},
         {"code": "thermal_insert_50_material_spec_qty", "label_ru": "Материал термовставок 50 мм, объём по спецификации", "unit": "m3", "grounded": true},
         {"code": "thermal_insert_100_material_spec_qty", "label_ru": "Материал термовставок 100 мм, объём по спецификации", "unit": "m3", "grounded": true},
-        {"code": "sand_volume", "label_ru": "Объём песка (подушка под плиту)", "unit": "m3", "grounded": true, "notes": "Тот же физический показатель, что earthworks.sand_base_volume_m3 — может быть одно и то же число из одной и той же таблицы. Не дублируй как два разных факта, если это явно одна ячейка."},
-        {"code": "geotextile_area", "label_ru": "Площадь геотекстиля", "unit": "m2", "grounded": true, "notes": "См. earthworks.geotextile_area_m2 — вероятно то же число."},
         {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "Foundation slab calculator input. The PDF row may appear on foundation/earthworks drawings, but the active target belongs to foundation_slab."}
       ],
       "extract_groups": [

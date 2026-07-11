@@ -175,18 +175,6 @@ eps_50_under_slab_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Volume of insulation below slab; do not confuse with m2 area or 100 mm edge insulation."
 
-eps_100_edge_volume:
-  section_code: foundation_slab
-  ru_label: "ЭППС 100 мм торец фундаментной плиты"
-  pdf_aliases: ["ЭППС 100 мм торец плиты", "ЭППС-100мм торец", "Утепление торца плиты ЭППС 100", "Вертикальное утепление плиты", "ЭППС 100 мм вертикальные поверхности"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плану фундаментной плиты", "Основное сечение по фундаменту"]
-  required_context: ["ЭППС", "100"]
-  negative_context: ["50 мм", "низ плиты", "кровля", "опалубка", "м2"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Material volume. Do not map formwork area or edge perimeter to this target."
-
 slab_side_formwork_area:
   section_code: foundation_slab
   ru_label: "Площадь опалубки бортов фундаментной плиты"
