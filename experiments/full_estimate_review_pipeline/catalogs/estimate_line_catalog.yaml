@@ -3629,3 +3629,147 @@ sections:
         prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: structural_zero
         notes: "Zero Excel structure line."
+
+  schiedel_vent_channels:
+    status: draft_cataloged
+    section_title_ru: "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel"
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/schiedel_vent_channels/section_contract.yaml"
+      - "experiments/schiedel_vent_channels_calculator/calculator.py"
+      - "experiments/schiedel_vent_channels_calculator/README.md"
+      - "docs/report_schiedel_vent_channels_calculator.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    calculator_estimate_line_count: 9
+    formula_ready_row_count: null
+    lines:
+      schiedel_masonry_work:
+        code: "schiedel_masonry_work"
+        row_id: "schiedel_vent_channels.schiedel_masonry_work"
+        name_ru: "Кладка вентканалов Schiedel"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "schiedel_masonry_total_length_m"
+          leaf_inputs:
+            - {ref: "review_parameters.schiedel_masonry_total_length_m", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: null, work_unit_price_key: "schiedel_masonry_work_rate_per_m", fixed_amount_key: null, price_registry_code: "schiedel_masonry_work_m"}
+        zero_policy: not_expected
+        notes: "Use raw reviewed length, not rounded display quantity."
+
+      schiedel_vent_channel_2x_36_25:
+        code: "schiedel_vent_channel_2x_36_25"
+        row_id: "schiedel_vent_channels.schiedel_vent_channel_2x_36_25"
+        name_ru: "Вентиляционный канал 2х,36/25 см Schiedel"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "schiedel_vent_channel_2x_count"
+          leaf_inputs:
+            - {ref: "supplier_inputs.schiedel_vent_channel_2x_count", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: "schiedel_vent_channel_2x_unit_price", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "schiedel_vent_channel_2x_36_25_item"}
+        zero_policy: not_expected
+        notes: "Manual/specification purchase quantity; do not derive from old control values."
+
+      schiedel_vent_channel_3x_52_25:
+        code: "schiedel_vent_channel_3x_52_25"
+        row_id: "schiedel_vent_channels.schiedel_vent_channel_3x_52_25"
+        name_ru: "Вентиляционный канал 3х,52/25 см Schiedel"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "schiedel_vent_channel_3x_count"
+          leaf_inputs:
+            - {ref: "supplier_inputs.schiedel_vent_channel_3x_count", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: "schiedel_vent_channel_3x_unit_price", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "schiedel_vent_channel_3x_52_25_item"}
+        zero_policy: not_expected
+        notes: "Manual/specification purchase quantity; do not derive from old control values."
+
+      schiedel_delivery:
+        code: "schiedel_delivery"
+        row_id: "schiedel_vent_channels.schiedel_delivery"
+        name_ru: "Доставка вентканалов"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "schiedel_delivery_trips"
+          leaf_inputs:
+            - {ref: "supplier_inputs.schiedel_delivery_trips", source_class: MANUAL_REVIEW}
+        prices: {material_unit_price_key: "schiedel_delivery_truck_price", work_unit_price_key: "schiedel_delivery_work_price", fixed_amount_key: null, price_registry_code: "schiedel_delivery_truck"}
+        zero_policy: not_expected
+        notes: "Manual logistics quantity."
+
+      schiedel_consumables_tool_depreciation:
+        code: "schiedel_consumables_tool_depreciation"
+        row_id: "schiedel_vent_channels.schiedel_consumables_tool_depreciation"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "1; amount = schiedel_direct_cost_base_before_consumables * consumables_rate"
+          leaf_inputs:
+            - {ref: "auto_calculated.schiedel_direct_cost_base_before_consumables", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.schiedel_vent_channels.defaults.consumables_rate", source_class: DEFAULT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "schiedel_consumables_amount", price_registry_code: null}
+        zero_policy: requires_review_if_zero
+        notes: "Percentage add-on calculated by calculator."
+
+      technical_supervision_zero:
+        code: "technical_supervision_zero"
+        row_id: "schiedel_vent_channels.technical_supervision_zero"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."
+
+      procurement_storage_zero:
+        code: "procurement_storage_zero"
+        row_id: "schiedel_vent_channels.procurement_storage_zero"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."
+
+      overhead_zero:
+        code: "overhead_zero"
+        row_id: "schiedel_vent_channels.overhead_zero"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."
+
+      profit_zero:
+        code: "profit_zero"
+        row_id: "schiedel_vent_channels.profit_zero"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_schiedel_vent_channels_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."

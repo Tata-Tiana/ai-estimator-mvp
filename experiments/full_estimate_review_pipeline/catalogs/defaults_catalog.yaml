@@ -1766,6 +1766,39 @@ sections:
         allow_override: true
         notes: "Package volume for SLOPE plate K."
 
+  schiedel_vent_channels:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/schiedel_vent_channels/section_contract.yaml"
+      - "experiments/schiedel_vent_channels_calculator/calculator.py"
+      - "experiments/schiedel_vent_channels_calculator/README.md"
+      - "docs/report_schiedel_vent_channels_calculator.md"
+      - "docs/elena_parameter_review_pack_audit.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    defaults:
+      project_name:
+        value: null
+        unit: ""
+        source_class: JOB_METADATA
+        calculator_input_path: "project_name"
+        used_by_estimate_lines: []
+        source_note: "Schiedel section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Filled from job metadata, not from section PDF quantities."
+
+      consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_rate"
+        used_by_estimate_lines: ["schiedel_vent_channels.schiedel_consumables_tool_depreciation"]
+        source_note: "Schiedel section contract and calculator method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Applied to direct Schiedel cost base before consumables."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -2122,3 +2155,56 @@ not_defaults:
       reason: "Material/mechanism unit price, not a default."
       belongs_to: "price registry / fallback / review sheet 02"
       estimate_line_code: "flat_roof.roof_crane_lifting"
+  schiedel_vent_channels:
+    schiedel_masonry_total_length_m:
+      reason: "Project/spec total masonry length for Schiedel channels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_masonry_work"
+    vent_channel_1_height_m:
+      reason: "Optional project control value for masonry length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    vent_channel_2_height_m:
+      reason: "Optional project control value for masonry length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    vent_channel_2_count:
+      reason: "Optional project control count for masonry length, not a default and not the same as material purchase count."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    schiedel_vent_chimney_cladding_segments:
+      reason: "Diagnostic/detail rows from the Schiedel specification, not calculator defaults."
+      belongs_to: "review sheet 01 / details sheet 03"
+      estimate_line_code: null
+    schiedel_vent_channel_2x_count:
+      reason: "Specification/manual purchase quantity, not derived automatically and not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_2x_36_25"
+    schiedel_vent_channel_3x_count:
+      reason: "Specification/manual purchase quantity, not derived automatically and not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_3x_52_25"
+    schiedel_delivery_trips:
+      reason: "Manual logistics quantity, not a default."
+      belongs_to: "review sheet 01 / MANUAL_REVIEW"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"
+    schiedel_masonry_work_rate_per_m:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_masonry_work"
+    schiedel_vent_channel_2x_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_2x_36_25"
+    schiedel_vent_channel_3x_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_3x_52_25"
+    schiedel_delivery_truck_price:
+      reason: "Delivery/material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"
+    schiedel_delivery_work_price:
+      reason: "Delivery work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"
