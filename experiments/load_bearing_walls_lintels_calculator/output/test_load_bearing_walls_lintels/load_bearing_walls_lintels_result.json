@@ -1,7 +1,7 @@
 {
   "case_name": "test_load_bearing_walls_lintels",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels/expected.json",
   "inputs": {
     "project_name": "test_load_bearing_walls_lintels",
     "scaffolding_setup_work_unit_price": 20000,

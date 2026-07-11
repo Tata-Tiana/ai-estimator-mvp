@@ -1,6 +1,6 @@
 {
   "case_name": "test_load_bearing_walls_lintels_live_prices",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels_live_prices/input.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels_live_prices/input.json",
   "expected_path": null,
   "inputs": {
     "project_name": "test_load_bearing_walls_lintels_live_prices",
@@ -454,31 +454,31 @@
       "is_case_specific": false,
       "notes": "legacy direct or floors-based quantity",
       "price_code": "scaffolding_setup_dismantling_work_set",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "20000",
       "unit_price_used": "20000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "scaffolding_timber_material",
       "name": "Пиломатериал для устройства лесов",
       "unit": "м3",
       "quantity": 1.0,
-      "material_unit_price": 21500.0,
-      "material_total_raw": 21500.0,
+      "material_unit_price": 21499.997319,
+      "material_total_raw": 21499.997319,
       "material_total": 21500,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 21500.0,
+      "line_total_raw": 21499.997319,
       "line_total": 21500,
       "is_case_specific": false,
       "notes": "legacy direct or floors-based quantity",
       "price_code": "timber_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "21500",
-      "unit_price_used": "21500",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "21499.997319",
+      "price_warning": null
     },
     {
       "code": "cutoff_waterproofing_under_first_row_blocks",
@@ -496,10 +496,10 @@
       "is_case_specific": false,
       "notes": "Не включает перегородки 150 мм",
       "price_code": "cutoff_waterproofing_under_blocks_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "250",
       "unit_price_used": "250",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_load_bearing_wall_masonry_work",
@@ -517,10 +517,10 @@
       "is_case_specific": false,
       "notes": "Работа по проектному объёму без запаса",
       "price_code": "gas_block_masonry_work_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "7000",
       "unit_price_used": "7000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_gas_block_d400_600x400x250_material",
@@ -538,10 +538,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "gas_block_d400_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "6000",
       "unit_price_used": "6000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_gas_block_d500_600x250x250_material",
@@ -559,31 +559,31 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "gas_block_d500_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "5500",
       "unit_price_used": "5500",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_gas_block_adhesive",
       "name": "Монтажный клей для блоков 25 кг",
       "unit": "мешок",
       "quantity": 138.0,
-      "material_unit_price": 340.0,
-      "material_total_raw": 46920.0,
-      "material_total": 46920,
+      "material_unit_price": 360.0,
+      "material_total_raw": 49680.0,
+      "material_total": 49680,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 46920.0,
-      "line_total": 46920,
+      "line_total_raw": 49680.0,
+      "line_total": 49680,
       "is_case_specific": false,
       "notes": "",
       "price_code": "block_adhesive_bag",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "340",
-      "unit_price_used": "340",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "360",
+      "price_warning": null
     },
     {
       "code": "sand_concrete_m300_first_row",
@@ -601,10 +601,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "sand_concrete_bag",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "375",
       "unit_price_used": "375",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "u_block_lintel_cutting",
@@ -622,10 +622,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "u_block_lintel_cutting_item",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "400",
       "unit_price_used": "400",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_wall_chasing_for_d10_reinforcement",
@@ -684,10 +684,10 @@
       "is_case_specific": false,
       "notes": "По закупочным объёмам после поддонов",
       "price_code": "block_delivery_truck",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "28000",
       "unit_price_used": "28000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "gas_blocks_unloading_manipulator",
@@ -705,10 +705,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "block_unloading_manipulator_truck",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "15000",
       "unit_price_used": "15000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "main_walls_blocks_crane_moving_25t",
@@ -726,10 +726,10 @@
       "is_case_specific": false,
       "notes": "legacy manual or delivery-trucks threshold",
       "price_code": "crane_shift",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "30000",
       "unit_price_used": "30000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "lintel_rebar_frame_assembly",
@@ -809,10 +809,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "lintel_concreting_work_m",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "1000",
       "unit_price_used": "1000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "lintel_concrete_b22_5_m300_material",
@@ -830,10 +830,10 @@
       "is_case_specific": false,
       "notes": "Минимум 1 м3",
       "price_code": "concrete_b22_5_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "6400",
       "unit_price_used": "6400",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "lintel_concrete_delivery",
@@ -851,10 +851,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "concrete_delivery_trip",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "7500",
       "unit_price_used": "7500",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "manual_concrete_lifting",
@@ -872,10 +872,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "manual_concrete_lifting_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "5000",
       "unit_price_used": "5000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "parapet_and_upper_level_masonry_work",
@@ -893,10 +893,10 @@
       "is_case_specific": true,
       "notes": "Парапет постоянный; второй свет case_specific addon",
       "price_code": "gas_block_masonry_work_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "7000",
       "unit_price_used": "7000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "parapet_and_upper_level_gas_block_d400_material",
@@ -914,10 +914,10 @@
       "is_case_specific": true,
       "notes": "Объединено, чтобы не перезакладывать лишний поддон",
       "price_code": "gas_block_d400_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "6000",
       "unit_price_used": "6000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "vent_chimney_gas_block_cladding_work",
@@ -936,10 +936,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "gas_block_cladding_work_m2",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "1200",
       "unit_price_used": "1200",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "vent_chimney_gas_block_d500_600x150x250_material",
@@ -957,31 +957,31 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "gas_block_d500_150_m3",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "5600",
       "unit_price_used": "5600",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "parapet_upper_level_adhesive",
       "name": "Монтажный клей для парапета и верхнего уровня",
       "unit": "мешок",
       "quantity": 49.0,
-      "material_unit_price": 340.0,
-      "material_total_raw": 16660.0,
-      "material_total": 16660,
+      "material_unit_price": 360.0,
+      "material_total_raw": 17640.0,
+      "material_total": 17640,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 16660.0,
-      "line_total": 16660,
+      "line_total_raw": 17640.0,
+      "line_total": 17640,
       "is_case_specific": true,
       "notes": "Две группы округления: second_light отдельно; parapet + vent/chimney вместе",
       "price_code": "block_adhesive_bag",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "340",
-      "unit_price_used": "340",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "360",
+      "price_warning": null
     },
     {
       "code": "parapet_blocks_crane_moving",
@@ -999,10 +999,10 @@
       "is_case_specific": false,
       "notes": "",
       "price_code": "crane_shift",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "30000",
       "unit_price_used": "30000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "parapet_and_second_light_chasing_for_d10_reinforcement",
@@ -1081,10 +1081,10 @@
       "is_case_specific": false,
       "notes": "manual/fixed line",
       "price_code": "waste_removal_truck",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10000",
       "unit_price_used": "10000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "price_warning": null
     },
     {
       "code": "walls_technical_supervision",
@@ -1094,65 +1094,40 @@
       "material_unit_price": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_unit_price": 10000.0,
-      "work_total_raw": 10000.0,
-      "work_total": 10000,
-      "line_total_raw": 10000.0,
-      "line_total": 10000,
+      "work_unit_price": 5000.0,
+      "work_total_raw": 5000.0,
+      "work_total": 5000,
+      "line_total_raw": 5000.0,
+      "line_total": 5000,
       "is_case_specific": false,
       "notes": "",
       "price_code": "technical_supervision_fixed",
-      "unit_price_source": "fallback_input",
+      "unit_price_source": "price_registry",
       "unit_price_original": "10000",
-      "unit_price_used": "10000",
-      "price_warning": "price_code not found in price_registry, fallback input price used"
+      "unit_price_used": "5000",
+      "price_warning": null
     }
   ],
   "internal_totals": {
-    "internal_materials_total_raw": "1540668.199",
-    "internal_materials_total": 1540668,
-    "internal_works_total_raw": "1121449.04",
-    "internal_works_total": 1121449,
-    "internal_section_total_raw": "2662117.239",
-    "internal_section_total": 2662117,
-    "sum_of_displayed_line_material_totals": 1540670,
-    "sum_of_displayed_line_work_totals": 1121449,
-    "sum_of_displayed_line_totals": 2662119
+    "internal_materials_total_raw": "1544408.196319",
+    "internal_materials_total": 1544408,
+    "internal_works_total_raw": "1116449.04",
+    "internal_works_total": 1116449,
+    "internal_section_total_raw": "2660857.236319",
+    "internal_section_total": 2660857,
+    "sum_of_displayed_line_material_totals": 1544410,
+    "sum_of_displayed_line_work_totals": 1116449,
+    "sum_of_displayed_line_totals": 2660859
   },
   "expected": {},
   "comparison": [],
-  "warnings": [
-    "scaffolding_setup_dismantling_work_set: price_code not found in price_registry, fallback input price used",
-    "timber_m3: price_code not found in price_registry, fallback input price used",
-    "cutoff_waterproofing_under_blocks_m2: price_code not found in price_registry, fallback input price used",
-    "gas_block_masonry_work_m3: price_code not found in price_registry, fallback input price used",
-    "gas_block_d400_m3: price_code not found in price_registry, fallback input price used",
-    "gas_block_d500_m3: price_code not found in price_registry, fallback input price used",
-    "block_adhesive_bag: price_code not found in price_registry, fallback input price used",
-    "sand_concrete_bag: price_code not found in price_registry, fallback input price used",
-    "u_block_lintel_cutting_item: price_code not found in price_registry, fallback input price used",
-    "block_delivery_truck: price_code not found in price_registry, fallback input price used",
-    "block_unloading_manipulator_truck: price_code not found in price_registry, fallback input price used",
-    "crane_shift: price_code not found in price_registry, fallback input price used",
-    "lintel_concreting_work_m: price_code not found in price_registry, fallback input price used",
-    "concrete_b22_5_m3: price_code not found in price_registry, fallback input price used",
-    "concrete_delivery_trip: price_code not found in price_registry, fallback input price used",
-    "manual_concrete_lifting_m3: price_code not found in price_registry, fallback input price used",
-    "gas_block_masonry_work_m3: price_code not found in price_registry, fallback input price used",
-    "gas_block_d400_m3: price_code not found in price_registry, fallback input price used",
-    "gas_block_cladding_work_m2: price_code not found in price_registry, fallback input price used",
-    "gas_block_d500_150_m3: price_code not found in price_registry, fallback input price used",
-    "block_adhesive_bag: price_code not found in price_registry, fallback input price used",
-    "crane_shift: price_code not found in price_registry, fallback input price used",
-    "waste_removal_truck: price_code not found in price_registry, fallback input price used",
-    "technical_supervision_fixed: price_code not found in price_registry, fallback input price used"
-  ],
+  "warnings": [],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
-    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 4,
+    "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
+    "prices_from_price_registry": 28,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 24,
-    "warnings_count": 24
+    "prices_from_fallback_input": 0,
+    "warnings_count": 0
   }
 }

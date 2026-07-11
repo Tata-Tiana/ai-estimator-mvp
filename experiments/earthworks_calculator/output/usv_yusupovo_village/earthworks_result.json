@@ -1,7 +1,7 @@
 {
   "case_name": "usv_yusupovo_village",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village/expected.json",
   "inputs": {
     "project_name": "usv_yusupovo_village",
     "pit_area_m2": 330,

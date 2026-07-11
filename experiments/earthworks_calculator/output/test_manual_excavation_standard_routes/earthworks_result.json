@@ -1,7 +1,7 @@
 {
   "case_name": "test_manual_excavation_standard_routes",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/test_manual_excavation_standard_routes/expected.json",
   "inputs": {
     "project_name": "test_manual_excavation_standard_routes",
     "pit_area_m2": 330,

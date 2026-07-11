@@ -124,7 +124,7 @@
 | Показатель | Значение |
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
-| `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
+| `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
 | `prices_from_price_registry` | `9` |
 | `prices_from_project_overrides` | `0` |
 | `prices_from_fallback_input` | `1` |

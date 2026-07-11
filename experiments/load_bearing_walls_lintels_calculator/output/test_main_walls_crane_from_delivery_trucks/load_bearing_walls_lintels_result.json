@@ -1,7 +1,7 @@
 {
   "case_name": "test_main_walls_crane_from_delivery_trucks",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_main_walls_crane_from_delivery_trucks/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_main_walls_crane_from_delivery_trucks/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_main_walls_crane_from_delivery_trucks/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_main_walls_crane_from_delivery_trucks/expected.json",
   "inputs": {
     "project_name": "test_main_walls_crane_from_delivery_trucks",
     "scaffolding_setup_work_unit_price": 20000,

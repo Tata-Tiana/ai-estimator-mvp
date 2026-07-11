@@ -1,6 +1,6 @@
 {
   "case_name": "usv_yusupovo_village_live_prices",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village_live_prices/input.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/usv_yusupovo_village_live_prices/input.json",
   "expected_path": null,
   "inputs": {
     "project_name": "usv_yusupovo_village_live_prices",
@@ -288,7 +288,7 @@
   "comparison": [],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
-    "registry_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
+    "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
     "prices_from_price_registry": 9,
     "prices_from_project_overrides": 0,
     "prices_from_fallback_input": 1,

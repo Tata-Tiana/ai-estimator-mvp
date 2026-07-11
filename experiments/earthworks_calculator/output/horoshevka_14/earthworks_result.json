@@ -1,7 +1,7 @@
 {
   "case_name": "horoshevka_14",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/horoshevka_14/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/earthworks_calculator/cases/horoshevka_14/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/horoshevka_14/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/earthworks_calculator/cases/horoshevka_14/expected.json",
   "inputs": {
     "project_name": "horoshevka_14",
     "pit_area_m2": 262,

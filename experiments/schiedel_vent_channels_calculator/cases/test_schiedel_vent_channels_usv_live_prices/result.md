@@ -189,7 +189,6 @@ AI не используется для расчёта. Калькулятор �
 - Количество доставки является ручным параметром.
 - Клиентская часть не считается.
 - schiedel_masonry_work_m: price_code not found in price_registry, fallback input price used
-- schiedel_delivery_truck: price_code not found in price_registry, fallback input price used
 
 ## Источники цен
 
@@ -198,7 +197,7 @@ AI не используется для расчёта. Калькулятор �
 | Кладка вентканалов Schiedel | `schiedel_masonry_work_m` | `5000` | `5000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
 | Вентиляционный канал 2х,36/25 см Schiedel | `schiedel_vent_channel_2x_36_25_item` | `504` | `512.4` | `price_registry` |  |
 | Вентиляционный канал 3х,52/25 см Schiedel | `schiedel_vent_channel_3x_52_25_item` | `720` | `732` | `price_registry` |  |
-| Доставка вентканалов | `schiedel_delivery_truck` | `15000` | `15000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Доставка вентканалов | `schiedel_delivery_truck` | `15000` | `15000` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `None` | `0` | `0` | `locked_case_prices` |  |
 | Технический надзор | `None` | `0` | `0` | `locked_case_prices` |  |
 | Заготовительно-складские расходы | `None` | `0` | `0` | `locked_case_prices` |  |
@@ -210,11 +209,11 @@ AI не используется для расчёта. Калькулятор �
 | Показатель | Значение |
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
-| `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `2` |
+| `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
+| `prices_from_price_registry` | `3` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `2` |
-| `warnings_count` | `2` |
+| `prices_from_fallback_input` | `1` |
+| `warnings_count` | `1` |
 
 ## Итоги
 

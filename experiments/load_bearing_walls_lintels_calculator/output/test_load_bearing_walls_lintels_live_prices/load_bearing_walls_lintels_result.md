@@ -364,12 +364,12 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | code | name | quantity | display_quantity | unit | material_unit_price | material_total_raw | material_total | work_unit_price | work_total_raw | work_total | line_total_raw | line_total | case_specific |
 | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | `scaffolding_setup_dismantling` | Устройство лесов, подмостей для кладки, демонтаж лесов | `1.0` | `` | `компл` | `0.0` | `0.0` | `0` | `20000.0` | `20000.0` | `20000` | `20000.0` | `20000` | `False` |
-| `scaffolding_timber_material` | Пиломатериал для устройства лесов | `1.0` | `` | `м3` | `21500.0` | `21500.0` | `21500` | `0.0` | `0.0` | `0` | `21500.0` | `21500` | `False` |
+| `scaffolding_timber_material` | Пиломатериал для устройства лесов | `1.0` | `` | `м3` | `21499.997319` | `21499.997319` | `21500` | `0.0` | `0.0` | `0` | `21499.997319` | `21500` | `False` |
 | `cutoff_waterproofing_under_first_row_blocks` | Гидроизоляция поверхности под первый ряд блоков | `40.59` | `` | `м2` | `250.0` | `10147.5` | `10148` | `100` | `4059.0` | `4059` | `14206.5` | `14207` | `False` |
 | `main_load_bearing_wall_masonry_work` | Кладка внешних, внутренних стен из газобетонных блоков | `109.35` | `` | `м3` | `0.0` | `0.0` | `0` | `7000.0` | `765450.0` | `765450` | `765450.0` | `765450` | `False` |
 | `main_gas_block_d400_600x400x250_material` | Газобетонный блок D400 600x400x250 мм | `83.85` | `` | `м3` | `6000.0` | `503100.0` | `503100` | `0.0` | `0.0` | `0` | `503100.0` | `503100` | `False` |
 | `main_gas_block_d500_600x250x250_material` | Газобетонный блок D500 600x250x250 мм | `32.4` | `` | `м3` | `5500.0` | `178200.0` | `178200` | `0.0` | `0.0` | `0` | `178200.0` | `178200` | `False` |
-| `main_gas_block_adhesive` | Монтажный клей для блоков 25 кг | `138.0` | `` | `мешок` | `340.0` | `46920.0` | `46920` | `0.0` | `0.0` | `0` | `46920.0` | `46920` | `False` |
+| `main_gas_block_adhesive` | Монтажный клей для блоков 25 кг | `138.0` | `` | `мешок` | `360.0` | `49680.0` | `49680` | `0.0` | `0.0` | `0` | `49680.0` | `49680` | `False` |
 | `sand_concrete_m300_first_row` | Пескобетон М300 40 кг | `39.0` | `` | `шт` | `375.0` | `14625.0` | `14625` | `0.0` | `0.0` | `0` | `14625.0` | `14625` | `False` |
 | `u_block_lintel_cutting` | Резка блока под перемычку (U-блок) | `39.0` | `` | `шт` | `0.0` | `0.0` | `0` | `400.0` | `15600.0` | `15600` | `15600.0` | `15600` | `False` |
 | `main_wall_chasing_for_d10_reinforcement` | Штробление блоков под армирование Ø10 | `1070.0` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
@@ -388,99 +388,76 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `parapet_and_upper_level_gas_block_d400_material` | Газобетонный блок D400 для парапета и верхнего уровня | `38.7` | `` | `м3` | `6000.0` | `232200.0` | `232200` | `0.0` | `0.0` | `0` | `232200.0` | `232200` | `True` |
 | `vent_chimney_gas_block_cladding_work` | Обкладка дымохода и вентканалов 150 мм | `11.4667` | `11.47` | `м2` | `0.0` | `0.0` | `0` | `1200.0` | `13760.04` | `13760` | `13760.04` | `13760` | `False` |
 | `vent_chimney_gas_block_d500_600x150x250_material` | Газобетонный блок D500 600x150x250 мм | `3.6` | `` | `м3` | `5600.0` | `20160.0` | `20160` | `0.0` | `0.0` | `0` | `20160.0` | `20160` | `False` |
-| `parapet_upper_level_adhesive` | Монтажный клей для парапета и верхнего уровня | `49.0` | `` | `мешок` | `340.0` | `16660.0` | `16660` | `0.0` | `0.0` | `0` | `16660.0` | `16660` | `True` |
+| `parapet_upper_level_adhesive` | Монтажный клей для парапета и верхнего уровня | `49.0` | `` | `мешок` | `360.0` | `17640.0` | `17640` | `0.0` | `0.0` | `0` | `17640.0` | `17640` | `True` |
 | `parapet_blocks_crane_moving` | Перемещение блоков, смеси автокраном для парапета | `1.0` | `` | `смена` | `30000.0` | `30000.0` | `30000` | `0.0` | `0.0` | `0` | `30000.0` | `30000` | `False` |
 | `parapet_and_second_light_chasing_for_d10_reinforcement` | Штробление парапета и второго света | `384.76` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `True` |
 | `parapet_and_second_light_rebar_a500_d10` | Арматура A500 Ø10 для парапета и второго света | `409.5` | `` | `мп` | `27.16` | `11122.02` | `11122` | `0.0` | `0.0` | `0` | `11122.02` | `11122` | `True` |
 | `walls_consumables_tool_amortization` | Расходные материалы, амортизация инструмента | `1.0` | `` | `комплект` | `100522` | `100521.7` | `100522` | `0.0` | `0.0` | `0` | `100521.7` | `100522` | `False` |
 | `construction_waste_removal` | Вывоз мусора с объекта | `3.0` | `` | `маш` | `10000.0` | `30000.0` | `30000` | `3500` | `10500.0` | `10500` | `40500.0` | `40500` | `False` |
-| `walls_technical_supervision` | Технический надзор | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `10000.0` | `10000.0` | `10000` | `10000.0` | `10000` | `False` |
+| `walls_technical_supervision` | Технический надзор | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `5000.0` | `5000.0` | `5000` | `5000.0` | `5000` | `False` |
 
 ## Итоги raw/rounded
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total_raw` | `1540668.199` |
-| `internal_materials_total` | `1540668` |
-| `internal_works_total_raw` | `1121449.04` |
-| `internal_works_total` | `1121449` |
-| `internal_section_total_raw` | `2662117.239` |
-| `internal_section_total` | `2662117` |
-| `sum_of_displayed_line_material_totals` | `1540670` |
-| `sum_of_displayed_line_work_totals` | `1121449` |
-| `sum_of_displayed_line_totals` | `2662119` |
+| `internal_materials_total_raw` | `1544408.196319` |
+| `internal_materials_total` | `1544408` |
+| `internal_works_total_raw` | `1116449.04` |
+| `internal_works_total` | `1116449` |
+| `internal_section_total_raw` | `2660857.236319` |
+| `internal_section_total` | `2660857` |
+| `sum_of_displayed_line_material_totals` | `1544410` |
+| `sum_of_displayed_line_work_totals` | `1116449` |
+| `sum_of_displayed_line_totals` | `2660859` |
 
 ## Источники цен
 
 | Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
 | --- | --- | ---: | ---: | --- | --- |
-| Устройство лесов, подмостей для кладки, демонтаж лесов | `scaffolding_setup_dismantling_work_set` | `20000` | `20000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Пиломатериал для устройства лесов | `timber_m3` | `21500` | `21500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Гидроизоляция поверхности под первый ряд блоков | `cutoff_waterproofing_under_blocks_m2` | `250` | `250` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Кладка внешних, внутренних стен из газобетонных блоков | `gas_block_masonry_work_m3` | `7000` | `7000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Газобетонный блок D400 600x400x250 мм | `gas_block_d400_m3` | `6000` | `6000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Газобетонный блок D500 600x250x250 мм | `gas_block_d500_m3` | `5500` | `5500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Монтажный клей для блоков 25 кг | `block_adhesive_bag` | `340` | `340` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Пескобетон М300 40 кг | `sand_concrete_bag` | `375` | `375` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Резка блока под перемычку (U-блок) | `u_block_lintel_cutting_item` | `400` | `400` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Устройство лесов, подмостей для кладки, демонтаж лесов | `scaffolding_setup_dismantling_work_set` | `20000` | `20000` | `price_registry` |  |
+| Пиломатериал для устройства лесов | `timber_m3` | `21500` | `21499.997319` | `price_registry` |  |
+| Гидроизоляция поверхности под первый ряд блоков | `cutoff_waterproofing_under_blocks_m2` | `250` | `250` | `price_registry` |  |
+| Кладка внешних, внутренних стен из газобетонных блоков | `gas_block_masonry_work_m3` | `7000` | `7000` | `price_registry` |  |
+| Газобетонный блок D400 600x400x250 мм | `gas_block_d400_m3` | `6000` | `6000` | `price_registry` |  |
+| Газобетонный блок D500 600x250x250 мм | `gas_block_d500_m3` | `5500` | `5500` | `price_registry` |  |
+| Монтажный клей для блоков 25 кг | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
+| Пескобетон М300 40 кг | `sand_concrete_bag` | `375` | `375` | `price_registry` |  |
+| Резка блока под перемычку (U-блок) | `u_block_lintel_cutting_item` | `400` | `400` | `price_registry` |  |
 | Штробление блоков под армирование Ø10 | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура A500 Ø10 для несущих стен | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
-| Доставка блоков, смеси | `block_delivery_truck` | `28000` | `28000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Разгрузка блоков, смеси манипулятором | `block_unloading_manipulator_truck` | `15000` | `15000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Перемещение блоков, смеси автокраном 25 т | `crane_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Доставка блоков, смеси | `block_delivery_truck` | `28000` | `28000` | `price_registry` |  |
+| Разгрузка блоков, смеси манипулятором | `block_unloading_manipulator_truck` | `15000` | `15000` | `price_registry` |  |
+| Перемещение блоков, смеси автокраном 25 т | `crane_shift` | `30000` | `30000` | `price_registry` |  |
 | Изготовление и монтаж каркаса армирования перемычек | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура класса А500 диаметром 12 мм | `rebar_a500_d12_m` | `45.29` | `36.85` | `price_registry` |  |
 | Арматура класса А240 диаметром 6 мм | `rebar_a240_d6_m` | `13.32` | `10.25` | `price_registry` |  |
-| Бетонирование перемычек | `lintel_concreting_work_m` | `1000` | `1000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Бетон В22,5 М300 для перемычек | `concrete_b22_5_m3` | `6400` | `6400` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Доставка бетона до объекта | `concrete_delivery_trip` | `7500` | `7500` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Перенос, подъём бетона вручную | `manual_concrete_lifting_m3` | `5000` | `5000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Кладка парапета и верхнего уровня | `gas_block_masonry_work_m3` | `7000` | `7000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Газобетонный блок D400 для парапета и верхнего уровня | `gas_block_d400_m3` | `6000` | `6000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Обкладка дымохода и вентканалов 150 мм | `gas_block_cladding_work_m2` | `1200` | `1200` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Газобетонный блок D500 600x150x250 мм | `gas_block_d500_150_m3` | `5600` | `5600` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Монтажный клей для парапета и верхнего уровня | `block_adhesive_bag` | `340` | `340` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Перемещение блоков, смеси автокраном для парапета | `crane_shift` | `30000` | `30000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Бетонирование перемычек | `lintel_concreting_work_m` | `1000` | `1000` | `price_registry` |  |
+| Бетон В22,5 М300 для перемычек | `concrete_b22_5_m3` | `6400` | `6400` | `price_registry` |  |
+| Доставка бетона до объекта | `concrete_delivery_trip` | `7500` | `7500` | `price_registry` |  |
+| Перенос, подъём бетона вручную | `manual_concrete_lifting_m3` | `5000` | `5000` | `price_registry` |  |
+| Кладка парапета и верхнего уровня | `gas_block_masonry_work_m3` | `7000` | `7000` | `price_registry` |  |
+| Газобетонный блок D400 для парапета и верхнего уровня | `gas_block_d400_m3` | `6000` | `6000` | `price_registry` |  |
+| Обкладка дымохода и вентканалов 150 мм | `gas_block_cladding_work_m2` | `1200` | `1200` | `price_registry` |  |
+| Газобетонный блок D500 600x150x250 мм | `gas_block_d500_150_m3` | `5600` | `5600` | `price_registry` |  |
+| Монтажный клей для парапета и верхнего уровня | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
+| Перемещение блоков, смеси автокраном для парапета | `crane_shift` | `30000` | `30000` | `price_registry` |  |
 | Штробление парапета и второго света | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура A500 Ø10 для парапета и второго света | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `100522` | `100522` | `locked_case_prices` |  |
-| Вывоз мусора с объекта | `waste_removal_truck` | `10000` | `10000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
-| Технический надзор | `technical_supervision_fixed` | `10000` | `10000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Вывоз мусора с объекта | `waste_removal_truck` | `10000` | `10000` | `price_registry` |  |
+| Технический надзор | `technical_supervision_fixed` | `10000` | `5000` | `price_registry` |  |
 
 ## Pricing summary
 | Показатель | Значение |
 | --- | ---: |
 | `mode` | `price_registry_with_fallback` |
-| `registry_path` | `/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
-| `prices_from_price_registry` | `4` |
+| `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
+| `prices_from_price_registry` | `28` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `24` |
-| `warnings_count` | `24` |
+| `prices_from_fallback_input` | `0` |
+| `warnings_count` | `0` |
 
 ## Warnings
-- scaffolding_setup_dismantling_work_set: price_code not found in price_registry, fallback input price used
-- timber_m3: price_code not found in price_registry, fallback input price used
-- cutoff_waterproofing_under_blocks_m2: price_code not found in price_registry, fallback input price used
-- gas_block_masonry_work_m3: price_code not found in price_registry, fallback input price used
-- gas_block_d400_m3: price_code not found in price_registry, fallback input price used
-- gas_block_d500_m3: price_code not found in price_registry, fallback input price used
-- block_adhesive_bag: price_code not found in price_registry, fallback input price used
-- sand_concrete_bag: price_code not found in price_registry, fallback input price used
-- u_block_lintel_cutting_item: price_code not found in price_registry, fallback input price used
-- block_delivery_truck: price_code not found in price_registry, fallback input price used
-- block_unloading_manipulator_truck: price_code not found in price_registry, fallback input price used
-- crane_shift: price_code not found in price_registry, fallback input price used
-- lintel_concreting_work_m: price_code not found in price_registry, fallback input price used
-- concrete_b22_5_m3: price_code not found in price_registry, fallback input price used
-- concrete_delivery_trip: price_code not found in price_registry, fallback input price used
-- manual_concrete_lifting_m3: price_code not found in price_registry, fallback input price used
-- gas_block_masonry_work_m3: price_code not found in price_registry, fallback input price used
-- gas_block_d400_m3: price_code not found in price_registry, fallback input price used
-- gas_block_cladding_work_m2: price_code not found in price_registry, fallback input price used
-- gas_block_d500_150_m3: price_code not found in price_registry, fallback input price used
-- block_adhesive_bag: price_code not found in price_registry, fallback input price used
-- crane_shift: price_code not found in price_registry, fallback input price used
-- waste_removal_truck: price_code not found in price_registry, fallback input price used
-- technical_supervision_fixed: price_code not found in price_registry, fallback input price used
+Предупреждений нет.
 
 ## Comparison
 Expected values are not provided for this case.
