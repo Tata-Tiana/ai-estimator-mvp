@@ -116,11 +116,14 @@ computed `1.22`; `cases/test_foundation_slab/expected.json` and
 
 ## Known, deliberately-not-fixed items (recorded, not risks needing action now)
 
-- `experiments/floor_slab_1_calculator/cases/test_floor_slab_1_live_prices/` (and the matching
-  `output/` snapshot) shows a real, pre-existing drift between the committed `result.json`/`result.md`
-  and what the current `price_registry` actually resolves — `unit_price_source` moved from
-  `fallback_input` to `price_registry`, with real total changes. Not caused by any fix in this pass;
-  flagged for a separate decision on whether to refresh the committed live-price snapshots repo-wide.
+- **Correction, 2026-07-11**: this report previously flagged
+  `experiments/floor_slab_1_calculator/cases/test_floor_slab_1_live_prices/` as having an open,
+  unresolved drift between the committed snapshot and the current `price_registry`
+  (`unit_price_source` moving from `fallback_input` to `price_registry`). That was stale — the drift
+  was already found and committed in `6d081a2` (the `floor_slab_1` legacy-default fix, whose commit
+  message already notes it as "unrelated pre-existing drift... not part of this fix's logic").
+  Re-verified just now: re-running `test_floor_slab_1_live_prices` produces a byte-identical result to
+  what's committed, zero diff. Nothing open here.
 - `floor_slab_1_calculator.py`'s nested dict-of-dicts input shape (unique among all 8 calculators) —
   recorded 2026-07-10, not acted on, candidate for a future dedicated flattening pass.
 - The adapter layer (`review normalized_review.json` → per-section calculator input) does not exist
@@ -136,4 +139,3 @@ computed `1.22`; `cases/test_foundation_slab/expected.json` and
 2. Run a real chat-extraction JSON through the full pipeline for every section except
    `foundation_slab` (which already had this pass) — this was the next planned step before this
    re-check was requested, still pending.
-3. Decide on the `floor_slab_1_live_prices` snapshot drift noted above.
