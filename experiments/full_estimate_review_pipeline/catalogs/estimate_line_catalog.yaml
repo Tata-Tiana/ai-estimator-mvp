@@ -1563,12 +1563,10 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator
         quantity:
-          formula: "max(ceil(lintel_concrete_spec_volume_m3 * concrete_waste_coeff), lintel_concrete_min_order_volume_m3)"
+          formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))"
           leaf_inputs:
             - ref: "review_parameters.lintel_concrete_spec_volume_m3"
               source_class: AUTO_PROJECT
-            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.concrete_waste_coeff"
-              source_class: DEFAULT
             - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.lintel_concrete_min_order_volume_m3"
               source_class: DEFAULT
         prices:
@@ -1577,7 +1575,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "concrete_b22_5_m3"
         zero_policy: not_expected
-        notes: "Production uses project/spec concrete volume for lintels, then applies waste and minimum order."
+        notes: "Fixed 2026-07-11: formula previously multiplied by concrete_waste_coeff, but calculate_lintel_concrete()'s production spec_volume branch never applies that coefficient (only the legacy legacy_length_section branch does) — verified directly against load_bearing_walls_lintels_calculator.py. Already fixed in sections/load_bearing_walls_lintels/section_contract.yaml on 2026-07-10; this catalog entry was stale until now."
 
       lintel_concrete_delivery:
         code: "lintel_concrete_delivery"
@@ -1743,7 +1741,7 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_flat_roof_enabled
         quantity:
-          formula: "vent_chimney_gas_block_spec_volume_m3 / vent_chimney_block_thickness_m when flat_roof_enabled"
+          formula: "vent_chimney_gas_block_spec_volume_m3 / vent_chimney_block_thickness_m when flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0"
           leaf_inputs:
             - ref: "review_parameters.vent_chimney_gas_block_spec_volume_m3"
               source_class: AUTO_PROJECT
@@ -1757,7 +1755,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "gas_block_cladding_work_m2"
         zero_policy: disabled_if_zero
-        notes: "Do not confuse this with Schiedel vent channel piece counts."
+        notes: "Do not confuse this with Schiedel vent channel piece counts. Gate corrected 2026-07-11: calculate_blocks() requires both flat_roof_enabled and a positive spec volume (vent_enabled = flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3 > 0), not flat_roof_enabled alone. Already fixed in sections/load_bearing_walls_lintels/section_contract.yaml on 2026-07-10; this catalog entry was stale until now."
 
       vent_chimney_gas_block_d500_600x150x250_material:
         code: "vent_chimney_gas_block_d500_600x150x250_material"
