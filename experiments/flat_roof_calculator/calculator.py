@@ -141,7 +141,7 @@ def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
 
 
 def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
-    method = input_data.get("roof_geometry_calc_method", "legacy_totals")
+    method = input_data.get("roof_geometry_calc_method")
     if method not in {"legacy_totals", "detailed_project_geometry"}:
         raise ValueError(f"Unsupported roof_geometry_calc_method: {method}")
 

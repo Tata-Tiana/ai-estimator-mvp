@@ -123,7 +123,7 @@ def calculate_formwork_rate_context(
     rates: dict[str, Any],
     slab_formwork_area: Decimal,
 ) -> dict[str, Any]:
-    method = rates.get("formwork_rate_calc_method", "legacy_supplier_quote_context")
+    method = rates.get("formwork_rate_calc_method")
     if method not in {"legacy_supplier_quote_context", "direct_section_rate"}:
         raise ValueError("formwork_rate_calc_method must be legacy_supplier_quote_context or direct_section_rate")
 

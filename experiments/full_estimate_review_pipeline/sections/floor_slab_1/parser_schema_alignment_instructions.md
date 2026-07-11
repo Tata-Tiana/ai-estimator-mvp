@@ -62,6 +62,16 @@ All 7 cases still pass 0 mismatches. Manually verified the new failure mode: del
 `ValueError: insulation.insulation_calc_method must be legacy_usv_geometry or spec_work_quantities`
 instead of silently computing ЮСВ's geometry.
 
+**Calculator change applied 2026-07-11, third instance found in the same file**: while re-auditing all
+8 calculators for the same silent-legacy-default pattern, found a 4th instance in
+`calculate_formwork_rate_context()` that the first pass missed: `rates.formwork_rate_calc_method`
+silently defaulted to `"legacy_supplier_quote_context"` (requires
+`formwork_supplier_quote_total`/`slab_2_formwork_area_for_rate_context_m2` instead of a direct rate —
+not hardcoded literals, but still a silent mode switch). Same fix: removed the default string, existing
+`if method not in {...}: raise ValueError(...)` now catches a missing field immediately. Every test
+fixture already set this field explicitly, so no fixture changes were needed. All 7 cases still pass 0
+mismatches.
+
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
 - `total_concrete_volume_from_spec_m3`

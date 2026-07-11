@@ -167,7 +167,7 @@ def calculate_geometry_context(
     warnings: list[str],
     beams_items_formwork_area: Decimal | None = None,
 ) -> dict[str, Any]:
-    method = input_data.get("formwork_area_calc_method", "legacy_dimensions")
+    method = input_data.get("formwork_area_calc_method")
     if method not in {"legacy_dimensions", "spec_formwork_area"}:
         raise ValueError(
             "formwork_area_calc_method must be either legacy_dimensions or spec_formwork_area."
@@ -459,7 +459,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     timber_volume = edge_and_beam_formwork_area * d(input_data["timber_thickness_m"])
     timber_total_raw = timber_volume * d(input_data["timber_unit_price"])
 
-    rebar_calc_method = input_data.get("rebar_calc_method", "legacy_weight_kg")
+    rebar_calc_method = input_data.get("rebar_calc_method")
     if rebar_calc_method not in {"legacy_weight_kg", "spec_length_items"}:
         raise ValueError("rebar_calc_method must be either legacy_weight_kg or spec_length_items.")
     rebar_items = [

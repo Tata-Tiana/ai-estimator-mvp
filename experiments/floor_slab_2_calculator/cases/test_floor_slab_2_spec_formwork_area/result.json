@@ -76,7 +76,8 @@
     "foam_min_cans": 1,
     "foam_can_unit_price": 490,
     "logistics_rate": 0.01,
-    "consumables_rate": 0.03
+    "consumables_rate": 0.03,
+    "rebar_calc_method": "legacy_weight_kg"
   },
   "calculation_blocks": {
     "geometry": {

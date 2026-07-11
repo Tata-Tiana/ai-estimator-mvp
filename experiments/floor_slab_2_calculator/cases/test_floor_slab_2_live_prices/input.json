@@ -78,5 +78,6 @@
   "pricing": {
     "mode": "price_registry_with_fallback",
     "registry_path": "output/price_registry_filled_v3.xlsx"
-  }
+  },
+  "rebar_calc_method": "legacy_weight_kg"
 }

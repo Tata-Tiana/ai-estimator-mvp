@@ -107,6 +107,19 @@ missing, zero orphaned.
 - Parapet lengths, vent-wall abutments, aerators, and drains are separate calculator inputs.
 - Supplier-required material volumes remain manual/supplier inputs unless the calculator contract explicitly marks them as AUTO_PROJECT.
 
+## Calculator silent legacy default fixed (2026-07-11)
+
+While re-auditing all 8 calculators for the "adapter forgets a `*_calc_method` field, calculator
+silently falls back to a legacy mode" risk (same class as `floor_slab_1`'s finding), found
+`roof_geometry_calc_method` silently defaulted to `"legacy_totals"` in `calculate_roof_geometry()` —
+that mode requires `roof_area_total_m2`/`parapet_and_abutment_total_length_m` directly instead of the
+detailed per-level fields this contract actually reviews. Already had
+`if method not in {...}: raise ValueError(...)` validation right after the `.get()` call, so the fix
+was just removing the hardcoded default string. `test_flat_roof_usv` and
+`test_flat_roof_usv_live_prices` relied on the implicit default — added
+`"roof_geometry_calc_method": "legacy_totals"` explicitly to both to preserve their existing tested
+behavior. All 3 cases still pass 0 mismatches.
+
 ## Check before marking section ready
 
 1. Read the calculator input shape directly.

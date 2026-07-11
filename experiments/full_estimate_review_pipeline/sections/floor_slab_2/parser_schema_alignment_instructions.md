@@ -134,6 +134,23 @@ After this pass, `calculator_targets_compact.json`'s `floor_slab_2` section has 
 targets and 2 extract_groups (`floor_slab_2_beam_items`, `floor_slab_2_rebar_items`) the contract's 9
 `target_code`s require — verified programmatically, 1:1 match, no extras, no gaps.
 
+## Calculator silent legacy defaults fixed (2026-07-11)
+
+While re-auditing all 8 calculators for the "adapter forgets a `*_calc_method` field, calculator
+silently falls back to a legacy mode" risk (same class as `floor_slab_1`'s `insulation_calc_method`
+finding), found two instances in `calculator.py`: `formwork_area_calc_method` silently defaulted to
+`"legacy_dimensions"`, and `rebar_calc_method` silently defaulted to `"legacy_weight_kg"`. Both already
+had `if method not in {...}: raise ValueError(...)` validation right after the `.get()` call, so the
+fix was just removing the hardcoded default string from each — a missing field now raises immediately
+instead of silently switching modes.
+
+`rebar_calc_method` was relied on implicitly (never set) by 5 of the 6 test fixtures
+(`test_floor_slab_2`, `test_floor_slab_2_formwork_delivery_threshold_180`,
+`test_floor_slab_2_formwork_delivery_threshold_above_180`, `test_floor_slab_2_live_prices`,
+`test_floor_slab_2_spec_formwork_area`) — added `"rebar_calc_method": "legacy_weight_kg"` explicitly to
+each to preserve their existing tested behavior. `formwork_area_calc_method` was already explicit in
+every fixture. All 6 cases still pass 0 mismatches.
+
 ## Check before marking section ready
 
 1. Read the calculator input shape directly, especially rebar item fields.
