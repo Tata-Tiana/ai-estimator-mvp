@@ -449,33 +449,21 @@ def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         ws.column_dimensions[column].hidden = True
 
 
-def detail_template_row(contract: dict[str, Any], table: dict[str, Any]) -> list[Any]:
-    columns = {item.get("key"): item for item in table.get("columns") or []}
-    def label(key: str) -> str:
-        item = columns.get(key)
-        if not item:
-            return ""
-        unit = item.get("unit") or ""
-        return f"{item.get('label_ru', key)}{', ' + unit if unit else ''}"
-
+def repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
     return [
-        table.get("label_ru", table.get("key", "")),
-        label("name") or "Наименование",
-        label("length_m"),
-        label("depth_m"),
-        label("width_m"),
-        label("volume_m3"),
-        label("diameter_mm"),
-        label("pipe_length_m"),
-        label("quantity"),
-        label("total_length_m"),
-        label("include_in_communications"),
-        "",
-        "",
-        "",
-        section_code(contract),
-        table.get("key", ""),
+        param
+        for param in (contract.get("review_parameters") or [])
+        if param.get("value_kind") == "repeated_rows" and param.get("columns")
     ]
+
+
+def repeated_row_headers(param: dict[str, Any]) -> list[str]:
+    headers = []
+    for col in param.get("columns") or []:
+        label = col.get("label_ru", col.get("key", ""))
+        unit = col.get("unit") or ""
+        headers.append(f"{label}{', ' + unit if unit else ''}")
+    return headers
 
 
 def generic_detail_row(template: dict[str, Any]) -> list[Any]:
@@ -500,53 +488,48 @@ def generic_detail_row(template: dict[str, Any]) -> list[Any]:
 
 
 def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
+    # Real repeated-row groups (rebar_items, beam_items, lintel_items, etc.) are declared as
+    # review_parameters entries with value_kind: repeated_rows, not a separate detail_tables key -
+    # no contract has ever used detail_tables. Each such entry that opts in with
+    # mirror_to_details_sheet: true gets its own titled block here, with headers taken directly
+    # from that entry's own columns list (found missing 2026-07-11 - this sheet was previously
+    # always empty of real project content for all 8 sections, only showing the generic templates
+    # below).
     ws = wb.create_sheet("03_Детали объемов")
-    ws.append(DETAIL_HEADERS)
-    has_detail_block = False
+    has_real_block = False
     for contract in contracts:
-        tables = contract.get("detail_tables") or []
-        if not tables:
-            continue
-        if has_detail_block:
-            ws.append([])
-        append_section_band(ws, [section_name(contract)], len(DETAIL_HEADERS))
-        has_detail_block = True
-        for table in tables:
-            ws.append(detail_template_row(contract, table))
-            for cell in ws[ws.max_row]:
-                cell.fill = FILL_WHITE
-    if has_detail_block:
+        for param in repeated_row_params(contract):
+            if not param.get("mirror_to_details_sheet"):
+                continue
+            headers = repeated_row_headers(param)
+            if not headers:
+                continue
+            title = f"{section_name(contract)} — {param.get('label_ru', param.get('key', ''))}"
+            append_block(
+                ws,
+                title,
+                headers + ["Комментарий Елены", "section_code", "target_code"],
+                [],
+            )
+            has_real_block = True
+
+    if has_real_block:
         ws.append([])
-    append_section_band(ws, ["Будущие detail-шаблоны"], len(DETAIL_HEADERS))
+    ws.append(["Будущие detail-шаблоны (общие заготовки, не привязаны к конкретному контракту)"])
+    style_block_title_row(ws, ws.max_row, 1)
     for template in GENERIC_DETAIL_TEMPLATES:
         ws.append([])
         append_section_band(ws, [template["title"]], len(DETAIL_HEADERS))
+        ws.append(DETAIL_HEADERS)
+        style_header_row(ws, ws.max_row, len(DETAIL_HEADERS))
         ws.append(generic_detail_row(template))
         for cell in ws[ws.max_row]:
             cell.fill = FILL_WHITE
 
     apply_table_style(ws)
+    restyle_block_sheet(ws)
     restyle_section_bands(ws)
-    set_widths(ws, {
-        "A": 18,
-        "B": 44,
-        "C": 14,
-        "D": 14,
-        "E": 14,
-        "F": 16,
-        "G": 16,
-        "H": 18,
-        "I": 14,
-        "J": 18,
-        "K": 14,
-        "L": 44,
-        "M": 78,
-        "N": 24,
-        "O": 20,
-        "P": 26,
-    })
-    for column in ["O", "P"]:
-        ws.column_dimensions[column].hidden = True
+    set_widths(ws, {chr(ord("A") + i): 26 for i in range(16)})
 
 
 def build_instruction_sheet(wb: Workbook) -> None:
@@ -725,6 +708,12 @@ def build_workbook(contract_paths: list[Path], output_path: Path) -> dict[str, A
     check = inspect_workbook(output_path)
     check["output_path"] = str(output_path)
     check["contracts"] = [str(path) for path in contract_paths]
+    check["detail_groups_rendered"] = sum(
+        1
+        for contract in contracts
+        for param in repeated_row_params(contract)
+        if param.get("mirror_to_details_sheet")
+    )
     return check
 
 
@@ -745,16 +734,10 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
         if cell_text(ws_prices.cell(row_idx, 12).value):
             price_rows += 1
 
-    detail_template_rows = 0
-    for row_idx in range(2, ws_details.max_row + 1):
-        if cell_text(ws_details.cell(row_idx, 16).value):
-            detail_template_rows += 1
-
     return {
         "sheet_names": sheets,
         "project_parameter_rows": project_rows,
         "price_rows": price_rows,
-        "detail_template_rows": detail_template_rows,
         "project_max_row": ws_project.max_row,
         "price_max_row": ws_prices.max_row,
         "details_max_row": ws_details.max_row,
@@ -788,7 +771,7 @@ def main() -> None:
         print(f"sheets: {', '.join(check['sheet_names'])}")
         print(f"project_parameter_rows: {check['project_parameter_rows']}")
         print(f"price_rows: {check['price_rows']}")
-        print(f"detail_template_rows: {check['detail_template_rows']}")
+        print(f"detail_groups_rendered: {check['detail_groups_rendered']}")
 
 
 if __name__ == "__main__":
