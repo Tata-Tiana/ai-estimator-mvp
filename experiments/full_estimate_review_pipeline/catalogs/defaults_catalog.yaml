@@ -1519,6 +1519,253 @@ sections:
         allow_override: true
         notes: "Percent consumables/tool line calculated from direct cost base."
 
+  flat_roof:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/flat_roof/section_contract.yaml"
+      - "experiments/flat_roof_calculator/calculator.py"
+      - "experiments/flat_roof_calculator/README.md"
+      - "docs/report_flat_roof_calculator.md"
+      - "docs/elena_parameter_review_pack_audit.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    defaults:
+      project_name:
+        value: null
+        unit: ""
+        source_class: JOB_METADATA
+        calculator_input_path: "project_name"
+        used_by_estimate_lines: []
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Filled from job metadata, not from PDF quantities."
+
+      roof_geometry_calc_method:
+        value: "detailed_project_geometry"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_geometry_calc_method"
+        used_by_estimate_lines:
+          - "flat_roof.roof_base_preparation_control"
+          - "flat_roof.vapor_barrier_installation"
+          - "flat_roof.eps_roof_insulation_installation"
+        source_note: "Production mode from flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed roof areas by level; project_spec_roof_area_m2 is control only."
+
+      vapor_barrier_film_overlap_coeff:
+        value: 1.15
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "vapor_barrier_film_overlap_coeff"
+        used_by_estimate_lines: ["flat_roof.vapor_barrier_film_technonikol_120mk"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Overlap coefficient for vapor barrier film ordering."
+
+      vapor_barrier_film_roll_area_m2:
+        value: 150.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "vapor_barrier_film_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.vapor_barrier_film_technonikol_120mk"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll area used for full-roll ordering."
+
+      eps_main_thickness_m:
+        value: 0.2
+        unit: "m"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "eps_main_thickness_m"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Main flat-roof EPS thickness for two 100 mm layers."
+
+      eps_insulation_waste_coeff:
+        value: 1.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_insulation_waste_coeff"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material waste coefficient for flat roof EPS."
+
+      geotextile_flat_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "geotextile_flat_coeff"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for flat geotextile layer."
+
+      geotextile_parapet_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "geotextile_parapet_coeff"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_150_parapet"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for parapet/abutment geotextile."
+
+      geotextile_flat_roll_area_m2:
+        value: 100.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "geotextile_flat_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "PROF 300 roll area for full-roll ordering."
+
+      geotextile_parapet_roll_area_m2:
+        value: 100.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "geotextile_parapet_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_150_parapet"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "PROF 150 roll area for full-roll ordering."
+
+      pvc_membrane_flat_coeff:
+        value: 1.15
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "pvc_membrane_flat_coeff"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for flat PVC membrane area."
+
+      pvc_membrane_parapet_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "pvc_membrane_parapet_coeff"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for PVC membrane at parapets and abutments."
+
+      pvc_membrane_roll_width_m:
+        value: 2.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "pvc_membrane_roll_width_m"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll width used for roll count."
+
+      pvc_membrane_roll_length_m:
+        value: 20.0
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "pvc_membrane_roll_length_m"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll length used for roll count."
+
+      rail_piece_length_m:
+        value: 3.0
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rail_piece_length_m"
+        used_by_estimate_lines:
+          - "flat_roof.aluminum_pressure_rail_3m"
+          - "flat_roof.aluminum_edge_rail_3m"
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rail piece length for ordered length rounded up to full pieces."
+
+      eps100_pack_volume_m3:
+        value: 0.27376
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for EPS 100 mm roof material; not a project EPS volume."
+
+      eps50_pack_volume_m3:
+        value: 0.27376
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps50_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for EPS 50 mm supplier-required volume."
+
+      slope_plate_a_pack_volume_m3:
+        value: 0.2916
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_a_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_2_1_plate_a"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate A."
+
+      slope_plate_b_pack_volume_m3:
+        value: 0.2736
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_b_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_2_1_plate_b"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate B."
+
+      slope_plate_j_pack_volume_m3:
+        value: 0.2916
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_j_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_4_2_plate_j"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate J."
+
+      slope_plate_k_pack_volume_m3:
+        value: 0.2736
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_k_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_4_2_plate_k"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate K."
+
 not_defaults:
   earthworks:
     consumables_amount:
@@ -1762,3 +2009,116 @@ not_defaults:
       reason: "Material unit price, not a default."
       belongs_to: "price registry / fallback / review sheet 02"
       estimate_line_code: "floor_slab_2.eps100_penoplex_material"
+  flat_roof:
+    roof_area_level_1_m2:
+      reason: "Project roof area by level, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
+    roof_area_level_2_m2:
+      reason: "Project roof area by level, not a default. Use 0 only when the level is absent and reviewed."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
+    project_spec_roof_area_m2:
+      reason: "Optional control value from project/specification, not a default and not a substitute for detailed roof geometry without review."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    parapet_length_level_1_m:
+      reason: "Project parapet length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    parapet_length_level_2_m:
+      reason: "Project parapet length, not a default. Use 0 only when the level is absent and reviewed."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    vent_wall_abutment_level_1_m:
+      reason: "Project abutment length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    vent_wall_abutment_level_2_m:
+      reason: "Project abutment length, not a default. Use 0 only when the level is absent and reviewed."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    roof_aerators_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.roof_pvc_aerator_75x375"
+    parapet_roof_drains_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.parapet_roof_drain_installation"
+    internal_roof_drains_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.internal_roof_drain_with_heating"
+    internal_drain_height_per_drain_m:
+      reason: "Project-specific drain height/length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.internal_drain_pvc_110mm"
+    roof_raw_material_spec_rows:
+      reason: "Diagnostic/detail rows from the project specification, not calculator defaults."
+      belongs_to: "review sheet 01 / details sheet 03"
+      estimate_line_code: null
+    roof_work_coeff:
+      reason: "Project/business supplier input, not a reusable default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps_roof_insulation_installation"
+    eps50_supplier_required_volume_m3:
+      reason: "Supplier/Technonikol volume, not geometry-derived default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps50_technonikol_carbon_eco"
+    slope_plate_a_supplier_required_volume_m3:
+      reason: "Supplier/Technonikol SLOPE volume, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps_slope_2_1_plate_a"
+    slope_plate_b_supplier_required_volume_m3:
+      reason: "Supplier/Technonikol SLOPE volume, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps_slope_2_1_plate_b"
+    slope_plate_j_supplier_required_volume_m3:
+      reason: "Supplier/Technonikol SLOPE volume, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps_slope_4_2_plate_j"
+    slope_plate_k_supplier_required_volume_m3:
+      reason: "Supplier/Technonikol SLOPE volume, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.eps_slope_4_2_plate_k"
+    vent_shaft_abutment_count:
+      reason: "Manual/project count requiring review, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.vent_shaft_abutment_installation"
+    gas_block_wall_holes_count:
+      reason: "Manual/project count requiring review, not a default and not necessarily equal to drain count."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.gas_block_wall_hole_drilling"
+    roof_crane_lifting_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_crane_lifting"
+    roof_consumables_total_raw:
+      reason: "Manual/fixed amount pending a universal formula, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_consumables_tool_depreciation"
+    roof_waste_removal_trucks:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_waste_removal"
+    roof_logistics_and_supply_total_raw:
+      reason: "Manual/fixed amount pending a universal formula, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_logistics_and_supply"
+    technical_supervision_work_total:
+      reason: "Manual/fixed amount, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.technical_supervision"
+    procurement_storage_work_total:
+      reason: "Manual/fixed amount, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.procurement_storage"
+    slope_plate_unit_price_per_m3:
+      reason: "Material unit price shared by SLOPE plate lines, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "flat_roof.eps_slope_plate_items"
+    roof_crane_lifting_unit_price_per_shift:
+      reason: "Material/mechanism unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "flat_roof.roof_crane_lifting"

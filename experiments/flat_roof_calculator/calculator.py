@@ -250,7 +250,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings = [
         "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
         "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
-        "Temporary door line is case-specific and is not included in this universal base calculator.",
         "Roof consumables use provided raw total; base formula is to be confirmed later.",
         "Logistics and supply uses provided raw total from the reviewed gray estimate.",
         "Technical supervision uses provided gray work total from the reviewed estimate.",

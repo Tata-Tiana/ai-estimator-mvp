@@ -3136,3 +3136,496 @@ sections:
         zero_policy: structural_zero
         source_note: "Floor slab 2 currently has only edge/beam EPS insulation; bottom slab EPS belongs to floor_slab_1, not this section."
         action_needed: "Do not add unless the calculator/contract gets an explicit bottom-slab EPS input for floor_slab_2."
+
+  flat_roof:
+    status: draft_cataloged
+    section_title_ru: "ПЛОСКАЯ КРОВЛЯ: КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА"
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/flat_roof/section_contract.yaml"
+      - "experiments/flat_roof_calculator/calculator.py"
+      - "experiments/flat_roof_calculator/README.md"
+      - "docs/report_flat_roof_calculator.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    calculator_estimate_line_count: 31
+    formula_ready_row_count: null
+    lines:
+      roof_base_preparation_control:
+        code: "roof_base_preparation_control"
+        row_id: "flat_roof.roof_base_preparation_control"
+        name_ru: "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности"
+        unit: "м2"
+        line_kind: control
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_area_level_1_m2 + roof_area_level_2_m2"
+          leaf_inputs:
+            - {ref: "review_parameters.roof_area_level_1_m2", source_class: AUTO_PROJECT}
+            - {ref: "review_parameters.roof_area_level_2_m2", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: allowed
+        notes: "Zero/internal control row for flat roof base preparation."
+
+      vapor_barrier_installation:
+        code: "vapor_barrier_installation"
+        row_id: "flat_roof.vapor_barrier_installation"
+        name_ru: "Пароизоляция основания пленкой ПВХ"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_area_total_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        prices: {material_unit_price_key: null, work_unit_price_key: "vapor_barrier_work_rate_per_m2", fixed_amount_key: null, price_registry_code: "roof_vapor_barrier_installation_work_m2"}
+        zero_policy: not_expected
+        notes: ""
+
+      vapor_barrier_film_technonikol_120mk:
+        code: "vapor_barrier_film_technonikol_120mk"
+        row_id: "flat_roof.vapor_barrier_film_technonikol_120mk"
+        name_ru: "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(roof_area_total_m2 * vapor_barrier_film_overlap_coeff / vapor_barrier_film_roll_area_m2) * vapor_barrier_film_roll_area_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.vapor_barrier_film_overlap_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.vapor_barrier_film_roll_area_m2", source_class: DEFAULT}
+        prices: {material_unit_price_key: "vapor_barrier_film_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_vapor_barrier_film_technonikol_120mk_m2"}
+        zero_policy: not_expected
+        notes: "Ordered area rounded up to full rolls."
+
+      eps_roof_insulation_installation:
+        code: "eps_roof_insulation_installation"
+        row_id: "flat_roof.eps_roof_insulation_installation"
+        name_ru: "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_area_total_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        prices: {material_unit_price_key: null, work_unit_price_key: "eps_insulation_work_rate_per_m2", fixed_amount_key: null, price_registry_code: "roof_eps_insulation_installation_work_m2"}
+        zero_policy: not_expected
+        notes: "Work price may include roof_work_coeff upstream; calculator takes reviewed combined rate."
+
+      eps100_technonikol_carbon_eco:
+        code: "eps100_technonikol_carbon_eco"
+        row_id: "flat_roof.eps100_technonikol_carbon_eco"
+        name_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 100 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.eps_main_thickness_m", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.eps_insulation_waste_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.eps100_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "eps100_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps100_technonikol_carbon_eco_m3"}
+        zero_policy: not_expected
+        notes: "Flat roof EPS material, not slab/foundation EPS."
+
+      eps50_technonikol_carbon_eco:
+        code: "eps50_technonikol_carbon_eco"
+        row_id: "flat_roof.eps50_technonikol_carbon_eco"
+        name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(eps50_supplier_required_volume_m3 / eps50_pack_volume_m3) * eps50_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "supplier_inputs.eps50_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.eps50_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "eps50_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps50_technonikol_carbon_eco_m3"}
+        zero_policy: not_expected
+        notes: "Supplier/Technonikol required volume, not geometry-derived."
+
+      eps_slope_2_1_plate_a:
+        code: "eps_slope_2_1_plate_a"
+        row_id: "flat_roof.eps_slope_2_1_plate_a"
+        name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(slope_plate_a_supplier_required_volume_m3 / slope_plate_a_pack_volume_m3) * slope_plate_a_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "supplier_inputs.slope_plate_a_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_a_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        zero_policy: not_expected
+        notes: "Shared reviewed SLOPE plate price is fanned out to plate types by adapter."
+
+      eps_slope_2_1_plate_b:
+        code: "eps_slope_2_1_plate_b"
+        row_id: "flat_roof.eps_slope_2_1_plate_b"
+        name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(slope_plate_b_supplier_required_volume_m3 / slope_plate_b_pack_volume_m3) * slope_plate_b_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "supplier_inputs.slope_plate_b_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_b_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        zero_policy: not_expected
+        notes: "Supplier/Technonikol required volume."
+
+      eps_slope_4_2_plate_j:
+        code: "eps_slope_4_2_plate_j"
+        row_id: "flat_roof.eps_slope_4_2_plate_j"
+        name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(slope_plate_j_supplier_required_volume_m3 / slope_plate_j_pack_volume_m3) * slope_plate_j_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "supplier_inputs.slope_plate_j_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_j_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        zero_policy: not_expected
+        notes: "Supplier/Technonikol required volume."
+
+      eps_slope_4_2_plate_k:
+        code: "eps_slope_4_2_plate_k"
+        row_id: "flat_roof.eps_slope_4_2_plate_k"
+        name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(slope_plate_k_supplier_required_volume_m3 / slope_plate_k_pack_volume_m3) * slope_plate_k_pack_volume_m3"
+          leaf_inputs:
+            - {ref: "supplier_inputs.slope_plate_k_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_k_pack_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        zero_policy: not_expected
+        notes: "Supplier/Technonikol required volume."
+
+      geotextile_prof_300_flat:
+        code: "geotextile_prof_300_flat"
+        row_id: "flat_roof.geotextile_prof_300_flat"
+        name_ru: "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(roof_area_total_m2 * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_roll_area_m2", source_class: DEFAULT}
+        prices: {material_unit_price_key: "geotextile_flat_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_prof_300_m2"}
+        zero_policy: not_expected
+        notes: "Flat roof layer."
+
+      geotextile_prof_150_parapet:
+        code: "geotextile_prof_150_parapet"
+        row_id: "flat_roof.geotextile_prof_150_parapet"
+        name_ru: "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(parapet_and_abutment_total_length_m * geotextile_parapet_coeff / geotextile_parapet_roll_area_m2) * geotextile_parapet_roll_area_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_parapet_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_parapet_roll_area_m2", source_class: DEFAULT}
+        prices: {material_unit_price_key: "geotextile_parapet_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_prof_150_m2"}
+        zero_policy: not_expected
+        notes: "Parapet and abutment layer."
+
+      pvc_membrane_flat_installation:
+        code: "pvc_membrane_flat_installation"
+        row_id: "flat_roof.pvc_membrane_flat_installation"
+        name_ru: "Укладка ПВХ Мембраны"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_area_total_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        prices: {material_unit_price_key: null, work_unit_price_key: "pvc_membrane_installation_work_rate_per_m2", fixed_amount_key: null, price_registry_code: "roof_pvc_membrane_installation_work_m2"}
+        zero_policy: not_expected
+        notes: ""
+
+      pvc_membrane_abutment_installation:
+        code: "pvc_membrane_abutment_installation"
+        row_id: "flat_roof.pvc_membrane_abutment_installation"
+        name_ru: "Монтаж примыкания кровли из ПВХ мембраны"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "parapet_length_level_1_m + parapet_length_level_2_m + vent_wall_abutment_level_1_m + vent_wall_abutment_level_2_m"
+          leaf_inputs:
+            - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+        prices: {material_unit_price_key: null, work_unit_price_key: "pvc_membrane_abutment_work_rate_per_m", fixed_amount_key: null, price_registry_code: "roof_pvc_membrane_abutment_work_m"}
+        zero_policy: not_expected
+        notes: ""
+
+      vent_shaft_abutment_installation:
+        code: "vent_shaft_abutment_installation"
+        row_id: "flat_roof.vent_shaft_abutment_installation"
+        name_ru: "Монтаж примыкания к вентшахтам"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "vent_shaft_abutment_count"
+          leaf_inputs:
+            - {ref: "supplier_inputs.vent_shaft_abutment_count", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: "vent_shaft_abutment_work_rate_per_item", fixed_amount_key: null, price_registry_code: "roof_vent_shaft_abutment_installation_item"}
+        zero_policy: not_expected
+        notes: "Manual/project count requiring review."
+
+      aluminum_pressure_rail_3m:
+        code: "aluminum_pressure_rail_3m"
+        row_id: "flat_roof.aluminum_pressure_rail_3m"
+        name_ru: "Рейка прижимная алюминиевая 3м"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(parapet_and_abutment_total_length_m / rail_piece_length_m) * rail_piece_length_m"
+          leaf_inputs:
+            - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.rail_piece_length_m", source_class: DEFAULT}
+        prices: {material_unit_price_key: "pressure_rail_unit_price_per_m", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_aluminum_pressure_rail_m"}
+        zero_policy: not_expected
+        notes: "Same ordered length as aluminum_edge_rail_3m."
+
+      aluminum_edge_rail_3m:
+        code: "aluminum_edge_rail_3m"
+        row_id: "flat_roof.aluminum_edge_rail_3m"
+        name_ru: "Рейка краевая алюминиевая 3м"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil(parapet_and_abutment_total_length_m / rail_piece_length_m) * rail_piece_length_m"
+          leaf_inputs:
+            - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.rail_piece_length_m", source_class: DEFAULT}
+        prices: {material_unit_price_key: "edge_rail_unit_price_per_m", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_aluminum_edge_rail_m"}
+        zero_policy: not_expected
+        notes: "Same ordered length as aluminum_pressure_rail_3m."
+
+      pvc_membrane_logicroof_vrp_1_5mm_gray:
+        code: "pvc_membrane_logicroof_vrp_1_5mm_gray"
+        row_id: "flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"
+        name_ru: "ПВХ мембрана Logicroof V-RP 1,5 мм"
+        unit: "рул"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "ceil((roof_area_total_m2 * pvc_membrane_flat_coeff + parapet_and_abutment_total_length_m * pvc_membrane_parapet_coeff) / (pvc_membrane_roll_width_m * pvc_membrane_roll_length_m))"
+          leaf_inputs:
+            - {ref: "auto_calculated.pvc_membrane_rolls", source_class: AUTO_CALCULATED}
+        prices: {material_unit_price_key: "pvc_membrane_unit_price_per_roll_display", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_pvc_membrane_logicroof_vrp_roll"}
+        zero_policy: not_expected
+        notes: "Roll count is calculated, not copied from an Excel result."
+
+      roof_pvc_aerator_75x375:
+        code: "roof_pvc_aerator_75x375"
+        row_id: "flat_roof.roof_pvc_aerator_75x375"
+        name_ru: "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_aerators_count"
+          leaf_inputs:
+            - {ref: "review_parameters.roof_aerators_count", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: "roof_aerator_unit_price", work_unit_price_key: "roof_aerator_installation_rate", fixed_amount_key: null, price_registry_code: "roof_pvc_aerator_75x375_item"}
+        zero_policy: not_expected
+        notes: ""
+
+      parapet_roof_drain_installation:
+        code: "parapet_roof_drain_installation"
+        row_id: "flat_roof.parapet_roof_drain_installation"
+        name_ru: "Установка воронки парапетной (без пробивки отверстий)"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "parapet_roof_drains_count"
+          leaf_inputs:
+            - {ref: "review_parameters.parapet_roof_drains_count", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: "parapet_roof_drain_unit_price", work_unit_price_key: "parapet_roof_drain_installation_rate", fixed_amount_key: null, price_registry_code: "roof_parapet_drain_item"}
+        zero_policy: not_expected
+        notes: ""
+
+      gas_block_wall_hole_drilling:
+        code: "gas_block_wall_hole_drilling"
+        row_id: "flat_roof.gas_block_wall_hole_drilling"
+        name_ru: "Пробивка отверстий в стенах из газоблока толщ.400мм"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "gas_block_wall_holes_count"
+          leaf_inputs:
+            - {ref: "supplier_inputs.gas_block_wall_holes_count", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: "gas_block_wall_hole_drilling_rate", fixed_amount_key: null, price_registry_code: "roof_gas_block_wall_hole_drilling_item"}
+        zero_policy: not_expected
+        notes: "Manual quantity; not always equal to parapet drain count."
+
+      internal_roof_drain_with_heating:
+        code: "internal_roof_drain_with_heating"
+        row_id: "flat_roof.internal_roof_drain_with_heating"
+        name_ru: "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "internal_roof_drains_count"
+          leaf_inputs:
+            - {ref: "review_parameters.internal_roof_drains_count", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: "internal_roof_drain_unit_price", work_unit_price_key: "internal_roof_drain_installation_rate", fixed_amount_key: null, price_registry_code: "roof_internal_drain_with_heating_item"}
+        zero_policy: not_expected
+        notes: ""
+
+      internal_drain_pvc_110mm:
+        code: "internal_drain_pvc_110mm"
+        row_id: "flat_roof.internal_drain_pvc_110mm"
+        name_ru: "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "internal_roof_drains_count * internal_drain_height_per_drain_m"
+          leaf_inputs:
+            - {ref: "review_parameters.internal_roof_drains_count", source_class: AUTO_PROJECT}
+            - {ref: "review_parameters.internal_drain_height_per_drain_m", source_class: AUTO_PROJECT}
+        prices: {material_unit_price_key: "internal_drain_pvc_110_unit_price_per_m", work_unit_price_key: "internal_drain_pvc_110_work_rate_per_m", fixed_amount_key: null, price_registry_code: "roof_internal_drain_pvc_110mm_m"}
+        zero_policy: not_expected
+        notes: "Drain height/length is project-specific."
+
+      roof_crane_lifting:
+        code: "roof_crane_lifting"
+        row_id: "flat_roof.roof_crane_lifting"
+        name_ru: "Подъем материалов автокраном"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_crane_lifting_shifts"
+          leaf_inputs:
+            - {ref: "supplier_inputs.roof_crane_lifting_shifts", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: "roof_crane_lifting_unit_price_per_shift", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_crane_lifting_shift"}
+        zero_policy: not_expected
+        notes: "Manual/supplier quantity."
+
+      roof_consumables_tool_depreciation:
+        code: "roof_consumables_tool_depreciation"
+        row_id: "flat_roof.roof_consumables_tool_depreciation"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1; amount = roof_consumables_total_raw"
+          leaf_inputs:
+            - {ref: "supplier_inputs.roof_consumables_total_raw", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "roof_consumables_total_raw", price_registry_code: null}
+        zero_policy: requires_review_if_zero
+        notes: "Manual/fixed amount until a universal formula is confirmed."
+
+      roof_waste_removal:
+        code: "roof_waste_removal"
+        row_id: "flat_roof.roof_waste_removal"
+        name_ru: "Вывоз мусора с объекта"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "roof_waste_removal_trucks"
+          leaf_inputs:
+            - {ref: "supplier_inputs.roof_waste_removal_trucks", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: "roof_waste_removal_truck_unit_price", work_unit_price_key: "roof_waste_removal_work_rate_per_truck", fixed_amount_key: null, price_registry_code: "roof_waste_removal_truck"}
+        zero_policy: not_expected
+        notes: ""
+
+      roof_logistics_and_supply:
+        code: "roof_logistics_and_supply"
+        row_id: "flat_roof.roof_logistics_and_supply"
+        name_ru: "Логистика, и снабжение"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1; amount = roof_logistics_and_supply_total_raw"
+          leaf_inputs:
+            - {ref: "supplier_inputs.roof_logistics_and_supply_total_raw", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "roof_logistics_and_supply_total_raw", price_registry_code: null}
+        zero_policy: requires_review_if_zero
+        notes: "Manual/fixed amount until a universal formula is confirmed."
+
+      technical_supervision:
+        code: "technical_supervision"
+        row_id: "flat_roof.technical_supervision"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1; amount = technical_supervision_work_total"
+          leaf_inputs:
+            - {ref: "supplier_inputs.technical_supervision_work_total", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "technical_supervision_work_total", price_registry_code: null}
+        zero_policy: requires_review_if_zero
+        notes: "Gray internal work total provided directly."
+
+      procurement_storage:
+        code: "procurement_storage"
+        row_id: "flat_roof.procurement_storage"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1; amount = procurement_storage_work_total"
+          leaf_inputs:
+            - {ref: "supplier_inputs.procurement_storage_work_total", source_class: SUPPLIER_INPUT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "procurement_storage_work_total", price_registry_code: null}
+        zero_policy: requires_review_if_zero
+        notes: "Gray internal work total provided directly."
+
+      overhead_zero:
+        code: "overhead_zero"
+        row_id: "flat_roof.overhead_zero"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."
+
+      profit_zero:
+        code: "profit_zero"
+        row_id: "flat_roof.profit_zero"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "1"
+          leaf_inputs: []
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
+        zero_policy: structural_zero
+        notes: "Zero Excel structure line."
