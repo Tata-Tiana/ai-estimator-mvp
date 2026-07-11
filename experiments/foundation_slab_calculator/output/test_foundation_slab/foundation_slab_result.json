@@ -1,7 +1,7 @@
 {
   "case_name": "test_foundation_slab",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab/expected.json",
   "inputs": {
     "project_name": "test_foundation_slab",
     "membrane_area_m2": 320,
@@ -401,7 +401,7 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 26123,
-      "display_quantity": 1.2,
+      "display_quantity": 1.22,
       "price_code": "timber_m3"
     },
     {
@@ -761,7 +761,7 @@
       "formwork_timber": {
         "unit": "м3",
         "quantity": 1.215,
-        "display_quantity": 1.2,
+        "display_quantity": 1.22,
         "material_unit_price": 21500,
         "material_total": 26123,
         "work_unit_price": 0,
@@ -1408,8 +1408,8 @@
     },
     {
       "key": "estimate_lines.formwork_timber.display_quantity",
-      "expected": 1.2,
-      "actual": 1.2,
+      "expected": 1.22,
+      "actual": 1.22,
       "diff": 0.0,
       "status": "ok"
     },

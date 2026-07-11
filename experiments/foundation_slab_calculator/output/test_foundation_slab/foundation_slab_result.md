@@ -262,7 +262,7 @@
 | `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1450` | `15950` | `0.0` | `0` | `15950` |
-| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.2` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
 | `thermal_insert_installation` | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `` | `21.5` | `` | `мп` | `0.0` | `0` | `100` | `2150` | `2150` |
 | `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм | `` | `14.4352` | `14.44` | `м3` | `9800` | `141465` | `0.0` | `0` | `141465` |
@@ -357,7 +357,7 @@
 | `estimate_lines.formwork_plywood.line_total` | `15950` | `15950` | `0` | `ok` |
 | `estimate_lines.formwork_timber.unit` | `м3` | `м3` | `` | `ok` |
 | `estimate_lines.formwork_timber.quantity` | `1.215` | `1.215` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber.display_quantity` | `1.2` | `1.2` | `0.0` | `ok` |
+| `estimate_lines.formwork_timber.display_quantity` | `1.22` | `1.22` | `0.0` | `ok` |
 | `estimate_lines.formwork_timber.material_unit_price` | `21500` | `21500` | `0` | `ok` |
 | `estimate_lines.formwork_timber.material_total` | `26123` | `26123` | `0` | `ok` |
 | `estimate_lines.formwork_timber.work_unit_price` | `0` | `0.0` | `0.0` | `ok` |

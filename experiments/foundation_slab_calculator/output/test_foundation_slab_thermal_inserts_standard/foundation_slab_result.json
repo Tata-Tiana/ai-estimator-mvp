@@ -1,7 +1,7 @@
 {
   "case_name": "test_foundation_slab_thermal_inserts_standard",
-  "input_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/AI сметчик/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/expected.json",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/input.json",
+  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/foundation_slab_calculator/cases/test_foundation_slab_thermal_inserts_standard/expected.json",
   "inputs": {
     "project_name": "test_foundation_slab_thermal_inserts_standard",
     "membrane_area_m2": 320,
@@ -407,7 +407,7 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 26123,
-      "display_quantity": 1.2,
+      "display_quantity": 1.22,
       "price_code": "timber_m3"
     },
     {

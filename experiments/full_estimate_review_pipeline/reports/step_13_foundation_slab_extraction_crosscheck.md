@@ -213,8 +213,20 @@ missing `auto_calculated.membrane_rolls` entry the ported lines needed; added 2 
 old rough estimate of 30 to the verified 29. Zero dangling `leaf_inputs`/price-key references,
 checked programmatically.
 
-Found, not fixed, flagged in the `formwork_timber` line's own notes: the calculator has a hardcoded
-`display_quantity=1.2` for that line — the same category of issue already fixed for waterproofing's
-`display_quantity` (step_16), and explicitly forbidden by this contract's own
-`checks.forbidden_production_inputs: display_quantity_overrides`. Needs the same explicit go-ahead
-before touching calculator code again.
+**Fixed 2026-07-11** (explicit user authorization — exception to the usual never-touch-calculator-code
+rule, same as the waterproofing `display_quantity` fix in step_16): the `formwork_timber` line had a
+hardcoded `display_quantity=1.2`, flagged above and left unfixed at the time. While re-auditing every
+calculator for the same class of issue, found two more instances in
+`foundation_slab_calculator.py`'s `thermal_insert_estimate_lines()` legacy branch (only reached when
+`thermal_insert_mode != "standard_50_100"`, i.e. never in production per this contract's own pinned
+defaults): `eps50_penoplex_geo_material` had `display_quantity=14.44` and `eps100_penoplex_geo_material`
+had `display_quantity=0.56`. All three replaced with `_round_decimal(quantity, "0.01")`, the same
+pattern already used everywhere else in this file for the production-mode thermal-insert lines.
+`display_quantity` never feeds `material_total`/`work_total`/`line_total` in this calculator (confirmed
+directly in `calculate_line()`), so this is cosmetic-only — real total amounts are unchanged.
+`formwork_timber`'s displayed value moved from the hardcoded `1.2` to the correctly-computed `1.22`
+(the real rounded value of `timber_raw_volume_m3`); the two legacy-branch fixes have no test coverage
+change since no fixture currently exercises `thermal_insert_mode != standard_50_100`.
+`cases/test_foundation_slab/expected.json` and
+`cases/test_foundation_slab_formwork_spec_area/expected.json` updated to `1.22`; all 6 test cases pass
+0 mismatches.
