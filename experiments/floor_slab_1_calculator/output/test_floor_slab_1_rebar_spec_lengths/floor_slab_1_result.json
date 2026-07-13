@@ -212,7 +212,10 @@
       ],
       "total_length_m": 23.2,
       "total_concrete_volume_m3": 3.1548,
-      "total_formwork_area_m2": 27.992
+      "total_formwork_area_m2": 27.992,
+      "concrete_volume_source": "calculated_from_beam_items",
+      "calculated_concrete_volume_m3": 3.1548,
+      "concrete_volume_delta_m3": null
     },
     "formwork": {
       "formwork_areas_calc_method": "legacy_calculated_from_geometry",

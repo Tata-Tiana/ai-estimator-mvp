@@ -567,8 +567,25 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         )
 
     beams_total_length = dec_sum([d(item["length_m"]) * d(item["count"]) for item in beam_items])
-    beams_concrete_volume = dec_sum([item["concrete_volume_m3"] for item in beam_items])
+    calculated_beams_concrete_volume = dec_sum([item["concrete_volume_m3"] for item in beam_items])
     beams_formwork_area = dec_sum([item["formwork_area_m2"] for item in beam_items])
+
+    beams_concrete_warnings: list[str] = []
+    beams_concrete_volume_override = input_data.get("beams_concrete_volume_m3")
+    if beams_concrete_volume_override is not None:
+        beams_concrete_volume = d(beams_concrete_volume_override)
+        if beams_concrete_volume < D0:
+            raise ValueError("beams_concrete_volume_m3 must be >= 0")
+        beams_concrete_volume_source = "spec_beams_concrete_volume"
+        beams_concrete_volume_delta = beams_concrete_volume - calculated_beams_concrete_volume
+        if abs(beams_concrete_volume_delta) > d("0.01"):
+            beams_concrete_warnings.append(
+                "beams_concrete_volume_m3 differs from sum of beams.items concrete_volume_m3 by more than 0.01 m3."
+            )
+    else:
+        beams_concrete_volume = calculated_beams_concrete_volume
+        beams_concrete_volume_source = "calculated_from_beam_items"
+        beams_concrete_volume_delta = None
 
     total_concrete_volume = d(geometry_in["total_concrete_volume_from_spec_m3"])
     slab_thickness = d(geometry_in["slab_thickness_m"])
@@ -967,6 +984,11 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "total_length_m": round_decimal(beams_total_length),
             "total_concrete_volume_m3": round_decimal(beams_concrete_volume),
             "total_formwork_area_m2": round_decimal(beams_formwork_area),
+            "concrete_volume_source": beams_concrete_volume_source,
+            "calculated_concrete_volume_m3": round_decimal(calculated_beams_concrete_volume),
+            "concrete_volume_delta_m3": None
+            if beams_concrete_volume_delta is None
+            else round_decimal(beams_concrete_volume_delta),
         },
         "formwork": formwork_block,
         "formwork_rate_context": formwork_rate_context,
@@ -1037,5 +1059,5 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "consumables_and_tool_depreciation_total": round_money_half_up(consumables_total_raw),
             "technical_supervision_total": round_money_half_up(manual_lines["technical_supervision_amount"]),
         },
-        "warnings": formwork_area_warnings + insulation_warnings,
+        "warnings": formwork_area_warnings + insulation_warnings + beams_concrete_warnings,
     }

@@ -385,7 +385,7 @@ lintel_total_length:
   negative_context: ["арматур", "бетон", "фундамент", "плита", "балка"]
   value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Production scalar for lintel length. If PDF has only row-by-row lintel_items, keep rows and mark scalar needs_review unless total is explicitly present."
+  notes: "Production scalar for lintel length. PDFs give this as an explicit total line (e.g. 'Длина перемычек в U-блоках'), not a mark-by-mark table — mark scalar needs_review if no explicit total is present."
 
 lintel_concrete_volume:
   section_code: load_bearing_walls_lintels
@@ -422,18 +422,6 @@ parapet_masonry_volume:
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Masonry volume for parapets, not parapet flashing length or roof abutment length."
-
-lintel_items:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Позиции перемычек"
-  pdf_aliases: ["Пм-", "Перемычка", "План перемычек", "Ведомость перемычек"]
-  expected_unit: null
-  table_hints: ["План перемычек", "Спецификация перемычек", "Ведомость перемычек"]
-  required_context: ["перемычк|Пм"]
-  negative_context: ["плита перекрытия", "балка перекрытия"]
-  value_column_hint: ["марка", "длина", "кол-во", "количество"]
-  unit_column_hint: ["м", "м.п.", "шт"]
-  notes: "Extract row-by-row with length and count."
 
 lintel_rebar_items:
   section_code: load_bearing_walls_lintels
@@ -558,6 +546,18 @@ floor_slab_1_beams_formwork_area:
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Production target for beam formwork area. Do not confuse with beam concrete volume or beam table total."
+
+floor_slab_1_beams_concrete_volume:
+  section_code: floor_slab_1
+  ru_label: "Объем бетона балок перекрытия 1-го этажа"
+  pdf_aliases: ["Бетон балок", "Бетон (балки в теле плиты перекрытия)", "Бетон В22,5 (балки)", "Итого" ]
+  expected_unit: m3
+  table_hints: ["Спецификация к плите перекрытия", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Спецификация Ж/Б балок"]
+  required_context: ["бетон", "балк"]
+  negative_context: ["плита", "опалубк", "перемычк", "2 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество", "итого"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Confirmed present in both ЮСВ КР2 (лист 22, 'Спецификация Ж/Б балок', строка Итого) and ТРЦ КР2 (лист 31, 'Бетон B-22,5 (балки в теле плиты перекрытия)'). If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
 
 floor_slab_1_edge_eps_work_length:
   section_code: floor_slab_1
@@ -742,6 +742,18 @@ floor_slab_2_beams_formwork_area:
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
   notes: "Optional; this floor slab may or may not have beams, independently of floor_slab_1. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.formwork_area_m2."
+
+floor_slab_2_beams_concrete_volume:
+  section_code: floor_slab_2
+  ru_label: "Объем бетона балок перекрытия 2-го этажа"
+  pdf_aliases: ["Бетон балок", "Бетон (балки в теле плиты перекрытия)", "Бетон В22,5 (балки)", "Итого"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плите перекрытия", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Спецификация Ж/Б балок"]
+  required_context: ["бетон", "балк"]
+  negative_context: ["плита", "опалубк", "перемычк", "1 этажа"]
+  value_column_hint: ["объем", "кол-во", "количество", "итого"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Optional; this floor slab may or may not have beams, independently of floor_slab_1. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
 
 floor_slab_2_beam_items:
   section_code: floor_slab_2

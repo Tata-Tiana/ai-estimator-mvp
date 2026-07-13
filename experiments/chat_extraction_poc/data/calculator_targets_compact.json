@@ -83,12 +83,6 @@
       ],
       "extract_groups": [
         {
-          "group_code": "lintel_items",
-          "description": "Ведомость перемычек — длины и количество одинаковых перемычек.",
-          "fields": ["mark", "length_m", "count", "total_length_m"],
-          "grounded": false
-        },
-        {
           "group_code": "main_wall_rebar_items",
           "description": "Арматура несущих стен — каждая строка спецификации отдельно, в м/п.",
           "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
@@ -120,6 +114,7 @@
         {"code": "floor_slab_1_under_slab_formwork_area", "label_ru": "Площадь опалубки под плитой перекрытия 1-го этажа", "unit": "m2", "grounded": false},
         {"code": "floor_slab_1_edge_formwork_area", "label_ru": "Площадь опалубки торца плиты перекрытия 1-го этажа", "unit": "m2", "grounded": false},
         {"code": "floor_slab_1_beams_formwork_area", "label_ru": "Площадь опалубки балок перекрытия 1-го этажа", "unit": "m2", "grounded": false},
+        {"code": "floor_slab_1_beams_concrete_volume", "label_ru": "Объем бетона балок перекрытия 1-го этажа", "unit": "m3", "grounded": true, "notes": "Usually a ready 'Итого' line in the beam specification table, separate from the slab's own concrete volume. Optional; leave null (not 0) if absent so the calculator falls back to the sum of beam_items.concrete_volume_m3."},
         {"code": "floor_slab_1_edge_eps_work_length", "label_ru": "ЭППС 100 мм торец плиты перекрытия 1-го этажа — длина работ", "unit": "linear_m", "grounded": false},
         {"code": "floor_slab_1_edge_insulation_height", "label_ru": "Высота утепления торца плиты перекрытия 1-го этажа", "unit": "m", "grounded": false, "notes": "Normalize mm to meters."},
         {"code": "floor_slab_1_edge_eps_material_area", "label_ru": "ЭППС 100 мм торец плиты перекрытия 1-го этажа — площадь материала", "unit": "m2", "grounded": false},
@@ -158,6 +153,7 @@
         {"code": "floor_slab_2_main_formwork_area", "label_ru": "Основная площадь опалубки плиты", "unit": "m2", "grounded": true},
         {"code": "floor_slab_2_edge_formwork_area", "label_ru": "Площадь опалубки торца плиты", "unit": "m2", "grounded": false},
         {"code": "floor_slab_2_beams_formwork_area", "label_ru": "Площадь опалубки балок перекрытия 2-го этажа", "unit": "m2", "grounded": false, "notes": "Optional; leave null (not 0) if absent so the calculator falls back to the sum of beam_items.formwork_area_m2."},
+        {"code": "floor_slab_2_beams_concrete_volume", "label_ru": "Объем бетона балок перекрытия 2-го этажа", "unit": "m3", "grounded": true, "notes": "Usually a ready 'Итого' line in the beam specification table, separate from the slab's own concrete volume. Optional; leave null (not 0) if absent so the calculator falls back to the sum of beam_items.concrete_volume_m3."},
         {"code": "floor_slab_2_edge_insulation_height", "label_ru": "Высота утепления торца плиты", "unit": "m", "grounded": true},
         {"code": "floor_slab_2_slab_area", "label_ru": "Площадь плиты перекрытия 2-го этажа для контроля", "unit": "m2", "grounded": false, "notes": "Optional control value only; does not feed the calculator directly."}
       ],

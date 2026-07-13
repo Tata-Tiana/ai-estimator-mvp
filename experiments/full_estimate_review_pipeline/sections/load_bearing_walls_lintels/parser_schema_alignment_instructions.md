@@ -39,7 +39,6 @@ those constants from the PDF.
 - `vent_chimney_gas_block_spec_volume_m3`
 - `main_wall_rebar_items`
 - `lintel_rebar_items`
-- `lintel_items`
 
 ## Repeated-row shapes
 
@@ -60,13 +59,6 @@ those constants from the PDF.
 - `diameter_mm`
 - `spec_length_m`
 - `kg_per_meter`
-
-`lintel_items`:
-
-- `mark`
-- `length_m`
-- `count`
-- `total_length_m`
 
 ## Critical extraction rules
 
@@ -122,3 +114,19 @@ otherwise leave it null for an adapter/catalog fallback. The identical gap was f
 same time on `floor_slab_1_rebar_items` and `floor_slab_2_rebar_items` (the latter also had fully
 stale field names left over from that section's rebar-catalog removal) — see those sections' own
 alignment files.
+
+## `lintel_items` removed 2026-07-12
+
+The diagnostic mark-by-mark breakdown (`mark`/`length_m`/`count`/`total_length_m`, always
+`required: false`, `calculator_input_path: ""` — never fed the calculator) was removed from the
+contract, and from `calculator_targets_compact.json`, `target_aliases_ru.yaml`, the extraction schema,
+the extraction prompt, `defaults_catalog.yaml`'s notes, and `build_review_workbook_from_contracts.py`'s
+generic detail-sheet templates. Reason: it assumed a "Марка Пм-1/Пм-2..." table that does not exist in
+real project PDFs. Checked directly (page text + tables) against `ЮСВ КР2 (11).pdf` (page 16, "План
+перемычек 1-го этажа" / "Спецификация перемычек 1-го этажа") and `КР2_ТРЦ_30,06,2026.pdf` (pages 11-12,
+"План перемычек 1/2 этажа", "СПЕЦИФИКАЦИЯ МАТЕРИАЛОВ НА УСТРОЙСТВО ПЕРЕМЫЧЕК"): both projects give a
+per-floor lintel *materials* spec table (Поз/Обозначение/Наименование/Кол-во/Масса/Примечание — concrete
+volume by lintel type, rebar length+mass by diameter, formwork area) with the totals already given as
+explicit summary lines (e.g. "Общая длина перемычек в U-блоке", "Длина перемычек в U-блоках"), not a
+row-per-mark schedule. `lintel_total_length_m`, `lintel_concrete_spec_volume_m3`, and
+`lintel_rebar_items` already capture exactly this real structure and remain correct as-is.

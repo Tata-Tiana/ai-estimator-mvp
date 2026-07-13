@@ -221,7 +221,10 @@ extraction.
 Для раздела `load_bearing_walls_lintels` не используй старую сводную цель
 `masonry_rebar_a500_d10_weight` в production extraction. Арматуру кладки несущих стен извлекай
 строками в `main_wall_rebar_items`, арматуру перемычек — строками в `lintel_rebar_items`.
-Марки/позиции перемычек (`Пм-1`, `Пм-2` и т.п.) — это `lintel_items`, не арматура.
+Марки перемычек (`Пм-1`, `Пм-2` и т.п.) встречаются только на чертеже плана перемычек, отдельной
+таблицы марка/длина/количество в PDF нет — реальные извлекаемые данные это итоговая длина
+(`lintel_total_length`), объём бетона (`lintel_concrete_volume`) и арматура по диаметрам
+(`lintel_rebar_items`), уже готовыми итоговыми строками в спецификации перемычек.
 
 `rod_length_m` (длина прутка) есть в полях у `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items`,
 `main_wall_rebar_items` и `lintel_rebar_items` — это обычно каталожная/стандартная длина прутка по

@@ -621,7 +621,7 @@ sections:
         source_note: "Production mode from load-bearing walls section contract and calculator README."
         confidence: confirmed_from_contract
         allow_override: false
-        notes: "Calculator uses lintel_total_length_m from specification; lintel_items are diagnostic only."
+        notes: "Calculator uses lintel_total_length_m from specification — an explicit total line in the PDF's lintel materials spec table, not a mark-by-mark breakdown."
 
       lintel_concrete_calc_method:
         value: "spec_volume"

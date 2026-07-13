@@ -420,11 +420,28 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
 
     (
         beam_items,
-        beams_items_concrete_volume,
+        calculated_beams_concrete_volume,
         beams_items_formwork_area,
         beams_items_eps_material_area,
         beams_items_eps_work_length,
     ) = calculate_beam_items(input_data.get("beams"))
+
+    beams_concrete_volume_override = input_data.get("beams_concrete_volume_m3")
+    if beams_concrete_volume_override is not None:
+        beams_items_concrete_volume = d(beams_concrete_volume_override)
+        if beams_items_concrete_volume < D0:
+            raise ValueError("beams_concrete_volume_m3 must be >= 0")
+        beams_concrete_volume_source = "spec_beams_concrete_volume"
+        beams_concrete_volume_delta = beams_items_concrete_volume - calculated_beams_concrete_volume
+        if abs(beams_concrete_volume_delta) > d("0.01"):
+            warnings.append(
+                "beams_concrete_volume_m3 differs from sum of beams.items concrete_volume_m3 by more than 0.01 m3."
+            )
+    else:
+        beams_items_concrete_volume = calculated_beams_concrete_volume
+        beams_concrete_volume_source = "calculated_from_beam_items"
+        beams_concrete_volume_delta = None
+
     geometry_context = calculate_geometry_context(
         input_data,
         warnings,
@@ -862,6 +879,11 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "items_total_formwork_area_m2": round_decimal(beams_items_formwork_area),
             "items_total_eps_material_area_m2": round_decimal(beams_items_eps_material_area),
             "items_total_eps_work_length_m": round_decimal(beams_items_eps_work_length),
+            "concrete_volume_source": beams_concrete_volume_source,
+            "calculated_concrete_volume_m3": round_decimal(calculated_beams_concrete_volume),
+            "concrete_volume_delta_m3": None
+            if beams_concrete_volume_delta is None
+            else round_decimal(beams_concrete_volume_delta),
             "notes": [
                 "All values are 0 when no beams.items are given. Beam concrete is subtracted from "
                 "concrete_placing_volume_m3 for the slab work line and priced separately on the "

@@ -102,6 +102,9 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
+- concrete_volume_source: `calculated_from_beam_items`
+- calculated_concrete_volume_m3: `0.0`
+- concrete_volume_delta_m3: `None`
 - notes: `['All values are 0 when no beams.items are given. Beam concrete is subtracted from concrete_placing_volume_m3 for the slab work line and priced separately on the beam_concreting_work estimate line. beams_formwork_area_m2 and the insulation length/area both use this data when their own scalar inputs are absent.']`
 
 ### rebar

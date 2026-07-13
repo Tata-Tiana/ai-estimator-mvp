@@ -1,16 +1,16 @@
 {
   "case_meta": {
-    "project": "test_floor_slab_1_insulation_spec_quantities",
-    "section": "floor_slab_1_with_beams",
-    "validated_with_elena": true,
-    "confidence": "high"
+    "project": "synthetic_no_beams",
+    "section": "floor_slab_1_no_beams",
+    "validated_with_elena": false,
+    "confidence": "synthetic"
   },
   "inputs": {
     "case_meta": {
-      "project": "test_floor_slab_1_insulation_spec_quantities",
-      "section": "floor_slab_1_with_beams",
-      "validated_with_elena": true,
-      "confidence": "high"
+      "project": "synthetic_no_beams",
+      "section": "floor_slab_1_no_beams",
+      "validated_with_elena": false,
+      "confidence": "synthetic"
     },
     "geometry": {
       "total_concrete_volume_from_spec_m3": 40.53,
@@ -22,32 +22,7 @@
       "edge_formwork_height_m": 0.2
     },
     "beams": {
-      "items": [
-        {
-          "code": "beam_b1",
-          "name": "Б-1",
-          "length_m": 7,
-          "width_m": 0.3,
-          "height_m": 0.25,
-          "count": 1
-        },
-        {
-          "code": "beam_b2",
-          "name": "Б-2",
-          "length_m": 7.2,
-          "width_m": 0.3,
-          "height_m": 0.68,
-          "count": 1
-        },
-        {
-          "code": "beam_b3",
-          "name": "Б-3",
-          "length_m": 9,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": 1
-        }
-      ]
+      "items": []
     },
     "rates": {
       "formwork_rate_calc_method": "direct_section_rate",
@@ -176,70 +151,39 @@
     "geometry": {
       "total_concrete_volume_from_spec_m3": 40.53,
       "slab_thickness_m": 0.18,
-      "slab_concrete_volume_m3_raw": 37.3752,
-      "slab_concrete_volume_m3_display": 37.38,
-      "slab_formwork_area_m2": 207.64,
+      "slab_concrete_volume_m3_raw": 40.53,
+      "slab_concrete_volume_m3_display": 40.53,
+      "slab_formwork_area_m2": 225.17,
       "slab_control_geometry_area_m2": 210.64,
       "slab_edge_perimeter_m": 118,
       "edge_formwork_height_m": 0.2
     },
     "beams": {
-      "items": [
-        {
-          "code": "beam_b1",
-          "name": "Б-1",
-          "length_m": 7.0,
-          "width_m": 0.3,
-          "height_m": 0.25,
-          "count": 1.0,
-          "concrete_volume_m3": 0.525,
-          "formwork_area_m2": 5.6
-        },
-        {
-          "code": "beam_b2",
-          "name": "Б-2",
-          "length_m": 7.2,
-          "width_m": 0.3,
-          "height_m": 0.68,
-          "count": 1.0,
-          "concrete_volume_m3": 1.4688,
-          "formwork_area_m2": 11.952
-        },
-        {
-          "code": "beam_b3",
-          "name": "Б-3",
-          "length_m": 9.0,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": 1.0,
-          "concrete_volume_m3": 1.161,
-          "formwork_area_m2": 10.44
-        }
-      ],
-      "total_length_m": 23.2,
-      "total_concrete_volume_m3": 3.1548,
-      "total_formwork_area_m2": 27.992,
+      "items": [],
+      "total_length_m": 0.0,
+      "total_concrete_volume_m3": 0.0,
+      "total_formwork_area_m2": 0.0,
       "concrete_volume_source": "calculated_from_beam_items",
-      "calculated_concrete_volume_m3": 3.1548,
+      "calculated_concrete_volume_m3": 0.0,
       "concrete_volume_delta_m3": null
     },
     "formwork": {
       "formwork_areas_calc_method": "legacy_calculated_from_geometry",
       "formwork_areas_source": "legacy_calculated_from_geometry",
-      "main_formwork_area_m2": 207.64,
-      "slab_formwork_area_m2": 207.64,
+      "main_formwork_area_m2": 225.166667,
+      "slab_formwork_area_m2": 225.166667,
       "edge_formwork_area_m2": 23.6,
-      "beams_formwork_area_m2": 27.992,
-      "edge_and_beam_formwork_area_m2": 51.592,
-      "calculated_main_formwork_area_m2": 207.64,
+      "beams_formwork_area_m2": 0.0,
+      "edge_and_beam_formwork_area_m2": 23.6,
+      "calculated_main_formwork_area_m2": 225.166667,
       "calculated_edge_formwork_area_m2": 23.6,
-      "calculated_beams_formwork_area_m2": 27.992,
+      "calculated_beams_formwork_area_m2": 0.0,
       "main_formwork_area_delta_m2": 0.0,
       "edge_formwork_area_delta_m2": 0.0,
       "beams_formwork_area_delta_m2": 0.0,
       "excel_rate_per_m2": 600.0,
       "formwork_delivery_calc_method": "area_threshold",
-      "formwork_delivery_area_source_m2": 207.64,
+      "formwork_delivery_area_source_m2": 225.166667,
       "formwork_delivery_threshold_m2": 180.0,
       "formwork_delivery_trucks": 4.0,
       "formwork_delivery_breakdown": "2 привоза + 2 вывоза",
@@ -252,16 +196,16 @@
       "box_level_quote_context_used": false
     },
     "plywood_and_timber": {
-      "edge_and_beam_plywood_sheets_raw": 22.431304,
-      "non_multiple_places_area_m2": 41.528,
-      "non_multiple_places_plywood_sheets_raw": 18.055652,
-      "base_plywood_sheets_raw": 40.486957,
-      "order_plywood_sheets_raw": 50.486957,
-      "order_plywood_sheets": 51,
+      "edge_and_beam_plywood_sheets_raw": 10.26087,
+      "non_multiple_places_area_m2": 45.033333,
+      "non_multiple_places_plywood_sheets_raw": 19.57971,
+      "base_plywood_sheets_raw": 29.84058,
+      "order_plywood_sheets_raw": 39.84058,
+      "order_plywood_sheets": 40,
       "overhang_sheet_equivalent": 24.193478,
-      "base_timber_volume_m3": 2.5796,
-      "additional_timber_volume_m3": 0.211246,
-      "timber_volume_m3_raw": 2.790846
+      "base_timber_volume_m3": 1.18,
+      "additional_timber_volume_m3": 0.218866,
+      "timber_volume_m3_raw": 1.398866
     },
     "rebar": {
       "rebar_calc_method": "spec_length_items",
@@ -513,25 +457,25 @@
       "edge_insulation_height_source": "specification",
       "slab_outer_edge_length_m": 84.8,
       "slab_outer_edge_eps_work_length_m": 84.8,
-      "insulated_beams_total_length_m": 23.2,
-      "beams_eps_work_length_m": 23.2,
-      "total_insulation_length_m": 108.0,
-      "edge_beam_eps_work_length_m": 108.0,
+      "insulated_beams_total_length_m": 0.0,
+      "beams_eps_work_length_m": 0.0,
+      "total_insulation_length_m": 84.8,
+      "edge_beam_eps_work_length_m": 84.8,
       "slab_edge_insulation_area_m2": 15.264,
       "slab_edge_eps_material_area_m2": 15.264,
-      "beams_insulation_area_m2": 10.516,
-      "beams_eps_material_area_m2": 10.516,
-      "edge_and_beam_insulation_area_m2": 25.78,
-      "edge_and_beam_eps_material_area_m2": 25.78,
-      "edge_and_beam_eps_volume_m3": 2.578,
+      "beams_insulation_area_m2": 0.0,
+      "beams_eps_material_area_m2": 0.0,
+      "edge_and_beam_insulation_area_m2": 15.264,
+      "edge_and_beam_eps_material_area_m2": 15.264,
+      "edge_and_beam_eps_volume_m3": 1.5264,
       "bottom_slab_eps_volume_m3": 5.192,
       "bottom_slab_insulation_area_m2_raw": 51.92,
       "bottom_slab_eps_work_area_m2": 51.92,
-      "total_insulation_area_m2": 77.7,
-      "foam_base_area_m2": 77.7,
+      "total_insulation_area_m2": 67.184,
+      "foam_base_area_m2": 67.184,
       "total_eps_volume_from_spec_m3": 7.77,
-      "calculated_clean_eps_volume_m3": 7.77,
-      "eps_volume_delta_m3": 0.0,
+      "calculated_clean_eps_volume_m3": 6.7184,
+      "eps_volume_delta_m3": -1.0516,
       "eps_thickness_m": 0.1,
       "eps_waste_coeff": 1.05,
       "required_eps_volume_m3_raw": 8.1585,
@@ -539,17 +483,17 @@
       "eps_packs_raw": 29.421204,
       "eps_packs_ordered": 30,
       "order_eps_volume_m3_raw": 8.319,
-      "foam_cans_raw": 7.77,
-      "foam_cans_ordered": 8
+      "foam_cans_raw": 6.7184,
+      "foam_cans_ordered": 7
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1707526.834518,
+      "base_subtotal_raw_before_overheads": 1636820.624302,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 17075.268345,
-      "logistics_and_supply_total": 17075,
+      "logistics_and_supply_total_raw": 16368.206243,
+      "logistics_and_supply_total": 16368,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 51225.805036,
-      "consumables_and_tool_depreciation_total": 51226
+      "consumables_and_tool_depreciation_total_raw": 49104.618729,
+      "consumables_and_tool_depreciation_total": 49105
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -557,8 +501,8 @@
     },
     "control_metrics": {
       "control_geometry_area_m2": 210.64,
-      "slab_area_used_in_estimate_m2": 207.64,
-      "beam_concreting_control_total_by_length": 46400,
+      "slab_area_used_in_estimate_m2": 225.17,
+      "beam_concreting_control_total_by_length": 0,
       "reinforcement_density_kg_per_m3": 115.09
     }
   },
@@ -568,8 +512,8 @@
       "name": "Монтаж опалубки под монолитное перекрытие 1-го этажа",
       "unit": "м2",
       "line_type": "zero_control_line",
-      "quantity_raw": 207.64,
-      "quantity_display": 207.64,
+      "quantity_raw": 225.166667,
+      "quantity_display": 225.166667,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,
@@ -583,14 +527,14 @@
       "name": "Комплект опалубки (телескопические стойки, унивилки, треноги, водостойкая фанера, поперечные и продольные балки двутавровые)",
       "unit": "м2",
       "line_type": "materials",
-      "quantity_raw": 207.64,
-      "quantity_display": 207.64,
-      "material_total_raw": 124584.0,
-      "material_total": 124584,
+      "quantity_raw": 225.166667,
+      "quantity_display": 225.166667,
+      "material_total_raw": 135100.0002,
+      "material_total": 135100,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 124584.0,
-      "line_total": 124584,
+      "line_total_raw": 135100.0002,
+      "line_total": 135100,
       "notes": [],
       "price_code": "formwork_rental_m2"
     },
@@ -637,12 +581,12 @@
       "line_type": "materials_consumables",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 9759.08,
-      "material_total": 9759,
+      "material_total_raw": 10582.833349,
+      "material_total": 10583,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 9759.08,
-      "line_total": 9759,
+      "line_total_raw": 10582.833349,
+      "line_total": 10583,
       "notes": [],
       "price_code": "formwork_consumables_m2"
     },
@@ -651,8 +595,8 @@
       "name": "Монтаж опалубки из доски 50 мм и фанеры для устройства балок, для отбортовки плиты",
       "unit": "м2",
       "line_type": "zero_control_line",
-      "quantity_raw": 51.592,
-      "quantity_display": 51.59,
+      "quantity_raw": 23.6,
+      "quantity_display": 23.6,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,
@@ -666,14 +610,14 @@
       "name": "Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов",
       "unit": "шт",
       "line_type": "materials",
-      "quantity_raw": 51.0,
-      "quantity_display": 51.0,
-      "material_total_raw": 73950.0,
-      "material_total": 73950,
+      "quantity_raw": 40.0,
+      "quantity_display": 40.0,
+      "material_total_raw": 58000.0,
+      "material_total": 58000,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 73950.0,
-      "line_total": 73950,
+      "line_total_raw": 58000.0,
+      "line_total": 58000,
       "notes": [],
       "price_code": "plywood_1520x1520_18mm_sheet"
     },
@@ -682,14 +626,14 @@
       "name": "Пиломатериал обрезной для устройства опалубки ГОСТ",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 2.790846,
-      "quantity_display": 2.79,
-      "material_total_raw": 60003.181518,
-      "material_total": 60003,
+      "quantity_raw": 1.398866,
+      "quantity_display": 1.4,
+      "material_total_raw": 30075.617753,
+      "material_total": 30076,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 60003.181518,
-      "line_total": 60003,
+      "line_total_raw": 30075.617753,
+      "line_total": 30076,
       "notes": [
         "Сумма считается от quantity_raw, не от отображаемого количества."
       ],
@@ -811,14 +755,14 @@
       "name": "Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300)",
       "unit": "м3",
       "line_type": "work",
-      "quantity_raw": 37.3752,
-      "quantity_display": 37.38,
+      "quantity_raw": 40.53,
+      "quantity_display": 40.53,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 448502.4,
-      "work_total": 448502,
-      "line_total_raw": 448502.4,
-      "line_total": 448502,
+      "work_total_raw": 486360.0,
+      "work_total": 486360,
+      "line_total_raw": 486360.0,
+      "line_total": 486360,
       "notes": [
         "Стоимость считается от raw 37.3752, не от display 37.38."
       ],
@@ -829,14 +773,14 @@
       "name": "Бетонирование балки бетоном марки В22,5 (М300)",
       "unit": "м3",
       "line_type": "work",
-      "quantity_raw": 3.1548,
-      "quantity_display": 3.15,
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 63096.0,
-      "work_total": 63096,
-      "line_total_raw": 63096.0,
-      "line_total": 63096,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
       "notes": [],
       "price_code": "beam_concrete_placing_work_m3"
     },
@@ -895,7 +839,7 @@
       "name": "Демонтаж опалубки после завершения бетонирования",
       "unit": "м2",
       "line_type": "client_only_zero_internal_line",
-      "quantity_raw": 207.64,
+      "quantity_raw": 225.166667,
       "quantity_display": 207.6,
       "material_total_raw": 0.0,
       "material_total": 0,
@@ -910,14 +854,14 @@
       "name": "Устройство утепления по наружной стороне торцов плиты, балок",
       "unit": "мп",
       "line_type": "work",
-      "quantity_raw": 108.0,
-      "quantity_display": 108.0,
+      "quantity_raw": 84.8,
+      "quantity_display": 84.8,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 48600.0,
-      "work_total": 48600,
-      "line_total_raw": 48600.0,
-      "line_total": 48600,
+      "work_total_raw": 38160.0,
+      "work_total": 38160,
+      "line_total_raw": 38160.0,
+      "line_total": 38160,
       "notes": [],
       "price_code": "edge_insulation_work_m"
     },
@@ -962,14 +906,14 @@
       "name": "Клей-пена для ЭППС",
       "unit": "баллон",
       "line_type": "materials_consumables",
-      "quantity_raw": 8.0,
-      "quantity_display": 8.0,
-      "material_total_raw": 3920.0,
-      "material_total": 3920,
+      "quantity_raw": 7.0,
+      "quantity_display": 7.0,
+      "material_total_raw": 3430.0,
+      "material_total": 3430,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 3920.0,
-      "line_total": 3920,
+      "line_total_raw": 3430.0,
+      "line_total": 3430,
       "notes": [],
       "price_code": "eps_foam_glue_can"
     },
@@ -980,12 +924,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 17075.268345,
-      "material_total": 17075,
+      "material_total_raw": 16368.206243,
+      "material_total": 16368,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17075.268345,
-      "line_total": 17075,
+      "line_total_raw": 16368.206243,
+      "line_total": 16368,
       "notes": []
     },
     {
@@ -995,12 +939,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 51225.805036,
-      "material_total": 51226,
+      "material_total_raw": 49104.618729,
+      "material_total": 49105,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 51225.805036,
-      "line_total": 51226,
+      "line_total_raw": 49104.618729,
+      "line_total": 49105,
       "notes": []
     },
     {
@@ -1021,425 +965,25 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1168899,
-    "internal_works_total": 611926,
-    "internal_section_total": 1780825,
-    "base_subtotal_raw_before_overheads": 1707526.834518,
-    "logistics_and_supply_total": 17075,
-    "consumables_and_tool_depreciation_total": 51226,
+    "internal_materials_total": 1131044,
+    "internal_works_total": 576248,
+    "internal_section_total": 1707292,
+    "base_subtotal_raw_before_overheads": 1636820.624302,
+    "logistics_and_supply_total": 16368,
+    "consumables_and_tool_depreciation_total": 49105,
     "technical_supervision_total": 5000
   },
-  "warnings": [],
-  "case_name": "test_floor_slab_1_insulation_spec_quantities",
-  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_insulation_spec_quantities/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_insulation_spec_quantities/expected.json",
-  "expected": {
-    "totals": {
-      "internal_materials_total": 1168899,
-      "internal_works_total": 611926,
-      "internal_section_total": 1780825,
-      "base_subtotal_raw_before_overheads": 1707526.834518,
-      "logistics_and_supply_total": 17075,
-      "consumables_and_tool_depreciation_total": 51226,
-      "technical_supervision_total": 5000
-    },
-    "calculation_blocks": {
-      "insulation": {
-        "insulation_calc_method": "spec_work_quantities",
-        "edge_insulation_height_m": 0.18,
-        "edge_insulation_height_source": "specification",
-        "slab_outer_edge_eps_work_length_m": 84.8,
-        "beams_eps_work_length_m": 23.2,
-        "edge_beam_eps_work_length_m": 108,
-        "slab_edge_eps_material_area_m2": 15.264,
-        "beams_eps_material_area_m2": 10.516,
-        "edge_and_beam_eps_material_area_m2": 25.78,
-        "bottom_slab_eps_work_area_m2": 51.92,
-        "total_eps_volume_from_spec_m3": 7.77,
-        "edge_and_beam_eps_volume_m3": 2.578,
-        "bottom_slab_eps_volume_m3": 5.192,
-        "calculated_clean_eps_volume_m3": 7.77,
-        "eps_volume_delta_m3": 0,
-        "required_eps_volume_m3_raw": 8.1585,
-        "eps_packs_raw": 29.421204,
-        "eps_packs_ordered": 30,
-        "order_eps_volume_m3_raw": 8.319,
-        "foam_cans_raw": 7.77,
-        "foam_cans_ordered": 8
-      }
-    },
-    "estimate_lines": {
-      "edge_beam_insulation_work": {
-        "quantity_raw": 108,
-        "quantity_display": 108,
-        "unit": "мп",
-        "work_total_raw": 48600,
-        "work_total": 48600
-      },
-      "bottom_slab_insulation_work": {
-        "quantity_raw": 51.92,
-        "quantity_display": 51.9,
-        "unit": "м2",
-        "work_total_raw": 46728,
-        "work_total": 46728
-      },
-      "eps_penoplex_osnova_100mm": {
-        "quantity_raw": 8.319,
-        "quantity_display": 8.32,
-        "unit": "м3",
-        "material_total_raw": 75037.38,
-        "material_total": 75037
-      },
-      "eps_glue_foam": {
-        "quantity_raw": 8,
-        "quantity_display": 8,
-        "unit": "баллон",
-        "material_total_raw": 3920,
-        "material_total": 3920
-      }
-    }
-  },
+  "warnings": [
+    "EPS clean volume from areas differs from total_eps_volume_from_spec_m3"
+  ],
+  "case_name": "test_floor_slab_1_no_beams",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_no_beams/input.json",
+  "expected_path": null,
+  "expected": {},
   "comparison": {
     "status": "ok",
-    "ok_count": 48,
+    "ok_count": 0,
     "mismatch_count": 0,
-    "items": [
-      {
-        "key": "totals.internal_materials_total",
-        "expected": 1168899,
-        "actual": 1168899,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.internal_works_total",
-        "expected": 611926,
-        "actual": 611926,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.internal_section_total",
-        "expected": 1780825,
-        "actual": 1780825,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.base_subtotal_raw_before_overheads",
-        "expected": 1707526.834518,
-        "actual": 1707526.834518,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.logistics_and_supply_total",
-        "expected": 17075,
-        "actual": 17075,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.consumables_and_tool_depreciation_total",
-        "expected": 51226,
-        "actual": 51226,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "totals.technical_supervision_total",
-        "expected": 5000,
-        "actual": 5000,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.insulation_calc_method",
-        "expected": "spec_work_quantities",
-        "actual": "spec_work_quantities",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.edge_insulation_height_m",
-        "expected": 0.18,
-        "actual": 0.18,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.edge_insulation_height_source",
-        "expected": "specification",
-        "actual": "specification",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.slab_outer_edge_eps_work_length_m",
-        "expected": 84.8,
-        "actual": 84.8,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.beams_eps_work_length_m",
-        "expected": 23.2,
-        "actual": 23.2,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.edge_beam_eps_work_length_m",
-        "expected": 108,
-        "actual": 108.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.slab_edge_eps_material_area_m2",
-        "expected": 15.264,
-        "actual": 15.264,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.beams_eps_material_area_m2",
-        "expected": 10.516,
-        "actual": 10.516,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.edge_and_beam_eps_material_area_m2",
-        "expected": 25.78,
-        "actual": 25.78,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.bottom_slab_eps_work_area_m2",
-        "expected": 51.92,
-        "actual": 51.92,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.total_eps_volume_from_spec_m3",
-        "expected": 7.77,
-        "actual": 7.77,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.edge_and_beam_eps_volume_m3",
-        "expected": 2.578,
-        "actual": 2.578,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.bottom_slab_eps_volume_m3",
-        "expected": 5.192,
-        "actual": 5.192,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.calculated_clean_eps_volume_m3",
-        "expected": 7.77,
-        "actual": 7.77,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.eps_volume_delta_m3",
-        "expected": 0,
-        "actual": 0.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.required_eps_volume_m3_raw",
-        "expected": 8.1585,
-        "actual": 8.1585,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.eps_packs_raw",
-        "expected": 29.421204,
-        "actual": 29.421204,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.eps_packs_ordered",
-        "expected": 30,
-        "actual": 30,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.order_eps_volume_m3_raw",
-        "expected": 8.319,
-        "actual": 8.319,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.foam_cans_raw",
-        "expected": 7.77,
-        "actual": 7.77,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "calculation_blocks.insulation.foam_cans_ordered",
-        "expected": 8,
-        "actual": 8,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.edge_beam_insulation_work.quantity_raw",
-        "expected": 108,
-        "actual": 108.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.edge_beam_insulation_work.quantity_display",
-        "expected": 108,
-        "actual": 108.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.edge_beam_insulation_work.unit",
-        "expected": "мп",
-        "actual": "мп",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.edge_beam_insulation_work.work_total_raw",
-        "expected": 48600,
-        "actual": 48600.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.edge_beam_insulation_work.work_total",
-        "expected": 48600,
-        "actual": 48600,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.bottom_slab_insulation_work.quantity_raw",
-        "expected": 51.92,
-        "actual": 51.92,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.bottom_slab_insulation_work.quantity_display",
-        "expected": 51.9,
-        "actual": 51.9,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.bottom_slab_insulation_work.unit",
-        "expected": "м2",
-        "actual": "м2",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.bottom_slab_insulation_work.work_total_raw",
-        "expected": 46728,
-        "actual": 46728.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.bottom_slab_insulation_work.work_total",
-        "expected": 46728,
-        "actual": 46728,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_penoplex_osnova_100mm.quantity_raw",
-        "expected": 8.319,
-        "actual": 8.319,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_penoplex_osnova_100mm.quantity_display",
-        "expected": 8.32,
-        "actual": 8.32,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_penoplex_osnova_100mm.unit",
-        "expected": "м3",
-        "actual": "м3",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_penoplex_osnova_100mm.material_total_raw",
-        "expected": 75037.38,
-        "actual": 75037.38,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_penoplex_osnova_100mm.material_total",
-        "expected": 75037,
-        "actual": 75037,
-        "diff": 0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_glue_foam.quantity_raw",
-        "expected": 8,
-        "actual": 8.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_glue_foam.quantity_display",
-        "expected": 8,
-        "actual": 8.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_glue_foam.unit",
-        "expected": "баллон",
-        "actual": "баллон",
-        "diff": null,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_glue_foam.material_total_raw",
-        "expected": 3920,
-        "actual": 3920.0,
-        "diff": 0.0,
-        "status": "ok"
-      },
-      {
-        "key": "estimate_lines.eps_glue_foam.material_total",
-        "expected": 3920,
-        "actual": 3920,
-        "diff": 0,
-        "status": "ok"
-      }
-    ]
+    "items": []
   }
 }

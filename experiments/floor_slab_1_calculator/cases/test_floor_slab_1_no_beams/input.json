@@ -1,0 +1,142 @@
+{
+  "case_meta": {
+    "project": "synthetic_no_beams",
+    "section": "floor_slab_1_no_beams",
+    "validated_with_elena": false,
+    "confidence": "synthetic"
+  },
+  "geometry": {
+    "total_concrete_volume_from_spec_m3": 40.53,
+    "slab_thickness_m": 0.18,
+    "slab_concrete_volume_m3_raw": 37.3752,
+    "slab_concrete_volume_m3_display": 37.38,
+    "slab_control_geometry_area_m2": 210.64,
+    "slab_edge_perimeter_m": 118,
+    "edge_formwork_height_m": 0.2
+  },
+  "beams": {
+    "items": []
+  },
+  "rates": {
+    "formwork_rate_calc_method": "direct_section_rate",
+    "formwork_delivery_calc_method": "area_threshold",
+    "formwork_rate_per_m2": 600,
+    "formwork_delivery_rate_per_trip": 20000,
+    "crane_shift_rate": 30000,
+    "formwork_consumables_rate_per_m2": 47,
+    "plywood_sheet_working_area_m2": 2.3,
+    "reserve_plywood_sheets": 10,
+    "non_multiple_places_coeff": 0.2,
+    "overhang_sheet_equivalent": 24.19347826,
+    "plywood_unit_price": 1450,
+    "timber_thickness_m": 0.05,
+    "additional_timber_coeff": 0.1,
+    "additional_timber_thickness_m": 0.05,
+    "timber_unit_price": 21500,
+    "metal_delivery_calc_method": "section_output_only",
+    "max_rebar_delivery_weight_per_truck_kg": 10000,
+    "rebar_delivery_rate_per_truck": 22000,
+    "slab_concreting_work_rate_per_m3": 12000,
+    "beam_concreting_work_rate_per_m3": 20000,
+    "concrete_waste_coeff": 1.05,
+    "concrete_unit_price_per_m3": 6400,
+    "mixer_capacity_m3": 9,
+    "concrete_delivery_rate_per_trip": 7500,
+    "concrete_pump_rate": 38000,
+    "edge_beam_insulation_work_rate_per_m": 450,
+    "bottom_slab_insulation_work_rate_per_m2": 900
+  },
+  "rebar_calc_method": "spec_length_items",
+  "rebar_items": [
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A500",
+      "diameter_mm": 25,
+      "spec_length_m": 46.8,
+      "kg_per_meter": 3.85,
+      "waste_coeff": 1.05,
+      "rod_length_m": 11.7,
+      "unit_price_per_m": 196.35
+    },
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A500",
+      "diameter_mm": 16,
+      "spec_length_m": 81.9,
+      "kg_per_meter": 1.58,
+      "waste_coeff": 1.05,
+      "rod_length_m": 11.7,
+      "unit_price_per_m": 80.58
+    },
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A500",
+      "diameter_mm": 12,
+      "spec_length_m": 58.5,
+      "kg_per_meter": 0.888,
+      "waste_coeff": 1.05,
+      "rod_length_m": 11.7,
+      "unit_price_per_m": 45.29
+    },
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A500",
+      "diameter_mm": 10,
+      "spec_length_m": 6879.6,
+      "kg_per_meter": 0.617,
+      "waste_coeff": 1.05,
+      "rod_length_m": 11.7,
+      "unit_price_per_m": 32.72
+    },
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A240",
+      "diameter_mm": 8,
+      "spec_length_m": 48,
+      "kg_per_meter": 0.395,
+      "waste_coeff": 1.05,
+      "rod_length_m": 6,
+      "unit_price_per_m": 24
+    },
+    {
+      "floor": 1,
+      "component": "floor_slab_1",
+      "steel_class": "A240",
+      "diameter_mm": 6,
+      "spec_length_m": 180,
+      "kg_per_meter": 0.222,
+      "waste_coeff": 1.05,
+      "rod_length_m": 6,
+      "unit_price_per_m": 13.32
+    }
+  ],
+  "insulation": {
+    "insulation_calc_method": "spec_work_quantities",
+    "edge_insulation_height_m": 0.18,
+    "slab_outer_edge_eps_work_length_m": 84.8,
+    "slab_edge_eps_material_area_m2": 15.264,
+    "bottom_slab_eps_work_area_m2": 51.92,
+    "total_eps_volume_from_spec_m3": 7.77,
+    "eps_thickness_m": 0.1,
+    "eps_waste_coeff": 1.05,
+    "eps_pack_volume_m3": 0.2773,
+    "eps_unit_price_per_m3": 9020,
+    "foam_coverage_m2_per_can": 10,
+    "foam_unit_price_per_can": 490
+  },
+  "overheads": {
+    "logistics_and_supply_percent": 0.01,
+    "consumables_and_tool_percent": 0.03
+  },
+  "manual_lines": {
+    "formwork_rebar_crane_shifts": 2,
+    "concrete_pump_shifts": 1,
+    "technical_supervision_amount": 5000
+  },
+  "formwork_areas_calc_method": "legacy_calculated_from_geometry"
+}

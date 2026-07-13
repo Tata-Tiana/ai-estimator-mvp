@@ -33,6 +33,9 @@
 | `beams.total_length_m` | `23.2` |
 | `beams.total_concrete_volume_m3` | `3.1548` |
 | `beams.total_formwork_area_m2` | `27.992` |
+| `beams.concrete_volume_source` | `calculated_from_beam_items` |
+| `beams.calculated_concrete_volume_m3` | `3.1548` |
+| `beams.concrete_volume_delta_m3` | `None` |
 | `formwork.formwork_areas_calc_method` | `spec_formwork_areas` |
 | `formwork.formwork_areas_source` | `spec_formwork_areas` |
 | `formwork.main_formwork_area_m2` | `207.64` |

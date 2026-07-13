@@ -49,7 +49,7 @@ AUTO_PROJECT_ALIASES = {
     ("load_bearing_walls_lintels", "cutoff_waterproofing_load_bearing_walls_area_m2"): ["cutoff_waterproofing_load_bearing_walls_area", "waterproofing_cutoff_material_area"],
     ("load_bearing_walls_lintels", "main_wall_gas_block_400_spec_volume_m3"): ["main_wall_gas_block_400_spec_volume"],
     ("load_bearing_walls_lintels", "main_wall_gas_block_250_spec_volume_m3"): ["main_wall_gas_block_250_spec_volume"],
-    ("load_bearing_walls_lintels", "lintel_total_length_m"): ["lintel_total_length", "lintel_items"],
+    ("load_bearing_walls_lintels", "lintel_total_length_m"): ["lintel_total_length"],
     ("load_bearing_walls_lintels", "lintel_concrete_spec_volume_m3"): ["lintel_concrete_volume"],
     ("load_bearing_walls_lintels", "vent_chimney_gas_block_spec_volume_m3"): ["vent_chimney_gas_block_150_volume", "vent_chimney_gas_block_spec_volume"],
     ("load_bearing_walls_lintels", "floor_2_masonry_volume_m3"): ["floor_2_masonry_volume"],
@@ -149,7 +149,6 @@ DETAIL_GROUP_CODES = {
     "main_wall_rebar_items",
     "lintel_rebar_items",
     "beam_items",
-    "lintel_items",
 }
 
 REBAR_GROUP_CODES = {
@@ -507,7 +506,7 @@ def rebar_mass_per_m(value: dict[str, Any]) -> Any:
 def is_detail_item(item: dict[str, Any]) -> bool:
     code = item_code(item)
     value = item.get("value")
-    if code in {"trench_routes", "communications_pipe_items", "beam_items", "lintel_items"}:
+    if code in {"trench_routes", "communications_pipe_items", "beam_items"}:
         return True
     if is_rebar_item(item):
         return True
