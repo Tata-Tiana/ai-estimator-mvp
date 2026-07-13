@@ -155,6 +155,7 @@ review_parameters:
     normalized_json_path: "sections.schiedel_vent_channels.parameters.schiedel_vent_chimney_cladding_segments.rows"
     value_kind: repeated_rows
     row_key_field: name
+    production_input: false
     columns:
       - key: name
         label_ru: "Наименование"

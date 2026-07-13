@@ -213,6 +213,7 @@ review_parameters:
     normalized_json_path: "sections.earthworks.parameters.trench_routes.rows"
     value_kind: repeated_rows
     row_key_field: route_code
+    production_input: false
     columns:
       - key: route_code
         label_ru: "Код маршрута"
@@ -269,6 +270,7 @@ review_parameters:
     normalized_json_path: "sections.earthworks.parameters.communications_pipe_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: false
     columns:
       - key: code
         label_ru: "Код позиции"

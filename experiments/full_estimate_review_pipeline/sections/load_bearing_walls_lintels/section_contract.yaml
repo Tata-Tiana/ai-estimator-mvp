@@ -124,10 +124,10 @@ review_parameters:
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_total_length_m.value"
     value_kind: scalar
     parser_mapping:
-      target_codes: ["lintel_total_length", "lintel_items"]
+      target_codes: ["lintel_total_length"]
       aliases_ru: ["суммарная длина перемычек", "перемычки итого длина", "ведомость перемычек"]
       expected_unit: "мп"
-      notes: "Production uses spec_total_length. Row-by-row lintel_items may be kept as diagnostics."
+      notes: "PDFs give this as an explicit total line in the lintel materials spec table (e.g. 'Длина перемычек в U-блоках'), verified against real ЮСВ/ТРЦ КР2 drawings 2026-07-12 — not a mark-by-mark table."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -239,6 +239,9 @@ review_parameters:
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.main_wall_rebar_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: true
+    item_label_columns: [steel_class, diameter_mm]
+    correction_columns: [spec_length_m, kg_per_meter]
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -274,6 +277,9 @@ review_parameters:
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_rebar_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: true
+    item_label_columns: [steel_class, diameter_mm]
+    correction_columns: [spec_length_m, kg_per_meter]
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
@@ -297,37 +303,6 @@ review_parameters:
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not mix with masonry reinforcement rows."
-
-  - key: lintel_items
-    label_ru: "Позиции перемычек"
-    unit: "м"
-    source_class: AUTO_PROJECT
-    required: false
-    review_sheet: "01_Проверка проекта"
-    target_code: "lintel_items"
-    calculator_input_path: ""
-    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_items.rows"
-    value_kind: repeated_rows
-    row_key_field: mark
-    columns:
-      - {key: mark, label_ru: "Марка", unit: "", value_kind: string}
-      - {key: length_m, label_ru: "Длина одной", unit: "м", value_kind: number}
-      - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
-      - {key: total_length_m, label_ru: "Итоговая длина", unit: "м", value_kind: number}
-    parser_mapping:
-      target_codes: ["lintel_total_length", "lintel_items"]
-      aliases_ru: ["ведомость перемычек", "спецификация перемычек"]
-      expected_unit: "м"
-      notes: "Diagnostic breakdown; calculator production input is the lintel_total_length_m scalar above, not this breakdown."
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "optional"
-      action_ru: "Необязательная разбивка перемычек по маркам, для справки; сверьте с lintel_total_length_m выше."
-    mirror_to_details_sheet: true
-    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
-    validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Diagnostic source table. Calculator production input is lintel_total_length_m. FUTURE NOTE (2026-07-09, non-blocking, nothing to do now): if `lintel_length_calc_method` is ever deliberately switched to `legacy_length_count_items`, these rows would feed the calculator's `LintelLength.from_dict()`, whose dataclass only declares `length_m`/`count` — the extra `mark`/`total_length_m` keys here would raise a TypeError on `**data` unpacking unless stripped first. Not relevant while `spec_total_length` stays the production mode; just don't forget it if that ever changes."
 
 price_keys:
   - {key: scaffolding_setup_work_unit_price, estimate_line_code: scaffolding_setup_dismantling, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", required: true, default_source: price_registry_with_fallback, registry_code: "scaffolding_setup_dismantling_work_set", fallback_key: "scaffolding_setup_work_unit_price", allow_manual_override: true, notes: ""}

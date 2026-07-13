@@ -90,6 +90,29 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not send 0 explicitly when beam_items are present — 0 is treated as a real override and will suppress the per-beam sum. Leave null/absent instead."
 
+  - key: beams_concrete_volume_m3
+    label_ru: "Объем бетона балок перекрытия 2-го этажа"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_2_beams_concrete_volume"
+    calculator_input_path: "beams_concrete_volume_m3"
+    normalized_json_path: "sections.floor_slab_2.parameters.beams_concrete_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_2_beams_concrete_volume", "floor_slab_2_beam_items"]
+      aliases_ru: ["бетон балок", "объем бетона балок", "бетон в теле плиты (балки)", "бетон в теле плиты перекрытия"]
+      expected_unit: "м3"
+      notes: "Usually a ready 'Итого' line in the beam specification table (see beam_items below), separate from the slab's own concrete volume. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3. Added 2026-07-12 after confirming both ЮСВ КР2 (лист 22) and ТРЦ КР2 (лист 31) give this as a ready total."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у этой плиты есть балки и в спецификации есть готовый итог по бетону балок, сверьте его; иначе оставьте пустым — он посчитается из позиций балок ниже."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Calculator-code override added 2026-07-12 (exception to the normal never-touch-calculator-code rule, explicit user authorization) — mirrors the existing beams_formwork_area_m2 override pattern. Do not send 0 explicitly when beam_items are present — 0 is treated as a real override. beam_items rows remain required regardless for formwork area and insulation length/area, which have no scalar override."
+
   - key: beam_items
     label_ru: "Позиции балок плиты перекрытия 2-го этажа"
     unit: "м"
@@ -101,6 +124,9 @@ review_parameters:
     normalized_json_path: "sections.floor_slab_2.parameters.beam_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: true
+    item_label_columns: [name]
+    correction_columns: [length_m, width_m, height_m, count]
     columns:
       - {key: code, label_ru: "Код балки", unit: "", value_kind: string}
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
@@ -226,6 +252,9 @@ review_parameters:
     normalized_json_path: "sections.floor_slab_2.parameters.floor_slab_2_rebar_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: true
+    item_label_columns: [steel_class, diameter_mm]
+    correction_columns: [spec_length_m, kg_per_meter]
     columns:
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
@@ -336,24 +365,15 @@ supplier_inputs:
     notes: "Fixed/manual line; do not compute from concrete volume."
 
 auto_calculated:
-  - key: beams_concrete_volume_m3
-    label_ru: "Бетон балок (сумма по позициям)"
-    source_class: AUTO_CALCULATED
-    formula: "sum(beam_items.length_m * beam_items.width_m * beam_items.height_m * beam_items.count)"
-    leaf_inputs:
-      - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
-    calculator_input_path: ""
-    notes: "Computed by the calculator itself from beam_items; 0 when the group is empty. Shown here for workbook/report visibility, not sent as a separate calculator input."
-
   - key: slab_concrete_volume_m3
     label_ru: "Бетон плиты (без балок)"
     source_class: AUTO_CALCULATED
     formula: "concrete_placing_volume_m3 - beams_concrete_volume_m3"
     leaf_inputs:
       - {ref: "review_parameters.concrete_placing_volume_m3", source_class: AUTO_PROJECT}
-      - {ref: "auto_calculated.beams_concrete_volume_m3", source_class: AUTO_CALCULATED}
+      - {ref: "review_parameters.beams_concrete_volume_m3", source_class: AUTO_PROJECT}
     calculator_input_path: ""
-    notes: "concrete_placing_volume_m3 is expected to already include beam concrete when beams exist, same convention as floor_slab_1_calculator.py. This is the concrete_placing_work estimate line's real quantity, not the raw scalar."
+    notes: "concrete_placing_volume_m3 is expected to already include beam concrete when beams exist, same convention as floor_slab_1_calculator.py. beams_concrete_volume_m3 here already resolves to the sum of beam_items.concrete_volume_m3 when the scalar review_parameters value is left null (added 2026-07-12, mirrors edge_and_beam_formwork_area_m2's beams_formwork_area_m2 pattern). This is the concrete_placing_work estimate line's real quantity, not the raw scalar."
 
   - key: edge_and_beam_formwork_area_m2
     label_ru: "Опалубка торца плиты и балок, сумма"

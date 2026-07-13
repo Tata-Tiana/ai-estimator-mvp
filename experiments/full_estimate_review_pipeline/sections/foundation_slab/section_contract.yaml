@@ -216,6 +216,9 @@ review_parameters:
     normalized_json_path: "sections.foundation_slab.parameters.foundation_rebar_items.rows"
     value_kind: repeated_rows
     row_key_field: code
+    production_input: true
+    item_label_columns: [steel_class, diameter_mm]
+    correction_columns: [source_length_m, kg_per_meter]
     columns:
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}

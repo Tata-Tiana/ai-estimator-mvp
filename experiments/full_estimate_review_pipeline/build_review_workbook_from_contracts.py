@@ -121,16 +121,6 @@ GENERIC_DETAIL_TEMPLATES = [
         "fragment": "Для плит перекрытия с балками: геометрия балки и/или строка спецификации Ж/Б балок.",
     },
     {
-        "title": "Перемычки",
-        "detail_table_key": "lintel_items",
-        "type": "Перемычка",
-        "name": "Перемычка / U-блок",
-        "length": "Длина, м",
-        "quantity": "Количество",
-        "total_length": "Итоговая длина, м",
-        "fragment": "Для load_bearing_walls_lintels: длины перемычек и арматуры перемычек.",
-    },
-    {
         "title": "Вентканалы / сегменты",
         "detail_table_key": "vent_chimney_cladding_segments",
         "type": "Вентканал",
@@ -333,6 +323,44 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
     })
 
 
+CORRECTION_SLOTS = 4
+
+
+def production_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        param
+        for param in (contract.get("review_parameters") or [])
+        if param.get("value_kind") == "repeated_rows" and param.get("production_input") is True
+    ]
+
+
+def scalar_review_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    # Repeated-row groups the calculator actually reads item-by-item (rebar, beams) get their
+    # own block below with real per-item rows, not a single summary row here. Diagnostic-only
+    # repeated-row groups (trench_routes, communications_pipe_items, etc. - calculator uses a
+    # reviewed scalar instead) stay as a single row here, same as before.
+    production_keys = {param["key"] for param in production_repeated_row_params(contract)}
+    review_parameters = [
+        param
+        for param in (contract.get("review_parameters") or [])
+        if param.get("key") not in production_keys
+    ]
+    return review_parameters + (contract.get("supplier_inputs") or [])
+
+
+def correction_headers(param: dict[str, Any]) -> list[str]:
+    columns_by_key = {col.get("key"): col for col in param.get("columns") or []}
+    headers = []
+    for key in param.get("correction_columns") or []:
+        col = columns_by_key.get(key, {})
+        label = col.get("label_ru", key)
+        unit = col.get("unit") or ""
+        headers.append(f"Исправить: {label}{', ' + unit if unit else ''}")
+    while len(headers) < CORRECTION_SLOTS:
+        headers.append("")
+    return headers[:CORRECTION_SLOTS]
+
+
 def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("01_Проверка проекта")
     project_title = "Разбор проекта:\n" + " + ".join(section_name(contract) for contract in contracts)
@@ -356,7 +384,7 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
 
     for contract in contracts:
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
-        for param in review_rows_for_contract(contract):
+        for param in scalar_review_rows_for_contract(contract):
             review_behavior = param.get("review_behavior") or {}
             ws.append([
                 param.get("label_ru", param.get("key", "")),
@@ -376,10 +404,26 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
             for cell in ws[ws.max_row]:
                 cell.fill = FILL_INPUT
 
+        # Production repeated-row groups (rebar, beams): построчно, каждая позиция отдельной
+        # строкой в тех же видимых колонках A-I, никакой отдельной "спецификационной" таблицы
+        # здесь - та живет на листе 03. Видимые "Исправить: ..." колонки - по одной на реально
+        # корректируемое числовое поле группы (длина/масса для арматуры, длина/ширина/высота/
+        # количество для балок), а не общая "Исправить/ввести значение". Скрытая row_data_json
+        # несет полный структурный набор полей строки для адаптера - никакого текста парсить не
+        # придется. Шаблон контрактов не содержит реальных данных проекта, поэтому строк-примеров
+        # здесь нет - только заголовок блока, как и на листе 03.
+        for param in production_repeated_row_params(contract):
+            review_behavior = param.get("review_behavior") or {}
+            action_ru = review_behavior.get("action_ru", "Проверьте позиции построчно.")
+            title = f"{section_name(contract)} — {param.get('label_ru', param.get('key', ''))} ({action_ru})"
+            headers = PROJECT_HEADERS + correction_headers(param) + ["row_data_json"]
+            append_block(ws, title, headers, [])
+
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
     ws.cell(1, 1).fill = FILL_HEADER
     apply_table_style(ws, header_row=4)
     restyle_section_bands(ws)
+    restyle_block_sheet(ws)
     ws.freeze_panes = "A5"
     set_widths(ws, {
         "A": 30,
@@ -395,8 +439,12 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         "K": 28,
         "L": 18,
         "M": 24,
+        "N": 24,
+        "O": 24,
+        "P": 24,
+        "Q": 24,
     })
-    for column in ["J", "K", "L", "M"]:
+    for column in ["J", "K", "L", "M", "R"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -488,7 +536,7 @@ def generic_detail_row(template: dict[str, Any]) -> list[Any]:
 
 
 def build_details_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
-    # Real repeated-row groups (rebar_items, beam_items, lintel_items, etc.) are declared as
+    # Real repeated-row groups (rebar_items, beam_items, lintel_rebar_items, etc.) are declared as
     # review_parameters entries with value_kind: repeated_rows, not a separate detail_tables key -
     # no contract has ever used detail_tables. Each such entry that opts in with
     # mirror_to_details_sheet: true gets its own titled block here, with headers taken directly
@@ -725,8 +773,15 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
     ws_details = wb["03_Детали объемов"]
 
     project_rows = 0
+    project_item_blocks = 0
     for row_idx in range(5, ws_project.max_row + 1):
-        if cell_text(ws_project.cell(row_idx, 11).value):
+        technical_key = cell_text(ws_project.cell(row_idx, 11).value)
+        if technical_key == "technical_key":
+            # Local header row of a production repeated-row block (rebar/beams item blocks),
+            # not a real parameter row - counted separately below.
+            project_item_blocks += 1
+            continue
+        if technical_key:
             project_rows += 1
 
     price_rows = 0
@@ -737,6 +792,7 @@ def inspect_workbook(path: Path) -> dict[str, Any]:
     return {
         "sheet_names": sheets,
         "project_parameter_rows": project_rows,
+        "project_item_blocks": project_item_blocks,
         "price_rows": price_rows,
         "project_max_row": ws_project.max_row,
         "price_max_row": ws_prices.max_row,
@@ -770,6 +826,7 @@ def main() -> None:
         print(f"built: {check['output_path']}")
         print(f"sheets: {', '.join(check['sheet_names'])}")
         print(f"project_parameter_rows: {check['project_parameter_rows']}")
+        print(f"project_item_blocks: {check['project_item_blocks']}")
         print(f"price_rows: {check['price_rows']}")
         print(f"detail_groups_rendered: {check['detail_groups_rendered']}")
 
