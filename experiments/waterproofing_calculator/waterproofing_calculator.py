@@ -67,6 +67,10 @@ class WaterproofingInput:
     eps_waste_coeff: float
     eps100_pack_volume_m3: float
     eps100_unit_price: float
+    eps50_wall_thickness_m: float
+    eps50_wall_insulation_work_unit_price: float
+    eps50_pack_volume_m3: float
+    eps50_unit_price: float
     glue_foam_coverage_m2_per_can: float
     glue_foam_min_units: int
     glue_foam_unit_price: float
@@ -74,6 +78,7 @@ class WaterproofingInput:
     waterproofing_consumables_coeff: float
     waterproofing_area_calc_method: str = "legacy_perimeter_height"
     waterproofing_area_m2: float | None = None
+    eps50_wall_volume_m3: float | None = None
     slab_formwork_perimeter_m: float | None = None
     slab_edge_height_m: float | None = None
     non_insulated_edge_lengths_m: list[float] = field(default_factory=list)
@@ -106,6 +111,8 @@ class WaterproofingInput:
             "eps100_wall_thickness_m",
             "eps_waste_coeff",
             "eps100_pack_volume_m3",
+            "eps50_wall_thickness_m",
+            "eps50_pack_volume_m3",
             "glue_foam_coverage_m2_per_can",
         ]
         for field_name in positive_fields:
@@ -118,6 +125,8 @@ class WaterproofingInput:
             "eps100_wall_volume_m3",
             "eps100_wall_insulation_work_unit_price",
             "eps100_unit_price",
+            "eps50_wall_insulation_work_unit_price",
+            "eps50_unit_price",
             "glue_foam_min_units",
             "glue_foam_unit_price",
             "waterproofing_logistics_coeff",
@@ -125,6 +134,9 @@ class WaterproofingInput:
         ]
         for field_name in non_negative_fields:
             _require_non_negative(field_name, getattr(self, field_name))
+
+        if self.eps50_wall_volume_m3 is not None and self.eps50_wall_volume_m3 < 0:
+            raise ValueError("eps50_wall_volume_m3 must be greater than or equal to 0")
 
         if self.waterproofing_area_calc_method == "spec_area":
             _require_positive("waterproofing_area_m2", self.waterproofing_area_m2)
@@ -199,6 +211,8 @@ PRICE_FIELD_BY_CODE = {
     "bitumen_mastic_aquamast_18kg": "mastic_unit_price",
     "eps100_wall_insulation_work": "eps100_wall_insulation_work_unit_price",
     "eps100_wall_penoplex_geo_material": "eps100_unit_price",
+    "eps50_wall_insulation_work": "eps50_wall_insulation_work_unit_price",
+    "eps50_wall_penoplex_geo_material": "eps50_unit_price",
     "eps_glue_foam": "glue_foam_unit_price",
 }
 
@@ -208,6 +222,8 @@ PRICE_CODE_BY_FIELD = {
     "mastic_unit_price": "bitumen_mastic_aquamast_18kg_item",
     "eps100_wall_insulation_work_unit_price": "eps_wall_insulation_work_m2",
     "eps100_unit_price": "eps_geo_100_m3",
+    "eps50_wall_insulation_work_unit_price": "eps_wall_insulation_work_50_m2",
+    "eps50_unit_price": "eps_geo_50_m3",
     "glue_foam_unit_price": "eps_foam_glue_can",
 }
 
@@ -388,8 +404,39 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
         "0.0001",
     )
 
+    eps50_wall_enabled = bool(data.eps50_wall_volume_m3) and data.eps50_wall_volume_m3 > 0
+
+    eps50_wall_insulation_area_m2 = 0.0
+    eps50_wall_required_volume_m3 = 0.0
+    eps50_wall_raw_packs = 0.0
+    eps50_wall_packs = 0
+    eps50_wall_order_volume_m3 = 0.0
+    if eps50_wall_enabled:
+        eps50_wall_insulation_area_m2 = _round_decimal(
+            _to_decimal(data.eps50_wall_volume_m3) / _to_decimal(data.eps50_wall_thickness_m)
+        )
+        eps50_wall_required_volume_m3 = _round_decimal(
+            _to_decimal(eps50_wall_insulation_area_m2)
+            * _to_decimal(data.eps50_wall_thickness_m)
+            * _to_decimal(data.eps_waste_coeff),
+            "0.0001",
+        )
+        eps50_wall_raw_packs = _round_decimal(
+            _to_decimal(eps50_wall_required_volume_m3)
+            / _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+        eps50_wall_packs = int(ceil(eps50_wall_raw_packs))
+        eps50_wall_order_volume_m3 = _round_decimal(
+            _to_decimal(eps50_wall_packs) * _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+
+    combined_wall_insulation_area_m2 = _round_decimal(
+        _to_decimal(eps100_wall_insulation_area_m2) + _to_decimal(eps50_wall_insulation_area_m2)
+    )
     glue_foam_raw_units = _round_decimal(
-        _to_decimal(eps100_wall_insulation_area_m2)
+        _to_decimal(combined_wall_insulation_area_m2)
         / _to_decimal(data.glue_foam_coverage_m2_per_can),
         "0.0001",
     )
@@ -416,6 +463,13 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
         "eps100_wall_raw_packs": eps100_wall_raw_packs,
         "eps100_wall_packs": eps100_wall_packs,
         "eps100_wall_order_volume_m3": eps100_wall_order_volume_m3,
+        "eps50_wall_enabled": eps50_wall_enabled,
+        "eps50_wall_insulation_area_m2": eps50_wall_insulation_area_m2,
+        "eps50_wall_required_volume_m3": eps50_wall_required_volume_m3,
+        "eps50_wall_raw_packs": eps50_wall_raw_packs,
+        "eps50_wall_packs": eps50_wall_packs,
+        "eps50_wall_order_volume_m3": eps50_wall_order_volume_m3,
+        "combined_wall_insulation_area_m2": combined_wall_insulation_area_m2,
         "glue_foam_raw_units": glue_foam_raw_units,
         "glue_foam_units": glue_foam_units,
     }
@@ -425,7 +479,7 @@ def calculate_primary_estimate_lines(
     data: WaterproofingInput,
     waterproofing: dict[str, Any],
 ) -> list[EstimateLineResult]:
-    return [
+    lines = [
         calculate_line(
             code="waterproofing_bitumen_mastic_work",
             name="Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя",
@@ -478,6 +532,31 @@ def calculate_primary_estimate_lines(
             price_code="eps_foam_glue_can",
         ),
     ]
+
+    if waterproofing["eps50_wall_enabled"]:
+        lines.extend([
+            calculate_line(
+                code="eps50_wall_insulation_work",
+                name="Утепление стен плиты ЭППС 50 мм",
+                unit="м2",
+                quantity=waterproofing["eps50_wall_insulation_area_m2"],
+                work_unit_price=data.eps50_wall_insulation_work_unit_price,
+                price_code="eps_wall_insulation_work_50_m2",
+            ),
+            calculate_line(
+                code="eps50_wall_penoplex_geo_material",
+                name="Пеноплэкс ГЕО 50 мм",
+                unit="м3",
+                quantity=waterproofing["eps50_wall_order_volume_m3"],
+                display_quantity=_round_decimal(
+                    waterproofing["eps50_wall_order_volume_m3"], "0.01"
+                ),
+                material_unit_price=data.eps50_unit_price,
+                price_code="eps_geo_50_m3",
+            ),
+        ])
+
+    return lines
 
 
 def calculate_internal_estimate_lines(

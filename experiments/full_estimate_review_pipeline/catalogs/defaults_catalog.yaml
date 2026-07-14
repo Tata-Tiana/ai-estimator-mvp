@@ -516,11 +516,13 @@ sections:
         unit: "ratio"
         source_class: BUSINESS_DEFAULT
         calculator_input_path: "eps_waste_coeff"
-        used_by_estimate_lines: ["waterproofing.eps100_wall_penoplex_geo_material"]
+        used_by_estimate_lines:
+          - "waterproofing.eps100_wall_penoplex_geo_material"
+          - "waterproofing.eps50_wall_penoplex_geo_material"
         source_note: "Waterproofing section contract."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "Waste coefficient for EPS material purchase volume."
+        notes: "Waste coefficient for EPS material purchase volume. Shared by both the 100mm and 50mm edge-insulation layers (added 2026-07-14)."
 
       eps100_pack_volume_m3:
         value: 0.2776
@@ -532,6 +534,31 @@ sections:
         confidence: confirmed_from_contract
         allow_override: true
         notes: "Package volume for purchase-pack rounding; not a project EPS volume."
+
+      eps50_wall_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_wall_thickness_m"
+        used_by_estimate_lines:
+          - "waterproofing.eps50_wall_insulation_work"
+          - "waterproofing.eps50_wall_penoplex_geo_material"
+          - "waterproofing.eps_glue_foam"
+        source_note: "Waterproofing section contract, added 2026-07-14 for the optional second (thinner) edge-insulation layer."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness used to convert project EPS-50 volume into work area; not a project quantity. Mirrors eps100_wall_thickness_m."
+
+      eps50_pack_volume_m3:
+        value: null
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["waterproofing.eps50_wall_penoplex_geo_material"]
+        source_note: "Package volume, not yet filled from catalog/price registry — same open item as foundation_slab.eps50_pack_volume_m3 (also null)."
+        confidence: needs_catalog_lookup
+        allow_override: true
+        notes: "Must be filled before eps50_wall_penoplex_geo_material can run. Added 2026-07-14."
 
       glue_foam_coverage_m2_per_can:
         value: 10.0

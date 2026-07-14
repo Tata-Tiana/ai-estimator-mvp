@@ -1052,6 +1052,52 @@ sections:
         zero_policy: not_expected
         notes: "Material quantity remains volume in m3. It must not be confused with EPS work area in m2."
 
+      eps50_wall_insulation_work:
+        code: "eps50_wall_insulation_work"
+        row_id: "waterproofing.eps50_wall_insulation_work"
+        name_ru: "Утепление стен плиты ЭППС 50 мм"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "eps50_wall_volume_m3 / eps50_wall_thickness_m"
+          leaf_inputs:
+            - ref: "review_parameters.eps50_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps50_wall_thickness_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: "eps50_wall_insulation_work_unit_price"
+          fixed_amount_key: null
+          price_registry_code: "eps_wall_insulation_work_50_m2"
+        zero_policy: zero_when_eps50_wall_volume_m3_absent
+        notes: "Added 2026-07-14. Optional second (thinner) layer of edge insulation, in addition to eps100_wall_insulation_work. Only returned when eps50_wall_volume_m3 > 0 (most projects, e.g. ЮСВ, don't have this layer)."
+
+      eps50_wall_penoplex_geo_material:
+        code: "eps50_wall_penoplex_geo_material"
+        row_id: "waterproofing.eps50_wall_penoplex_geo_material"
+        name_ru: "Пеноплэкс ГЕО 50 мм"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_waterproofing_calculator
+        quantity:
+          formula: "ceil((eps50_wall_volume_m3 * eps_waste_coeff) / eps50_pack_volume_m3) * eps50_pack_volume_m3"
+          leaf_inputs:
+            - ref: "review_parameters.eps50_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps50_pack_volume_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "eps50_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "eps_geo_50_m3"
+        zero_policy: zero_when_eps50_wall_volume_m3_absent
+        notes: "Added 2026-07-14. Same registry price as foundation_slab.eps50_unit_price (same physical product, confirmed by user). Only returned when eps50_wall_volume_m3 > 0."
+
       eps_glue_foam:
         code: "eps_glue_foam"
         row_id: "waterproofing.eps_glue_foam"
@@ -1060,11 +1106,15 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_waterproofing_calculator
         quantity:
-          formula: "max(glue_foam_min_units, ceil((eps100_wall_volume_m3 / eps100_wall_thickness_m) / glue_foam_coverage_m2_per_can))"
+          formula: "max(glue_foam_min_units, ceil(combined_wall_insulation_area_m2 / glue_foam_coverage_m2_per_can))"
           leaf_inputs:
             - ref: "review_parameters.eps100_wall_volume_m3"
               source_class: AUTO_PROJECT
             - ref: "defaults_catalog.sections.waterproofing.defaults.eps100_wall_thickness_m"
+              source_class: DEFAULT
+            - ref: "review_parameters.eps50_wall_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.waterproofing.defaults.eps50_wall_thickness_m"
               source_class: DEFAULT
             - ref: "defaults_catalog.sections.waterproofing.defaults.glue_foam_coverage_m2_per_can"
               source_class: DEFAULT
@@ -1076,7 +1126,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "eps_foam_glue_can"
         zero_policy: not_expected
-        notes: "Quantity is calculated from EPS work area and coverage; unit price is PRICE."
+        notes: "Changed 2026-07-14: quantity now derives from combined 50+100mm EPS work area (both layers get glued), not just the 100mm layer. Unit price is PRICE."
 
       waterproofing_logistics_and_supply:
         code: "waterproofing_logistics_and_supply"

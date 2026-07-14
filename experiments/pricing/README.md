@@ -29,6 +29,26 @@ Priority:
 If a price is not found in the registry, the resolver returns the fallback input price
 and a warning. It does not silently fail.
 
+## Rule: registry is always checked first, fallback is last resort
+
+This is not optional and not per-calculator — it is how `resolve_price()` works for every
+`price_code`, in every section, with no exceptions. Confirmed 2026-07-14 while adding a
+brand-new price_code (`eps_wall_insulation_work_50_m2`, waterproofing) that did not exist
+in the registry yet: the resolver still checked the registry and `project_price_overrides`
+first, only fell back to the `input.json` value, and logged a warning saying so
+(`"eps_wall_insulation_work_50_m2: price_code not found in price_registry, fallback input
+price used"`). Nothing in `price_reader.py` needs to change when a code is added to the
+registry later — the next run in `price_registry_with_fallback` mode picks it up
+automatically.
+
+**What this means for anyone wiring calculator input in production (adapters,
+`build_input.py` per section, future `box_calculator`):** always set
+`pricing.mode = "price_registry_with_fallback"` explicitly. Never leave `pricing` absent
+and rely on the default — the default is `locked_case_prices`, which reads prices straight
+from the input dict and never consults the registry or overrides at all. A calculator
+running in `locked_case_prices` mode will keep using whatever number was baked into its
+input forever, even after Elena adds a real price to the registry, because it never looks.
+
 ## Files
 
 - `price_reader.py` reads prices and resolves fallback.

@@ -287,6 +287,18 @@ eps100_wall_volume_m3:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Production input name for waterproofing calculator. Same physical PDF row may also be relevant to foundation_slab.eps_100_edge_volume, but waterproofing output target_code must be eps100_wall_volume_m3."
 
+eps50_wall_volume_m3:
+  section_code: waterproofing
+  ru_label: "ЭППС 50 мм для вертикального утепления в разделе гидроизоляции (второй, тонкий слой)"
+  pdf_aliases: ["ЭППС 50 мм торец", "ЭППС 50 мм вертикальное утепление", "ЭППС-50мм утепление вертикальных поверхностей"]
+  expected_unit: m3
+  table_hints: ["Основное сечение по фундаменту", "Спецификация гидроизоляции", "Спецификация материала на устройство фундамента"]
+  required_context: ["ЭППС", "50", "вертикальн"]
+  negative_context: ["100 мм", "низ плиты", "опалубка", "кровля", "м2", "термовставк"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Найдено 2026-07-14 в реальном проекте ТРЦ (КР-1 стр.22): строки 'ЭППС-50мм (Утепление вертикальных поверхностей)' и 'ЭППС-100мм (Утепление вертикальных поверхностей)' идут рядом в одной таблице 'Спецификация материала на устройство фундамента' — до этого исправления 50-мм строка не имела совпадающего target_code и терялась (see docs/report_load_bearing_walls_floor_2_refactor.md history for the same class of gap). required_context содержит 'вертикальн', чтобы не путать со строкой 'ЭППС-50мм (Утепление под плитой)' -> foundation_slab.eps50_under_slab_volume_m3, и негативный контекст 'термовставк' отсекает foundation_slab.thermal_insert_50_material_spec_qty."
+
 load_bearing_walls_lintels:
   section_code: load_bearing_walls_lintels
   ru_label: "Несущие стены и перемычки"

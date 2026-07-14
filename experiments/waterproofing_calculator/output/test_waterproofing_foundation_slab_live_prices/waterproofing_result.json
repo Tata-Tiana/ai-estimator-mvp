@@ -18,6 +18,10 @@
     "eps_waste_coeff": 1.05,
     "eps100_pack_volume_m3": 0.2776,
     "eps100_unit_price": 10000,
+    "eps50_wall_thickness_m": 0.05,
+    "eps50_wall_insulation_work_unit_price": 500,
+    "eps50_pack_volume_m3": 0.6,
+    "eps50_unit_price": 8800,
     "glue_foam_coverage_m2_per_can": 10,
     "glue_foam_min_units": 1,
     "glue_foam_unit_price": 490,
@@ -25,6 +29,7 @@
     "waterproofing_consumables_coeff": 0.03,
     "waterproofing_area_calc_method": "legacy_perimeter_height",
     "waterproofing_area_m2": null,
+    "eps50_wall_volume_m3": null,
     "slab_formwork_perimeter_m": 81,
     "slab_edge_height_m": 0.3,
     "non_insulated_edge_lengths_m": [
@@ -59,6 +64,13 @@
       "eps100_wall_raw_packs": 6.6192,
       "eps100_wall_packs": 7,
       "eps100_wall_order_volume_m3": 1.9432,
+      "eps50_wall_enabled": false,
+      "eps50_wall_insulation_area_m2": 0.0,
+      "eps50_wall_required_volume_m3": 0.0,
+      "eps50_wall_raw_packs": 0.0,
+      "eps50_wall_packs": 0,
+      "eps50_wall_order_volume_m3": 0.0,
+      "combined_wall_insulation_area_m2": 17.5,
       "glue_foam_raw_units": 1.75,
       "glue_foam_units": 2,
       "waterproofing_base_subtotal": 46799,
@@ -205,13 +217,15 @@
   },
   "expected": {},
   "comparison": [],
-  "warnings": [],
+  "warnings": [
+    "eps_wall_insulation_work_50_m2: price_code not found in price_registry, fallback input price used"
+  ],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 6,
+    "prices_from_price_registry": 7,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 0,
-    "warnings_count": 0
+    "prices_from_fallback_input": 1,
+    "warnings_count": 1
   }
 }

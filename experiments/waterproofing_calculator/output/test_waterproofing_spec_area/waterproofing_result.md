@@ -18,6 +18,10 @@
 - `eps_waste_coeff`: `1.05`
 - `eps100_pack_volume_m3`: `0.2776`
 - `eps100_unit_price`: `10000`
+- `eps50_wall_thickness_m`: `0.05`
+- `eps50_wall_insulation_work_unit_price`: `500`
+- `eps50_pack_volume_m3`: `0.6`
+- `eps50_unit_price`: `6000`
 - `glue_foam_coverage_m2_per_can`: `10`
 - `glue_foam_min_units`: `1`
 - `glue_foam_unit_price`: `490`
@@ -62,6 +66,13 @@
 | `eps100_wall_raw_packs` | `6.6192` |
 | `eps100_wall_packs` | `7` |
 | `eps100_wall_order_volume_m3` | `1.9432` |
+| `eps50_wall_enabled` | `False` |
+| `eps50_wall_insulation_area_m2` | `0.0` |
+| `eps50_wall_required_volume_m3` | `0.0` |
+| `eps50_wall_raw_packs` | `0.0` |
+| `eps50_wall_packs` | `0` |
+| `eps50_wall_order_volume_m3` | `0.0` |
+| `combined_wall_insulation_area_m2` | `17.5` |
 | `glue_foam_raw_units` | `1.75` |
 | `glue_foam_units` | `2` |
 | `waterproofing_base_subtotal` | `48777` |
