@@ -114,10 +114,10 @@ review_parameters:
     notes: ""
 
   - key: lintel_total_length_m
-    label_ru: "Суммарная длина перемычек"
+    label_ru: "Суммарная длина перемычек в U-блоках, 1-й этаж"
     unit: "мп"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "lintel_total_length"
     calculator_input_path: "lintel_total_length_m"
@@ -125,22 +125,22 @@ review_parameters:
     value_kind: scalar
     parser_mapping:
       target_codes: ["lintel_total_length"]
-      aliases_ru: ["суммарная длина перемычек", "перемычки итого длина", "ведомость перемычек"]
+      aliases_ru: ["суммарная длина перемычек", "перемычки итого длина", "ведомость перемычек", "длина перемычек в u-блоках"]
       expected_unit: "мп"
-      notes: "PDFs give this as an explicit total line in the lintel materials spec table (e.g. 'Длина перемычек в U-блоках'), verified against real ЮСВ/ТРЦ КР2 drawings 2026-07-12 — not a mark-by-mark table."
+      notes: "PDFs give this as an explicit total line in the lintel materials spec table (e.g. 'Длина перемычек в U-блоках'), verified against real ЮСВ/ТРЦ КР2 drawings 2026-07-12 — not a mark-by-mark table. U-block portion only; see lintel_1_monolithic_concrete_volume_m3 for the monolithic portion."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте суммарную длину перемычек."
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть перемычки в U-блоках, проверьте суммарную длину. Перемычек на этаже может не быть вовсе, или быть только монолитными — Елена, 2026-07-15."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Do not use this row for slab beams."
+    notes: "Do not use this row for slab beams. Made optional 2026-07-15 — a floor may have no U-block lintels at all (only monolithic, or no lintels at all)."
 
   - key: lintel_concrete_spec_volume_m3
-    label_ru: "Бетон перемычек, объем по спецификации"
+    label_ru: "Бетон перемычек в U-блоках, объем по спецификации, 1-й этаж"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "lintel_concrete_volume"
     calculator_input_path: "lintel_concrete_spec_volume_m3"
@@ -148,16 +148,315 @@ review_parameters:
     value_kind: scalar
     parser_mapping:
       target_codes: ["lintel_concrete_volume"]
-      aliases_ru: ["бетон перемычек", "бетон для перемычек", "перемычка бетон"]
+      aliases_ru: ["бетон перемычек", "бетон для перемычек", "перемычка бетон", "бетон перемычек в u-блоке"]
       expected_unit: "м3"
-      notes: "Lintel concrete only; not slab or beam concrete."
+      notes: "Lintel concrete only; not slab or beam concrete. U-block portion only; see lintel_1_monolithic_concrete_volume_m3 for the monolithic portion (material purchase combines both, work lines stay split)."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте объем бетона перемычек по спецификации."
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть перемычки в U-блоках, проверьте объем бетона по спецификации."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Made optional 2026-07-15, same reasoning as lintel_total_length_m."
+
+  - key: floor_2_lintel_ublock_total_length_m
+    label_ru: "Суммарная длина перемычек в U-блоках, 2-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_total_length"
+    calculator_input_path: "floor_2_lintel_ublock_total_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_ublock_total_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_total_length"]
+      aliases_ru: ["суммарная длина перемычек 2 этаж", "перемычки 2-го этажа итого длина", "длина перемычек в u-блоках 2 этаж"]
+      expected_unit: "мп"
+      notes: "Same table as lintel_total_length_m but for floor 2's own spec table. Independent of floor 1 — Elena, 2026-07-15: lintels may be present on either floor, both, or neither."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть перемычки в U-блоках, проверьте суммарную длину."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж: 20,5 м.п., 35 шт резки U-блока) — floor_2 needs its own length, not shared with floor 1."
+
+  - key: floor_2_lintel_concrete_spec_volume_m3
+    label_ru: "Бетон перемычек в U-блоках, объем по спецификации, 2-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_concrete_volume"
+    calculator_input_path: "floor_2_lintel_concrete_spec_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_concrete_spec_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_concrete_volume"]
+      aliases_ru: ["бетон перемычек 2 этаж", "бетон перемычек в u-блоке 2 этаж"]
+      expected_unit: "м3"
+      notes: "Floor 2's U-block portion only; combined with floor_2_lintel_monolithic_concrete_volume_m3 for the material purchase line."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть перемычки в U-блоках, проверьте объем бетона по спецификации."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_2_concrete_delivery_trips
+    label_ru: "Доставка бетона до объекта, рейсов, 2-й этаж"
+    unit: "рейс"
+    source_class: MANUAL_REVIEW
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_concrete_delivery_trips"
+    calculator_input_path: "floor_2_concrete_delivery_trips"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_concrete_delivery_trips.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "рейс"
+      notes: "Manual/business input, not a PDF extraction target — mirrors the existing concrete_delivery_trips field for floor 1."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть перемычки (любого типа), укажите количество рейсов доставки бетона."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_1_lintel_monolithic_concrete_volume_m3
+    label_ru: "Бетон монолитных перемычек, объем, 1-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_monolithic_concrete_volume"
+    calculator_input_path: "floor_1_lintel_monolithic_concrete_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_monolithic_concrete_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_monolithic_concrete_volume"]
+      aliases_ru: ["бетон монолитных перемычек 1 этаж", "монолитные перемычки бетон", "бетонирование монолитных перемычек"]
+      expected_unit: "м3"
+      notes: "Monolithic (poured-in-place) lintels are a second construction method alongside U-block lintels — Elena, 2026-07-15: present in at least 50% of projects, independently of U-block lintels, on either floor."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте объем бетона."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15. When present (>0), triggers the whole monolithic block: concreting work, formwork materials, and edge insulation (Elena: monolithic lintels are always insulated)."
+
+  - key: floor_1_lintel_monolithic_insulation_length_m
+    label_ru: "Утепление торца монолитной перемычки, длина, 1-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_insulation_length"
+    calculator_input_path: "floor_1_lintel_monolithic_insulation_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_monolithic_insulation_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_insulation_length"]
+      aliases_ru: ["утепление торца монолитной перемычки", "устройство утепления перемычки"]
+      expected_unit: "мп"
+      notes: "Direct spec value, not derived from monolithic concrete volume — do not reconstruct from geometry."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте длину утепления торца."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_1_lintel_formwork_plywood_qty
+    label_ru: "Фанера для опалубки монолитных перемычек, 1-й этаж"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_formwork_plywood_qty"
+    calculator_input_path: "floor_1_lintel_formwork_plywood_qty"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_formwork_plywood_qty.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_formwork_plywood_qty"]
+      aliases_ru: ["фанера для опалубки перемычек", "фанера перемычки"]
+      expected_unit: "шт"
+      notes: "Material only — Elena, 2026-07-15: 'в СС работы на устройство опалубки нет' (no formwork-installation work line; U-block lintels need no formwork at all)."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте количество фанеры для опалубки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_1_lintel_formwork_timber_volume_m3
+    label_ru: "Пиломатериал для опалубки монолитных перемычек, объем, 1-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_formwork_timber_volume"
+    calculator_input_path: "floor_1_lintel_formwork_timber_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_formwork_timber_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_formwork_timber_volume"]
+      aliases_ru: ["пиломатериал для опалубки перемычек", "доска для опалубки перемычек"]
+      expected_unit: "м3"
+      notes: "Material only, no separate installation work line (see floor_1_lintel_formwork_plywood_qty notes)."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте объем пиломатериала для опалубки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_1_lintel_insulation_eps_spec_volume_m3
+    label_ru: "Пеноплэкс Основа для утепления перемычек, объем, 1-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_insulation_eps_volume"
+    calculator_input_path: "floor_1_lintel_insulation_eps_spec_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_insulation_eps_spec_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_insulation_eps_volume"]
+      aliases_ru: ["пеноплэкс основа перемычки", "эппс утепление перемычки"]
+      expected_unit: "м3"
+      notes: "Same physical product as floor_slab_1's edge/beam insulation (Пеноплэкс Основа 100х585х1185 мм) — same registry price eps_penoplex_osnova_100_m3, but a project-specific volume for lintels."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте объем ЭППС Пеноплэкс Основа."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_2_lintel_monolithic_concrete_volume_m3
+    label_ru: "Бетон монолитных перемычек, объем, 2-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_monolithic_concrete_volume"
+    calculator_input_path: "floor_2_lintel_monolithic_concrete_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_monolithic_concrete_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_monolithic_concrete_volume"]
+      aliases_ru: ["бетон монолитных перемычек 2 этаж"]
+      expected_unit: "м3"
+      notes: "Mirrors floor_1_lintel_monolithic_concrete_volume_m3, independent per floor."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте объем бетона."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+
+  - key: floor_2_lintel_monolithic_insulation_length_m
+    label_ru: "Утепление торца монолитной перемычки, длина, 2-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_insulation_length"
+    calculator_input_path: "floor_2_lintel_monolithic_insulation_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_monolithic_insulation_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_insulation_length"]
+      aliases_ru: ["утепление торца монолитной перемычки 2 этаж"]
+      expected_unit: "мп"
+      notes: "Direct spec value, mirrors floor_1_lintel_monolithic_insulation_length_m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте длину утепления торца."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_2_lintel_formwork_plywood_qty
+    label_ru: "Фанера для опалубки монолитных перемычек, 2-й этаж"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_formwork_plywood_qty"
+    calculator_input_path: "floor_2_lintel_formwork_plywood_qty"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_formwork_plywood_qty.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_formwork_plywood_qty"]
+      aliases_ru: ["фанера для опалубки перемычек 2 этаж"]
+      expected_unit: "шт"
+      notes: "Mirrors floor_1_lintel_formwork_plywood_qty."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте количество фанеры для опалубки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_2_lintel_formwork_timber_volume_m3
+    label_ru: "Пиломатериал для опалубки монолитных перемычек, объем, 2-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_formwork_timber_volume"
+    calculator_input_path: "floor_2_lintel_formwork_timber_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_formwork_timber_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_formwork_timber_volume"]
+      aliases_ru: ["пиломатериал для опалубки перемычек 2 этаж"]
+      expected_unit: "м3"
+      notes: "Mirrors floor_1_lintel_formwork_timber_volume_m3."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте объем пиломатериала для опалубки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
+
+  - key: floor_2_lintel_insulation_eps_spec_volume_m3
+    label_ru: "Пеноплэкс Основа для утепления перемычек, объем, 2-й этаж"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_insulation_eps_volume"
+    calculator_input_path: "floor_2_lintel_insulation_eps_spec_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_insulation_eps_spec_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_insulation_eps_volume"]
+      aliases_ru: ["пеноплэкс основа перемычки 2 этаж"]
+      expected_unit: "м3"
+      notes: "Mirrors floor_1_lintel_insulation_eps_spec_volume_m3."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте объем ЭППС Пеноплэкс Основа."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15."
 
   - key: floor_2_masonry_volume_m3
     label_ru: "Кладка несущих стен 2-го этажа, объем"
@@ -323,6 +622,12 @@ price_keys:
   - {key: concrete_m300_unit_price, estimate_line_code: lintel_concrete_b22_5_m300_material, label_ru: "Бетон В22,5 М300 для перемычек", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_b22_5_m3", fallback_key: "concrete_m300_unit_price", allow_manual_override: true, notes: ""}
   - {key: concrete_delivery_unit_price, estimate_line_code: lintel_concrete_delivery, label_ru: "Доставка бетона до объекта", price_kind: material, unit: "рейс", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_delivery_trip", fallback_key: "concrete_delivery_unit_price", allow_manual_override: true, notes: ""}
   - {key: manual_concrete_lifting_work_unit_price, estimate_line_code: manual_concrete_lifting, label_ru: "Перенос, подъем бетона вручную", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "manual_concrete_lifting_m3", fallback_key: "manual_concrete_lifting_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: lintel_monolithic_concreting_work_unit_price, estimate_line_code: floor_1_lintel_monolithic_concreting_work, label_ru: "Бетонирование монолитных перемычек", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_monolithic_concreting_work_m3", fallback_key: "lintel_monolithic_concreting_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors — reused for floor_2_lintel_monolithic_concreting_work too."}
+  - {key: lintel_formwork_plywood_unit_price, estimate_line_code: floor_1_lintel_formwork_plywood_material, label_ru: "Фанера для опалубки монолитных перемычек", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_formwork_plywood_sheet", fallback_key: "lintel_formwork_plywood_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
+  - {key: lintel_formwork_timber_unit_price, estimate_line_code: floor_1_lintel_formwork_timber_material, label_ru: "Пиломатериал для опалубки монолитных перемычек", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_formwork_timber_m3", fallback_key: "lintel_formwork_timber_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
+  - {key: lintel_insulation_work_unit_price, estimate_line_code: floor_1_lintel_edge_insulation_work, label_ru: "Устройство утепления по наружной стороне монолитной перемычки", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_edge_insulation_work_m", fallback_key: "lintel_insulation_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
+  - {key: lintel_insulation_eps_unit_price, estimate_line_code: floor_1_lintel_edge_insulation_eps_material, label_ru: "Экструдированный пенополистирол Пеноплэкс Основа", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_penoplex_osnova_100_m3", fallback_key: "lintel_insulation_eps_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same registry code as floor_slab_1's edge/beam insulation material — same physical product."}
+  - {key: lintel_glue_foam_unit_price, estimate_line_code: floor_1_lintel_edge_insulation_glue_foam, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", required: true, default_source: price_registry_with_fallback, registry_code: "eps_foam_glue_can", fallback_key: "lintel_glue_foam_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same registry code as waterproofing's glue-foam — same physical product."}
   - {key: parapet_masonry_work_unit_price, estimate_line_code: parapet_masonry_work, label_ru: "Кладка парапета", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_masonry_work_m3", fallback_key: "parapet_masonry_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: vent_chimney_cladding_work_unit_price, estimate_line_code: vent_chimney_gas_block_cladding_work, label_ru: "Обкладка дымохода и вентканалов 150 мм", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_cladding_work_m2", fallback_key: "vent_chimney_cladding_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_d500_150_unit_price, estimate_line_code: vent_chimney_gas_block_d500_600x150x250_material, label_ru: "Газобетонный блок D500 600x150x250 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_d500_150_m3", fallback_key: "gas_block_d500_150_unit_price", allow_manual_override: true, notes: ""}
@@ -355,6 +660,10 @@ defaults:
   - {key: lintel_concrete_min_order_volume_m3, label_ru: "Минимальный заказ бетона перемычек", source_class: DEFAULT, value: 1, unit: "м3", calculator_input_path: "lintel_concrete_min_order_volume_m3", source_note: "Supplier/business minimum order default.", allow_override_later: true, notes: ""}
   - {key: lintel_section_width_m, label_ru: "Ширина сечения перемычки для legacy режима", source_class: DEFAULT, value: 0.125, unit: "м", calculator_input_path: "lintel_section_width_m", source_note: "Kept for calculator compatibility; production spec_volume is primary.", allow_override_later: true, notes: ""}
   - {key: lintel_section_height_m, label_ru: "Высота сечения перемычки для legacy режима", source_class: DEFAULT, value: 0.125, unit: "м", calculator_input_path: "lintel_section_height_m", source_note: "Kept for calculator compatibility; production spec_volume is primary.", allow_override_later: true, notes: ""}
+  - {key: lintel_insulation_eps_waste_coeff, label_ru: "Коэффициент запаса ЭППС утепления перемычек", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "lintel_insulation_eps_waste_coeff", source_note: "Business/material waste default, same value as other EPS waste coefficients in the project.", allow_override_later: true, notes: "Added 2026-07-15."}
+  - {key: lintel_insulation_eps_pack_volume_m3, label_ru: "Объем пачки Пеноплэкс Основа для перемычек", source_class: DEFAULT, value: 0.2773, unit: "м3", calculator_input_path: "lintel_insulation_eps_pack_volume_m3", source_note: "Same pack volume as floor_slab_1's Пеноплэкс Основа 100х585х1185 мм (same physical product).", allow_override_later: true, notes: "Added 2026-07-15."}
+  - {key: lintel_glue_foam_coverage_m_per_can, label_ru: "Покрытие клей-пены для перемычек", source_class: DEFAULT, value: 10, unit: "м/баллон", calculator_input_path: "lintel_glue_foam_coverage_m_per_can", source_note: "Coverage expressed per linear meter of insulated lintel edge, not per m2 (unlike waterproofing's area-based glue-foam) — lintel edge insulation is a linear run, not a large flat area.", allow_override_later: true, notes: "Added 2026-07-15."}
+  - {key: lintel_glue_foam_min_units, label_ru: "Минимальное количество клей-пены для перемычек", source_class: DEFAULT, value: 1, unit: "баллон", calculator_input_path: "lintel_glue_foam_min_units", source_note: "Business/material minimum purchase default, same pattern as waterproofing's glue_foam_min_units.", allow_override_later: true, notes: "Added 2026-07-15."}
   - {key: vent_chimney_block_thickness_m, label_ru: "Толщина блока обкладки вентканалов", source_class: DEFAULT, value: 0.15, unit: "м", calculator_input_path: "vent_chimney_block_thickness_m", source_note: "Catalog/formula default for 150 mm block.", allow_override_later: true, notes: ""}
   - {key: gas_block_d400_pallet_volume_m3, label_ru: "Объем поддона D400 600x400x250", source_class: DEFAULT, value: 2.15, unit: "м3", calculator_input_path: "gas_block_d400_pallet_volume_m3", source_note: "Catalog pallet volume; found missing 2026-07-10 — required by the calculator (no dataclass default) and used by every D400 order-volume line (main, floor_2, parapet). Confirmed identical across all production test cases.", allow_override_later: true, notes: ""}
   - {key: gas_block_d500_250_pallet_volume_m3, label_ru: "Объем поддона D500 600x250x250", source_class: DEFAULT, value: 1.8, unit: "м3", calculator_input_path: "gas_block_d500_250_pallet_volume_m3", source_note: "Catalog pallet volume; found missing 2026-07-10, same class of gap as gas_block_d400_pallet_volume_m3.", allow_override_later: true, notes: ""}
@@ -450,7 +759,7 @@ supplier_inputs:
     notes: "Calculator currently keeps this as manual/fixed pending formula confirmation."
 
 auto_calculated:
-  - {key: lintel_concrete_order_volume_m3, label_ru: "Заказной объем бетона перемычек", source_class: AUTO_CALCULATED, formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))", leaf_inputs: [{ref: review_parameters.lintel_concrete_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.lintel_concrete_min_order_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Feeds both lintel_concrete_b22_5_m300_material and manual_concrete_lifting. Production spec_volume mode does NOT apply concrete_waste_coeff (only the legacy_length_section mode does) — found 2026-07-10 that the pre-existing lintel_concrete_b22_5_m300_material line in this contract incorrectly multiplied by concrete_waste_coeff; fixed alongside this entry."}
+  - {key: lintel_concrete_order_volume_m3, label_ru: "Заказной объем бетона перемычек в U-блоке, 1-й этаж (без монолита)", source_class: AUTO_CALCULATED, formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))", leaf_inputs: [{ref: review_parameters.lintel_concrete_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.lintel_concrete_min_order_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Diagnostic-only as of 2026-07-15 — no longer feeds any estimate line directly. lintel_concrete_b22_5_m300_material and manual_concrete_lifting now use the combined U-block+monolithic formula (see those estimate_lines entries) instead of this U-block-only value. Production spec_volume mode does NOT apply concrete_waste_coeff (only the legacy_length_section mode does) — found 2026-07-10 that the pre-existing lintel_concrete_b22_5_m300_material line in this contract incorrectly multiplied by concrete_waste_coeff; fixed alongside this entry."}
   - {key: gas_block_delivery_total_volume_m3, label_ru: "Суммарный закупочный объем блоков для доставки", source_class: AUTO_CALCULATED, formula: "main_gas_block_d400_600x400x250_material.order_volume_m3 + main_gas_block_d500_600x250x250_material.order_volume_m3 + floor_2_gas_block_d400_material.order_volume_m3 + parapet_gas_block_d400_material.order_volume_m3 + vent_chimney_gas_block_d500_600x150x250_material.order_volume_m3", leaf_inputs: [{ref: review_parameters.main_wall_gas_block_400_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.main_wall_gas_block_250_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.floor_2_masonry_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.parapet_masonry_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.vent_chimney_gas_block_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: review_parameters.floors_count, source_class: AUTO_PROJECT}, {ref: supplier_inputs.flat_roof_enabled, source_class: MANUAL_REVIEW}, {ref: defaults.gas_block_waste_coeff, source_class: DEFAULT}, {ref: defaults.gas_block_d400_pallet_volume_m3, source_class: DEFAULT}, {ref: defaults.gas_block_d500_250_pallet_volume_m3, source_class: DEFAULT}, {ref: defaults.gas_block_d500_150_pallet_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "The floor_2/parapet/vent terms are each 0 whenever that group's own estimate lines are disabled (floors_count != 2, or no flat roof) — no special-casing needed in the sum itself."}
   - {key: gas_block_delivery_trucks, label_ru: "Количество машин доставки блоков", source_class: AUTO_CALCULATED, formula: "ceil(gas_block_delivery_total_volume_m3 / gas_block_delivery_truck_capacity_m3)", leaf_inputs: [{ref: auto_calculated.gas_block_delivery_total_volume_m3, source_class: AUTO_CALCULATED}, {ref: defaults.gas_block_delivery_truck_capacity_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Feeds gas_blocks_and_mix_delivery and gas_blocks_unloading_manipulator (same quantity for both) and the crane-shift threshold below."}
   - {key: main_walls_crane_shifts, label_ru: "Смены автокрана 25т для несущих стен", source_class: AUTO_CALCULATED, formula: "1 if gas_block_delivery_trucks <= 3 else 2", leaf_inputs: [{ref: auto_calculated.gas_block_delivery_trucks, source_class: AUTO_CALCULATED}], calculator_input_path: "", notes: "Production mode is delivery_trucks_threshold; legacy manual shift count is not production."}
@@ -527,7 +836,7 @@ estimate_lines:
         - {ref: "review_parameters.lintel_total_length_m", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: lintel_concreting_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: ""
+    notes: "Made conditional 2026-07-15: only returned when lintel_total_length_m > 0 (floor 1 may have no U-block lintels — see review_parameters.lintel_total_length_m)."
 
   - code: lintel_concrete_b22_5_m300_material
     name_ru: "Бетон В22,5 М300 для перемычек"
@@ -535,12 +844,14 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=lintel_concrete_b22_5_m300_material]"
     quantity:
-      formula: "lintel_concrete_order_volume_m3"
+      formula: "max(1, ceil(lintel_required_concrete_volume_m3 + floor_1_lintel_monolithic_concrete_volume_m3))"
       leaf_inputs:
-        - {ref: "auto_calculated.lintel_concrete_order_volume_m3", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.lintel_concrete_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_1_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: concrete_m300_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Fixed 2026-07-10: previous formula incorrectly multiplied lintel_concrete_spec_volume_m3 by concrete_waste_coeff. Verified directly against calculate_lintel_concrete() in load_bearing_walls_lintels_calculator.py — the spec_volume branch (production mode) does not apply concrete_waste_coeff at all, only the legacy_length_section branch does. Same order volume also feeds manual_concrete_lifting."
+    notes: "Fixed 2026-07-10: previous formula incorrectly multiplied lintel_concrete_spec_volume_m3 by concrete_waste_coeff. Verified directly against calculate_lintel_concrete() in load_bearing_walls_lintels_calculator.py — the spec_volume branch (production mode) does not apply concrete_waste_coeff at all, only the legacy_length_section branch does. Formula changed 2026-07-15: now combines U-block + monolithic concrete need for floor 1 into one purchase (same truck, Elena) before the 1 m3 minimum; made conditional — only returned when the combined need is > 0. Same order volume also feeds manual_concrete_lifting."
 
   - code: scaffolding_timber_material
     name_ru: "Пиломатериал обрезной хвойных пород для устройства лесов, подмостей 2 сорт ГОСТ"
@@ -630,7 +941,7 @@ estimate_lines:
         - {ref: "defaults.gas_block_length_m", source_class: DEFAULT}
     prices: {material_unit_price_key: null, work_unit_price_key: u_block_cutting_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Unit stays pieces; do not convert to meters."
+    notes: "Unit stays pieces; do not convert to meters. Made conditional 2026-07-15: only returned when lintel_total_length_m > 0."
 
   - code: main_wall_chasing_for_d10_reinforcement
     name_ru: "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм"
@@ -740,7 +1051,7 @@ estimate_lines:
         - {ref: "supplier_inputs.concrete_delivery_trips", source_class: SUPPLIER_INPUT}
     prices: {material_unit_price_key: concrete_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Supplier/manual quantity; not a reusable default."
+    notes: "Supplier/manual quantity; not a reusable default. Made conditional 2026-07-15: only returned when floor 1's combined lintel concrete need is > 0."
 
   - code: manual_concrete_lifting
     name_ru: "Перенос, подъем бетона вручную"
@@ -748,12 +1059,248 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=manual_concrete_lifting]"
     quantity:
-      formula: "lintel_concrete_order_volume_m3"
+      formula: "max(1, ceil(lintel_required_concrete_volume_m3 + floor_1_lintel_monolithic_concrete_volume_m3))"
       leaf_inputs:
-        - {ref: "auto_calculated.lintel_concrete_order_volume_m3", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.lintel_concrete_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_1_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: null, work_unit_price_key: manual_concrete_lifting_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Same ordered volume as lintel_concrete_b22_5_m300_material."
+    notes: "Same ordered volume as lintel_concrete_b22_5_m300_material. Formula changed 2026-07-15 (combined U-block+monolithic); made conditional — only returned when the combined need is > 0."
+
+  - code: floor_2_u_block_lintel_cutting
+    name_ru: "Резка блока под перемычку (U-блок), 2-й этаж"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_u_block_lintel_cutting]"
+    quantity:
+      formula: "floor_2_lintel_ublock_total_length_m / gas_block_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_ublock_total_length_m", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_length_m", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: u_block_cutting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Only returned when floor_2_lintel_ublock_total_length_m > 0. Reuses the same work rate as floor 1's u_block_lintel_cutting."
+
+  - code: floor_2_lintel_concreting_work
+    name_ru: "Бетонирование перемычек в U-блоке, 2-й этаж"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_concreting_work]"
+    quantity:
+      formula: "floor_2_lintel_ublock_total_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_ublock_total_length_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: lintel_concreting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Reuses the same work rate as floor 1's lintel_concreting_work."
+
+  - code: floor_2_lintel_concrete_b22_5_m300_material
+    name_ru: "Бетон В22,5 М300 для перемычек, 2-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_concrete_b22_5_m300_material]"
+    quantity:
+      formula: "max(1, ceil(floor_2_lintel_concrete_spec_volume_m3 + floor_2_lintel_monolithic_concrete_volume_m3))"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_concrete_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_2_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: concrete_m300_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Combines floor 2's U-block + monolithic concrete need into one purchase, same pattern as floor 1's lintel_concrete_b22_5_m300_material."
+
+  - code: floor_2_lintel_concrete_delivery
+    name_ru: "Доставка бетона до объекта, 2-й этаж"
+    unit: "рейс"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_concrete_delivery]"
+    quantity:
+      formula: "floor_2_concrete_delivery_trips"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_concrete_delivery_trips", source_class: MANUAL_REVIEW}
+    prices: {material_unit_price_key: concrete_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Supplier/manual quantity, own field per floor (not shared with floor 1's concrete_delivery_trips)."
+
+  - code: floor_2_manual_concrete_lifting
+    name_ru: "Перенос, подъем бетона вручную, 2-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_manual_concrete_lifting]"
+    quantity:
+      formula: "max(1, ceil(floor_2_lintel_concrete_spec_volume_m3 + floor_2_lintel_monolithic_concrete_volume_m3))"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_concrete_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_2_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: manual_concrete_lifting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Same ordered volume as floor_2_lintel_concrete_b22_5_m300_material."
+
+  - code: floor_1_lintel_monolithic_concreting_work
+    name_ru: "Бетонирование монолитных перемычек, 1-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_monolithic_concreting_work]"
+    quantity:
+      formula: "floor_1_lintel_monolithic_concrete_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: lintel_monolithic_concreting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Only returned when floor_1_lintel_monolithic_concrete_volume_m3 > 0. Concrete material itself is combined with the U-block portion in lintel_concrete_b22_5_m300_material, not a separate material line here — this line is work only."
+
+  - code: floor_1_lintel_formwork_plywood_material
+    name_ru: "Фанера для опалубки монолитных перемычек, 1-й этаж"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_formwork_plywood_material]"
+    quantity:
+      formula: "floor_1_lintel_formwork_plywood_qty"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_formwork_plywood_qty", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: lintel_formwork_plywood_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Material only — Elena, 2026-07-15: no separate formwork-installation work line in the cost structure. Same enable gate as floor_1_lintel_monolithic_concreting_work."
+
+  - code: floor_1_lintel_formwork_timber_material
+    name_ru: "Пиломатериал обрезной для опалубки монолитных перемычек, 1-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_formwork_timber_material]"
+    quantity:
+      formula: "floor_1_lintel_formwork_timber_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_formwork_timber_volume_m3", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: lintel_formwork_timber_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Material only, same reasoning as floor_1_lintel_formwork_plywood_material."
+
+  - code: floor_1_lintel_edge_insulation_work
+    name_ru: "Устройство утепления по наружной стороне монолитной перемычки, 1-й этаж"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_edge_insulation_work]"
+    quantity:
+      formula: "floor_1_lintel_monolithic_insulation_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: lintel_insulation_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Elena, 2026-07-15: monolithic lintels are always insulated, so this shares the monolithic block's single enable gate rather than a separate condition."
+
+  - code: floor_1_lintel_edge_insulation_eps_material
+    name_ru: "Экструдированный пенополистирол Пеноплэкс Основа, 1-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_edge_insulation_eps_material]"
+    quantity:
+      formula: "ceil((floor_1_lintel_insulation_eps_spec_volume_m3 * lintel_insulation_eps_waste_coeff) / lintel_insulation_eps_pack_volume_m3) * lintel_insulation_eps_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_insulation_eps_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_insulation_eps_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.lintel_insulation_eps_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: lintel_insulation_eps_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Same pack-rounding pattern as waterproofing's EPS wall material lines."
+
+  - code: floor_1_lintel_edge_insulation_glue_foam
+    name_ru: "Клей-пена для ЭППС, 1-й этаж"
+    unit: "баллон"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_1_lintel_edge_insulation_glue_foam]"
+    quantity:
+      formula: "max(lintel_glue_foam_min_units, ceil(floor_1_lintel_monolithic_insulation_length_m / lintel_glue_foam_coverage_m_per_can))"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_1_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_glue_foam_coverage_m_per_can", source_class: DEFAULT}
+        - {ref: "defaults.lintel_glue_foam_min_units", source_class: DEFAULT}
+    prices: {material_unit_price_key: lintel_glue_foam_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Coverage is per linear meter of insulated edge (lintel insulation is a linear run), unlike waterproofing's area-based glue-foam."
+
+  - code: floor_2_lintel_monolithic_concreting_work
+    name_ru: "Бетонирование монолитных перемычек, 2-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_monolithic_concreting_work]"
+    quantity:
+      formula: "floor_2_lintel_monolithic_concrete_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: lintel_monolithic_concreting_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_monolithic_concreting_work, independent per floor. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+
+  - code: floor_2_lintel_formwork_plywood_material
+    name_ru: "Фанера для опалубки монолитных перемычек, 2-й этаж"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_formwork_plywood_material]"
+    quantity:
+      formula: "floor_2_lintel_formwork_plywood_qty"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_formwork_plywood_qty", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: lintel_formwork_plywood_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_formwork_plywood_material."
+
+  - code: floor_2_lintel_formwork_timber_material
+    name_ru: "Пиломатериал обрезной для опалубки монолитных перемычек, 2-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_formwork_timber_material]"
+    quantity:
+      formula: "floor_2_lintel_formwork_timber_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_formwork_timber_volume_m3", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: lintel_formwork_timber_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_formwork_timber_material."
+
+  - code: floor_2_lintel_edge_insulation_work
+    name_ru: "Устройство утепления по наружной стороне монолитной перемычки, 2-й этаж"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_edge_insulation_work]"
+    quantity:
+      formula: "floor_2_lintel_monolithic_insulation_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: lintel_insulation_work_unit_price, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_edge_insulation_work."
+
+  - code: floor_2_lintel_edge_insulation_eps_material
+    name_ru: "Экструдированный пенополистирол Пеноплэкс Основа, 2-й этаж"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_edge_insulation_eps_material]"
+    quantity:
+      formula: "ceil((floor_2_lintel_insulation_eps_spec_volume_m3 * lintel_insulation_eps_waste_coeff) / lintel_insulation_eps_pack_volume_m3) * lintel_insulation_eps_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_insulation_eps_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_insulation_eps_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.lintel_insulation_eps_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: lintel_insulation_eps_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_edge_insulation_eps_material."
+
+  - code: floor_2_lintel_edge_insulation_glue_foam
+    name_ru: "Клей-пена для ЭППС, 2-й этаж"
+    unit: "баллон"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_2_lintel_edge_insulation_glue_foam]"
+    quantity:
+      formula: "max(lintel_glue_foam_min_units, ceil(floor_2_lintel_monolithic_insulation_length_m / lintel_glue_foam_coverage_m_per_can))"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_2_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
+        - {ref: "defaults.lintel_glue_foam_coverage_m_per_can", source_class: DEFAULT}
+        - {ref: "defaults.lintel_glue_foam_min_units", source_class: DEFAULT}
+    prices: {material_unit_price_key: lintel_glue_foam_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_edge_insulation_glue_foam."
 
   - code: floor_2_masonry_work
     name_ru: "Кладка несущих стен 2-го этажа из газобетонных блоков"
@@ -910,8 +1457,6 @@ checks:
     - cutoff_waterproofing_load_bearing_walls_area_m2
     - main_wall_gas_block_400_spec_volume_m3
     - main_wall_gas_block_250_spec_volume_m3
-    - lintel_total_length_m
-    - lintel_concrete_spec_volume_m3
     - main_wall_rebar_items
     - lintel_rebar_items
   forbidden_production_inputs:
@@ -922,9 +1467,9 @@ checks:
     - legacy_wall_geometry
     - legacy_weight_items
     - legacy_manual_toggle
-  expected_estimate_line_count: 30
+  expected_estimate_line_count: 48
   contamination_check:
     old_project_markers_allowed: false
     fixture_values_allowed: false
     old_expected_result_values_allowed: false
-  notes: "estimate_lines fully built out 2026-07-10 from catalogs/estimate_line_catalog.yaml, verified directly against load_bearing_walls_lintels_calculator.py line by line (23 always-present lines + up to 7 conditional lines when both floors_count=2 and flat_roof_enabled with parapet/vent volumes > 0 = 30 max simultaneous; the catalog header's calculator_estimate_line_count: 27 was stale/inaccurate, superseded by this direct count). Two real bugs found and fixed during verification, both pure contract-YAML corrections (no calculator code touched): (1) lintel_concrete_b22_5_m300_material incorrectly applied concrete_waste_coeff, which production spec_volume mode never does; (2) vent_chimney_gas_block_cladding_work's gate was missing the vent_chimney_gas_block_spec_volume_m3 > 0 condition alongside flat_roof_enabled. Also found and fixed a structural gap: this contract had no auto_calculated or checks sections at all before this pass, and was missing 9 required LoadBearingWallsLintelsInput dataclass fields with no calculator-side default (added as new defaults/price_keys entries, documented individually with 2026-07-10 dates) — without them the adapter would fail to construct the calculator input at all, in production mode or otherwise."
+  notes: "estimate_lines fully built out 2026-07-10 from catalogs/estimate_line_catalog.yaml, verified directly against load_bearing_walls_lintels_calculator.py line by line (23 always-present lines + up to 7 conditional lines when both floors_count=2 and flat_roof_enabled with parapet/vent volumes > 0 = 30 max simultaneous; the catalog header's calculator_estimate_line_count: 27 was stale/inaccurate, superseded by this direct count). Two real bugs found and fixed during verification, both pure contract-YAML corrections (no calculator code touched): (1) lintel_concrete_b22_5_m300_material incorrectly applied concrete_waste_coeff, which production spec_volume mode never does; (2) vent_chimney_gas_block_cladding_work's gate was missing the vent_chimney_gas_block_spec_volume_m3 > 0 condition alongside flat_roof_enabled. Also found and fixed a structural gap: this contract had no auto_calculated or checks sections at all before this pass, and was missing 9 required LoadBearingWallsLintelsInput dataclass fields with no calculator-side default (added as new defaults/price_keys entries, documented individually with 2026-07-10 dates) — without them the adapter would fail to construct the calculator input at all, in production mode or otherwise. Updated 2026-07-15: floor 1's U-block lintel lines (5) moved from always-present to conditional (a floor may have no U-block lintels at all — see review_parameters.lintel_total_length_m), and 17 new conditional lines added for floor 2's own U-block lintels + concrete purchase (5) and monolithic lintels on either floor (6 each). Max simultaneous count verified empirically at 48 (was 30) by running the calculator directly with every optional block enabled at once, not just derived by arithmetic."

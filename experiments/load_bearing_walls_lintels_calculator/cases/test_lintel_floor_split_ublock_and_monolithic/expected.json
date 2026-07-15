@@ -1,0 +1,195 @@
+{
+  "calculation_blocks": {
+    "lintels": {
+      "lintel_total_length_m": 22.62,
+      "lintel_concrete_order_volume_m3": 1.0,
+      "lintel_concrete_combined_order_volume_m3": 1.0,
+      "ublock_enabled": true,
+      "concrete_enabled": true
+    },
+    "floor_2_ublock_lintels": {
+      "enabled": true,
+      "ublock_total_length_m": 20.5,
+      "u_block_quantity": 34.1667,
+      "concrete_spec_volume_m3": 0.3
+    },
+    "floor_2_lintel_concrete": {
+      "enabled": true,
+      "combined_required_volume_m3": 0.71,
+      "combined_order_volume_m3": 1.0
+    },
+    "floor_1_monolithic_lintels": {
+      "enabled": true,
+      "monolithic_concrete_volume_m3": 0.35,
+      "monolithic_insulation_length_m": 1.5,
+      "formwork_plywood_qty": 1.0,
+      "formwork_timber_volume_m3": 0.2,
+      "insulation_eps_spec_volume_m3": 0.3,
+      "insulation_eps_required_volume_m3": 0.315,
+      "insulation_eps_raw_packs": 1.136,
+      "insulation_eps_packs": 2,
+      "insulation_eps_order_volume_m3": 0.5546,
+      "glue_foam_raw_units": 0.15,
+      "glue_foam_units": 1
+    },
+    "floor_2_monolithic_lintels": {
+      "enabled": true,
+      "monolithic_concrete_volume_m3": 0.41,
+      "monolithic_insulation_length_m": 1.2,
+      "formwork_plywood_qty": 2.0,
+      "formwork_timber_volume_m3": 0.2,
+      "insulation_eps_spec_volume_m3": 0.25,
+      "insulation_eps_required_volume_m3": 0.2625,
+      "insulation_eps_raw_packs": 0.9466,
+      "insulation_eps_packs": 1,
+      "insulation_eps_order_volume_m3": 0.2773,
+      "glue_foam_raw_units": 0.12,
+      "glue_foam_units": 1
+    }
+  },
+  "estimate_lines": {
+    "u_block_lintel_cutting": {
+      "quantity": 37.7,
+      "material_total": 0,
+      "work_total": 15080,
+      "line_total": 15080
+    },
+    "lintel_concreting_work": {
+      "quantity": 22.62,
+      "material_total": 0,
+      "work_total": 22620,
+      "line_total": 22620
+    },
+    "lintel_concrete_b22_5_m300_material": {
+      "quantity": 1.0,
+      "material_total": 6400,
+      "work_total": 0,
+      "line_total": 6400
+    },
+    "lintel_concrete_delivery": {
+      "quantity": 1.0,
+      "material_total": 7500,
+      "work_total": 0,
+      "line_total": 7500
+    },
+    "manual_concrete_lifting": {
+      "quantity": 1.0,
+      "material_total": 0,
+      "work_total": 5000,
+      "line_total": 5000
+    },
+    "floor_2_u_block_lintel_cutting": {
+      "quantity": 34.1667,
+      "material_total": 0,
+      "work_total": 13667,
+      "line_total": 13667
+    },
+    "floor_2_lintel_concreting_work": {
+      "quantity": 20.5,
+      "material_total": 0,
+      "work_total": 20500,
+      "line_total": 20500
+    },
+    "floor_2_lintel_concrete_b22_5_m300_material": {
+      "quantity": 1.0,
+      "material_total": 6400,
+      "work_total": 0,
+      "line_total": 6400
+    },
+    "floor_2_lintel_concrete_delivery": {
+      "quantity": 1.0,
+      "material_total": 7500,
+      "work_total": 0,
+      "line_total": 7500
+    },
+    "floor_2_manual_concrete_lifting": {
+      "quantity": 1.0,
+      "material_total": 0,
+      "work_total": 5000,
+      "line_total": 5000
+    },
+    "floor_1_lintel_monolithic_concreting_work": {
+      "quantity": 0.35,
+      "material_total": 0,
+      "work_total": 7000,
+      "line_total": 7000
+    },
+    "floor_1_lintel_formwork_plywood_material": {
+      "quantity": 1.0,
+      "material_total": 1450,
+      "work_total": 0,
+      "line_total": 1450
+    },
+    "floor_1_lintel_formwork_timber_material": {
+      "quantity": 0.2,
+      "material_total": 4700,
+      "work_total": 0,
+      "line_total": 4700
+    },
+    "floor_1_lintel_edge_insulation_work": {
+      "quantity": 1.5,
+      "material_total": 0,
+      "work_total": 975,
+      "line_total": 975
+    },
+    "floor_1_lintel_edge_insulation_eps_material": {
+      "quantity": 0.5546,
+      "material_total": 5002,
+      "work_total": 0,
+      "line_total": 5002
+    },
+    "floor_1_lintel_edge_insulation_glue_foam": {
+      "quantity": 1.0,
+      "material_total": 450,
+      "work_total": 0,
+      "line_total": 450
+    },
+    "floor_2_lintel_monolithic_concreting_work": {
+      "quantity": 0.41,
+      "material_total": 0,
+      "work_total": 8200,
+      "line_total": 8200
+    },
+    "floor_2_lintel_formwork_plywood_material": {
+      "quantity": 2.0,
+      "material_total": 2900,
+      "work_total": 0,
+      "line_total": 2900
+    },
+    "floor_2_lintel_formwork_timber_material": {
+      "quantity": 0.2,
+      "material_total": 4700,
+      "work_total": 0,
+      "line_total": 4700
+    },
+    "floor_2_lintel_edge_insulation_work": {
+      "quantity": 1.2,
+      "material_total": 0,
+      "work_total": 780,
+      "line_total": 780
+    },
+    "floor_2_lintel_edge_insulation_eps_material": {
+      "quantity": 0.2773,
+      "material_total": 2501,
+      "work_total": 0,
+      "line_total": 2501
+    },
+    "floor_2_lintel_edge_insulation_glue_foam": {
+      "quantity": 1.0,
+      "material_total": 450,
+      "work_total": 0,
+      "line_total": 450
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 1570244.329,
+    "internal_materials_total": 1570244,
+    "internal_works_total_raw": 1201732.68,
+    "internal_works_total": 1201733,
+    "internal_section_total_raw": 2771977.009,
+    "internal_section_total": 2771977,
+    "sum_of_displayed_line_material_totals": 1570245,
+    "sum_of_displayed_line_work_totals": 1201733,
+    "sum_of_displayed_line_totals": 2771978
+  }
+}

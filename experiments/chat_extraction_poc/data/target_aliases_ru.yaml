@@ -389,27 +389,171 @@ main_wall_rebar_items:
 
 lintel_total_length:
   section_code: load_bearing_walls_lintels
-  ru_label: "Общая длина перемычек"
-  pdf_aliases: ["Общая длина перемычек", "Итого длина перемычек", "Перемычки длина всего", "Суммарная длина перемычек", "Всего перемычек м.п."]
+  ru_label: "Общая длина перемычек в U-блоках, 1-й этаж"
+  pdf_aliases: ["Общая длина перемычек", "Итого длина перемычек", "Перемычки длина всего", "Суммарная длина перемычек", "Всего перемычек м.п.", "Длина перемычек в U-блоках"]
   expected_unit: linear_m
-  table_hints: ["План перемычек", "Спецификация перемычек", "Ведомость перемычек"]
+  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа", "Ведомость перемычек"]
   required_context: ["перемычк", "итого|общ|суммар|всего|длина"]
-  negative_context: ["арматур", "бетон", "фундамент", "плита", "балка"]
+  negative_context: ["арматур", "бетон", "фундамент", "плита", "балка", "2 этаж", "монолит"]
   value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Production scalar for lintel length. PDFs give this as an explicit total line (e.g. 'Длина перемычек в U-блоках'), not a mark-by-mark table — mark scalar needs_review if no explicit total is present."
+  notes: "Production scalar for lintel length, U-block portion of floor 1 only. PDFs give this as an explicit total line (e.g. 'Длина перемычек в U-блоках'), not a mark-by-mark table — mark scalar needs_review if no explicit total is present. Optional 2026-07-15 — a floor may have no U-block lintels."
 
 lintel_concrete_volume:
   section_code: load_bearing_walls_lintels
-  ru_label: "Бетон перемычек"
-  pdf_aliases: ["Бетон перемычек", "Бетон для перемычек", "Перемычка бетон", "Бетон В22,5 перемычки", "U-блок перемычка бетон"]
+  ru_label: "Бетон перемычек в U-блоках, 1-й этаж"
+  pdf_aliases: ["Бетон перемычек", "Бетон для перемычек", "Перемычка бетон", "Бетон В22,5 перемычки", "U-блок перемычка бетон", "Бетонирование перемычек в U блоке"]
   expected_unit: m3
-  table_hints: ["План перемычек", "Спецификация перемычек"]
+  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
   required_context: ["бетон", "перемычк"]
-  negative_context: ["фундамент", "перекрыти", "плита", "балка"]
+  negative_context: ["фундамент", "перекрыти", "плита", "балка", "2 этаж", "монолит"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Lintel concrete only; not slab concrete or beam concrete."
+  notes: "Lintel concrete only; not slab concrete or beam concrete. U-block portion of floor 1 only, distinct from floor_1_lintel_monolithic_concrete_volume — required_context 'u' or 'блок' text near the row helps distinguish it from the monolithic row when both are present."
+
+floor_2_lintel_total_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Общая длина перемычек в U-блоках, 2-й этаж"
+  pdf_aliases: ["Длина перемычек в U-блоках 2 этаж", "Перемычки 2-го этажа длина", "Общая длина перемычек 2 этаж"]
+  expected_unit: linear_m
+  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
+  required_context: ["перемычк", "2 этаж|втор", "итого|общ|суммар|всего|длина"]
+  negative_context: ["арматур", "бетон", "1 этаж", "монолит"]
+  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — Elena, 2026-07-15: lintels may be present on either floor, both, or neither. Confirmed on real ТРЦ project (20,5 м.п.)."
+
+floor_2_lintel_concrete_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Бетон перемычек в U-блоках, 2-й этаж"
+  pdf_aliases: ["Бетон перемычек 2 этаж", "Бетонирование перемычек в U блоке 2 этаж"]
+  expected_unit: m3
+  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
+  required_context: ["бетон", "перемычк", "2 этаж|втор"]
+  negative_context: ["фундамент", "перекрыти", "плита", "балка", "1 этаж", "монолит"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Mirrors lintel_concrete_volume for floor 2."
+
+floor_1_lintel_monolithic_concrete_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Бетон монолитных перемычек, 1-й этаж"
+  pdf_aliases: ["Бетонирование монолитных перемычек", "Бетон монолитных перемычек", "Монолитные перемычки бетон"]
+  expected_unit: m3
+  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
+  required_context: ["монолит", "перемычк"]
+  negative_context: ["u-блок", "u блок", "2 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Monolithic (poured-in-place) lintels are a second construction method alongside U-block lintels — Elena, 2026-07-15: present in at least 50% of projects, independent of U-block lintels. When present (>0), Elena confirmed monolithic lintels are always insulated and always need plywood+timber formwork (no separate formwork-installation work)."
+
+floor_1_lintel_insulation_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Утепление торца монолитной перемычки, 1-й этаж — длина"
+  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки", "Утепление торца перемычки", "Утепление монолитной перемычки"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация перемычек 1-го этажа"]
+  required_context: ["утепл", "перемычк"]
+  negative_context: ["плита", "балка", "фундамент", "2 этаж"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "мп"]
+  notes: "Added 2026-07-15. Direct spec value; do not derive from monolithic concrete volume by formula."
+
+floor_1_lintel_formwork_plywood_qty:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Фанера для опалубки монолитных перемычек, 1-й этаж"
+  pdf_aliases: ["Фанера для заливки перемычек", "Фанера ФК для опалубки перемычек", "Фанера для закрытия некратных мест и торцов"]
+  expected_unit: pcs
+  table_hints: ["Спецификация перемычек 1-го этажа"]
+  required_context: ["фанера", "перемычк"]
+  negative_context: ["плита", "фундамент", "2 этаж"]
+  value_column_hint: ["кол-во", "количество", "шт"]
+  unit_column_hint: ["шт"]
+  notes: "Added 2026-07-15. U-block lintels need no formwork at all — this row only exists when monolithic lintels are present."
+
+floor_1_lintel_formwork_timber_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Пиломатериал для опалубки монолитных перемычек, 1-й этаж"
+  pdf_aliases: ["Пиломатериал обрезной для устройства опалубки перемычек", "Доска для опалубки перемычек"]
+  expected_unit: m3
+  table_hints: ["Спецификация перемычек 1-го этажа"]
+  required_context: ["пиломатериал|доска", "опалуб|перемычк"]
+  negative_context: ["плита", "фундамент", "лес", "подмост", "2 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Do not confuse with scaffolding/formwork timber for other sections — must be specifically tied to a lintel table."
+
+floor_1_lintel_insulation_eps_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Пеноплэкс Основа для утепления перемычек, 1-й этаж"
+  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки", "ЭППС Основа перемычки"]
+  expected_unit: m3
+  table_hints: ["Спецификация перемычек 1-го этажа"]
+  required_context: ["пеноплэкс|эппс", "перемычк"]
+  negative_context: ["плита", "фундамент", "стен", "2 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Same physical product (Пеноплэкс Основа 100х585х1185 мм) as floor_slab_1's edge/beam insulation, but a distinct project volume for lintels — do not sum with floor_slab_1_edge_eps_material_area or similar."
+
+floor_2_lintel_monolithic_concrete_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Бетон монолитных перемычек, 2-й этаж"
+  pdf_aliases: ["Бетонирование монолитных перемычек 2 этаж", "Бетон монолитных перемычек 2 этаж"]
+  expected_unit: m3
+  table_hints: ["Спецификация перемычек 2-го этажа"]
+  required_context: ["монолит", "перемычк", "2 этаж|втор"]
+  negative_context: ["u-блок", "u блок", "1 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+
+floor_2_lintel_insulation_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Утепление торца монолитной перемычки, 2-й этаж — длина"
+  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки 2 этаж"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация перемычек 2-го этажа"]
+  required_context: ["утепл", "перемычк", "2 этаж|втор"]
+  negative_context: ["плита", "балка", "фундамент", "1 этаж"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "мп"]
+  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_length."
+
+floor_2_lintel_formwork_plywood_qty:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Фанера для опалубки монолитных перемычек, 2-й этаж"
+  pdf_aliases: ["Фанера для заливки перемычек 2 этаж"]
+  expected_unit: pcs
+  table_hints: ["Спецификация перемычек 2-го этажа"]
+  required_context: ["фанера", "перемычк", "2 этаж|втор"]
+  negative_context: ["плита", "фундамент", "1 этаж"]
+  value_column_hint: ["кол-во", "количество", "шт"]
+  unit_column_hint: ["шт"]
+  notes: "Added 2026-07-15. Mirrors floor_1_lintel_formwork_plywood_qty."
+
+floor_2_lintel_formwork_timber_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Пиломатериал для опалубки монолитных перемычек, 2-й этаж"
+  pdf_aliases: ["Пиломатериал обрезной для устройства опалубки перемычек 2 этаж"]
+  expected_unit: m3
+  table_hints: ["Спецификация перемычек 2-го этажа"]
+  required_context: ["пиломатериал|доска", "опалуб|перемычк", "2 этаж|втор"]
+  negative_context: ["плита", "фундамент", "лес", "подмост", "1 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Mirrors floor_1_lintel_formwork_timber_volume."
+
+floor_2_lintel_insulation_eps_volume:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Пеноплэкс Основа для утепления перемычек, 2-й этаж"
+  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки 2 этаж"]
+  expected_unit: m3
+  table_hints: ["Спецификация перемычек 2-го этажа"]
+  required_context: ["пеноплэкс|эппс", "перемычк", "2 этаж|втор"]
+  negative_context: ["плита", "фундамент", "стен", "1 этаж"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_eps_volume."
 
 floor_2_masonry_volume:
   section_code: load_bearing_walls_lintels

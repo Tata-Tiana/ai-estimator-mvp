@@ -117,6 +117,16 @@ class LoadBearingWallsLintelsInput:
     concrete_delivery_trips: float
     concrete_delivery_unit_price: float
     manual_concrete_lifting_work_unit_price: float
+    lintel_monolithic_concreting_work_unit_price: float
+    lintel_formwork_plywood_unit_price: float
+    lintel_formwork_timber_unit_price: float
+    lintel_insulation_work_unit_price: float
+    lintel_insulation_eps_unit_price: float
+    lintel_glue_foam_unit_price: float
+    lintel_insulation_eps_waste_coeff: float
+    lintel_insulation_eps_pack_volume_m3: float
+    lintel_glue_foam_coverage_m_per_can: float
+    lintel_glue_foam_min_units: float
     parapet_masonry_work_unit_price: float
     vent_chimney_cladding_work_unit_price: float
     gas_block_d500_150_pallet_volume_m3: float
@@ -151,6 +161,19 @@ class LoadBearingWallsLintelsInput:
     lintel_length_calc_method: str = "legacy_length_count_items"
     lintel_total_length_m: float | None = None
     lintel_lengths_m: list[LintelLength | dict[str, Any]] | None = None
+    floor_2_lintel_ublock_total_length_m: float | None = None
+    floor_2_lintel_concrete_spec_volume_m3: float | None = None
+    floor_2_concrete_delivery_trips: float | None = None
+    floor_1_lintel_monolithic_concrete_volume_m3: float | None = None
+    floor_1_lintel_monolithic_insulation_length_m: float | None = None
+    floor_1_lintel_formwork_plywood_qty: float | None = None
+    floor_1_lintel_formwork_timber_volume_m3: float | None = None
+    floor_1_lintel_insulation_eps_spec_volume_m3: float | None = None
+    floor_2_lintel_monolithic_concrete_volume_m3: float | None = None
+    floor_2_lintel_monolithic_insulation_length_m: float | None = None
+    floor_2_lintel_formwork_plywood_qty: float | None = None
+    floor_2_lintel_formwork_timber_volume_m3: float | None = None
+    floor_2_lintel_insulation_eps_spec_volume_m3: float | None = None
     main_wall_rebar_calc_method: str = "legacy_wall_geometry"
     main_wall_rebar_items: list[SpecRebarItem | dict[str, Any]] | None = None
     lintel_rebar_calc_method: str = "legacy_weight_items"
@@ -296,9 +319,10 @@ class LoadBearingWallsLintelsInput:
             if not self.lintel_lengths_m:
                 raise ValueError("lintel_lengths_m is required for legacy_length_count_items")
         if self.lintel_length_calc_method == "spec_total_length":
-            if self.lintel_total_length_m is None:
-                raise ValueError("lintel_total_length_m is required for spec_total_length")
-            require_non_negative("lintel_total_length_m", self.lintel_total_length_m)
+            # Optional: a floor may have no U-block lintels at all (only monolithic, or
+            # no lintels of any kind) — Elena, 2026-07-15. None means absent, not zero.
+            if self.lintel_total_length_m is not None:
+                require_non_negative("lintel_total_length_m", self.lintel_total_length_m)
         if self.main_wall_rebar_calc_method not in {"legacy_wall_geometry", "spec_length_items"}:
             raise ValueError("main_wall_rebar_calc_method must be legacy_wall_geometry or spec_length_items")
         if self.main_wall_rebar_calc_method == "spec_length_items":
@@ -320,9 +344,10 @@ class LoadBearingWallsLintelsInput:
         if self.lintel_concrete_calc_method not in {"legacy_length_section", "spec_volume"}:
             raise ValueError("lintel_concrete_calc_method must be legacy_length_section or spec_volume")
         if self.lintel_concrete_calc_method == "spec_volume":
-            if self.lintel_concrete_spec_volume_m3 is None:
-                raise ValueError("lintel_concrete_spec_volume_m3 is required for spec_volume")
-            require_non_negative("lintel_concrete_spec_volume_m3", self.lintel_concrete_spec_volume_m3)
+            # Optional, same reasoning as lintel_total_length_m above: a floor may have
+            # only monolithic lintels (no U-block concrete need) or no lintels at all.
+            if self.lintel_concrete_spec_volume_m3 is not None:
+                require_non_negative("lintel_concrete_spec_volume_m3", self.lintel_concrete_spec_volume_m3)
         if self.main_walls_crane_calc_method not in {"legacy_manual_shifts", "delivery_trucks_threshold"}:
             raise ValueError("main_walls_crane_calc_method must be legacy_manual_shifts or delivery_trucks_threshold")
         if self.main_walls_crane_calc_method == "legacy_manual_shifts" and self.main_walls_crane_shifts is None:
@@ -344,6 +369,9 @@ class LoadBearingWallsLintelsInput:
             "concrete_waste_coeff",
             "lintel_concrete_min_order_volume_m3",
             "gas_block_d500_150_pallet_volume_m3",
+            "lintel_insulation_eps_waste_coeff",
+            "lintel_insulation_eps_pack_volume_m3",
+            "lintel_glue_foam_coverage_m_per_can",
         ]:
             require_positive(name, getattr(self, name))
         for name, value in self.to_dict().items():
@@ -667,12 +695,10 @@ def calculate_lintel_total_length(data: LoadBearingWallsLintelsInput) -> dict[st
         }
 
     if data.lintel_length_calc_method == "spec_total_length":
-        if data.lintel_total_length_m is None:
-            raise ValueError("lintel_total_length_m is required for spec_total_length")
         return {
             "lintel_length_calc_method": data.lintel_length_calc_method,
             "lintel_length_source": "spec_total_length",
-            "lintel_total_length_m": q(data.lintel_total_length_m),
+            "lintel_total_length_m": q(d(data.lintel_total_length_m or 0)),
         }
 
     raise ValueError(f"Unknown lintel_length_calc_method: {data.lintel_length_calc_method}")
@@ -685,9 +711,7 @@ def calculate_lintel_concrete(data: LoadBearingWallsLintelsInput, lintel_total_l
         source = "legacy_length_section"
         spec_volume = None
     elif data.lintel_concrete_calc_method == "spec_volume":
-        if data.lintel_concrete_spec_volume_m3 is None:
-            raise ValueError("lintel_concrete_spec_volume_m3 is required for spec_volume")
-        raw_concrete = d(data.lintel_concrete_spec_volume_m3)
+        raw_concrete = d(data.lintel_concrete_spec_volume_m3 or 0)
         required_concrete = raw_concrete
         source = "spec_volume"
         spec_volume = q(raw_concrete)
@@ -705,6 +729,63 @@ def calculate_lintel_concrete(data: LoadBearingWallsLintelsInput, lintel_total_l
         "lintel_required_concrete_volume_m3": q(required_concrete),
         "lintel_concrete_min_order_volume_m3": q(data.lintel_concrete_min_order_volume_m3),
         "lintel_concrete_order_volume_m3": q(order_concrete),
+    }
+
+
+def calculate_floor_2_ublock_lintels(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
+    """U-block lintels on floor 2. Independent of floor 1's lintels — both, either,
+    or neither type/floor may have lintels at all (Elena, 2026-07-15)."""
+    length = d(data.floor_2_lintel_ublock_total_length_m or 0)
+    enabled = length > 0
+    u_block_quantity = length / d(data.gas_block_length_m) if enabled else Decimal("0")
+    return {
+        "enabled": enabled,
+        "ublock_total_length_m": q(length),
+        "u_block_quantity": q(u_block_quantity),
+        "concrete_spec_volume_m3": q(d(data.floor_2_lintel_concrete_spec_volume_m3 or 0)),
+    }
+
+
+def calculate_monolithic_lintel_block(
+    concrete_volume_m3: float | None,
+    insulation_length_m: float | None,
+    plywood_qty: float | None,
+    timber_volume_m3: float | None,
+    eps_spec_volume_m3: float | None,
+    data: LoadBearingWallsLintelsInput,
+) -> dict[str, Any]:
+    """Monolithic (poured-in-place) lintels — a floor's second lintel construction
+    method alongside U-block lintels. Present in at least 50% of real projects
+    (Elena, 2026-07-15), independent of U-block lintels and independent per floor.
+    Formwork here is board + plywood only (material, no install-work line — Elena:
+    "в СС работы на устройство опалубки нет"). Edge insulation always accompanies
+    monolithic lintels (Elena: "да"), so it shares this block's single enable gate
+    rather than a separate condition."""
+    concrete_volume = d(concrete_volume_m3 or 0)
+    enabled = concrete_volume > 0
+    insulation_length = d(insulation_length_m or 0)
+    plywood = d(plywood_qty or 0)
+    timber = d(timber_volume_m3 or 0)
+    eps_spec = d(eps_spec_volume_m3 or 0)
+    eps_required = eps_spec * d(data.lintel_insulation_eps_waste_coeff)
+    eps_raw_packs = eps_required / d(data.lintel_insulation_eps_pack_volume_m3) if enabled else Decimal("0")
+    eps_packs = int(ceil(eps_raw_packs)) if enabled else 0
+    eps_order_volume = d(eps_packs) * d(data.lintel_insulation_eps_pack_volume_m3)
+    foam_raw = insulation_length / d(data.lintel_glue_foam_coverage_m_per_can) if enabled else Decimal("0")
+    foam_units = max(int(data.lintel_glue_foam_min_units), int(ceil(foam_raw))) if enabled else 0
+    return {
+        "enabled": enabled,
+        "monolithic_concrete_volume_m3": q(concrete_volume),
+        "monolithic_insulation_length_m": q(insulation_length),
+        "formwork_plywood_qty": q(plywood),
+        "formwork_timber_volume_m3": q(timber),
+        "insulation_eps_spec_volume_m3": q(eps_spec),
+        "insulation_eps_required_volume_m3": q(eps_required),
+        "insulation_eps_raw_packs": q(eps_raw_packs),
+        "insulation_eps_packs": eps_packs,
+        "insulation_eps_order_volume_m3": q(eps_order_volume),
+        "glue_foam_raw_units": q(foam_raw),
+        "glue_foam_units": foam_units,
     }
 
 
@@ -804,6 +885,44 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     main_wall_reinforcement, _ = calculate_main_wall_reinforcement(data)
     lintel_rebar, _ = calculate_lintel_rebar(data)
     lintel_concrete = calculate_lintel_concrete(data, lintel_total_length)
+    floor_2_ublock_lintels = calculate_floor_2_ublock_lintels(data)
+    floor_1_monolithic_lintels = calculate_monolithic_lintel_block(
+        data.floor_1_lintel_monolithic_concrete_volume_m3,
+        data.floor_1_lintel_monolithic_insulation_length_m,
+        data.floor_1_lintel_formwork_plywood_qty,
+        data.floor_1_lintel_formwork_timber_volume_m3,
+        data.floor_1_lintel_insulation_eps_spec_volume_m3,
+        data,
+    )
+    floor_2_monolithic_lintels = calculate_monolithic_lintel_block(
+        data.floor_2_lintel_monolithic_concrete_volume_m3,
+        data.floor_2_lintel_monolithic_insulation_length_m,
+        data.floor_2_lintel_formwork_plywood_qty,
+        data.floor_2_lintel_formwork_timber_volume_m3,
+        data.floor_2_lintel_insulation_eps_spec_volume_m3,
+        data,
+    )
+    # Concrete material purchase is combined across U-block + monolithic lintels per floor
+    # (same truck either way, Elena 2026-07-15) even though the work lines stay split by method.
+    floor_1_lintel_concrete_combined_required = d(lintel_concrete["lintel_required_concrete_volume_m3"]) + d(
+        floor_1_monolithic_lintels["monolithic_concrete_volume_m3"]
+    )
+    floor_1_lintel_concrete_enabled = floor_1_lintel_concrete_combined_required > 0
+    floor_1_lintel_concrete_order_volume_m3 = (
+        max(d(data.lintel_concrete_min_order_volume_m3), Decimal(ceil(floor_1_lintel_concrete_combined_required)))
+        if floor_1_lintel_concrete_enabled
+        else Decimal("0")
+    )
+    floor_1_ublock_enabled = lintel_total_length > 0
+    floor_2_lintel_concrete_combined_required = d(floor_2_ublock_lintels["concrete_spec_volume_m3"]) + d(
+        floor_2_monolithic_lintels["monolithic_concrete_volume_m3"]
+    )
+    floor_2_lintel_concrete_enabled = floor_2_lintel_concrete_combined_required > 0
+    floor_2_lintel_concrete_order_volume_m3 = (
+        max(d(data.lintel_concrete_min_order_volume_m3), Decimal(ceil(floor_2_lintel_concrete_combined_required)))
+        if floor_2_lintel_concrete_enabled
+        else Decimal("0")
+    )
     floor_2_enabled = data.floors_count == 2
     if data.upper_floor_calc_method == "legacy_second_light_addon":
         second_light_enabled = bool(data.second_light_masonry_enabled)
@@ -902,7 +1021,18 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
             "lintel_200mm_steps": q(lintel_total_length / d("0.2")),
             **lintel_concrete,
             **lintel_rebar,
+            "lintel_concrete_combined_order_volume_m3": q(floor_1_lintel_concrete_order_volume_m3),
+            "ublock_enabled": floor_1_ublock_enabled,
+            "concrete_enabled": floor_1_lintel_concrete_enabled,
         },
+        "floor_2_ublock_lintels": floor_2_ublock_lintels,
+        "floor_2_lintel_concrete": {
+            "enabled": floor_2_lintel_concrete_enabled,
+            "combined_required_volume_m3": q(floor_2_lintel_concrete_combined_required),
+            "combined_order_volume_m3": q(floor_2_lintel_concrete_order_volume_m3),
+        },
+        "floor_1_monolithic_lintels": floor_1_monolithic_lintels,
+        "floor_2_monolithic_lintels": floor_2_monolithic_lintels,
         "main_wall_reinforcement": main_wall_reinforcement,
         "floor_2_load_bearing_walls": {
             "floors_count": data.floors_count,
@@ -1004,7 +1134,6 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         line("main_gas_block_d500_600x250x250_material", "Газобетонный блок D500 600x250x250 мм", "м3", gas["d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, price_code="gas_block_d500_m3"),
         line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
         line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
-        line("u_block_lintel_cutting", "Резка блока под перемычку (U-блок)", "шт", lintels["u_block_quantity"], work_unit_price=data.u_block_cutting_work_unit_price, price_code="u_block_lintel_cutting_item"),
         line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под армирование Ø10", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка серой части, база для арматуры Ø10"),
         *main_wall_rebar_lines,
         line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов", price_code="block_delivery_truck"),
@@ -1012,11 +1141,50 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         line("main_walls_blocks_crane_moving_25t", "Перемещение блоков, смеси автокраном 25 т", "смена", delivery["main_walls_crane_shifts"], material_unit_price=data.crane_25t_unit_price, notes="legacy manual or delivery-trucks threshold", price_code="crane_shift"),
         line("lintel_rebar_frame_assembly", "Изготовление и монтаж каркаса армирования перемычек", "мп", lintels["lintel_rebar_frame_assembly_quantity_m"], notes="Нулевая агрегирующая строка"),
         *lintel_rebar_lines,
-        line("lintel_concreting_work", "Бетонирование перемычек", "мп", lintels["lintel_total_length_m"], work_unit_price=data.lintel_concreting_work_unit_price, price_code="lintel_concreting_work_m"),
-        line("lintel_concrete_b22_5_m300_material", "Бетон В22,5 М300 для перемычек", "м3", lintels["lintel_concrete_order_volume_m3"], material_unit_price=data.concrete_m300_unit_price, notes="Минимум 1 м3", price_code="concrete_b22_5_m3"),
-        line("lintel_concrete_delivery", "Доставка бетона до объекта", "рейс", data.concrete_delivery_trips, material_unit_price=data.concrete_delivery_unit_price, price_code="concrete_delivery_trip"),
-        line("manual_concrete_lifting", "Перенос, подъём бетона вручную", "м3", lintels["lintel_concrete_order_volume_m3"], work_unit_price=data.manual_concrete_lifting_work_unit_price, price_code="manual_concrete_lifting_m3"),
     ]
+
+    if lintels["ublock_enabled"]:
+        lines.extend([
+            line("u_block_lintel_cutting", "Резка блока под перемычку (U-блок)", "шт", lintels["u_block_quantity"], work_unit_price=data.u_block_cutting_work_unit_price, price_code="u_block_lintel_cutting_item"),
+            line("lintel_concreting_work", "Бетонирование перемычек", "мп", lintels["lintel_total_length_m"], work_unit_price=data.lintel_concreting_work_unit_price, price_code="lintel_concreting_work_m"),
+        ])
+
+    if lintels["concrete_enabled"]:
+        lines.extend([
+            line("lintel_concrete_b22_5_m300_material", "Бетон В22,5 М300 для перемычек", "м3", lintels["lintel_concrete_combined_order_volume_m3"], material_unit_price=data.concrete_m300_unit_price, notes="Минимум 1 м3; объём U-блока и монолита 1-го этажа объединены в одну закупку", price_code="concrete_b22_5_m3"),
+            line("lintel_concrete_delivery", "Доставка бетона до объекта", "рейс", data.concrete_delivery_trips, material_unit_price=data.concrete_delivery_unit_price, price_code="concrete_delivery_trip"),
+            line("manual_concrete_lifting", "Перенос, подъём бетона вручную", "м3", lintels["lintel_concrete_combined_order_volume_m3"], work_unit_price=data.manual_concrete_lifting_work_unit_price, price_code="manual_concrete_lifting_m3"),
+        ])
+
+    floor_2_ublock = b["floor_2_ublock_lintels"]
+    if floor_2_ublock["enabled"]:
+        lines.extend([
+            line("floor_2_u_block_lintel_cutting", "Резка блока под перемычку (U-блок), 2-й этаж", "шт", floor_2_ublock["u_block_quantity"], work_unit_price=data.u_block_cutting_work_unit_price, price_code="u_block_lintel_cutting_item"),
+            line("floor_2_lintel_concreting_work", "Бетонирование перемычек в U-блоке, 2-й этаж", "мп", floor_2_ublock["ublock_total_length_m"], work_unit_price=data.lintel_concreting_work_unit_price, price_code="lintel_concreting_work_m"),
+        ])
+
+    floor_2_lintel_concrete = b["floor_2_lintel_concrete"]
+    if floor_2_lintel_concrete["enabled"]:
+        lines.extend([
+            line("floor_2_lintel_concrete_b22_5_m300_material", "Бетон В22,5 М300 для перемычек, 2-й этаж", "м3", floor_2_lintel_concrete["combined_order_volume_m3"], material_unit_price=data.concrete_m300_unit_price, notes="Минимум 1 м3; объём U-блока и монолита 2-го этажа объединены в одну закупку", price_code="concrete_b22_5_m3"),
+            line("floor_2_lintel_concrete_delivery", "Доставка бетона до объекта, 2-й этаж", "рейс", data.floor_2_concrete_delivery_trips or 0, material_unit_price=data.concrete_delivery_unit_price, price_code="concrete_delivery_trip"),
+            line("floor_2_manual_concrete_lifting", "Перенос, подъём бетона вручную, 2-й этаж", "м3", floor_2_lintel_concrete["combined_order_volume_m3"], work_unit_price=data.manual_concrete_lifting_work_unit_price, price_code="manual_concrete_lifting_m3"),
+        ])
+
+    floor_1_monolithic = b["floor_1_monolithic_lintels"]
+    floor_2_monolithic = b["floor_2_monolithic_lintels"]
+    for floor_label, floor_number, monolithic in (("1-й этаж", 1, floor_1_monolithic), ("2-й этаж", 2, floor_2_monolithic)):
+        if not monolithic["enabled"]:
+            continue
+        prefix = f"floor_{floor_number}"
+        lines.extend([
+            line(f"{prefix}_lintel_monolithic_concreting_work", f"Бетонирование монолитных перемычек, {floor_label}", "м3", monolithic["monolithic_concrete_volume_m3"], work_unit_price=data.lintel_monolithic_concreting_work_unit_price, price_code="lintel_monolithic_concreting_work_m3"),
+            line(f"{prefix}_lintel_formwork_plywood_material", f"Фанера для опалубки монолитных перемычек, {floor_label}", "шт", monolithic["formwork_plywood_qty"], material_unit_price=data.lintel_formwork_plywood_unit_price, price_code="lintel_formwork_plywood_sheet"),
+            line(f"{prefix}_lintel_formwork_timber_material", f"Пиломатериал обрезной для опалубки монолитных перемычек, {floor_label}", "м3", monolithic["formwork_timber_volume_m3"], material_unit_price=data.lintel_formwork_timber_unit_price, price_code="lintel_formwork_timber_m3"),
+            line(f"{prefix}_lintel_edge_insulation_work", f"Устройство утепления по наружной стороне монолитной перемычки, {floor_label}", "мп", monolithic["monolithic_insulation_length_m"], work_unit_price=data.lintel_insulation_work_unit_price, price_code="lintel_edge_insulation_work_m"),
+            line(f"{prefix}_lintel_edge_insulation_eps_material", f"Экструдированный пенополистирол Пеноплэкс Основа, {floor_label}", "м3", monolithic["insulation_eps_order_volume_m3"], display_quantity=q(monolithic["insulation_eps_order_volume_m3"], "0.01"), material_unit_price=data.lintel_insulation_eps_unit_price, price_code="eps_penoplex_osnova_100_m3"),
+            line(f"{prefix}_lintel_edge_insulation_glue_foam", f"Клей-пена для ЭППС, {floor_label}", "баллон", monolithic["glue_foam_units"], material_unit_price=data.lintel_glue_foam_unit_price, price_code="eps_foam_glue_can"),
+        ])
 
     if data.upper_floor_calc_method == "legacy_second_light_addon":
         lines.extend([

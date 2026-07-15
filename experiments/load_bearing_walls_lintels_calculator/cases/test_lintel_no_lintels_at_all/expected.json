@@ -1,0 +1,31 @@
+{
+  "calculation_blocks": {
+    "lintels": {
+      "ublock_enabled": false,
+      "concrete_enabled": false
+    },
+    "floor_2_ublock_lintels": {
+      "enabled": false
+    },
+    "floor_2_lintel_concrete": {
+      "enabled": false
+    },
+    "floor_1_monolithic_lintels": {
+      "enabled": false
+    },
+    "floor_2_monolithic_lintels": {
+      "enabled": false
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 1155725.003,
+    "internal_materials_total": 1155725,
+    "internal_works_total_raw": 806989.75,
+    "internal_works_total": 806990,
+    "internal_section_total_raw": 1962714.753,
+    "internal_section_total": 1962715,
+    "sum_of_displayed_line_material_totals": 1155725,
+    "sum_of_displayed_line_work_totals": 806990,
+    "sum_of_displayed_line_totals": 1962715
+  }
+}

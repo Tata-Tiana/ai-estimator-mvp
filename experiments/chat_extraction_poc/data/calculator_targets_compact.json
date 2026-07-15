@@ -76,11 +76,23 @@
         {"code": "cutoff_waterproofing_load_bearing_walls_area", "label_ru": "Отсечная гидроизоляция под первый ряд несущих стен — площадь", "unit": "m2", "grounded": true},
         {"code": "main_wall_gas_block_400_spec_volume", "label_ru": "Газобетонный блок 600×400×250 — объём по спецификации", "unit": "m3", "grounded": true},
         {"code": "main_wall_gas_block_250_spec_volume", "label_ru": "Газобетонный блок 600×250×250 — объём по спецификации", "unit": "m3", "grounded": false},
-        {"code": "lintel_total_length", "label_ru": "Перемычки — общая длина", "unit": "linear_m", "grounded": true},
+        {"code": "lintel_total_length", "label_ru": "Перемычки в U-блоках, 1-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "U-block portion only, 1-й этаж. Optional 2026-07-15 — a floor may have no U-block lintels (only monolithic, or none). See lintel_concrete_volume/floor_1_lintel_monolithic_concrete_volume for the monolithic portion."},
         {"code": "vent_chimney_gas_block_150_volume", "label_ru": "Газобетонный блок 600×150×250 для вентканалов — объём по спецификации", "unit": "m3", "grounded": false},
-        {"code": "lintel_concrete_volume", "label_ru": "Бетон перемычек — объём", "unit": "m3", "grounded": true},
+        {"code": "lintel_concrete_volume", "label_ru": "Бетон перемычек в U-блоках, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "U-block portion only, 1-й этаж. Optional 2026-07-15, same reasoning as lintel_total_length."},
         {"code": "floor_2_masonry_volume", "label_ru": "Кладка несущих стен 2-го этажа — объём по спецификации", "unit": "m3", "grounded": true},
-        {"code": "parapet_masonry_volume", "label_ru": "Объём кладки парапета", "unit": "m3", "grounded": true}
+        {"code": "parapet_masonry_volume", "label_ru": "Объём кладки парапета", "unit": "m3", "grounded": true},
+        {"code": "floor_2_lintel_total_length", "label_ru": "Перемычки в U-блоках, 2-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — confirmed on real ТРЦ project (20,5 м.п., 35 шт резки U-блока)."},
+        {"code": "floor_2_lintel_concrete_volume", "label_ru": "Бетон перемычек в U-блоках, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_1_lintel_monolithic_concrete_volume", "label_ru": "Бетон монолитных перемычек, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Monolithic (poured-in-place) lintels are a second construction method alongside U-block lintels — Elena, 2026-07-15: present in at least 50% of projects, independent of U-block lintels, on either floor."},
+        {"code": "floor_1_lintel_insulation_length", "label_ru": "Утепление торца монолитной перемычки, 1-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15. Direct spec value; do not derive from monolithic concrete volume."},
+        {"code": "floor_1_lintel_formwork_plywood_qty", "label_ru": "Фанера для опалубки монолитных перемычек, 1-й этаж — количество", "unit": "pcs", "grounded": true, "notes": "Added 2026-07-15. U-block lintels need no formwork; only monolithic lintels do."},
+        {"code": "floor_1_lintel_formwork_timber_volume", "label_ru": "Пиломатериал для опалубки монолитных перемычек, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_1_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Same physical product as floor_slab_1's edge/beam insulation, different application (lintel edge, not slab edge)."},
+        {"code": "floor_2_lintel_monolithic_concrete_volume", "label_ru": "Бетон монолитных перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."},
+        {"code": "floor_2_lintel_insulation_length", "label_ru": "Утепление торца монолитной перемычки, 2-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_2_lintel_formwork_plywood_qty", "label_ru": "Фанера для опалубки монолитных перемычек, 2-й этаж — количество", "unit": "pcs", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_2_lintel_formwork_timber_volume", "label_ru": "Пиломатериал для опалубки монолитных перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_2_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."}
       ],
       "extract_groups": [
         {

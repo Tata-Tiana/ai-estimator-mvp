@@ -942,10 +942,64 @@ sections:
         used_by_estimate_lines:
           - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
           - "load_bearing_walls_lintels.manual_concrete_lifting"
+          - "load_bearing_walls_lintels.floor_2_lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.floor_2_manual_concrete_lifting"
         source_note: "Calculator README production rule."
         confidence: confirmed_from_code
         allow_override: true
-        notes: "Minimum concrete order for lintels."
+        notes: "Minimum concrete order for lintels. used_by_estimate_lines extended 2026-07-15 for floor 2's own combined U-block+monolithic concrete purchase."
+
+      lintel_insulation_eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_insulation_eps_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_eps_material"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_eps_material"
+        source_note: "Same value as other EPS waste coefficients in the project (e.g. waterproofing.eps_waste_coeff)."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15 for monolithic lintel edge insulation."
+
+      lintel_insulation_eps_pack_volume_m3:
+        value: 0.2773
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "lintel_insulation_eps_pack_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_eps_material"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_eps_material"
+        source_note: "Same pack volume as floor_slab_1's Пеноплэкс Основа 100х585х1185 мм (same physical product)."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
+
+      lintel_glue_foam_coverage_m_per_can:
+        value: 10
+        unit: "m/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_glue_foam_coverage_m_per_can"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_glue_foam"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_glue_foam"
+        source_note: "Coverage per linear meter of insulated lintel edge, not per m2 — lintel edge insulation is a linear run, unlike waterproofing's area-based glue-foam."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
+
+      lintel_glue_foam_min_units:
+        value: 1
+        unit: "can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_glue_foam_min_units"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_glue_foam"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_glue_foam"
+        source_note: "Business/material minimum purchase default, same pattern as waterproofing.glue_foam_min_units."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
 
       gas_block_delivery_truck_capacity_m3:
         value: 30.0

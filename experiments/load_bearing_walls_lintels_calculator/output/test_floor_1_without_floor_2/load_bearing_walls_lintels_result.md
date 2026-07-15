@@ -46,6 +46,16 @@
 - `concrete_delivery_trips`: `1`
 - `concrete_delivery_unit_price`: `7500`
 - `manual_concrete_lifting_work_unit_price`: `5000`
+- `lintel_monolithic_concreting_work_unit_price`: `20000`
+- `lintel_formwork_plywood_unit_price`: `1450`
+- `lintel_formwork_timber_unit_price`: `23500`
+- `lintel_insulation_work_unit_price`: `650`
+- `lintel_insulation_eps_unit_price`: `9020`
+- `lintel_glue_foam_unit_price`: `450`
+- `lintel_insulation_eps_waste_coeff`: `1.05`
+- `lintel_insulation_eps_pack_volume_m3`: `0.2773`
+- `lintel_glue_foam_coverage_m_per_can`: `10`
+- `lintel_glue_foam_min_units`: `1`
 - `parapet_masonry_work_unit_price`: `7000`
 - `vent_chimney_cladding_work_unit_price`: `1200`
 - `gas_block_d500_150_pallet_volume_m3`: `1.8`
@@ -78,6 +88,19 @@
 - `lintel_length_calc_method`: `legacy_length_count_items`
 - `lintel_total_length_m`: `None`
 - `lintel_lengths_m`: `[{'length_m': 1.4, 'count': 6}, {'length_m': 2.3, 'count': 2}, {'length_m': 1.2, 'count': 3}, {'length_m': 2.3, 'count': 1}, {'length_m': 3.2, 'count': 1}, {'length_m': 1.3, 'count': 1}]`
+- `floor_2_lintel_ublock_total_length_m`: `None`
+- `floor_2_lintel_concrete_spec_volume_m3`: `None`
+- `floor_2_concrete_delivery_trips`: `None`
+- `floor_1_lintel_monolithic_concrete_volume_m3`: `None`
+- `floor_1_lintel_monolithic_insulation_length_m`: `None`
+- `floor_1_lintel_formwork_plywood_qty`: `None`
+- `floor_1_lintel_formwork_timber_volume_m3`: `None`
+- `floor_1_lintel_insulation_eps_spec_volume_m3`: `None`
+- `floor_2_lintel_monolithic_concrete_volume_m3`: `None`
+- `floor_2_lintel_monolithic_insulation_length_m`: `None`
+- `floor_2_lintel_formwork_plywood_qty`: `None`
+- `floor_2_lintel_formwork_timber_volume_m3`: `None`
+- `floor_2_lintel_insulation_eps_spec_volume_m3`: `None`
 - `main_wall_rebar_calc_method`: `legacy_wall_geometry`
 - `main_wall_rebar_items`: `[]`
 - `lintel_rebar_calc_method`: `legacy_weight_items`
@@ -247,6 +270,40 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `lintels.lintel_rebar_frame_assembly_quantity_m` | `230.7` |
 | `lintels.lintel_rebar_order_length_m` | `230.7` |
 | `lintels.lintel_rebar_delivery_weight_kg` | `136.9296` |
+| `lintels.lintel_concrete_combined_order_volume_m3` | `1.0` |
+| `lintels.ublock_enabled` | `True` |
+| `lintels.concrete_enabled` | `True` |
+| `floor_2_ublock_lintels.enabled` | `False` |
+| `floor_2_ublock_lintels.ublock_total_length_m` | `0.0` |
+| `floor_2_ublock_lintels.u_block_quantity` | `0.0` |
+| `floor_2_ublock_lintels.concrete_spec_volume_m3` | `0.0` |
+| `floor_2_lintel_concrete.enabled` | `False` |
+| `floor_2_lintel_concrete.combined_required_volume_m3` | `0.0` |
+| `floor_2_lintel_concrete.combined_order_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.enabled` | `False` |
+| `floor_1_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
+| `floor_1_monolithic_lintels.formwork_plywood_qty` | `0.0` |
+| `floor_1_monolithic_lintels.formwork_timber_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.insulation_eps_spec_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.insulation_eps_required_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.insulation_eps_raw_packs` | `0.0` |
+| `floor_1_monolithic_lintels.insulation_eps_packs` | `0` |
+| `floor_1_monolithic_lintels.insulation_eps_order_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.glue_foam_raw_units` | `0.0` |
+| `floor_1_monolithic_lintels.glue_foam_units` | `0` |
+| `floor_2_monolithic_lintels.enabled` | `False` |
+| `floor_2_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
+| `floor_2_monolithic_lintels.formwork_plywood_qty` | `0.0` |
+| `floor_2_monolithic_lintels.formwork_timber_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.insulation_eps_spec_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.insulation_eps_required_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.insulation_eps_raw_packs` | `0.0` |
+| `floor_2_monolithic_lintels.insulation_eps_packs` | `0` |
+| `floor_2_monolithic_lintels.insulation_eps_order_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.glue_foam_raw_units` | `0.0` |
+| `floor_2_monolithic_lintels.glue_foam_units` | `0` |
 | `main_wall_reinforcement.main_wall_rebar_calc_method` | `legacy_wall_geometry` |
 | `main_wall_reinforcement.main_wall_rebar_source` | `legacy_wall_geometry` |
 | `main_wall_reinforcement.main_wall_chasing_raw_length_m` | `1069.9865` |
@@ -341,7 +398,6 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `main_gas_block_d500_600x250x250_material` | Газобетонный блок D500 600x250x250 мм | `32.4` | `` | `м3` | `5500` | `178200.0` | `178200` | `0.0` | `0.0` | `0` | `178200.0` | `178200` | `False` |
 | `main_gas_block_adhesive` | Монтажный клей для блоков 25 кг | `138.0` | `` | `мешок` | `340` | `46920.0` | `46920` | `0.0` | `0.0` | `0` | `46920.0` | `46920` | `False` |
 | `sand_concrete_m300_first_row` | Пескобетон М300 40 кг | `39.0` | `` | `шт` | `375` | `14625.0` | `14625` | `0.0` | `0.0` | `0` | `14625.0` | `14625` | `False` |
-| `u_block_lintel_cutting` | Резка блока под перемычку (U-блок) | `39.0` | `` | `шт` | `0.0` | `0.0` | `0` | `400` | `15600.0` | `15600` | `15600.0` | `15600` | `False` |
 | `main_wall_chasing_for_d10_reinforcement` | Штробление блоков под армирование Ø10 | `1070.0` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 | `main_wall_rebar_a500_d10` | Арматура A500 Ø10 для несущих стен | `1134.9` | `` | `мп` | `32.72` | `37133.928` | `37134` | `0.0` | `0.0` | `0` | `37133.928` | `37134` | `False` |
 | `gas_blocks_and_mix_delivery` | Доставка блоков, смеси | `4.0` | `` | `маш` | `28000` | `112000.0` | `112000` | `0.0` | `0.0` | `0` | `112000.0` | `112000` | `False` |
@@ -350,6 +406,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `lintel_rebar_frame_assembly` | Изготовление и монтаж каркаса армирования перемычек | `230.7` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 | `lintel_rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | `128.7` | `` | `мп` | `45.29` | `5828.823` | `5829` | `0.0` | `0.0` | `0` | `5828.823` | `5829` | `False` |
 | `lintel_rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `102.0` | `` | `мп` | `13.32` | `1358.64` | `1359` | `0.0` | `0.0` | `0` | `1358.64` | `1359` | `False` |
+| `u_block_lintel_cutting` | Резка блока под перемычку (U-блок) | `39.0` | `` | `шт` | `0.0` | `0.0` | `0` | `400` | `15600.0` | `15600` | `15600.0` | `15600` | `False` |
 | `lintel_concreting_work` | Бетонирование перемычек | `23.4` | `` | `мп` | `0.0` | `0.0` | `0` | `1000` | `23400.0` | `23400` | `23400.0` | `23400` | `False` |
 | `lintel_concrete_b22_5_m300_material` | Бетон В22,5 М300 для перемычек | `1.0` | `` | `м3` | `6400` | `6400.0` | `6400` | `0.0` | `0.0` | `0` | `6400.0` | `6400` | `False` |
 | `lintel_concrete_delivery` | Доставка бетона до объекта | `1.0` | `` | `рейс` | `7500` | `7500.0` | `7500` | `0.0` | `0.0` | `0` | `7500.0` | `7500` | `False` |
