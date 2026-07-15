@@ -111,6 +111,7 @@
 - `parapet_calc_method`: `flat_roof_spec_volume`
 - `flat_roof_enabled`: `True`
 - `parapet_masonry_volume_m3`: `22.74`
+- `parapet_gas_block_d500_250_spec_volume_m3`: `None`
 - `vent_chimney_cladding_calc_method`: `flat_roof_spec_volume`
 - `vent_chimney_gas_block_spec_volume_m3`: `1.72`
 - `vent_chimney_geometry_calc_method`: `spec_volume_thickness`
@@ -340,6 +341,13 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `parapet.parapet_d400.raw_pallets` | `11.1056` |
 | `parapet.parapet_d400.pallets` | `12` |
 | `parapet.parapet_d400.order_volume_m3` | `25.8` |
+| `parapet.parapet_gas_block_d500_250_spec_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.spec_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.required_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.raw_pallets` | `0.0` |
+| `parapet.parapet_d500_250.pallets` | `0` |
+| `parapet.parapet_d500_250.order_volume_m3` | `0.0` |
+| `parapet.parapet_total_masonry_volume_m3` | `22.74` |
 | `parapet.parapet_upper_level_total_volume_m3` | `22.74` |
 | `parapet.parapet_and_upper_level_d400.spec_volume_m3` | `22.74` |
 | `parapet.parapet_and_upper_level_d400.required_volume_m3` | `23.877` |
@@ -403,7 +411,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `lintel_concrete_delivery` | Доставка бетона до объекта | `1.0` | `` | `рейс` | `7500` | `7500.0` | `7500` | `0.0` | `0.0` | `0` | `7500.0` | `7500` | `False` |
 | `manual_concrete_lifting` | Перенос, подъём бетона вручную | `1.0` | `` | `м3` | `0.0` | `0.0` | `0` | `5000` | `5000.0` | `5000` | `5000.0` | `5000` | `False` |
 | `parapet_masonry_work` | Кладка парапета | `22.74` | `` | `м3` | `0.0` | `0.0` | `0` | `7000` | `159180.0` | `159180` | `159180.0` | `159180` | `False` |
-| `parapet_gas_block_d400_material` | Газобетонный блок D400 для парапета | `25.8` | `` | `м3` | `6000` | `154800.0` | `154800` | `0.0` | `0.0` | `0` | `154800.0` | `154800` | `False` |
+| `parapet_gas_block_d400_material` | Газобетонный блок D400 600x400x250 мм для парапета | `25.8` | `` | `м3` | `6000` | `154800.0` | `154800` | `0.0` | `0.0` | `0` | `154800.0` | `154800` | `False` |
 | `vent_chimney_gas_block_cladding_work` | Обкладка дымохода и вентканалов 150 мм | `11.4667` | `11.47` | `м2` | `0.0` | `0.0` | `0` | `1200` | `13760.0` | `13760` | `13760.0` | `13760` | `False` |
 | `vent_chimney_gas_block_d500_600x150x250_material` | Газобетонный блок D500 600x150x250 мм | `3.6` | `` | `м3` | `5600` | `20160.0` | `20160` | `0.0` | `0.0` | `0` | `20160.0` | `20160` | `False` |
 | `walls_consumables_tool_amortization` | Расходные материалы, амортизация инструмента | `1.0` | `` | `комплект` | `100522` | `100521.7` | `100522` | `0.0` | `0.0` | `0` | `100521.7` | `100522` | `False` |

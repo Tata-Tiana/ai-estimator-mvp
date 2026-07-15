@@ -111,6 +111,7 @@
 - `parapet_calc_method`: `flat_roof_spec_volume`
 - `flat_roof_enabled`: `False`
 - `parapet_masonry_volume_m3`: `22.74`
+- `parapet_gas_block_d500_250_spec_volume_m3`: `None`
 - `vent_chimney_cladding_calc_method`: `flat_roof_spec_volume`
 - `vent_chimney_gas_block_spec_volume_m3`: `1.72`
 - `vent_chimney_geometry_calc_method`: `legacy_segments_rows`
@@ -343,6 +344,13 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `parapet.parapet_d400.raw_pallets` | `0.0` |
 | `parapet.parapet_d400.pallets` | `0` |
 | `parapet.parapet_d400.order_volume_m3` | `0.0` |
+| `parapet.parapet_gas_block_d500_250_spec_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.spec_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.required_volume_m3` | `0.0` |
+| `parapet.parapet_d500_250.raw_pallets` | `0.0` |
+| `parapet.parapet_d500_250.pallets` | `0` |
+| `parapet.parapet_d500_250.order_volume_m3` | `0.0` |
+| `parapet.parapet_total_masonry_volume_m3` | `0.0` |
 | `parapet.parapet_upper_level_total_volume_m3` | `0.0` |
 | `parapet.parapet_and_upper_level_d400.spec_volume_m3` | `0.0` |
 | `parapet.parapet_and_upper_level_d400.required_volume_m3` | `0.0` |

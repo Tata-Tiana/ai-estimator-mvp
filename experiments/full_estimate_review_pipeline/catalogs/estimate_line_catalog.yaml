@@ -2117,11 +2117,13 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_flat_roof_enabled
         quantity:
-          formula: "parapet_masonry_volume_m3 when flat_roof_enabled"
+          formula: "(parapet_masonry_volume_m3 + parapet_gas_block_d500_250_spec_volume_m3) when flat_roof_enabled"
           leaf_inputs:
             - ref: "supplier_inputs.flat_roof_enabled"
               source_class: MANUAL_REVIEW
             - ref: "review_parameters.parapet_masonry_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.parapet_gas_block_d500_250_spec_volume_m3"
               source_class: AUTO_PROJECT
         prices:
           material_unit_price_key: null
@@ -2129,7 +2131,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "gas_block_masonry_work_m3"
         zero_policy: disabled_if_zero
-        notes: "Parapet is separate from floor_2/current upper masonry."
+        notes: "Parapet is separate from floor_2/current upper masonry. Formula changed 2026-07-15: combines D400+D500 volume (one masonry-laying operation regardless of block density, Elena). Gate triggers on either density being present."
 
       parapet_gas_block_d400_material:
         code: "parapet_gas_block_d400_material"
@@ -2153,7 +2155,31 @@ sections:
           fixed_amount_key: null
           price_registry_code: "gas_block_d400_m3"
         zero_policy: disabled_if_zero
-        notes: "Purchased D400 volume for parapet."
+        notes: "Purchased D400 volume for parapet. Gate unchanged 2026-07-15 (still parapet_masonry_volume_m3 > 0 only) — must stay absent when parapet is entirely D500."
+
+      parapet_gas_block_d500_250_material:
+        code: "parapet_gas_block_d500_250_material"
+        row_id: "load_bearing_walls_lintels.parapet_gas_block_d500_250_material"
+        name_ru: "Газобетонный блок D500 600x250x250мм для парапета"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_flat_roof_enabled
+        quantity:
+          formula: "ceil_to_pallet(parapet_gas_block_d500_250_spec_volume_m3 * gas_block_waste_coeff, gas_block_d500_250_pallet_volume_m3)"
+          leaf_inputs:
+            - ref: "review_parameters.parapet_gas_block_d500_250_spec_volume_m3"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.gas_block_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.gas_block_d500_250_pallet_volume_m3"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "gas_block_d500_250_unit_price"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "gas_block_d500_m3"
+        zero_policy: disabled_if_zero
+        notes: "Added 2026-07-15. Elena: parapet is usually D400 (80-90%) but can rarely be entirely or partially D500 600x250x250 — same SKU as main walls' second material (main_wall_gas_block_250_spec_volume_m3), no new price key."
 
       vent_chimney_gas_block_cladding_work:
         code: "vent_chimney_gas_block_cladding_work"

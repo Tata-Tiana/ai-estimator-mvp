@@ -196,6 +196,7 @@
     "flat_roof_enabled": false,
     "parapet_enabled": true,
     "parapet_masonry_volume_m3": 22.74,
+    "parapet_gas_block_d500_250_spec_volume_m3": null,
     "vent_chimney_cladding_calc_method": "legacy_manual_toggle",
     "vent_chimney_cladding_enabled": true,
     "vent_chimney_gas_block_spec_volume_m3": 1.72,
@@ -399,6 +400,15 @@
         "pallets": 12,
         "order_volume_m3": 25.8
       },
+      "parapet_gas_block_d500_250_spec_volume_m3": 0.0,
+      "parapet_d500_250": {
+        "spec_volume_m3": 0.0,
+        "required_volume_m3": 0.0,
+        "raw_pallets": 0.0,
+        "pallets": 0,
+        "order_volume_m3": 0.0
+      },
+      "parapet_total_masonry_volume_m3": 22.74,
       "parapet_upper_level_total_volume_m3": 36.24,
       "parapet_and_upper_level_d400": {
         "spec_volume_m3": 36.24,

@@ -482,7 +482,7 @@ review_parameters:
     notes: ""
 
   - key: parapet_masonry_volume_m3
-    label_ru: "Кладка парапета, объем"
+    label_ru: "Кладка парапета, D400 600x400x250, объем"
     unit: "м3"
     source_class: AUTO_PROJECT
     required: false
@@ -493,16 +493,39 @@ review_parameters:
     value_kind: scalar
     parser_mapping:
       target_codes: ["parapet_masonry_volume"]
-      aliases_ru: ["кладка парапета", "парапеты газобетон", "объем парапетов"]
+      aliases_ru: ["кладка парапета", "парапеты газобетон", "объем парапетов", "газобетонный блок d400 парапет"]
       expected_unit: "м3"
-      notes: "Usually comes from flat roof context."
+      notes: "Usually comes from flat roof context. D400 block, always size 600x400x250 — Elena, 2026-07-15: D400 only exists in this one size, no other. Most common (80-90%) parapet material; may be 0 if the parapet is entirely D500 instead — see parapet_gas_block_d500_250_spec_volume_m3."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required_if_applicable"
-      action_ru: "Если есть плоская кровля с парапетом, проверьте объем кладки парапета."
+      action_ru: "Если есть плоская кровля с парапетом, проверьте объем кладки парапета D400 600x400x250. Если парапет частично или полностью D500, см. также объем D500 600x250x250."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Made explicitly D400-only in label 2026-07-15 after finding parapet can also (rarely) be D500 — see parapet_gas_block_d500_250_spec_volume_m3."
+
+  - key: parapet_gas_block_d500_250_spec_volume_m3
+    label_ru: "Кладка парапета, D500 600x250x250, объем"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "parapet_gas_block_d500_250_volume"
+    calculator_input_path: "parapet_gas_block_d500_250_spec_volume_m3"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.parapet_gas_block_d500_250_spec_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["parapet_gas_block_d500_250_volume"]
+      aliases_ru: ["газобетонный блок d500 парапет", "парапет d500 600x250x250", "кладка парапета d500"]
+      expected_unit: "м3"
+      notes: "Added 2026-07-15. Elena: parapet is rarely (depends on building architecture) entirely or partially D500 600x250x250 instead of D400 600x400x250 — same block/SKU already used as the second material for main walls (main_wall_gas_block_250_spec_volume_m3). Do not confuse with vent_chimney_gas_block_spec_volume_m3 (D500 600x150x250, a completely different item — vent-channel cladding, not parapet — that is sometimes grouped under the same 'Парапет' heading in a smeta only because vent channels sit on the roof near the parapet)."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если у парапета есть блок D500 600x250x250 (редкий случай), проверьте объем. Не путать с обкладкой вентканалов (тоже D500, но 600x150x250, отдельная позиция)."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-15. Independent of parapet_masonry_volume_m3 — no formula relates them; both are direct spec values that can be 0, nonzero, or both nonzero (mixed parapet) independently."
 
   - key: vent_chimney_gas_block_spec_volume_m3
     label_ru: "Газобетон 150 мм для обкладки вентканалов, объем"
@@ -1354,13 +1377,14 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=parapet_masonry_work]"
     quantity:
-      formula: "parapet_masonry_volume_m3 when flat_roof_enabled and parapet_masonry_volume_m3 > 0"
+      formula: "(parapet_masonry_volume_m3 + parapet_gas_block_d500_250_spec_volume_m3) when flat_roof_enabled and (parapet_masonry_volume_m3 > 0 or parapet_gas_block_d500_250_spec_volume_m3 > 0)"
       leaf_inputs:
         - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
         - {ref: "review_parameters.parapet_masonry_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.parapet_gas_block_d500_250_spec_volume_m3", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: parapet_masonry_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Parapet is separate from floor_2/current upper masonry."
+    notes: "Parapet is separate from floor_2/current upper masonry. Formula changed 2026-07-15: combines D400+D500 volume — masonry laying is one work operation regardless of block density (Elena). Gate also changed to trigger on either density being present, so a parapet that's entirely D500 (D400 portion = 0) still gets its masonry work line."
 
   - code: parapet_gas_block_d400_material
     name_ru: "Газобетонный блок D400 600x400x250мм для парапета"
@@ -1376,6 +1400,23 @@ estimate_lines:
         - {ref: "defaults.gas_block_d400_pallet_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: gas_block_d400_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Gate unchanged (still only on parapet_masonry_volume_m3 > 0 specifically) — this line is D400-only and must not appear when the parapet is entirely D500."
+
+  - code: parapet_gas_block_d500_250_material
+    name_ru: "Газобетонный блок D500 600x250x250мм для парапета"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_gas_block_d500_250_material]"
+    quantity:
+      formula: "ceil_to_pallet(parapet_gas_block_d500_250_spec_volume_m3 * gas_block_waste_coeff, gas_block_d500_250_pallet_volume_m3) when flat_roof_enabled and parapet_gas_block_d500_250_spec_volume_m3 > 0"
+      leaf_inputs:
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "review_parameters.parapet_gas_block_d500_250_spec_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.gas_block_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.gas_block_d500_250_pallet_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: gas_block_d500_250_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-15. Elena: parapet is usually D400 (80-90%) but can rarely be entirely or partially D500 600x250x250, same SKU as main walls' second material — no new price key needed, reuses gas_block_d500_250_unit_price/gas_block_d500_250_pallet_volume_m3."
     notes: "Purchased D400 volume for parapet."
 
   - code: vent_chimney_gas_block_cladding_work
@@ -1467,9 +1508,9 @@ checks:
     - legacy_wall_geometry
     - legacy_weight_items
     - legacy_manual_toggle
-  expected_estimate_line_count: 48
+  expected_estimate_line_count: 49
   contamination_check:
     old_project_markers_allowed: false
     fixture_values_allowed: false
     old_expected_result_values_allowed: false
-  notes: "estimate_lines fully built out 2026-07-10 from catalogs/estimate_line_catalog.yaml, verified directly against load_bearing_walls_lintels_calculator.py line by line (23 always-present lines + up to 7 conditional lines when both floors_count=2 and flat_roof_enabled with parapet/vent volumes > 0 = 30 max simultaneous; the catalog header's calculator_estimate_line_count: 27 was stale/inaccurate, superseded by this direct count). Two real bugs found and fixed during verification, both pure contract-YAML corrections (no calculator code touched): (1) lintel_concrete_b22_5_m300_material incorrectly applied concrete_waste_coeff, which production spec_volume mode never does; (2) vent_chimney_gas_block_cladding_work's gate was missing the vent_chimney_gas_block_spec_volume_m3 > 0 condition alongside flat_roof_enabled. Also found and fixed a structural gap: this contract had no auto_calculated or checks sections at all before this pass, and was missing 9 required LoadBearingWallsLintelsInput dataclass fields with no calculator-side default (added as new defaults/price_keys entries, documented individually with 2026-07-10 dates) — without them the adapter would fail to construct the calculator input at all, in production mode or otherwise. Updated 2026-07-15: floor 1's U-block lintel lines (5) moved from always-present to conditional (a floor may have no U-block lintels at all — see review_parameters.lintel_total_length_m), and 17 new conditional lines added for floor 2's own U-block lintels + concrete purchase (5) and monolithic lintels on either floor (6 each). Max simultaneous count verified empirically at 48 (was 30) by running the calculator directly with every optional block enabled at once, not just derived by arithmetic."
+  notes: "estimate_lines fully built out 2026-07-10 from catalogs/estimate_line_catalog.yaml, verified directly against load_bearing_walls_lintels_calculator.py line by line (23 always-present lines + up to 7 conditional lines when both floors_count=2 and flat_roof_enabled with parapet/vent volumes > 0 = 30 max simultaneous; the catalog header's calculator_estimate_line_count: 27 was stale/inaccurate, superseded by this direct count). Two real bugs found and fixed during verification, both pure contract-YAML corrections (no calculator code touched): (1) lintel_concrete_b22_5_m300_material incorrectly applied concrete_waste_coeff, which production spec_volume mode never does; (2) vent_chimney_gas_block_cladding_work's gate was missing the vent_chimney_gas_block_spec_volume_m3 > 0 condition alongside flat_roof_enabled. Also found and fixed a structural gap: this contract had no auto_calculated or checks sections at all before this pass, and was missing 9 required LoadBearingWallsLintelsInput dataclass fields with no calculator-side default (added as new defaults/price_keys entries, documented individually with 2026-07-10 dates) — without them the adapter would fail to construct the calculator input at all, in production mode or otherwise. Updated 2026-07-15: floor 1's U-block lintel lines (5) moved from always-present to conditional (a floor may have no U-block lintels at all — see review_parameters.lintel_total_length_m), and 17 new conditional lines added for floor 2's own U-block lintels + concrete purchase (5) and monolithic lintels on either floor (6 each). Max simultaneous count verified empirically at 48 (was 30) by running the calculator directly with every optional block enabled at once, not just derived by arithmetic. Updated again 2026-07-15: added parapet_gas_block_d500_250_material (parapet can rarely be D500 600x250x250 instead of/alongside D400 — Elena), max simultaneous count now 49, also re-verified empirically."

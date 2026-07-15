@@ -196,6 +196,7 @@
     "flat_roof_enabled": true,
     "parapet_enabled": null,
     "parapet_masonry_volume_m3": 22.74,
+    "parapet_gas_block_d500_250_spec_volume_m3": null,
     "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
     "vent_chimney_cladding_enabled": null,
     "vent_chimney_gas_block_spec_volume_m3": 1.72,
@@ -382,6 +383,15 @@
         "pallets": 12,
         "order_volume_m3": 25.8
       },
+      "parapet_gas_block_d500_250_spec_volume_m3": 0.0,
+      "parapet_d500_250": {
+        "spec_volume_m3": 0.0,
+        "required_volume_m3": 0.0,
+        "raw_pallets": 0.0,
+        "pallets": 0,
+        "order_volume_m3": 0.0
+      },
+      "parapet_total_masonry_volume_m3": 22.74,
       "parapet_upper_level_total_volume_m3": 22.74,
       "parapet_and_upper_level_d400": {
         "spec_volume_m3": 22.74,
@@ -803,12 +813,12 @@
       "line_total_raw": 159180.0,
       "line_total": 159180,
       "is_case_specific": false,
-      "notes": "Production-блок парапета из спецификации кровли",
+      "notes": "Production-блок парапета из спецификации кровли; объём D400+D500 объединён, т.к. кладка — одна работа независимо от плотности блока",
       "price_code": "gas_block_masonry_work_m3"
     },
     {
       "code": "parapet_gas_block_d400_material",
-      "name": "Газобетонный блок D400 для парапета",
+      "name": "Газобетонный блок D400 600x400x250 мм для парапета",
       "unit": "м3",
       "quantity": 25.8,
       "material_unit_price": 6000,

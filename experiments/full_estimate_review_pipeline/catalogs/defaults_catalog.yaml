@@ -808,11 +808,13 @@ sections:
         unit: "m3/pallet"
         source_class: CATALOG_DEFAULT
         calculator_input_path: "gas_block_d500_250_pallet_volume_m3"
-        used_by_estimate_lines: ["load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"]
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d500_250_material"
         source_note: "Load-bearing walls section contract and calculator tests."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "Catalog pallet volume for D500 250 mm blocks."
+        notes: "Catalog pallet volume for D500 250 mm blocks. used_by_estimate_lines extended 2026-07-15: parapet can rarely reuse this same D500 SKU (Elena)."
 
       gas_block_d500_150_pallet_volume_m3:
         value: 1.8

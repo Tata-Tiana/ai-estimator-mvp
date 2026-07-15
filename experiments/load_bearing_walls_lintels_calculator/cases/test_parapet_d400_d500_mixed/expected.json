@@ -1,0 +1,41 @@
+{
+  "calculation_blocks": {
+    "parapet": {
+      "parapet_enabled_calculated": true,
+      "parapet_masonry_volume_m3": 15.0,
+      "parapet_gas_block_d500_250_spec_volume_m3": 6.74,
+      "parapet_total_masonry_volume_m3": 21.74
+    }
+  },
+  "estimate_lines": {
+    "parapet_masonry_work": {
+      "quantity": 21.74,
+      "material_total": 0,
+      "work_total": 152180,
+      "line_total": 152180
+    },
+    "parapet_gas_block_d400_material": {
+      "quantity": 17.2,
+      "material_total": 103200,
+      "work_total": 0,
+      "line_total": 103200
+    },
+    "parapet_gas_block_d500_250_material": {
+      "quantity": 7.2,
+      "material_total": 39600,
+      "work_total": 0,
+      "line_total": 39600
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 1381413.826,
+    "internal_materials_total": 1381414,
+    "internal_works_total_raw": 999596.43,
+    "internal_works_total": 999596,
+    "internal_section_total_raw": 2381010.256,
+    "internal_section_total": 2381010,
+    "sum_of_displayed_line_material_totals": 1381414,
+    "sum_of_displayed_line_work_totals": 999597,
+    "sum_of_displayed_line_totals": 2381011
+  }
+}

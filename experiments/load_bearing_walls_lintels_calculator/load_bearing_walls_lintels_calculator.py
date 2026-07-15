@@ -188,6 +188,7 @@ class LoadBearingWallsLintelsInput:
     flat_roof_enabled: bool = False
     parapet_enabled: bool | None = None
     parapet_masonry_volume_m3: float | None = None
+    parapet_gas_block_d500_250_spec_volume_m3: float | None = None
     vent_chimney_cladding_calc_method: str = "legacy_manual_toggle"
     vent_chimney_cladding_enabled: bool | None = None
     vent_chimney_gas_block_spec_volume_m3: float | None = None
@@ -254,10 +255,15 @@ class LoadBearingWallsLintelsInput:
             if self.parapet_masonry_volume_m3 is None:
                 raise ValueError("parapet_masonry_volume_m3 is required for legacy_manual_toggle")
         if self.parapet_calc_method == "flat_roof_spec_volume":
-            if self.flat_roof_enabled and self.parapet_masonry_volume_m3 is None:
-                raise ValueError("parapet_masonry_volume_m3 is required for flat_roof_spec_volume when flat_roof_enabled is true")
+            # Not required even when flat_roof_enabled: Elena, 2026-07-15 — a flat-roof
+            # parapet can rarely be entirely D500 (600x250x250) instead of D400, so the
+            # D400 volume alone must not be mandatory. See parapet_gas_block_d500_250_spec_volume_m3.
             if self.parapet_masonry_volume_m3 is not None:
                 require_non_negative("parapet_masonry_volume_m3", self.parapet_masonry_volume_m3)
+            if self.parapet_gas_block_d500_250_spec_volume_m3 is not None:
+                require_non_negative(
+                    "parapet_gas_block_d500_250_spec_volume_m3", self.parapet_gas_block_d500_250_spec_volume_m3
+                )
         if self.vent_chimney_cladding_calc_method not in {"legacy_manual_toggle", "flat_roof_spec_volume"}:
             raise ValueError("vent_chimney_cladding_calc_method must be legacy_manual_toggle or flat_roof_spec_volume")
         if self.vent_chimney_cladding_calc_method == "legacy_manual_toggle":
@@ -940,8 +946,15 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     if data.parapet_calc_method == "legacy_manual_toggle":
         parapet_enabled = bool(data.parapet_enabled)
     else:
-        parapet_enabled = bool(data.flat_roof_enabled and d(data.parapet_masonry_volume_m3 or 0) > 0)
+        parapet_enabled = bool(
+            data.flat_roof_enabled
+            and (
+                d(data.parapet_masonry_volume_m3 or 0) > 0
+                or d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) > 0
+            )
+        )
     parapet_volume = d(data.parapet_masonry_volume_m3 or 0) if parapet_enabled else Decimal("0")
+    parapet_d500_volume = d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) if parapet_enabled else Decimal("0")
 
     if data.vent_chimney_cladding_calc_method == "legacy_manual_toggle":
         vent_enabled = bool(data.vent_chimney_cladding_enabled)
@@ -953,6 +966,10 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     floor_2_adhesive_raw = floor_2_volume * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
     floor_2_adhesive_bags = int(ceil(floor_2_adhesive_raw))
     parapet_d400 = gas_block_order(q(parapet_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
+    parapet_d500_250 = gas_block_order(
+        q(parapet_d500_volume), data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3
+    )
+    parapet_total_masonry_volume = parapet_volume + parapet_d500_volume
     parapet_upper_total_volume = parapet_volume + second_light_volume
     parapet_upper_d400 = gas_block_order(q(parapet_upper_total_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
     second_light_d400 = gas_block_order(q(second_light_input_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
@@ -987,12 +1004,12 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     if data.upper_floor_calc_method == "legacy_second_light_addon":
         delivery_total = d(main_d400["order_volume_m3"]) + d(main_d500_250["order_volume_m3"]) + d(second_light_d400["order_volume_m3"]) + parapet_delivery_order_volume + d(vent_d500["order_volume_m3"])
     else:
-        delivery_total = d(main_d400["order_volume_m3"]) + d(main_d500_250["order_volume_m3"]) + d(floor_2_d400["order_volume_m3"]) + d(parapet_d400["order_volume_m3"]) + d(vent_d500["order_volume_m3"])
+        delivery_total = d(main_d400["order_volume_m3"]) + d(main_d500_250["order_volume_m3"]) + d(floor_2_d400["order_volume_m3"]) + d(parapet_d400["order_volume_m3"]) + d(parapet_d500_250["order_volume_m3"]) + d(vent_d500["order_volume_m3"])
     delivery_trucks = int(ceil(delivery_total / d(data.gas_block_delivery_truck_capacity_m3)))
     main_walls_crane = calculate_main_walls_crane(data, delivery_trucks)
     second_light_adhesive_raw = second_light_volume * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
     second_light_adhesive_bags = int(ceil(second_light_adhesive_raw))
-    parapet_vent_adhesive_raw = (parapet_volume + vent_spec_volume) * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
+    parapet_vent_adhesive_raw = (parapet_total_masonry_volume + vent_spec_volume) * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
     parapet_vent_adhesive_bags = int(ceil(parapet_vent_adhesive_raw))
     second_light_rebar = rebar_from_base_length(data.second_light_rebar_base_length_m, data.rebar_a500_d10_rod_length_m, data.rebar_waste_coeff, data.rebar_a500_d10_unit_price_per_m)
     parapet_rebar = rebar_from_base_length(data.parapet_rebar_base_length_m, data.rebar_a500_d10_rod_length_m, data.rebar_waste_coeff, data.rebar_a500_d10_unit_price_per_m)
@@ -1055,6 +1072,9 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
             "parapet_enabled_calculated": parapet_enabled,
             "parapet_masonry_volume_m3": q(parapet_volume),
             "parapet_d400": parapet_d400,
+            "parapet_gas_block_d500_250_spec_volume_m3": q(parapet_d500_volume),
+            "parapet_d500_250": parapet_d500_250,
+            "parapet_total_masonry_volume_m3": q(parapet_total_masonry_volume),
             "parapet_upper_level_total_volume_m3": q(parapet_upper_total_volume),
             "parapet_and_upper_level_d400": parapet_upper_d400,
             "parapet_d400_delivery_control": {
@@ -1199,10 +1219,17 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
                 line("floor_2_masonry_glue", "Монтажный клей для блоков 2-го этажа", "мешок", floor_2["floor_2_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
             ])
         if parapet["parapet_enabled_calculated"]:
-            lines.extend([
-                line("parapet_masonry_work", "Кладка парапета", "м3", parapet["parapet_masonry_volume_m3"], work_unit_price=data.parapet_masonry_work_unit_price, notes="Production-блок парапета из спецификации кровли", price_code="gas_block_masonry_work_m3"),
-                line("parapet_gas_block_d400_material", "Газобетонный блок D400 для парапета", "м3", parapet["parapet_d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, price_code="gas_block_d400_m3"),
-            ])
+            lines.append(
+                line("parapet_masonry_work", "Кладка парапета", "м3", parapet["parapet_total_masonry_volume_m3"], work_unit_price=data.parapet_masonry_work_unit_price, notes="Production-блок парапета из спецификации кровли; объём D400+D500 объединён, т.к. кладка — одна работа независимо от плотности блока", price_code="gas_block_masonry_work_m3")
+            )
+            if parapet["parapet_masonry_volume_m3"] > 0:
+                lines.append(
+                    line("parapet_gas_block_d400_material", "Газобетонный блок D400 600x400x250 мм для парапета", "м3", parapet["parapet_d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, price_code="gas_block_d400_m3")
+                )
+            if parapet["parapet_gas_block_d500_250_spec_volume_m3"] > 0:
+                lines.append(
+                    line("parapet_gas_block_d500_250_material", "Газобетонный блок D500 600x250x250 мм для парапета", "м3", parapet["parapet_d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, notes="Добавлено 2026-07-15. Елена: парапет обычно D400 (80-90%), но может быть частично или полностью D500 600x250x250, тот же блок, что и второй материал основных стен.", price_code="gas_block_d500_m3")
+                )
 
     if vent["vent_chimney_cladding_enabled_calculated"]:
         lines.extend([

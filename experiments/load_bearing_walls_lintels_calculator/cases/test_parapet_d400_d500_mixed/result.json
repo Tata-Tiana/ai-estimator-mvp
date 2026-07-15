@@ -1,9 +1,9 @@
 {
-  "case_name": "test_floor_1_without_floor_2",
-  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_floor_1_without_floor_2/input.json",
-  "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_floor_1_without_floor_2/expected.json",
+  "case_name": "test_parapet_d400_d500_mixed",
+  "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/load_bearing_walls_lintels_calculator/cases/test_parapet_d400_d500_mixed/input.json",
+  "expected_path": null,
   "inputs": {
-    "project_name": "test_floor_1_without_floor_2",
+    "project_name": "test_parapet_d400_d500_mixed",
     "scaffolding_setup_work_unit_price": 20000,
     "scaffolding_timber_unit_price": 21500,
     "cutoff_waterproofing_material_unit_price": 250,
@@ -49,16 +49,6 @@
         "kg_per_meter": 0.888,
         "rod_length_m": 11.7,
         "unit_price_per_m": 45.29
-      },
-      {
-        "code": "lintel_rebar_a240_d6",
-        "name": "Арматура класса А240 диаметром 6 мм",
-        "steel_class": "A240",
-        "diameter_mm": 6,
-        "weight_kg": 20.4,
-        "kg_per_meter": 0.222,
-        "rod_length_m": 6,
-        "unit_price_per_m": 13.32
       }
     ],
     "lintel_concreting_work_unit_price": 1000,
@@ -83,9 +73,9 @@
     "gas_block_d500_150_unit_price": 5600,
     "parapet_crane_shifts": 1,
     "parapet_chasing_base_length_m": 231.6,
-    "second_light_chasing_base_length_m": 153.16,
+    "second_light_chasing_base_length_m": 0,
     "parapet_rebar_base_length_m": 232,
-    "second_light_rebar_base_length_m": 153,
+    "second_light_rebar_base_length_m": 0,
     "walls_consumables_tool_amortization_amount_raw": 100521.7,
     "waste_removal_trucks": 3,
     "waste_removal_truck_unit_price": 10000,
@@ -106,38 +96,11 @@
     "cutoff_waterproofing_load_bearing_walls_area_m2": null,
     "cutoff_waterproofing_wall_400_lengths_m": [
       17.8,
-      5.1,
-      6.6,
-      8.5,
-      3,
-      4.2,
-      11.3,
-      4.05,
-      0.9,
-      0.4,
-      4.4,
-      4.2,
-      1.2,
-      0.4,
-      1.75,
-      3.9
+      5.1
     ],
     "cutoff_waterproofing_wall_250_lengths_m": [
       2.7,
-      2.25,
-      1.9,
-      0.15,
-      1.7,
-      1.2,
-      8.4,
-      2.35,
-      2,
-      3.24,
-      2.75,
-      4.6,
-      1.95,
-      1.2,
-      1.65
+      2.25
     ],
     "wall_400_thickness_m": 0.4,
     "wall_250_thickness_m": 0.25,
@@ -151,22 +114,6 @@
       {
         "length_m": 2.3,
         "count": 2
-      },
-      {
-        "length_m": 1.2,
-        "count": 3
-      },
-      {
-        "length_m": 2.3,
-        "count": 1
-      },
-      {
-        "length_m": 3.2,
-        "count": 1
-      },
-      {
-        "length_m": 1.3,
-        "count": 1
       }
     ],
     "floor_2_lintel_ublock_total_length_m": null,
@@ -189,34 +136,22 @@
     "main_walls_crane_shifts": 2,
     "upper_floor_calc_method": "floor_2_spec_volume",
     "floor_2_masonry_volume_m3": 0,
-    "second_light_masonry_enabled": true,
-    "second_light_masonry_case_specific": true,
-    "second_light_masonry_volume_m3": 13.5,
+    "second_light_masonry_enabled": null,
+    "second_light_masonry_case_specific": null,
+    "second_light_masonry_volume_m3": null,
     "parapet_calc_method": "flat_roof_spec_volume",
-    "flat_roof_enabled": false,
-    "parapet_enabled": true,
-    "parapet_masonry_volume_m3": 22.74,
-    "parapet_gas_block_d500_250_spec_volume_m3": null,
+    "flat_roof_enabled": true,
+    "parapet_enabled": null,
+    "parapet_masonry_volume_m3": 15.0,
+    "parapet_gas_block_d500_250_spec_volume_m3": 6.74,
     "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
-    "vent_chimney_cladding_enabled": true,
+    "vent_chimney_cladding_enabled": null,
     "vent_chimney_gas_block_spec_volume_m3": 1.72,
     "vent_chimney_geometry_calc_method": "legacy_segments_rows",
     "vent_chimney_block_thickness_m": 0.15,
     "vent_chimney_segment_lengths_m": [
       {
         "length_m": 0.88,
-        "count": 2
-      },
-      {
-        "length_m": 0.55,
-        "count": 6
-      },
-      {
-        "length_m": 0.72,
-        "count": 2
-      },
-      {
-        "length_m": 0.36,
         "count": 2
       }
     ],
@@ -237,9 +172,9 @@
       "cutoff_waterproofing_calc_method": "legacy_lengths_by_wall_thickness",
       "cutoff_waterproofing_source": "legacy_lengths_by_wall_thickness",
       "cutoff_waterproofing_load_bearing_walls_area_m2": null,
-      "wall_400_length_m": 77.7,
-      "wall_250_length_m": 38.04,
-      "cutoff_waterproofing_area_m2": 40.59
+      "wall_400_length_m": 22.9,
+      "wall_250_length_m": 4.95,
+      "cutoff_waterproofing_area_m2": 10.3975
     },
     "main_walls": {
       "main_masonry_volume_m3": 109.35
@@ -263,23 +198,23 @@
     "adhesive_and_sand_concrete": {
       "main_adhesive_raw_bags": 137.781,
       "main_adhesive_bags": 138,
-      "sand_concrete_raw_bags": 38.5605,
-      "sand_concrete_bags": 39
+      "sand_concrete_raw_bags": 9.8776,
+      "sand_concrete_bags": 10
     },
     "lintels": {
       "lintel_length_calc_method": "legacy_length_count_items",
       "lintel_length_source": "legacy_length_count_items",
-      "lintel_total_length_m": 23.4,
+      "lintel_total_length_m": 13.0,
       "gas_block_length_m": 0.6,
-      "u_block_quantity": 39.0,
-      "lintel_200mm_steps": 117.0,
+      "u_block_quantity": 21.6667,
+      "lintel_200mm_steps": 65.0,
       "lintel_concrete_calc_method": "legacy_length_section",
       "lintel_concrete_source": "legacy_length_section",
       "lintel_concrete_spec_volume_m3": null,
       "lintel_section_width_m": 0.125,
       "lintel_section_height_m": 0.125,
-      "lintel_raw_concrete_volume_m3": 0.3656,
-      "lintel_required_concrete_volume_m3": 0.3839,
+      "lintel_raw_concrete_volume_m3": 0.2031,
+      "lintel_required_concrete_volume_m3": 0.2133,
       "lintel_concrete_min_order_volume_m3": 1.0,
       "lintel_concrete_order_volume_m3": 1.0,
       "lintel_rebar_calc_method": "legacy_weight_items",
@@ -292,19 +227,11 @@
           "raw_rods": 10.4094,
           "rods": 11,
           "order_length_m": 128.7
-        },
-        "lintel_rebar_a240_d6": {
-          "weight_kg": 20.4,
-          "raw_length_m": 91.8919,
-          "length_with_waste_m": 96.4865,
-          "raw_rods": 16.0811,
-          "rods": 17,
-          "order_length_m": 102.0
         }
       },
-      "lintel_rebar_frame_assembly_quantity_m": 230.7,
-      "lintel_rebar_order_length_m": 230.7,
-      "lintel_rebar_delivery_weight_kg": 136.9296,
+      "lintel_rebar_frame_assembly_quantity_m": 128.7,
+      "lintel_rebar_order_length_m": 128.7,
+      "lintel_rebar_delivery_weight_kg": 114.2856,
       "lintel_concrete_combined_order_volume_m3": 1.0,
       "ublock_enabled": true,
       "concrete_enabled": true
@@ -380,45 +307,45 @@
       "floor_2_adhesive_bags": 0
     },
     "deliveries_and_cranes": {
-      "gas_block_delivery_total_volume_m3": 116.25,
-      "gas_block_delivery_raw_trucks": 3.6328,
+      "gas_block_delivery_total_volume_m3": 144.25,
+      "gas_block_delivery_raw_trucks": 4.5078,
       "main_walls_crane_calc_method": "legacy_manual_shifts",
       "main_walls_crane_source": "legacy_manual_shifts",
-      "gas_block_delivery_trucks": 4,
+      "gas_block_delivery_trucks": 5,
       "main_walls_crane_threshold_trucks": null,
       "main_walls_crane_shifts": 2.0
     },
     "parapet": {
       "parapet_calc_method": "flat_roof_spec_volume",
-      "flat_roof_enabled": false,
-      "parapet_enabled_calculated": false,
-      "parapet_masonry_volume_m3": 0.0,
+      "flat_roof_enabled": true,
+      "parapet_enabled_calculated": true,
+      "parapet_masonry_volume_m3": 15.0,
       "parapet_d400": {
-        "spec_volume_m3": 0.0,
-        "required_volume_m3": 0.0,
-        "raw_pallets": 0.0,
-        "pallets": 0,
-        "order_volume_m3": 0.0
+        "spec_volume_m3": 15.0,
+        "required_volume_m3": 15.75,
+        "raw_pallets": 7.3256,
+        "pallets": 8,
+        "order_volume_m3": 17.2
       },
-      "parapet_gas_block_d500_250_spec_volume_m3": 0.0,
+      "parapet_gas_block_d500_250_spec_volume_m3": 6.74,
       "parapet_d500_250": {
-        "spec_volume_m3": 0.0,
-        "required_volume_m3": 0.0,
-        "raw_pallets": 0.0,
-        "pallets": 0,
-        "order_volume_m3": 0.0
+        "spec_volume_m3": 6.74,
+        "required_volume_m3": 7.077,
+        "raw_pallets": 3.9317,
+        "pallets": 4,
+        "order_volume_m3": 7.2
       },
-      "parapet_total_masonry_volume_m3": 0.0,
-      "parapet_upper_level_total_volume_m3": 0.0,
+      "parapet_total_masonry_volume_m3": 21.74,
+      "parapet_upper_level_total_volume_m3": 15.0,
       "parapet_and_upper_level_d400": {
-        "spec_volume_m3": 0.0,
-        "required_volume_m3": 0.0,
-        "raw_pallets": 0.0,
-        "pallets": 0,
-        "order_volume_m3": 0.0
+        "spec_volume_m3": 15.0,
+        "required_volume_m3": 15.75,
+        "raw_pallets": 7.3256,
+        "pallets": 8,
+        "order_volume_m3": 17.2
       },
       "parapet_d400_delivery_control": {
-        "order_volume_m3": 0.0,
+        "order_volume_m3": 17.2,
         "notes": "Production parapet order volume calculated separately."
       },
       "parapet_chasing_base_length_m": 231.6,
@@ -429,47 +356,35 @@
     "vent_chimney_cladding": {
       "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
       "vent_chimney_geometry_calc_method": "legacy_segments_rows",
-      "flat_roof_enabled": false,
-      "vent_chimney_cladding_enabled_calculated": false,
-      "vent_chimney_gas_block_spec_volume_m3": 0.0,
+      "flat_roof_enabled": true,
+      "vent_chimney_cladding_enabled_calculated": true,
+      "vent_chimney_gas_block_spec_volume_m3": 1.72,
       "vent_chimney_block_thickness_m": 0.15,
-      "vent_chimney_cladding_area_m2": 0.0,
-      "vent_chimney_display_area_m2": 0.0,
+      "vent_chimney_cladding_area_m2": 11.4666666667,
+      "vent_chimney_display_area_m2": 11.47,
       "vent_chimney_d500_150": {
-        "spec_volume_m3": 0.0,
-        "required_volume_m3": 0.0,
-        "raw_pallets": 0.0,
-        "pallets": 0,
-        "order_volume_m3": 0.0
+        "spec_volume_m3": 1.72,
+        "required_volume_m3": 1.806,
+        "raw_pallets": 1.0033,
+        "pallets": 2,
+        "order_volume_m3": 3.6
       },
       "vent_chimney_segment_lengths_m": [
         {
           "length_m": 0.88,
           "count": 2
-        },
-        {
-          "length_m": 0.55,
-          "count": 6
-        },
-        {
-          "length_m": 0.72,
-          "count": 2
-        },
-        {
-          "length_m": 0.36,
-          "count": 2
         }
       ],
       "vent_chimney_rows": 5,
       "block_height_m": 0.25,
-      "vent_chimney_total_length_m": 7.22,
+      "vent_chimney_total_length_m": 1.76,
       "vent_chimney_height_m": 1.25,
-      "vent_chimney_geometry_volume_m3": 0.0
+      "vent_chimney_geometry_volume_m3": 0.33
     },
     "overheads": {
-      "parapet_vent_adhesive_raw_bags": 0.0,
-      "parapet_vent_adhesive_bags": 0,
-      "parapet_upper_level_adhesive_bags": 0,
+      "parapet_vent_adhesive_raw_bags": 29.5596,
+      "parapet_vent_adhesive_bags": 30,
+      "parapet_upper_level_adhesive_bags": 30,
       "floor_2_adhesive_raw_bags": 0.0,
       "floor_2_adhesive_bags": 0,
       "parapet_rebar": {
@@ -522,15 +437,15 @@
       "code": "cutoff_waterproofing_under_first_row_blocks",
       "name": "Гидроизоляция поверхности под первый ряд блоков",
       "unit": "м2",
-      "quantity": 40.59,
+      "quantity": 10.3975,
       "material_unit_price": 250,
-      "material_total_raw": 10147.5,
-      "material_total": 10148,
+      "material_total_raw": 2599.375,
+      "material_total": 2599,
       "work_unit_price": 100,
-      "work_total_raw": 4059.0,
-      "work_total": 4059,
-      "line_total_raw": 14206.5,
-      "line_total": 14207,
+      "work_total_raw": 1039.75,
+      "work_total": 1040,
+      "line_total_raw": 3639.125,
+      "line_total": 3639,
       "is_case_specific": false,
       "notes": "Не включает перегородки 150 мм",
       "price_code": "cutoff_waterproofing_under_blocks_m2"
@@ -607,15 +522,15 @@
       "code": "sand_concrete_m300_first_row",
       "name": "Пескобетон М300 40 кг",
       "unit": "шт",
-      "quantity": 39.0,
+      "quantity": 10.0,
       "material_unit_price": 375,
-      "material_total_raw": 14625.0,
-      "material_total": 14625,
+      "material_total_raw": 3750.0,
+      "material_total": 3750,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 14625.0,
-      "line_total": 14625,
+      "line_total_raw": 3750.0,
+      "line_total": 3750,
       "is_case_specific": false,
       "notes": "",
       "price_code": "sand_concrete_bag"
@@ -657,15 +572,15 @@
       "code": "gas_blocks_and_mix_delivery",
       "name": "Доставка блоков, смеси",
       "unit": "маш",
-      "quantity": 4.0,
+      "quantity": 5.0,
       "material_unit_price": 28000,
-      "material_total_raw": 112000.0,
-      "material_total": 112000,
+      "material_total_raw": 140000.0,
+      "material_total": 140000,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 112000.0,
-      "line_total": 112000,
+      "line_total_raw": 140000.0,
+      "line_total": 140000,
       "is_case_specific": false,
       "notes": "По закупочным объёмам после поддонов",
       "price_code": "block_delivery_truck"
@@ -674,15 +589,15 @@
       "code": "gas_blocks_unloading_manipulator",
       "name": "Разгрузка блоков, смеси манипулятором",
       "unit": "маш",
-      "quantity": 4.0,
+      "quantity": 5.0,
       "material_unit_price": 15000,
-      "material_total_raw": 60000.0,
-      "material_total": 60000,
+      "material_total_raw": 75000.0,
+      "material_total": 75000,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 60000.0,
-      "line_total": 60000,
+      "line_total_raw": 75000.0,
+      "line_total": 75000,
       "is_case_specific": false,
       "notes": "",
       "price_code": "block_unloading_manipulator_truck"
@@ -708,7 +623,7 @@
       "code": "lintel_rebar_frame_assembly",
       "name": "Изготовление и монтаж каркаса армирования перемычек",
       "unit": "мп",
-      "quantity": 230.7,
+      "quantity": 128.7,
       "material_unit_price": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
@@ -738,35 +653,18 @@
       "price_code": "rebar_a500_d12_m"
     },
     {
-      "code": "lintel_rebar_a240_d6",
-      "name": "Арматура класса А240 диаметром 6 мм",
-      "unit": "мп",
-      "quantity": 102.0,
-      "material_unit_price": 13.32,
-      "material_total_raw": 1358.64,
-      "material_total": 1359,
-      "work_unit_price": 0.0,
-      "work_total_raw": 0.0,
-      "work_total": 0,
-      "line_total_raw": 1358.64,
-      "line_total": 1359,
-      "is_case_specific": false,
-      "notes": "",
-      "price_code": "rebar_a240_d6_m"
-    },
-    {
       "code": "u_block_lintel_cutting",
       "name": "Резка блока под перемычку (U-блок)",
       "unit": "шт",
-      "quantity": 39.0,
+      "quantity": 21.6667,
       "material_unit_price": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_unit_price": 400,
-      "work_total_raw": 15600.0,
-      "work_total": 15600,
-      "line_total_raw": 15600.0,
-      "line_total": 15600,
+      "work_total_raw": 8666.68,
+      "work_total": 8667,
+      "line_total_raw": 8666.68,
+      "line_total": 8667,
       "is_case_specific": false,
       "notes": "",
       "price_code": "u_block_lintel_cutting_item"
@@ -775,15 +673,15 @@
       "code": "lintel_concreting_work",
       "name": "Бетонирование перемычек",
       "unit": "мп",
-      "quantity": 23.4,
+      "quantity": 13.0,
       "material_unit_price": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_unit_price": 1000,
-      "work_total_raw": 23400.0,
-      "work_total": 23400,
-      "line_total_raw": 23400.0,
-      "line_total": 23400,
+      "work_total_raw": 13000.0,
+      "work_total": 13000,
+      "line_total_raw": 13000.0,
+      "line_total": 13000,
       "is_case_specific": false,
       "notes": "",
       "price_code": "lintel_concreting_work_m"
@@ -840,6 +738,92 @@
       "price_code": "manual_concrete_lifting_m3"
     },
     {
+      "code": "parapet_masonry_work",
+      "name": "Кладка парапета",
+      "unit": "м3",
+      "quantity": 21.74,
+      "material_unit_price": 0.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 7000,
+      "work_total_raw": 152180.0,
+      "work_total": 152180,
+      "line_total_raw": 152180.0,
+      "line_total": 152180,
+      "is_case_specific": false,
+      "notes": "Production-блок парапета из спецификации кровли; объём D400+D500 объединён, т.к. кладка — одна работа независимо от плотности блока",
+      "price_code": "gas_block_masonry_work_m3"
+    },
+    {
+      "code": "parapet_gas_block_d400_material",
+      "name": "Газобетонный блок D400 600x400x250 мм для парапета",
+      "unit": "м3",
+      "quantity": 17.2,
+      "material_unit_price": 6000,
+      "material_total_raw": 103200.0,
+      "material_total": 103200,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 103200.0,
+      "line_total": 103200,
+      "is_case_specific": false,
+      "notes": "",
+      "price_code": "gas_block_d400_m3"
+    },
+    {
+      "code": "parapet_gas_block_d500_250_material",
+      "name": "Газобетонный блок D500 600x250x250 мм для парапета",
+      "unit": "м3",
+      "quantity": 7.2,
+      "material_unit_price": 5500,
+      "material_total_raw": 39600.0,
+      "material_total": 39600,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 39600.0,
+      "line_total": 39600,
+      "is_case_specific": false,
+      "notes": "Добавлено 2026-07-15. Елена: парапет обычно D400 (80-90%), но может быть частично или полностью D500 600x250x250, тот же блок, что и второй материал основных стен.",
+      "price_code": "gas_block_d500_m3"
+    },
+    {
+      "code": "vent_chimney_gas_block_cladding_work",
+      "name": "Обкладка дымохода и вентканалов 150 мм",
+      "unit": "м2",
+      "quantity": 11.4667,
+      "material_unit_price": 0.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 1200,
+      "work_total_raw": 13760.0,
+      "work_total": 13760,
+      "line_total_raw": 13760.0,
+      "line_total": 13760,
+      "display_quantity": 11.47,
+      "is_case_specific": false,
+      "notes": "",
+      "price_code": "gas_block_cladding_work_m2"
+    },
+    {
+      "code": "vent_chimney_gas_block_d500_600x150x250_material",
+      "name": "Газобетонный блок D500 600x150x250 мм",
+      "unit": "м3",
+      "quantity": 3.6,
+      "material_unit_price": 5600,
+      "material_total_raw": 20160.0,
+      "material_total": 20160,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 20160.0,
+      "line_total": 20160,
+      "is_case_specific": false,
+      "notes": "",
+      "price_code": "gas_block_d500_150_m3"
+    },
+    {
       "code": "walls_consumables_tool_amortization",
       "name": "Расходные материалы, амортизация инструмента",
       "unit": "комплект",
@@ -891,115 +875,17 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total_raw": 1195235.591,
-    "internal_materials_total": 1195236,
-    "internal_works_total_raw": 854009.0,
-    "internal_works_total": 854009,
-    "internal_section_total_raw": 2049244.591,
-    "internal_section_total": 2049245,
-    "sum_of_displayed_line_material_totals": 1195237,
-    "sum_of_displayed_line_work_totals": 854009,
-    "sum_of_displayed_line_totals": 2049246
+    "internal_materials_total_raw": 1381413.826,
+    "internal_materials_total": 1381414,
+    "internal_works_total_raw": 999596.43,
+    "internal_works_total": 999596,
+    "internal_section_total_raw": 2381010.256,
+    "internal_section_total": 2381010,
+    "sum_of_displayed_line_material_totals": 1381414,
+    "sum_of_displayed_line_work_totals": 999597,
+    "sum_of_displayed_line_totals": 2381011
   },
-  "expected": {
-    "calculation_blocks": {
-      "floor_2_load_bearing_walls": {
-        "floors_count": 1,
-        "upper_floor_calc_method": "floor_2_spec_volume",
-        "enabled": false,
-        "floor_2_load_bearing_walls_enabled": false,
-        "floor_2_masonry_volume_m3": 0.0
-      },
-      "parapet": {
-        "parapet_calc_method": "flat_roof_spec_volume",
-        "flat_roof_enabled": false,
-        "parapet_enabled_calculated": false
-      },
-      "vent_chimney_cladding": {
-        "vent_chimney_cladding_calc_method": "flat_roof_spec_volume",
-        "flat_roof_enabled": false,
-        "vent_chimney_cladding_enabled_calculated": false
-      }
-    }
-  },
-  "comparison": [
-    {
-      "key": "calculation_blocks.floor_2_load_bearing_walls.floors_count",
-      "expected": 1,
-      "actual": 1,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.floor_2_load_bearing_walls.upper_floor_calc_method",
-      "expected": "floor_2_spec_volume",
-      "actual": "floor_2_spec_volume",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.floor_2_load_bearing_walls.enabled",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.floor_2_load_bearing_walls.floor_2_load_bearing_walls_enabled",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.floor_2_load_bearing_walls.floor_2_masonry_volume_m3",
-      "expected": 0.0,
-      "actual": 0.0,
-      "diff": 0.0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.parapet.parapet_calc_method",
-      "expected": "flat_roof_spec_volume",
-      "actual": "flat_roof_spec_volume",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.parapet.flat_roof_enabled",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.parapet.parapet_enabled_calculated",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.vent_chimney_cladding.vent_chimney_cladding_calc_method",
-      "expected": "flat_roof_spec_volume",
-      "actual": "flat_roof_spec_volume",
-      "diff": null,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.vent_chimney_cladding.flat_roof_enabled",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    },
-    {
-      "key": "calculation_blocks.vent_chimney_cladding.vent_chimney_cladding_enabled_calculated",
-      "expected": false,
-      "actual": false,
-      "diff": 0,
-      "status": "ok"
-    }
-  ],
+  "expected": {},
+  "comparison": [],
   "warnings": []
 }
