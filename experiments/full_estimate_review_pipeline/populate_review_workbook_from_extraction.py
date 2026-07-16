@@ -17,13 +17,14 @@ from pathlib import Path
 from typing import Any
 
 from openpyxl import Workbook
-from openpyxl.styles import Font
+from openpyxl.styles import Alignment, Font
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from build_review_workbook_from_contracts import (  # noqa: E402
     FILL_HEADER,
     FILL_INPUT,
+    FILL_WHITE,
     FONT_NAME,
     PROJECT_HEADERS,
     apply_table_style,
@@ -31,7 +32,6 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     append_section_band,
     build_constructor_sheet,
     build_contracts_summary_sheet,
-    build_details_sheet,
     build_instruction_sheet,
     build_prices_sheet,
     build_raw_contracts_sheet,
@@ -44,6 +44,9 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     scalar_review_rows_for_contract,
     section_code,
     section_name,
+    set_widths,
+    style_block_title_row,
+    style_header_row,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,6 +73,150 @@ def display_value(value: Any) -> Any:
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False)
     return value
+
+
+DETAIL_RAW_HEADERS = [
+    "№",
+    "Исходные колонки PDF",
+    "Исходные ячейки PDF",
+    "Сырая строка PDF",
+    "Ед.",
+    "Норм. ед.",
+    "Target codes",
+    "Needs review",
+    "Комментарий parser",
+    "Комментарий Елены",
+    "section_code",
+    "source_pdf",
+    "page_number",
+    "page_title",
+    "table_id",
+    "row_index",
+    "mapped_target_codes_json",
+]
+
+
+def joined(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return " | ".join("" if item is None else str(item) for item in value)
+    return str(value)
+
+
+def table_title(row: dict[str, Any]) -> str:
+    title = row.get("table_title")
+    if title:
+        return str(title)
+    page_title = row.get("page_title") or "Лист без названия"
+    table_id = row.get("table_id") or "unknown_table"
+    return f"{page_title} — таблица {table_id}"
+
+
+def table_group_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        row.get("section_code") or "",
+        row.get("source_pdf") or "",
+        row.get("page_number") or "",
+        row.get("page_title") or "",
+        row.get("table_id") or "",
+        row.get("table_title") or "",
+    )
+
+
+def iter_raw_table_groups(extraction: dict[str, Any]) -> list[tuple[tuple[Any, ...], list[dict[str, Any]]]]:
+    groups: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+    for section in (extraction.get("sections") or {}).values():
+        for row in section.get("raw_table_rows") or []:
+            if not isinstance(row, dict):
+                continue
+            groups.setdefault(table_group_key(row), []).append(row)
+    return list(groups.items())
+
+
+def build_details_sheet_from_extraction(wb: Workbook, extraction: dict[str, Any]) -> dict[str, int]:
+    ws = wb.create_sheet("03_Детали объемов")
+    groups = iter_raw_table_groups(extraction)
+    max_col = len(DETAIL_RAW_HEADERS)
+
+    for _group_key, rows in groups:
+        first = rows[0]
+        title = table_title(first)
+        context = (
+            f"Раздел: {first.get('section_code') or ''} | "
+            f"PDF: {first.get('source_pdf') or ''} | "
+            f"стр. {first.get('page_number') or ''} | "
+            f"Лист: {first.get('page_title') or ''}"
+        )
+
+        if ws.max_row == 1 and not ws.cell(1, 1).value:
+            ws.cell(1, 1).value = title
+        else:
+            ws.append([])
+            ws.append([title])
+        style_block_title_row(ws, ws.max_row, max_col)
+        ws.append([context])
+        for cell in ws[ws.max_row]:
+            cell.fill = FILL_WHITE
+            cell.font = Font(name=FONT_NAME, size=10, italic=True)
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+        ws.append(DETAIL_RAW_HEADERS)
+        style_header_row(ws, ws.max_row, max_col)
+
+        for row in rows:
+            mapped = row.get("mapped_target_codes") or []
+            ws.append([
+                row.get("row_index"),
+                joined(row.get("columns")),
+                joined(row.get("cells")),
+                row.get("raw_text") or "",
+                row.get("unit") or "",
+                row.get("normalized_unit") or "",
+                joined(mapped),
+                "да" if row.get("needs_review") else "нет",
+                row.get("notes") or "",
+                "",
+                row.get("section_code") or "",
+                row.get("source_pdf") or "",
+                row.get("page_number") or "",
+                row.get("page_title") or "",
+                row.get("table_id") or "",
+                row.get("row_index") or "",
+                json.dumps(mapped, ensure_ascii=False),
+            ])
+            for cell in ws[ws.max_row]:
+                cell.font = Font(name=FONT_NAME, size=11)
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+    if not groups:
+        ws.append(["Сырые таблицы parser не найдены в extraction JSON."])
+        style_block_title_row(ws, 1, 1)
+
+    set_widths(ws, {
+        "A": 8,
+        "B": 44,
+        "C": 58,
+        "D": 72,
+        "E": 12,
+        "F": 12,
+        "G": 32,
+        "H": 14,
+        "I": 52,
+        "J": 30,
+        "K": 20,
+        "L": 34,
+        "M": 10,
+        "N": 34,
+        "O": 28,
+        "P": 12,
+        "Q": 32,
+    })
+    for column in ["K", "L", "M", "N", "O", "P", "Q"]:
+        ws.column_dimensions[column].hidden = True
+    ws.freeze_panes = "A1"
+
+    return {"detail_table_blocks": len(groups), "raw_detail_rows": sum(len(rows) for _, rows in groups)}
 
 
 def build_project_sheet_from_extraction(
@@ -211,7 +358,7 @@ def build_workbook_from_extraction(
     build_constructor_sheet(wb, contracts)
     counts = build_project_sheet_from_extraction(wb, contracts, extraction)
     build_prices_sheet(wb, contracts)
-    build_details_sheet(wb, contracts)
+    detail_counts = build_details_sheet_from_extraction(wb, extraction)
     build_instruction_sheet(wb)
     build_contracts_summary_sheet(wb, contracts)
     build_raw_contracts_sheet(wb, contracts)
@@ -219,7 +366,7 @@ def build_workbook_from_extraction(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output_path)
 
-    return {"output_path": str(output_path), **counts}
+    return {"output_path": str(output_path), **counts, **detail_counts}
 
 
 def parse_args() -> argparse.Namespace:
