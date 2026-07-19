@@ -123,6 +123,38 @@ Forbidden in production contracts, adapters, review workbook builders, normalize
 
 Before committing any future step, run a text search for old project names and known fixture-only phrases in the files touched by that step. If a match remains, it must be either removed or explicitly documented as non-production reference evidence.
 
+## Universalization Workstream (started 2026-07-18)
+
+Customer explicitly asked to validate calculators/parser against several more real projects and make
+the whole box-shell estimate system adaptive to different architectural/structural variations, not
+tuned to one house. ЮСВ shaped the original 8 contracts; ТРЦ (2026-07-13..15) forced real optional
+structure into `load_bearing_walls_lintels`/`waterproofing`; a third project (АРК) surfaced five more
+rigid spots plus one correction to a rule derived from ТРЦ (D400/D500-by-block-width is a default, not
+a hard constant).
+
+Read, in this order, before touching any section_contract.yaml for this workstream:
+
+- `reports/step_20_ark_third_project_stress_test.md` — structural findings, per section, with an
+  explicit out-of-scope list (canopies, above-grade columns, windows, blind-area apron — all
+  confirmed excluded 2026-07-18).
+- `UNIVERSALIZATION_PLAN.md` (this directory) — the P1/P2/P3 prioritized checklist those findings
+  drive. Update its checkboxes as items land; do not start a P2 item before its P1 prerequisites in
+  the same section are done.
+- `reports/step_21_ark_real_extraction_crosscheck.md` — the real chat-extraction pass against АРК
+  (2026-07-18), crosschecked against step_20/the plan. Confirms every prediction in the plan (several
+  turned out worse than the manual-PDF read suggested); adds two new P1/P2 items (both resolved by
+  2026-07-19 after reading the actual calculator code — see the file for corrections).
+- `reports/step_22_trc_real_extraction_audit.md` — a real chat-extraction pass against ТРЦ (2026-07-19,
+  files supplied by the user), auditing whether ТРЦ is fully ready for the pipeline and how much of
+  its remaining gaps the ARK-derived plan already covers. Most do; three plan items needed expanding
+  (`slab_zones[]` scope, a new "source more aggregated than contract" rule, Schiedel shaft-count vs
+  module-count). One finding — several КР2 pages carry a different project's title block — is a
+  standing precondition requiring architect confirmation, not a code fix.
+
+No contract edit from this workstream has shipped yet as of 2026-07-19 — real chat-extraction passes
+against both АРК (step_21) and ТРЦ (step_22) are now done; next is P1 implementation with explicit
+authorization before any calculator.py edit.
+
 ## Reference Earthworks Flow
 
 Start with:
