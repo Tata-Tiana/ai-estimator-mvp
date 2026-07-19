@@ -251,6 +251,30 @@ foundation_rebar_items:
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
   notes: "Extract row-by-row with diameter and steel class. Primary PDF quantity is often length in м/п plus kg_per_meter; weight_kg is null unless the PDF explicitly gives kg."
 
+foundation_wall_items:
+  section_code: foundation_slab
+  ru_label: "Стены фундамента/цоколя"
+  pdf_aliases: ["Стена фундамента", "Стена цоколя", "Цокольная стена", "Стена приямка", "Спецификация стен фундамента"]
+  expected_unit: null
+  table_hints: ["Разрез фундамента", "Спецификация к плану фундамента", "Узел стены цоколя"]
+  required_context: ["стен", "фундамент|цоколь|приямок"]
+  negative_context: ["несущ", "перекрыти", "перемычк", "плита фундамент"]
+  value_column_hint: ["объем", "площадь", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м", "м2", "м²"]
+  notes: "Added 2026-07-20. Fundament/цоколь walls below +0,000, not the slab itself and not above-grade load-bearing walls. Return row-by-row as foundation_wall_items — context is a free string describing the segment as printed in the PDF, waterproofing_extent is a free string ('только торец' / 'торец и верх', as written, do not infer a default). Diagnostic-only, not yet in the calculator."
+
+column_footing_items:
+  section_code: foundation_slab
+  ru_label: "Подколонники"
+  pdf_aliases: ["Подколонник", "Столбчатый фундамент под колонну", "Фундамент под колонну"]
+  expected_unit: null
+  table_hints: ["Разрез фундамента", "Спецификация к плану фундамента", "Узел подколонника"]
+  required_context: ["подколонник|колонн"]
+  negative_context: ["несущ", "перекрыти", "перемычк", "плита фундамент"]
+  value_column_hint: ["объем", "площадь", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м", "м2", "м²"]
+  notes: "Added 2026-07-20. Only the footing below +0,000 belongs here (2026-07-18 decision) — an above-grade column is out of MVP scope, do not extract it into this group. Same field conventions as foundation_wall_items, kept as a separate group_code. Diagnostic-only, not yet in the calculator."
+
 waterproofing:
   section_code: waterproofing
   ru_label: "Гидроизоляция"
@@ -421,6 +445,30 @@ floor_2_lintel_total_length:
   negative_context: ["арматур", "бетон", "1 этаж", "монолит"]
   value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+
+floor_1_lintel_groove_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Перемычка в штробе (только арматура), 1-й этаж — длина"
+  pdf_aliases: ["Перемычка в штробе", "Армированная штроба", "Перемычка арматурой в штробе", "Штроба с арматурой"]
+  expected_unit: linear_m
+  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
+  required_context: ["перемычк", "штроб"]
+  negative_context: ["u-блок", "блок", "бетон", "монолит", "2 этаж"]
+  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Third lintel construction method (2026-07-20), separate from both U-block (lintel_total_length) and monolithic (floor_1_lintel_monolithic_concrete_volume) — rebar set into a routed groove, no block/concrete/formwork. Diagnostic-only, not yet wired into the calculator."
+
+floor_2_lintel_groove_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Перемычка в штробе (только арматура), 2-й этаж — длина"
+  pdf_aliases: ["Перемычка в штробе 2 этаж", "Армированная штроба 2 этаж", "Перемычка арматурой в штробе 2 этаж"]
+  expected_unit: linear_m
+  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
+  required_context: ["перемычк", "штроб", "2 этаж|втор"]
+  negative_context: ["u-блок", "блок", "бетон", "монолит", "1 этаж"]
+  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Mirrors floor_1_lintel_groove_length."
   notes: "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — Elena, 2026-07-15: lintels may be present on either floor, both, or neither. Confirmed on real ТРЦ project (20,5 м.п.)."
 
 floor_2_lintel_concrete_volume:
@@ -606,6 +654,22 @@ lintel_rebar_items:
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
   notes: "Return row-by-row as lintel_rebar_items with component=lintels, spec_length_m and kg_per_meter. Do not mix with masonry reinforcement. Do not calculate total weight in chat extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
+
+lintel_groove_rebar_items:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Арматура перемычек в штробе"
+  pdf_aliases: ["Арматура перемычки в штробе", "Армирование штробы", "ф12 А500С в штробе"]
+  expected_unit: null
+  accepted_units: ["linear_m"]
+  primary_pdf_unit: "linear_m"
+  calculated_unit: "kg"
+  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
+  table_hints: ["Спецификация перемычек", "План перемычек"]
+  required_context: ["перемычк", "штроб", "арматур|ф|Ø|А500|А240"]
+  negative_context: ["фундамент", "перекрытие", "кладка", "u-блок", "блок", "монолит"]
+  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Added 2026-07-20. Deliberately separate from lintel_rebar_items (which is directly wired into the calculator with strict component=lintels validation) — use component=lintels_groove here, never lintels. Diagnostic-only, not yet fed into any calculator. Return row-by-row, same field conventions as lintel_rebar_items."
 
 vent_chimney_cladding_segments:
   section_code: load_bearing_walls_lintels

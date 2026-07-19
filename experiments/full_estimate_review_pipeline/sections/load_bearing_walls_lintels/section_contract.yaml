@@ -458,6 +458,74 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Added 2026-07-15."
 
+  - key: floor_1_lintel_groove_length_m
+    label_ru: "Перемычка в штробе (только арматура), длина, 1-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_groove_length"
+    calculator_input_path: ""
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_groove_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_groove_length"]
+      aliases_ru: ["перемычка в штробе 1 этаж", "армированная штроба"]
+      expected_unit: "мп"
+      notes: "Third lintel construction method (2026-07-20): rebar set into a routed groove, no block/concrete/formwork/insulation — distinct from both U-block (lintel_total_length_m) and monolithic (floor_1_lintel_monolithic_concrete_volume_m3)."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Диагностическое поле — пока не участвует в смете. Если на 1-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-20. Diagnostic-only — calculator_input_path intentionally empty, not yet wired into load_bearing_walls_lintels_calculator.py (needs separate authorization; see UNIVERSALIZATION_PLAN.md P1). Captured so this real construction method isn't silently lost or misfiled under lintel_total_length_m/lintel_concrete_spec_volume_m3."
+
+  - key: floor_2_lintel_groove_length_m
+    label_ru: "Перемычка в штробе (только арматура), длина, 2-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_groove_length"
+    calculator_input_path: ""
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_groove_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_groove_length"]
+      aliases_ru: ["перемычка в штробе 2 этаж"]
+      expected_unit: "мп"
+      notes: "Mirrors floor_1_lintel_groove_length_m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Диагностическое поле — пока не участвует в смете. Если на 2-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-20. Diagnostic-only, mirrors floor_1_lintel_groove_length_m."
+
+  - key: lintel_groove_rebar_items
+    label_ru: "Арматура перемычек в штробе"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "lintel_groove_rebar_items"
+    calculator_input_path: ""
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.lintel_groove_rebar_items.rows"
+    value_kind: rows
+    parser_mapping:
+      target_codes: ["lintel_groove_rebar_items"]
+      aliases_ru: ["арматура перемычки в штробе", "армирование штробы"]
+      notes: "component must be lintels_groove, never lintels — lintel_rebar_items below is directly wired into the calculator with strict component==\"lintels\" validation and would hard-crash on a groove row."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно арматуру перемычек в штробе, если она есть на объекте."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20. Diagnostic-only, calculator_input_path intentionally empty — same pattern as schiedel_vent_channels' diagnostic channel-spec rows. Deliberately a separate key from lintel_rebar_items rather than a new component value inside it, to avoid breaking that group's calculator validation. See UNIVERSALIZATION_PLAN.md P1 for the wiring-into-calculator follow-up."
+
   - key: floor_2_masonry_volume_m3
     label_ru: "Кладка несущих стен 2-го этажа, объем"
     unit: "м3"

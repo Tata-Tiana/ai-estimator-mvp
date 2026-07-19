@@ -240,6 +240,74 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Production primary PDF unit is m.п.; do not require PDF total weight."
 
+  - key: foundation_wall_items
+    label_ru: "Стены фундамента/цоколя"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "foundation_wall_items"
+    calculator_input_path: ""
+    normalized_json_path: "sections.foundation_slab.parameters.foundation_wall_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: false
+    item_label_columns: [context]
+    correction_columns: [concrete_volume_m3, vertical_formwork_area_m2, planter_membrane_area_m2, waterproofing_coating_area_m2]
+    columns:
+      - {key: context, label_ru: "Участок стены (по PDF)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: vertical_formwork_area_m2, label_ru: "Вертикальная опалубка", unit: "м2", value_kind: number}
+      - {key: planter_membrane_area_m2, label_ru: "Мембрана PLANTER", unit: "м2", value_kind: number}
+      - {key: waterproofing_coating_area_m2, label_ru: "Обмазочная гидроизоляция", unit: "м2", value_kind: number}
+      - {key: waterproofing_extent, label_ru: "Охват гидроизоляции (по PDF)", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["foundation_wall_items"]
+      aliases_ru: ["стена фундамента", "стена цоколя", "стена приямка"]
+      expected_unit: ""
+      notes: "Fundament/цоколь walls below +0,000, distinct from the slab and from above-grade load-bearing walls. context is a free string, do not invent a classification the PDF doesn't state."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно стены фундамента/цоколя, если они есть на объекте."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only — calculator_input_path intentionally empty, not yet wired into foundation_slab_calculator.py (needs separate authorization). Captured so real fundament-wall/цоколь geometry isn't silently lost."
+
+  - key: column_footing_items
+    label_ru: "Подколонники"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "column_footing_items"
+    calculator_input_path: ""
+    normalized_json_path: "sections.foundation_slab.parameters.column_footing_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: false
+    item_label_columns: [context]
+    correction_columns: [concrete_volume_m3, vertical_formwork_area_m2, planter_membrane_area_m2, waterproofing_coating_area_m2]
+    columns:
+      - {key: context, label_ru: "Подколонник (по PDF)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: vertical_formwork_area_m2, label_ru: "Вертикальная опалубка", unit: "м2", value_kind: number}
+      - {key: planter_membrane_area_m2, label_ru: "Мембрана PLANTER", unit: "м2", value_kind: number}
+      - {key: waterproofing_coating_area_m2, label_ru: "Обмазочная гидроизоляция", unit: "м2", value_kind: number}
+      - {key: waterproofing_extent, label_ru: "Охват гидроизоляции (по PDF)", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["column_footing_items"]
+      aliases_ru: ["подколонник", "столбчатый фундамент под колонну"]
+      expected_unit: ""
+      notes: "Only the footing below +0,000 (2026-07-18 decision) — an above-grade column is out of MVP scope."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно подколонники, если они есть на объекте."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — kept as a separate group_code (not merged into foundation_wall_items) so a future calculator wiring pass can price/gate them independently."
+
 price_keys:
   - {key: membrane_installation_work_unit_price, estimate_line_code: planter_membrane_installation, label_ru: "Монтаж мембраны PLANTER стандарт", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "planter_membrane_installation_work_m2", fallback_key: "membrane_installation_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: planter_standard_roll_unit_price, estimate_line_code: planter_standard_material, label_ru: "Planter Standard Технониколь", price_kind: material, unit: "рулон", required: true, default_source: price_registry_with_fallback, registry_code: "planter_standard_roll", fallback_key: "planter_standard_roll_unit_price", allow_manual_override: true, notes: ""}

@@ -54,6 +54,20 @@
           "fields": ["code", "name", "steel_class", "diameter_mm", "source_length_m", "kg_per_meter", "weight_kg"],
           "grounded": true,
           "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные source_length_m и kg_per_meter; weight_kg оставлять null, вес считает код. Если PDF явно даёт кг, тогда можно заполнить weight_kg. Не путай с ценой за метр/кг."
+        },
+        {
+          "group_code": "foundation_wall_items",
+          "description": "Стены фундамента/цоколя ниже +0,000 (не плита) — каждый отдельный участок/контекст своей строкой: бетон, вертикальная опалубка, площадь мембраны PLANTER, площадь обмазочной гидроизоляции.",
+          "fields": ["context", "concrete_volume_m3", "vertical_formwork_area_m2", "planter_membrane_area_m2", "waterproofing_coating_area_m2", "waterproofing_extent"],
+          "grounded": true,
+          "notes": "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only for now — captured so real fundament-wall/цоколь geometry isn't lost, not yet wired into foundation_slab_calculator.py (needs separate authorization). context — свободная строка с описанием участка стены прямо из PDF (например 'стена цоколя по оси А', 'стена приямка'), не выдумывать классификацию. waterproofing_extent — свободная строка, что именно покрывает обмазочная гидроизоляция по PDF (например 'только торец' или 'торец и верх') — записывать как написано в PDF, не угадывать по умолчанию."
+        },
+        {
+          "group_code": "column_footing_items",
+          "description": "Подколонники (столбчатый фундамент под колонну, ниже +0,000) — та же структура полей, что и foundation_wall_items, отдельная группа по решению 2026-07-18 (подколонник входит в раздел фундамента, надземная колонна — нет).",
+          "fields": ["context", "concrete_volume_m3", "vertical_formwork_area_m2", "planter_membrane_area_m2", "waterproofing_coating_area_m2", "waterproofing_extent"],
+          "grounded": true,
+          "notes": "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — not yet wired into foundation_slab_calculator.py. Do not merge rows into foundation_wall_items even if geometry looks similar; keep as a separate group so a future calculator wiring pass can price/gate them independently."
         }
       ]
     },
@@ -93,7 +107,9 @@
         {"code": "floor_2_lintel_insulation_length", "label_ru": "Утепление торца монолитной перемычки, 2-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15."},
         {"code": "floor_2_lintel_formwork_plywood_qty", "label_ru": "Фанера для опалубки монолитных перемычек, 2-й этаж — количество", "unit": "pcs", "grounded": true, "notes": "Added 2026-07-15."},
         {"code": "floor_2_lintel_formwork_timber_volume", "label_ru": "Пиломатериал для опалубки монолитных перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
-        {"code": "floor_2_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."}
+        {"code": "floor_2_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
+        {"code": "floor_1_lintel_groove_length", "label_ru": "Перемычка в штробе (только арматура), 1-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-20. Third lintel construction method alongside U-block/monolithic: rebar set into a routed groove in the wall, no block/concrete/formwork/insulation. Diagnostic-only for now — captured so this real construction method isn't lost or misfiled under U-block/monolithic fields, not yet wired into load_bearing_walls_lintels_calculator.py (needs separate authorization; see UNIVERSALIZATION_PLAN.md P1)."},
+        {"code": "floor_2_lintel_groove_length", "label_ru": "Перемычка в штробе (только арматура), 2-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-20. Mirrors floor_1_lintel_groove_length."}
       ],
       "extract_groups": [
         {
@@ -115,6 +131,13 @@
           "description": "Сегменты обкладки вентканалов газоблоком (длина и количество по сегментам).",
           "fields": ["length_m", "count"],
           "grounded": false
+        },
+        {
+          "group_code": "lintel_groove_rebar_items",
+          "description": "Арматура перемычек в штробе (третий тип перемычки, без блока/бетона/опалубки) — каждая строка спецификации отдельно, в м/п.",
+          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
+          "grounded": false,
+          "notes": "Added 2026-07-20. Deliberately a separate group_code from lintel_rebar_items, not an additional component value inside it: lintel_rebar_items is already wired into load_bearing_walls_lintels_calculator.py's calculator_input_path with strict validation (component must equal exactly \"lintels\" or the run raises ValueError) — mixing groove-type rows into it would hard-crash real calculator runs. This group is diagnostic-only, no calculator_input_path yet, same pattern as schiedel_channel_spec_items. component should be lintels_groove. rod_length_m — catalog length by diameter unless the PDF gives an explicit rod-length table, otherwise leave null."
         }
       ]
     },
