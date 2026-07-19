@@ -72,6 +72,33 @@ class SpecRebarItem:
         return cls(**data)
 
 
+WALL_BLOCK_ITEM_ROLES = {"main_walls", "floor_2", "parapet", "partitions"}
+WALL_BLOCK_ITEM_DENSITIES = {"D400", "D500"}
+# Only these (role, density) combinations have a priced material/work path today.
+# floor_2 D500 is a known gap (see floor_2_walls_incomplete_and_floors_count_risk memory) —
+# deliberately not in this map, so it fails loudly instead of silently dropping volume.
+WALL_BLOCK_ITEM_PRICED_KEYS = {
+    ("main_walls", "D400"),
+    ("main_walls", "D500"),
+    ("floor_2", "D400"),
+    ("parapet", "D400"),
+    ("parapet", "D500"),
+}
+
+
+@dataclass(frozen=True)
+class WallBlockItem:
+    context: str
+    wall_role: str
+    volume_m3: float
+    block_density: str | None = None
+    block_size: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "WallBlockItem":
+        return cls(**data)
+
+
 @dataclass(frozen=True)
 class LoadBearingWallsLintelsInput:
     project_name: str
@@ -176,6 +203,7 @@ class LoadBearingWallsLintelsInput:
     floor_2_lintel_insulation_eps_spec_volume_m3: float | None = None
     main_wall_rebar_calc_method: str = "legacy_wall_geometry"
     main_wall_rebar_items: list[SpecRebarItem | dict[str, Any]] | None = None
+    wall_block_items: list[WallBlockItem | dict[str, Any]] | None = None
     lintel_rebar_calc_method: str = "legacy_weight_items"
     main_walls_crane_calc_method: str = "legacy_manual_shifts"
     main_walls_crane_shifts: float | None = None
@@ -220,6 +248,14 @@ class LoadBearingWallsLintelsInput:
             [
                 x if isinstance(x, SpecRebarItem) else SpecRebarItem.from_dict(x)
                 for x in (self.main_wall_rebar_items or [])
+            ],
+        )
+        object.__setattr__(
+            self,
+            "wall_block_items",
+            [
+                x if isinstance(x, WallBlockItem) else WallBlockItem.from_dict(x)
+                for x in (self.wall_block_items or [])
             ],
         )
         self.validate()
@@ -329,6 +365,22 @@ class LoadBearingWallsLintelsInput:
             # no lintels of any kind) — Elena, 2026-07-15. None means absent, not zero.
             if self.lintel_total_length_m is not None:
                 require_non_negative("lintel_total_length_m", self.lintel_total_length_m)
+        for item in self.wall_block_items or []:
+            if item.wall_role not in WALL_BLOCK_ITEM_ROLES:
+                raise ValueError(f"wall_block_items wall_role must be one of {sorted(WALL_BLOCK_ITEM_ROLES)}")
+            require_non_negative("wall_block_items.volume_m3", item.volume_m3)
+            if item.wall_role == "partitions":
+                continue
+            if item.block_density not in WALL_BLOCK_ITEM_DENSITIES:
+                raise ValueError(
+                    f"wall_block_items block_density must be one of {sorted(WALL_BLOCK_ITEM_DENSITIES)} "
+                    f"for wall_role={item.wall_role!r} (context={item.context!r})"
+                )
+            if (item.wall_role, item.block_density) not in WALL_BLOCK_ITEM_PRICED_KEYS:
+                raise ValueError(
+                    f"wall_block_items combination wall_role={item.wall_role!r}/block_density={item.block_density!r} "
+                    f"has no priced material path yet (context={item.context!r})"
+                )
         if self.main_wall_rebar_calc_method not in {"legacy_wall_geometry", "spec_length_items"}:
             raise ValueError("main_wall_rebar_calc_method must be legacy_wall_geometry or spec_length_items")
         if self.main_wall_rebar_calc_method == "spec_length_items":
@@ -519,6 +571,28 @@ def gas_block_order(spec_volume: float, waste_coeff: float, pallet_volume: float
         "order_volume_m3": q(order_volume),
     }
     return blocks
+
+
+def wall_block_items_totals(items: list[WallBlockItem]) -> dict[str, Decimal]:
+    """Bucket wall_block_items[] rows by (wall_role, block_density) into the same
+    named volumes the legacy scalar-field path already produces, so everything
+    downstream of this point (gas_block_order, adhesive, delivery, crane) is
+    unchanged whether the volume came from wall_block_items or the old fields."""
+    totals = {
+        "main_walls_d400": Decimal("0"),
+        "main_walls_d500": Decimal("0"),
+        "floor_2_d400": Decimal("0"),
+        "parapet_d400": Decimal("0"),
+        "parapet_d500": Decimal("0"),
+        "partitions": Decimal("0"),
+    }
+    for item in items:
+        if item.wall_role == "partitions":
+            totals["partitions"] += d(item.volume_m3)
+            continue
+        key = f"{item.wall_role}_{item.block_density.lower()}"
+        totals[key] += d(item.volume_m3)
+    return totals
 
 
 def rebar_from_weight(item: RebarItem, waste_coeff: float) -> tuple[dict[str, Any], EstimateLineResult]:
@@ -882,9 +956,16 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     cutoff_area = d(cutoff_waterproofing["cutoff_waterproofing_area_m2"])
     lintel_length = calculate_lintel_total_length(data)
     lintel_total_length = d(lintel_length["lintel_total_length_m"])
-    main_masonry_volume = d(data.main_wall_gas_block_400_spec_volume_m3) + d(data.main_wall_gas_block_250_spec_volume_m3)
-    main_d400 = gas_block_order(data.main_wall_gas_block_400_spec_volume_m3, data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
-    main_d500_250 = gas_block_order(data.main_wall_gas_block_250_spec_volume_m3, data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3)
+    wall_block_totals = wall_block_items_totals(data.wall_block_items) if data.wall_block_items else None
+    if wall_block_totals is not None:
+        main_400_volume = wall_block_totals["main_walls_d400"]
+        main_500_250_volume = wall_block_totals["main_walls_d500"]
+    else:
+        main_400_volume = d(data.main_wall_gas_block_400_spec_volume_m3)
+        main_500_250_volume = d(data.main_wall_gas_block_250_spec_volume_m3)
+    main_masonry_volume = main_400_volume + main_500_250_volume
+    main_d400 = gas_block_order(main_400_volume, data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
+    main_d500_250 = gas_block_order(main_500_250_volume, data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3)
     adhesive_raw = main_masonry_volume * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
     sand_raw = cutoff_area * d(data.sand_concrete_consumption_kg_per_m2_per_10mm) * d(data.sand_concrete_thickness_factor) / d(data.sand_concrete_bag_weight_kg)
     u_block_quantity = lintel_total_length / d(data.gas_block_length_m)
@@ -929,7 +1010,14 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         if floor_2_lintel_concrete_enabled
         else Decimal("0")
     )
-    floor_2_enabled = data.floors_count == 2
+    if wall_block_totals is not None and data.upper_floor_calc_method != "legacy_second_light_addon":
+        # wall_block_items[] present: gate floor_2 by whether a floor_2-role item
+        # actually exists, not by floors_count (АРК: floors_count is sometimes
+        # physically absent from the PDF, so gating on it is impossible in principle —
+        # see floor_2_walls_incomplete_and_floors_count_risk memory).
+        floor_2_enabled = wall_block_totals["floor_2_d400"] > 0
+    else:
+        floor_2_enabled = data.floors_count == 2
     if data.upper_floor_calc_method == "legacy_second_light_addon":
         second_light_enabled = bool(data.second_light_masonry_enabled)
         second_light_case_specific = bool(data.second_light_masonry_case_specific)
@@ -941,10 +1029,20 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         second_light_case_specific = False
         second_light_input_volume = Decimal("0")
         second_light_volume = Decimal("0")
-        floor_2_volume = d(data.floor_2_masonry_volume_m3 or 0) if floor_2_enabled else Decimal("0")
+        floor_2_volume = (
+            wall_block_totals["floor_2_d400"]
+            if wall_block_totals is not None
+            else (d(data.floor_2_masonry_volume_m3 or 0) if floor_2_enabled else Decimal("0"))
+        )
 
+    parapet_uses_wall_block_items = wall_block_totals is not None and data.parapet_calc_method != "legacy_manual_toggle"
     if data.parapet_calc_method == "legacy_manual_toggle":
         parapet_enabled = bool(data.parapet_enabled)
+    elif parapet_uses_wall_block_items:
+        parapet_enabled = bool(
+            data.flat_roof_enabled
+            and (wall_block_totals["parapet_d400"] > 0 or wall_block_totals["parapet_d500"] > 0)
+        )
     else:
         parapet_enabled = bool(
             data.flat_roof_enabled
@@ -953,8 +1051,12 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
                 or d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) > 0
             )
         )
-    parapet_volume = d(data.parapet_masonry_volume_m3 or 0) if parapet_enabled else Decimal("0")
-    parapet_d500_volume = d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) if parapet_enabled else Decimal("0")
+    if parapet_uses_wall_block_items:
+        parapet_volume = wall_block_totals["parapet_d400"] if parapet_enabled else Decimal("0")
+        parapet_d500_volume = wall_block_totals["parapet_d500"] if parapet_enabled else Decimal("0")
+    else:
+        parapet_volume = d(data.parapet_masonry_volume_m3 or 0) if parapet_enabled else Decimal("0")
+        parapet_d500_volume = d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) if parapet_enabled else Decimal("0")
 
     if data.vent_chimney_cladding_calc_method == "legacy_manual_toggle":
         vent_enabled = bool(data.vent_chimney_cladding_enabled)
@@ -1022,6 +1124,12 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         "scaffolding": calculate_scaffolding(data),
         "cutoff_waterproofing": cutoff_waterproofing,
         "main_walls": {"main_masonry_volume_m3": q(main_masonry_volume)},
+        "wall_block_items": {
+            "used": wall_block_totals is not None,
+            # Captured but deliberately not priced yet (2026-07-20 decision) — partitions
+            # masonry/rebar has no cost-structure rate assigned in this calculator.
+            "partitions_captured_volume_m3": q(wall_block_totals["partitions"]) if wall_block_totals is not None else 0.0,
+        },
         "main_gas_blocks": {"d400": main_d400, "d500_250": main_d500_250},
         "adhesive_and_sand_concrete": {
             "main_adhesive_raw_bags": q(adhesive_raw),

@@ -103,6 +103,7 @@
 - `floor_2_lintel_insulation_eps_spec_volume_m3`: `None`
 - `main_wall_rebar_calc_method`: `legacy_wall_geometry`
 - `main_wall_rebar_items`: `[]`
+- `wall_block_items`: `[]`
 - `lintel_rebar_calc_method`: `legacy_weight_items`
 - `main_walls_crane_calc_method`: `legacy_manual_shifts`
 - `main_walls_crane_shifts`: `2`
@@ -225,6 +226,8 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `cutoff_waterproofing.wall_250_length_m` | `38.04` |
 | `cutoff_waterproofing.cutoff_waterproofing_area_m2` | `40.59` |
 | `main_walls.main_masonry_volume_m3` | `109.35` |
+| `wall_block_items.used` | `False` |
+| `wall_block_items.partitions_captured_volume_m3` | `0.0` |
 | `main_gas_blocks.d400.spec_volume_m3` | `78.95` |
 | `main_gas_blocks.d400.required_volume_m3` | `82.8975` |
 | `main_gas_blocks.d400.raw_pallets` | `38.557` |

@@ -151,6 +151,7 @@
     "floor_2_lintel_insulation_eps_spec_volume_m3": null,
     "main_wall_rebar_calc_method": "legacy_wall_geometry",
     "main_wall_rebar_items": [],
+    "wall_block_items": [],
     "lintel_rebar_calc_method": "legacy_weight_items",
     "main_walls_crane_calc_method": "legacy_manual_shifts",
     "main_walls_crane_shifts": 2,
@@ -210,6 +211,10 @@
     },
     "main_walls": {
       "main_masonry_volume_m3": 109.35
+    },
+    "wall_block_items": {
+      "used": false,
+      "partitions_captured_volume_m3": 0.0
     },
     "main_gas_blocks": {
       "d400": {

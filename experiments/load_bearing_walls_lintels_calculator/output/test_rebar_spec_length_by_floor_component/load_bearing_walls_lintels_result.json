@@ -201,6 +201,7 @@
         "name": null
       }
     ],
+    "wall_block_items": [],
     "lintel_rebar_calc_method": "spec_length_items",
     "main_walls_crane_calc_method": "legacy_manual_shifts",
     "main_walls_crane_shifts": 2,
@@ -260,6 +261,10 @@
     },
     "main_walls": {
       "main_masonry_volume_m3": 109.35
+    },
+    "wall_block_items": {
+      "used": false,
+      "partitions_captured_volume_m3": 0.0
     },
     "main_gas_blocks": {
       "d400": {

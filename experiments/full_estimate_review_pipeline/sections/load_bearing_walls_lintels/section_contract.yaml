@@ -618,6 +618,41 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
+  - key: wall_block_items
+    label_ru: "Объём кладки по участкам (альтернатива фиксированным полям)"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "wall_block_items"
+    calculator_input_path: "wall_block_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.wall_block_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: false
+    item_label_columns: [context, wall_role, block_density]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: context, label_ru: "Участок (по PDF)", unit: "", value_kind: string}
+      - {key: wall_role, label_ru: "Роль", unit: "", value_kind: string}
+      - {key: block_density, label_ru: "Плотность блока", unit: "", value_kind: string}
+      - {key: block_size, label_ru: "Размер блока", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["wall_block_items"]
+      aliases_ru: []
+      expected_unit: ""
+      notes: "NOT YET part of the live extraction prompt (calculator_targets_compact.json/target_aliases_ru.yaml) — added 2026-07-20 only as a calculator-side + contract-side alternative input, for Elena/adapter manual use or a future extraction rollout. wall_role must be one of main_walls/floor_2/parapet/partitions (validated by load_bearing_walls_lintels_calculator.py — WALL_BLOCK_ITEM_ROLES). block_density must be D400 or D500 for priced roles; partitions rows don't need it (captured volume only, never priced — see wall_block_items.partitions_captured_volume_m3 in calculation output). Only these (wall_role, block_density) pairs have a priced path today: main_walls×D400, main_walls×D500, floor_2×D400, parapet×D400, parapet×D500 — floor_2×D500 is a known separate gap and the calculator raises loudly if given one."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива фиксированным полям объёма стен ниже. Используйте, если проект даёт объём кладки по произвольным участкам/контекстам, которые не укладываются в текущие фиксированные поля (например перегородки, или несущие стены 2-го этажа при отсутствии floors_count в PDF)."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, wall_block_items[]). Purely additive — when empty/absent, the calculator behaves exactly as before (all 17 pre-existing regression cases unaffected, verified). When non-empty, it REPLACES the fixed volume fields below (main_wall_gas_block_400/250_spec_volume_m3, floor_2_masonry_volume_m3, parapet_masonry_volume_m3, parapet_gas_block_d500_250_spec_volume_m3) for this run — those fields are still required by the calculator's dataclass but their values are ignored once wall_block_items is non-empty. Also changes floor_2 gating from floors_count==2 to 'does a floor_2-role item exist', fixing the АРК case where floors_count is physically absent from the PDF. See p1_additive_schema_additions / ark-universalization-workstream memory."
+
   - key: main_wall_rebar_items
     label_ru: "Арматура несущих стен по диаметрам"
     unit: "мп"
