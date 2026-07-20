@@ -1,0 +1,349 @@
+# Отчет по второму API-прогону Claude: подготовительный слой page_inventory
+
+Дата: 20 июля 2026  
+Эксперимент: `experiments/claude_api_extraction_poc`  
+Статус: повторный прогон тех же фрагментов ARK и TRC через Claude API, но с дополнительным подготовительным слоем `page_inventory`  
+Стоимость прогона по факту: 1,09 $
+
+## 1. Зачем делали прогон
+
+После первого API-прогона стало понятно, что Claude API технически работает, но модель без предварительной подготовки местами путает сметный смысл строк. Особенно опасный пример — Schiedel: количество элементов в спецификации может быть ошибочно принято за количество шахт/каналов.
+
+Цель второго прогона — проверить не новый prompt под конкретный проект, а универсальный слой подготовки данных перед Claude:
+
+- извлечь из PDF текстовые строки;
+- попробовать вытащить таблицы библиотекой;
+- найти числовые строки с единицами;
+- найти совпадения с русскими aliases из `target_aliases_ru.yaml`;
+- передать Claude не только текст и картинки страниц, но и нейтральный список строк-кандидатов.
+
+Важно: prompt не подгонялся под ARK или TRC. Модель осталась та же, страницы остались те же.
+
+## 2. Что использовали
+
+Модель API:
+
+- `claude-sonnet-4-6`
+
+Библиотеки:
+
+- PyMuPDF (`fitz`) — текстовые линии PDF с координатами и изображения страниц;
+- `pdfplumber` — пробное извлечение таблиц;
+- PyYAML — чтение `target_aliases_ru.yaml`;
+- `requests` — вызов Anthropic API;
+- локальный validator `validate_claude_extraction.py` — проверка формы JSON.
+
+Новый файл слоя подготовки:
+
+- `experiments/claude_api_extraction_poc/build_page_inventory.py`
+
+Что делает `page_inventory`:
+
+- сохраняет строки текста по странице;
+- сохраняет грубые таблицы из `pdfplumber`;
+- находит числа с единицами (`м2`, `м3`, `м.пог`, `шт` и т.п.);
+- находит совпадения по aliases нужных разделов;
+- сохраняет результат в `page_inventory.json` и `page_inventory.md`.
+
+Что важно: `page_inventory` не принимает сметных решений. Он не говорит “это правильный target”. Он только дает Claude более структурированную заготовку.
+
+## 3. Какие страницы прогоняли
+
+Страницы те же, что в первом API-прогоне.
+
+### ARK
+
+Файл:
+
+- `АРК КР2 для ИИ.pdf`
+
+Страницы:
+
+- 23 — план кровли на отм. +3,730;
+- 24 — план кровли на отм. +5,160;
+- 25 — схема расположения шахт вентканалов.
+
+Разделы:
+
+- `flat_roof`;
+- `schiedel_vent_channels`.
+
+Inventory:
+
+- `experiments/claude_api_extraction_poc/outputs/ark/inventory/flat_roof_schiedel/page_inventory.json`;
+- `experiments/claude_api_extraction_poc/outputs/ark/inventory/flat_roof_schiedel/page_inventory.md`.
+
+Результаты API:
+
+- `experiments/claude_api_extraction_poc/outputs/ark/sections/flat_roof_schiedel_with_inventory_api/extraction_output.json`;
+- `experiments/claude_api_extraction_poc/outputs/ark/sections/flat_roof_schiedel_with_inventory_api/service_memo.txt`;
+- `experiments/claude_api_extraction_poc/outputs/ark/sections/flat_roof_schiedel_with_inventory_api/validation_report.md`.
+
+### TRC
+
+Файл:
+
+- `КР2_ТРЦ_30,06,2026.pdf`
+
+Страницы:
+
+- 39 — расположение вентканалов на плане 2-го этажа;
+- 40 — сечения по вентканалам.
+
+Раздел:
+
+- `schiedel_vent_channels`.
+
+Inventory:
+
+- `experiments/claude_api_extraction_poc/outputs/trc/inventory/schiedel/page_inventory.json`;
+- `experiments/claude_api_extraction_poc/outputs/trc/inventory/schiedel/page_inventory.md`.
+
+Результаты API:
+
+- `experiments/claude_api_extraction_poc/outputs/trc/sections/schiedel_with_inventory_api/extraction_output.json`;
+- `experiments/claude_api_extraction_poc/outputs/trc/sections/schiedel_with_inventory_api/service_memo.txt`;
+- `experiments/claude_api_extraction_poc/outputs/trc/sections/schiedel_with_inventory_api/validation_report.md`.
+
+## 4. Что собрал page_inventory
+
+### ARK
+
+Страницы: 3  
+Кандидаты: 113
+
+По страницам:
+
+- стр. 23: 176 текстовых линий, 6 таблиц, 79 строк таблиц, 62 кандидата;
+- стр. 24: 136 текстовых линий, 5 таблиц, 72 строки таблиц, 33 кандидата;
+- стр. 25: 172 текстовые линии, 15 таблиц, 78 строк таблиц, 18 кандидатов.
+
+Основные target-hit:
+
+- `project_spec_roof_area`: 8;
+- `roof_internal_drains_count`: 5;
+- `roof_parapet_drains_count`: 5;
+- `roof_vent_wall_abutment_level_1`: 8;
+- `roof_vent_wall_abutment_level_2`: 8;
+- `schiedel_masonry_total_length_m`: 3;
+- `vent_shaft_abutment_count`: 8.
+
+### TRC
+
+Страницы: 2  
+Кандидаты: 28
+
+По страницам:
+
+- стр. 39: 106 текстовых линий, 11 таблиц, 66 строк таблиц, 13 кандидатов;
+- стр. 40: 145 текстовых линий, 4 таблицы, 34 строки таблиц, 15 кандидатов.
+
+Основные target-hit:
+
+- `schiedel_masonry_total_length_m`: 1;
+- `schiedel_vent_channels`: 12.
+
+## 5. Как прошел запуск технически
+
+### ARK с inventory
+
+Модель: `claude-sonnet-4-6`  
+Вход: 99 561 input tokens  
+Выход: 28 702 output tokens  
+Stop reason: `end_turn`
+
+Validation:
+
+- sections: 2;
+- raw table rows: 37;
+- found items: 15;
+- missing items: 8;
+- needs-review items: 9;
+- validator warnings: 0.
+
+### TRC с inventory
+
+Модель: `claude-sonnet-4-6`  
+Вход: 76 119 input tokens  
+Выход: 8 785 output tokens  
+Stop reason: `end_turn`
+
+Validation:
+
+- sections: 1;
+- raw table rows: 6;
+- found items: 7;
+- missing items: 1;
+- needs-review items: 3;
+- validator warnings: 0.
+
+## 6. Сравнение с первым API-прогоном
+
+### ARK: стало лучше по кровле
+
+Первый API-прогон без inventory:
+
+- `project_spec_roof_area = null`;
+- `roof_area_level_1 = null`;
+- `roof_area_level_2 = 84,9 м2`;
+- `roof_internal_drains_count = null`;
+- `roof_parapet_drains_count = 2 шт`.
+
+Второй API-прогон с inventory:
+
+- `project_spec_roof_area = null`;
+- `roof_area_level_1 = 224,3 м2`, needs_review;
+- `roof_area_level_2 = 84,9 м2`;
+- `roof_internal_drains_count = null`;
+- `roof_parapet_drains_count = 2 шт`.
+
+Вывод: inventory помог модели увереннее разложить кровлю по уровням и увидеть строку `roof_area_level_1`. При этом она не стала автоматически суммировать все площади, что правильно.
+
+Служебная записка по ARK стала понятнее. Она хорошо объясняет:
+
+- три зоны кровли;
+- отсутствие явной итоговой площади;
+- конфликт 224,3 м2 и 226,1 м2;
+- разные марки мембраны LOGICROOF V-GR / V-RP;
+- что по ARK нет явной системы Schiedel.
+
+### ARK: стало хуже/беднее по вентканалам
+
+Первый API-прогон без inventory:
+
+- `schiedel_masonry_total_length_m = null`, needs_review;
+- `vent_channel_2_height = 2,43 м`, needs_review;
+- несколько дополнительных контрольных полей были сохранены.
+
+Второй API-прогон с inventory:
+
+- `schiedel_masonry_total_length_m = 7,0 м.пог`, needs_review;
+- меньше найденных target-полей по Schiedel;
+- больше missing.
+
+Вывод: inventory помог зафиксировать явную итоговую строку 7,0 м.пог, но модель стала осторожнее и не стала раскладывать все детали по target-кодам. Для ARK это не критично, потому что проект, судя по листу, вообще не про Schiedel, а про газоблочные шахты.
+
+### TRC: служебная записка стала лучше
+
+Во втором прогоне модель явно заметила проблему библиотечного извлечения таблицы:
+
+- `pdfplumber` может читать цифры в таблице Schiedel неправильно;
+- изображение страницы нужно считать главным источником;
+- значения из таблицы нужно проверять по картинке.
+
+Это важное улучшение. Слой подготовки дал модели повод сравнить “машинное чтение” и изображение.
+
+### TRC: target-count все еще опасен
+
+Первый API-прогон без inventory:
+
+- `schiedel_masonry_total_length_m = 9,8 п.м.`;
+- `schiedel_vent_channel_2x_count = 21 шт`, needs_review;
+- `vent_channel_2_count = 15 шт`, needs_review.
+
+Второй API-прогон с inventory:
+
+- `schiedel_masonry_total_length_m = 9,8 п.м.`;
+- `schiedel_vent_channel_2x_count = 21 шт`, needs_review;
+- `vent_channel_2_count = 21 шт`, needs_review;
+- `vent_channel_1_height = 4,9 п.м.`, needs_review;
+- `vent_channel_2_height = 4,9 п.м.`, needs_review.
+
+Проблема осталась: модель все еще может положить количество элементов Schiedel в target, который может ожидать количество шахт/каналов. Inventory даже усиливает эту проблему, потому что явнее показывает строки со `шт`.
+
+Вывод: подготовительный слой нужен, но он должен различать тип количества:
+
+- `quantity_kind = material_elements_count`;
+- `quantity_kind = shafts_count`;
+- `quantity_kind = total_length`;
+- `quantity_kind = height`;
+- `quantity_kind = area`;
+- `quantity_kind = volume`.
+
+Без этого Claude продолжит путать “шт элементов” и “шт шахт”.
+
+## 7. Что получилось хорошо
+
+1. Новый слой технически работает.
+
+Он строит `page_inventory.json` и `page_inventory.md`, а API-запуск умеет принимать `--inventory`.
+
+2. JSON после прогонов валиден.
+
+Оба результата прошли validator без warnings.
+
+3. По ARK кровля стала лучше.
+
+Модель стала увереннее использовать найденные строки и лучше объяснять конфликтные площади.
+
+4. Служебные записки стали диагностичнее.
+
+Особенно TRC: модель прямо написала, что автоматический парсер таблицы может ошибаться и нужно смотреть изображение.
+
+## 8. Что получилось плохо или требует доработки
+
+1. Inventory сейчас слишком широкий.
+
+ARK дал 113 кандидатов на 3 страницах. Это много. В API нужно отдавать не весь сырой inventory, а компактный section-inventory.
+
+2. Prompt-pack все еще слишком большой.
+
+С inventory вход вырос:
+
+- ARK: с 69 865 до 99 561 input tokens;
+- TRC: с 66 250 до 76 119 input tokens.
+
+Это дорого и медленно. Для production нужно резать pack по разделам.
+
+3. `pdfplumber` не всегда надежно читает чертежные таблицы.
+
+Он полезен как один из источников, но нельзя доверять ему как истине. Изображение страницы остается обязательным.
+
+4. Модель все еще путает смысл `шт`.
+
+Для Schiedel это особенно опасно: `шт` в спецификации элементов — не обязательно количество шахт.
+
+## 9. Вывод для руководства
+
+Второй прогон подтвердил: подготовительный слой нужен, но текущая версия — только первый черновик.
+
+Что подтвердилось:
+
+- библиотеки могут собрать полезный слой перед Claude;
+- модель может использовать этот слой для лучшей диагностики;
+- служебная записка становится понятнее;
+- JSON остается валидным.
+
+Что не подтвердилось:
+
+- один только inventory не решает сметный смысл;
+- нельзя просто добавить все найденные строки к полному prompt-pack и считать это production-решением;
+- нужен более умный классификатор типов количеств и секционное сжатие pack.
+
+Следующий правильный шаг:
+
+1. сделать `section-pack`, чтобы в Claude уходили только targets/aliases нужных разделов;
+2. доработать inventory: добавить `quantity_kind`;
+3. отличать строки спецификации материалов/элементов от строк количества шахт/объемов работ;
+4. повторить тот же тест на тех же страницах и той же модели;
+5. сравнить стоимость, токены, JSON и служебную записку.
+
+## 10. Шаблон отчетов для следующих прогонов
+
+Для каждого следующего API-прогона фиксировать:
+
+- дата;
+- проект;
+- PDF и страницы;
+- section_code;
+- модель;
+- стоимость;
+- input/output tokens;
+- какие библиотеки использовались;
+- какие файлы результата созданы;
+- validation stats;
+- что совпало со старым JSON;
+- что стало лучше;
+- что стало хуже;
+- опасные ошибки;
+- решение: можно расширять прогон или нужно сначала править подготовительный слой/prompt.
