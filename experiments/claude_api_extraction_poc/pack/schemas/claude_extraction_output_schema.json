@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "purpose": "Target JSON shape for Claude-chat extraction output (A6.1). Not a strict machine-enforced JSON Schema — a shape description for the model and for validate_claude_extraction.py.",
+    "top_level_example": {
+      "project_name": "string|null",
+      "source_files": ["string, ...  - PDF filenames used"],
+      "sections": {
+        "<section_code>": {
+          "raw_table_rows": ["raw_table_row, ... - table rows copied before target mapping"],
+          "found": ["found_item, ..."],
+          "missing": ["target_code, ... - codes from calculator_targets_compact.json with no PDF evidence"],
+          "needs_review": ["found_item, ... - subset of found items flagged for human review (also present in found)"]
+        }
+      },
+      "extraction_warnings": ["string, ... - free-text notes about the PDF that don't fit elsewhere (e.g. 'page 8 table overlaps a drawing, low confidence')"]
+    }
+  },
+  "found_item_shape": {
+    "target_code": "string - matches a target/group code from calculator_targets_compact.json, or a free-text label if outside the compact list",
+    "group_code": "string|null - set only for items belonging to an extract_groups entry (e.g. trench_routes, foundation_rebar_items)",
+    "item_name": "string|null - for group items, e.g. route name 'К1' or rebar 'ф10 А500С'",
+    "value": "number|string|object|array|null",
+    "unit": "string|null - unit as written in the PDF",
+    "normalized_unit": "string|null - from unit_normalization_guide.json",
+    "source_pdf": "string|null",
+    "page_number": "number|null",
+    "page_title": "string|null",
+    "raw_text": "string|null - verbatim quote or table cell description",
+    "table_context": "string|null - table title/header this value came from, if applicable",
+    "confidence": "number - 0..1",
+    "needs_review": "boolean",
+    "candidates": "array|null - present only when there is genuine ambiguity between two or more values; each candidate has the same shape as found_item minus this field",
+    "notes": "string|null"
+  },
+  "raw_table_row_shape": {
+    "table_id": "string|null - stable local id within this extraction, e.g. 'floor_slab_2_formwork_table'",
+    "table_title": "string|null - visible table title/header",
+    "section_code": "string|null",
+    "source_pdf": "string|null",
+    "page_number": "number|null",
+    "page_title": "string|null",
+    "columns": ["string, ... - column headers as visible in the PDF"],
+    "row_index": "number|null - row order inside the table",
+    "cells": ["string|number|null, ... - raw cell values in the same order as columns"],
+    "raw_text": "string|null - full raw row text if cells are hard to separate",
+    "unit": "string|null - unit as written in the table row/cell",
+    "normalized_unit": "string|null - from unit_normalization_guide.json",
+    "mapped_target_codes": ["string, ... - target codes this row was mapped to, or empty if only kept for context"],
+    "confidence": "number - 0..1",
+    "needs_review": "boolean",
+    "notes": "string|null"
+  },
+  "group_value_shapes": {
+    "trench_routes": {"route_code": "string", "name": "string|null", "length_m": "number|null", "depth_m": "number|null", "width_m": "number|null", "volume_m3": "number|null"},
+    "communications_pipe_items": {"code": "string", "name": "string", "diameter_mm": "number|null", "pipe_length_m": "number|null", "quantity": "number|null", "total_length_m": "number|null - only if explicitly present in PDF", "include_in_communications": "boolean|null"},
+    "foundation_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "source_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly gives kg; do not calculate it"},
+    "floor_slab_1_rebar_items": {"floor": "number|null - should be 1 for this section", "component": "floor_slab_1", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
+    "floor_slab_2_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
+    "beam_items": {"code": "string|null", "name": "string", "length_m": "number|null", "width_m": "number|null", "height_m": "number|null", "count": "number|null"},
+    "floor_slab_2_beam_items": {"code": "string|null", "name": "string", "length_m": "number|null", "width_m": "number|null", "height_m": "number|null", "count": "number|null"},
+    "beam_table_controls": {"label": "string", "value": "number|null", "unit": "string|null"},
+    "roof_raw_material_spec_rows": {"name": "string", "quantity": "number|null", "unit": "string|null"},
+    "main_wall_rebar_items": {"floor": "number|null", "component": "load_bearing_walls", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
+    "lintel_rebar_items": {"floor": "number|null", "component": "lintels", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
+    "vent_chimney_cladding_segments": {"length_m": "number|null", "count": "number|null"},
+    "schiedel_vent_chimney_cladding_segments": {"name": "string|null", "length_m": "number|null", "quantity": "number|null", "total_length_m": "number|null - only if explicitly present in PDF"}
+  },
+  "sections_expected": [
+    "earthworks", "foundation_slab", "waterproofing", "load_bearing_walls_lintels",
+    "floor_slab_1", "floor_slab_2", "flat_roof", "schiedel_vent_channels"
+  ]
+}
