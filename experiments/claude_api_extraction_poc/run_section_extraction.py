@@ -126,10 +126,59 @@ def image_block(page: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_request_text(section_codes: list[str], pages: list[dict[str, Any]]) -> str:
+def compact_inventory_text(inventory_path: Path | None) -> str:
+    if not inventory_path:
+        return ""
+    inventory = read_json(inventory_path)
+    compact_candidates: list[dict[str, Any]] = []
+    for candidate in inventory.get("candidates") or []:
+        has_alias = bool(candidate.get("alias_hits"))
+        has_numbers = bool(candidate.get("numbers"))
+        is_contextual_table_row = (
+            candidate.get("source_type") == "pdfplumber_table_row"
+            and has_numbers
+            and len(str(candidate.get("text") or "")) > 20
+        )
+        if not has_alias and not is_contextual_table_row:
+            continue
+        compact_candidates.append(
+            {
+                "candidate_id": candidate.get("candidate_id"),
+                "source_type": candidate.get("source_type"),
+                "source_pdf": candidate.get("source_pdf"),
+                "page_number": candidate.get("page_number"),
+                "text": candidate.get("text"),
+                "numbers": candidate.get("numbers") or [],
+                "alias_hits": candidate.get("alias_hits") or [],
+                "table_index": candidate.get("table_index"),
+                "row_index": candidate.get("row_index"),
+                "cells": candidate.get("cells"),
+            }
+        )
+    compact = {
+        "method": inventory.get("method"),
+        "pages": inventory.get("pages"),
+        "target_hit_counts": inventory.get("target_hit_counts"),
+        "candidates": compact_candidates,
+    }
+    return "\n".join(
+        [
+            "# PREPARED PAGE INVENTORY",
+            "Ниже нейтральная машинная подготовка страниц. Это не готовый ответ и не источник истины.",
+            "Используй inventory как указатель на строки-кандидаты, но проверяй значения по изображению страницы.",
+            "Если inventory и изображение расходятся, приоритет у изображения, а строку отметь needs_review.",
+            "",
+            "```json",
+            json.dumps(compact, ensure_ascii=False, indent=2),
+            "```",
+        ]
+    )
+
+
+def build_request_text(section_codes: list[str], pages: list[dict[str, Any]], inventory_path: Path | None) -> str:
     sections = ", ".join(section_codes)
     return "\n\n".join(
-        [
+        [part for part in [
             build_pack_text(),
             "# API SECTION RUN",
             f"requested_section_codes: {sections}",
@@ -145,8 +194,9 @@ def build_request_text(section_codes: list[str], pages: list[dict[str, Any]]) ->
                 "- raw_table_rows заполняй только по таблицам/строкам выбранных страниц, относящимся к requested_section_codes;\n"
                 "- служебная записка должна описывать только выбранные страницы и явно сказать, что это partial section run."
             ),
+            compact_inventory_text(inventory_path),
             page_text_block(pages),
-        ]
+        ] if part]
     )
 
 
@@ -156,6 +206,7 @@ def build_payload(
     section_codes: list[str],
     model: str,
     max_tokens: int,
+    inventory_path: Path | None,
 ) -> dict[str, Any]:
     content: list[dict[str, Any]] = []
     for page in pages:
@@ -169,7 +220,7 @@ def build_payload(
     content.append(
         {
             "type": "text",
-            "text": build_request_text(section_codes, pages),
+            "text": build_request_text(section_codes, pages, inventory_path),
         }
     )
     return {
@@ -284,6 +335,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--section-code", action="append", required=True)
     parser.add_argument("--page-ref", action="append", required=True, help="Use 'source.pdf:page_number'.")
+    parser.add_argument("--inventory", type=Path, help="Optional page_inventory.json from build_page_inventory.py.")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--max-tokens", type=int, default=40000)
@@ -293,12 +345,14 @@ def main() -> int:
     load_env()
     manifest = read_json(args.manifest)
     pages = select_pages(manifest, args.page_ref)
-    payload = build_payload(manifest, pages, args.section_code, args.model, args.max_tokens)
+    payload = build_payload(manifest, pages, args.section_code, args.model, args.max_tokens, args.inventory)
 
     print("Claude API section extraction request")
     print(f"model: {args.model}")
     print(f"sections: {', '.join(args.section_code)}")
     print(f"pages: {len(pages)}")
+    if args.inventory:
+        print(f"inventory: {args.inventory}")
     print(f"pack_dir: {PACK_DIR}")
 
     if args.dry_run:
