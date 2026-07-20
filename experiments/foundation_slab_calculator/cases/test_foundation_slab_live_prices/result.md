@@ -63,6 +63,7 @@
 - `eps100_thickness_m`: `0.1`
 - `eps100_pack_volume_m3`: `0.2776`
 - `eps100_unit_price`: `10000`
+- `slab_zones`: `[]`
 
 ## Формулы
 - Монтаж мембраны: `quantity = membrane_area_m2`.
@@ -237,6 +238,9 @@
 | `manual_lines.technical_supervision.quantity` | `1` |
 | `manual_lines.technical_supervision.unit_price` | `10000` |
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |
+| `slab_zones.used` | `False` |
+| `slab_zones.zone_count` | `0` |
+| `slab_zones.concrete_project_volume_m3` | `81` |
 
 ## Контроль армирования
 | Показатель | Значение |

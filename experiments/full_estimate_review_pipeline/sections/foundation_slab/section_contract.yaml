@@ -113,6 +113,38 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not merge with floor slab, beam, lintel, or wall concrete."
 
+  - key: slab_zones
+    label_ru: "Объём бетона по зонам плиты (альтернатива единому проектному объёму)"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "slab_zones"
+    calculator_input_path: "slab_zones"
+    normalized_json_path: "sections.foundation_slab.parameters.slab_zones.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: false
+    item_label_columns: [context]
+    correction_columns: [concrete_volume_m3]
+    columns:
+      - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["slab_zones"]
+      aliases_ru: []
+      expected_unit: ""
+      notes: "NOT YET part of the live extraction prompt (calculator_targets_compact.json/target_aliases_ru.yaml) — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (e.g. main slab + a lower zone under a porch), same shape as ТРЦ step_22's finding. context is a free string describing the zone as printed in the PDF."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива concrete_project_volume_m3 выше. Используйте, если PDF даёт бетон плиты несколькими зонами без общего итога — иначе оставьте пустым и заполняйте единое поле выше как обычно."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all pre-existing foundation_slab_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES concrete_project_volume_m3 above for this run — that field is still required by the calculator's dataclass but its value is ignored once slab_zones is non-empty (same convention as load_bearing_walls_lintels' wall_block_items). Formwork/PLANTER membrane/thermal inserts deliberately stay as independent scalars, not per-zone — confirmed on real ТРЦ data that formwork area is given as one combined figure across zones, not per-zone (see step_22 note in UNIVERSALIZATION_PLAN.md), so forcing it into slab_zones would misrepresent the source. See p1_slab_zones_shipped memory."
+
   - key: thermal_insert_50_length_m
     label_ru: "Термовставка 50 мм, длина"
     unit: "мп"

@@ -120,7 +120,8 @@
     "thermal_insert_installation_work_unit_price": 100,
     "eps100_thickness_m": 0.1,
     "eps100_pack_volume_m3": 0.2776,
-    "eps100_unit_price": 10000
+    "eps100_unit_price": 10000,
+    "slab_zones": []
   },
   "calculation_blocks": {
     "confirmed_rules": [
@@ -325,6 +326,11 @@
         "unit_price": 10000,
         "line_type": "fixed/manual"
       }
+    },
+    "slab_zones": {
+      "used": false,
+      "zone_count": 0,
+      "concrete_project_volume_m3": 81
     }
   },
   "warnings": [

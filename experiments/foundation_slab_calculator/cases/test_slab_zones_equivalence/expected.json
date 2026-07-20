@@ -1,0 +1,40 @@
+{
+  "calculation_blocks": {
+    "concrete": {
+      "concrete_order_volume_m3": 85.5,
+      "concrete_delivery_trips": 10,
+      "reinforcement_density_kg_per_m3_rounded": 89
+    },
+    "slab_zones": {
+      "used": true,
+      "zone_count": 2,
+      "concrete_project_volume_m3": 81
+    }
+  },
+  "estimate_lines": {
+    "foundation_slab_concreting_work": {
+      "quantity": 81,
+      "material_total": 0,
+      "work_total": 972000,
+      "line_total": 972000
+    },
+    "concrete_b22_5_m300_material": {
+      "quantity": 85.5,
+      "material_total": 547200,
+      "work_total": 0,
+      "line_total": 547200
+    },
+    "concrete_delivery": {
+      "quantity": 10,
+      "material_total": 75000,
+      "work_total": 0,
+      "line_total": 75000
+    },
+    "concrete_pump_32m": {
+      "quantity": 1,
+      "material_total": 38000,
+      "work_total": 0,
+      "line_total": 38000
+    }
+  }
+}

@@ -118,6 +118,16 @@ class RebarItemInput:
 
 
 @dataclass(frozen=True)
+class SlabZone:
+    context: str
+    concrete_volume_m3: float
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "SlabZone":
+        return cls(**data)
+
+
+@dataclass(frozen=True)
 class FoundationSlabInput:
     project_name: str
     membrane_area_m2: float
@@ -191,6 +201,7 @@ class FoundationSlabInput:
     thermal_insert_100_pack_multiple_qty: float | None = None
     thermal_insert_50_material_unit_price: float | None = None
     thermal_insert_100_material_unit_price: float | None = None
+    slab_zones: list[SlabZone | dict[str, Any]] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -201,6 +212,25 @@ class FoundationSlabInput:
                 for item in self.rebar_items
             ],
         )
+        object.__setattr__(
+            self,
+            "slab_zones",
+            [
+                zone if isinstance(zone, SlabZone) else SlabZone.from_dict(zone)
+                for zone in (self.slab_zones or [])
+            ],
+        )
+        if self.slab_zones:
+            # Purely additive: overriding concrete_project_volume_m3 here means every
+            # downstream usage in this file (rebar density, concrete order volume,
+            # delivery trips, the concreting-work estimate line) gets the correct
+            # summed value with zero other code changes. Empty/absent slab_zones
+            # leaves the originally-supplied scalar untouched.
+            object.__setattr__(
+                self,
+                "concrete_project_volume_m3",
+                _round_decimal(sum(_to_decimal(zone.concrete_volume_m3) for zone in self.slab_zones)),
+            )
         self.validate()
 
     @classmethod
@@ -260,6 +290,11 @@ class FoundationSlabInput:
         ]
         for field_name in non_negative_fields:
             _require_non_negative(field_name, getattr(self, field_name))
+
+        for zone in self.slab_zones or []:
+            if not zone.context:
+                raise ValueError("slab_zones.context is required")
+            _require_non_negative(f"slab_zones.{zone.context}.concrete_volume_m3", zone.concrete_volume_m3)
 
         if not self.rebar_items:
             raise ValueError("rebar_items is required")
@@ -1293,6 +1328,11 @@ def calculate_foundation_slab(data: FoundationSlabInput) -> dict[str, Any]:
         "rebar": rebar_block,
         "concrete": concrete_block,
         "manual_lines": manual_lines_block,
+        "slab_zones": {
+            "used": bool(data.slab_zones),
+            "zone_count": len(data.slab_zones or []),
+            "concrete_project_volume_m3": data.concrete_project_volume_m3,
+        },
     }
     estimate_lines = calculate_internal_estimate_lines(
         data,

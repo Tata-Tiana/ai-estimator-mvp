@@ -118,7 +118,8 @@
     "thermal_insert_50_pack_multiple_qty": 0.2776,
     "thermal_insert_100_pack_multiple_qty": 0.2776,
     "thermal_insert_50_material_unit_price": 9800,
-    "thermal_insert_100_material_unit_price": 10000
+    "thermal_insert_100_material_unit_price": 10000,
+    "slab_zones": []
   },
   "calculation_blocks": {
     "confirmed_rules": [
@@ -335,6 +336,11 @@
         "unit_price": 10000,
         "line_type": "fixed/manual"
       }
+    },
+    "slab_zones": {
+      "used": false,
+      "zone_count": 0,
+      "concrete_project_volume_m3": 81
     }
   },
   "warnings": [],
