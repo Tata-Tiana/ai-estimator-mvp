@@ -1,33 +1,34 @@
-# API run 04: TRC KR2 full-PDF attempt
+# API run 04 — попытка полного прогона TRC KR2
 
-Date: 2026-07-20
+Дата: 2026-07-20
 
-## Goal
+## Цель
 
-Test a closer API equivalent of the manual chat extraction:
+Проверить более близкий API-аналог ручного извлечения через чат:
 
-- only TRC;
-- only the second project file / KR2;
-- full prompt pack, not compact section-pack;
-- short run note explaining that this is the above-floor / second part of the project;
-- keep the whole KR2 file available so the model can use cross-page context.
+- только проект TRC;
+- только второй файл проекта / KR2;
+- полный prompt pack, а не компактный section-pack;
+- короткая заметка к запуску, что это надземная часть / вторая часть проекта;
+- весь файл KR2 должен быть доступен модели, чтобы она могла использовать контекст между листами.
 
-## Script Changes
+## Изменения в скриптах
 
-Two small API harness changes were added:
+Были добавлены две небольшие доработки API harness:
 
 - `run_section_extraction.py`
-  - added `--source-pdf` to select all prepared pages belonging to one PDF from manifest;
-  - added `--run-note`;
+  - добавлен `--source-pdf`, чтобы выбирать из manifest все подготовленные страницы одного PDF;
+  - добавлен `--run-note`;
 - `run_claude_api_extraction.py`
-  - added `--run-note`;
-  - added optional `--section-code` filter while still sending the full prompt pack.
+  - добавлен `--run-note`;
+  - добавлен необязательный фильтр `--section-code`, при этом полный prompt pack все равно
+    отправляется модели.
 
-These changes do not alter the manual chat prompt.
+Эти изменения не меняют ручной prompt для chat extraction.
 
-## Attempt 1: KR2 as 44 prepared PNG pages
+## Попытка 1: KR2 как 44 подготовленные PNG-страницы
 
-Command shape:
+Форма команды:
 
 ```text
 run_section_extraction.py
@@ -36,30 +37,30 @@ run_section_extraction.py
 --model claude-opus-4-8
 ```
 
-Selected content:
+Выбранный контент:
 
-- 44 prepared pages from `КР2_ТРЦ_30,06,2026.pdf`;
-- full API prompt pack;
-- requested sections:
+- 44 подготовленные страницы из `КР2_ТРЦ_30,06,2026.pdf`;
+- полный API prompt pack;
+- запрошенные разделы:
   - `load_bearing_walls_lintels`;
   - `floor_slab_1`;
   - `floor_slab_2`;
   - `flat_roof`;
   - `schiedel_vent_channels`.
 
-Result:
+Результат:
 
-- failed before extraction;
-- API returned `413 request_too_large`;
-- reason: 44 PNG images + full prompt + page text exceeded Anthropic request size.
+- запрос упал до начала извлечения;
+- API вернул `413 request_too_large`;
+- причина: 44 PNG-картинки + полный prompt + текст страниц превысили лимит размера запроса Anthropic.
 
-Conclusion:
+Вывод:
 
-Sending the entire KR2 as rendered PNG pages is not viable in one request.
+Отправлять весь KR2 как отрендеренные PNG-страницы в одном запросе нельзя: запрос слишком большой.
 
-## Attempt 2: KR2 as one PDF document block, no section filter
+## Попытка 2: KR2 как один PDF document block, без фильтра разделов
 
-Command shape:
+Форма команды:
 
 ```text
 run_claude_api_extraction.py
@@ -68,27 +69,27 @@ run_claude_api_extraction.py
 --max-tokens 40000
 ```
 
-Result:
+Результат:
 
-- API accepted the request;
-- output was saved to:
+- API принял запрос;
+- ответ сохранен в:
   - `experiments/claude_api_extraction_poc/outputs/trc/full_kr2_pdf_opus48_full_prompt/api_raw_response.json`
   - `experiments/claude_api_extraction_poc/outputs/trc/full_kr2_pdf_opus48_full_prompt/api_output_text.txt`
-- parser failed because the JSON was incomplete;
+- parser не смог разобрать результат, потому что JSON был неполным;
 - `stop_reason = max_tokens`;
 - usage:
   - input tokens: `171695`;
   - output tokens: `40000`.
 
-Important observation:
+Важное наблюдение:
 
-Because this full-PDF script did not pass requested section codes yet, the model started generating
-all eight prompt sections, including empty `earthworks` and `foundation_slab`. That wasted output
-tokens and made truncation inevitable.
+Так как full-PDF скрипт на тот момент еще не передавал список нужных section codes, модель начала
+генерировать все восемь разделов prompt, включая пустые `earthworks` и `foundation_slab`. Это
+потратило output tokens и практически гарантировало обрезание ответа.
 
-## Attempt 3: KR2 as one PDF document block, with KR2 section filter
+## Попытка 3: KR2 как один PDF document block, с фильтром разделов KR2
 
-Command shape:
+Форма команды:
 
 ```text
 run_claude_api_extraction.py
@@ -102,57 +103,60 @@ run_claude_api_extraction.py
 --max-tokens 40000
 ```
 
-Result:
+Результат:
 
-- API accepted the request;
-- output was saved to:
+- API принял запрос;
+- ответ сохранен в:
   - `experiments/claude_api_extraction_poc/outputs/trc/full_kr2_pdf_opus48_full_prompt_v2/api_raw_response.json`
   - `experiments/claude_api_extraction_poc/outputs/trc/full_kr2_pdf_opus48_full_prompt_v2/api_output_text.txt`
-- parser failed because the JSON was still incomplete / malformed;
+- parser снова не смог разобрать результат, потому что JSON все еще неполный / malformed;
 - `stop_reason = max_tokens`;
 - usage:
   - input tokens: `171879`;
   - output tokens: `40000`.
 
-Quality note from the partial text:
+Замечание по качеству частичного текста:
 
-The model did use broad cross-page context and found real project issues:
+Модель действительно использовала широкий контекст между страницами и нашла реальные проблемы
+проекта:
 
-- it noticed that some sheets appear to have a different project stamp;
-- it found wall/block, slab, formwork, roof, and vent-channel related data;
-- it flagged many values as `needs_review` because the PDF text layer is fragmented;
-- it identified mixed/ambiguous values such as slab edge formwork vs beam formwork.
+- заметила, что часть листов, похоже, имеет другой штамп проекта;
+- нашла данные по стенам/блокам, плитам, опалубке, кровле и вентканалам;
+- пометила много значений как `needs_review`, потому что текстовый слой PDF фрагментирован;
+- увидела смешанные/неоднозначные значения, например опалубку торца плиты и опалубку балок.
 
-But the response is not a usable final `extraction_output.json` because it hit the output token limit.
+Но это все равно не usable final `extraction_output.json`, потому что ответ уперся в output token
+limit.
 
-## Conclusion
+## Вывод
 
-The full-KR2 / full-prompt idea is directionally right for quality because it preserves cross-page
-context. But one monolithic JSON answer for the whole KR2 is too large.
+Идея full-KR2 / full-prompt правильная по направлению качества: она сохраняет контекст между
+страницами. Но один монолитный JSON-ответ по всему KR2 слишком большой.
 
-Recommended next approach:
+Рекомендованный следующий подход:
 
-1. Keep Opus 4.8.
-2. Keep the full prompt pack.
-3. Keep the whole relevant PDF file available when possible.
-4. Do not ask for all KR2 sections in one JSON response.
-5. Split KR2 into logical full-context runs:
-   - walls/lintels;
-   - floor slab 1;
-   - floor slab 2;
-   - flat roof;
-   - vent channels.
-6. Alternatively use section groups:
+1. Оставить Opus 4.8.
+2. Оставить полный prompt pack.
+3. По возможности оставлять модели весь релевантный PDF-файл как контекст.
+4. Не просить все разделы KR2 одним JSON-ответом.
+5. Разбить KR2 на логические full-context задачи:
+   - стены/перемычки;
+   - плита 1 этажа;
+   - плита 2 этажа;
+   - плоская кровля;
+   - вентканалы.
+6. Альтернативно использовать группы разделов:
    - `flat_roof + schiedel_vent_channels`;
    - `floor_slab_1 + floor_slab_2`;
    - `load_bearing_walls_lintels`.
 
-This is not the same as blind page slicing: the model can still receive the full KR2 PDF/document,
-but the requested output must be smaller and section-scoped so it can finish valid JSON.
+Это не то же самое, что слепая нарезка страниц: модель все еще может получать весь KR2 PDF/document,
+но запрошенный output должен быть меньше и ограничен конкретным разделом, чтобы модель успела
+закончить валидный JSON.
 
-## Practical Takeaway
+## Практический вывод
 
-For production API extraction, we need a job plan:
+Для production API extraction нужен job plan:
 
 ```text
 project file split (KR1/KR2)
@@ -162,5 +166,5 @@ project file split (KR1/KR2)
 → validate final JSON
 ```
 
-This preserves the benefit of seeing the whole file while avoiding a single huge response that cannot
-fit in the API output limit.
+Так мы сохраняем преимущество полного файла в контексте, но избегаем одного огромного ответа, который
+не помещается в API output limit.

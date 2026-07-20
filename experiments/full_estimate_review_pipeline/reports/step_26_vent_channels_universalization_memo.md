@@ -1,211 +1,214 @@
-# Step 26 — Vent Channels / Schiedel Universalization Memo
+# Шаг 26 — памятка по универсализации вентканалов / Schiedel
 
-Date: 2026-07-20
+Дата: 2026-07-20
 
-Status: architecture memo only. No production config or calculator code changed in this step.
+Статус: только архитектурная памятка. На этом шаге production-конфиги и код калькуляторов не менялись.
 
-## Why This Memo Exists
+## Зачем нужна эта памятка
 
-We reviewed the vent-channel problem in detail after comparing:
+Мы подробно разобрали проблему вентканалов после сравнения:
 
-- API extraction outputs for ARK/TRC;
-- screenshots of TRC and USV vent-channel drawings/specifications;
-- USV estimate workbook;
-- TRC estimate workbook;
-- current `schiedel_vent_channels` calculator behavior.
+- API-извлечений по ARK/TRC;
+- скриншотов чертежей и спецификаций вентканалов TRC и USV;
+- готовой сметы USV;
+- готовой сметы TRC;
+- текущего поведения калькулятора `schiedel_vent_channels`.
 
-The conclusion is important for the whole extraction and estimate pipeline: the current section name
-`schiedel_vent_channels` is too narrow and the current target names mix at least three different
-concepts. This can make GPT/Claude confuse:
+Главный вывод важен для всего пайплайна извлечения и сметы: текущее имя раздела
+`schiedel_vent_channels` слишком узкое, а текущие target-поля смешивают минимум три разных смысла.
+Из-за этого GPT/Claude может путать:
 
-- bought Schiedel material pieces;
-- physical vent shafts / ВК labels on drawings;
-- total masonry length used for work quantity.
+- покупные элементы Schiedel;
+- физические вентшахты / метки ВК на чертежах;
+- общую длину кладки, по которой считается работа.
 
-This memo records what must be changed later in chat extraction / full estimate architecture.
+Эта памятка фиксирует, что позже нужно поменять в chat extraction / full estimate архитектуре.
 
-## Estimate Findings
+## Что нашли в сметах
 
-These numbers are project examples from existing estimate workbooks. They are not defaults and must
-not be copied into production config as universal quantities.
+Числа ниже — это примеры из конкретных готовых смет. Это не дефолты и их нельзя переносить в
+production-конфиги как универсальные количества.
 
-### USV Estimate
+### Смета USV
 
-Workbook:
+Файл:
 
 ```text
 /Users/tatanamedzidova/Desktop/Сметный расчет _ЮСВ_28.04.2026.xlsx
 ```
 
-Use the sheet selected by the user as the current reference:
+В качестве текущего reference-листа пользователь указал:
 
 ```text
 АЛ 06.04 КР1,КР2 (ЕЧ)(ЮВ)КровТН
 ```
 
-Relevant estimate rows found on this sheet:
+На этом листе найдены релевантные строки сметы:
 
-- row 122: `Обкладка дымохода и вентканалов толщ. 150мм из из газобетонных блоков` — `11.466666666666667 м2`;
-- row 212: `Монтаж примыкания к вентшахтам` — `3 шт`;
-- row 231: section header `ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel`;
-- row 232: `Кладка вентканалов Schiedel` — `15.82 мп`;
-- row 233: `Вентиляционный канал 2х,36/25 см Schiedel` — `24 шт`;
-- row 234: `Вентиляционный канал 3х,52/25 см Schiedel` — `8 шт`;
-- row 235: `Доставка вентканалов` — `1 маш`.
+- строка 122: `Обкладка дымохода и вентканалов толщ. 150мм из из газобетонных блоков` — `11.466666666666667 м2`;
+- строка 212: `Монтаж примыкания к вентшахтам` — `3 шт`;
+- строка 231: заголовок раздела `ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel`;
+- строка 232: `Кладка вентканалов Schiedel` — `15.82 мп`;
+- строка 233: `Вентиляционный канал 2х,36/25 см Schiedel` — `24 шт`;
+- строка 234: `Вентиляционный канал 3х,52/25 см Schiedel` — `8 шт`;
+- строка 235: `Доставка вентканалов` — `1 маш`.
 
-Interpretation:
+Интерпретация:
 
-- USV uses Schiedel product pieces 2x and 3x in the estimate.
-- The paid work row is driven by total masonry length `15.82 мп`, not by counting visible holes/shafts.
-- Gas-block cladding of smoke/vent shafts is a separate walls/parapet-related estimate line, not the
-  same thing as Schiedel product pieces.
-- Roof abutments to vent shafts are a roof estimate line, not Schiedel material quantity.
+- В USV в смете есть покупные элементы Schiedel типов 2x и 3x.
+- Строка работы считается по общей длине кладки `15.82 мп`, а не по количеству видимых отверстий или
+  шахт на чертеже.
+- Обкладка дымохода и вентканалов газоблоком — это отдельная строка, связанная со стенами/парапетом,
+  а не то же самое, что покупные элементы Schiedel.
+- Примыкания кровли к вентшахтам — это строка кровли, а не количество материалов Schiedel.
 
-### TRC Estimate
+### Смета TRC
 
-Workbook:
+Файл:
 
 ```text
 /Users/tatanamedzidova/Desktop/ТРЦ_3_точный_расчет_коробка_для_ИИ.xlsx
 ```
 
-Relevant estimate rows found on sheet `НС 29.06.26`:
+На листе `НС 29.06.26` найдены релевантные строки сметы:
 
-- row 138: `Обкладка дымохода и вентканалов толщ. 150мм из из газобетонных блоков` — `4.4 м2`;
-- row 265: section header `ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel (без учёта дымоходов)`;
-- row 266: `Кладка вентканалов Schiedel` — `9.8 мп`;
-- row 267: `Вентиляционный блок SCHIEDEL VENT, 1 хода, наружный размер 20/25 см, высота 33 см` — `21 шт`;
-- row 268: `Вентиляционный блок SCHIEDEL VENT, 2 хода, наружный размер 36/25 см, высота 33 см` — `15 шт`;
-- row 269: `Доставка вентканалов` — `1 маш`.
+- строка 138: `Обкладка дымохода и вентканалов толщ. 150мм из из газобетонных блоков` — `4.4 м2`;
+- строка 265: заголовок раздела `ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel (без учёта дымоходов)`;
+- строка 266: `Кладка вентканалов Schiedel` — `9.8 мп`;
+- строка 267: `Вентиляционный блок SCHIEDEL VENT, 1 хода, наружный размер 20/25 см, высота 33 см` — `21 шт`;
+- строка 268: `Вентиляционный блок SCHIEDEL VENT, 2 хода, наружный размер 36/25 см, высота 33 см` — `15 шт`;
+- строка 269: `Доставка вентканалов` — `1 маш`.
 
-Interpretation:
+Интерпретация:
 
-- TRC uses Schiedel product pieces 1x and 2x in the estimate.
-- There is no 3x material row in this TRC estimate fragment.
-- The current calculator only has material rows for 2x and 3x, so it cannot represent TRC perfectly
-  until a 1x product line is added or generalized.
-- The paid work row is driven by total masonry length `9.8 мп`, not by the count of visible shaft
-  labels.
+- В TRC в смете есть покупные элементы Schiedel типов 1x и 2x.
+- В этом фрагменте сметы TRC нет строки материала 3x.
+- Текущий калькулятор умеет материалы только 2x и 3x, поэтому он не сможет идеально представить TRC,
+  пока мы не добавим или не обобщим строку для 1x.
+- Строка работы считается по общей длине кладки `9.8 мп`, а не по количеству видимых меток шахт.
 
-### ARK Observation From API Runs
+### Наблюдение по ARK из API-прогонов
 
-ARK pages contained vent-channel / shaft information without a branded Schiedel product. Opus 4.8
-correctly noted that these are gas-block / non-Schiedel vent shafts and did not confidently fill
-Schiedel product target codes.
+В ARK на страницах были данные по вентканалам/шахтам без брендированных элементов Schiedel. Opus 4.8
+правильно отметил, что это газоблочные или не-Schiedel вентшахты, и не стал уверенно заполнять
+Schiedel target-коды.
 
-Interpretation:
+Интерпретация:
 
-- ARK is not a `schiedel_prefab` case.
-- It should not create Schiedel 2x/3x material rows just because the page contains vent shafts.
-- It needs a more general `vent_channels` system type or it should route the gas-block cladding data
-  to the load-bearing walls / parapet / vent-shaft cladding logic.
+- ARK — это не случай `schiedel_prefab`.
+- Для ARK нельзя создавать строки материалов Schiedel 2x/3x только потому, что на странице есть
+  вентшахты.
+- Нужен более общий тип системы `vent_channels`, либо данные по обкладке газоблоком должны уходить в
+  логику стен / парапета / обкладки вентшахт.
 
-## The Core Modeling Problem
+## Главная проблема модели данных
 
-The word "vent channel" appears in several meanings:
+Слово "вентканал" встречается в нескольких смыслах.
 
-1. **Bought Schiedel product pieces**
+1. **Покупные элементы Schiedel**
 
-   Examples:
+   Примеры:
 
    - `Вентиляционный канал 2х,36/25 см Schiedel — 24 шт`;
    - `Вентиляционный блок SCHIEDEL VENT, 1 хода ... — 21 шт`;
    - `Вентиляционный блок SCHIEDEL VENT, 2 хода ... — 15 шт`;
    - `Вентиляционный канал 3х,52/25 см Schiedel — 8 шт`.
 
-   These are material estimate lines: quantity in pieces multiplied by material unit price.
+   Это строки материалов в смете: количество в штуках умножается на цену материала.
 
-2. **Physical vent shafts / drawing labels**
+2. **Физические вентшахты / метки на чертежах**
 
-   Examples:
+   Примеры:
 
    - `ВК-1`, `ВК-2`, `ВК-3`;
    - `ШВ-1`, `ШВ-2`;
-   - one visible shaft or one drawing node.
+   - один видимый узел или одна шахта на разрезе.
 
-   These are not automatically material quantities. A single visible shaft can require many bought
-   Schiedel blocks.
+   Это не автоматическое количество материалов. Одна видимая шахта может требовать много покупных
+   блоков Schiedel.
 
-3. **Total masonry length / height for work**
+3. **Общая длина / высота кладки для работы**
 
-   Examples:
+   Примеры:
 
    - `Общая длина кладки 6,52 м/п`;
    - `Высота вентканалов общая 4,9п.м + 4,9п.м = 9,8п.м`;
-   - estimate row `Кладка вентканалов Schiedel — 15.82 мп`.
+   - строка сметы `Кладка вентканалов Schiedel — 15.82 мп`.
 
-   This is the primary paid quantity for masonry work.
+   Это основное оплачиваемое количество для работы по кладке.
 
-The current names `schiedel_vent_channel_2x_count` and `vent_channel_2_count` are too easy to confuse.
-The first is a material piece count. The second is only a legacy/control geometry count.
+Текущие имена `schiedel_vent_channel_2x_count` и `vent_channel_2_count` слишком легко перепутать.
+Первое поле означает количество покупных элементов материала. Второе поле сейчас похоже на
+legacy/control количество по геометрии.
 
-## What The Calculator Actually Needs
+## Что на самом деле нужно калькулятору
 
-For the paid Schiedel estimate lines, the calculator needs:
+Для оплачиваемых строк Schiedel калькулятору нужны:
 
-- total masonry length for `Кладка вентканалов Schiedel`;
-- product piece counts for each Schiedel product type that appears in the estimate;
-- delivery trips;
-- prices.
+- общая длина кладки для строки `Кладка вентканалов Schiedel`;
+- количества покупных элементов Schiedel по каждому типу, который есть в смете;
+- доставка;
+- цены.
 
-The calculator does **not** need the number of physical holes/shafts as a paid production input when
-the PDF/specification already gives total masonry length and product quantities.
+Калькулятору не нужно количество физических отверстий/шахт как production-вход для расчета, если PDF
+или спецификация уже дает общую длину кладки и количества покупных элементов.
 
-Physical shaft counts can be useful only as diagnostic/control data:
+Количество физических шахт может быть полезно только как диагностическая/control-информация:
 
-- to explain a drawing;
-- to help a reviewer see why a total length might exist;
-- to reconstruct a length only when no explicit total exists.
+- чтобы объяснить чертеж;
+- чтобы ревьюер видел, откуда могла появиться общая длина;
+- чтобы восстановить длину только если явной общей длины нет.
 
-They should not be mixed into material count targets.
+Эти данные нельзя смешивать с target-полями количества материалов.
 
-## Minimum Two System Types Already Exist
+## Минимум два типа систем уже существуют
 
-### Type 1 — `schiedel_prefab`
+### Тип 1 — `schiedel_prefab`
 
-Use this when the project/estimate has branded Schiedel product pieces.
+Используем, когда в проекте/смете есть брендированные покупные элементы Schiedel.
 
-Possible product rows:
+Возможные строки материалов:
 
-- 1x / one duct / `1 хода` / `1х,20/25`;
-- 2x / two ducts / `2 хода` / `2х,36/25`;
-- 3x / three ducts / `3 хода` / `3х,52/25`.
+- 1x / один ход / `1 хода` / `1х,20/25`;
+- 2x / два хода / `2 хода` / `2х,36/25`;
+- 3x / три хода / `3 хода` / `3х,52/25`.
 
-Expected estimate behavior:
+Ожидаемое поведение сметы:
 
-- work: `Кладка вентканалов Schiedel`, quantity from total masonry length;
-- materials: dynamic Schiedel product item rows, quantity from specification pieces;
-- delivery: delivery trips;
-- optional consumables/logistics lines according to catalog/calculator.
+- работа: `Кладка вентканалов Schiedel`, количество из общей длины кладки;
+- материалы: динамические строки элементов Schiedel, количество из спецификации в штуках;
+- доставка: рейсы/машины доставки;
+- при необходимости расходники/логистика по каталогу или калькулятору.
 
-### Type 2 — `gas_block_vent_shaft` / non-Schiedel shafts
+### Тип 2 — `gas_block_vent_shaft` / не-Schiedel шахты
 
-Use this when the project has vent shafts, gas-block cladding, or generic vent-channel rows but no
-Schiedel product rows.
+Используем, когда в проекте есть вентшахты, обкладка газоблоком или общие строки вентканалов, но нет
+покупных элементов Schiedel.
 
-Expected behavior:
+Ожидаемое поведение:
 
-- do not fill Schiedel product count targets;
-- keep raw/detail rows for review;
-- route gas-block cladding volume/area to the relevant walls/parapet/vent-shaft cladding logic;
-- calculate a separate vent-shaft mode only after a dedicated production contract exists.
+- не заполнять target-поля количества материалов Schiedel;
+- сохранить raw/detail строки для проверки;
+- направить площадь/объем обкладки газоблоком в соответствующую логику стен / парапета / обкладки
+  вентшахт;
+- считать отдельный режим вентшахт только после появления отдельного production contract.
 
-### Type 3 — `unknown`
+### Тип 3 — `unknown`
 
-Use when the page contains vent-channel terms but the system type is unclear.
+Используем, когда на странице есть термины про вентканалы, но тип системы неясен.
 
-Expected behavior:
+Ожидаемое поведение:
 
-- do not calculate Schiedel materials automatically;
-- keep candidates and `needs_review`;
-- require manual review or a resolver decision.
+- не считать материалы Schiedel автоматически;
+- сохранить candidates и `needs_review`;
+- требовать ручную проверку или решение resolver.
 
-## Required Architecture Change
+## Как нужно изменить архитектуру
 
-Long-term target: replace the narrow section model with a general `vent_channels` contract and route
-to calculators/adapters by system type.
+Долгосрочная цель: заменить узкую модель раздела более общим contract `vent_channels` и дальше
+разводить данные в калькуляторы/adapter по типу системы.
 
-Suggested normalized shape:
+Предлагаемая нормализованная форма:
 
 ```yaml
 vent_channels:
@@ -216,7 +219,7 @@ vent_channels:
       - unknown
 
   vent_channel_total_masonry_length_m:
-    meaning: paid work quantity if explicit in PDF/specification/estimate
+    meaning: оплачиваемое количество работы, если оно явно есть в PDF/спецификации/смете
 
   schiedel_prefab_items:
     repeated: true
@@ -229,7 +232,7 @@ vent_channels:
 
   vent_shaft_items:
     repeated: true
-    purpose: diagnostic/control only
+    purpose: только diagnostic/control
     fields:
       - shaft_mark          # ВК-1, ВК-2, ШВ-1...
       - height_m
@@ -244,59 +247,60 @@ vent_channels:
       - density
 ```
 
-Adapter behavior:
+Поведение adapter:
 
 ```text
 if vent_channel_system_type == schiedel_prefab:
-    send Schiedel masonry length + Schiedel product pieces to Schiedel calculator/adapter
+    отправить длину кладки Schiedel и покупные элементы Schiedel в Schiedel calculator/adapter
 
 if vent_channel_system_type == gas_block_vent_shaft:
-    do not send Schiedel product pieces
-    route gas-block cladding to walls/parapet/vent-shaft cladding logic
+    не отправлять покупные элементы Schiedel
+    направить обкладку газоблоком в логику стен/парапета/обкладки вентшахт
 
 if vent_channel_system_type == unknown:
-    keep review/manual; no automatic material estimate rows
+    оставить на review/manual; не создавать автоматические строки материалов
 ```
 
-## Immediate Changes Needed Later
+## Что нужно сделать позже
 
-These are not done in this memo. They should be scheduled as separate implementation steps.
+В этой памятке эти изменения не выполнены. Их нужно планировать отдельными implementation-шагами.
 
-1. Add a system-type target/rule:
+1. Добавить target/rule для типа системы:
 
    ```text
    vent_channel_system_type = schiedel_prefab | gas_block_vent_shaft | unknown
    ```
 
-2. Rename or deprecate ambiguous targets:
+2. Переименовать или вывести из production неоднозначные targets.
 
-   Current ambiguous fields:
+   Текущие неоднозначные поля:
 
    - `schiedel_vent_channel_2x_count`
    - `schiedel_vent_channel_3x_count`
    - `vent_channel_2_count`
 
-   Clearer production names:
+   Более понятные production-имена:
 
    - `schiedel_vent_channel_1x_material_count_pcs`
    - `schiedel_vent_channel_2x_material_count_pcs`
    - `schiedel_vent_channel_3x_material_count_pcs`
-   - `vent_shaft_type_2_count` or similar, but mark as `CONTROL_ONLY` / `LEGACY_DIAGNOSTIC`.
+   - `vent_shaft_type_2_count` или похожее имя, но обязательно с пометкой `CONTROL_ONLY` /
+     `LEGACY_DIAGNOSTIC`.
 
-3. Add support for Schiedel 1x.
+3. Добавить поддержку Schiedel 1x.
 
-   TRC estimate has:
+   В смете TRC есть:
 
    ```text
    Вентиляционный блок SCHIEDEL VENT, 1 хода, наружный размер 20/25 см, высота 33 см — 21 шт
    ```
 
-   The current calculator cannot represent this as a material line because it only has 2x and 3x
-   product rows.
+   Текущий калькулятор не может представить это как строку материала, потому что в нем есть только
+   product rows для 2x и 3x.
 
-4. Make Schiedel product rows dynamic.
+4. Сделать строки покупных элементов Schiedel динамическими.
 
-   Instead of fixed 2x and 3x only, use repeated rows:
+   Вместо жестких 2x и 3x использовать repeated rows:
 
    ```yaml
    schiedel_prefab_items:
@@ -308,47 +312,51 @@ These are not done in this memo. They should be scheduled as separate implementa
        quantity_pcs: ...
    ```
 
-   The adapter can still output fixed legacy inputs for old calculator cases until the calculator is
-   generalized.
+   Adapter при необходимости еще сможет выдавать старые fixed legacy inputs для старого калькулятора,
+   пока сам калькулятор не обобщен.
 
-5. Mark `vent_channel_1_height_m`, `vent_channel_2_height_m`, `vent_channel_2_count` as diagnostic
-   only unless there is no explicit total masonry length.
+5. Пометить `vent_channel_1_height_m`, `vent_channel_2_height_m`, `vent_channel_2_count` как
+   diagnostic only, если нет явной общей длины кладки.
 
-6. Update chat extraction prompt/aliases:
+6. Обновить prompt/aliases для chat extraction:
 
-   - Do not map a visible `ВК-1` / `ВК-2` / shaft count on a plan to Schiedel product piece counts.
-   - Do not map `1 шт` from a drawing node to material quantity.
-   - Schiedel material quantities must come from specification rows with `шт`.
-   - Masonry work quantity should come from explicit total length/height such as `общая длина кладки`
-     or `высота вентканалов общая`.
-   - If the page has vent shafts but no word `Schiedel` or no Schiedel product names, do not fill
-     Schiedel material targets; set system type to `gas_block_vent_shaft` or `unknown`.
+   - Не маппить видимый `ВК-1` / `ВК-2` / количество шахт на плане в количество покупных элементов
+     Schiedel.
+   - Не маппить `1 шт` из узла на чертеже в количество материала.
+   - Количество материалов Schiedel должно приходить из строк спецификации с `шт`.
+   - Количество работы по кладке должно приходить из явной общей длины/высоты: `общая длина кладки`,
+     `высота вентканалов общая` и похожих формулировок.
+   - Если на странице есть вентшахты, но нет слова `Schiedel` или названий продуктов Schiedel, не
+     заполнять material targets Schiedel; ставить system type `gas_block_vent_shaft` или `unknown`.
 
-7. Update full estimate catalogs:
+7. Обновить full estimate catalogs:
 
-   - allow Schiedel 1x estimate line;
-   - keep Schiedel 2x and 3x estimate lines;
-   - keep delivery line;
-   - keep gas-block cladding as a separate line outside Schiedel product pieces;
-   - keep roof vent-shaft abutment lines in flat roof, not in Schiedel material rows.
+   - разрешить строку Schiedel 1x;
+   - сохранить строки Schiedel 2x и 3x;
+   - сохранить строку доставки;
+   - держать обкладку газоблоком отдельной строкой, вне покупных элементов Schiedel;
+   - держать примыкания кровли к вентшахтам в разделе flat roof, а не в строках материалов Schiedel.
 
-## Current Risk
+## Текущий риск
 
-If we leave the current naming as-is, a model can produce one of two wrong behaviors:
+Если оставить текущие имена как есть, модель может ошибиться одним из двух способов:
 
-- take `1 шт` from a visible ВК/shaft mark and use it as a Schiedel material count;
-- take product pieces like `15 шт` / `21 шт` and use them as physical shaft counts/control geometry.
+- взять `1 шт` из видимой метки ВК/шахты и использовать это как количество покупных элементов
+  Schiedel;
+- взять покупные элементы `15 шт` / `21 шт` и использовать их как количество физических шахт или
+  control-геометрию.
 
-Both are wrong. The first breaks material estimate rows. The second breaks diagnostic/control logic.
+Оба варианта неправильные. Первый ломает строки материалов в смете. Второй ломает диагностическую /
+control-логику.
 
-## Practical Rule For Review Workbooks
+## Практическое правило для review workbook
 
-On review sheet `01_Проверка проекта`, paid calculator inputs should be only:
+На листе `01_Проверка проекта` оплачиваемыми входами калькулятора должны быть только:
 
-- explicit total masonry length for work;
-- explicit product counts from specification;
-- delivery/manual supplier inputs;
-- prices.
+- явная общая длина кладки для работы;
+- явные количества покупных элементов из спецификации;
+- доставка / ручные supplier inputs;
+- цены.
 
-Drawing shaft counts should go to details/control, not to paid estimate quantities, unless a future
-calculator explicitly needs them and the contract says why.
+Количество шахт по чертежу должно уходить в детали/control, а не в оплачиваемые количества сметы,
+если только будущий калькулятор явно не потребует эти данные и contract не объяснит зачем.
