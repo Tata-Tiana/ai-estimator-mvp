@@ -587,7 +587,21 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         beams_concrete_volume_source = "calculated_from_beam_items"
         beams_concrete_volume_delta = None
 
-    total_concrete_volume = d(geometry_in["total_concrete_volume_from_spec_m3"])
+    # slab_zones[]: purely additive alternative to the scalar geometry.total_concrete_volume_from_spec_m3
+    # (2026-07-20, UNIVERSALIZATION_PLAN.md P1). When present, its sum overrides the scalar below —
+    # everything downstream already reads the single `total_concrete_volume` local, so no other change
+    # is needed. Fixes the real ТРЦ case where the slab's concrete is printed as separate zones (main
+    # slab + kitchen/dining slab) with no combined total. See p1_slab_zones_shipped memory.
+    slab_zones_in = input_data.get("slab_zones") or []
+    for zone in slab_zones_in:
+        if not zone.get("context"):
+            raise ValueError("slab_zones[].context is required")
+        if d(zone["concrete_volume_m3"]) < D0:
+            raise ValueError(f"slab_zones.{zone['context']}.concrete_volume_m3 must be >= 0")
+    if slab_zones_in:
+        total_concrete_volume = dec_sum([d(zone["concrete_volume_m3"]) for zone in slab_zones_in])
+    else:
+        total_concrete_volume = d(geometry_in["total_concrete_volume_from_spec_m3"])
     slab_thickness = d(geometry_in["slab_thickness_m"])
     slab_concrete_volume = total_concrete_volume - beams_concrete_volume
     calculated_main_formwork_area = slab_concrete_volume / slab_thickness
@@ -1019,6 +1033,10 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "order_concrete_volume_m3": order_concrete_volume,
             "mixer_capacity_m3": rates["mixer_capacity_m3"],
             "concrete_delivery_trips": concrete_delivery_trips,
+        },
+        "slab_zones": {
+            "used": bool(slab_zones_in),
+            "zone_count": len(slab_zones_in),
         },
         "insulation": insulation_context,
         "overheads": {

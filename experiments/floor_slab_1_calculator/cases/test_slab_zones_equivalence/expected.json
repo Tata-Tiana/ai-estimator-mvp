@@ -1,0 +1,19 @@
+{
+  "calculation_blocks": {
+    "concrete": {
+      "total_project_concrete_volume_m3": 40.53,
+      "concrete_volume_with_waste_m3_raw": 42.5565,
+      "order_concrete_volume_m3": 43,
+      "concrete_delivery_trips": 5
+    },
+    "slab_zones": {
+      "used": true,
+      "zone_count": 2
+    }
+  },
+  "totals": {
+    "internal_materials_total": 1175601,
+    "internal_works_total": 611926,
+    "internal_section_total": 1787527
+  }
+}

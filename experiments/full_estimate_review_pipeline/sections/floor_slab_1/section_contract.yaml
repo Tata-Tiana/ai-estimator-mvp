@@ -44,6 +44,38 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not confuse with lintel, foundation, roof, or 2nd floor slab concrete."
 
+  - key: slab_zones
+    label_ru: "Объём бетона по зонам плиты перекрытия 1-го этажа (альтернатива единому объёму)"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "slab_zones"
+    calculator_input_path: "slab_zones"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_zones.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: false
+    item_label_columns: [context]
+    correction_columns: [concrete_volume_m3]
+    columns:
+      - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["slab_zones"]
+      aliases_ru: []
+      expected_unit: ""
+      notes: "NOT YET part of the live extraction prompt — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (real ТРЦ case: main slab 25.337 + kitchen/dining slab 5.975 m3, no printed sum). Same shape as foundation_slab's slab_zones."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива total_concrete_volume_from_spec_m3 выше. Используйте, если PDF даёт бетон плиты несколькими зонами без общего итога — иначе оставьте пустым."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all 9 pre-existing floor_slab_1_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES total_concrete_volume_from_spec_m3 above for this run (same convention as foundation_slab's slab_zones and load_bearing_walls_lintels' wall_block_items). Unlike foundation_slab, this calculator has no dataclass/validate() layer — the override and per-zone validation happen as plain checks inside calculate_floor_slab_1() itself. See p1_slab_zones_shipped memory."
+
   - key: slab_thickness_m
     label_ru: "Толщина плиты перекрытия 1-го этажа"
     unit: "м"

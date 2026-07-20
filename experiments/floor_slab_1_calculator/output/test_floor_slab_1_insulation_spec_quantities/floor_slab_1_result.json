@@ -507,6 +507,10 @@
       "mixer_capacity_m3": 9,
       "concrete_delivery_trips": 5
     },
+    "slab_zones": {
+      "used": false,
+      "zone_count": 0
+    },
     "insulation": {
       "insulation_calc_method": "spec_work_quantities",
       "edge_insulation_height_m": 0.18,

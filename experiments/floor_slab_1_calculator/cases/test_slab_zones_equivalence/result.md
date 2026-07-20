@@ -1,21 +1,21 @@
-# Расчёт монолитной плиты перекрытия 1-го этажа: test_floor_slab_1_direct_formwork_rate
+# Расчёт монолитной плиты перекрытия 1-го этажа: test_slab_zones_equivalence
 
-Проект: `test_floor_slab_1_direct_formwork_rate`
+Проект: `horoshevka_14`
 
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1152721` |
+| `internal_materials_total` | `1175601` |
 | `internal_works_total` | `611926` |
-| `internal_section_total` | `1764647` |
-| `base_subtotal_raw_before_overheads` | `1691968.300518` |
-| `logistics_and_supply_total` | `16920` |
-| `consumables_and_tool_depreciation_total` | `50759` |
+| `internal_section_total` | `1787527` |
+| `base_subtotal_raw_before_overheads` | `1713968.300518` |
+| `logistics_and_supply_total` | `17140` |
+| `consumables_and_tool_depreciation_total` | `51419` |
 | `technical_supervision_total` | `5000` |
 
 ## Comparison Summary
 - status: `ok`
-- ok: `193`
+- ok: `0`
 - mismatch: `0`
 
 ## Расчётные блоки
@@ -57,9 +57,15 @@
 | `formwork.formwork_delivery_breakdown` | `2 привоза + 2 вывоза` |
 | `formwork.formwork_delivery_status` | `calculated` |
 | `formwork.formwork_delivery_note` | `До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.` |
-| `formwork_rate_context.formwork_rate_calc_method` | `direct_section_rate` |
+| `formwork.supplier_quote_total` | `170710.0` |
+| `formwork.slab_2_formwork_area_for_rate_context_m2` | `81.9` |
+| `formwork.raw_average_rate` | `589.5903847` |
+| `formwork_rate_context.formwork_rate_calc_method` | `legacy_supplier_quote_context` |
+| `formwork_rate_context.formwork_supplier_quote_total` | `170710.0` |
+| `formwork_rate_context.slab_2_formwork_area_for_rate_context_m2` | `81.9` |
+| `formwork_rate_context.raw_average_rate` | `589.5903847` |
 | `formwork_rate_context.formwork_rate_per_m2` | `600.0` |
-| `formwork_rate_context.box_level_quote_context_used` | `False` |
+| `formwork_rate_context.box_level_quote_context_used` | `True` |
 | `plywood_and_timber.edge_and_beam_plywood_sheets_raw` | `22.431304` |
 | `plywood_and_timber.non_multiple_places_area_m2` | `41.528` |
 | `plywood_and_timber.non_multiple_places_plywood_sheets_raw` | `18.055652` |
@@ -152,19 +158,23 @@
 | `rebar.item_controls_by_code.rebar_a240_d6.material_total_raw` | `2397.6` |
 | `rebar.rebar_frame_assembly_quantity_m` | `7294.8` |
 | `rebar.floor_slab_1_rebar_weight_with_waste_kg` | `4630.1` |
-| `rebar.metal_delivery_calc_method` | `section_output_only` |
+| `rebar.metal_delivery_calc_method` | `legacy_slab1_slab2_context` |
 | `rebar.section_rebar_delivery_weight_kg` | `4665.1632` |
+| `rebar.floor_slab_2_rebar_weight_for_delivery_context_kg` | `1825.39` |
+| `rebar.total_delivery_weight_kg_raw` | `6455.49` |
+| `rebar.total_delivery_weight_kg_display` | `6456` |
 | `rebar.max_weight_per_truck_kg` | `10000.0` |
-| `rebar.legacy_delivery_line_enabled` | `False` |
-| `rebar.box_level_delivery_required` | `True` |
+| `rebar.trucks_ordered` | `1` |
+| `rebar.legacy_delivery_line_enabled` | `True` |
+| `rebar.box_level_delivery_required` | `False` |
 | `concrete.total_project_concrete_volume_m3` | `40.53` |
 | `concrete.concrete_volume_with_waste_m3_raw` | `42.5565` |
 | `concrete.concrete_volume_with_waste_m3_display` | `42.56` |
 | `concrete.order_concrete_volume_m3` | `43` |
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
-| `slab_zones.used` | `False` |
-| `slab_zones.zone_count` | `0` |
+| `slab_zones.used` | `True` |
+| `slab_zones.zone_count` | `2` |
 | `insulation.insulation_calc_method` | `legacy_usv_geometry` |
 | `insulation.edge_insulation_height_m` | `0.18` |
 | `insulation.edge_insulation_height_source` | `specification` |
@@ -198,13 +208,13 @@
 | `insulation.order_eps_volume_m3_raw` | `8.319` |
 | `insulation.foam_cans_raw` | `7.77` |
 | `insulation.foam_cans_ordered` | `8` |
-| `overheads.base_subtotal_raw_before_overheads` | `1691968.300518` |
+| `overheads.base_subtotal_raw_before_overheads` | `1713968.300518` |
 | `overheads.logistics_and_supply_percent` | `0.01` |
-| `overheads.logistics_and_supply_total_raw` | `16919.683005` |
-| `overheads.logistics_and_supply_total` | `16920` |
+| `overheads.logistics_and_supply_total_raw` | `17139.683005` |
+| `overheads.logistics_and_supply_total` | `17140` |
 | `overheads.consumables_and_tool_percent` | `0.03` |
-| `overheads.consumables_and_tool_depreciation_total_raw` | `50759.049016` |
-| `overheads.consumables_and_tool_depreciation_total` | `50759` |
+| `overheads.consumables_and_tool_depreciation_total_raw` | `51419.049016` |
+| `overheads.consumables_and_tool_depreciation_total` | `51419` |
 | `manual_lines.concrete_pump_shifts` | `1` |
 | `manual_lines.technical_supervision_amount` | `5000` |
 | `control_metrics.control_geometry_area_m2` | `210.64` |
@@ -234,15 +244,15 @@ Legacy-режим `legacy_calculated_from_geometry`: площади опалуб
 
 ## Ставка комплекта опалубки
 
-Production-режим `direct_section_rate`: ставка опалубки взята напрямую для плиты перекрытия 1-го этажа.
-
-Общая сумма предложения поставщика и площадь плиты 2-го этажа в этом калькуляторе не используются.
+Legacy-режим `legacy_supplier_quote_context`: справочная средняя ставка считается из общего предложения поставщика по двум плитам.
 
 | Показатель | Значение |
 | --- | ---: |
-| `formwork_rate_calc_method` | `direct_section_rate` |
+| `formwork_rate_calc_method` | `legacy_supplier_quote_context` |
+| `formwork_supplier_quote_total` | `170710.0` |
+| `slab_2_formwork_area_for_rate_context_m2` | `81.9` |
+| `raw_average_rate` | `589.5903847` |
 | `formwork_rate_per_m2` | `600.0` |
-| `box_level_quote_context_used` | `False` |
 
 ## Арматура плиты перекрытия 1-го этажа
 
@@ -265,17 +275,15 @@ Legacy-режим `legacy_weight_parts`: арматура берётся вес�
 
 ## Доставка арматуры и металла
 
-Production-режим `section_output_only`: калькулятор плиты 1-го этажа отдаёт только вес закупочной арматуры текущего раздела.
-
-Количество машин доставки металла считается выше, на уровне `box_calculator`, по суммарному весу металла коробки.
+Legacy-режим `legacy_slab1_slab2_context`: строка доставки металла использует контекст веса арматуры плит 1-го и 2-го этажа.
 
 | Показатель | Значение |
 | --- | ---: |
-| `metal_delivery_calc_method` | `section_output_only` |
+| `metal_delivery_calc_method` | `legacy_slab1_slab2_context` |
 | `section_rebar_delivery_weight_kg` | `4665.1632` |
-| `max_weight_per_truck_kg` | `10000.0` |
-| `legacy_delivery_line_enabled` | `False` |
-| `box_level_delivery_required` | `True` |
+| `floor_slab_2_rebar_weight_for_delivery_context_kg` | `1825.39` |
+| `total_delivery_weight_kg_raw` | `6455.49` |
+| `trucks_ordered` | `1` |
 
 ## Утепление плиты
 
@@ -320,6 +328,7 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | `6879.6` | `6879.6` | `мп` | `materials` | `225100.512` | `225101` | `0.0` | `0` | `225100.512` | `225101` |
 | `rebar_a240_d8` | Арматура класса А240 диаметром 8 мм | `48.0` | `48.0` | `мп` | `materials` | `1152.0` | `1152` | `0.0` | `0` | `1152.0` | `1152` |
 | `rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `180.0` | `180.0` | `мп` | `materials` | `2397.6` | `2398` | `0.0` | `0` | `2397.6` | `2398` |
+| `rebar_metal_delivery` | Доставка арматуры, металла | `1.0` | `1.0` | `маш` | `logistics_machinery` | `22000.0` | `22000` | `0.0` | `0` | `22000.0` | `22000` |
 | `floor_slab_concreting_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `37.3752` | `37.38` | `м3` | `work` | `0.0` | `0` | `448502.4` | `448502` | `448502.4` | `448502` |
 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | `3.1548` | `3.15` | `м3` | `work` | `0.0` | `0` | `63096.0` | `63096` | `63096.0` | `63096` |
 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | `43.0` | `43.0` | `м3` | `materials` | `275200.0` | `275200` | `0.0` | `0` | `275200.0` | `275200` |
@@ -330,14 +339,15 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 | `bottom_slab_insulation_work` | Устройство утепления низа плиты | `51.92` | `51.9` | `м2` | `work` | `0.0` | `0` | `46728.0` | `46728` | `46728.0` | `46728` |
 | `eps_penoplex_osnova_100mm` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `8.319` | `8.32` | `м3` | `materials` | `75037.38` | `75037` | `0.0` | `0` | `75037.38` | `75037` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `8.0` | `8.0` | `баллон` | `materials_consumables` | `3920.0` | `3920` | `0.0` | `0` | `3920.0` | `3920` |
-| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16919.683005` | `16920` | `0.0` | `0` | `16919.683005` | `16920` |
-| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `50759.049016` | `50759` | `0.0` | `0` | `50759.049016` | `50759` |
+| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `17139.683005` | `17140` | `0.0` | `0` | `17139.683005` | `17140` |
+| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `51419.049016` | `51419` | `0.0` | `0` | `51419.049016` | `51419` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
 
 ## Warnings / Notes
 - `formwork_delivery_return_manipulator`: До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.
 - `formwork_rebar_crane_supply`: 3-я смена пока только manual_review / override.
 - `formwork_timber_gost`: Сумма считается от quantity_raw, не от отображаемого количества.
+- `rebar_metal_delivery`: Legacy: доставка металла считалась с контекстом веса арматуры плиты 2-го этажа.
 - `floor_slab_concreting_work`: Стоимость считается от raw 37.3752, не от display 37.38.
 - `concrete_pump_32m`: Fixed/manual line; не вычислять от объёма бетона.
 - `bottom_slab_insulation_work`: Стоимость считается от raw 51.92, не от display 51.9.
@@ -346,196 +356,3 @@ Legacy-режим `legacy_usv_geometry`: утепление рассчитано
 ## Comparison
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
-| `totals.internal_materials_total` | `1152721` | `1152721` | `0` | `ok` |
-| `totals.internal_works_total` | `611926` | `611926` | `0` | `ok` |
-| `totals.internal_section_total` | `1764647` | `1764647` | `0` | `ok` |
-| `totals.base_subtotal_raw_before_overheads` | `1691968.300518` | `1691968.300518` | `0.0` | `ok` |
-| `totals.logistics_and_supply_total` | `16920` | `16920` | `0` | `ok` |
-| `totals.consumables_and_tool_depreciation_total` | `50759` | `50759` | `0` | `ok` |
-| `totals.technical_supervision_total` | `5000` | `5000` | `0` | `ok` |
-| `calculation_blocks.geometry.slab_concrete_volume_m3_raw` | `37.3752` | `37.3752` | `0.0` | `ok` |
-| `calculation_blocks.geometry.slab_concrete_volume_m3_display` | `37.38` | `37.38` | `0.0` | `ok` |
-| `calculation_blocks.geometry.slab_formwork_area_m2` | `207.64` | `207.64` | `0.0` | `ok` |
-| `calculation_blocks.beams.total_length_m` | `23.2` | `23.2` | `0.0` | `ok` |
-| `calculation_blocks.beams.total_concrete_volume_m3` | `3.1548` | `3.1548` | `0.0` | `ok` |
-| `calculation_blocks.beams.total_formwork_area_m2` | `27.992` | `27.992` | `0.0` | `ok` |
-| `calculation_blocks.formwork.edge_formwork_area_m2` | `23.6` | `23.6` | `0.0` | `ok` |
-| `calculation_blocks.formwork.edge_and_beam_formwork_area_m2` | `51.592` | `51.592` | `0.0` | `ok` |
-| `calculation_blocks.formwork.formwork_delivery_trucks` | `4` | `4.0` | `0.0` | `ok` |
-| `calculation_blocks.formwork_rate_context.formwork_rate_calc_method` | `direct_section_rate` | `direct_section_rate` | `` | `ok` |
-| `calculation_blocks.formwork_rate_context.formwork_rate_per_m2` | `600` | `600.0` | `0.0` | `ok` |
-| `calculation_blocks.formwork_rate_context.box_level_quote_context_used` | `False` | `False` | `0` | `ok` |
-| `calculation_blocks.plywood_and_timber.order_plywood_sheets` | `51` | `51` | `0` | `ok` |
-| `calculation_blocks.plywood_and_timber.timber_volume_m3_raw` | `2.790846` | `2.790846` | `0.0` | `ok` |
-| `calculation_blocks.rebar.rebar_frame_assembly_quantity_m` | `7294.8` | `7294.8` | `0.0` | `ok` |
-| `calculation_blocks.rebar.floor_slab_1_rebar_weight_with_waste_kg` | `4630.1` | `4630.1` | `0.0` | `ok` |
-| `calculation_blocks.rebar.metal_delivery_calc_method` | `section_output_only` | `section_output_only` | `` | `ok` |
-| `calculation_blocks.rebar.section_rebar_delivery_weight_kg` | `4665.1632` | `4665.1632` | `0.0` | `ok` |
-| `calculation_blocks.rebar.legacy_delivery_line_enabled` | `False` | `False` | `0` | `ok` |
-| `calculation_blocks.rebar.box_level_delivery_required` | `True` | `True` | `0` | `ok` |
-| `calculation_blocks.concrete.concrete_volume_with_waste_m3_raw` | `42.5565` | `42.5565` | `0.0` | `ok` |
-| `calculation_blocks.concrete.concrete_volume_with_waste_m3_display` | `42.56` | `42.56` | `0.0` | `ok` |
-| `calculation_blocks.concrete.order_concrete_volume_m3` | `43` | `43` | `0` | `ok` |
-| `calculation_blocks.concrete.concrete_delivery_trips` | `5` | `5` | `0` | `ok` |
-| `calculation_blocks.insulation.total_insulation_length_m` | `108` | `108.0` | `0.0` | `ok` |
-| `calculation_blocks.insulation.edge_and_beam_insulation_area_m2` | `25.78` | `25.78` | `0.0` | `ok` |
-| `calculation_blocks.insulation.bottom_slab_insulation_area_m2_raw` | `51.92` | `51.92` | `0.0` | `ok` |
-| `calculation_blocks.insulation.total_insulation_area_m2` | `77.7` | `77.7` | `0.0` | `ok` |
-| `calculation_blocks.insulation.eps_packs_ordered` | `30` | `30` | `0` | `ok` |
-| `calculation_blocks.insulation.order_eps_volume_m3_raw` | `8.319` | `8.319` | `0.0` | `ok` |
-| `calculation_blocks.insulation.foam_cans_ordered` | `8` | `8` | `0` | `ok` |
-| `calculation_blocks.overheads.base_subtotal_raw_before_overheads` | `1691968.300518` | `1691968.300518` | `0.0` | `ok` |
-| `calculation_blocks.overheads.logistics_and_supply_total` | `16920` | `16920` | `0` | `ok` |
-| `calculation_blocks.overheads.consumables_and_tool_depreciation_total` | `50759` | `50759` | `0` | `ok` |
-| `estimate_lines.slab_formwork_installation_control.quantity_raw` | `207.64` | `207.64` | `0.0` | `ok` |
-| `estimate_lines.slab_formwork_installation_control.quantity_display` | `207.64` | `207.64` | `0.0` | `ok` |
-| `estimate_lines.slab_formwork_installation_control.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.slab_formwork_installation_control.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.slab_formwork_installation_control.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.quantity_raw` | `207.64` | `207.64` | `0.0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.quantity_display` | `207.64` | `207.64` | `0.0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.material_total_raw` | `124584` | `124584.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.material_total` | `124584` | `124584` | `0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_set_rental_material.line_total` | `124584` | `124584` | `0` | `ok` |
-| `estimate_lines.formwork_delivery_return_manipulator.quantity_raw` | `4` | `4.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_delivery_return_manipulator.quantity_display` | `4` | `4.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_delivery_return_manipulator.material_total` | `80000` | `80000` | `0` | `ok` |
-| `estimate_lines.formwork_delivery_return_manipulator.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_delivery_return_manipulator.line_total` | `80000` | `80000` | `0` | `ok` |
-| `estimate_lines.formwork_rebar_crane_supply.quantity_raw` | `2` | `2.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_rebar_crane_supply.quantity_display` | `2` | `2.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_rebar_crane_supply.material_total` | `60000` | `60000` | `0` | `ok` |
-| `estimate_lines.formwork_rebar_crane_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_rebar_crane_supply.line_total` | `60000` | `60000` | `0` | `ok` |
-| `estimate_lines.formwork_consumables.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_consumables.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.formwork_consumables.material_total_raw` | `9759.08` | `9759.08` | `0.0` | `ok` |
-| `estimate_lines.formwork_consumables.material_total` | `9759` | `9759` | `0` | `ok` |
-| `estimate_lines.formwork_consumables.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_consumables.line_total` | `9759` | `9759` | `0` | `ok` |
-| `estimate_lines.edge_beam_formwork_installation_control.quantity_raw` | `51.592` | `51.592` | `0.0` | `ok` |
-| `estimate_lines.edge_beam_formwork_installation_control.quantity_display` | `51.59` | `51.59` | `0.0` | `ok` |
-| `estimate_lines.edge_beam_formwork_installation_control.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_formwork_installation_control.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_formwork_installation_control.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.quantity_raw` | `51` | `51.0` | `0.0` | `ok` |
-| `estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.quantity_display` | `51` | `51.0` | `0.0` | `ok` |
-| `estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.material_total` | `73950` | `73950` | `0` | `ok` |
-| `estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.plywood_fk_18mm_for_edges_and_non_multiple_places.line_total` | `73950` | `73950` | `0` | `ok` |
-| `estimate_lines.formwork_timber_gost.quantity_raw` | `2.790846` | `2.790846` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber_gost.quantity_display` | `2.79` | `2.79` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber_gost.material_total_raw` | `60003.181518` | `60003.181518` | `0.0` | `ok` |
-| `estimate_lines.formwork_timber_gost.material_total` | `60003` | `60003` | `0` | `ok` |
-| `estimate_lines.formwork_timber_gost.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_timber_gost.line_total` | `60003` | `60003` | `0` | `ok` |
-| `estimate_lines.floor_slab_rebar_frame_assembly_control.quantity_raw` | `7294.8` | `7294.8` | `0.0` | `ok` |
-| `estimate_lines.floor_slab_rebar_frame_assembly_control.quantity_display` | `7294.8` | `7294.8` | `0.0` | `ok` |
-| `estimate_lines.floor_slab_rebar_frame_assembly_control.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.floor_slab_rebar_frame_assembly_control.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.floor_slab_rebar_frame_assembly_control.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d25.quantity_raw` | `46.8` | `46.8` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d25.quantity_display` | `46.8` | `46.8` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d25.material_total_raw` | `9189.18` | `9189.18` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d25.material_total` | `9189` | `9189` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d25.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d25.line_total` | `9189` | `9189` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d16.quantity_raw` | `81.9` | `81.9` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d16.quantity_display` | `81.9` | `81.9` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d16.material_total_raw` | `6599.502` | `6599.502` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d16.material_total` | `6600` | `6600` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d16.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d16.line_total` | `6600` | `6600` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d12.quantity_raw` | `58.5` | `58.5` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d12.quantity_display` | `58.5` | `58.5` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d12.material_total_raw` | `2649.465` | `2649.465` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d12.material_total` | `2649` | `2649` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d12.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d12.line_total` | `2649` | `2649` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d10.quantity_raw` | `6879.6` | `6879.6` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d10.quantity_display` | `6879.6` | `6879.6` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d10.material_total_raw` | `225100.512` | `225100.512` | `0.0` | `ok` |
-| `estimate_lines.rebar_a500_d10.material_total` | `225101` | `225101` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d10.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a500_d10.line_total` | `225101` | `225101` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d8.quantity_raw` | `48` | `48.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d8.quantity_display` | `48` | `48.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d8.material_total` | `1152` | `1152` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d8.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d8.line_total` | `1152` | `1152` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d6.quantity_raw` | `180` | `180.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d6.quantity_display` | `180` | `180.0` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d6.material_total_raw` | `2397.6` | `2397.6` | `0.0` | `ok` |
-| `estimate_lines.rebar_a240_d6.material_total` | `2398` | `2398` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d6.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.rebar_a240_d6.line_total` | `2398` | `2398` | `0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.quantity_raw` | `37.3752` | `37.3752` | `0.0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.quantity_display` | `37.38` | `37.38` | `0.0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.work_total_raw` | `448502.4` | `448502.4` | `0.0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.work_total` | `448502` | `448502` | `0` | `ok` |
-| `estimate_lines.floor_slab_concreting_work.line_total` | `448502` | `448502` | `0` | `ok` |
-| `estimate_lines.beam_concreting_work.quantity_raw` | `3.1548` | `3.1548` | `0.0` | `ok` |
-| `estimate_lines.beam_concreting_work.quantity_display` | `3.15` | `3.15` | `0.0` | `ok` |
-| `estimate_lines.beam_concreting_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.beam_concreting_work.work_total` | `63096` | `63096` | `0` | `ok` |
-| `estimate_lines.beam_concreting_work.line_total` | `63096` | `63096` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.quantity_raw` | `43` | `43.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.quantity_display` | `43` | `43.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.material_total` | `275200` | `275200` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_b22_5_m300_material.line_total` | `275200` | `275200` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.quantity_raw` | `5` | `5.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_delivery.quantity_display` | `5` | `5.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_delivery.material_total` | `37500` | `37500` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_delivery.line_total` | `37500` | `37500` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_pump_32m.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.concrete_pump_32m.material_total` | `38000` | `38000` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.concrete_pump_32m.line_total` | `38000` | `38000` | `0` | `ok` |
-| `estimate_lines.formwork_dismantling_zero_internal.quantity_raw` | `207.64` | `207.64` | `0.0` | `ok` |
-| `estimate_lines.formwork_dismantling_zero_internal.quantity_display` | `207.6` | `207.6` | `0.0` | `ok` |
-| `estimate_lines.formwork_dismantling_zero_internal.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_dismantling_zero_internal.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.formwork_dismantling_zero_internal.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.quantity_raw` | `108` | `108.0` | `0.0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.quantity_display` | `108` | `108.0` | `0.0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.work_total` | `48600` | `48600` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.line_total` | `48600` | `48600` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.quantity_raw` | `51.92` | `51.92` | `0.0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.quantity_display` | `51.9` | `51.9` | `0.0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.work_total` | `46728` | `46728` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.line_total` | `46728` | `46728` | `0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.quantity_raw` | `8.319` | `8.319` | `0.0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.quantity_display` | `8.32` | `8.32` | `0.0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.material_total_raw` | `75037.38` | `75037.38` | `0.0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.material_total` | `75037` | `75037` | `0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps_penoplex_osnova_100mm.line_total` | `75037` | `75037` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.quantity_raw` | `8` | `8.0` | `0.0` | `ok` |
-| `estimate_lines.eps_glue_foam.quantity_display` | `8` | `8.0` | `0.0` | `ok` |
-| `estimate_lines.eps_glue_foam.material_total` | `3920` | `3920` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.eps_glue_foam.line_total` | `3920` | `3920` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_total_raw` | `16919.683005` | `16919.683005` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_total` | `16920` | `16920` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.line_total` | `16920` | `16920` | `0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.material_total_raw` | `50759.049016` | `50759.049016` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.material_total` | `50759` | `50759` | `0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.line_total` | `50759` | `50759` | `0` | `ok` |
-| `estimate_lines.technical_supervision.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.technical_supervision.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.technical_supervision.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.technical_supervision.work_total` | `5000` | `5000` | `0` | `ok` |
-| `estimate_lines.technical_supervision.line_total` | `5000` | `5000` | `0` | `ok` |

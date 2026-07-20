@@ -173,6 +173,8 @@
 | `concrete.order_concrete_volume_m3` | `43` |
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
+| `slab_zones.used` | `False` |
+| `slab_zones.zone_count` | `0` |
 | `insulation.insulation_calc_method` | `legacy_usv_geometry` |
 | `insulation.edge_insulation_height_m` | `0.18` |
 | `insulation.edge_insulation_height_source` | `specification` |
