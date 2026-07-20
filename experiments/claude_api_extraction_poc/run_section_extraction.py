@@ -13,6 +13,11 @@ from typing import Any
 import requests
 
 try:
+    import yaml
+except ImportError:
+    yaml = None  # type: ignore[assignment]
+
+try:
     from dotenv import load_dotenv
 except ImportError:
 
@@ -40,6 +45,12 @@ PACK_FILES = [
     PACK_DIR / "data" / "section_guide.json",
 ]
 
+TARGETS_PATH = PACK_DIR / "data" / "calculator_targets_compact.json"
+ALIASES_PATH = PACK_DIR / "data" / "target_aliases_ru.yaml"
+UNIT_GUIDE_PATH = PACK_DIR / "data" / "unit_normalization_guide.json"
+SECTION_GUIDE_PATH = PACK_DIR / "data" / "section_guide.json"
+SCHEMA_PATH = PACK_DIR / "schemas" / "claude_extraction_output_schema.json"
+
 
 def load_env() -> None:
     load_dotenv(PROJECT_ROOT / ".env")
@@ -52,6 +63,12 @@ def read_text(path: Path) -> str:
 
 def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def read_yaml(path: Path) -> Any:
+    if yaml is None:
+        raise ImportError("PyYAML is required for --pack-mode section. Run with the project .venv.")
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
 def write_json(path: Path, data: Any) -> None:
@@ -89,6 +106,108 @@ def build_pack_text() -> str:
             raise FileNotFoundError(f"missing pack file: {path}")
         rel = path.relative_to(PACK_DIR)
         parts.extend([f"===== FILE: {rel} =====", read_text(path), f"===== END FILE: {rel} =====", ""])
+    return "\n".join(parts)
+
+
+def filter_calculator_targets(section_codes: list[str]) -> dict[str, Any]:
+    wanted = set(section_codes)
+    data = read_json(TARGETS_PATH)
+    return {
+        "_meta": data.get("_meta", {}),
+        "sections": [
+            section
+            for section in data.get("sections", [])
+            if section.get("section_code") in wanted
+        ],
+    }
+
+
+def filter_section_guide(section_codes: list[str]) -> dict[str, Any]:
+    wanted = set(section_codes)
+    data = read_json(SECTION_GUIDE_PATH)
+    filtered: dict[str, Any] = {}
+    if "_meta" in data:
+        filtered["_meta"] = data["_meta"]
+    for code in section_codes:
+        if code in data:
+            filtered[code] = data[code]
+    missing = wanted - set(filtered)
+    if missing:
+        raise ValueError(f"section guide has no entries for: {sorted(missing)}")
+    return filtered
+
+
+def filter_target_aliases(section_codes: list[str]) -> dict[str, Any]:
+    wanted = set(section_codes)
+    data = read_yaml(ALIASES_PATH) or {}
+    filtered: dict[str, Any] = {}
+    for key, value in data.items():
+        if str(key).startswith("_"):
+            filtered[key] = value
+            continue
+        if isinstance(value, dict) and value.get("section_code") in wanted:
+            filtered[key] = value
+    return filtered
+
+
+def section_pack_rules() -> str:
+    return """# UNIVERSAL SECTION API EXTRACTION RULES
+
+Ты извлекаешь данные из выбранных страниц PDF проекта для частичного API-прогона.
+Это универсальный production-тест, не подгоняй ответ под конкретный проект.
+
+Что делать:
+- работай только с requested_section_codes;
+- сначала восстанови raw_table_rows по реальным строкам таблиц/спецификаций PDF, потом маппь строки на target_code;
+- target_code выбирай только из calculator_targets_compact.json, переданного ниже;
+- русские названия и алиасы из target_aliases_ru.yaml обязательны; нельзя сопоставлять target_code только по английскому имени;
+- сохраняй реальные русские названия таблиц из PDF в raw_table_rows[].table_title;
+- если в PDF есть несколько похожих чисел и нет явной итоговой строки, не выбирай молча: положи кандидаты/notes и отметь needs_review;
+- не вычисляй проектные величины самостоятельно, если target требует явно найденное значение из PDF;
+- если значение относится к материалу и работе одновременно по методике contract, можно продублировать его в оба target_code, но обязательно объяснить это в notes;
+- не придумывай отсутствующие значения; отсутствующие target_code перечисляй в missing;
+- не создавай extracted_values с value: null для всех отсутствующих target_code;
+- отвечай JSON по schema и затем служебной запиской по выбранным страницам.
+
+Приоритет источников: изображение страницы важнее машинного текста. Машинный текст нужен как подсказка.
+"""
+
+
+def build_section_pack_text(section_codes: list[str]) -> str:
+    targets = filter_calculator_targets(section_codes)
+    aliases = filter_target_aliases(section_codes)
+    guide = filter_section_guide(section_codes)
+    unit_guide = read_json(UNIT_GUIDE_PATH)
+    schema = read_json(SCHEMA_PATH)
+
+    parts = [
+        "Ниже compact section-pack для API extraction. Используй только эти правила и выбранные страницы.",
+        "",
+        "===== FILE: prompts/section_api_rules.md =====",
+        section_pack_rules(),
+        "===== END FILE: prompts/section_api_rules.md =====",
+        "",
+        "===== FILE: schemas/claude_extraction_output_schema.json =====",
+        json.dumps(schema, ensure_ascii=False, indent=2),
+        "===== END FILE: schemas/claude_extraction_output_schema.json =====",
+        "",
+        "===== FILE: data/calculator_targets_compact.json =====",
+        json.dumps(targets, ensure_ascii=False, indent=2),
+        "===== END FILE: data/calculator_targets_compact.json =====",
+        "",
+        "===== FILE: data/target_aliases_ru.yaml =====",
+        yaml.safe_dump(aliases, allow_unicode=True, sort_keys=False) if yaml else "",
+        "===== END FILE: data/target_aliases_ru.yaml =====",
+        "",
+        "===== FILE: data/unit_normalization_guide.json =====",
+        json.dumps(unit_guide, ensure_ascii=False, indent=2),
+        "===== END FILE: data/unit_normalization_guide.json =====",
+        "",
+        "===== FILE: data/section_guide.json =====",
+        json.dumps(guide, ensure_ascii=False, indent=2),
+        "===== END FILE: data/section_guide.json =====",
+        "",
+    ]
     return "\n".join(parts)
 
 
@@ -175,11 +294,16 @@ def compact_inventory_text(inventory_path: Path | None) -> str:
     )
 
 
-def build_request_text(section_codes: list[str], pages: list[dict[str, Any]], inventory_path: Path | None) -> str:
+def build_request_text(
+    section_codes: list[str],
+    pages: list[dict[str, Any]],
+    inventory_path: Path | None,
+    pack_mode: str,
+) -> str:
     sections = ", ".join(section_codes)
     return "\n\n".join(
         [part for part in [
-            build_pack_text(),
+            build_pack_text() if pack_mode == "full" else build_section_pack_text(section_codes),
             "# API SECTION RUN",
             f"requested_section_codes: {sections}",
             (
@@ -207,6 +331,7 @@ def build_payload(
     model: str,
     max_tokens: int,
     inventory_path: Path | None,
+    pack_mode: str,
 ) -> dict[str, Any]:
     content: list[dict[str, Any]] = []
     for page in pages:
@@ -220,7 +345,7 @@ def build_payload(
     content.append(
         {
             "type": "text",
-            "text": build_request_text(section_codes, pages, inventory_path),
+            "text": build_request_text(section_codes, pages, inventory_path, pack_mode),
         }
     )
     return {
@@ -337,6 +462,7 @@ def main() -> int:
     parser.add_argument("--page-ref", action="append", required=True, help="Use 'source.pdf:page_number'.")
     parser.add_argument("--inventory", type=Path, help="Optional page_inventory.json from build_page_inventory.py.")
     parser.add_argument("--out-dir", type=Path, required=True)
+    parser.add_argument("--pack-mode", choices=["full", "section"], default="full")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--max-tokens", type=int, default=40000)
     parser.add_argument("--dry-run", action="store_true")
@@ -345,12 +471,21 @@ def main() -> int:
     load_env()
     manifest = read_json(args.manifest)
     pages = select_pages(manifest, args.page_ref)
-    payload = build_payload(manifest, pages, args.section_code, args.model, args.max_tokens, args.inventory)
+    payload = build_payload(
+        manifest,
+        pages,
+        args.section_code,
+        args.model,
+        args.max_tokens,
+        args.inventory,
+        args.pack_mode,
+    )
 
     print("Claude API section extraction request")
     print(f"model: {args.model}")
     print(f"sections: {', '.join(args.section_code)}")
     print(f"pages: {len(pages)}")
+    print(f"pack_mode: {args.pack_mode}")
     if args.inventory:
         print(f"inventory: {args.inventory}")
     print(f"pack_dir: {PACK_DIR}")
