@@ -96,6 +96,16 @@ def select_pages(manifest: dict[str, Any], page_refs: list[str]) -> list[dict[st
     return selected
 
 
+def select_pages_by_source_pdf(manifest: dict[str, Any], source_pdfs: list[str]) -> list[dict[str, Any]]:
+    wanted = set(source_pdfs)
+    selected = [page for page in manifest.get("pages", []) if page["source_pdf"] in wanted]
+    found = {page["source_pdf"] for page in selected}
+    missing = sorted(wanted - found)
+    if missing:
+        raise ValueError(f"source PDFs not found in manifest: {missing}")
+    return selected
+
+
 def build_pack_text() -> str:
     parts = [
         "Ниже локальный API extraction pack. Используй только эти правила и выбранные страницы.",
@@ -299,6 +309,7 @@ def build_request_text(
     pages: list[dict[str, Any]],
     inventory_path: Path | None,
     pack_mode: str,
+    run_note: str | None,
 ) -> str:
     sections = ", ".join(section_codes)
     return "\n\n".join(
@@ -306,6 +317,7 @@ def build_request_text(
             build_pack_text() if pack_mode == "full" else build_section_pack_text(section_codes),
             "# API SECTION RUN",
             f"requested_section_codes: {sections}",
+            f"run_note: {run_note}" if run_note else "",
             (
                 "Извлеки только перечисленные requested_section_codes. "
                 "Верни частичный extraction_output JSON с верхним ключом `sections`, "
@@ -332,6 +344,7 @@ def build_payload(
     max_tokens: int,
     inventory_path: Path | None,
     pack_mode: str,
+    run_note: str | None,
 ) -> dict[str, Any]:
     content: list[dict[str, Any]] = []
     for page in pages:
@@ -345,7 +358,7 @@ def build_payload(
     content.append(
         {
             "type": "text",
-            "text": build_request_text(section_codes, pages, inventory_path, pack_mode),
+            "text": build_request_text(section_codes, pages, inventory_path, pack_mode, run_note),
         }
     )
     return {
@@ -459,10 +472,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--section-code", action="append", required=True)
-    parser.add_argument("--page-ref", action="append", required=True, help="Use 'source.pdf:page_number'.")
+    parser.add_argument("--page-ref", action="append", help="Use 'source.pdf:page_number'.")
+    parser.add_argument("--source-pdf", action="append", help="Select all prepared pages for this source PDF.")
     parser.add_argument("--inventory", type=Path, help="Optional page_inventory.json from build_page_inventory.py.")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--pack-mode", choices=["full", "section"], default="full")
+    parser.add_argument("--run-note", help="Short contextual note for this API run.")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--max-tokens", type=int, default=40000)
     parser.add_argument("--dry-run", action="store_true")
@@ -470,7 +485,14 @@ def main() -> int:
 
     load_env()
     manifest = read_json(args.manifest)
-    pages = select_pages(manifest, args.page_ref)
+    if args.page_ref and args.source_pdf:
+        raise ValueError("Use either --page-ref or --source-pdf, not both.")
+    if args.page_ref:
+        pages = select_pages(manifest, args.page_ref)
+    elif args.source_pdf:
+        pages = select_pages_by_source_pdf(manifest, args.source_pdf)
+    else:
+        raise ValueError("Provide at least one --page-ref or --source-pdf.")
     payload = build_payload(
         manifest,
         pages,
@@ -479,6 +501,7 @@ def main() -> int:
         args.max_tokens,
         args.inventory,
         args.pack_mode,
+        args.run_note,
     )
 
     print("Claude API section extraction request")
@@ -486,6 +509,8 @@ def main() -> int:
     print(f"sections: {', '.join(args.section_code)}")
     print(f"pages: {len(pages)}")
     print(f"pack_mode: {args.pack_mode}")
+    if args.run_note:
+        print(f"run_note: {args.run_note}")
     if args.inventory:
         print(f"inventory: {args.inventory}")
     print(f"pack_dir: {PACK_DIR}")

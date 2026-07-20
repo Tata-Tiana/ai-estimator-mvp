@@ -59,7 +59,7 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def build_prompt_text() -> str:
+def build_prompt_text(section_codes: list[str] | None = None, run_note: str | None = None) -> str:
     parts = [
         "Ниже загружены все файлы chat-extraction pack как текст.",
         "Используй их так, как если бы они были приложены отдельными файлами в чате.",
@@ -82,6 +82,21 @@ def build_prompt_text() -> str:
         "Выполни извлечение по приложенным PDF. "
         "Верни сначала чистый JSON extraction_output.json, затем служебную записку отдельным текстовым блоком."
     )
+    if run_note:
+        parts.extend(["", "# RUN NOTE", run_note])
+    if section_codes:
+        parts.extend(
+            [
+                "",
+                "# REQUESTED SECTION CODES",
+                ", ".join(section_codes),
+                "",
+                "Для этого API-запуска верни только перечисленные requested section codes.",
+                "Не создавай пустые разделы для section_code, которых нет в requested list.",
+                "Не заполняй found значениями null для отсутствующих target_code; перечисляй отсутствующие коды в missing.",
+                "Служебную записку сделай компактной, но обязательно укажи спорные места и листы PDF.",
+            ]
+        )
     return "\n".join(parts)
 
 
@@ -99,11 +114,17 @@ def encode_pdf_block(pdf_path: Path) -> dict[str, Any]:
     }
 
 
-def build_payload(pdf_paths: list[Path], model: str, max_tokens: int) -> dict[str, Any]:
+def build_payload(
+    pdf_paths: list[Path],
+    model: str,
+    max_tokens: int,
+    section_codes: list[str] | None = None,
+    run_note: str | None = None,
+) -> dict[str, Any]:
     content: list[dict[str, Any]] = []
     for pdf_path in pdf_paths:
         content.append(encode_pdf_block(pdf_path))
-    content.append({"type": "text", "text": build_prompt_text()})
+    content.append({"type": "text", "text": build_prompt_text(section_codes, run_note)})
     return {
         "model": model,
         "max_tokens": max_tokens,
@@ -236,8 +257,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pdf", action="append", type=Path, required=True, help="Project PDF. Pass multiple times.")
     parser.add_argument("--out-dir", type=Path, required=True)
+    parser.add_argument("--section-code", action="append", help="Optional section code filter for this full-PDF run.")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--max-tokens", type=int, default=20000)
+    parser.add_argument("--run-note", help="Short contextual note for this API run.")
     parser.add_argument("--dry-run", action="store_true", help="Build and describe the request without calling API.")
     args = parser.parse_args()
 
@@ -248,7 +271,7 @@ def main() -> int:
             raise FileNotFoundError(pdf_path)
 
     describe_request(pdf_paths, args.model, args.max_tokens)
-    payload = build_payload(pdf_paths, args.model, args.max_tokens)
+    payload = build_payload(pdf_paths, args.model, args.max_tokens, args.section_code, args.run_note)
 
     if args.dry_run:
         args.out_dir.mkdir(parents=True, exist_ok=True)
