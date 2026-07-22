@@ -155,6 +155,24 @@ No contract edit from this workstream has shipped yet as of 2026-07-19 — real 
 against both АРК (step_21) and ТРЦ (step_22) are now done; next is P1 implementation with explicit
 authorization before any calculator.py edit.
 
+Since then (2026-07-20/21), the P1 calculator.py items have shipped (`wall_block_items[]`,
+`slab_zones[]` for foundation_slab/floor_slab_1, `edge_and_beam_formwork_area_combined_m2` for
+floor_slab_1) — see `UNIVERSALIZATION_PLAN.md` checkboxes and memory (`p1_wall_block_items_shipped`,
+`p1_slab_zones_shipped`, `p1_floor_slab_1_combined_formwork_shipped`).
+
+## Section-Within-Section & Capture Status (started 2026-07-22)
+
+Read `SECTION_WITHIN_SECTION_AND_CAPTURE_STATUS_PLAN.md` (this directory) before touching
+`populate_review_workbook_from_extraction.py`, `build_review_workbook_from_contracts.py`, any
+`section_contract.yaml`, or the extraction prompt. Covers a verified, non-hypothetical problem: data
+that's already captured in schema (`wall_block_items`, `foundation_wall_items`, `column_footing_items`
+— partitions/columns/foundation walls) does not actually reach Elena on sheet 01 today (three
+compounding bugs), and separately, a real extraction run mistagged partition rebar in a way that would
+let it slip past the calculator's own guardrail and get silently priced as load-bearing-wall rebar.
+Also defines the `capture_status` model (active/in_development/outside_schema, field-level granularity)
+and a `future_section:*` tag for the Elena-approved roadmap of sections that don't exist yet (see
+memory `future_estimate_sections_roadmap`). Nothing implemented yet as of 2026-07-22 — plan only.
+
 ## Reference Earthworks Flow
 
 Start with:

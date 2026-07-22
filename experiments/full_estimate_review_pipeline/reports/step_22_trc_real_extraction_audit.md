@@ -86,6 +86,22 @@ Confirmed present in ТРЦ's real extraction, in the same shape already documen
   the extraction's current contradiction-detection doesn't catch across different visual elements on
   one page. Reinforces (does not duplicate) the open P3 item already recorded for that class of issue.
 
+## Resolution, 2026-07-21 — Finding #0 downgraded from blocker to logged warning
+
+User decision: the foreign title block (Ananьино) on several КР2 pages is a copy-paste artifact from
+reusing a template project's sheet, the same category as the kadastr-number and отметка 0,000
+discrepancies caught by rule 24 in `step_25`. It is **not** a signal that the underlying quantities on
+those pages belong to a different building. Verbatim: "это ошибки при копировании, только указать в
+служебной записке и дальше игнорить, ни на что не должно влиять."
+
+This reverses this document's original framing ("the standing precondition before ТРЦ's roof and
+floor_slab_2 can be trusted at all") — flat_roof, floor_slab_2, and the floor_slab_1 kitchen/dining
+rebar affected by this stamp are no longer waiting on architect confirmation. Extraction should keep
+flagging the mismatch (`needs_review` + note, same as today) purely as an audit trail — Elena/the
+architect can still be told, but the pipeline does not wait for their answer before trusting the
+numbers. No contract/calculator change needed; this only changes downstream handling of an
+already-caught finding, not detection.
+
 ## Where this feeds next
 
 `UNIVERSALIZATION_PLAN.md` updated: `slab_zones[]` scope note expanded to include `floor_slab_1`; a
