@@ -423,6 +423,8 @@ def calculate_formwork_areas_context(
             warnings.append(f"Spec formwork area differs from calculated control area: {label}")
         return result
 
+    edge_and_beam_formwork_area_combined: Decimal | None = None
+
     if method == "legacy_calculated_from_geometry":
         if calculated_main_formwork_area is None:
             raise ValueError("calculated main formwork area is required for legacy_calculated_from_geometry")
@@ -439,6 +441,17 @@ def calculate_formwork_areas_context(
             (input_data, "main_formwork_area_m2"),
             (geometry_in, "main_formwork_area_m2"),
         )
+        # edge_and_beam_formwork_area_combined_m2: additive alternative to edge_formwork_area_m2 +
+        # beams_formwork_area_m2 (2026-07-21, UNIVERSALIZATION_PLAN.md P1). Real ТРЦ case: the PDF
+        # prints slab-edge and beam vertical formwork as ONE merged number ("Вертикальные поверхности
+        # плиты и ж/б балок") with no way to split it. Every downstream estimate line (installation,
+        # plywood sheets, timber volume) already reads only the edge+beams SUM, never the two parts
+        # separately for money math — so accepting the merged figure directly is safe. When absent,
+        # behavior is byte-for-byte identical to before.
+        edge_and_beam_formwork_area_combined = first_optional_decimal(
+            (input_data, "edge_and_beam_formwork_area_combined_m2"),
+            (geometry_in, "edge_and_beam_formwork_area_combined_m2"),
+        )
         edge_formwork_area = first_optional_decimal(
             (input_data, "edge_formwork_area_m2"),
             (geometry_in, "edge_formwork_area_m2"),
@@ -449,27 +462,42 @@ def calculate_formwork_areas_context(
         )
         if main_formwork_area is None:
             raise ValueError("main_formwork_area_m2 is required for spec_formwork_areas")
-        if edge_formwork_area is None:
-            raise ValueError("edge_formwork_area_m2 is required for spec_formwork_areas")
-        if beams_formwork_area is None:
-            beams_formwork_area = (
-                calculated_beams_formwork_area if calculated_beams_formwork_area is not None else D0
-            )
-            warnings.append(
-                "beams_formwork_area_m2 is not provided; using sum of beams.items formwork_area_m2 "
-                "instead (0 when no beams.items were given)."
-            )
-        source = "spec_formwork_areas"
+        if edge_and_beam_formwork_area_combined is not None:
+            if edge_formwork_area is not None or beams_formwork_area is not None:
+                raise ValueError(
+                    "edge_and_beam_formwork_area_combined_m2 cannot be combined with "
+                    "edge_formwork_area_m2/beams_formwork_area_m2 — the source is either split or "
+                    "merged, not both at once"
+                )
+        else:
+            if edge_formwork_area is None:
+                raise ValueError(
+                    "edge_formwork_area_m2 is required for spec_formwork_areas unless "
+                    "edge_and_beam_formwork_area_combined_m2 is provided"
+                )
+            if beams_formwork_area is None:
+                beams_formwork_area = (
+                    calculated_beams_formwork_area if calculated_beams_formwork_area is not None else D0
+                )
+                warnings.append(
+                    "beams_formwork_area_m2 is not provided; using sum of beams.items formwork_area_m2 "
+                    "instead (0 when no beams.items were given)."
+                )
+        source = "spec_formwork_areas" if edge_and_beam_formwork_area_combined is None else "spec_formwork_areas_combined_edge_and_beam"
 
     for key, value in {
         "main_formwork_area_m2": main_formwork_area,
         "edge_formwork_area_m2": edge_formwork_area,
         "beams_formwork_area_m2": beams_formwork_area,
+        "edge_and_beam_formwork_area_combined_m2": edge_and_beam_formwork_area_combined,
     }.items():
-        if value < D0:
+        if value is not None and value < D0:
             raise ValueError(f"{key} must be >= 0")
 
-    edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
+    if edge_and_beam_formwork_area_combined is not None:
+        edge_and_beam_formwork_area = edge_and_beam_formwork_area_combined
+    else:
+        edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
     main_delta = delta(main_formwork_area, calculated_main_formwork_area, "main_formwork_area_m2")
     edge_delta = delta(edge_formwork_area, calculated_edge_formwork_area, "edge_formwork_area_m2")
     beams_delta = delta(beams_formwork_area, calculated_beams_formwork_area, "beams_formwork_area_m2")
@@ -479,8 +507,11 @@ def calculate_formwork_areas_context(
         "formwork_areas_source": source,
         "main_formwork_area_m2": round_decimal(main_formwork_area),
         "slab_formwork_area_m2": round_decimal(main_formwork_area),
-        "edge_formwork_area_m2": round_decimal(edge_formwork_area),
-        "beams_formwork_area_m2": round_decimal(beams_formwork_area),
+        "edge_formwork_area_m2": None if edge_formwork_area is None else round_decimal(edge_formwork_area),
+        "beams_formwork_area_m2": None if beams_formwork_area is None else round_decimal(beams_formwork_area),
+        "edge_and_beam_formwork_area_combined_m2": None
+        if edge_and_beam_formwork_area_combined is None
+        else round_decimal(edge_and_beam_formwork_area_combined),
         "edge_and_beam_formwork_area_m2": round_decimal(edge_and_beam_formwork_area),
         "calculated_main_formwork_area_m2": None
         if calculated_main_formwork_area is None
@@ -617,8 +648,10 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         formwork_area_warnings,
     )
     slab_formwork_area = d(formwork_areas_context["slab_formwork_area_m2"])
-    edge_formwork_area = d(formwork_areas_context["edge_formwork_area_m2"])
-    beams_formwork_area = d(formwork_areas_context["beams_formwork_area_m2"])
+    edge_formwork_area_ctx = formwork_areas_context["edge_formwork_area_m2"]
+    edge_formwork_area = None if edge_formwork_area_ctx is None else d(edge_formwork_area_ctx)
+    beams_formwork_area_ctx = formwork_areas_context["beams_formwork_area_m2"]
+    beams_formwork_area = None if beams_formwork_area_ctx is None else d(beams_formwork_area_ctx)
     edge_and_beam_formwork_area = d(formwork_areas_context["edge_and_beam_formwork_area_m2"])
 
     formwork_rate_context = calculate_formwork_rate_context(rates, slab_formwork_area)
@@ -997,7 +1030,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "items": beam_items,
             "total_length_m": round_decimal(beams_total_length),
             "total_concrete_volume_m3": round_decimal(beams_concrete_volume),
-            "total_formwork_area_m2": round_decimal(beams_formwork_area),
+            "total_formwork_area_m2": None if beams_formwork_area is None else round_decimal(beams_formwork_area),
             "concrete_volume_source": beams_concrete_volume_source,
             "calculated_concrete_volume_m3": round_decimal(calculated_beams_concrete_volume),
             "concrete_volume_delta_m3": None

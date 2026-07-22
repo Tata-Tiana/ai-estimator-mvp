@@ -48,6 +48,7 @@
 | `formwork.slab_formwork_area_m2` | `207.64` |
 | `formwork.edge_formwork_area_m2` | `23.6` |
 | `formwork.beams_formwork_area_m2` | `27.992` |
+| `formwork.edge_and_beam_formwork_area_combined_m2` | `None` |
 | `formwork.edge_and_beam_formwork_area_m2` | `51.592` |
 | `formwork.calculated_main_formwork_area_m2` | `207.64` |
 | `formwork.calculated_edge_formwork_area_m2` | `23.6` |

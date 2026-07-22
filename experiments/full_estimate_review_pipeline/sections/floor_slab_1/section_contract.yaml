@@ -190,7 +190,30 @@ review_parameters:
       status_if_missing: "manual_required"
       action_ru: "Проверьте площадь опалубки торца плиты."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Do not confuse with EPS 100 mm edge volume in m3."
+    notes: "Do not confuse with EPS 100 mm edge volume in m3. Required unless edge_and_beam_formwork_area_combined_m2 below is used instead (source gives one merged number for edge+beams)."
+
+  - key: edge_and_beam_formwork_area_combined_m2
+    label_ru: "Опалубка торца плиты + балок перекрытия 1-го этажа (объединено, разделить нельзя)"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_and_beam_formwork_area_combined"
+    calculator_input_path: "edge_and_beam_formwork_area_combined_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.edge_and_beam_formwork_area_combined_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_and_beam_formwork_area_combined"]
+      aliases_ru: ["опалубка торца плиты и балок", "вертикальные поверхности плиты и ж/б балок"]
+      expected_unit: "м2"
+      notes: "Use only when the PDF genuinely gives edge and beam vertical formwork as ONE merged number with no way to split it (confirmed real ТРЦ case, 2026-07-21). Do not use as a shortcut when edge_formwork_area_m2/beams_formwork_area_m2 are actually separable — those remain the default path. Mutually exclusive with edge_formwork_area_m2/beams_formwork_area_m2; calculator raises if both are supplied."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Заполняйте только если PDF даёт торец плиты и балки одной строкой, которую нельзя разделить; иначе используйте раздельные поля ниже."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Additive alternative shipped 2026-07-21 (calculator.py change, authorized). Extraction prompt (calculator_targets_compact.json/target_aliases_ru.yaml) intentionally not updated yet — same deferred-activation pattern as wall_block_items[]/slab_zones[]."
 
   - key: beams_formwork_area_m2
     label_ru: "Площадь опалубки балок перекрытия 1-го этажа"
