@@ -1,0 +1,15 @@
+{
+  "project_name": "test_schiedel_vent_channels_trc",
+  "schiedel_masonry_total_length_m": 9.8,
+  "schiedel_masonry_work_rate_per_m": 4000,
+  "schiedel_channel_items": [
+    {"product_type": "1x", "quantity_pcs": 21},
+    {"product_type": "2x", "quantity_pcs": 15}
+  ],
+  "schiedel_vent_channel_1x_unit_price": 264,
+  "schiedel_vent_channel_2x_unit_price": 504,
+  "schiedel_delivery_trips": 1,
+  "schiedel_delivery_truck_price": 15000,
+  "schiedel_delivery_work_price": 2500,
+  "consumables_rate": 0.03
+}

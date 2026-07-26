@@ -98,18 +98,54 @@ def zero_structure_line(code: str, name: str) -> dict[str, Any]:
     )
 
 
+# Product types confirmed across real projects (2026-07-26): 1x/2x on one project, 3x/4x on another.
+# CVENT is a rare distinct Schiedel product line (Elena: "бывает достаточно редко") — kept in the same
+# enum so a project that has it doesn't need a schema change. Brand is always Schiedel per Elena's rule
+# ("всегда используется Шидель, даже если в проекте не указано название, во всех проектах") — confirmed
+# against a real delivered smeta that bills Schiedel-branded blocks even though that project's PDF
+# drawings never name the brand explicitly. 2x/3x keep their pre-existing price codes (already real
+# entries in the price registry); 1x/4x/cvent are new codes.
+CHANNEL_TYPE_SPECS: dict[str, dict[str, str]] = {
+    "1x": {
+        "name": "Вентиляционный канал 1х Schiedel",
+        "price_code": "schiedel_vent_channel_1x_item",
+        "price_field": "schiedel_vent_channel_1x_unit_price",
+    },
+    "2x": {
+        "name": "Вентиляционный канал 2х,36/25 см Schiedel",
+        "price_code": "schiedel_vent_channel_2x_36_25_item",
+        "price_field": "schiedel_vent_channel_2x_unit_price",
+    },
+    "3x": {
+        "name": "Вентиляционный канал 3х,52/25 см Schiedel",
+        "price_code": "schiedel_vent_channel_3x_52_25_item",
+        "price_field": "schiedel_vent_channel_3x_unit_price",
+    },
+    "4x": {
+        "name": "Вентиляционный канал 4х Schiedel",
+        "price_code": "schiedel_vent_channel_4x_item",
+        "price_field": "schiedel_vent_channel_4x_unit_price",
+    },
+    "cvent": {
+        "name": "Вентиляционный канал CVENT Schiedel",
+        "price_code": "schiedel_vent_channel_cvent_item",
+        "price_field": "schiedel_vent_channel_cvent_unit_price",
+    },
+}
+
 PRICE_FIELD_BY_CODE = {
     "schiedel_masonry_work": "schiedel_masonry_work_rate_per_m",
-    "schiedel_vent_channel_2x_36_25": "schiedel_vent_channel_2x_unit_price",
-    "schiedel_vent_channel_3x_52_25": "schiedel_vent_channel_3x_unit_price",
     "schiedel_delivery": "schiedel_delivery_truck_price",
+    **{
+        f"schiedel_vent_channel_{product_type}": spec["price_field"]
+        for product_type, spec in CHANNEL_TYPE_SPECS.items()
+    },
 }
 
 PRICE_CODE_BY_FIELD = {
     "schiedel_masonry_work_rate_per_m": "schiedel_masonry_work_m",
-    "schiedel_vent_channel_2x_unit_price": "schiedel_vent_channel_2x_36_25_item",
-    "schiedel_vent_channel_3x_unit_price": "schiedel_vent_channel_3x_52_25_item",
     "schiedel_delivery_truck_price": "schiedel_delivery_truck",
+    **{spec["price_field"]: spec["price_code"] for spec in CHANNEL_TYPE_SPECS.values()},
 }
 
 
@@ -179,7 +215,7 @@ def build_effective_pricing(
         resolutions_by_code[price_code] = {
             "price_code": price_code,
             "unit_price_source": source,
-            "unit_price_original": decimal_str(original_price),
+            "unit_price_original": decimal_str(original_price) if original_price is not None else None,
             "unit_price_used": decimal_str(used_price) if used_price is not None else None,
             "price_warning": resolved["warning"],
         }
@@ -218,24 +254,63 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
     original_input_data = dict(input_data)
     input_data, pricing_summary, pricing_warnings = build_effective_pricing(input_data)
     warnings = [
-        "Количество материалов Schiedel 24 и 8 требует подтверждения у Елены/по спецификации.",
+        "Количество вентканалов по типам берётся из schiedel_channel_items — из спецификации проекта "
+        "или, если PDF не даёт готовое количество в штуках, вручную от сметчицы.",
         "Количество доставки является ручным параметром.",
         "Клиентская часть не считается.",
         *pricing_warnings,
     ]
 
+    # Masonry work is the one payable quantity regardless of channel type/count (Elena,
+    # 2026-07-21: "работа у нас одна") — driven solely by the reviewed total length, in
+    # running meters. Shaft count/height are NOT tracked here at all (Elena, 2026-07-26:
+    # "не надо считать шахты, это не важно") — only module/material count matters.
     masonry_length = d(input_data["schiedel_masonry_total_length_m"])
-    masonry_control_length = (
-        d(input_data["vent_channel_1_height_m"])
-        + d(input_data["vent_channel_2_height_m"]) * d(input_data["vent_channel_2_count"])
-    )
     masonry_work_raw = masonry_length * d(input_data["schiedel_masonry_work_rate_per_m"])
 
-    channel_2x_qty = d(input_data["schiedel_vent_channel_2x_count"])
-    channel_2x_total_raw = channel_2x_qty * d(input_data["schiedel_vent_channel_2x_unit_price"])
+    # schiedel_channel_items[]: dynamic list of {product_type, quantity_pcs}, replacing the
+    # old hardcoded schiedel_vent_channel_2x_count/_3x_count scalar pair (2026-07-26). Rows
+    # with the same product_type are summed, same bucketing convention as
+    # wall_block_items_totals() elsewhere in this pipeline. Any subset of the five known
+    # types can appear; a project with only 1x and 2x or only 3x and 4x (both real project
+    # cases) needs no code change either way.
+    channel_items_in = input_data.get("schiedel_channel_items") or []
+    channel_totals: dict[str, Decimal] = {product_type: D0 for product_type in CHANNEL_TYPE_SPECS}
+    for item in channel_items_in:
+        product_type = item.get("product_type")
+        if product_type not in CHANNEL_TYPE_SPECS:
+            raise ValueError(
+                f"schiedel_channel_items[].product_type must be one of {sorted(CHANNEL_TYPE_SPECS)}"
+            )
+        quantity_pcs = d(item.get("quantity_pcs", 0))
+        if quantity_pcs < D0:
+            raise ValueError("schiedel_channel_items[].quantity_pcs must be >= 0")
+        channel_totals[product_type] += quantity_pcs
 
-    channel_3x_qty = d(input_data["schiedel_vent_channel_3x_count"])
-    channel_3x_total_raw = channel_3x_qty * d(input_data["schiedel_vent_channel_3x_unit_price"])
+    channel_lines: list[dict[str, Any]] = []
+    channel_material_raw_total = D0
+    channel_breakdown: dict[str, str] = {}
+    for product_type, spec in CHANNEL_TYPE_SPECS.items():
+        quantity_pcs = channel_totals[product_type]
+        channel_breakdown[f"schiedel_channel_{product_type}_count"] = decimal_str(quantity_pcs)
+        if quantity_pcs <= D0:
+            continue
+        unit_price = d(input_data[spec["price_field"]])
+        total_raw = quantity_pcs * unit_price
+        channel_material_raw_total += total_raw
+        channel_lines.append(
+            estimate_line(
+                code=f"schiedel_vent_channel_{product_type}",
+                name=spec["name"],
+                unit="шт",
+                line_type="materials",
+                quantity_raw=quantity_pcs,
+                quantity_source="sum of schiedel_channel_items rows with this product_type",
+                price_code=spec["price_code"],
+                material_unit_price=unit_price,
+                material_total_raw=total_raw,
+            )
+        )
 
     delivery_trips = d(input_data["schiedel_delivery_trips"])
     delivery_material_raw = delivery_trips * d(input_data["schiedel_delivery_truck_price"])
@@ -243,8 +318,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
 
     direct_cost_base_before_consumables = (
         masonry_work_raw
-        + channel_2x_total_raw
-        + channel_3x_total_raw
+        + channel_material_raw_total
         + delivery_material_raw
         + delivery_work_raw
     )
@@ -261,58 +335,9 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             price_code="schiedel_masonry_work_m",
             work_unit_price=input_data["schiedel_masonry_work_rate_per_m"],
             work_total_raw=masonry_work_raw,
-            formula={
-                "control_length_m": decimal_str(masonry_control_length),
-                "control_formula": "vent_channel_1_height_m + vent_channel_2_height_m * vent_channel_2_count",
-                "work_total": "schiedel_masonry_total_length_m * schiedel_masonry_work_rate_per_m",
-            },
-            notes=[
-                "Серая сумма считается от raw 15.82 мп.",
-                "Не считать от старого отображаемого количества 16 мп.",
-            ],
+            formula={"work_total": "schiedel_masonry_total_length_m * schiedel_masonry_work_rate_per_m"},
         ),
-        estimate_line(
-            code="schiedel_vent_channel_2x_36_25",
-            name="Вентиляционный канал 2х,36/25 см Schiedel",
-            unit="шт",
-            line_type="materials",
-            quantity_raw=channel_2x_qty,
-            quantity_source="manual_from_schiedel_specification_or_elena_table",
-            price_code="schiedel_vent_channel_2x_36_25_item",
-            material_unit_price=input_data["schiedel_vent_channel_2x_unit_price"],
-            material_total_raw=channel_2x_total_raw,
-            formula={
-                "quantity": "manual/specification input",
-                "material_total": "schiedel_vent_channel_2x_count * schiedel_vent_channel_2x_unit_price",
-                "control_blocks_raw": "65.51515152",
-                "secondary_control_value": "28",
-            },
-            notes=[
-                "Количество 24 не выводится автоматически из контрольных правых значений.",
-                "Контрольные числа сохранены справочно и не участвуют в quantity.",
-            ],
-        ),
-        estimate_line(
-            code="schiedel_vent_channel_3x_52_25",
-            name="Вентиляционный канал 3х,52/25 см Schiedel",
-            unit="шт",
-            line_type="materials",
-            quantity_raw=channel_3x_qty,
-            quantity_source="manual_from_schiedel_specification_or_elena_table",
-            price_code="schiedel_vent_channel_3x_52_25_item",
-            material_unit_price=input_data["schiedel_vent_channel_3x_unit_price"],
-            material_total_raw=channel_3x_total_raw,
-            formula={
-                "quantity": "manual/specification input",
-                "material_total": "schiedel_vent_channel_3x_count * schiedel_vent_channel_3x_unit_price",
-                "control_blocks_raw": "14.57575758",
-                "secondary_control_value": "6",
-            },
-            notes=[
-                "Количество 8 не выводится автоматически из контрольных правых значений.",
-                "Контрольные числа сохранены справочно и не участвуют в quantity.",
-            ],
-        ),
+        *channel_lines,
         estimate_line(
             code="schiedel_delivery",
             name="Доставка вентканалов",
@@ -343,7 +368,6 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 "consumables_rate": decimal_str(input_data["consumables_rate"]),
                 "material_total_raw": decimal_str(consumables_total_raw),
             },
-            notes=["Расходные материалы считаются как 3% от прямой базы 114456."],
         ),
         zero_structure_line("technical_supervision_zero", "Технический надзор"),
         zero_structure_line("procurement_storage_zero", "Заготовительно-складские расходы"),
@@ -369,13 +393,11 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
         "calculation_blocks": {
             "masonry": {
                 "schiedel_masonry_total_length_m": decimal_str(masonry_length),
-                "control_length_m": decimal_str(masonry_control_length),
                 "work_rate_per_m": decimal_str(input_data["schiedel_masonry_work_rate_per_m"]),
             },
             "materials": {
-                "schiedel_vent_channel_2x_count": decimal_str(channel_2x_qty),
-                "schiedel_vent_channel_3x_count": decimal_str(channel_3x_qty),
-                "counts_source": "manual/specification input",
+                **channel_breakdown,
+                "counts_source": "schiedel_channel_items (specification or manual estimator input)",
             },
             "delivery": {
                 "schiedel_delivery_trips": decimal_str(delivery_trips),
@@ -384,12 +406,6 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 "direct_cost_base_before_consumables": decimal_str(direct_cost_base_before_consumables),
                 "consumables_rate": decimal_str(input_data["consumables_rate"]),
                 "consumables_total_raw": decimal_str(consumables_total_raw),
-            },
-            "control_metrics": {
-                "schiedel_2x_control_blocks_raw": "65.51515152",
-                "schiedel_2x_secondary_control_value": "28",
-                "schiedel_3x_control_blocks_raw": "14.57575758",
-                "schiedel_3x_secondary_control_value": "6",
             },
         },
         "estimate_lines": lines,
