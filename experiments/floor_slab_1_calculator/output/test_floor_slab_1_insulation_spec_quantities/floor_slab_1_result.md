@@ -61,6 +61,8 @@
 | `formwork_rate_context.formwork_rate_calc_method` | `direct_section_rate` |
 | `formwork_rate_context.formwork_rate_per_m2` | `600.0` |
 | `formwork_rate_context.box_level_quote_context_used` | `False` |
+| `plywood_and_timber.beams_bottom_formwork_area_m2` | `0.0` |
+| `plywood_and_timber.edge_beam_formwork_area_for_materials_m2` | `51.592` |
 | `plywood_and_timber.edge_and_beam_plywood_sheets_raw` | `22.431304` |
 | `plywood_and_timber.non_multiple_places_area_m2` | `41.528` |
 | `plywood_and_timber.non_multiple_places_plywood_sheets_raw` | `18.055652` |

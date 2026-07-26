@@ -31,8 +31,8 @@
   - калькулятор переводит вес в м.п. через `kg_per_meter`, добавляет запас и округляет до хлыстов;
   - в production арматура должна приходить из спецификации сразу в м.п. через `rebar_items[*].spec_length_m`.
 - Утепление плиты:
-  - этот кейс использует legacy-режим `insulation.insulation_calc_method = legacy_usv_geometry`;
-  - старые рабочие количества утепления восстанавливаются через геометрию ЮСВ для сверки с исходной сметой;
+  - этот кейс использует legacy-режим `insulation.insulation_calc_method = legacy_fixed_edge_length`;
+  - переименовано 2026-07-26 (было `legacy_usv_geometry`) — формула никогда не читала геометрию проекта, всегда возвращала одну и ту же длину торца (84,8 м) вне зависимости от входных данных; переименование и явная константа убирают реальные размеры конкретного проекта из кода калькулятора, поведение побайтово не изменилось;
   - в production рабочие длины/площади и чистый объём ЭППС должны приходить из спецификации через `insulation.slab_outer_edge_eps_work_length_m`, `insulation.slab_edge_eps_material_area_m2`, `insulation.bottom_slab_eps_work_area_m2`, `insulation.total_eps_volume_from_spec_m3`.
 - Площади опалубки:
   - этот кейс использует legacy-режим `formwork_areas_calc_method = legacy_calculated_from_geometry`;

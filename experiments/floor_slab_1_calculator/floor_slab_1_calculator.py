@@ -262,8 +262,8 @@ def calculate_insulation_context(
     slab_thickness: Decimal,
 ) -> tuple[dict[str, Any], list[str]]:
     method = insulation.get("insulation_calc_method")
-    if method not in {"legacy_usv_geometry", "spec_work_quantities"}:
-        raise ValueError("insulation.insulation_calc_method must be legacy_usv_geometry or spec_work_quantities")
+    if method not in {"legacy_fixed_edge_length", "spec_work_quantities"}:
+        raise ValueError("insulation.insulation_calc_method must be legacy_fixed_edge_length or spec_work_quantities")
 
     eps_thickness = d(insulation.get("eps_thickness_m", "0.1"))
     eps_waste_coeff = d(insulation.get("eps_waste_coeff", "1.05"))
@@ -304,8 +304,13 @@ def calculate_insulation_context(
     if edge_insulation_height <= D0:
         raise ValueError("insulation.edge_insulation_height_m must be > 0")
 
-    if method == "legacy_usv_geometry":
-        slab_outer_edge_eps_work_length = d(19) * d(2) + (d(7) + d("13.2")) * d(2) + d("3.2") * d(2)
+    if method == "legacy_fixed_edge_length":
+        # Fixed fallback constant, not derived from any project's actual geometry — this legacy
+        # mode never reads slab dimensions at all, it always uses the same edge length regardless
+        # of which project is run. Kept only for historical regression fixtures predating
+        # spec_work_quantities (the production mode, which takes this length directly from the
+        # project's own specification instead).
+        slab_outer_edge_eps_work_length = d("84.8")
         slab_edge_eps_material_area = slab_outer_edge_eps_work_length * edge_insulation_height
         edge_and_beam_eps_material_area = slab_edge_eps_material_area + beams_eps_material_area
         edge_and_beam_eps_volume = edge_and_beam_eps_material_area * eps_thickness
@@ -442,7 +447,7 @@ def calculate_formwork_areas_context(
             (geometry_in, "main_formwork_area_m2"),
         )
         # edge_and_beam_formwork_area_combined_m2: additive alternative to edge_formwork_area_m2 +
-        # beams_formwork_area_m2 (2026-07-21, UNIVERSALIZATION_PLAN.md P1). Real ТРЦ case: the PDF
+        # beams_formwork_area_m2 (2026-07-21, UNIVERSALIZATION_PLAN.md P1). Real project case: the PDF
         # prints slab-edge and beam vertical formwork as ONE merged number ("Вертикальные поверхности
         # плиты и ж/б балок") with no way to split it. Every downstream estimate line (installation,
         # plywood sheets, timber volume) already reads only the edge+beams SUM, never the two parts
@@ -621,8 +626,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     # slab_zones[]: purely additive alternative to the scalar geometry.total_concrete_volume_from_spec_m3
     # (2026-07-20, UNIVERSALIZATION_PLAN.md P1). When present, its sum overrides the scalar below —
     # everything downstream already reads the single `total_concrete_volume` local, so no other change
-    # is needed. Fixes the real ТРЦ case where the slab's concrete is printed as separate zones (main
-    # slab + kitchen/dining slab) with no combined total. See p1_slab_zones_shipped memory.
+    # is needed. Fixes the real-project case where the slab's concrete is printed as separate zones
+    # (main slab + kitchen/dining slab) with no combined total. See p1_slab_zones_shipped memory.
     slab_zones_in = input_data.get("slab_zones") or []
     for zone in slab_zones_in:
         if not zone.get("context"):
@@ -659,10 +664,18 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     formwork_delivery_context = calculate_formwork_delivery_context(rates, manual_lines, slab_formwork_area)
     formwork_delivery_trucks = d(formwork_delivery_context["formwork_delivery_trucks"])
 
+    # beams_bottom_formwork_area_m2: additive, real-project case (2026-07-26) — a project can print
+    # the beam's HORIZONTAL (bottom) formwork area as its own separate line, distinct from both the
+    # slab's horizontal area (main_formwork_area_m2) and the combined slab+beam VERTICAL area
+    # (edge_and_beam_formwork_area). Nothing upstream folds this into edge_and_beam_formwork_area
+    # today, so without this field the beam bottom area was silently never counted for plywood/timber.
+    # When absent, behavior is byte-for-byte identical to before.
+    beams_bottom_formwork_area = d(input_data.get("beams_bottom_formwork_area_m2") or 0)
     plywood_working_area = d(rates["plywood_sheet_working_area_m2"])
     non_multiple_coeff = d(rates["non_multiple_places_coeff"])
     reserve_plywood_sheets = d(rates["reserve_plywood_sheets"])
-    edge_beam_plywood_raw = edge_and_beam_formwork_area / plywood_working_area
+    edge_beam_formwork_area_for_materials = edge_and_beam_formwork_area + beams_bottom_formwork_area
+    edge_beam_plywood_raw = edge_beam_formwork_area_for_materials / plywood_working_area
     non_multiple_area = slab_formwork_area * non_multiple_coeff
     non_multiple_plywood_raw = non_multiple_area / plywood_working_area
     base_plywood_raw = edge_beam_plywood_raw + non_multiple_plywood_raw
@@ -676,7 +689,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         * d(rates["additional_timber_coeff"])
         * d(rates["additional_timber_thickness_m"])
     )
-    base_timber_volume = edge_and_beam_formwork_area * timber_thickness
+    base_timber_volume = edge_beam_formwork_area_for_materials * timber_thickness
     timber_volume = quantized_decimal(base_timber_volume + additional_timber_volume, "0.000000001")
 
     rebar_items = [calculate_rebar_item(item, rebar_calc_method) for item in rebar_items_in]
@@ -783,8 +796,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "Монтаж опалубки из доски 50 мм и фанеры для устройства балок, для отбортовки плиты",
             "м2",
             "zero_control_line",
-            edge_and_beam_formwork_area,
-            display_decimal(edge_and_beam_formwork_area),
+            edge_beam_formwork_area_for_materials,
+            display_decimal(edge_beam_formwork_area_for_materials),
         ),
         estimate_line(
             "plywood_fk_18mm_for_edges_and_non_multiple_places",
@@ -1040,6 +1053,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         "formwork": formwork_block,
         "formwork_rate_context": formwork_rate_context,
         "plywood_and_timber": {
+            "beams_bottom_formwork_area_m2": round_decimal(beams_bottom_formwork_area),
+            "edge_beam_formwork_area_for_materials_m2": round_decimal(edge_beam_formwork_area_for_materials),
             "edge_and_beam_plywood_sheets_raw": round_decimal(edge_beam_plywood_raw),
             "non_multiple_places_area_m2": round_decimal(non_multiple_area),
             "non_multiple_places_plywood_sheets_raw": round_decimal(non_multiple_plywood_raw),

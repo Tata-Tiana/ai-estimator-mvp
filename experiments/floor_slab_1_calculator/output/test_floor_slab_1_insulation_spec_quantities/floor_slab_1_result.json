@@ -253,6 +253,8 @@
       "box_level_quote_context_used": false
     },
     "plywood_and_timber": {
+      "beams_bottom_formwork_area_m2": 0.0,
+      "edge_beam_formwork_area_for_materials_m2": 51.592,
       "edge_and_beam_plywood_sheets_raw": 22.431304,
       "non_multiple_places_area_m2": 41.528,
       "non_multiple_places_plywood_sheets_raw": 18.055652,

@@ -222,11 +222,11 @@ section_rebar_delivery_weight_kg = sum(order_length_m * kg_per_meter)
 
 ## Production-стандарт утепления плиты
 
-В production утепление плиты перекрытия 1-го этажа не восстанавливается через геометрию ЮСВ. Рабочие количества и чистый объём ЭППС приходят из спецификации.
+В production утепление плиты перекрытия 1-го этажа не восстанавливается через фиксированную геометрию. Рабочие количества и чистый объём ЭППС приходят из спецификации.
 
 Режимы:
 
-- `insulation.insulation_calc_method = legacy_usv_geometry` - legacy ЮСВ, где старые количества утепления повторяются через прежнюю геометрию;
+- `insulation.insulation_calc_method = legacy_fixed_edge_length` - legacy-режим для старых регресс-кейсов, где длина торца плиты — фиксированная константа (84,8 м), не читается из проекта;
 - `insulation.insulation_calc_method = spec_work_quantities` - production, где рабочие длины/площади и объём ЭППС берутся из спецификации.
 
 Production input:

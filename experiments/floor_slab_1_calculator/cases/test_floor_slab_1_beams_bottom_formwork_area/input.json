@@ -1,14 +1,17 @@
 {
   "case_meta": {
-    "project": "horoshevka_14",
+    "project": "test_floor_slab_1_beams_bottom_formwork_area",
     "section": "floor_slab_1_with_beams",
-    "validated_with_elena": true,
+    "validated_with_elena": false,
     "confidence": "high",
-    "project_name": "test_slab_zones_equivalence"
+    "notes": "Real ТРЦ case (2026-07-26): PDF gives beam horizontal (bottom) formwork area as its own separate line (1,26 м2), distinct from the combined slab+beam vertical area (36,60 м2, see test_floor_slab_1_edge_and_beam_formwork_combined) and from the slab's own horizontal area (main_formwork_area_m2). Same base inputs as that case plus beams_bottom_formwork_area_m2, to prove it now feeds into plywood/timber."
   },
-  "formwork_areas_calc_method": "legacy_calculated_from_geometry",
+  "formwork_areas_calc_method": "spec_formwork_areas",
+  "main_formwork_area_m2": 207.64,
+  "edge_and_beam_formwork_area_combined_m2": 51.592,
+  "beams_bottom_formwork_area_m2": 1.26,
   "geometry": {
-    "total_concrete_volume_from_spec_m3": 0,
+    "total_concrete_volume_from_spec_m3": 40.53,
     "slab_thickness_m": 0.18,
     "slab_concrete_volume_m3_raw": 37.3752,
     "slab_concrete_volume_m3_display": 37.38,
@@ -42,11 +45,9 @@
     ]
   },
   "rates": {
-    "formwork_rate_calc_method": "legacy_supplier_quote_context",
+    "formwork_rate_calc_method": "direct_section_rate",
     "formwork_delivery_calc_method": "area_threshold",
     "formwork_rate_per_m2": 600,
-    "formwork_supplier_quote_total": 170710,
-    "slab_2_formwork_area_for_rate_context_m2": 81.9,
     "formwork_delivery_rate_per_trip": 20000,
     "crane_shift_rate": 30000,
     "formwork_consumables_rate_per_m2": 47,
@@ -59,8 +60,7 @@
     "additional_timber_coeff": 0.1,
     "additional_timber_thickness_m": 0.05,
     "timber_unit_price": 21500,
-    "metal_delivery_calc_method": "legacy_slab1_slab2_context",
-    "floor_slab_2_rebar_weight_for_delivery_context_kg": 1825.39,
+    "metal_delivery_calc_method": "section_output_only",
     "max_rebar_delivery_weight_per_truck_kg": 10000,
     "rebar_delivery_rate_per_truck": 22000,
     "slab_concreting_work_rate_per_m3": 12000,
@@ -168,19 +168,8 @@
     "consumables_and_tool_percent": 0.03
   },
   "manual_lines": {
-    "formwork_delivery_trucks_override": 4,
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
     "technical_supervision_amount": 5000
-  },
-  "slab_zones": [
-    {
-      "context": "Основная плита",
-      "concrete_volume_m3": 30.0
-    },
-    {
-      "context": "Плита кухни/столовой",
-      "concrete_volume_m3": 10.53
-    }
-  ]
+  }
 }

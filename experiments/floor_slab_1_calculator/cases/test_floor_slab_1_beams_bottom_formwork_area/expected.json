@@ -1,0 +1,57 @@
+{
+  "calculation_blocks": {
+    "formwork": {
+      "formwork_areas_calc_method": "spec_formwork_areas",
+      "formwork_areas_source": "spec_formwork_areas_combined_edge_and_beam",
+      "main_formwork_area_m2": 207.64,
+      "slab_formwork_area_m2": 207.64,
+      "edge_formwork_area_m2": null,
+      "beams_formwork_area_m2": null,
+      "edge_and_beam_formwork_area_combined_m2": 51.592,
+      "edge_and_beam_formwork_area_m2": 51.592,
+      "calculated_main_formwork_area_m2": 207.64,
+      "calculated_edge_formwork_area_m2": 23.6,
+      "calculated_beams_formwork_area_m2": 27.992,
+      "main_formwork_area_delta_m2": 0,
+      "edge_formwork_area_delta_m2": null,
+      "beams_formwork_area_delta_m2": null
+    },
+    "geometry": {
+      "slab_formwork_area_m2": 207.64
+    },
+    "beams": {
+      "total_formwork_area_m2": null
+    },
+    "plywood_and_timber": {
+      "beams_bottom_formwork_area_m2": 1.26,
+      "edge_beam_formwork_area_for_materials_m2": 52.852,
+      "edge_and_beam_plywood_sheets_raw": 22.97913,
+      "base_timber_volume_m3": 2.6426,
+      "timber_volume_m3_raw": 2.853846
+    }
+  },
+  "estimate_lines": {
+    "slab_formwork_installation_control": {
+      "quantity_raw": 207.64,
+      "quantity_display": 207.64
+    },
+    "formwork_set_rental_material": {
+      "quantity_raw": 207.64,
+      "quantity_display": 207.64,
+      "material_total_raw": 124584,
+      "material_total": 124584
+    },
+    "edge_beam_formwork_installation_control": {
+      "quantity_raw": 52.852,
+      "quantity_display": 52.85
+    },
+    "plywood_fk_18mm_for_edges_and_non_multiple_places": {
+      "quantity_raw": 52,
+      "quantity_display": 52
+    },
+    "formwork_timber_gost": {
+      "quantity_raw": 2.853846,
+      "quantity_display": 2.85
+    }
+  }
+}

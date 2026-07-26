@@ -61,6 +61,8 @@
 | `formwork_rate_context.formwork_rate_calc_method` | `direct_section_rate` |
 | `formwork_rate_context.formwork_rate_per_m2` | `600.0` |
 | `formwork_rate_context.box_level_quote_context_used` | `False` |
+| `plywood_and_timber.beams_bottom_formwork_area_m2` | `0.0` |
+| `plywood_and_timber.edge_beam_formwork_area_for_materials_m2` | `51.592` |
 | `plywood_and_timber.edge_and_beam_plywood_sheets_raw` | `22.431304` |
 | `plywood_and_timber.non_multiple_places_area_m2` | `41.528` |
 | `plywood_and_timber.non_multiple_places_plywood_sheets_raw` | `18.055652` |
@@ -166,7 +168,7 @@
 | `concrete.concrete_delivery_trips` | `5` |
 | `slab_zones.used` | `False` |
 | `slab_zones.zone_count` | `0` |
-| `insulation.insulation_calc_method` | `legacy_usv_geometry` |
+| `insulation.insulation_calc_method` | `legacy_fixed_edge_length` |
 | `insulation.edge_insulation_height_m` | `0.18` |
 | `insulation.edge_insulation_height_source` | `specification` |
 | `insulation.slab_outer_edge_length_m` | `84.8` |
@@ -282,11 +284,11 @@ Production-режим `section_output_only`: калькулятор плиты 1
 
 ## Утепление плиты
 
-Legacy-режим `legacy_usv_geometry`: утепление рассчитано по старой геометрии ЮСВ для сохранения сверки с исходной сметой.
+Legacy-режим `legacy_fixed_edge_length`: утепление рассчитано по фиксированной длине торца (не из реального проекта) для сохранения старых регресс-кейсов.
 
 | Показатель | Значение |
 | --- | ---: |
-| `insulation_calc_method` | `legacy_usv_geometry` |
+| `insulation_calc_method` | `legacy_fixed_edge_length` |
 | `slab_outer_edge_eps_work_length_m` | `84.8` |
 | `beams_eps_work_length_m` | `23.2` |
 | `edge_beam_eps_work_length_m` | `108.0` |

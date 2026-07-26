@@ -380,7 +380,7 @@ def insulation_context_markdown(calculation: dict[str, Any]) -> list[str]:
     else:
         lines.extend(
             [
-                "Legacy-режим `legacy_usv_geometry`: утепление рассчитано по старой геометрии ЮСВ для сохранения сверки с исходной сметой.",
+                "Legacy-режим `legacy_fixed_edge_length`: утепление рассчитано по фиксированной длине торца (не из реального проекта) для сохранения старых регресс-кейсов.",
                 "",
             ]
         )
