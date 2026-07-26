@@ -142,8 +142,14 @@ def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
 
 def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
     method = input_data.get("roof_geometry_calc_method")
-    if method not in {"legacy_totals", "detailed_project_geometry"}:
+    if method not in {"legacy_totals", "detailed_project_geometry", "roof_zones"}:
         raise ValueError(f"Unsupported roof_geometry_calc_method: {method}")
+
+    # Only roof_zones can mark a zone "exploitable" (V-GR membrane) today — legacy_totals
+    # and detailed_project_geometry have no per-zone operability concept, so 100% of their
+    # area/length stays "non_exploitable" (V-RP), exactly matching pre-2026-07-26 behavior.
+    exploitable_area_total = D0
+    exploitable_parapet_and_abutment_total = D0
 
     if method == "legacy_totals":
         roof_area = require_non_negative(input_data, "roof_area_total_m2")
@@ -152,6 +158,51 @@ def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> 
         calculated_parapet_and_abutment = None
         roof_area_source = "legacy_totals"
         parapet_and_abutment_source = "legacy_totals"
+    elif method == "roof_zones":
+        # roof_zones[]: sums any number of roof zones (by floor, by type, including a
+        # staircase roof zone with no special-casing) — real project case, 2026-07-26:
+        # a PDF can split roof area into more than two zones (e.g. 1st floor Type1/Type2,
+        # 2nd floor Type2, staircase roof) which don't fit detailed_project_geometry's
+        # fixed level_1/level_2 shape. Each zone's area sums into roof_area_total_m2;
+        # each zone's parapet_length_m + wall_abutment_length_m sum into
+        # parapet_and_abutment_total_length_m, same combined concept
+        # detailed_project_geometry already produces from its four length fields.
+        roof_zones_in = input_data.get("roof_zones") or []
+        if not roof_zones_in:
+            raise ValueError("roof_zones is required for roof_geometry_calc_method=roof_zones")
+        zone_area_total = D0
+        zone_parapet_and_abutment_total = D0
+        # exploitable ("эксплуатируемая") zones get V-GR membrane, everything else
+        # (explicitly "неэксплуатируемая" or no operability given at all) gets V-RP —
+        # real project rule, 2026-07-26. Tracked per zone here so the membrane material
+        # split (see calculate_flat_roof) can price each zone's area with the right brand.
+        for zone in roof_zones_in:
+            if not zone.get("context"):
+                raise ValueError("roof_zones[].context is required")
+            zone_area = d(zone["area_m2"])
+            if zone_area < D0:
+                raise ValueError(f"roof_zones.{zone['context']}.area_m2 must be >= 0")
+            zone_parapet_length = d(zone.get("parapet_length_m") or 0)
+            zone_wall_abutment_length = d(zone.get("wall_abutment_length_m") or 0)
+            if zone_parapet_length < D0 or zone_wall_abutment_length < D0:
+                raise ValueError(f"roof_zones.{zone['context']} lengths must be >= 0")
+            zone_operability = zone.get("operability") or "non_exploitable"
+            if zone_operability not in {"exploitable", "non_exploitable"}:
+                raise ValueError(
+                    f"roof_zones.{zone['context']}.operability must be 'exploitable' or 'non_exploitable'"
+                )
+            zone_length = zone_parapet_length + zone_wall_abutment_length
+            zone_area_total += zone_area
+            zone_parapet_and_abutment_total += zone_length
+            if zone_operability == "exploitable":
+                exploitable_area_total += zone_area
+                exploitable_parapet_and_abutment_total += zone_length
+        roof_area = zone_area_total
+        parapet_and_abutment = zone_parapet_and_abutment_total
+        calculated_roof_area = zone_area_total
+        calculated_parapet_and_abutment = zone_parapet_and_abutment_total
+        roof_area_source = "calculated_from_roof_zones"
+        parapet_and_abutment_source = "calculated_from_roof_zones"
     else:
         roof_area_level_1 = require_non_negative(input_data, "roof_area_level_1_m2")
         roof_area_level_2 = require_non_negative(input_data, "roof_area_level_2_m2")
@@ -204,6 +255,10 @@ def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> 
         "input_parapet_and_abutment_total_length_m": input_parapet_and_abutment,
         "calculated_parapet_and_abutment_total_length_m": calculated_parapet_and_abutment,
         "parapet_and_abutment_total_delta_m": parapet_and_abutment_delta,
+        "exploitable_roof_area_m2": exploitable_area_total,
+        "exploitable_parapet_and_abutment_length_m": exploitable_parapet_and_abutment_total,
+        "non_exploitable_roof_area_m2": roof_area - exploitable_area_total,
+        "non_exploitable_parapet_and_abutment_length_m": parapet_and_abutment - exploitable_parapet_and_abutment_total,
     }
 
 
@@ -258,6 +313,10 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     geometry = calculate_roof_geometry(input_data, warnings)
     roof_area = geometry["roof_area"]
     parapet_and_abutment = geometry["parapet_and_abutment"]
+    exploitable_roof_area = geometry["exploitable_roof_area_m2"]
+    exploitable_parapet_and_abutment = geometry["exploitable_parapet_and_abutment_length_m"]
+    non_exploitable_roof_area = geometry["non_exploitable_roof_area_m2"]
+    non_exploitable_parapet_and_abutment = geometry["non_exploitable_parapet_and_abutment_length_m"]
 
     lines: list[dict[str, Any]] = []
     lines.append(
@@ -451,31 +510,72 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         )
     )
 
-    membrane_flat_area = roof_area * d(input_data["pvc_membrane_flat_coeff"])
-    membrane_abutment_area = parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
+    # Membrane material splits by brand per zone exploitability (real project rule,
+    # 2026-07-26): V-RP covers the non-exploitable area/abutment (everything when no
+    # roof_zones operability is used at all — byte-identical to pre-2026-07-26 behavior
+    # since exploitable_roof_area is then always 0), V-GR covers only the exploitable
+    # portion. Installation WORK above stays one combined line regardless of brand (same
+    # physical laying operation) — only material purchase splits.
+    membrane_flat_area = non_exploitable_roof_area * d(input_data["pvc_membrane_flat_coeff"])
+    membrane_abutment_area = non_exploitable_parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
     membrane_required_area = membrane_flat_area + membrane_abutment_area
     membrane_roll_area = d(input_data["pvc_membrane_roll_width_m"]) * d(input_data["pvc_membrane_roll_length_m"])
-    membrane_rolls = ceil_decimal(membrane_required_area / membrane_roll_area)
-    lines.append(
-        estimate_line(
-            code="pvc_membrane_logicroof_vrp_1_5mm_gray",
-            name="Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
-            unit="рул",
-            line_type="materials",
-            quantity_raw=membrane_rolls,
-            quantity_source="flat and abutment membrane areas rounded to rolls",
-            price_code="roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
-            material_unit_price=input_data["pvc_membrane_unit_price_per_roll_display"],
-            material_total_raw=d(membrane_rolls) * d(input_data["pvc_membrane_unit_price_per_roll_display"]),
-            formula={
-                "flat_area_m2": decimal_str(membrane_flat_area),
-                "abutment_area_m2": decimal_str(membrane_abutment_area),
-                "required_area_m2": decimal_str(membrane_required_area),
-                "roll_area_m2": decimal_str(membrane_roll_area),
-                "rolls_ordered": membrane_rolls,
-            },
+    membrane_rolls = 0
+    if membrane_required_area > D0:
+        membrane_rolls = ceil_decimal(membrane_required_area / membrane_roll_area)
+        lines.append(
+            estimate_line(
+                code="pvc_membrane_logicroof_vrp_1_5mm_gray",
+                name="Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20",
+                unit="рул",
+                line_type="materials",
+                quantity_raw=membrane_rolls,
+                quantity_source="non-exploitable flat and abutment membrane areas rounded to rolls",
+                price_code="roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
+                material_unit_price=input_data["pvc_membrane_unit_price_per_roll_display"],
+                material_total_raw=d(membrane_rolls) * d(input_data["pvc_membrane_unit_price_per_roll_display"]),
+                formula={
+                    "flat_area_m2": decimal_str(membrane_flat_area),
+                    "abutment_area_m2": decimal_str(membrane_abutment_area),
+                    "required_area_m2": decimal_str(membrane_required_area),
+                    "roll_area_m2": decimal_str(membrane_roll_area),
+                    "rolls_ordered": membrane_rolls,
+                },
+            )
         )
-    )
+
+    vgr_membrane_flat_area = exploitable_roof_area * d(input_data["pvc_membrane_flat_coeff"])
+    vgr_membrane_abutment_area = exploitable_parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
+    vgr_membrane_required_area = vgr_membrane_flat_area + vgr_membrane_abutment_area
+    vgr_membrane_roll_area = D0
+    vgr_membrane_rolls = 0
+    if vgr_membrane_required_area > D0:
+        # pvc_membrane_vgr_* fields only need to exist when a project actually has an
+        # exploitable zone — every existing project/case without one never touches them.
+        vgr_membrane_roll_area = d(input_data["pvc_membrane_vgr_roll_width_m"]) * d(
+            input_data["pvc_membrane_vgr_roll_length_m"]
+        )
+        vgr_membrane_rolls = ceil_decimal(vgr_membrane_required_area / vgr_membrane_roll_area)
+        lines.append(
+            estimate_line(
+                code="pvc_membrane_logicroof_vgr_1_5mm_gray",
+                name="Полимерная мембрана ПВХ Logicroof V-GR 1,5 мм мембрана серая, 2,10х20",
+                unit="рул",
+                line_type="materials",
+                quantity_raw=vgr_membrane_rolls,
+                quantity_source="exploitable flat and abutment membrane areas rounded to rolls",
+                price_code="roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll",
+                material_unit_price=input_data["pvc_membrane_vgr_unit_price_per_roll_display"],
+                material_total_raw=d(vgr_membrane_rolls) * d(input_data["pvc_membrane_vgr_unit_price_per_roll_display"]),
+                formula={
+                    "flat_area_m2": decimal_str(vgr_membrane_flat_area),
+                    "abutment_area_m2": decimal_str(vgr_membrane_abutment_area),
+                    "required_area_m2": decimal_str(vgr_membrane_required_area),
+                    "roll_area_m2": decimal_str(vgr_membrane_roll_area),
+                    "rolls_ordered": vgr_membrane_rolls,
+                },
+            )
+        )
 
     def material_and_work(
         code: str,
@@ -666,6 +766,13 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 "required_area_m2": decimal_str(membrane_required_area),
                 "roll_area_m2": decimal_str(membrane_roll_area),
                 "rolls_ordered": membrane_rolls,
+            },
+            "pvc_membrane_vgr": {
+                "exploitable_roof_area_m2": decimal_str(exploitable_roof_area),
+                "exploitable_parapet_and_abutment_length_m": decimal_str(exploitable_parapet_and_abutment),
+                "required_area_m2": decimal_str(vgr_membrane_required_area),
+                "roll_area_m2": decimal_str(vgr_membrane_roll_area),
+                "rolls_ordered": vgr_membrane_rolls,
             },
         },
         "estimate_lines": lines,

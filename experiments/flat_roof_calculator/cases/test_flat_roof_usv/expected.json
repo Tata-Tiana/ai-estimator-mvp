@@ -352,7 +352,7 @@
       "line_type": "materials",
       "quantity_raw": "11",
       "quantity_display": "11",
-      "quantity_source": "flat and abutment membrane areas rounded to rolls",
+      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
       "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
       "internal_cost": {
         "material_unit_price": "51431",
