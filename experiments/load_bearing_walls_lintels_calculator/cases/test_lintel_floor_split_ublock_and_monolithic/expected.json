@@ -22,8 +22,10 @@
       "enabled": true,
       "monolithic_concrete_volume_m3": 0.35,
       "monolithic_insulation_length_m": 1.5,
+      "formwork_horizontal_area_m2": 0.3,
+      "formwork_vertical_area_m2": 1.2,
       "formwork_plywood_qty": 1.0,
-      "formwork_timber_volume_m3": 0.2,
+      "formwork_timber_volume_m3": 0.075,
       "insulation_eps_spec_volume_m3": 0.3,
       "insulation_eps_required_volume_m3": 0.315,
       "insulation_eps_raw_packs": 1.136,
@@ -36,8 +38,10 @@
       "enabled": true,
       "monolithic_concrete_volume_m3": 0.41,
       "monolithic_insulation_length_m": 1.2,
+      "formwork_horizontal_area_m2": 0.4,
+      "formwork_vertical_area_m2": 2.1,
       "formwork_plywood_qty": 2.0,
-      "formwork_timber_volume_m3": 0.2,
+      "formwork_timber_volume_m3": 0.125,
       "insulation_eps_spec_volume_m3": 0.25,
       "insulation_eps_required_volume_m3": 0.2625,
       "insulation_eps_raw_packs": 0.9466,
@@ -121,10 +125,10 @@
       "line_total": 1450
     },
     "floor_1_lintel_formwork_timber_material": {
-      "quantity": 0.2,
-      "material_total": 4700,
+      "quantity": 0.075,
+      "material_total": 1763,
       "work_total": 0,
-      "line_total": 4700
+      "line_total": 1763
     },
     "floor_1_lintel_edge_insulation_work": {
       "quantity": 1.5,
@@ -157,10 +161,10 @@
       "line_total": 2900
     },
     "floor_2_lintel_formwork_timber_material": {
-      "quantity": 0.2,
-      "material_total": 4700,
+      "quantity": 0.125,
+      "material_total": 2938,
       "work_total": 0,
-      "line_total": 4700
+      "line_total": 2938
     },
     "floor_2_lintel_edge_insulation_work": {
       "quantity": 1.2,
@@ -182,14 +186,14 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total_raw": 1570244.329,
-    "internal_materials_total": 1570244,
+    "internal_materials_total_raw": 1565544.329,
+    "internal_materials_total": 1565544,
     "internal_works_total_raw": 1201732.68,
     "internal_works_total": 1201733,
-    "internal_section_total_raw": 2771977.009,
-    "internal_section_total": 2771977,
-    "sum_of_displayed_line_material_totals": 1570245,
+    "internal_section_total_raw": 2767277.009,
+    "internal_section_total": 2767277,
+    "sum_of_displayed_line_material_totals": 1565546,
     "sum_of_displayed_line_work_totals": 1201733,
-    "sum_of_displayed_line_totals": 2771978
+    "sum_of_displayed_line_totals": 2767279
   }
 }

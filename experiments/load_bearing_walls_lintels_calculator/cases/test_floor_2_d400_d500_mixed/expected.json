@@ -1,0 +1,47 @@
+{
+  "calculation_blocks": {
+    "floor_2_load_bearing_walls": {
+      "floor_2_masonry_volume_m3": 50.71,
+      "floor_2_gas_block_d500_spec_volume_m3": 10.95,
+      "floor_2_total_masonry_volume_m3": 61.66,
+      "floor_2_adhesive_bags": 78
+    }
+  },
+  "estimate_lines": {
+    "floor_2_masonry_work": {
+      "quantity": 61.66,
+      "material_total": 0,
+      "work_total": 431620,
+      "line_total": 431620
+    },
+    "floor_2_gas_block_d400_material": {
+      "quantity": 53.75,
+      "material_total": 322500,
+      "work_total": 0,
+      "line_total": 322500
+    },
+    "floor_2_gas_block_d500_material": {
+      "quantity": 12.6,
+      "material_total": 69300,
+      "work_total": 0,
+      "line_total": 69300
+    },
+    "floor_2_masonry_glue": {
+      "quantity": 78.0,
+      "material_total": 26520,
+      "work_total": 0,
+      "line_total": 26520
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 822553.826,
+    "internal_materials_total": 822554,
+    "internal_works_total_raw": 499826.43,
+    "internal_works_total": 499826,
+    "internal_section_total_raw": 1322380.256,
+    "internal_section_total": 1322380,
+    "sum_of_displayed_line_material_totals": 822554,
+    "sum_of_displayed_line_work_totals": 499827,
+    "sum_of_displayed_line_totals": 1322381
+  }
+}

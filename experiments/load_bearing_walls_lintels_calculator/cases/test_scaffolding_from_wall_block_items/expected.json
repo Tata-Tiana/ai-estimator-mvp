@@ -1,0 +1,33 @@
+{
+  "calculation_blocks": {
+    "scaffolding": {
+      "scaffolding_calc_method": "floors_based",
+      "scaffolding_source": "floors_based",
+      "floors_count": 2,
+      "floors_count_source": "wall_block_items",
+      "floors_count_input": 1,
+      "setup_units_per_floor": 1,
+      "timber_m3_per_floor": 1,
+      "setup_quantity": 2.0,
+      "timber_quantity_m3": 2.0
+    },
+    "floor_2_load_bearing_walls": {
+      "floor_2_load_bearing_walls_enabled": true,
+      "floor_2_masonry_volume_m3": 12.5
+    }
+  },
+  "estimate_lines": {
+    "scaffolding_setup_dismantling": {
+      "quantity": 2.0,
+      "material_total": 0,
+      "work_total": 40000,
+      "line_total": 40000
+    },
+    "scaffolding_timber_material": {
+      "quantity": 2.0,
+      "material_total": 43000,
+      "work_total": 0,
+      "line_total": 43000
+    }
+  }
+}

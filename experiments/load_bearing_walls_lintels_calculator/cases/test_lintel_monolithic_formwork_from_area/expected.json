@@ -1,0 +1,53 @@
+{
+  "calculation_blocks": {
+    "floor_1_monolithic_lintels": {
+      "formwork_horizontal_area_m2": 0.5,
+      "formwork_vertical_area_m2": 1.4,
+      "formwork_plywood_qty": 1.0,
+      "formwork_timber_volume_m3": 0.095
+    },
+    "floor_2_monolithic_lintels": {
+      "formwork_horizontal_area_m2": 0.45,
+      "formwork_vertical_area_m2": 3.25,
+      "formwork_plywood_qty": 2.0,
+      "formwork_timber_volume_m3": 0.185
+    }
+  },
+  "estimate_lines": {
+    "floor_1_lintel_formwork_plywood_material": {
+      "quantity": 1.0,
+      "material_total": 1450,
+      "work_total": 0,
+      "line_total": 1450
+    },
+    "floor_1_lintel_formwork_timber_material": {
+      "quantity": 0.095,
+      "material_total": 2233,
+      "work_total": 0,
+      "line_total": 2233
+    },
+    "floor_2_lintel_formwork_plywood_material": {
+      "quantity": 2.0,
+      "material_total": 2900,
+      "work_total": 0,
+      "line_total": 2900
+    },
+    "floor_2_lintel_formwork_timber_material": {
+      "quantity": 0.185,
+      "material_total": 4348,
+      "work_total": 0,
+      "line_total": 4348
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total_raw": 1567424.329,
+    "internal_materials_total": 1567424,
+    "internal_works_total_raw": 1201732.68,
+    "internal_works_total": 1201733,
+    "internal_section_total_raw": 2769157.009,
+    "internal_section_total": 2769157,
+    "sum_of_displayed_line_material_totals": 1567426,
+    "sum_of_displayed_line_work_totals": 1201733,
+    "sum_of_displayed_line_totals": 2769159
+  }
+}

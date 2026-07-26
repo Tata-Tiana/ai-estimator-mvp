@@ -228,6 +228,8 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `scaffolding.scaffolding_calc_method` | `floors_based` |
 | `scaffolding.scaffolding_source` | `floors_based` |
 | `scaffolding.floors_count` | `2` |
+| `scaffolding.floors_count_source` | `floors_count` |
+| `scaffolding.floors_count_input` | `2` |
 | `scaffolding.setup_units_per_floor` | `1` |
 | `scaffolding.timber_m3_per_floor` | `1` |
 | `scaffolding.setup_quantity` | `2.0` |

@@ -229,6 +229,8 @@
       "scaffolding_calc_method": "floors_based",
       "scaffolding_source": "floors_based",
       "floors_count": 2,
+      "floors_count_source": "floors_count",
+      "floors_count_input": 2,
       "setup_units_per_floor": 1,
       "timber_m3_per_floor": 1,
       "setup_quantity": 2.0,

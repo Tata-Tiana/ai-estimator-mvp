@@ -24,3 +24,13 @@ sums U-block + monolithic need before applying the 1 m3 minimum order.
 Numbers hand-verified against the calculation formulas before being captured into
 `expected.json` (see conversation this was built in — spot-checked u_block_quantity,
 combined concrete order volumes, EPS pack rounding, and glue-foam minimum-unit logic).
+
+**Updated 2026-07-25**: `floor_N_lintel_formwork_plywood_qty`/`floor_N_lintel_formwork_timber_volume_m3`
+(direct ready-quantity inputs) were removed from the calculator entirely — checked real PDFs across
+АРК/ТРЦ (2026-07-25) and confirmed lintel formwork is never given as a ready sheet count/m3 in any real
+project, only as horizontal+vertical area (the direct-quantity fields were apparently modeled off the
+finished smeta rather than the source PDF). This case's formwork inputs were switched to
+`floor_N_lintel_formwork_horizontal_area_m2`/`floor_N_lintel_formwork_vertical_area_m2`
+(floor 1: 0.3+1.2=1.5 m2 → 1 sheet/0.075 m3; floor 2: 0.4+2.1=2.5 m2 → 2 sheets/0.125 m3, deliberately
+different totals from `test_lintel_monolithic_formwork_from_area` to avoid duplicating that case). See
+[[lintel_monolithic_formwork_from_area_shipped]].
