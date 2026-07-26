@@ -54,6 +54,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - main_formwork_area_m2: `81.9`
 - edge_formwork_area_m2: `7.24`
 - beams_formwork_area_m2: `0.0`
+- edge_and_beam_formwork_area_combined_m2: `None`
 - edge_and_beam_formwork_area_m2: `7.24`
 - calculated_edge_formwork_area_m2: `7.24`
 - edge_formwork_area_delta_m2: `0.0`
@@ -72,6 +73,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - edge_formwork_area_m2: `7.24`
 - beams_formwork_area_m2: `0.0`
 - edge_and_beam_formwork_area_m2: `7.24`
+- beams_bottom_formwork_area_m2: `0.0`
+- edge_beam_formwork_area_for_materials_m2: `7.24`
 - calculated_edge_formwork_area_m2: `7.24`
 - edge_formwork_area_delta_m2: `0.0`
 - edge_formwork_area_source: `spec_formwork_area`
@@ -85,6 +88,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 ### plywood_and_timber
 
 - edge_and_beam_formwork_area_m2: `7.24`
+- beams_bottom_formwork_area_m2: `0.0`
+- edge_beam_formwork_area_for_materials_m2: `7.24`
 - edge_plywood_sheets_raw: `3.147826`
 - non_multiple_places_area_m2: `16.38`
 - non_multiple_places_plywood_sheets_raw: `7.121739`
@@ -233,7 +238,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
-- Примечание: Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 from specification.
+- Примечание: Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 (or edge_and_beam_formwork_area_combined_m2) + beams_bottom_formwork_area_m2 from specification — same combined quantity as plywood/timber material.
 
 ### 7. Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов
 

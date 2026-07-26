@@ -1,0 +1,29 @@
+{
+  "calculation_blocks": {
+    "formwork.formwork_area_calc_method": "spec_formwork_area",
+    "formwork.main_formwork_area_m2": 94.0,
+    "formwork.edge_formwork_area_m2": null,
+    "formwork.beams_formwork_area_m2": null,
+    "formwork.edge_and_beam_formwork_area_m2": 12.92,
+    "formwork.beams_bottom_formwork_area_m2": 3.1,
+    "formwork.edge_beam_formwork_area_for_materials_m2": 16.02,
+    "formwork.edge_formwork_area_source": "spec_formwork_area_combined_edge_and_beam",
+    "plywood_and_timber.edge_and_beam_formwork_area_m2": 12.92,
+    "plywood_and_timber.beams_bottom_formwork_area_m2": 3.1,
+    "plywood_and_timber.edge_beam_formwork_area_for_materials_m2": 16.02,
+    "plywood_and_timber.edge_plywood_sheets_raw": 6.965217,
+    "plywood_and_timber.base_plywood_sheets_raw": 15.13913,
+    "plywood_and_timber.order_plywood_sheets_raw": 20.13913,
+    "plywood_and_timber.plywood_sheets": 21,
+    "plywood_and_timber.timber_volume_m3_raw": 0.801,
+    "plywood_and_timber.timber_volume_m3_display": 0.8
+  },
+  "estimate_lines": [
+    {
+      "code": "edge_formwork_installation_control",
+      "unit": "м2",
+      "quantity_raw": 16.02,
+      "quantity_display": 16.02
+    }
+  ]
+}

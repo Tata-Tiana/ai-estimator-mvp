@@ -98,6 +98,7 @@
       "main_formwork_area_m2": 81.9,
       "edge_formwork_area_m2": 7.24,
       "beams_formwork_area_m2": 0.0,
+      "edge_and_beam_formwork_area_combined_m2": null,
       "edge_and_beam_formwork_area_m2": 7.24,
       "calculated_edge_formwork_area_m2": 7.24,
       "edge_formwork_area_delta_m2": 0.0,
@@ -115,6 +116,8 @@
       "edge_formwork_area_m2": 7.24,
       "beams_formwork_area_m2": 0.0,
       "edge_and_beam_formwork_area_m2": 7.24,
+      "beams_bottom_formwork_area_m2": 0.0,
+      "edge_beam_formwork_area_for_materials_m2": 7.24,
       "calculated_edge_formwork_area_m2": 7.24,
       "edge_formwork_area_delta_m2": 0.0,
       "edge_formwork_area_source": "legacy_dimensions",
@@ -127,6 +130,8 @@
     },
     "plywood_and_timber": {
       "edge_and_beam_formwork_area_m2": 7.24,
+      "beams_bottom_formwork_area_m2": 0.0,
+      "edge_beam_formwork_area_for_materials_m2": 7.24,
       "edge_plywood_sheets_raw": 3.147826,
       "non_multiple_places_area_m2": 16.38,
       "non_multiple_places_plywood_sheets_raw": 7.121739,
@@ -383,7 +388,7 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "notes": [
-        "Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 from specification."
+        "Production quantity uses edge_formwork_area_m2 + beams_formwork_area_m2 (or edge_and_beam_formwork_area_combined_m2) + beams_bottom_formwork_area_m2 from specification — same combined quantity as plywood/timber material."
       ],
       "unit_price_source": "locked_case_prices",
       "unit_price_original": null,
