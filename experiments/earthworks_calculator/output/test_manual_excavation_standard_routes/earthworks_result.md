@@ -67,6 +67,8 @@
 | `trench_volume_total_m3` | `16.12` |
 | `trench_volume_m3` | `16.12` |
 | `manual_excavation_total_m3` | `42.52` |
+| `sand_source` | `legacy` |
+| `sand_items_raw_total_m3` | `0.0` |
 | `compacted_sand_base_m3` | `0.0` |
 | `compacted_sand_trenches_m3` | `20.956` |
 | `sand_total_m3` | `20.956` |

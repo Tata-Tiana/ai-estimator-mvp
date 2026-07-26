@@ -40,6 +40,7 @@ class EarthworksInput:
     excavator_shifts_calc_method: str = "legacy_manual_shifts"
     pit_excavation_depth_m: float | None = None
     excavator_productivity_m3_per_shift: float = 80.0
+    pit_items: list[dict[str, Any]] | None = None
     manual_excavation_calc_method: str = "legacy_manual_override"
     manual_refinement_depth_m: float = 0.08
     trench_volume_m3: float | None = None
@@ -50,6 +51,7 @@ class EarthworksInput:
     sand_base_volume_m3: float = 0.0
     sand_compaction_coeff: float = 1.3
     sand_truck_step_m3: float = 20.0
+    sand_items: list[dict[str, Any]] | None = None
     geotextile_area_m2: float = 0.0
     geotextile_overlap_coeff: float = 1.10
     geotextile_roll_area_m2: float = 100.0
@@ -145,6 +147,18 @@ class EarthworksInput:
         for key, value in self.quantity_overrides.items():
             _require_non_negative(f"quantity_overrides.{key}", value)
 
+        for index, item in enumerate(self.pit_items or []):
+            prefix = f"pit_items[{index}]"
+            if not item.get("context"):
+                raise ValueError(f"{prefix}.context is required")
+            _require_non_negative(f"{prefix}.volume_m3", item.get("volume_m3"))
+
+        for index, item in enumerate(self.sand_items or []):
+            prefix = f"sand_items[{index}]"
+            if not item.get("context"):
+                raise ValueError(f"{prefix}.context is required")
+            _require_non_negative(f"{prefix}.volume_m3", item.get("volume_m3"))
+
         if self.manual_excavation_calc_method == "standard_routes":
             _require_positive("trench_width_m", self.trench_width_m)
             if self.trench_volume_m3 is not None:
@@ -160,6 +174,8 @@ class EarthworksInput:
                     raise ValueError(f"{prefix}.route_code is required")
                 _require_non_negative(f"{prefix}.length_m", route.get("length_m"))
                 _require_non_negative(f"{prefix}.depth_m", route.get("depth_m"))
+                if route.get("volume_m3") is not None:
+                    _require_non_negative(f"{prefix}.volume_m3", route.get("volume_m3"))
             return
 
         if self.trench_volume_m3 is not None:
@@ -231,17 +247,28 @@ def calculate_excavator_shifts(
     pit_area_m2: float,
     pit_excavation_depth_m: float | None,
     excavator_productivity_m3_per_shift: float,
+    pit_items: list[dict[str, Any]] | None = None,
 ) -> tuple[str, float | None, float]:
     if excavator_shifts_calc_method == "legacy_manual_shifts":
         return "legacy_manual_shifts", None, _round_decimal(_to_decimal(excavator_shifts))
 
-    pit_area = _to_decimal(pit_area_m2)
-    pit_depth = _to_decimal(pit_excavation_depth_m)
     productivity = _to_decimal(excavator_productivity_m3_per_shift)
-    if pit_depth is None:
-        raise ValueError("pit_excavation_depth_m is required for standard_volume_productivity")
 
-    machine_excavation_volume_m3 = _round_decimal(pit_area * pit_depth)
+    if pit_items:
+        # Given ready excavation volumes per item (real project case, 2026-07-26): a project can
+        # give the pit's own excavated volume directly (e.g. main pit + footing pits), instead of
+        # recomputing it from pit_area_m2 * pit_excavation_depth_m — stated project volumes always
+        # win over recomputed geometry (same principle as trench_routes' volume_m3 override).
+        machine_excavation_volume_m3 = _round_decimal(
+            sum(_to_decimal(item["volume_m3"]) for item in pit_items)
+        )
+    else:
+        pit_area = _to_decimal(pit_area_m2)
+        pit_depth = _to_decimal(pit_excavation_depth_m)
+        if pit_depth is None:
+            raise ValueError("pit_excavation_depth_m is required for standard_volume_productivity")
+        machine_excavation_volume_m3 = _round_decimal(pit_area * pit_depth)
+
     if machine_excavation_volume_m3 == 0:
         return "standard_volume_productivity", machine_excavation_volume_m3, 0.0
 
@@ -273,15 +300,35 @@ def calculate_trench_volume(
 def calculate_trench_routes(
     trench_routes: list[dict[str, Any]],
     trench_width_m: float,
-) -> tuple[list[dict[str, Any]], float]:
+) -> tuple[list[dict[str, Any]], float, list[str]]:
     route_results = []
+    warnings: list[str] = []
     total = Decimal("0")
     width = _to_decimal(trench_width_m)
 
     for route in trench_routes:
         length = _to_decimal(route["length_m"])
         depth = _to_decimal(route["depth_m"])
-        volume = length * depth * width
+        calculated_volume = length * depth * width
+        # Optional direct volume_m3 per route (real project case, 2026-07-26): a PDF table
+        # can print a ready м3 column that disagrees with length*depth*width for that same
+        # row — real project data always wins over recomputed geometry (rule already
+        # established elsewhere in this pipeline: don't substitute arithmetic for stated
+        # values). When given, it takes priority; a mismatch is only logged as a warning,
+        # never blocked — the estimator reviews every trench/communications row by hand
+        # regardless (see feedback_communications_precision_not_needed memory).
+        given_volume = route.get("volume_m3")
+        if given_volume is not None:
+            volume = _to_decimal(given_volume)
+            delta = abs(volume - calculated_volume)
+            if delta > Decimal("0.01"):
+                warnings.append(
+                    f"trench_routes.{route['route_code']}: given volume_m3 ({_round_decimal(volume)}) "
+                    f"differs from length*depth*width ({_round_decimal(calculated_volume)}); "
+                    "using the given value."
+                )
+        else:
+            volume = calculated_volume
         total += volume
         route_results.append(
             {
@@ -291,10 +338,17 @@ def calculate_trench_routes(
                 "depth_m": _round_decimal(depth),
                 "width_m": _round_decimal(width),
                 "volume_m3": _round_decimal(volume),
+                "calculated_volume_m3": _round_decimal(calculated_volume),
+                # Context-only (real project case, 2026-07-26): a route's printed depth can be
+                # measured from a different reference point (e.g. "от дна котлована" instead of
+                # from ground/zero elevation) than the depth actually used above. Carried through
+                # purely for the service memo — never used in any calculation here, since mixing
+                # reference points into one arithmetic check would produce false mismatches.
+                "depth_reference": route.get("depth_reference"),
             }
         )
 
-    return route_results, _round_decimal(total)
+    return route_results, _round_decimal(total), warnings
 
 
 def calculate_manual_excavation_total(
@@ -609,16 +663,18 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         data.pit_area_m2,
         data.pit_excavation_depth_m,
         data.excavator_productivity_m3_per_shift,
+        data.pit_items,
     )
 
     trench_routes_result: list[dict[str, Any]] = []
+    trench_route_warnings: list[str] = []
     trench_volume_source = "legacy"
     if data.manual_excavation_calc_method == "standard_routes":
         if data.trench_volume_m3 is not None:
             trench_volume_m3 = calculate_trench_volume(trench_volume_m3=data.trench_volume_m3)
             trench_volume_source = "spec_volume"
         else:
-            trench_routes_result, trench_volume_m3 = calculate_trench_routes(
+            trench_routes_result, trench_volume_m3, trench_route_warnings = calculate_trench_routes(
                 data.trench_routes or [],
                 data.trench_width_m,
             )
@@ -644,17 +700,36 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         trench_volume_m3,
     )
 
-    compacted_sand_base_m3 = calculate_compacted_sand(
-        data.sand_base_volume_m3,
-        data.sand_compaction_coeff,
-    )
-    compacted_sand_trenches_m3 = calculate_compacted_sand(
-        trench_volume_m3,
-        data.sand_compaction_coeff,
-    )
-    sand_total_m3 = _round_decimal(
-        _to_decimal(compacted_sand_base_m3) + _to_decimal(compacted_sand_trenches_m3)
-    )
+    sand_items_raw_total_m3 = 0.0
+    if data.sand_items:
+        # Given ready sand quantities per item (real project case, 2026-07-26): a project can
+        # give sand backfill volumes directly by category (e.g. wall pazukha + trench bottom
+        # combined, plus a separate footing-pit category) that don't map 1:1 onto the base/trench
+        # split below — sum them first into one raw total, then apply the single compaction
+        # coefficient once, same "sum then compact" math as before, just from a different source.
+        sand_source = "items"
+        sand_items_raw_total_m3 = _round_decimal(
+            sum(_to_decimal(item["volume_m3"]) for item in data.sand_items)
+        )
+        compacted_sand_base_m3 = 0.0
+        compacted_sand_trenches_m3 = 0.0
+        sand_total_m3 = calculate_compacted_sand(
+            sand_items_raw_total_m3,
+            data.sand_compaction_coeff,
+        )
+    else:
+        sand_source = "legacy"
+        compacted_sand_base_m3 = calculate_compacted_sand(
+            data.sand_base_volume_m3,
+            data.sand_compaction_coeff,
+        )
+        compacted_sand_trenches_m3 = calculate_compacted_sand(
+            trench_volume_m3,
+            data.sand_compaction_coeff,
+        )
+        sand_total_m3 = _round_decimal(
+            _to_decimal(compacted_sand_base_m3) + _to_decimal(compacted_sand_trenches_m3)
+        )
     sand_order_volume_m3 = round_up_to_step(sand_total_m3, data.sand_truck_step_m3)
 
     geotextile_with_overlap_m2 = calculate_geotextile_with_overlap(
@@ -678,6 +753,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "machine_excavation_volume_m3": machine_excavation_volume_m3,
         "excavator_productivity_m3_per_shift": data.excavator_productivity_m3_per_shift,
         "excavator_shifts": excavator_shifts,
+        "pit_items": data.pit_items or [],
         "manual_excavation_calc_method": data.manual_excavation_calc_method,
         "manual_pit_volume_m3": manual_pit_volume_m3,
         "manual_refinement_depth_m": data.manual_refinement_depth_m,
@@ -687,6 +763,9 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "trench_volume_total_m3": trench_volume_m3,
         "trench_volume_m3": trench_volume_m3,
         "manual_excavation_total_m3": manual_excavation_total_m3,
+        "sand_source": sand_source,
+        "sand_items": data.sand_items or [],
+        "sand_items_raw_total_m3": sand_items_raw_total_m3,
         "compacted_sand_base_m3": compacted_sand_base_m3,
         "compacted_sand_trenches_m3": compacted_sand_trenches_m3,
         "sand_total_m3": sand_total_m3,
@@ -696,6 +775,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "communications_length_calc_method": data.communications_length_calc_method,
         "communications_pipe_items": communications_pipe_items_result,
         "communications_length_m": communications_length_m,
+        "trench_routes_warnings": trench_route_warnings,
     }
     estimate_lines = calculate_internal_estimate_lines(data, volume_result)
     internal_totals = calculate_internal_totals(estimate_lines)
@@ -705,4 +785,5 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "volume_result": volume_result,
         "estimate_lines": [line.to_dict() for line in estimate_lines],
         "internal_totals": internal_totals,
+        "warnings": trench_route_warnings,
     }

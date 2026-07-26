@@ -1,0 +1,54 @@
+{
+  "project_name": "test_trench_routes_given_volume_priority",
+  "case_meta": {
+    "validated_with_elena": true,
+    "confidence": "real_project"
+  },
+  "manual_excavation_calc_method": "standard_routes",
+  "pit_area_m2": 0,
+  "manual_refinement_depth_m": 0.08,
+  "trench_width_m": 0.4,
+  "trench_routes": [
+    {
+      "route_code": "K1",
+      "name": "К1",
+      "length_m": 51.209,
+      "depth_m": 0.3,
+      "volume_m3": 12.2
+    },
+    {
+      "route_code": "K2",
+      "name": "К2",
+      "length_m": 14.5,
+      "depth_m": 0.3,
+      "volume_m3": 3.48
+    },
+    {
+      "route_code": "VODA",
+      "name": "Вода",
+      "length_m": 12.61,
+      "depth_m": 1.4,
+      "volume_m3": 8.5
+    },
+    {
+      "route_code": "EL_KABEL",
+      "name": "Эл.кабель",
+      "length_m": 20.69,
+      "depth_m": 0.7,
+      "volume_m3": 8.2
+    }
+  ],
+  "sand_base_volume_m3": 0,
+  "geotextile_area_m2": 0,
+  "communications_length_m": 0,
+  "axis_marking_shifts": 0,
+  "excavator_shifts": 0,
+  "geotextile_laying_area_m2": 0,
+  "consumables_amount": 0,
+  "enabled_lines": [
+    "manual_excavation"
+  ],
+  "internal_prices": {
+    "manual_excavation_work_unit_price": 1000
+  }
+}

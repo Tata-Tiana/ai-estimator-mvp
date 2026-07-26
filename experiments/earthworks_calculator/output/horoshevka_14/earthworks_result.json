@@ -17,6 +17,7 @@
     "excavator_shifts_calc_method": "legacy_manual_shifts",
     "pit_excavation_depth_m": null,
     "excavator_productivity_m3_per_shift": 80.0,
+    "pit_items": null,
     "manual_excavation_calc_method": "legacy_manual_override",
     "manual_refinement_depth_m": 0.08,
     "trench_volume_m3": 11.43,
@@ -27,6 +28,7 @@
     "sand_base_volume_m3": 165.7,
     "sand_compaction_coeff": 1.3,
     "sand_truck_step_m3": 10,
+    "sand_items": null,
     "geotextile_area_m2": 257.4,
     "geotextile_overlap_coeff": 1.0,
     "geotextile_roll_area_m2": 100,
@@ -78,6 +80,7 @@
     "machine_excavation_volume_m3": null,
     "excavator_productivity_m3_per_shift": 80.0,
     "excavator_shifts": 3.0,
+    "pit_items": [],
     "manual_excavation_calc_method": "legacy_manual_override",
     "manual_pit_volume_m3": 20.96,
     "manual_refinement_depth_m": 0.08,
@@ -87,6 +90,9 @@
     "trench_volume_total_m3": 11.43,
     "trench_volume_m3": 11.43,
     "manual_excavation_total_m3": 32.39,
+    "sand_source": "legacy",
+    "sand_items": [],
+    "sand_items_raw_total_m3": 0.0,
     "compacted_sand_base_m3": 215.41,
     "compacted_sand_trenches_m3": 14.859,
     "sand_total_m3": 230.269,
@@ -95,7 +101,8 @@
     "geotextile_rolls": 3,
     "communications_length_calc_method": "legacy_direct_length",
     "communications_pipe_items": [],
-    "communications_length_m": 0.0
+    "communications_length_m": 0.0,
+    "trench_routes_warnings": []
   },
   "estimate_lines": [
     {

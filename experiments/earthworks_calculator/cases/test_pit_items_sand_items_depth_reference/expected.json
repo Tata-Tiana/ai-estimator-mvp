@@ -1,0 +1,25 @@
+{
+  "volumes": {
+    "machine_excavation_volume_m3": 212.5,
+    "excavator_shifts": 3,
+    "trench_volume_total_m3": 60.1,
+    "sand_items_raw_total_m3": 237.2,
+    "sand_total_m3": 308.36,
+    "sand_order_volume_m3": 320,
+    "manual_excavation_total_m3": 93.204
+  },
+  "estimate_lines": {
+    "excavator_jcb": {
+      "quantity": 3,
+      "material_total": 78000,
+      "work_total": 10500,
+      "line_total": 88500
+    },
+    "sand_material": {
+      "quantity": 320,
+      "material_total": 288000,
+      "work_total": 0,
+      "line_total": 288000
+    }
+  }
+}
