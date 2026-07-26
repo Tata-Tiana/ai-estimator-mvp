@@ -44,6 +44,29 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not confuse with lintel, foundation, roof, or 2nd floor slab concrete."
 
+  - key: kind
+    label_ru: "Тип плиты — жилое перекрытие или кровельная плита"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_kind"
+    calculator_input_path: ""
+    normalized_json_path: "sections.floor_slab_1.parameters.kind.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_kind"]
+      aliases_ru: ["Плоская Ж/б, неэксплуатируемая", "Плоская Ж/б, эксплуатируемая"]
+      expected_unit: ""
+      notes: "roof_cover_slab when general data describes this slab as part of the roof build-up (e.g. 'Плоская Ж/б, неэксплуатируемая, согласно КР-2'); otherwise residential_floor."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Чисто описательное поле, не влияет на расчёт. Укажите, если общие данные явно называют эту плиту частью кровельного пирога (неэксплуатируемая плоская Ж/б и т.п.), а не жилым перекрытием."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely descriptive — calculator_input_path intentionally empty, never gates pricing/calculation. This slab still occupies the floor_slab_1 pipeline slot and is calculated there as usual regardless of this value. Do not confuse this slab's own PDF label (e.g. ПМ1) with roof zone identifiers used in flat_roof's roof_zones — those must come from the roof's own specification sheet, a separate labeling system even when it covers the same physical area."
+
   - key: slab_zones
     label_ru: "Объём бетона по зонам плиты перекрытия 1-го этажа (альтернатива единому объёму)"
     unit: ""
@@ -237,6 +260,29 @@ review_parameters:
       action_ru: "Если у этой плиты есть балки, проверьте площадь опалубки балок; иначе оставьте пустым — она посчитается из позиций балок ниже."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
+
+  - key: beams_bottom_formwork_area_m2
+    label_ru: "Горизонтальная площадь опалубки под балкой перекрытия 1-го этажа"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_bottom_formwork_area"
+    calculator_input_path: "beams_bottom_formwork_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_bottom_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_bottom_formwork_area"]
+      aliases_ru: ["горизонтальная площадь опалубки под балкой", "нижняя опалубка балок"]
+      expected_unit: "м2"
+      notes: "Distinct from main_formwork_area_m2 (horizontal under the SLAB) and from edge_and_beam_formwork_area_combined_m2 (vertical slab+beam). This is specifically the beam's own horizontal/bottom formwork, when the PDF gives it as its own separate line."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у балок этой плиты есть отдельная строка нижней (горизонтальной) опалубки, укажите её здесь; иначе оставьте пустым (0)."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when absent, calculator behavior is byte-identical to before (defaults to 0). Feeds both plywood/timber material AND the edge_beam_formwork_installation_control work quantity (corrected 2026-07-26 to include this — see that estimate_line's own notes)."
 
   - key: beams_concrete_volume_m3
     label_ru: "Объем бетона балок перекрытия 1-го этажа"
@@ -656,13 +702,14 @@ estimate_lines:
     line_role: zero_control_line
     calculator_result_path: "estimate_lines[code=edge_beam_formwork_installation_control]"
     quantity:
-      formula: "edge_formwork_area_m2 + beams_formwork_area_m2"
+      formula: "edge_formwork_area_m2 + beams_formwork_area_m2 + beams_bottom_formwork_area_m2"
       leaf_inputs:
         - {ref: "review_parameters.edge_formwork_area_m2", source_class: AUTO_PROJECT}
         - {ref: "review_parameters.beams_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_bottom_formwork_area_m2", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Zero control/client line from calculator."
+    notes: "Zero control/client line from calculator. Corrected 2026-07-26 (real project case, checked against the real costed smeta): this quantity must include beams_bottom_formwork_area_m2, same as the plywood/timber material calculation — confirmed identical across all three real projects reviewed this session (same work-line name, same combined vertical+beam-bottom quantity, distinct from the separate slab-bottom formwork line)."
 
   - code: plywood_fk_18mm_for_edges_and_non_multiple_places
     name_ru: "Фанера ФК 1,52 x 1,52 толщиной 18 мм для некратных мест и торцов"

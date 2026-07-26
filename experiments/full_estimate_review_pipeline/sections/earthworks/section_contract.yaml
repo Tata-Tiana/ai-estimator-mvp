@@ -72,6 +72,38 @@ review_parameters:
       max_value: null
     notes: ""
 
+  - key: pit_items
+    label_ru: "Готовые объёмы выемки грунта по записям (котлован, приямки)"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "pit_items"
+    calculator_input_path: "pit_items"
+    normalized_json_path: "sections.earthworks.parameters.pit_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: context, label_ru: "Запись (по PDF)", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём выемки", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["pit_items"]
+      aliases_ru: ["объем выемки грунта котлована", "объем выемки грунта приямков"]
+      expected_unit: ""
+      notes: "Added 2026-07-26 (real project case). Use when the spec gives ready excavation volume totals directly (e.g. main pit + footing pits) instead of area*depth geometry."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива pit_area_m2/pit_excavation_depth_m выше. Используйте, если PDF даёт готовый объём выемки грунта отдельными записями (котлован, приямки) — иначе оставьте пустым и заполняйте площадь/глубину как обычно."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when empty/absent, calculator behavior (pit_area_m2 * pit_excavation_depth_m) is byte-identical to before. When non-empty, its sum OVERRIDES the area*depth calculation for excavator shifts. production_input: true because this group IS wired into earthworks_calculator.py and must render per-row on sheet 01."
+
   - key: sand_base_volume_m3
     label_ru: "Объем песка под основание"
     unit: "м3"
@@ -97,6 +129,38 @@ review_parameters:
       min_value: 0
       max_value: null
     notes: ""
+
+  - key: sand_items
+    label_ru: "Готовые объёмы песка по категориям"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "sand_items"
+    calculator_input_path: "sand_items"
+    normalized_json_path: "sections.earthworks.parameters.sand_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: context, label_ru: "Категория (по PDF)", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["sand_items"]
+      aliases_ru: ["песок засыпки пазух стен и дна траншей", "песок дна котлована подпятников"]
+      expected_unit: ""
+      notes: "Added 2026-07-26 (real project case). Use when the spec gives sand by ready category totals that don't split cleanly into 'under the slab' vs 'under the trenches'."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива sand_base_volume_m3 выше. Используйте, если PDF даёт песок несколькими готовыми категориями — иначе оставьте пустым и заполняйте sand_base_volume_m3 как обычно."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when empty/absent, calculator behavior (sand_base_volume_m3 + trench-derived sand) is byte-identical to before. When non-empty, its raw sum replaces that pair before the existing compaction coefficient/truck-rounding are applied. production_input: true because this group IS wired into earthworks_calculator.py and must render per-row on sheet 01."
 
   - key: trench_volume_m3
     label_ru: "Объем траншей"
@@ -245,6 +309,11 @@ review_parameters:
         unit: "м3"
         value_kind: number
         required: false
+      - key: depth_reference
+        label_ru: "Точка отсчёта глубины (контекст по PDF)"
+        unit: ""
+        value_kind: string
+        required: false
     parser_mapping:
       group_codes: ["trench_routes"]
       expected_context: ["траншеи", "котлован"]
@@ -257,7 +326,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is trench_volume_m3 (scalar above), not this breakdown."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled."
+    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point."
 
   - key: communications_pipe_items
     label_ru: "Трубы коммуникаций"

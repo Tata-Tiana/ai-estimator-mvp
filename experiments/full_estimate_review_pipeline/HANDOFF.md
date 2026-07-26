@@ -173,6 +173,20 @@ Also defines the `capture_status` model (active/in_development/outside_schema, f
 and a `future_section:*` tag for the Elena-approved roadmap of sections that don't exist yet (see
 memory `future_estimate_sections_roadmap`). Nothing implemented yet as of 2026-07-22 — plan only.
 
+## Wall/Lintel/Slab/Roof/Vent-Channel Findings — ARK/TRC/USV (started 2026-07-23)
+
+Read `ARK_TRC_USV_WALL_ROOF_LINTEL_FINDINGS_PLAN.md` (this directory) before touching
+`wall_block_items` roles, `slab_zones`, thermal insert fields, `lintel_groove_rebar_items`,
+`floor_slab_1`/`floor_slab_2` formwork/insulation fields, `flat_roof`, or the D400/D500 vent-channel
+rule. Living document, user-driven deep-dive comparing real ARK/TRC/USV project data category by
+category (foundation walls, slab zones, thermal inserts, earthworks, partition waterproofing, lintel
+subtypes, roof types/membrane brands, vent channels). Flags one direct conflict with the already-
+finalized D400/D500 rule (needs Elena, not a unilateral reversal) and one unresolved open question
+(Д1 embedded steel in ПМ1 — include with slab per section-within-section precedent, pending user
+confirmation). Also the beam-subtraction-from-slab-concrete bug from `floor_slab_1_calculator.py`
+(confirmed via real delivered smeta files for all three projects) lives in
+`SECTION_WITHIN_SECTION_AND_CAPTURE_STATUS_PLAN.md`, not here — don't duplicate it.
+
 ## Reference Earthworks Flow
 
 Start with:

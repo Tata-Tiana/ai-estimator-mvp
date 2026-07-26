@@ -42,6 +42,15 @@ review_parameters:
       status_if_missing: "manual_required"
       action_ru: "Проверьте этажность для раздела стен."
     validation: {numeric: true, min_value: 1, max_value: 2}
+    notes: "2026-07-23: no longer the source of truth for floor_2 wall masonry OR scaffolding tier
+      count when wall_block_items[] is used — both now derive from whether a wall_block_items row
+      with wall_role='floor_2' actually exists, not from this PDF-text-derived field. This value is
+      still required as a fallback for legacy inputs (no wall_block_items supplied) and is still
+      shown for review, but real projects have shown the PDF's literal 'этажность' text and the
+      calculator's real per-tier pricing need are different things that do not reliably coincide
+      (ЮСВ: text says 1, real second tier exists; АРК: no text at all). See
+      fact_of_data_vs_text_signal_principle memory and
+      ARK_TRC_USV_WALL_ROOF_LINTEL_FINDINGS_PLAN.md section 10."
     notes: "Used for floors_based scaffolding and optional 2nd floor wall block."
 
   - key: cutoff_waterproofing_load_bearing_walls_area_m2
@@ -270,9 +279,9 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required_if_applicable"
-      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте длину утепления торца."
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте длину утепления торца. Не все монолитные перемычки обязательно утеплены — берите длину только тех, что реально утеплены по спецификации, не всю длину монолитных перемычек."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15."
+    notes: "Added 2026-07-15. Added 2026-07-26 (real project case, confirmed against the real costed smeta): edge insulation does not always cover every monolithic lintel on a floor — this must be the length of only the insulated lintels (real case: 2,8 of 5,4 м.пог combined monolithic length insulated; the smeta's own work-line quantity confirms 2,8, not 5,4). Feeds both the insulation work line and the glue-foam quantity, so an inflated length overcounts both."
 
   - key: floor_1_lintel_formwork_plywood_qty
     label_ru: "Фанера для опалубки монолитных перемычек, 1-й этаж"
@@ -385,9 +394,9 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required_if_applicable"
-      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте длину утепления торца."
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте длину утепления торца. Не все монолитные перемычки обязательно утеплены — берите длину только тех, что реально утеплены по спецификации."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15."
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_monolithic_insulation_length_m, including its 2026-07-26 note."
 
   - key: floor_2_lintel_formwork_plywood_qty
     label_ru: "Фанера для опалубки монолитных перемычек, 2-й этаж"
@@ -479,7 +488,7 @@ review_parameters:
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Если на 1-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-20. Diagnostic-only — calculator_input_path intentionally empty, not yet wired into load_bearing_walls_lintels_calculator.py (needs separate authorization; see UNIVERSALIZATION_PLAN.md P1). Captured so this real construction method isn't silently lost or misfiled under lintel_total_length_m/lintel_concrete_spec_volume_m3."
+    notes: "Added 2026-07-20. Diagnostic-only — calculator_input_path intentionally empty, not yet wired into load_bearing_walls_lintels_calculator.py (needs separate authorization; see UNIVERSALIZATION_PLAN.md P1). Captured so this real construction method isn't silently lost or misfiled under lintel_total_length_m/lintel_concrete_spec_volume_m3. Added 2026-07-26 (real project case, confirmed via the drawing's own legend): this method is specifically the partition-wall lintel type, not a generic third option — stays diagnostic/captured-not-priced, same status as partitions masonry/rebar elsewhere in this section."
 
   - key: floor_2_lintel_groove_length_m
     label_ru: "Перемычка в штробе (только арматура), длина, 2-й этаж"
@@ -502,7 +511,7 @@ review_parameters:
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Если на 2-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-20. Diagnostic-only, mirrors floor_1_lintel_groove_length_m."
+    notes: "Added 2026-07-20. Diagnostic-only, mirrors floor_1_lintel_groove_length_m, including its 2026-07-26 partition-lintel-only note."
 
   - key: lintel_groove_rebar_items
     label_ru: "Арматура перемычек в штробе"
@@ -524,7 +533,7 @@ review_parameters:
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно арматуру перемычек в штробе, если она есть на объекте."
     validation: {numeric: false}
-    notes: "Added 2026-07-20. Diagnostic-only, calculator_input_path intentionally empty — same pattern as schiedel_vent_channels' diagnostic channel-spec rows. Deliberately a separate key from lintel_rebar_items rather than a new component value inside it, to avoid breaking that group's calculator validation. See UNIVERSALIZATION_PLAN.md P1 for the wiring-into-calculator follow-up."
+    notes: "Added 2026-07-20. Diagnostic-only, calculator_input_path intentionally empty — same pattern as schiedel_vent_channels' diagnostic channel-spec rows. Deliberately a separate key from lintel_rebar_items rather than a new component value inside it, to avoid breaking that group's calculator validation. See UNIVERSALIZATION_PLAN.md P1 for the wiring-into-calculator follow-up. Added 2026-07-26 (real project case, confirmed via the drawing's own legend): this is specifically partition-wall lintel rebar — treat like other partitions data (wall_block_items role=partitions, excluded from main_wall_rebar_items) — captured, not priced."
 
   - key: floor_2_masonry_volume_m3
     label_ru: "Кладка несущих стен 2-го этажа, объем"
