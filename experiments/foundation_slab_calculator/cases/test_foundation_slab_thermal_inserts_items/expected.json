@@ -1,0 +1,27 @@
+{
+  "calculation_blocks": {
+    "thermal_insert": {
+      "mode": "items",
+      "combined_length_m": 14.2
+    }
+  },
+  "estimate_lines": {
+    "thermal_insert_items_installation": {
+      "quantity": 14.2,
+      "material_total": 0,
+      "work_total": 1420,
+      "line_total": 1420
+    },
+    "thermal_insert_material_item_0": {
+      "quantity": 0.2776,
+      "material_total": 2720,
+      "work_total": 0,
+      "line_total": 2720
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 932652,
+    "internal_works_total": 830920,
+    "internal_section_total": 1763572
+  }
+}

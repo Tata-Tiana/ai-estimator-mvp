@@ -121,6 +121,7 @@
     "eps100_thickness_m": 0.1,
     "eps100_pack_volume_m3": 0.2776,
     "eps100_unit_price": 10000,
+    "thermal_insert_items": [],
     "slab_zones": []
   },
   "calculation_blocks": {

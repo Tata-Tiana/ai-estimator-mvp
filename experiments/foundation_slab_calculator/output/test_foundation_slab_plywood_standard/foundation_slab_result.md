@@ -61,6 +61,7 @@
 - `thermal_insert_100_pack_multiple_qty`: `0.2776`
 - `thermal_insert_50_material_unit_price`: `9800`
 - `thermal_insert_100_material_unit_price`: `10000`
+- `thermal_insert_items`: `[]`
 - `slab_zones`: `[]`
 
 ## Формулы
@@ -131,6 +132,7 @@
 | `thermal_insert.mode` | `standard_50_100` |
 | `thermal_insert.thermal_insert_50_length_m` | `10` |
 | `thermal_insert.thermal_insert_100_length_m` | `15` |
+| `thermal_insert.thermal_insert_combined_length_m` | `None` |
 | `thermal_insert.thermal_insert_50_material_spec_qty` | `1.0` |
 | `thermal_insert.thermal_insert_100_material_spec_qty` | `0.5` |
 | `thermal_insert.thermal_insert_material_waste_coeff` | `1.05` |

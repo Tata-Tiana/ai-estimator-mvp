@@ -1,0 +1,37 @@
+{
+  "calculation_blocks": {
+    "thermal_insert": {
+      "mode": "standard_50_100",
+      "thermal_insert_50_length_m": null,
+      "thermal_insert_100_length_m": null,
+      "thermal_insert_combined_length_m": 7.15,
+      "thermal_insert_50_material_purchase_qty": 0.2776,
+      "thermal_insert_100_material_purchase_qty": 0.2776
+    }
+  },
+  "estimate_lines": {
+    "thermal_insert_combined_installation": {
+      "quantity": 7.15,
+      "material_total": 0,
+      "work_total": 715,
+      "line_total": 715
+    },
+    "thermal_insert_50_material": {
+      "quantity": 0.2776,
+      "material_total": 2720,
+      "work_total": 0,
+      "line_total": 2720
+    },
+    "thermal_insert_100_material": {
+      "quantity": 0.2776,
+      "material_total": 2776,
+      "work_total": 0,
+      "line_total": 2776
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1454619,
+    "internal_works_total": 1082215,
+    "internal_section_total": 2536834
+  }
+}

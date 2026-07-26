@@ -128,6 +128,19 @@ class SlabZone:
 
 
 @dataclass(frozen=True)
+class ThermalInsertItem:
+    eps_size: str
+    length_m: float
+    material_spec_qty_m3: float
+    pack_multiple_qty: float
+    material_unit_price: float
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ThermalInsertItem":
+        return cls(**data)
+
+
+@dataclass(frozen=True)
 class FoundationSlabInput:
     project_name: str
     membrane_area_m2: float
@@ -201,6 +214,10 @@ class FoundationSlabInput:
     thermal_insert_100_pack_multiple_qty: float | None = None
     thermal_insert_50_material_unit_price: float | None = None
     thermal_insert_100_material_unit_price: float | None = None
+    thermal_insert_combined_length_m: float | None = None
+    thermal_insert_combined_work_unit_price: float | None = None
+    thermal_insert_items: list[ThermalInsertItem | dict[str, Any]] | None = None
+    thermal_insert_items_work_unit_price: float | None = None
     slab_zones: list[SlabZone | dict[str, Any]] | None = None
 
     def __post_init__(self) -> None:
@@ -218,6 +235,14 @@ class FoundationSlabInput:
             [
                 zone if isinstance(zone, SlabZone) else SlabZone.from_dict(zone)
                 for zone in (self.slab_zones or [])
+            ],
+        )
+        object.__setattr__(
+            self,
+            "thermal_insert_items",
+            [
+                item if isinstance(item, ThermalInsertItem) else ThermalInsertItem.from_dict(item)
+                for item in (self.thermal_insert_items or [])
             ],
         )
         if self.slab_zones:
@@ -333,11 +358,41 @@ class FoundationSlabInput:
             _require_positive("slab_formwork_perimeter_m", self.slab_formwork_perimeter_m)
             _require_positive("slab_edge_height_m", self.slab_edge_height_m)
 
-        if self.thermal_insert_mode not in {"legacy", "standard_50_100"}:
+        if self.thermal_insert_mode not in {"legacy", "standard_50_100", "items"}:
             raise ValueError(
-                "thermal_insert_mode must be 'legacy' or 'standard_50_100'"
+                "thermal_insert_mode must be 'legacy', 'standard_50_100' or 'items'"
             )
-        if self.thermal_insert_mode == "legacy":
+        if self.thermal_insert_mode == "items":
+            # Arbitrary-size thermal inserts (real project case, 2026-07-26): a project can give
+            # a single EPS size (or any number of sizes) instead of the fixed 50mm+100mm pair
+            # standard_50_100 assumes. Material stays per-size (spec qty * waste, rounded to
+            # that size's pack multiple); installation work is one combined line by total
+            # length across all sizes, same convention as thermal_insert_combined_length_m.
+            _require_positive(
+                "thermal_insert_material_waste_coeff",
+                self.thermal_insert_material_waste_coeff,
+            )
+            _require_non_negative(
+                "thermal_insert_items_work_unit_price",
+                self.thermal_insert_items_work_unit_price,
+            )
+            if not self.thermal_insert_items:
+                raise ValueError(
+                    "thermal_insert_items is required for thermal_insert_mode 'items'"
+                )
+            for item in self.thermal_insert_items:
+                if not item.eps_size:
+                    raise ValueError("thermal_insert_items.eps_size is required")
+                prefix = f"thermal_insert_items.{item.eps_size}"
+                _require_non_negative(f"{prefix}.length_m", item.length_m)
+                _require_non_negative(
+                    f"{prefix}.material_spec_qty_m3", item.material_spec_qty_m3
+                )
+                _require_positive(f"{prefix}.pack_multiple_qty", item.pack_multiple_qty)
+                _require_non_negative(
+                    f"{prefix}.material_unit_price", item.material_unit_price
+                )
+        elif self.thermal_insert_mode == "legacy":
             for field_name in [
                 "thermal_insert_piece_length_m",
                 "thermal_insert_piece_width_m",
@@ -360,16 +415,44 @@ class FoundationSlabInput:
                 self.thermal_insert_material_waste_coeff,
             )
             for field_name in [
-                "thermal_insert_50_length_m",
-                "thermal_insert_100_length_m",
-                "thermal_insert_50_work_unit_price",
-                "thermal_insert_100_work_unit_price",
                 "thermal_insert_50_material_spec_qty",
                 "thermal_insert_100_material_spec_qty",
                 "thermal_insert_50_material_unit_price",
                 "thermal_insert_100_material_unit_price",
             ]:
                 _require_non_negative(field_name, getattr(self, field_name))
+            # Combined-length alternative: some projects give one combined installation
+            # length for both 50mm and 100mm layers of the same thermal insert run, with
+            # no way to split it per layer (real project case, Elena 2026-07-25) — material
+            # stays split by thickness regardless, only the installation work length/price
+            # collapses into one line instead of two. Additive: split lengths still work
+            # unchanged when combined length is absent.
+            combined_length_given = self.thermal_insert_combined_length_m is not None
+            split_length_given = (
+                self.thermal_insert_50_length_m is not None
+                or self.thermal_insert_100_length_m is not None
+            )
+            if combined_length_given and split_length_given:
+                raise ValueError(
+                    "Provide either thermal_insert_combined_length_m or split "
+                    "thermal_insert_50_length_m/thermal_insert_100_length_m, not both"
+                )
+            if combined_length_given:
+                _require_non_negative(
+                    "thermal_insert_combined_length_m", self.thermal_insert_combined_length_m
+                )
+                _require_non_negative(
+                    "thermal_insert_combined_work_unit_price",
+                    self.thermal_insert_combined_work_unit_price,
+                )
+            else:
+                for field_name in [
+                    "thermal_insert_50_length_m",
+                    "thermal_insert_100_length_m",
+                    "thermal_insert_50_work_unit_price",
+                    "thermal_insert_100_work_unit_price",
+                ]:
+                    _require_non_negative(field_name, getattr(self, field_name))
             for field_name in [
                 "thermal_insert_50_pack_multiple_qty",
                 "thermal_insert_100_pack_multiple_qty",
@@ -580,6 +663,7 @@ def calculate_thermal_insert_block(data: FoundationSlabInput) -> dict[str, Any]:
             "mode": data.thermal_insert_mode,
             "thermal_insert_50_length_m": data.thermal_insert_50_length_m,
             "thermal_insert_100_length_m": data.thermal_insert_100_length_m,
+            "thermal_insert_combined_length_m": data.thermal_insert_combined_length_m,
             "thermal_insert_50_material_spec_qty": data.thermal_insert_50_material_spec_qty,
             "thermal_insert_100_material_spec_qty": data.thermal_insert_100_material_spec_qty,
             "thermal_insert_material_waste_coeff": data.thermal_insert_material_waste_coeff,
@@ -590,6 +674,39 @@ def calculate_thermal_insert_block(data: FoundationSlabInput) -> dict[str, Any]:
             "thermal_insert_50_material_purchase_qty": thermal_insert_50_material_purchase_qty,
             "thermal_insert_100_material_purchase_qty": thermal_insert_100_material_purchase_qty,
             "warnings": warnings,
+        }
+
+    if data.thermal_insert_mode == "items":
+        items_result = []
+        combined_length_m = Decimal("0")
+        for item in data.thermal_insert_items:
+            material_raw_qty_m3 = _round_decimal(
+                _to_decimal(item.material_spec_qty_m3)
+                * _to_decimal(data.thermal_insert_material_waste_coeff),
+                "0.0001",
+            )
+            material_purchase_qty_m3 = round_up_to_multiple(
+                material_raw_qty_m3,
+                item.pack_multiple_qty,
+            )
+            combined_length_m += _to_decimal(item.length_m)
+            items_result.append(
+                {
+                    "eps_size": item.eps_size,
+                    "length_m": item.length_m,
+                    "material_spec_qty_m3": item.material_spec_qty_m3,
+                    "material_raw_qty_m3": material_raw_qty_m3,
+                    "pack_multiple_qty": item.pack_multiple_qty,
+                    "material_purchase_qty_m3": material_purchase_qty_m3,
+                    "material_unit_price": item.material_unit_price,
+                }
+            )
+        return {
+            "mode": data.thermal_insert_mode,
+            "items": items_result,
+            "combined_length_m": _round_decimal(combined_length_m),
+            "thermal_insert_items_work_unit_price": data.thermal_insert_items_work_unit_price,
+            "warnings": [],
         }
 
     thermal_insert_raw_pieces = _round_decimal(
@@ -636,7 +753,7 @@ def calculate_eps_block(
         * _to_decimal(data.eps50_thickness_m)
         * _to_decimal(data.eps_waste_coeff)
     )
-    if data.thermal_insert_mode == "standard_50_100":
+    if data.thermal_insert_mode in {"standard_50_100", "items"}:
         eps50_required_volume_m3 = eps50_under_slab_required_volume_m3
         eps50_raw_packs = _round_decimal(
             _to_decimal(eps50_required_volume_m3) / _to_decimal(data.eps50_pack_volume_m3),
@@ -1133,23 +1250,40 @@ def thermal_insert_estimate_lines(
     thermal_insert: dict[str, Any],
 ) -> list[EstimateLineResult]:
     if data.thermal_insert_mode == "standard_50_100":
-        return [
-            calculate_line(
-                code="thermal_insert_50_installation",
-                name="Устройство и монтаж термовставок 50 мм",
-                unit="мп",
-                quantity=data.thermal_insert_50_length_m,
-                work_unit_price=data.thermal_insert_50_work_unit_price,
-                price_code="thermal_insert_50_installation_work_m",
-            ),
-            calculate_line(
-                code="thermal_insert_100_installation",
-                name="Устройство и монтаж термовставок 100 мм",
-                unit="мп",
-                quantity=data.thermal_insert_100_length_m,
-                work_unit_price=data.thermal_insert_100_work_unit_price,
-                price_code="thermal_insert_100_installation_work_m",
-            ),
+        if data.thermal_insert_combined_length_m is not None:
+            # PDF gives one combined installation length for both layers of the same
+            # thermal insert run, with no way to split it per thickness (real project
+            # case, Elena 2026-07-25) — one work line instead of two; material stays split.
+            installation_lines = [
+                calculate_line(
+                    code="thermal_insert_combined_installation",
+                    name="Устройство и монтаж термовставок 50+100 мм",
+                    unit="мп",
+                    quantity=data.thermal_insert_combined_length_m,
+                    work_unit_price=data.thermal_insert_combined_work_unit_price,
+                    price_code="thermal_insert_combined_installation_work_m",
+                ),
+            ]
+        else:
+            installation_lines = [
+                calculate_line(
+                    code="thermal_insert_50_installation",
+                    name="Устройство и монтаж термовставок 50 мм",
+                    unit="мп",
+                    quantity=data.thermal_insert_50_length_m,
+                    work_unit_price=data.thermal_insert_50_work_unit_price,
+                    price_code="thermal_insert_50_installation_work_m",
+                ),
+                calculate_line(
+                    code="thermal_insert_100_installation",
+                    name="Устройство и монтаж термовставок 100 мм",
+                    unit="мп",
+                    quantity=data.thermal_insert_100_length_m,
+                    work_unit_price=data.thermal_insert_100_work_unit_price,
+                    price_code="thermal_insert_100_installation_work_m",
+                ),
+            ]
+        return installation_lines + [
             calculate_line(
                 code="eps50_penoplex_geo_material",
                 name="Пеноплэкс ГЕО 50 мм под плитой",
@@ -1184,6 +1318,42 @@ def thermal_insert_estimate_lines(
                 price_code="thermal_insert_100_material_m3",
             ),
         ]
+
+    if data.thermal_insert_mode == "items":
+        lines = [
+            calculate_line(
+                code="thermal_insert_items_installation",
+                name="Устройство и монтаж термовставок",
+                unit="мп",
+                quantity=thermal_insert["combined_length_m"],
+                work_unit_price=data.thermal_insert_items_work_unit_price,
+                price_code="thermal_insert_items_installation_work_m",
+            ),
+        ]
+        for index, item in enumerate(thermal_insert["items"]):
+            lines.append(
+                calculate_line(
+                    code=f"thermal_insert_material_item_{index}",
+                    name=f"Материал термовставок {item['eps_size']}",
+                    unit="м3",
+                    quantity=item["material_purchase_qty_m3"],
+                    display_quantity=_round_decimal(item["material_purchase_qty_m3"], "0.01"),
+                    material_unit_price=item["material_unit_price"],
+                    price_code="thermal_insert_item_material_m3",
+                )
+            )
+        lines.append(
+            calculate_line(
+                code="eps50_penoplex_geo_material",
+                name="Пеноплэкс ГЕО 50 мм под плитой",
+                unit="м3",
+                quantity=eps["eps50_order_volume_m3"],
+                display_quantity=_round_decimal(eps["eps50_order_volume_m3"], "0.01"),
+                material_unit_price=data.eps50_unit_price,
+                price_code="eps_geo_50_m3",
+            )
+        )
+        return lines
 
     return [
         calculate_line(
@@ -1283,6 +1453,14 @@ def confirmed_rules(
                 "Работы по термовставкам считаются по длине в м.п. из спецификации.",
                 "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
                 "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.",
+            ]
+        )
+    elif thermal_insert_mode == "items":
+        rules.extend(
+            [
+                "Термовставки произвольного типоразмера (не только 50/100 мм) считаются построчно по eps_size.",
+                "Работа по термовставкам — одна общая строка по сумме длин всех типоразмеров.",
+                "Материал каждого типоразмера — из спецификации, умножается на запас и округляется до кратности своей пачки.",
             ]
         )
     else:
