@@ -55,6 +55,13 @@ experiments/chat_extraction_poc/outputs/*.json
 experiments/chat_extraction_poc/reports/*.md
 experiments/chat_extraction_poc/dist/
 
+# Regenerated per-case result.json/result.md written directly into a case directory (schiedel-style
+# calculators, not the output/ convention above) — refreshed by simply re-running a calculator, not
+# meaningful without an accompanying source/fixture change. Only affects new case directories going
+# forward; already-tracked result.json/result.md files elsewhere in the repo are unaffected.
+experiments/**/cases/*/result.json
+experiments/**/cases/*/result.md
+
 # Local meeting transcripts and screenshots
 experiments/meeting_analysis/input/**/*
 !experiments/meeting_analysis/input/README.md
