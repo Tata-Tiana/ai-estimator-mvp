@@ -1,0 +1,21 @@
+{
+  "calculation_blocks": {
+    "main_wall_reinforcement": {
+      "main_wall_rebar_calc_method": "spec_length_items",
+      "main_wall_rebar_source": "spec_length_items",
+      "main_wall_rebar_base_length_m": 1074.4,
+      "main_wall_rebar_order_length_m": 1146.6,
+      "main_wall_rebar_delivery_weight_kg": 707.4522
+    }
+  },
+  "estimate_lines": {
+    "load_bearing_walls_floor_1_rebar_a500_d10": {
+      "quantity": 1134.9,
+      "price_code": "rebar_a500_d10_m"
+    },
+    "load_bearing_walls_floor_1_rebar_a500_d10_subwindow": {
+      "quantity": 11.7,
+      "price_code": "rebar_a500_d10_m"
+    }
+  }
+}

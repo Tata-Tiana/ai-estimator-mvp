@@ -923,7 +923,16 @@ def calculate_main_wall_reinforcement(data: LoadBearingWallsLintelsInput) -> tup
     rebar_lines: list[EstimateLineResult] = []
     for item in data.main_wall_rebar_items or []:
         control, rebar_line = rebar_from_spec_length(item, data.rebar_waste_coeff)
-        controls[control["line_code"]] = control
+        line_code = control["line_code"]
+        if line_code in controls:
+            raise ValueError(
+                f"main_wall_rebar_items: duplicate line_code '{line_code}' "
+                f"(floor={item.floor}, component={item.component}, steel_class={item.steel_class}, "
+                f"diameter_mm={item.diameter_mm}) — two rows resolve to the same auto-generated code and "
+                "would silently overwrite each other's control totals. Set an explicit unique `code` on "
+                "at least one of the colliding rows (e.g. a '_subwindow' suffix)."
+            )
+        controls[line_code] = control
         rebar_lines.append(rebar_line)
     base_length = sum(d(control["spec_length_m"]) for control in controls.values())
     order_length = sum(d(control["order_length_m"]) for control in controls.values())
@@ -964,7 +973,16 @@ def calculate_lintel_rebar(data: LoadBearingWallsLintelsInput) -> tuple[dict[str
         if not isinstance(item, SpecRebarItem):
             raise ValueError("spec lintel rebar requires SpecRebarItem")
         control, rebar_line = rebar_from_spec_length(item, data.rebar_waste_coeff)
-        controls[control["line_code"]] = control
+        line_code = control["line_code"]
+        if line_code in controls:
+            raise ValueError(
+                f"lintel_rebar_items: duplicate line_code '{line_code}' "
+                f"(floor={item.floor}, component={item.component}, steel_class={item.steel_class}, "
+                f"diameter_mm={item.diameter_mm}) — two rows resolve to the same auto-generated code and "
+                "would silently overwrite each other's control totals. Set an explicit unique `code` on "
+                "at least one of the colliding rows."
+            )
+        controls[line_code] = control
         rebar_lines.append(rebar_line)
     base_length = sum(d(control["spec_length_m"]) for control in controls.values())
     order_length = sum(d(control["order_length_m"]) for control in controls.values())

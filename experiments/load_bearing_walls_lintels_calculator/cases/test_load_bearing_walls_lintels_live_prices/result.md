@@ -95,14 +95,16 @@
 - `floor_2_concrete_delivery_trips`: `None`
 - `floor_1_lintel_monolithic_concrete_volume_m3`: `None`
 - `floor_1_lintel_monolithic_insulation_length_m`: `None`
-- `floor_1_lintel_formwork_plywood_qty`: `None`
-- `floor_1_lintel_formwork_timber_volume_m3`: `None`
+- `floor_1_lintel_formwork_horizontal_area_m2`: `None`
+- `floor_1_lintel_formwork_vertical_area_m2`: `None`
 - `floor_1_lintel_insulation_eps_spec_volume_m3`: `None`
 - `floor_2_lintel_monolithic_concrete_volume_m3`: `None`
 - `floor_2_lintel_monolithic_insulation_length_m`: `None`
-- `floor_2_lintel_formwork_plywood_qty`: `None`
-- `floor_2_lintel_formwork_timber_volume_m3`: `None`
+- `floor_2_lintel_formwork_horizontal_area_m2`: `None`
+- `floor_2_lintel_formwork_vertical_area_m2`: `None`
 - `floor_2_lintel_insulation_eps_spec_volume_m3`: `None`
+- `lintel_formwork_plywood_sheet_area_m2`: `2.3`
+- `lintel_formwork_board_thickness_m`: `0.05`
 - `main_wall_rebar_calc_method`: `legacy_wall_geometry`
 - `main_wall_rebar_items`: `[]`
 - `wall_block_items`: `[]`
@@ -294,6 +296,8 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_1_monolithic_lintels.enabled` | `False` |
 | `floor_1_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
 | `floor_1_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
+| `floor_1_monolithic_lintels.formwork_horizontal_area_m2` | `None` |
+| `floor_1_monolithic_lintels.formwork_vertical_area_m2` | `None` |
 | `floor_1_monolithic_lintels.formwork_plywood_qty` | `0.0` |
 | `floor_1_monolithic_lintels.formwork_timber_volume_m3` | `0.0` |
 | `floor_1_monolithic_lintels.insulation_eps_spec_volume_m3` | `0.0` |
@@ -306,6 +310,8 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_2_monolithic_lintels.enabled` | `False` |
 | `floor_2_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
 | `floor_2_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
+| `floor_2_monolithic_lintels.formwork_horizontal_area_m2` | `None` |
+| `floor_2_monolithic_lintels.formwork_vertical_area_m2` | `None` |
 | `floor_2_monolithic_lintels.formwork_plywood_qty` | `0.0` |
 | `floor_2_monolithic_lintels.formwork_timber_volume_m3` | `0.0` |
 | `floor_2_monolithic_lintels.insulation_eps_spec_volume_m3` | `0.0` |
@@ -336,6 +342,13 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_2_load_bearing_walls.floor_2_d400.raw_pallets` | `0.0` |
 | `floor_2_load_bearing_walls.floor_2_d400.pallets` | `0` |
 | `floor_2_load_bearing_walls.floor_2_d400.order_volume_m3` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_gas_block_d500_spec_volume_m3` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_d500.spec_volume_m3` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_d500.required_volume_m3` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_d500.raw_pallets` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_d500.pallets` | `0` |
+| `floor_2_load_bearing_walls.floor_2_d500.order_volume_m3` | `0.0` |
+| `floor_2_load_bearing_walls.floor_2_total_masonry_volume_m3` | `0.0` |
 | `floor_2_load_bearing_walls.floor_2_adhesive_raw_bags` | `0.0` |
 | `floor_2_load_bearing_walls.floor_2_adhesive_bags` | `0` |
 | `deliveries_and_cranes.gas_block_delivery_total_volume_m3` | `158.55` |
