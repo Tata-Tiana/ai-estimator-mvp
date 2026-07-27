@@ -221,7 +221,7 @@ thermal_insert_50_length:
   negative_context: ["100 мм", "м3", "объем", "материал"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Length for work quantity, not material volume."
+  notes: "Length for work quantity, not material volume. Use ONLY when the PDF gives this 50mm layer its OWN separate length, distinct from the 100mm layer. Updated 2026-07-27: if the PDF gives one shared length for both layers together (not two separate lengths), do not fill this field — use thermal_insert_combined_length_m instead and leave this null. Do not copy the same combined number into both this field and thermal_insert_100_length — that double-counts installation work."
 
 thermal_insert_100_length:
   section_code: foundation_slab
@@ -233,7 +233,19 @@ thermal_insert_100_length:
   negative_context: ["50 мм", "м3", "объем", "материал"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Length for work quantity, not material volume."
+  notes: "Length for work quantity, not material volume. Use ONLY when the PDF gives this 100mm layer its OWN separate length, distinct from the 50mm layer. Updated 2026-07-27: if the PDF gives one shared length for both layers together (not two separate lengths), do not fill this field — use thermal_insert_combined_length_m instead and leave this null. Do not copy the same combined number into both this field and thermal_insert_50_length — that double-counts installation work."
+
+thermal_insert_combined_length_m:
+  section_code: foundation_slab
+  ru_label: "Длина термовставок, общая на оба слоя ЭППС"
+  pdf_aliases: ["Длина термовставок", "Термовставки длина", "Термовкладыш длина", "Общая длина термовставок"]
+  expected_unit: linear_m
+  table_hints: ["План термовставок", "Спецификация термовставок"]
+  required_context: ["термовстав|термовкладыш"]
+  negative_context: ["м3", "объем", "материал"]
+  value_column_hint: ["длина", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
+  notes: "Added 2026-07-27 (calculator support shipped 2026-07-25, this closes the missing extraction routing — real ТРЦ finding: one '7,15 м.пог' length covers both the 50mm and 100mm EPS layers together, while material stays split by thickness). Use this field INSTEAD OF thermal_insert_50_length/thermal_insert_100_length ONLY when the PDF gives ONE shared installation length for the whole thermal-insert node, not two separate lengths per thickness. Material targets (thermal_insert_50_material_spec_qty/thermal_insert_100_material_spec_qty) are unaffected either way — they stay split by thickness regardless of which length path is used. Do NOT copy the same combined number into both thermal_insert_50_length and thermal_insert_100_length — that double-counts installation work, which is exactly the bug this field prevents. If the PDF genuinely gives two distinct lengths, one per thickness, use the old scalar targets as before and leave this field empty — don't fill both paths. LIVE, not diagnostic — wired into foundation_slab_calculator.py (calculator_input_path: thermal_insert_combined_length_m, requires thermal_insert_mode='standard_50_100')."
 
 thermal_insert_50_material_spec_qty:
   section_code: foundation_slab
