@@ -133,6 +133,27 @@ CHANNEL_TYPE_SPECS: dict[str, dict[str, str]] = {
     },
 }
 
+# Gas block used to build the vent-channel shaft itself (masonry between/around the Schiedel
+# ceramic modules) — a DIFFERENT block from vent_chimney_cladding's 600x150x250 (that one lives in
+# load_bearing_walls_lintels_calculator.py and is hardcoded D500, confirmed against a real smeta).
+# This shaft-masonry block's density is NOT assumed by width/heuristic — it's whatever the project's
+# own PDF specification states next to the block (found 2026-07-26: one real project labels its
+# 150x250x650 shaft block D400 repeatedly, distinct from the wall-block-family D400/D500 rule which
+# covers a different block size/purpose entirely). Both densities are supported so the calculator
+# never has to guess.
+SCHIEDEL_MASONRY_GAS_BLOCK_SPECS: dict[str, dict[str, str]] = {
+    "D400": {
+        "name": "Газобетонный блок D400 150x250x650 мм для кладки вентканалов",
+        "price_code": "schiedel_masonry_gas_block_d400_m3",
+        "price_field": "schiedel_masonry_gas_block_d400_unit_price",
+    },
+    "D500": {
+        "name": "Газобетонный блок D500 150x250x650 мм для кладки вентканалов",
+        "price_code": "schiedel_masonry_gas_block_d500_m3",
+        "price_field": "schiedel_masonry_gas_block_d500_unit_price",
+    },
+}
+
 PRICE_FIELD_BY_CODE = {
     "schiedel_masonry_work": "schiedel_masonry_work_rate_per_m",
     "schiedel_delivery": "schiedel_delivery_truck_price",
@@ -140,12 +161,17 @@ PRICE_FIELD_BY_CODE = {
         f"schiedel_vent_channel_{product_type}": spec["price_field"]
         for product_type, spec in CHANNEL_TYPE_SPECS.items()
     },
+    **{
+        f"schiedel_masonry_gas_block_{density}": spec["price_field"]
+        for density, spec in SCHIEDEL_MASONRY_GAS_BLOCK_SPECS.items()
+    },
 }
 
 PRICE_CODE_BY_FIELD = {
     "schiedel_masonry_work_rate_per_m": "schiedel_masonry_work_m",
     "schiedel_delivery_truck_price": "schiedel_delivery_truck",
     **{spec["price_field"]: spec["price_code"] for spec in CHANNEL_TYPE_SPECS.values()},
+    **{spec["price_field"]: spec["price_code"] for spec in SCHIEDEL_MASONRY_GAS_BLOCK_SPECS.values()},
 }
 
 
@@ -312,6 +338,53 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             )
         )
 
+    # schiedel_masonry_gas_block_items[]: additive, optional list of {density, volume_m3} for the
+    # gas block used to build the vent-channel shaft itself. Absent/empty by default — projects that
+    # never had this field keep byte-identical output. Density is taken as-is from the spec (D400 or
+    # D500), never defaulted from block width.
+    masonry_gas_block_items_in = input_data.get("schiedel_masonry_gas_block_items") or []
+    masonry_gas_block_totals: dict[str, Decimal] = {
+        density: D0 for density in SCHIEDEL_MASONRY_GAS_BLOCK_SPECS
+    }
+    for item in masonry_gas_block_items_in:
+        density = item.get("density")
+        if density not in SCHIEDEL_MASONRY_GAS_BLOCK_SPECS:
+            raise ValueError(
+                "schiedel_masonry_gas_block_items[].density must be one of "
+                f"{sorted(SCHIEDEL_MASONRY_GAS_BLOCK_SPECS)}"
+            )
+        volume_m3 = d(item.get("volume_m3", 0))
+        if volume_m3 < D0:
+            raise ValueError("schiedel_masonry_gas_block_items[].volume_m3 must be >= 0")
+        masonry_gas_block_totals[density] += volume_m3
+
+    masonry_gas_block_lines: list[dict[str, Any]] = []
+    masonry_gas_block_material_raw_total = D0
+    masonry_gas_block_breakdown: dict[str, str] = {}
+    for density, spec in SCHIEDEL_MASONRY_GAS_BLOCK_SPECS.items():
+        volume_m3 = masonry_gas_block_totals[density]
+        masonry_gas_block_breakdown[f"schiedel_masonry_gas_block_{density}_volume_m3"] = decimal_str(
+            volume_m3
+        )
+        if volume_m3 <= D0:
+            continue
+        unit_price = d(input_data[spec["price_field"]])
+        total_raw = volume_m3 * unit_price
+        masonry_gas_block_material_raw_total += total_raw
+        masonry_gas_block_lines.append(
+            estimate_line(
+                code=f"schiedel_masonry_gas_block_{density}",
+                name=spec["name"],
+                unit="м3",
+                line_type="materials",
+                quantity_raw=volume_m3,
+                quantity_source="sum of schiedel_masonry_gas_block_items rows with this density",
+                price_code=spec["price_code"],
+                material_unit_price=unit_price,
+                material_total_raw=total_raw,
+            )
+        )
+
     delivery_trips = d(input_data["schiedel_delivery_trips"])
     delivery_material_raw = delivery_trips * d(input_data["schiedel_delivery_truck_price"])
     delivery_work_raw = delivery_trips * d(input_data["schiedel_delivery_work_price"])
@@ -319,6 +392,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
     direct_cost_base_before_consumables = (
         masonry_work_raw
         + channel_material_raw_total
+        + masonry_gas_block_material_raw_total
         + delivery_material_raw
         + delivery_work_raw
     )
@@ -338,6 +412,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             formula={"work_total": "schiedel_masonry_total_length_m * schiedel_masonry_work_rate_per_m"},
         ),
         *channel_lines,
+        *masonry_gas_block_lines,
         estimate_line(
             code="schiedel_delivery",
             name="Доставка вентканалов",
@@ -398,6 +473,13 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             "materials": {
                 **channel_breakdown,
                 "counts_source": "schiedel_channel_items (specification or manual estimator input)",
+            },
+            "masonry_gas_block": {
+                **masonry_gas_block_breakdown,
+                "volume_source": (
+                    "sum of schiedel_masonry_gas_block_items rows (density trusted as stated in the "
+                    "project's own PDF specification, never defaulted from block width)"
+                ),
             },
             "delivery": {
                 "schiedel_delivery_trips": decimal_str(delivery_trips),

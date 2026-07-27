@@ -1,0 +1,19 @@
+{
+  "project_name": "test_schiedel_masonry_gas_block_items",
+  "schiedel_masonry_total_length_m": 5.43,
+  "schiedel_masonry_work_rate_per_m": 4000,
+  "schiedel_channel_items": [
+    {"product_type": "3x", "quantity_pcs": 7},
+    {"product_type": "4x", "quantity_pcs": 11}
+  ],
+  "schiedel_vent_channel_3x_unit_price": 720,
+  "schiedel_vent_channel_4x_unit_price": 888,
+  "schiedel_masonry_gas_block_items": [
+    {"density": "D400", "volume_m3": 1.6}
+  ],
+  "schiedel_masonry_gas_block_d400_unit_price": 7500,
+  "schiedel_delivery_trips": 1,
+  "schiedel_delivery_truck_price": 10000,
+  "schiedel_delivery_work_price": 2500,
+  "consumables_rate": 0.03
+}
