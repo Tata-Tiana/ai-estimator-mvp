@@ -582,19 +582,45 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     beam_items = []
     for item in (beams_in or {}).get("items") or []:
         length = d(item["length_m"])
-        width = d(item["width_m"])
         height = d(item["height_m"])
-        count = d(item.get("count", 1))
+        width_raw = item.get("width_m")
+        width = d(width_raw) if width_raw is not None else None
+        count_raw = item.get("count", 1)
+        count = D1 if count_raw is None else d(count_raw)
         if count < D0:
             raise ValueError("beams.items[].count must be >= 0")
-        concrete_volume = length * width * height * count
-        formwork_area = length * (width + d(2) * height) * count
+
+        # width_m is optional (2026-07-28): real spec tables sometimes combine beams of different
+        # cross-sections into one row (e.g. ARK's Б4/Б4-1, 300mm vs 400mm) with no single valid width.
+        # concrete_volume_m3/formwork_area_m2 can then be given ready on the row instead of recomputed
+        # from length*width*height — also lets clean cases (e.g. USV, which prints ready concrete AND
+        # formwork per beam) use the spec's own numbers instead of a recomputation that can drift from
+        # rounding. See beam_items_width_optional_ready_value_override memory / plan section 39.
+        concrete_volume_override = item.get("concrete_volume_m3")
+        if concrete_volume_override is not None:
+            concrete_volume = d(concrete_volume_override)
+        elif width is not None:
+            concrete_volume = length * width * height * count
+        else:
+            raise ValueError(
+                f"beams.items[{item.get('code')!r}] needs either width_m or concrete_volume_m3 "
+                "to determine concrete volume"
+            )
+
+        formwork_area_override = item.get("formwork_area_m2")
+        if formwork_area_override is not None:
+            formwork_area = d(formwork_area_override)
+        elif width is not None:
+            formwork_area = length * (width + d(2) * height) * count
+        else:
+            formwork_area = D0
+
         beam_items.append(
             {
                 "code": item["code"],
                 "name": item["name"],
                 "length_m": round_decimal(length),
-                "width_m": round_decimal(width),
+                "width_m": None if width is None else round_decimal(width),
                 "height_m": round_decimal(height),
                 "count": round_decimal(count),
                 "concrete_volume_m3": round_decimal(concrete_volume),
@@ -736,9 +762,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     foam_cans_ordered = d(insulation_context["foam_cans_ordered"])
 
     if beam_items:
-        beam_concreting_work_rate_per_m3 = d(rates["beam_concreting_work_rate_per_m3"])
+        beam_concreting_work_rate_per_m = d(rates["beam_concreting_work_rate_per_m"])
     else:
-        beam_concreting_work_rate_per_m3 = D0
+        beam_concreting_work_rate_per_m = D0
 
     lines = [
         estimate_line(
@@ -877,13 +903,16 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             estimate_line(
                 "beam_concreting_work",
                 "Бетонирование балки бетоном марки В22,5 (М300)",
-                "м3",
+                "мп",
                 "work",
-                beams_concrete_volume,
-                display_decimal(beams_concrete_volume),
+                beams_total_length,
+                display_decimal(beams_total_length),
                 0,
-                beams_concrete_volume * beam_concreting_work_rate_per_m3,
-                price_code="beam_concrete_placing_work_m3",
+                beams_total_length * beam_concreting_work_rate_per_m,
+                notes=[
+                    "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона."
+                ],
+                price_code="beam_concrete_placing_work_m",
             ),
             estimate_line(
                 "concrete_b22_5_m300_material",
@@ -1103,7 +1132,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         "control_metrics": {
             "control_geometry_area_m2": geometry_in["slab_control_geometry_area_m2"],
             "slab_area_used_in_estimate_m2": display_decimal(slab_formwork_area),
-            "beam_concreting_control_total_by_length": round_money_half_up(beams_total_length * d(2000)),
+            "beam_concreting_control_total_by_length": round_money_half_up(
+                beams_total_length * beam_concreting_work_rate_per_m
+            ),
             "reinforcement_density_kg_per_m3": display_decimal(
                 floor_slab_1_rebar_weight_with_waste
                 / d(display_decimal(concrete_volume_with_waste))

@@ -126,20 +126,43 @@ def calculate_beam_items(
     beam_items: list[dict[str, Any]] = []
     for item in items_in:
         length = d(item["length_m"])
-        width = d(item["width_m"])
         height = d(item["height_m"])
-        count = d(item.get("count", 1))
-        if length < D0 or width < D0 or height < D0 or count < D0:
+        width_raw = item.get("width_m")
+        width = d(width_raw) if width_raw is not None else None
+        count_raw = item.get("count", 1)
+        count = D1 if count_raw is None else d(count_raw)
+        if length < D0 or (width is not None and width < D0) or height < D0 or count < D0:
             raise ValueError("beams.items length_m, width_m, height_m and count must be >= 0")
-        concrete_volume = length * width * height * count
-        formwork_area = length * (width + d(2) * height) * count
+
+        # width_m is optional (2026-07-28), ported from floor_slab_1_calculator.py: real spec tables
+        # sometimes combine beams of different cross-sections into one row with no single valid width.
+        # concrete_volume_m3/formwork_area_m2 can be given ready on the row instead of recomputed.
+        concrete_volume_override = item.get("concrete_volume_m3")
+        if concrete_volume_override is not None:
+            concrete_volume = d(concrete_volume_override)
+        elif width is not None:
+            concrete_volume = length * width * height * count
+        else:
+            raise ValueError(
+                f"beams.items[{item.get('code')!r}] needs either width_m or concrete_volume_m3 "
+                "to determine concrete volume"
+            )
+
+        formwork_area_override = item.get("formwork_area_m2")
+        if formwork_area_override is not None:
+            formwork_area = d(formwork_area_override)
+        elif width is not None:
+            formwork_area = length * (width + d(2) * height) * count
+        else:
+            formwork_area = D0
+
         eps_material_area = length * height * count
         beam_items.append(
             {
                 "code": item["code"],
                 "name": item["name"],
                 "length_m": round_decimal(length),
-                "width_m": round_decimal(width),
+                "width_m": None if width is None else round_decimal(width),
                 "height_m": round_decimal(height),
                 "count": round_decimal(count),
                 "concrete_volume_m3": round_decimal(concrete_volume),
@@ -453,6 +476,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         beams_items_eps_material_area,
         beams_items_eps_work_length,
     ) = calculate_beam_items(input_data.get("beams"))
+    beams_items_total_length = beams_items_eps_work_length
 
     beams_concrete_volume_override = input_data.get("beams_concrete_volume_m3")
     if beams_concrete_volume_override is not None:
@@ -542,7 +566,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         beam_concreting_work_unit_price = d(input_data["beam_concreting_work_unit_price"])
     else:
         beam_concreting_work_unit_price = D0
-    beam_concrete_work_total_raw = beams_items_concrete_volume * beam_concreting_work_unit_price
+    beam_concrete_work_total_raw = beams_items_total_length * beam_concreting_work_unit_price
     concrete_volume_with_waste = concrete_placing_volume * d(input_data["concrete_waste_coeff"])
     concrete_order_volume = ceil_to_step(concrete_volume_with_waste, input_data["concrete_round_step_m3"])
     concrete_material_total_raw = concrete_order_volume * d(input_data["concrete_unit_price"])
@@ -711,15 +735,16 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         estimate_line(
             "beam_concreting_work",
             "Бетонирование балки бетоном марки В22,5 (М300)",
-            "м3",
+            "мп",
             "work",
-            beams_items_concrete_volume,
+            beams_items_total_length,
             work_unit_price=beam_concreting_work_unit_price,
             work_total_raw=beam_concrete_work_total_raw,
             notes=[
-                "Quantity and total are 0 when no beams.items are given for this floor slab."
+                "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.",
+                "Quantity and total are 0 when no beams.items are given for this floor slab.",
             ],
-            price_code="beam_concrete_placing_work_m3",
+            price_code="beam_concrete_placing_work_m",
         ),
         estimate_line(
             "concrete_b22_5_m300_material",
@@ -922,6 +947,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         "beams": {
             "items": beam_items,
             "items_count": len(beam_items),
+            "items_total_length_m": round_decimal(beams_items_total_length),
             "items_total_concrete_volume_m3": round_decimal(beams_items_concrete_volume),
             "items_total_formwork_area_m2": round_decimal(beams_items_formwork_area),
             "items_total_eps_material_area_m2": round_decimal(beams_items_eps_material_area),
