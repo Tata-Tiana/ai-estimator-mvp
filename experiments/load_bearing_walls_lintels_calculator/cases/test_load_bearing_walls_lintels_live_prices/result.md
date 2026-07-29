@@ -296,6 +296,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_2_lintel_concrete.combined_required_volume_m3` | `0.0` |
 | `floor_2_lintel_concrete.combined_order_volume_m3` | `0.0` |
 | `floor_1_monolithic_lintels.enabled` | `False` |
+| `floor_1_monolithic_lintels.insulation_enabled` | `False` |
 | `floor_1_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
 | `floor_1_monolithic_lintels.monolithic_total_length_m` | `0.0` |
 | `floor_1_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
@@ -311,6 +312,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_1_monolithic_lintels.glue_foam_raw_units` | `0.0` |
 | `floor_1_monolithic_lintels.glue_foam_units` | `0` |
 | `floor_2_monolithic_lintels.enabled` | `False` |
+| `floor_2_monolithic_lintels.insulation_enabled` | `False` |
 | `floor_2_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
 | `floor_2_monolithic_lintels.monolithic_total_length_m` | `0.0` |
 | `floor_2_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |

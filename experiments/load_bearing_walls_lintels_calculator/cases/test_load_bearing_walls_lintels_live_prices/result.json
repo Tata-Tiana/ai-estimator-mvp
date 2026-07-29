@@ -331,6 +331,7 @@
     },
     "floor_1_monolithic_lintels": {
       "enabled": false,
+      "insulation_enabled": false,
       "monolithic_concrete_volume_m3": 0.0,
       "monolithic_total_length_m": 0.0,
       "monolithic_insulation_length_m": 0.0,
@@ -348,6 +349,7 @@
     },
     "floor_2_monolithic_lintels": {
       "enabled": false,
+      "insulation_enabled": false,
       "monolithic_concrete_volume_m3": 0.0,
       "monolithic_total_length_m": 0.0,
       "monolithic_insulation_length_m": 0.0,

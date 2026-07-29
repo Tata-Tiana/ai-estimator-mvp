@@ -912,9 +912,10 @@ def calculate_monolithic_lintel_block(
     method alongside U-block lintels. Present in at least 50% of real projects
     (Elena, 2026-07-15), independent of U-block lintels and independent per floor.
     Formwork here is board + plywood only (material, no install-work line — Elena:
-    "в СС работы на устройство опалубки нет"). Edge insulation always accompanies
-    monolithic lintels (Elena: "да"), so it shares this block's single enable gate
-    rather than a separate condition.
+    "в СС работы на устройство опалубки нет"). Updated 2026-07-29 (Elena): monolithic
+    lintels are not always insulated, and when insulated may cover only part of their
+    length — insulation now has its own `insulation_enabled` gate instead of sharing
+    the concrete/length block's `enabled`.
 
     Formwork plywood/timber are always derived from horizontal+vertical area — real
     project PDFs never give a ready sheet count or timber m3 for lintel formwork,
@@ -925,21 +926,31 @@ def calculate_monolithic_lintel_block(
     total_length = d(total_length_m or 0)
     if concrete_volume > 0 and total_length_m is None:
         raise ValueError("monolithic lintel concreting work requires total_length_m when concrete_volume_m3 is present")
+    if total_length > 0 and concrete_volume_m3 is None:
+        # 2026-07-29: symmetric guard for the real ARK case — the spec gives a combined
+        # total_length_m (e.g. 5.4m for ПБ1+ПБ2) but no combined concrete_volume_m3 (each
+        # lintel's concrete is only given separately, 0.21+0.16, and must not be summed by
+        # the extraction itself). Without this guard, concreting work still gets billed by
+        # length while concrete material silently defaults to 0 — real money lost with no
+        # error raised. See sheet01_required_field_unenforced_and_section_enabled_gap memory.
+        raise ValueError("monolithic lintel concrete material requires concrete_volume_m3 when total_length_m is present")
     enabled = concrete_volume > 0 or total_length > 0
     insulation_length = d(insulation_length_m or 0)
+    insulation_enabled = insulation_length > 0
     total_formwork_area = d(formwork_horizontal_area_m2 or 0) + d(formwork_vertical_area_m2 or 0)
     plywood_raw = total_formwork_area / d(data.lintel_formwork_plywood_sheet_area_m2)
     plywood = Decimal(ceil(plywood_raw)) if enabled else Decimal("0")
     timber = total_formwork_area * d(data.lintel_formwork_board_thickness_m)
     eps_spec = d(eps_spec_volume_m3 or 0)
     eps_required = eps_spec * d(data.lintel_insulation_eps_waste_coeff)
-    eps_raw_packs = eps_required / d(data.lintel_insulation_eps_pack_volume_m3) if enabled else Decimal("0")
-    eps_packs = int(ceil(eps_raw_packs)) if enabled else 0
+    eps_raw_packs = eps_required / d(data.lintel_insulation_eps_pack_volume_m3) if insulation_enabled else Decimal("0")
+    eps_packs = int(ceil(eps_raw_packs)) if insulation_enabled else 0
     eps_order_volume = d(eps_packs) * d(data.lintel_insulation_eps_pack_volume_m3)
-    foam_raw = insulation_length / d(data.lintel_glue_foam_coverage_m_per_can) if enabled else Decimal("0")
-    foam_units = max(int(data.lintel_glue_foam_min_units), int(ceil(foam_raw))) if enabled else 0
+    foam_raw = insulation_length / d(data.lintel_glue_foam_coverage_m_per_can) if insulation_enabled else Decimal("0")
+    foam_units = max(int(data.lintel_glue_foam_min_units), int(ceil(foam_raw))) if insulation_enabled else 0
     return {
         "enabled": enabled,
+        "insulation_enabled": insulation_enabled,
         "monolithic_concrete_volume_m3": q(concrete_volume),
         "monolithic_total_length_m": q(total_length),
         "monolithic_insulation_length_m": q(insulation_length),

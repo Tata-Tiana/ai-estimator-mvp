@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_review_workbook_from_contracts import (  # noqa: E402
     FILL_HEADER,
     FILL_INPUT,
+    FILL_MISSING,
     FILL_WHITE,
     FONT_NAME,
     PROJECT_HEADERS,
@@ -94,6 +95,45 @@ def compute_cross_check_value(formula: str, found_groups: dict[str, list[Any]]) 
 
 def auto_calculated_by_key(contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {entry["key"]: entry for entry in (contract.get("auto_calculated") or []) if entry.get("key")}
+
+
+# 2026-07-29: sections/fields that only exist for some projects (U-block lintels, monolithic
+# lintels — per floor, independently) currently show the exact same "Не найдено" status whether
+# the field is safely inapplicable or genuinely missing money-critical data. Real ARK case that
+# motivated this: floor_1_lintel_monolithic_total_length_m was found (5.4, proving monolithic
+# lintels exist on this floor) but floor_1_lintel_monolithic_concrete_volume_m3 was missing — the
+# calculator used to silently price concrete material as 0 while still billing the concreting
+# work by length (see plan section 41 / calculate_monolithic_lintel_block fix). Each inner list is
+# a "presence pair": if extraction found a truthy value for ANY code in the pair, the others are
+# confirmed required — this project definitely has this construction, so a still-missing sibling
+# is a real gap, not a safely-blank optional field. Scoped to the 4 pairs with a proven money-loss
+# bug (U-block + monolithic lintels, floor 1 and floor 2); other conditional sections (floor_2
+# masonry, parapet, vent chimney cladding, beam_items presence) don't have a sibling-field risk
+# today, so are not included here — extend this table if a similar bug is found for them.
+SECTION_PRESENCE_PAIRS: dict[str, list[list[str]]] = {
+    "load_bearing_walls_lintels": [
+        ["lintel_total_length", "lintel_concrete_volume"],
+        ["floor_2_lintel_total_length", "floor_2_lintel_concrete_volume"],
+        ["floor_1_lintel_monolithic_total_length", "floor_1_lintel_monolithic_concrete_volume"],
+        ["floor_2_lintel_monolithic_total_length", "floor_2_lintel_monolithic_concrete_volume"],
+    ],
+}
+
+
+def compute_confirmed_required(found_by_target: dict[str, Any], sec_code: str) -> set[str]:
+    """Returns target_codes that are confirmed required for this project because a sibling
+    code in the same presence pair was found with a truthy value. See SECTION_PRESENCE_PAIRS."""
+    confirmed: set[str] = set()
+    for pair in SECTION_PRESENCE_PAIRS.get(sec_code, []):
+        signal_fired = False
+        for code in pair:
+            found = found_by_target.get(code)
+            if found is not None and found.get("value") not in (None, 0, 0.0):
+                signal_fired = True
+                break
+        if signal_fired:
+            confirmed.update(pair)
+    return confirmed
 
 
 def index_extraction_section(extraction: dict[str, Any], sec_code: str) -> tuple[dict, dict, set]:
@@ -272,11 +312,12 @@ def build_project_sheet_from_extraction(
     ws.append([])
     ws.append(PROJECT_HEADERS)
 
-    counts = {"found": 0, "needs_review": 0, "missing": 0, "item_rows": 0}
+    counts = {"found": 0, "needs_review": 0, "missing": 0, "missing_confirmed_required": 0, "item_rows": 0}
 
     for contract in contracts:
         sec_code = section_code(contract)
         found_by_target, found_groups, missing = index_extraction_section(extraction, sec_code)
+        confirmed_required = compute_confirmed_required(found_by_target, sec_code)
         auto_calculated = auto_calculated_by_key(contract)
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
 
@@ -284,7 +325,22 @@ def build_project_sheet_from_extraction(
             review_behavior = param.get("review_behavior") or {}
             target_code = param.get("target_code", "")
             found = found_by_target.get(target_code)
-            if found is not None:
+            row_fill = FILL_INPUT
+            is_unresolved_needs_review = found is not None and found.get("value") is None
+            if target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
+                # A sibling field in the same presence pair was found — this project definitely
+                # has this construction, so a still-blank value here (whether never attempted, in
+                # section.missing, or a needs_review entry that only has candidates — e.g. the real
+                # ARK ПБ1/ПБ2 case where extraction correctly refused to sum 0.21+0.16 itself) is a
+                # real, money-relevant gap, not a safely-skippable optional field. Escalate instead
+                # of following the normal found/missing branches below. See SECTION_PRESENCE_PAIRS.
+                found_value = None
+                status = "Не найдено — ОБЯЗАТЕЛЬНО (раздел точно есть в проекте)"
+                row_fill = FILL_MISSING
+                source = found.get("source_pdf") if found is not None else ""
+                fragment = (found.get("raw_text") or found.get("notes") or "") if found is not None else ""
+                counts["missing_confirmed_required"] += 1
+            elif found is not None:
                 found_value = display_value(found.get("value"))
                 needs_review = bool(found.get("needs_review"))
                 status = "Проверьте (needs_review)" if needs_review else "Найдено"
@@ -329,7 +385,7 @@ def build_project_sheet_from_extraction(
                 target_code,
             ])
             for cell in ws[ws.max_row]:
-                cell.fill = FILL_INPUT
+                cell.fill = row_fill
 
         for param in production_repeated_row_params(contract):
             review_behavior = param.get("review_behavior") or {}
