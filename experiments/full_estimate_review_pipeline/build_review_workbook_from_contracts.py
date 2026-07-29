@@ -508,25 +508,10 @@ def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
     return keys
 
 
-# Groups whose per-item rows should get an explicit compact height on sheet 01 instead of
-# Excel's default auto-fit (2026-07-29 design request - rebar/pipes/beams/roof rows read as
-# too tall). Rebar and beams are detected structurally, same convention as
-# rebar_group_keys_for_contract, so this keeps working if a new rebar/beam-shaped group is
-# added; communications_pipe_items and roof_raw_material_spec_rows have no reusable shape
-# signature (nothing else looks like them) so they're named explicitly.
+# Sheet 01's default row height instead of Excel's auto-fit (2026-07-29 design request - "все
+# строки узкие, кроме заголовков и шапочек табличек"). Applied to every scalar and per-item data
+# row; title/section-band/header rows are styled separately and never touch this constant.
 COMPACT_ROW_HEIGHT = 15
-_COMPACT_ROW_EXPLICIT_KEYS = {"communications_pipe_items", "roof_raw_material_spec_rows"}
-
-
-def wants_compact_row_height(param: dict[str, Any]) -> bool:
-    if param.get("key") in _COMPACT_ROW_EXPLICIT_KEYS:
-        return True
-    column_keys = {c.get("key") for c in (param.get("columns") or [])}
-    if {"steel_class", "diameter_mm"} <= column_keys:
-        return True
-    if {"length_m", "width_m", "height_m"} <= column_keys:
-        return True
-    return False
 
 
 # source_class values with no PDF signal at all - Elena types/confirms these regardless of
@@ -630,6 +615,7 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
             ])
             for cell in ws[ws.max_row]:
                 cell.fill = FILL_INPUT
+            ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
         # Production repeated-row groups (rebar, beams): построчно, каждая позиция отдельной
         # строкой в тех же видимых колонках A-I, никакой отдельной "спецификационной" таблицы

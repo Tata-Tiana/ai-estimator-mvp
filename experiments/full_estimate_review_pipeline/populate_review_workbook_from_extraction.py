@@ -59,7 +59,6 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     set_widths,
     style_block_title_row,
     style_header_row,
-    wants_compact_row_height,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -399,6 +398,7 @@ def build_project_sheet_from_extraction(
             ])
             for cell in ws[ws.max_row]:
                 cell.fill = row_fill
+            ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
         for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract):
             review_behavior = param.get("review_behavior") or {}
@@ -455,7 +455,7 @@ def build_project_sheet_from_extraction(
                 rows.append(row)
 
             append_block(ws, title, headers, rows)
-            if rows and wants_compact_row_height(param):
+            if rows:
                 for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
                     ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
 
@@ -540,6 +540,22 @@ def build_workbook_from_extraction(
     return {"output_path": str(output_path), **counts, **detail_counts}
 
 
+def next_versioned_path(path: Path) -> Path:
+    """Appends/bumps a _vN suffix so repeated builds never overwrite the previous one (a real
+    review session rebuilds this file many times while iterating) - ark_review_workbook_with_
+    prices.xlsx -> ..._v1.xlsx, then _v2.xlsx, etc., based on the highest _vN already present
+    in the target directory. Re-versions cleanly if the given path already ends in _vN."""
+    match = re.match(r"^(.*)_v(\d+)$", path.stem)
+    base_stem = match.group(1) if match else path.stem
+    max_version = 0
+    if path.parent.exists():
+        for existing in path.parent.glob(f"{base_stem}_v*{path.suffix}"):
+            existing_match = re.match(rf"^{re.escape(base_stem)}_v(\d+)$", existing.stem)
+            if existing_match:
+                max_version = max(max_version, int(existing_match.group(1)))
+    return path.parent / f"{base_stem}_v{max_version + 1}{path.suffix}"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("extraction_json", help="Path to a real extraction_output.json")
@@ -564,10 +580,11 @@ def main() -> None:
     args = parse_args()
     price_registry_path = Path(args.price_registry) if args.price_registry else None
     manual_values_registry_path = Path(args.manual_values_registry) if args.manual_values_registry else None
+    output_path = next_versioned_path(Path(args.output))
     result = build_workbook_from_extraction(
         default_contract_paths(),
         Path(args.extraction_json),
-        Path(args.output),
+        output_path,
         price_registry_path,
         manual_values_registry_path,
     )
