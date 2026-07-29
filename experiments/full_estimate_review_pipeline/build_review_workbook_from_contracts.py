@@ -213,7 +213,7 @@ def set_widths(ws, widths: dict[str, float]) -> None:
         ws.column_dimensions[column].width = width
 
 
-def _merge_row_full_width(ws, row_idx: int, max_col: int) -> None:
+def merge_row_full_width(ws, row_idx: int, max_col: int) -> None:
     """Merges A<row_idx>:<max_col><row_idx>, first unmerging any existing range(s) that already
     touch this row. Re-merging a row at a NEW width without unmerging the old range first does
     not raise in openpyxl (it only rejects an exact-duplicate re-merge) - it silently writes a
@@ -243,7 +243,7 @@ def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
     # one wide banner instead of bold text sitting alone in column A, which made these rows
     # visually disappear next to the much wider block-title rows below them (2026-07-29 design
     # fix, same reasoning as the block-title merge in style_block_title_row).
-    _merge_row_full_width(ws, row_idx, max_col)
+    merge_row_full_width(ws, row_idx, max_col)
 
 
 def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
@@ -267,7 +267,7 @@ def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
     # Merge the title across the full row width so long titles wrap across all that space
     # instead of just column A - previously the text sat in column A alone, forcing 3+ wrapped
     # lines (and a tall row) even though the row already had 13+ empty-looking cells next to it.
-    _merge_row_full_width(ws, row_idx, max_col)
+    merge_row_full_width(ws, row_idx, max_col)
 
 
 def append_block(ws, title: str, headers: list[str], rows: list[list[Any]]) -> None:
@@ -508,6 +508,27 @@ def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
     return keys
 
 
+# Groups whose per-item rows should get an explicit compact height on sheet 01 instead of
+# Excel's default auto-fit (2026-07-29 design request - rebar/pipes/beams/roof rows read as
+# too tall). Rebar and beams are detected structurally, same convention as
+# rebar_group_keys_for_contract, so this keeps working if a new rebar/beam-shaped group is
+# added; communications_pipe_items and roof_raw_material_spec_rows have no reusable shape
+# signature (nothing else looks like them) so they're named explicitly.
+COMPACT_ROW_HEIGHT = 15
+_COMPACT_ROW_EXPLICIT_KEYS = {"communications_pipe_items", "roof_raw_material_spec_rows"}
+
+
+def wants_compact_row_height(param: dict[str, Any]) -> bool:
+    if param.get("key") in _COMPACT_ROW_EXPLICIT_KEYS:
+        return True
+    column_keys = {c.get("key") for c in (param.get("columns") or [])}
+    if {"steel_class", "diameter_mm"} <= column_keys:
+        return True
+    if {"length_m", "width_m", "height_m"} <= column_keys:
+        return True
+    return False
+
+
 # source_class values with no PDF signal at all - Elena types/confirms these regardless of
 # project, they're never something the parser could find. Moved off sheet 01 onto sheet 01-1
 # (manual values catalog) 2026-07-29 so sheet 01 is exclusively parser-found data, per the
@@ -630,6 +651,7 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     apply_table_style(ws, header_row=4)
     restyle_section_bands(ws)
     restyle_block_sheet(ws)
+    merge_row_full_width(ws, 1, ws.max_column)
     ws.freeze_panes = "A5"
     set_widths(ws, {
         "A": 30,

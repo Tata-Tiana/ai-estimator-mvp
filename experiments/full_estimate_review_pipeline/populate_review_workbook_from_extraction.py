@@ -25,6 +25,7 @@ from openpyxl.styles import Alignment, Font
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from build_review_workbook_from_contracts import (  # noqa: E402
+    COMPACT_ROW_HEIGHT,
     FILL_HEADER,
     FILL_INPUT,
     FILL_MISSING,
@@ -47,6 +48,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     load_manual_values_registry,
     load_price_registry,
     load_yaml_contract,
+    merge_row_full_width,
     production_repeated_row_params,
     rebar_group_keys_for_contract,
     restyle_block_sheet,
@@ -57,6 +59,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     set_widths,
     style_block_title_row,
     style_header_row,
+    wants_compact_row_height,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -452,12 +455,19 @@ def build_project_sheet_from_extraction(
                 rows.append(row)
 
             append_block(ws, title, headers, rows)
+            if rows and wants_compact_row_height(param):
+                for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
+                    ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
 
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
     ws.cell(1, 1).fill = FILL_HEADER
     apply_table_style(ws, header_row=4)
     restyle_section_bands(ws)
     restyle_block_sheet(ws)
+    # Merged last, using the sheet's true final ws.max_column (grows as item blocks with extra
+    # correction columns get added above) - merging earlier at a narrower width risks the same
+    # overlapping-merge corruption already fixed once for section bands/block titles.
+    merge_row_full_width(ws, 1, ws.max_column)
     ws.freeze_panes = "A5"
     set_widths = {
         "A": 30, "B": 26, "C": 10, "D": 20, "E": 20, "F": 62, "G": 30, "H": 64,
