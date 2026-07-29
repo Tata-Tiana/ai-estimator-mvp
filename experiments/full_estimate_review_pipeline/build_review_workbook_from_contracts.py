@@ -25,7 +25,11 @@ FILL_MISSING = PatternFill("solid", fgColor="F4CCCC")
 FILL_INPUT = FILL_REVIEW
 FILL_PRICE = PatternFill("solid", fgColor="D9EAD3")
 FILL_DETAIL = PatternFill("solid", fgColor="DAE8FC")
-FILL_TECH = PatternFill("solid", fgColor="E7E6E6")
+# Was the same RGB as FILL_SECTION (E7E6E6) until 2026-07-29 - restyle_section_bands detects
+# section-band rows by fgColor alone, so an identical color made it silently re-style every
+# block-title row too (wrong font/alignment/height) the moment section bands got their own
+# distinct styling. Keep this a different shade from FILL_SECTION/FILL_HEADER.
+FILL_TECH = PatternFill("solid", fgColor="D0CECE")
 FILL_WHITE = PatternFill("solid", fgColor="FFFFFF")
 BORDER_THIN = Border(
     left=Side(style="thin", color="B7B7B7"),
@@ -50,6 +54,14 @@ PROJECT_HEADERS = [
     "source_class",
     "target_code",
 ]
+
+# Same columns as PROJECT_HEADERS, same positions (so section_code/technical_key stay at the
+# same absolute column letters that review_to_calculator's workbook_reader.py depends on) -
+# just blanks the "Исправить / ввести значение" header label for repeated-row item blocks
+# (rebar, beams, trench_routes, ...), which have their own per-field "Исправить: <поле>"
+# correction columns further right instead. Real column removal would shift technical_key/
+# section_code left for item rows only and break workbook_reader's fixed-letter assumptions.
+ITEM_BLOCK_HEADERS = [h if h != "Исправить / ввести значение" else "" for h in PROJECT_HEADERS]
 
 PRICE_HEADERS = [
     "Строка сметы",
@@ -201,20 +213,35 @@ def set_widths(ws, widths: dict[str, float]) -> None:
         ws.column_dimensions[column].width = width
 
 
+def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
+    for col in range(1, max_col + 1):
+        cell = ws.cell(row_idx, col)
+        cell.fill = FILL_SECTION
+        cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=12)
+        cell.alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[row_idx].height = 22
+    # Merge across the full row width so the section name (Фундаментная плита, ...) reads as
+    # one wide banner instead of bold text sitting alone in column A, which made these rows
+    # visually disappear next to the much wider block-title rows below them (2026-07-29 design
+    # fix, same reasoning as the block-title merge in style_block_title_row). restyle_section_
+    # bands can re-run this on an already-merged row (rebuilt sheet) - repeat merge of the same
+    # range is expected and safely ignored.
+    if max_col > 1:
+        try:
+            ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=max_col)
+        except ValueError:
+            pass
+
+
 def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
     ws.append(row_values + [""] * max(0, max_col - len(row_values)))
-    row_idx = ws.max_row
-    for cell in ws[row_idx]:
-        cell.fill = FILL_SECTION
-        cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
+    _style_section_band_row(ws, ws.max_row, max_col)
 
 
 def restyle_section_bands(ws) -> None:
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
         if row[0].fill.fgColor.rgb == "00E7E6E6":
-            for cell in row:
-                cell.fill = FILL_SECTION
-                cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
+            _style_section_band_row(ws, row[0].row, ws.max_column)
 
 
 def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
@@ -224,6 +251,16 @@ def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
         cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=10)
         cell.alignment = Alignment(wrap_text=True, vertical="center")
         cell.border = BORDER_THIN
+    # Merge the title across the full row width so long titles wrap across all that space
+    # instead of just column A - previously the text sat in column A alone, forcing 3+ wrapped
+    # lines (and a tall row) even though the row already had 13+ empty-looking cells next to it.
+    # restyle_block_sheet can call this on an already-merged row (rebuilt sheet), so a repeat
+    # merge of the same exact range is expected and safely ignored.
+    if max_col > 1:
+        try:
+            ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=max_col)
+        except ValueError:
+            pass
 
 
 def append_block(ws, title: str, headers: list[str], rows: list[list[Any]]) -> None:
@@ -291,6 +328,31 @@ def load_price_registry(path: Path) -> dict[str, dict[str, Any]]:
             "name": row.get("Наименование") or "",
             "unit": row.get("Ед. изм.") or "",
             "price": row.get("Цена"),
+            "comment": row.get("Комментарий") or "",
+        }
+    return registry
+
+
+def load_manual_values_registry(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    """Reads manual_values_registry.xlsx into {(section_code, key): {value, comment}} - Elena's
+    typical/default numbers for MANUAL_REVIEW/SUPPLIER_INPUT scalar fields (crane shifts,
+    delivery trips, fixed logistics amounts, ...), the ones with no PDF source at all. Keyed by
+    (section_code, key) because `key` alone repeats across sections (e.g. concrete_pump_shifts
+    exists in foundation_slab, floor_slab_1, floor_slab_2 - see estimate_key_namespace_collisions
+    memory). See sheet01_manual_values_catalog plan/memory, 2026-07-29."""
+    wb = load_workbook(path, read_only=True, data_only=True)
+    ws = wb["manual_values"] if "manual_values" in wb.sheetnames else wb[wb.sheetnames[0]]
+    rows = ws.iter_rows(values_only=True)
+    headers = [str(cell).strip() if cell is not None else "" for cell in next(rows)]
+    registry: dict[tuple[str, str], dict[str, Any]] = {}
+    for raw in rows:
+        row = dict(zip(headers, raw))
+        sec_code = row.get("section_code")
+        key = row.get("key")
+        if not sec_code or not key:
+            continue
+        registry[(str(sec_code).strip(), str(key).strip())] = {
+            "value": row.get("Типовое значение"),
             "comment": row.get("Комментарий") or "",
         }
     return registry
@@ -391,11 +453,35 @@ def build_constructor_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> No
 CORRECTION_SLOTS = 4
 
 
+def is_hidden_from_sheet01(param: dict[str, Any]) -> bool:
+    """review_behavior.show_to_user: false hides a field from sheet 01 entirely (not even a
+    blank placeholder row) - for data that's captured in the schema but has no calculator or
+    UI use yet (e.g. foundation_wall_items/column_footing_items, awaiting a future rostverk
+    calculator). Was declared in the contract schema but never read by any code until now."""
+    return (param.get("review_behavior") or {}).get("show_to_user") is False
+
+
 def production_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         param
         for param in (contract.get("review_parameters") or [])
-        if param.get("value_kind") == "repeated_rows" and param.get("production_input") is True
+        if param.get("value_kind") == "repeated_rows"
+        and param.get("production_input") is True
+        and not is_hidden_from_sheet01(param)
+    ]
+
+
+def diagnostic_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    """Repeated-row groups the calculator does NOT read item-by-item (it reads a reviewed
+    scalar instead, e.g. trench_routes vs trench_volume_m3) but that should still render as a
+    real per-item table on sheet 01 - Elena needs to see/correct the actual length/width/depth
+    per route, not a single dead summary row. See build_project_sheet_from_extraction."""
+    return [
+        param
+        for param in (contract.get("review_parameters") or [])
+        if param.get("value_kind") == "repeated_rows"
+        and param.get("production_input") is not True
+        and not is_hidden_from_sheet01(param)
     ]
 
 
@@ -415,18 +501,49 @@ def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
     return keys
 
 
+# source_class values with no PDF signal at all - Elena types/confirms these regardless of
+# project, they're never something the parser could find. Moved off sheet 01 onto sheet 01-1
+# (manual values catalog) 2026-07-29 so sheet 01 is exclusively parser-found data, per the
+# user's explicit "лист 01 только для данных из парсера и больше никак".
+MANUAL_VALUE_SOURCE_CLASSES = {"MANUAL_REVIEW", "SUPPLIER_INPUT"}
+
+
 def scalar_review_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
-    # Repeated-row groups the calculator actually reads item-by-item (rebar, beams) get their
-    # own block below with real per-item rows, not a single summary row here. Diagnostic-only
-    # repeated-row groups (trench_routes, communications_pipe_items, etc. - calculator uses a
-    # reviewed scalar instead) stay as a single row here, same as before.
-    production_keys = {param["key"] for param in production_repeated_row_params(contract)}
+    # Every repeated-row group (production AND diagnostic-only) gets its own real per-item
+    # block below instead of a row here - see production_repeated_row_params and
+    # diagnostic_repeated_row_params. A single scalar-shaped row for a repeated-row group
+    # can never show real data (it looks up found_by_target[group_key], but real item data
+    # lives in found_groups[group_key] instead) - this used to silently render trench_routes/
+    # communications_pipe_items/etc. as a permanently-blank "Проверьте" row even when the
+    # extraction had real per-item data. Fields with show_to_user: false (e.g.
+    # foundation_wall_items, column_footing_items - awaiting a future calculator) are hidden
+    # entirely, not rendered as a dead row either. MANUAL_REVIEW/SUPPLIER_INPUT fields render on
+    # sheet 01-1 instead (manual_values_rows_for_contract) - see MANUAL_VALUE_SOURCE_CLASSES.
     review_parameters = [
         param
         for param in (contract.get("review_parameters") or [])
-        if param.get("key") not in production_keys
+        if param.get("value_kind") != "repeated_rows"
+        and not is_hidden_from_sheet01(param)
+        and param.get("source_class") not in MANUAL_VALUE_SOURCE_CLASSES
     ]
-    return review_parameters + (contract.get("supplier_inputs") or [])
+    supplier_inputs = [
+        param
+        for param in (contract.get("supplier_inputs") or [])
+        if not is_hidden_from_sheet01(param) and param.get("source_class") not in MANUAL_VALUE_SOURCE_CLASSES
+    ]
+    return review_parameters + supplier_inputs
+
+
+def manual_values_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    """MANUAL_REVIEW/SUPPLIER_INPUT scalar fields for sheet 01-1 - see MANUAL_VALUE_SOURCE_CLASSES."""
+    params = (contract.get("review_parameters") or []) + (contract.get("supplier_inputs") or [])
+    return [
+        param
+        for param in params
+        if param.get("value_kind") != "repeated_rows"
+        and not is_hidden_from_sheet01(param)
+        and param.get("source_class") in MANUAL_VALUE_SOURCE_CLASSES
+    ]
 
 
 def correction_headers(param: dict[str, Any]) -> list[str]:
@@ -494,11 +611,11 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         # несет полный структурный набор полей строки для адаптера - никакого текста парсить не
         # придется. Шаблон контрактов не содержит реальных данных проекта, поэтому строк-примеров
         # здесь нет - только заголовок блока, как и на листе 03.
-        for param in production_repeated_row_params(contract):
+        for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract):
             review_behavior = param.get("review_behavior") or {}
             action_ru = review_behavior.get("action_ru", "Проверьте позиции построчно.")
             title = f"{section_name(contract)} — {param.get('label_ru', param.get('key', ''))} ({action_ru})"
-            headers = PROJECT_HEADERS + correction_headers(param) + ["row_data_json"]
+            headers = ITEM_BLOCK_HEADERS + correction_headers(param) + ["row_data_json"]
             append_block(ws, title, headers, [])
 
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
@@ -679,6 +796,69 @@ def build_prices_sheet(
         "O": 22,
     })
     for column in ["K", "L", "M", "N", "O"]:
+        ws.column_dimensions[column].hidden = True
+
+
+MANUAL_VALUES_HEADERS = [
+    "Строка",
+    "Ед.",
+    "Типовое значение (справочник)",
+    "Исправить для этого проекта",
+    "Источник",
+    "Комментарий",
+    "section_code",
+    "key",
+]
+
+
+def build_manual_values_sheet(
+    wb: Workbook,
+    contracts: list[dict[str, Any]],
+    manual_values_registry: dict[tuple[str, str], dict[str, Any]] | None = None,
+) -> None:
+    """Builds sheet 01-1: MANUAL_REVIEW/SUPPLIER_INPUT scalar fields (crane shifts, delivery
+    trips, fixed logistics amounts, ...) that have no PDF source at all - see
+    MANUAL_VALUE_SOURCE_CLASSES. These used to render on sheet 01 mixed in with real parser
+    data and always blank; sheet 01 is parser-only now (2026-07-29). With no registry passed,
+    this is an empty template (every value blank, flagged for attention) - pass
+    manual_values_registry (see load_manual_values_registry) to pre-fill Elena's typical
+    values, which she can still override per project in the "Исправить для этого проекта"
+    column without touching the registry itself."""
+    ws = wb.create_sheet("01-1_Ручные строки (справочник)")
+    ws.append(MANUAL_VALUES_HEADERS)
+    for contract in contracts:
+        rows = manual_values_rows_for_contract(contract)
+        if not rows:
+            continue
+        append_section_band(ws, [section_name(contract)], len(MANUAL_VALUES_HEADERS))
+        sec_code = section_code(contract)
+        for param in rows:
+            entry = manual_values_registry.get((sec_code, param.get("key"))) if manual_values_registry else None
+            if manual_values_registry is None:
+                typical_value, source, comment, fill = None, "", "", FILL_REVIEW
+            elif entry is None:
+                typical_value, source, comment, fill = None, "нет в справочнике", "Добавьте типовое значение в manual_values_registry.xlsx или заполните вручную для этого проекта.", FILL_MISSING
+            elif entry["value"] in (None, ""):
+                typical_value, source, comment, fill = None, "справочник: значение пустое", entry["comment"], FILL_REVIEW
+            else:
+                typical_value, source, comment, fill = entry["value"], "справочник", entry["comment"], FILL_FOUND
+            ws.append([
+                param.get("label_ru", param.get("key", "")),
+                param.get("unit", ""),
+                typical_value,
+                "",
+                source,
+                comment,
+                sec_code,
+                param.get("key", ""),
+            ])
+            for cell in ws[ws.max_row]:
+                cell.fill = fill
+
+    apply_table_style(ws)
+    restyle_section_bands(ws)
+    set_widths(ws, {"A": 44, "B": 10, "C": 22, "D": 22, "E": 22, "F": 44, "G": 22, "H": 30})
+    for column in ["G", "H"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -929,6 +1109,7 @@ def build_workbook(contract_paths: list[Path], output_path: Path) -> dict[str, A
     wb = Workbook()
     build_constructor_sheet(wb, contracts)
     build_project_sheet(wb, contracts)
+    build_manual_values_sheet(wb, contracts)
     build_prices_sheet(wb, contracts)
     build_details_sheet(wb, contracts)
     build_instruction_sheet(wb)

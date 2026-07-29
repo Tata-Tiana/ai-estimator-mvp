@@ -30,6 +30,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     FILL_MISSING,
     FILL_WHITE,
     FONT_NAME,
+    ITEM_BLOCK_HEADERS,
     PROJECT_HEADERS,
     apply_table_style,
     append_block,
@@ -37,10 +38,13 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     build_constructor_sheet,
     build_contracts_summary_sheet,
     build_instruction_sheet,
+    build_manual_values_sheet,
     build_prices_sheet,
     build_raw_contracts_sheet,
     correction_headers,
     default_contract_paths,
+    diagnostic_repeated_row_params,
+    load_manual_values_registry,
     load_price_registry,
     load_yaml_contract,
     production_repeated_row_params,
@@ -58,6 +62,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_PRICE_REGISTRY = ROOT / "output" / "price_registry_filled_v4.xlsx"
+DEFAULT_MANUAL_VALUES_REGISTRY = ROOT / "output" / "manual_values_registry.xlsx"
 
 
 # Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
@@ -392,12 +397,12 @@ def build_project_sheet_from_extraction(
             for cell in ws[ws.max_row]:
                 cell.fill = row_fill
 
-        for param in production_repeated_row_params(contract):
+        for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract):
             review_behavior = param.get("review_behavior") or {}
             action_ru = review_behavior.get("action_ru", "Проверьте позиции построчно.")
             group_key = param.get("key")
             title = f"{section_name(contract)} — {param.get('label_ru', group_key)} ({action_ru})"
-            headers = PROJECT_HEADERS + correction_headers(param) + ["row_data_json"]
+            headers = ITEM_BLOCK_HEADERS + correction_headers(param) + ["row_data_json"]
 
             item_label_columns = param.get("item_label_columns") or []
             correction_columns = param.get("correction_columns") or []
@@ -430,7 +435,9 @@ def build_project_sheet_from_extraction(
                     param.get("unit", ""),
                     status,
                     "",
-                    action_ru,
+                    "",  # action_ru already stated once in the block title above, not per row -
+                         # repeating a ~100-char sentence on every item row was the main cause of
+                         # tall wrapped rows (2026-07-29 design fix)
                     item.get("source_pdf") or "",
                     item.get("raw_text") or item.get("notes") or "",
                     "",
@@ -494,6 +501,7 @@ def build_workbook_from_extraction(
     extraction_path: Path,
     output_path: Path,
     price_registry_path: Path | None = DEFAULT_PRICE_REGISTRY,
+    manual_values_registry_path: Path | None = DEFAULT_MANUAL_VALUES_REGISTRY,
 ) -> dict[str, Any]:
     contracts = [load_yaml_contract(path) for path in contract_paths]
     extraction = json.loads(extraction_path.read_text(encoding="utf-8"))
@@ -501,11 +509,15 @@ def build_workbook_from_extraction(
     price_registry = None
     if price_registry_path is not None and price_registry_path.exists():
         price_registry = load_price_registry(price_registry_path)
+    manual_values_registry = None
+    if manual_values_registry_path is not None and manual_values_registry_path.exists():
+        manual_values_registry = load_manual_values_registry(manual_values_registry_path)
     rebar_lookup = build_rebar_lookup(contracts, extraction)
 
     wb = Workbook()
     build_constructor_sheet(wb, contracts)
     counts = build_project_sheet_from_extraction(wb, contracts, extraction)
+    build_manual_values_sheet(wb, contracts, manual_values_registry=manual_values_registry)
     build_prices_sheet(wb, contracts, price_registry=price_registry, rebar_lookup=rebar_lookup)
     detail_counts = build_details_sheet_from_extraction(wb, extraction)
     build_instruction_sheet(wb)
@@ -530,14 +542,24 @@ def parse_args() -> argparse.Namespace:
         default=str(DEFAULT_PRICE_REGISTRY),
         help="Path to a price_registry_filled_v*.xlsx; pass an empty string to skip price fill.",
     )
+    parser.add_argument(
+        "--manual-values-registry",
+        default=str(DEFAULT_MANUAL_VALUES_REGISTRY),
+        help="Path to manual_values_registry.xlsx; pass an empty string to skip sheet 01-1 fill.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     price_registry_path = Path(args.price_registry) if args.price_registry else None
+    manual_values_registry_path = Path(args.manual_values_registry) if args.manual_values_registry else None
     result = build_workbook_from_extraction(
-        default_contract_paths(), Path(args.extraction_json), Path(args.output), price_registry_path
+        default_contract_paths(),
+        Path(args.extraction_json),
+        Path(args.output),
+        price_registry_path,
+        manual_values_registry_path,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

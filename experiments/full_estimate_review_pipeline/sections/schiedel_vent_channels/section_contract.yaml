@@ -156,6 +156,8 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: name
     production_input: false
+    item_label_columns: [name]
+    correction_columns: [length_m, quantity, total_length_m]
     columns:
       - key: name
         label_ru: "Наименование"
@@ -176,7 +178,7 @@ review_parameters:
     parser_mapping:
       group_codes: ["schiedel_vent_chimney_cladding_segments"]
       expected_context: ["вентканал", "обкладка"]
-      notes: "Renamed 2026-07-10 from vent_chimney_cladding_segments — that bare group_code is already used by a different, calculator-consumed extract_group under load_bearing_walls_lintels (gas-block cladding segments for legacy_segments_rows mode). This section's own version is a different, diagnostic-only concept (Schiedel channel spec table rows) that the calculator never reads at all (verified against calculate_schiedel_vent_channels() — no reference to this field anywhere); the shared bare name was a genuine collision risk in the flat alias namespace, not the same data."
+      notes: "Renamed 2026-07-10 from vent_chimney_cladding_segments — that bare group_code is already used by a different, calculator-consumed extract_group under load_bearing_walls_lintels (gas-block cladding segments for legacy_segments_rows mode). This section's own version is a different, diagnostic-only concept (Schiedel channel spec table rows) that the calculator never reads at all (verified against calculate_schiedel_vent_channels() — no reference to this field anywhere); the shared bare name was a genuine collision risk in the flat alias namespace, not the same data. item_label_columns/correction_columns added 2026-07-29 — this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day); now renders per-row."
     review_behavior:
       show_to_user: true
       allow_manual_override: true

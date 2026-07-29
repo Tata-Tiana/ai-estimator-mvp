@@ -279,6 +279,8 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: route_code
     production_input: false
+    item_label_columns: [route_code]
+    correction_columns: [length_m, width_m, depth_m, volume_m3]
     columns:
       - key: route_code
         label_ru: "Код маршрута"
@@ -327,7 +329,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is trench_volume_m3 (scalar above), not this breakdown."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point."
+    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point. item_label_columns/correction_columns added 2026-07-29: this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day) even though real per-route length/depth/width/volume data was already being extracted — now renders per-route so Elena can actually see and correct it, not just trench_volume_m3's total."
 
   - key: communications_pipe_items
     label_ru: "Трубы коммуникаций"
@@ -341,6 +343,8 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: code
     production_input: false
+    item_label_columns: [name]
+    correction_columns: [diameter_mm, pipe_length_m, quantity, total_length_m]
     columns:
       - key: code
         label_ru: "Код позиции"
@@ -389,7 +393,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is communications_length_m (scalar above), not this breakdown."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; scalar communications_length_m remains the reviewed calculator quantity. code is required so this group can also feed calculator pipe_items mode safely if that mode is deliberately enabled."
+    notes: "Reference/cross-check breakdown only; scalar communications_length_m remains the reviewed calculator quantity. code is required so this group can also feed calculator pipe_items mode safely if that mode is deliberately enabled. item_label_columns/correction_columns added 2026-07-29, same fix and reason as trench_routes above — renders per-pipe now instead of one dead scalar row."
 
 price_keys:
   - key: axis_marking_work_unit_price

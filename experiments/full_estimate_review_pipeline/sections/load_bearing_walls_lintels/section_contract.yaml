@@ -684,7 +684,7 @@ review_parameters:
     normalized_json_path: "sections.load_bearing_walls_lintels.parameters.wall_block_items.rows"
     value_kind: repeated_rows
     row_key_field: context
-    production_input: false
+    production_input: true
     item_label_columns: [context, wall_role, block_density]
     correction_columns: [volume_m3]
     columns:
@@ -706,7 +706,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, wall_block_items[]). Purely additive — when empty/absent, the calculator behaves exactly as before (all 17 pre-existing regression cases unaffected, verified). When non-empty, it REPLACES the fixed volume fields below (main_wall_gas_block_400/250_spec_volume_m3, floor_2_masonry_volume_m3, parapet_masonry_volume_m3, parapet_gas_block_d500_250_spec_volume_m3) for this run — those fields are still required by the calculator's dataclass but their values are ignored once wall_block_items is non-empty. Also changes floor_2 gating from floors_count==2 to 'does a floor_2-role item exist', fixing the АРК case where floors_count is physically absent from the PDF. See p1_additive_schema_additions / ark-universalization-workstream memory."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, wall_block_items[]). Purely additive — when empty/absent, the calculator behaves exactly as before (all 17 pre-existing regression cases unaffected, verified). When non-empty, it REPLACES the fixed volume fields below (main_wall_gas_block_400/250_spec_volume_m3, floor_2_masonry_volume_m3, parapet_masonry_volume_m3, parapet_gas_block_d500_250_spec_volume_m3) for this run — those fields are still required by the calculator's dataclass but their values are ignored once wall_block_items is non-empty. Also changes floor_2 gating from floors_count==2 to 'does a floor_2-role item exist', fixing the АРК case where floors_count is physically absent from the PDF. See p1_additive_schema_additions / ark-universalization-workstream memory. production_input corrected false -> true 2026-07-29: load_bearing_walls_lintels_calculator.py has read this group since the 2026-07-20 ship, but the flag said otherwise, so sheet 01 collapsed it to one dead summary row instead of the real per-item table."
 
   - key: main_wall_rebar_items
     label_ru: "Арматура несущих стен по диаметрам"

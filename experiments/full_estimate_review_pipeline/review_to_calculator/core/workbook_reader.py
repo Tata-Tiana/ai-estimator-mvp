@@ -6,17 +6,22 @@ sheet 01 (`01_Проверка проекта`) and sheet 02 (`02_Цены се�
 ../ADAPTER_BUILD_PLAN.md, "Критическое правило", for why.
 
 Sheet 01 has two kinds of rows:
-- Scalar rows (most parameters, plus the 5 diagnostic-only repeated_rows groups): one row
-  per `technical_key`, value in "Найдено в проекте" unless "Исправить / ввести значение"
-  is filled, which then wins.
-- Production repeated_rows item rows (rebar/beams - see
-  `core.contract_loader.production_repeated_row_params`): one row per real item, found in
-  a block below a local header. The row's structured data lives in the hidden
+- Scalar rows (true scalar parameters + supplier_inputs only): one row per `technical_key`,
+  value in "Найдено в проекте" unless "Исправить / ввести значение" is filled, which then
+  wins.
+- Repeated_rows item rows (rebar/beams, AND diagnostic-only groups like trench_routes/
+  communications_pipe_items since 2026-07-29 - see `core.contract_loader.
+  production_repeated_row_params` / `diagnostic_repeated_row_params`): one row per real item,
+  found in a block below a local header. The row's structured data lives in the hidden
   `row_data_json` column; the visible "Исправить: <поле>" columns (fixed positions N-Q,
   in the same order as the contract's own `correction_columns` list) override individual
   fields of that JSON when Elena has typed something into them. Column letters N-Q carry
   a different field meaning per block/group - only `contract_loader`'s per-group
-  `correction_columns` order tells you which is which, not the sheet itself.
+  `correction_columns` order tells you which is which, not the sheet itself. Diagnostic
+  groups' item data is NOT read back into calculator input by `read_production_item_rows`
+  (production_repeated_row_params still filters to production_input: true only) - it exists
+  on sheet 01 for Elena to see/correct against the PDF, not as a calculator source; the
+  calculator still reads the reviewed scalar (e.g. trench_volume_m3) as before.
 """
 
 from __future__ import annotations
@@ -29,6 +34,7 @@ from openpyxl.utils import column_index_from_string
 from core.contract_loader import (
     all_review_parameters,
     all_supplier_inputs,
+    diagnostic_repeated_row_params,
     price_keys as contract_price_keys,
     production_repeated_row_params,
 )
@@ -66,15 +72,18 @@ def cell_by_header(ws, row_idx: int, col_map: dict[str, int], header: str) -> An
 
 
 def read_scalar_parameters(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Reads sheet 01's flat rows: scalar review_parameters, supplier_inputs, and the
-    diagnostic-only repeated_rows groups (which stay a single summary row). Production
-    repeated_rows item rows are excluded here - use `read_production_item_rows`."""
+    """Reads sheet 01's flat rows: true scalar review_parameters and supplier_inputs only.
+    All repeated_rows groups (production AND diagnostic-only) render as per-item blocks
+    instead of a flat row now - use `read_production_item_rows` for those."""
     known_keys = {
         param["key"]
         for param in all_review_parameters(contract) + all_supplier_inputs(contract)
     }
-    production_keys = {param["key"] for param in production_repeated_row_params(contract)}
-    scalar_keys = known_keys - production_keys
+    repeated_row_keys = {
+        param["key"]
+        for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract)
+    }
+    scalar_keys = known_keys - repeated_row_keys
     section = contract["section"]["code"]
 
     ws = wb[SHEET_01_NAME]

@@ -91,6 +91,23 @@ def production_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, A
     ]
 
 
+def diagnostic_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    """Repeated-row groups the calculator does NOT read item-by-item (production_input is not
+    True) but that still render as a real per-item block on sheet 01 (2026-07-29 fix - they
+    used to collapse to one permanently-blank scalar row). Mirrors
+    build_review_workbook_from_contracts.diagnostic_repeated_row_params - kept in sync by hand
+    since this package can't import across the sibling review_to_calculator boundary. Excludes
+    review_behavior.show_to_user: false fields (foundation_wall_items, column_footing_items),
+    which don't render on sheet 01 at all."""
+    return [
+        param
+        for param in all_review_parameters(contract)
+        if param.get("value_kind") == "repeated_rows"
+        and param.get("production_input") is not True
+        and (param.get("review_behavior") or {}).get("show_to_user") is not False
+    ]
+
+
 def price_keys(contract: dict[str, Any]) -> list[dict[str, Any]]:
     return list(contract.get("price_keys") or [])
 

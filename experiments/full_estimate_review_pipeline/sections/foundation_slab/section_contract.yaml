@@ -357,12 +357,12 @@ review_parameters:
       expected_unit: ""
       notes: "Fundament/цоколь walls below +0,000, distinct from the slab and from above-grade load-bearing walls. context is a free string, do not invent a classification the PDF doesn't state."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно стены фундамента/цоколя, если они есть на объекте."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only — calculator_input_path intentionally empty, not yet wired into foundation_slab_calculator.py (needs separate authorization). Captured so real fundament-wall/цоколь geometry isn't silently lost."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only — calculator_input_path intentionally empty, not yet wired into foundation_slab_calculator.py (needs separate authorization). Captured so real fundament-wall/цоколь geometry isn't silently lost. show_to_user: false set 2026-07-29 — hidden from sheet 01 entirely until a real calculator/rostverk section exists to use it; re-enable when that ships."
 
   - key: column_footing_items
     label_ru: "Подколонники"
@@ -391,12 +391,12 @@ review_parameters:
       expected_unit: ""
       notes: "Only the footing below +0,000 (2026-07-18 decision) — an above-grade column is out of MVP scope."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно подколонники, если они есть на объекте."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — kept as a separate group_code (not merged into foundation_wall_items) so a future calculator wiring pass can price/gate them independently."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — kept as a separate group_code (not merged into foundation_wall_items) so a future calculator wiring pass can price/gate them independently. show_to_user: false set 2026-07-29 — hidden from sheet 01 entirely until a real calculator/rostverk section exists to use it; re-enable when that ships."
 
 price_keys:
   - {key: membrane_installation_work_unit_price, estimate_line_code: planter_membrane_installation, label_ru: "Монтаж мембраны PLANTER стандарт", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "planter_membrane_installation_work_m2", fallback_key: "membrane_installation_work_unit_price", allow_manual_override: true, notes: ""}
