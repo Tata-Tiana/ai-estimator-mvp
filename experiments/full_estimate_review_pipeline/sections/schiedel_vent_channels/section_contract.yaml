@@ -54,95 +54,36 @@ review_parameters:
       max_value: null
     notes: "Do not use old displayed rounded quantity as calculator quantity."
 
-  - key: vent_channel_1_height_m
-    label_ru: "Высота вентканала 1"
-    unit: "м"
-    source_class: AUTO_PROJECT
-    required: false
-    review_sheet: "01_Проверка проекта"
-    target_code: "vent_channel_1_height"
-    calculator_input_path: "vent_channel_1_height_m"
-    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_1_height_m.value"
-    value_kind: scalar
-    parser_mapping:
-      target_codes:
-        - "vent_channel_1_height"
-      aliases_ru:
-        - "высота вентканала 1"
-        - "вентканал ВК-1 высота"
-        - "канал 1 высота"
-      expected_unit: "м"
-      notes: "Control value for masonry length; if numbering is unclear, keep alternatives."
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "optional_control"
-      action_ru: "Проверьте высоту вентканала 1 как контроль длины кладки."
-    validation:
-      numeric: true
-      min_value: 0
-      max_value: null
-    notes: "Control input, not a separate estimate line."
-
-  - key: vent_channel_2_height_m
-    label_ru: "Высота вентканала 2"
-    unit: "м"
-    source_class: AUTO_PROJECT
-    required: false
-    review_sheet: "01_Проверка проекта"
-    target_code: "vent_channel_2_height"
-    calculator_input_path: "vent_channel_2_height_m"
-    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_2_height_m.value"
-    value_kind: scalar
-    parser_mapping:
-      target_codes:
-        - "vent_channel_2_height"
-      aliases_ru:
-        - "высота вентканала 2"
-        - "вентканал ВК-2 высота"
-        - "канал 2 высота"
-      expected_unit: "м"
-      notes: "Control value for masonry length; if numbering is unclear, keep alternatives."
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "optional_control"
-      action_ru: "Проверьте высоту вентканала 2 как контроль длины кладки."
-    validation:
-      numeric: true
-      min_value: 0
-      max_value: null
-    notes: "Control input, not a separate estimate line."
-
-  - key: vent_channel_2_count
-    label_ru: "Количество вентканалов типа 2 для контроля длины"
+  - key: schiedel_channel_items
+    label_ru: "Вентканалы Schiedel по типам (модули)"
     unit: "шт"
     source_class: AUTO_PROJECT
     required: false
     review_sheet: "01_Проверка проекта"
-    target_code: "vent_channel_2_count"
-    calculator_input_path: "vent_channel_2_count"
-    normalized_json_path: "sections.schiedel_vent_channels.parameters.vent_channel_2_count.value"
-    value_kind: scalar
+    target_code: "schiedel_channel_items"
+    calculator_input_path: "schiedel_channel_items"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.schiedel_channel_items.rows"
+    value_kind: repeated_rows
+    row_key_field: product_type
+    production_input: true
+    item_label_columns: [product_type]
+    correction_columns: [quantity_pcs]
+    columns:
+      - {key: product_type, label_ru: "Тип модуля", unit: "", value_kind: string}
+      - {key: quantity_pcs, label_ru: "Количество", unit: "шт", value_kind: number}
     parser_mapping:
-      target_codes:
-        - "vent_channel_2_count"
-      aliases_ru:
-        - "количество вентканалов типа 2"
-        - "ВК-2 количество"
-        - "VENT 2 количество"
-      expected_unit: "шт"
-      notes: "Control count for masonry length formula; not the same as Schiedel material purchase count."
+      group_codes: ["schiedel_channel_items"]
+      expected_context: ["вентканал", "Schiedel"]
+      notes: "product_type must be exactly one of 1x/2x/3x/4x/cvent. quantity_pcs is the piece/module count from the specification, never the shaft/node count shown on the plan. If the PDF only gives linear meters per channel type (not a piece count), leave this group empty and flag an explicit needs_review entry instead of guessing a conversion - see target_aliases_ru.yaml, 2026-07-28 rule."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "optional_control"
-      action_ru: "Проверьте количество вентканалов типа 2 для контрольной формулы длины."
-    validation:
-      numeric: true
-      min_value: 0
-      max_value: null
-    notes: "Do not confuse with schiedel_vent_channel_2x_count supplier input."
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Проверьте количество модулей вентканалов Schiedel по типам построчно."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-29 - the section_contract.yaml was never updated when calculator.py was rewritten 2026-07-26 (Elena) to read this dynamic group instead of the old fixed schiedel_vent_channel_2x_count/_3x_count scalar pair. Until this fix, sheet 01 had no row for this group at all (calculator_targets_compact.json/target_aliases_ru.yaml already targeted it - the parser prompt side was correct, only the review-workbook contract was stale), so any real parser-found channel counts were silently invisible to Elena. See sheet01_schiedel_channel_items_contract_desync memory."
 
   - key: schiedel_vent_chimney_cladding_segments
     label_ru: "Сегменты / строки спецификации вентканалов"
@@ -272,38 +213,6 @@ defaults:
     notes: "Applied to direct Schiedel cost base before consumables."
 
 supplier_inputs:
-  - key: schiedel_vent_channel_2x_count
-    label_ru: "Вентиляционный канал 2х,36/25 см Schiedel — количество"
-    unit: "шт"
-    source_class: SUPPLIER_INPUT
-    required: true
-    review_sheet: "01_Проверка проекта"
-    target_code: "schiedel_vent_channel_2x_count"
-    calculator_input_path: "schiedel_vent_channel_2x_count"
-    normalized_json_path: "sections.schiedel_vent_channels.supplier_inputs.schiedel_vent_channel_2x_count.value"
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Подтвердите закупочное количество Schiedel 2х по спецификации или таблице Елены."
-    notes: "Do not derive automatically from old control values."
-
-  - key: schiedel_vent_channel_3x_count
-    label_ru: "Вентиляционный канал 3х,52/25 см Schiedel — количество"
-    unit: "шт"
-    source_class: SUPPLIER_INPUT
-    required: true
-    review_sheet: "01_Проверка проекта"
-    target_code: "schiedel_vent_channel_3x_count"
-    calculator_input_path: "schiedel_vent_channel_3x_count"
-    normalized_json_path: "sections.schiedel_vent_channels.supplier_inputs.schiedel_vent_channel_3x_count.value"
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Подтвердите закупочное количество Schiedel 3х по спецификации или таблице Елены."
-    notes: "Do not derive automatically from old control values."
-
   - key: schiedel_delivery_trips
     label_ru: "Количество доставок вентканалов"
     unit: "маш"
@@ -321,37 +230,21 @@ supplier_inputs:
     notes: "Manual logistics input; not extracted from PDF by default."
 
 auto_calculated:
-  - key: schiedel_masonry_control_length_m
-    label_ru: "Контрольная длина кладки вентканалов"
-    source_class: AUTO_CALCULATED
-    formula: "vent_channel_1_height_m + vent_channel_2_height_m * vent_channel_2_count"
-    leaf_inputs:
-      - ref: review_parameters.vent_channel_1_height_m
-        source_class: AUTO_PROJECT
-      - ref: review_parameters.vent_channel_2_height_m
-        source_class: AUTO_PROJECT
-      - ref: review_parameters.vent_channel_2_count
-        source_class: AUTO_PROJECT
-    calculator_input_path: ""
-    notes: "Diagnostic control only; primary calculator quantity is schiedel_masonry_total_length_m."
-
   - key: schiedel_direct_cost_base_before_consumables
     label_ru: "База прямых затрат Schiedel до расходников"
     source_class: AUTO_CALCULATED
-    formula: "masonry work + 2x material + 3x material + delivery"
+    formula: "masonry work + sum(schiedel_channel_items material by product_type) + delivery"
     leaf_inputs:
       - ref: review_parameters.schiedel_masonry_total_length_m
         source_class: AUTO_PROJECT
-      - ref: supplier_inputs.schiedel_vent_channel_2x_count
-        source_class: SUPPLIER_INPUT
-      - ref: supplier_inputs.schiedel_vent_channel_3x_count
-        source_class: SUPPLIER_INPUT
+      - ref: review_parameters.schiedel_channel_items
+        source_class: AUTO_PROJECT
       - ref: supplier_inputs.schiedel_delivery_trips
         source_class: MANUAL_REVIEW
       - ref: price_keys
         source_class: PRICE
     calculator_input_path: ""
-    notes: ""
+    notes: "Updated 2026-07-29 - formula/leaf_inputs previously referenced the removed schiedel_vent_channel_2x_count/_3x_count supplier inputs; now matches calculator.py's real dynamic schiedel_channel_items[] sum. schiedel_masonry_control_length_m (the old vent_channel_1/2_height/count cross-check) was deleted outright, not updated - the shaft-height/count tracking it depended on was removed from the calculator entirely 2026-07-26 (Elena: 'не надо считать шахты, это не важно'), no replacement control value exists or is needed."
 
   - key: schiedel_consumables_amount
     label_ru: "Расходные материалы, амортизация инструмента"
@@ -384,50 +277,14 @@ calculator_input_mapping:
     fallback: null
     notes: ""
 
-  - input_path: "vent_channel_1_height_m"
+  - input_path: "schiedel_channel_items"
     from:
-      ref: "review_parameters.vent_channel_1_height_m"
+      ref: "review_parameters.schiedel_channel_items"
       source_class: AUTO_PROJECT
     required: false
-    transform: number_m
-    fallback: 0
-    notes: "Optional control value, but calculate_schiedel_vent_channels() reads input_data['vent_channel_1_height_m'] unconditionally (no .get, no calculator-side default) to build the diagnostic masonry_control_length formula — found 2026-07-10. fallback changed from null to 0 (a pure contract-side fix, no calculator code touched) so an adapter with no reviewed value still constructs valid input instead of crashing; 0 is safe since this only feeds a display-only control formula, never the paid schiedel_masonry_work quantity (that always comes from schiedel_masonry_total_length_m)."
-
-  - input_path: "vent_channel_2_height_m"
-    from:
-      ref: "review_parameters.vent_channel_2_height_m"
-      source_class: AUTO_PROJECT
-    required: false
-    transform: number_m
-    fallback: 0
-    notes: "Same unconditional-read gap as vent_channel_1_height_m, found and fixed 2026-07-10 — see that entry's notes."
-
-  - input_path: "vent_channel_2_count"
-    from:
-      ref: "review_parameters.vent_channel_2_count"
-      source_class: AUTO_PROJECT
-    required: false
-    transform: number_count
-    fallback: 0
-    notes: "Same unconditional-read gap as vent_channel_1_height_m, found and fixed 2026-07-10 — see that entry's notes."
-
-  - input_path: "schiedel_vent_channel_2x_count"
-    from:
-      ref: "supplier_inputs.schiedel_vent_channel_2x_count"
-      source_class: SUPPLIER_INPUT
-    required: true
-    transform: number_count
-    fallback: null
-    notes: ""
-
-  - input_path: "schiedel_vent_channel_3x_count"
-    from:
-      ref: "supplier_inputs.schiedel_vent_channel_3x_count"
-      source_class: SUPPLIER_INPUT
-    required: true
-    transform: number_count
-    fallback: null
-    notes: ""
+    transform: schiedel_channel_items_to_calculator_items
+    fallback: []
+    notes: "Added 2026-07-29, replaces the removed vent_channel_1/2_height_m, vent_channel_2_count (dead shaft-tracking control fields, calculator.py stopped reading them 2026-07-26) and schiedel_vent_channel_2x_count/_3x_count (dead fixed-pair fields, same date) mappings. calculate_schiedel_vent_channels() reads input_data.get('schiedel_channel_items') as a list of {product_type, quantity_pcs} and sums by product_type - an empty/missing list is valid (all channel quantities compute as zero), matching the case where the PDF only gives linear meters and extraction correctly leaves the group empty per the 2026-07-28 rule in target_aliases_ru.yaml."
 
   - input_path: "schiedel_delivery_trips"
     from:
@@ -492,7 +349,7 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Manual/specification quantity; not derived from control values."
+    notes: "STALE 2026-07-29 — quantity still references the deleted supplier_inputs.schiedel_vent_channel_2x_count. The calculator now produces one dynamic line per product_type actually present in schiedel_channel_items[] (1x/2x/3x/4x/cvent, see calculate_schiedel_vent_channels()'s channel_breakdown), not a fixed 2x/3x pair — this estimate_lines list needs a real redesign for dynamic per-product-type lines (same shape problem price_keys already solved for rebar_<class>_d<diameter>_m). Left as-is, not fixed: this affects only the not-yet-built final-estimate-workbook layer (no build_input.py exists for this section), not the review workbook. Do not read this quantity formula as current."
 
   - code: schiedel_vent_channel_3x_52_25
     name_ru: "Вентиляционный канал 3х,52/25 см Schiedel"
@@ -515,7 +372,7 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Manual/specification quantity; not derived from control values."
+    notes: "STALE 2026-07-29 — same issue as schiedel_vent_channel_2x_36_25 above, see its notes."
 
   - code: schiedel_delivery
     name_ru: "Доставка вентканалов"
@@ -676,8 +533,6 @@ checks:
   required_review_parameters:
     - schiedel_masonry_total_length_m
   required_supplier_inputs:
-    - schiedel_vent_channel_2x_count
-    - schiedel_vent_channel_3x_count
     - schiedel_delivery_trips
   forbidden_production_inputs:
     - old_control_blocks_raw
