@@ -213,6 +213,25 @@ def set_widths(ws, widths: dict[str, float]) -> None:
         ws.column_dimensions[column].width = width
 
 
+def _merge_row_full_width(ws, row_idx: int, max_col: int) -> None:
+    """Merges A<row_idx>:<max_col><row_idx>, first unmerging any existing range(s) that already
+    touch this row. Re-merging a row at a NEW width without unmerging the old range first does
+    not raise in openpyxl (it only rejects an exact-duplicate re-merge) - it silently writes a
+    second, overlapping merged range into the same row, producing a structurally invalid xlsx
+    that Excel refuses to open ("reading error", real user report 2026-07-29). This happened
+    because both the row-creation call (append_section_band/append_block, sheet width not yet
+    final) and a later full-sheet restyle pass (restyle_section_bands/restyle_block_sheet, using
+    the sheet's now-final ws.max_column) each merged the same row at a different width. Always
+    unmerging first makes repeated calls at different widths safe by construction, regardless of
+    call order or count."""
+    if max_col <= 1:
+        return
+    for rng in list(ws.merged_cells.ranges):
+        if rng.min_row <= row_idx <= rng.max_row:
+            ws.unmerge_cells(range_string=str(rng))
+    ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=max_col)
+
+
 def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
     for col in range(1, max_col + 1):
         cell = ws.cell(row_idx, col)
@@ -223,14 +242,8 @@ def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
     # Merge across the full row width so the section name (Фундаментная плита, ...) reads as
     # one wide banner instead of bold text sitting alone in column A, which made these rows
     # visually disappear next to the much wider block-title rows below them (2026-07-29 design
-    # fix, same reasoning as the block-title merge in style_block_title_row). restyle_section_
-    # bands can re-run this on an already-merged row (rebuilt sheet) - repeat merge of the same
-    # range is expected and safely ignored.
-    if max_col > 1:
-        try:
-            ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=max_col)
-        except ValueError:
-            pass
+    # fix, same reasoning as the block-title merge in style_block_title_row).
+    _merge_row_full_width(ws, row_idx, max_col)
 
 
 def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
@@ -254,13 +267,7 @@ def style_block_title_row(ws, row_idx: int, max_col: int) -> None:
     # Merge the title across the full row width so long titles wrap across all that space
     # instead of just column A - previously the text sat in column A alone, forcing 3+ wrapped
     # lines (and a tall row) even though the row already had 13+ empty-looking cells next to it.
-    # restyle_block_sheet can call this on an already-merged row (rebuilt sheet), so a repeat
-    # merge of the same exact range is expected and safely ignored.
-    if max_col > 1:
-        try:
-            ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=max_col)
-        except ValueError:
-            pass
+    _merge_row_full_width(ws, row_idx, max_col)
 
 
 def append_block(ws, title: str, headers: list[str], rows: list[list[Any]]) -> None:
