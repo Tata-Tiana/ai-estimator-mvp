@@ -160,7 +160,7 @@ Primary project inputs:
 | `floor_slab_rebar_frame_assembly_control` | `sum(rebar order_length_m)` | rebar items | `AUTO_CALCULATED` control | none |
 | `rebar_*` | `ceil(spec_length_m * waste_coeff / rod_length_m) * rod_length_m` | steel class, diameter, spec length, catalog kg/m, rod length | spec length `AUTO_PROJECT`; catalog `DEFAULT` | `rebar_<class>_d<diameter>_m` |
 | `floor_slab_concreting_work` | `slab_concrete_volume` | slab concrete volume | `AUTO_PROJECT` or calculated from total minus beams depending mode | `concrete_placing_work_m3` |
-| `beam_concreting_work` | `beams_concrete_volume` | beam concrete volume/detail table | `AUTO_PROJECT` / `DETAIL_TABLE` | `beam_concrete_placing_work_m3` |
+| `beam_concreting_work` | `sum(beam.length_m * beam.count)` | beam detail rows | `AUTO_PROJECT` / repeated rows | `beam_concrete_placing_work_m` |
 | `concrete_b22_5_m300_material` | `ceil(total_concrete_volume * concrete_waste_coeff)` | slab concrete + beam concrete, waste | volumes `AUTO_PROJECT`; waste `DEFAULT` | `concrete_b22_5_m3` |
 | `concrete_delivery` | `ceil(concrete_volume_with_waste / mixer_capacity_m3)` | concrete volume, mixer capacity | `AUTO_CALCULATED` + `DEFAULT` | `concrete_delivery_trip` |
 | `concrete_pump_32m` | `concrete_pump_shifts` | pump shifts | `MANUAL_REVIEW` | `concrete_pump_32m_shift` |

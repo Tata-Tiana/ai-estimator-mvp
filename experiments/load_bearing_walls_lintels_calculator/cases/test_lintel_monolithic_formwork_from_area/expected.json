@@ -42,12 +42,12 @@
   "internal_totals": {
     "internal_materials_total_raw": 1567424.329,
     "internal_materials_total": 1567424,
-    "internal_works_total_raw": 1201732.68,
-    "internal_works_total": 1201733,
-    "internal_section_total_raw": 2769157.009,
-    "internal_section_total": 2769157,
+    "internal_works_total_raw": 1197632.68,
+    "internal_works_total": 1197633,
+    "internal_section_total_raw": 2765057.009,
+    "internal_section_total": 2765057,
     "sum_of_displayed_line_material_totals": 1567426,
-    "sum_of_displayed_line_work_totals": 1201733,
-    "sum_of_displayed_line_totals": 2769159
+    "sum_of_displayed_line_work_totals": 1197633,
+    "sum_of_displayed_line_totals": 2765059
   }
 }

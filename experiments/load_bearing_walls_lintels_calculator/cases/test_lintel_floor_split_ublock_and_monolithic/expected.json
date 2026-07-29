@@ -113,10 +113,10 @@
       "line_total": 5000
     },
     "floor_1_lintel_monolithic_concreting_work": {
-      "quantity": 0.35,
+      "quantity": 5.4,
       "material_total": 0,
-      "work_total": 7000,
-      "line_total": 7000
+      "work_total": 8100,
+      "line_total": 8100
     },
     "floor_1_lintel_formwork_plywood_material": {
       "quantity": 1.0,
@@ -149,10 +149,10 @@
       "line_total": 450
     },
     "floor_2_lintel_monolithic_concreting_work": {
-      "quantity": 0.41,
+      "quantity": 2.0,
       "material_total": 0,
-      "work_total": 8200,
-      "line_total": 8200
+      "work_total": 3000,
+      "line_total": 3000
     },
     "floor_2_lintel_formwork_plywood_material": {
       "quantity": 2.0,
@@ -188,12 +188,12 @@
   "internal_totals": {
     "internal_materials_total_raw": 1565544.329,
     "internal_materials_total": 1565544,
-    "internal_works_total_raw": 1201732.68,
-    "internal_works_total": 1201733,
-    "internal_section_total_raw": 2767277.009,
-    "internal_section_total": 2767277,
+    "internal_works_total_raw": 1197632.68,
+    "internal_works_total": 1197633,
+    "internal_section_total_raw": 2763177.009,
+    "internal_section_total": 2763177,
     "sum_of_displayed_line_material_totals": 1565546,
-    "sum_of_displayed_line_work_totals": 1201733,
-    "sum_of_displayed_line_totals": 2767279
+    "sum_of_displayed_line_work_totals": 1197633,
+    "sum_of_displayed_line_totals": 2763179
   }
 }

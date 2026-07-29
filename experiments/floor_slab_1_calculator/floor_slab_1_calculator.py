@@ -282,16 +282,17 @@ def calculate_insulation_context(
         raise ValueError("insulation.total_eps_volume_from_spec_m3 must be >= 0")
 
     beam_items = (beams or {}).get("items") or []
-    beams_eps_work_length = D0
-    beams_eps_material_area = D0
+    calculated_beams_eps_work_length = D0
+    calculated_beams_eps_material_area = D0
     for beam in beam_items:
-        count = d(beam.get("count", 1))
+        count_raw = beam.get("count", 1)
+        count = D1 if count_raw is None else d(count_raw)
         length = d(beam["length_m"])
         height = d(beam["height_m"])
         if count < D0 or length < D0 or height < D0:
             raise ValueError("beams.items length_m, height_m and count must be >= 0")
-        beams_eps_work_length += length * count
-        beams_eps_material_area += length * height * count
+        calculated_beams_eps_work_length += length * count
+        calculated_beams_eps_material_area += length * height * count
 
     warnings: list[str] = []
     if "edge_insulation_height_m" in insulation:
@@ -303,6 +304,35 @@ def calculate_insulation_context(
         warnings.append("edge_insulation_height_m is not provided; fallback to slab_thickness_m.")
     if edge_insulation_height <= D0:
         raise ValueError("insulation.edge_insulation_height_m must be > 0")
+
+    beams_eps_work_length_override = insulation.get("beams_eps_work_length_m")
+    beams_eps_material_area_override = insulation.get("beams_eps_material_area_m2")
+    if beams_eps_work_length_override is not None:
+        beams_eps_work_length = d(beams_eps_work_length_override)
+        beams_eps_work_length_source = "specification"
+    else:
+        beams_eps_work_length = calculated_beams_eps_work_length
+        beams_eps_work_length_source = "calculated_all_beams"
+        if beam_items:
+            warnings.append(
+                "insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. "
+                "Elena confirmed beams may be insulated only partially, so review this length."
+            )
+    if beams_eps_material_area_override is not None:
+        beams_eps_material_area = d(beams_eps_material_area_override)
+        beams_eps_material_area_source = "specification"
+    else:
+        beams_eps_material_area = calculated_beams_eps_material_area
+        beams_eps_material_area_source = "calculated_all_beams"
+        if beam_items:
+            warnings.append(
+                "insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. "
+                "Elena confirmed beams may be insulated only partially, so review this area."
+            )
+    if beams_eps_work_length < D0:
+        raise ValueError("insulation.beams_eps_work_length_m must be >= 0")
+    if beams_eps_material_area < D0:
+        raise ValueError("insulation.beams_eps_material_area_m2 must be >= 0")
 
     if method == "legacy_fixed_edge_length":
         # Fixed fallback constant, not derived from any project's actual geometry — this legacy
@@ -364,12 +394,16 @@ def calculate_insulation_context(
         "slab_outer_edge_eps_work_length_m": round_decimal(slab_outer_edge_eps_work_length),
         "insulated_beams_total_length_m": round_decimal(beams_eps_work_length),
         "beams_eps_work_length_m": round_decimal(beams_eps_work_length),
+        "beams_eps_work_length_source": beams_eps_work_length_source,
+        "calculated_all_beams_eps_work_length_m": round_decimal(calculated_beams_eps_work_length),
         "total_insulation_length_m": round_decimal(edge_beam_eps_work_length),
         "edge_beam_eps_work_length_m": round_decimal(edge_beam_eps_work_length),
         "slab_edge_insulation_area_m2": round_decimal(slab_edge_eps_material_area),
         "slab_edge_eps_material_area_m2": round_decimal(slab_edge_eps_material_area),
         "beams_insulation_area_m2": round_decimal(beams_eps_material_area),
         "beams_eps_material_area_m2": round_decimal(beams_eps_material_area),
+        "beams_eps_material_area_source": beams_eps_material_area_source,
+        "calculated_all_beams_eps_material_area_m2": round_decimal(calculated_beams_eps_material_area),
         "edge_and_beam_insulation_area_m2": round_decimal(edge_and_beam_eps_material_area),
         "edge_and_beam_eps_material_area_m2": round_decimal(edge_and_beam_eps_material_area),
         "edge_and_beam_eps_volume_m3": round_decimal(edge_and_beam_eps_volume),

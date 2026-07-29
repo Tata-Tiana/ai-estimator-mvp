@@ -7,8 +7,14 @@
   "scaffolding_timber_quantity_m3": 1,
   "scaffolding_timber_unit_price": 21500,
   "cutoff_waterproofing_calc_method": "legacy_lengths_by_wall_thickness",
-  "cutoff_waterproofing_wall_400_lengths_m": [17.8, 5.1],
-  "cutoff_waterproofing_wall_250_lengths_m": [2.7, 2.25],
+  "cutoff_waterproofing_wall_400_lengths_m": [
+    17.8,
+    5.1
+  ],
+  "cutoff_waterproofing_wall_250_lengths_m": [
+    2.7,
+    2.25
+  ],
   "wall_400_thickness_m": 0.4,
   "wall_250_thickness_m": 0.25,
   "cutoff_waterproofing_material_unit_price": 250,
@@ -30,8 +36,14 @@
   "sand_concrete_unit_price": 375,
   "lintel_length_calc_method": "legacy_length_count_items",
   "lintel_lengths_m": [
-    {"length_m": 1.4, "count": 6},
-    {"length_m": 2.3, "count": 2}
+    {
+      "length_m": 1.4,
+      "count": 6
+    },
+    {
+      "length_m": 2.3,
+      "count": 2
+    }
   ],
   "gas_block_length_m": 0.6,
   "u_block_cutting_work_unit_price": 400,
@@ -89,7 +101,10 @@
   "gas_block_d500_150_pallet_volume_m3": 1.8,
   "gas_block_d500_150_unit_price": 5600,
   "vent_chimney_segment_lengths_m": [
-    {"length_m": 0.88, "count": 2}
+    {
+      "length_m": 0.88,
+      "count": 2
+    }
   ],
   "vent_chimney_rows": 5,
   "block_height_m": 0.25,
@@ -103,7 +118,7 @@
   "waste_removal_truck_unit_price": 10000,
   "waste_removal_work_unit_price": 3500,
   "technical_supervision_amount": 10000,
-  "lintel_monolithic_concreting_work_unit_price": 20000,
+  "lintel_monolithic_concreting_work_unit_price": 1500,
   "lintel_formwork_plywood_unit_price": 1450,
   "lintel_formwork_timber_unit_price": 23500,
   "lintel_insulation_work_unit_price": 650,

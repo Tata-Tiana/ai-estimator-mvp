@@ -101,10 +101,13 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - items: 0 items
 - items_count: `0`
+- items_total_length_m: `0.0`
 - items_total_concrete_volume_m3: `0.0`
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
+- eps_work_length_source: `calculated_all_beams`
+- eps_material_area_source: `calculated_all_beams`
 - concrete_volume_source: `calculated_from_beam_items`
 - calculated_concrete_volume_m3: `0.0`
 - concrete_volume_delta_m3: `None`
@@ -171,7 +174,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
 | 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
-| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 0 | 0 | 0 | 0 | 0 |
+| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | мп | 0 | 0 | 0 | 0 | 0 |
 | 15 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
 | 16 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
 | 17 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
@@ -302,6 +305,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
+- Примечание: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
 - Примечание: Quantity and total are 0 when no beams.items are given for this floor slab.
 
 ### 15. Бетон марки В22,5 (М300)

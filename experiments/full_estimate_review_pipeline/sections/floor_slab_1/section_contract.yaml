@@ -305,7 +305,7 @@ review_parameters:
       status_if_missing: "optional_default_zero"
       action_ru: "Если у этой плиты есть балки и в спецификации есть готовый итог по бетону балок, сверьте его; иначе оставьте пустым — он посчитается из позиций балок ниже."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Calculator-code override added 2026-07-12 (exception to the normal never-touch-calculator-code rule, explicit user authorization) — mirrors the existing beams_formwork_area_m2 override pattern. beam_items rows remain required regardless for formwork area and insulation length/area, which have no scalar override."
+    notes: "Calculator-code override added 2026-07-12 (exception to the normal never-touch-calculator-code rule, explicit user authorization) — mirrors the existing beams_formwork_area_m2 override pattern. beam_items rows remain required for formwork/concrete fallback and beam work length; insulation has its own optional overrides below because beams are not always insulated along their full length."
 
   - key: slab_outer_edge_eps_work_length_m
     label_ru: "ЭППС 100 мм торец плиты, длина работ"
@@ -321,14 +321,60 @@ review_parameters:
       target_codes: ["floor_slab_1_edge_eps_work_length", "floor_slab_1_slab_edge_perimeter"]
       aliases_ru: ["ЭППС торец плиты длина", "утепление торца плиты длина", "длина утепления торца"]
       expected_unit: "мп"
-      notes: "Work length, not material volume."
+      notes: "Work length for the slab outer edge only. Beam insulation must use beams_eps_work_length_m below when it is present, because beams may be insulated only partially."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
       action_ru: "Проверьте длину работ по ЭППС торца плиты."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Do not include beam length here unless the PDF explicitly gives one combined slab+beam insulation length and no split is possible; production prefers a separate beams_eps_work_length_m."
+
+  - key: beams_eps_work_length_m
+    label_ru: "ЭППС 100 мм торец балок 1-го этажа, длина утепляемой части"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_eps_work_length"
+    calculator_input_path: "insulation.beams_eps_work_length_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_eps_work_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_eps_work_length"]
+      aliases_ru: ["утепление балок длина", "утепляемая часть балок", "длина утепления ж/б балок", "ЭППС торец балок длина"]
+      expected_unit: "мп"
+      notes: "Only the length of beam faces actually insulated from outside. Do not substitute total beam length: beams may be L/T-shaped and insulated only on the outside portion."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если в проекте есть отдельная длина утепляемой части балок, проверьте ее; если балок не утепляют, поставьте 0; если данных нет, оставьте пустым и проверьте вручную."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Elena 2026-07-29: beams are not always insulated, and when insulated may cover only part of the beam length."
+
+  - key: beams_eps_material_area_m2
+    label_ru: "ЭППС 100 мм торец балок 1-го этажа, площадь материала"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_eps_material_area"
+    calculator_input_path: "insulation.beams_eps_material_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_eps_material_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_eps_material_area"]
+      aliases_ru: ["площадь утепления ж/б балок", "ЭППС балки площадь", "утепление балок площадь"]
+      expected_unit: "м2"
+      notes: "Only the EPS area actually used on insulated beam faces. Do not derive from total beam length if the project shows partial insulation."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если в проекте есть отдельная площадь ЭППС по балкам, проверьте ее; если балок не утепляют, поставьте 0; если данных нет, оставьте пустым и проверьте вручную."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Optional override. If absent, calculator falls back to all beam length * height for backward compatibility, but production extraction should prefer the actual insulated area/length from the PDF."
 
   - key: edge_insulation_height_m
     label_ru: "Высота утепления торца плиты перекрытия 1-го этажа"
@@ -473,7 +519,7 @@ review_parameters:
     row_key_field: code
     production_input: true
     item_label_columns: [name]
-    correction_columns: [length_m, width_m, height_m, count]
+    correction_columns: [length_m, width_m, height_m, count, concrete_volume_m3, formwork_area_m2]
     columns:
       - {key: code, label_ru: "Код", unit: "", value_kind: string}
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
@@ -481,11 +527,13 @@ review_parameters:
       - {key: width_m, label_ru: "Ширина", unit: "м", value_kind: number}
       - {key: height_m, label_ru: "Высота", unit: "м", value_kind: number}
       - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: formwork_area_m2, label_ru: "Опалубка", unit: "м2", value_kind: number}
     parser_mapping:
       target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
       aliases_ru: ["ведомость балок", "спецификация балок", "балки Б-"]
       expected_unit: ""
-      notes: "This floor slab may have zero, one, or several beams, independently of floor_slab_2. Extract only real beam rows, not the total row of a beam table. Do not invent rows if the PDF has no beam table for this slab."
+      notes: "This floor slab may have zero, one, or several beams, independently of floor_slab_2. Extract only real beam rows, not the total row of a beam table. If the PDF gives ready concrete/formwork per beam, fill concrete_volume_m3/formwork_area_m2 from the spec. width_m is optional when the row combines different beam cross-sections; do not invent a split."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -494,7 +542,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Extract only real beam rows, not the total row of a beam table."
+    notes: "Extract only real beam rows, not the total row of a beam table. Production uses length_m for beam concreting work. Do not assume beam insulation follows the full beam length: use beams_eps_work_length_m/beams_eps_material_area_m2 when the PDF gives the actually insulated portion. width_m is not required when concrete_volume_m3 is already given. For combined rows such as ARK B4/B4-1, keep one combined row with needs_review/manual split note until a separated designer specification is available."
 
   - key: beam_table_controls
     label_ru: "Контрольные итоги таблицы Ж/Б балок"
@@ -535,7 +583,7 @@ price_keys:
   - {key: timber_unit_price, estimate_line_code: formwork_timber_gost, label_ru: "Пиломатериал обрезной для устройства опалубки", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "timber_unit_price", allow_manual_override: true, notes: ""}
   - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура плиты перекрытия по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of floor_slab_1_rebar_items."}
   - {key: slab_concreting_work_rate_per_m3, estimate_line_code: floor_slab_concreting_work, label_ru: "Бетонирование плиты перекрытия", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_placing_work_m3", fallback_key: "slab_concreting_work_rate_per_m3", allow_manual_override: true, notes: ""}
-  - {key: beam_concreting_work_rate_per_m3, estimate_line_code: beam_concreting_work, label_ru: "Бетонирование балок", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "beam_concrete_placing_work_m3", fallback_key: "beam_concreting_work_rate_per_m3", allow_manual_override: true, notes: ""}
+  - {key: beam_concreting_work_rate_per_m, estimate_line_code: beam_concreting_work, label_ru: "Бетонирование балок", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "beam_concrete_placing_work_m", fallback_key: "beam_concreting_work_rate_per_m", allow_manual_override: true, notes: "С 2026-07-28 по решению Елены все балки перекрытий считаются по длине в м.п. по единой ставке, без деления по высоте."}
   - {key: concrete_unit_price_per_m3, estimate_line_code: concrete_b22_5_m300_material, label_ru: "Бетон В22,5 М300", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_b22_5_m3", fallback_key: "concrete_unit_price_per_m3", allow_manual_override: true, notes: ""}
   - {key: concrete_delivery_rate_per_trip, estimate_line_code: concrete_delivery, label_ru: "Доставка бетона до объекта", price_kind: material, unit: "рейс", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_delivery_trip", fallback_key: "concrete_delivery_rate_per_trip", allow_manual_override: true, notes: ""}
   - {key: concrete_pump_rate, estimate_line_code: concrete_pump_32m, label_ru: "Работа бетононасоса 32 м", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_pump_32m_shift", fallback_key: "concrete_pump_rate", allow_manual_override: true, notes: ""}
@@ -807,16 +855,16 @@ estimate_lines:
 
   - code: beam_concreting_work
     name_ru: "Бетонирование балок бетоном В22,5 (М300)"
-    unit: "м3"
+    unit: "мп"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=beam_concreting_work]"
     quantity:
-      formula: "sum(beam.length_m * beam.width_m * beam.height_m * beam.count)"
+      formula: "sum(beam.length_m * beam.count)"
       leaf_inputs:
         - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
-    prices: {material_unit_price_key: null, work_unit_price_key: beam_concreting_work_rate_per_m3, fixed_amount_key: null}
+    prices: {material_unit_price_key: null, work_unit_price_key: beam_concreting_work_rate_per_m, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Beam concrete only, separate from slab concrete."
+    notes: "Beam concreting work only, priced by beam length. Beam concrete material remains in m3 on the concrete material line."
 
   - code: concrete_b22_5_m300_material
     name_ru: "Бетон марки В22,5 (М300)"
@@ -880,13 +928,14 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=edge_beam_insulation_work]"
     quantity:
-      formula: "slab_outer_edge_eps_work_length_m + sum(beam.length_m * beam.count)"
+      formula: "slab_outer_edge_eps_work_length_m + beams_eps_work_length_m (or fallback sum(beam.length_m * beam.count) only when no explicit beam insulation length is provided)"
       leaf_inputs:
         - {ref: "review_parameters.slab_outer_edge_eps_work_length_m", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_eps_work_length_m", source_class: AUTO_PROJECT}
         - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: edge_beam_insulation_work_rate_per_m, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Beam edge insulation length is calculated from beam rows."
+    notes: "Do not assume every beam is insulated along its full length. Elena confirmed beams may be uninsulated or insulated only partially; use beams_eps_work_length_m when the project gives the actual insulated portion."
 
   - code: bottom_slab_insulation_work
     name_ru: "Устройство утепления низа плиты"

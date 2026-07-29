@@ -93,6 +93,11 @@ class WallBlockItem:
     volume_m3: float
     block_density: str | None = None
     block_size: str | None = None
+    # Escape hatch for a rare non-D400/D500 block (Elena, 2026-07-28: "могут быть, но очень
+    # редко"). Required only when block_density isn't D400/D500 — see validate(). Priced directly
+    # from this value (no registry lookup, no waste/pallet rounding) since it's a one-off material,
+    # not a stocked SKU with a known pallet volume.
+    material_unit_price: float | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "WallBlockItem":
@@ -192,11 +197,13 @@ class LoadBearingWallsLintelsInput:
     floor_2_lintel_concrete_spec_volume_m3: float | None = None
     floor_2_concrete_delivery_trips: float | None = None
     floor_1_lintel_monolithic_concrete_volume_m3: float | None = None
+    floor_1_lintel_monolithic_total_length_m: float | None = None
     floor_1_lintel_monolithic_insulation_length_m: float | None = None
     floor_1_lintel_formwork_horizontal_area_m2: float | None = None
     floor_1_lintel_formwork_vertical_area_m2: float | None = None
     floor_1_lintel_insulation_eps_spec_volume_m3: float | None = None
     floor_2_lintel_monolithic_concrete_volume_m3: float | None = None
+    floor_2_lintel_monolithic_total_length_m: float | None = None
     floor_2_lintel_monolithic_insulation_length_m: float | None = None
     floor_2_lintel_formwork_horizontal_area_m2: float | None = None
     floor_2_lintel_formwork_vertical_area_m2: float | None = None
@@ -373,16 +380,23 @@ class LoadBearingWallsLintelsInput:
             require_non_negative("wall_block_items.volume_m3", item.volume_m3)
             if item.wall_role == "partitions":
                 continue
-            if item.block_density not in WALL_BLOCK_ITEM_DENSITIES:
-                raise ValueError(
-                    f"wall_block_items block_density must be one of {sorted(WALL_BLOCK_ITEM_DENSITIES)} "
-                    f"for wall_role={item.wall_role!r} (context={item.context!r})"
-                )
-            if (item.wall_role, item.block_density) not in WALL_BLOCK_ITEM_PRICED_KEYS:
-                raise ValueError(
-                    f"wall_block_items combination wall_role={item.wall_role!r}/block_density={item.block_density!r} "
-                    f"has no priced material path yet (context={item.context!r})"
-                )
+            if item.block_density in WALL_BLOCK_ITEM_DENSITIES:
+                if (item.wall_role, item.block_density) not in WALL_BLOCK_ITEM_PRICED_KEYS:
+                    raise ValueError(
+                        f"wall_block_items combination wall_role={item.wall_role!r}/block_density={item.block_density!r} "
+                        f"has no priced material path yet (context={item.context!r})"
+                    )
+            else:
+                # Rare non-standard block (Elena, 2026-07-28) — priced directly from this row
+                # instead of the shared D400/D500 price, since its size/density isn't a known SKU.
+                if item.material_unit_price is None:
+                    raise ValueError(
+                        f"wall_block_items block_density={item.block_density!r} is not one of "
+                        f"{sorted(WALL_BLOCK_ITEM_DENSITIES)} for wall_role={item.wall_role!r} "
+                        f"(context={item.context!r}) — supply an explicit material_unit_price on "
+                        "this row for a rare non-standard block, or use D400/D500."
+                    )
+                require_non_negative("wall_block_items.material_unit_price", item.material_unit_price)
         if self.main_wall_rebar_calc_method not in {"legacy_wall_geometry", "spec_length_items"}:
             raise ValueError("main_wall_rebar_calc_method must be legacy_wall_geometry or spec_length_items")
         if self.main_wall_rebar_calc_method == "spec_length_items":
@@ -583,19 +597,53 @@ def wall_block_items_totals(items: list[WallBlockItem]) -> dict[str, Decimal]:
     totals = {
         "main_walls_d400": Decimal("0"),
         "main_walls_d500": Decimal("0"),
+        "main_walls_other": Decimal("0"),
         "floor_2_d400": Decimal("0"),
         "floor_2_d500": Decimal("0"),
+        "floor_2_other": Decimal("0"),
         "parapet_d400": Decimal("0"),
         "parapet_d500": Decimal("0"),
+        "parapet_other": Decimal("0"),
         "partitions": Decimal("0"),
     }
     for item in items:
         if item.wall_role == "partitions":
             totals["partitions"] += d(item.volume_m3)
             continue
-        key = f"{item.wall_role}_{item.block_density.lower()}"
+        if item.block_density in WALL_BLOCK_ITEM_DENSITIES:
+            key = f"{item.wall_role}_{item.block_density.lower()}"
+        else:
+            # Rare non-D400/D500 block — bucketed separately so "is there any floor_2/parapet
+            # volume at all" checks (floor_2_enabled, scaffolding, parapet_enabled) don't have to
+            # rely on D400 specifically being present.
+            key = f"{item.wall_role}_other"
         totals[key] += d(item.volume_m3)
     return totals
+
+
+def wall_block_other_density_lines(items: list["WallBlockItem"], wall_role: str) -> list[EstimateLineResult]:
+    """One priced line per rare non-D400/D500 row for the given role (Elena, 2026-07-28: 'могут
+    быть, но очень редко'). Density/size are trusted exactly as given in the project spec, price
+    comes directly from the row — no registry lookup, no waste/pallet rounding, since it's a
+    one-off material rather than a stocked SKU with a known pallet volume."""
+    result: list[EstimateLineResult] = []
+    for index, item in enumerate(items):
+        if item.wall_role != wall_role or item.block_density in WALL_BLOCK_ITEM_DENSITIES:
+            continue
+        size_label = f", {item.block_size}" if item.block_size else ""
+        density_label = item.block_density or "плотность не указана по спецификации"
+        result.append(
+            line(
+                f"wall_block_other_{wall_role}_{index}",
+                f"Газобетонный блок {density_label}{size_label} — {item.context}",
+                "м3",
+                item.volume_m3,
+                material_unit_price=item.material_unit_price,
+                notes="Нестандартная плотность/размер блока (редкий случай, подтверждено Еленой "
+                "2026-07-28) — цена берётся напрямую из данных проекта, без округления по поддонам.",
+            )
+        )
+    return result
 
 
 def rebar_from_weight(item: RebarItem, waste_coeff: float) -> tuple[dict[str, Any], EstimateLineResult]:
@@ -699,7 +747,13 @@ def calculate_scaffolding(data: LoadBearingWallsLintelsInput, wall_block_totals:
         # Falls back to floors_count untouched when wall_block_items isn't used at all, so every
         # existing regression case (none of which supply wall_block_items) is byte-identical.
         if wall_block_totals is not None:
-            effective_floors_count = 2 if wall_block_totals["floor_2_d400"] > 0 else 1
+            # Checks all three density buckets (not just D400) so a floor_2 built entirely from a
+            # rare non-D400/D500 block (Elena, 2026-07-28: "могут быть, но очень редко") still
+            # correctly triggers 2-tier scaffolding instead of silently under-counting to 1.
+            floor_2_any_volume = (
+                wall_block_totals["floor_2_d400"] + wall_block_totals["floor_2_d500"] + wall_block_totals["floor_2_other"]
+            )
+            effective_floors_count = 2 if floor_2_any_volume > 0 else 1
             floors_count_source = "wall_block_items"
         else:
             if data.floors_count is None:
@@ -847,6 +901,7 @@ def calculate_floor_2_ublock_lintels(data: LoadBearingWallsLintelsInput) -> dict
 
 def calculate_monolithic_lintel_block(
     concrete_volume_m3: float | None,
+    total_length_m: float | None,
     insulation_length_m: float | None,
     eps_spec_volume_m3: float | None,
     data: LoadBearingWallsLintelsInput,
@@ -867,7 +922,10 @@ def calculate_monolithic_lintel_block(
     direct-quantity input path (removed 2026-07-25 — Elena: confirmed this data
     never appears in source drawings)."""
     concrete_volume = d(concrete_volume_m3 or 0)
-    enabled = concrete_volume > 0
+    total_length = d(total_length_m or 0)
+    if concrete_volume > 0 and total_length_m is None:
+        raise ValueError("monolithic lintel concreting work requires total_length_m when concrete_volume_m3 is present")
+    enabled = concrete_volume > 0 or total_length > 0
     insulation_length = d(insulation_length_m or 0)
     total_formwork_area = d(formwork_horizontal_area_m2 or 0) + d(formwork_vertical_area_m2 or 0)
     plywood_raw = total_formwork_area / d(data.lintel_formwork_plywood_sheet_area_m2)
@@ -883,6 +941,7 @@ def calculate_monolithic_lintel_block(
     return {
         "enabled": enabled,
         "monolithic_concrete_volume_m3": q(concrete_volume),
+        "monolithic_total_length_m": q(total_length),
         "monolithic_insulation_length_m": q(insulation_length),
         "formwork_horizontal_area_m2": formwork_horizontal_area_m2,
         "formwork_vertical_area_m2": formwork_vertical_area_m2,
@@ -1007,10 +1066,12 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     if wall_block_totals is not None:
         main_400_volume = wall_block_totals["main_walls_d400"]
         main_500_250_volume = wall_block_totals["main_walls_d500"]
+        main_other_volume = wall_block_totals["main_walls_other"]
     else:
         main_400_volume = d(data.main_wall_gas_block_400_spec_volume_m3)
         main_500_250_volume = d(data.main_wall_gas_block_250_spec_volume_m3)
-    main_masonry_volume = main_400_volume + main_500_250_volume
+        main_other_volume = Decimal("0")
+    main_masonry_volume = main_400_volume + main_500_250_volume + main_other_volume
     main_d400 = gas_block_order(main_400_volume, data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
     main_d500_250 = gas_block_order(main_500_250_volume, data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3)
     adhesive_raw = main_masonry_volume * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
@@ -1022,6 +1083,7 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     floor_2_ublock_lintels = calculate_floor_2_ublock_lintels(data)
     floor_1_monolithic_lintels = calculate_monolithic_lintel_block(
         data.floor_1_lintel_monolithic_concrete_volume_m3,
+        data.floor_1_lintel_monolithic_total_length_m,
         data.floor_1_lintel_monolithic_insulation_length_m,
         data.floor_1_lintel_insulation_eps_spec_volume_m3,
         data,
@@ -1030,6 +1092,7 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     )
     floor_2_monolithic_lintels = calculate_monolithic_lintel_block(
         data.floor_2_lintel_monolithic_concrete_volume_m3,
+        data.floor_2_lintel_monolithic_total_length_m,
         data.floor_2_lintel_monolithic_insulation_length_m,
         data.floor_2_lintel_insulation_eps_spec_volume_m3,
         data,
@@ -1062,7 +1125,11 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         # actually exists, not by floors_count (a real project's floors_count is
         # sometimes physically absent from the PDF, so gating on it is impossible
         # in principle — see floor_2_walls_incomplete_and_floors_count_risk memory).
-        floor_2_enabled = wall_block_totals["floor_2_d400"] > 0
+        # Checks all three density buckets (not just D400) so a floor_2 built entirely from a
+        # rare non-D400/D500 block (Elena, 2026-07-28) still gets detected as present.
+        floor_2_enabled = (
+            wall_block_totals["floor_2_d400"] + wall_block_totals["floor_2_d500"] + wall_block_totals["floor_2_other"]
+        ) > 0
     else:
         floor_2_enabled = data.floors_count == 2
     if data.upper_floor_calc_method == "legacy_second_light_addon":
@@ -1072,6 +1139,7 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         second_light_volume = second_light_input_volume if second_light_enabled else Decimal("0")
         floor_2_volume = Decimal("0")
         floor_2_d500_volume = Decimal("0")
+        floor_2_other_volume = Decimal("0")
     else:
         second_light_enabled = False
         second_light_case_specific = False
@@ -1086,6 +1154,9 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         # external walls are D400, internal load-bearing walls are D500, on any floor. Only
         # reachable via wall_block_items; the legacy scalar path has no D500 field for floor_2.
         floor_2_d500_volume = wall_block_totals["floor_2_d500"] if wall_block_totals is not None else Decimal("0")
+        # Rare non-D400/D500 block on floor 2 (Elena, 2026-07-28) — priced per-row separately,
+        # see wall_block_other_density_lines(); only its volume feeds the combined masonry work.
+        floor_2_other_volume = wall_block_totals["floor_2_other"] if wall_block_totals is not None else Decimal("0")
 
     parapet_uses_wall_block_items = wall_block_totals is not None and data.parapet_calc_method != "legacy_manual_toggle"
     if data.parapet_calc_method == "legacy_manual_toggle":
@@ -1093,7 +1164,11 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     elif parapet_uses_wall_block_items:
         parapet_enabled = bool(
             data.flat_roof_enabled
-            and (wall_block_totals["parapet_d400"] > 0 or wall_block_totals["parapet_d500"] > 0)
+            and (
+                wall_block_totals["parapet_d400"] > 0
+                or wall_block_totals["parapet_d500"] > 0
+                or wall_block_totals["parapet_other"] > 0
+            )
         )
     else:
         parapet_enabled = bool(
@@ -1106,9 +1181,11 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     if parapet_uses_wall_block_items:
         parapet_volume = wall_block_totals["parapet_d400"] if parapet_enabled else Decimal("0")
         parapet_d500_volume = wall_block_totals["parapet_d500"] if parapet_enabled else Decimal("0")
+        parapet_other_volume = wall_block_totals["parapet_other"] if parapet_enabled else Decimal("0")
     else:
         parapet_volume = d(data.parapet_masonry_volume_m3 or 0) if parapet_enabled else Decimal("0")
         parapet_d500_volume = d(data.parapet_gas_block_d500_250_spec_volume_m3 or 0) if parapet_enabled else Decimal("0")
+        parapet_other_volume = Decimal("0")
 
     if data.vent_chimney_cladding_calc_method == "legacy_manual_toggle":
         vent_enabled = bool(data.vent_chimney_cladding_enabled)
@@ -1121,15 +1198,16 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         q(floor_2_d500_volume), data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3
     )
     # Masonry work is one line regardless of block density (same as main walls/parapet) —
-    # D400 and D500 volumes are combined here, split back out per density only for materials.
-    floor_2_total_masonry_volume = floor_2_volume + floor_2_d500_volume
+    # D400, D500 and any rare "other" volume are combined here, split back out per density
+    # (and per row for "other") only for materials.
+    floor_2_total_masonry_volume = floor_2_volume + floor_2_d500_volume + floor_2_other_volume
     floor_2_adhesive_raw = floor_2_total_masonry_volume * d(data.adhesive_consumption_bag_per_m3) * d(data.adhesive_waste_coeff)
     floor_2_adhesive_bags = int(ceil(floor_2_adhesive_raw))
     parapet_d400 = gas_block_order(q(parapet_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
     parapet_d500_250 = gas_block_order(
         q(parapet_d500_volume), data.gas_block_waste_coeff, data.gas_block_d500_250_pallet_volume_m3
     )
-    parapet_total_masonry_volume = parapet_volume + parapet_d500_volume
+    parapet_total_masonry_volume = parapet_volume + parapet_d500_volume + parapet_other_volume
     parapet_upper_total_volume = parapet_volume + second_light_volume
     parapet_upper_d400 = gas_block_order(q(parapet_upper_total_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
     second_light_d400 = gas_block_order(q(second_light_input_volume), data.gas_block_waste_coeff, data.gas_block_d400_pallet_volume_m3)
@@ -1321,6 +1399,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         line("main_load_bearing_wall_masonry_work", "Кладка внешних, внутренних стен из газобетонных блоков", "м3", main["main_masonry_volume_m3"], work_unit_price=data.main_wall_masonry_work_unit_price, notes="Работа по проектному объёму без запаса", price_code="gas_block_masonry_work_m3"),
         line("main_gas_block_d400_600x400x250_material", "Газобетонный блок D400 600x400x250 мм", "м3", gas["d400"]["order_volume_m3"], material_unit_price=data.gas_block_d400_unit_price, price_code="gas_block_d400_m3"),
         line("main_gas_block_d500_600x250x250_material", "Газобетонный блок D500 600x250x250 мм", "м3", gas["d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, price_code="gas_block_d500_m3"),
+        *wall_block_other_density_lines(data.wall_block_items or [], "main_walls"),
         line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
         line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
         line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под армирование Ø10", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка серой части, база для арматуры Ø10"),
@@ -1367,7 +1446,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
             continue
         prefix = f"floor_{floor_number}"
         lines.extend([
-            line(f"{prefix}_lintel_monolithic_concreting_work", f"Бетонирование монолитных перемычек, {floor_label}", "м3", monolithic["monolithic_concrete_volume_m3"], work_unit_price=data.lintel_monolithic_concreting_work_unit_price, price_code="lintel_monolithic_concreting_work_m3"),
+            line(f"{prefix}_lintel_monolithic_concreting_work", f"Бетонирование монолитных перемычек, {floor_label}", "мп", monolithic["monolithic_total_length_m"], work_unit_price=data.lintel_monolithic_concreting_work_unit_price, notes="С 2026-07-28 работа по бетонированию монолитных перемычек считается по общей длине перемычек, а не по объему бетона.", price_code="lintel_monolithic_concreting_work_m"),
             line(f"{prefix}_lintel_formwork_plywood_material", f"Фанера для опалубки монолитных перемычек, {floor_label}", "шт", monolithic["formwork_plywood_qty"], material_unit_price=data.lintel_formwork_plywood_unit_price, price_code="lintel_formwork_plywood_sheet"),
             line(f"{prefix}_lintel_formwork_timber_material", f"Пиломатериал обрезной для опалубки монолитных перемычек, {floor_label}", "м3", monolithic["formwork_timber_volume_m3"], material_unit_price=data.lintel_formwork_timber_unit_price, price_code="lintel_formwork_timber_m3"),
             line(f"{prefix}_lintel_edge_insulation_work", f"Устройство утепления по наружной стороне монолитной перемычки, {floor_label}", "мп", monolithic["monolithic_insulation_length_m"], work_unit_price=data.lintel_insulation_work_unit_price, price_code="lintel_edge_insulation_work_m"),
@@ -1391,6 +1470,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
                 lines.append(
                     line("floor_2_gas_block_d500_material", "Газобетонный блок D500 для несущих стен 2-го этажа", "м3", floor_2["floor_2_d500"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, notes="Добавлено 2026-07-24. Внутренние несущие стены 2-го этажа — тот же принцип D400 снаружи/D500 внутри, что и на 1-м этаже и в парапете.", price_code="gas_block_d500_m3")
                 )
+            lines.extend(wall_block_other_density_lines(data.wall_block_items or [], "floor_2"))
         if parapet["parapet_enabled_calculated"]:
             lines.append(
                 line("parapet_masonry_work", "Кладка парапета", "м3", parapet["parapet_total_masonry_volume_m3"], work_unit_price=data.parapet_masonry_work_unit_price, notes="Production-блок парапета из спецификации кровли; объём D400+D500 объединён, т.к. кладка — одна работа независимо от плотности блока", price_code="gas_block_masonry_work_m3")
@@ -1403,6 +1483,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
                 lines.append(
                     line("parapet_gas_block_d500_250_material", "Газобетонный блок D500 600x250x250 мм для парапета", "м3", parapet["parapet_d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, notes="Добавлено 2026-07-15. Елена: парапет обычно D400 (80-90%), но может быть частично или полностью D500 600x250x250, тот же блок, что и второй материал основных стен.", price_code="gas_block_d500_m3")
                 )
+            lines.extend(wall_block_other_density_lines(data.wall_block_items or [], "parapet"))
 
     if vent["vent_chimney_cladding_enabled_calculated"]:
         lines.extend([

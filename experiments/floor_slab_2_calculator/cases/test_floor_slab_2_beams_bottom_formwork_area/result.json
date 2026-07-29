@@ -132,10 +132,13 @@
     "beams": {
       "items": [],
       "items_count": 0,
+      "items_total_length_m": 0.0,
       "items_total_concrete_volume_m3": 0.0,
       "items_total_formwork_area_m2": 0.0,
       "items_total_eps_material_area_m2": 0.0,
       "items_total_eps_work_length_m": 0.0,
+      "eps_work_length_source": "calculated_all_beams",
+      "eps_material_area_source": "calculated_all_beams",
       "concrete_volume_source": "calculated_from_beam_items",
       "calculated_concrete_volume_m3": 0.0,
       "concrete_volume_delta_m3": null,
@@ -450,7 +453,7 @@
     {
       "code": "beam_concreting_work",
       "name": "Бетонирование балки бетоном марки В22,5 (М300)",
-      "unit": "м3",
+      "unit": "мп",
       "line_type": "work",
       "quantity_raw": 0.0,
       "quantity_display": 0.0,
@@ -463,9 +466,10 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "notes": [
+        "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.",
         "Quantity and total are 0 when no beams.items are given for this floor slab."
       ],
-      "price_code": "beam_concrete_placing_work_m3"
+      "price_code": "beam_concrete_placing_work_m"
     },
     {
       "code": "concrete_b22_5_m300_material",

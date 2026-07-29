@@ -1,0 +1,36 @@
+{
+  "calculation_blocks": {
+    "scaffolding": {
+      "floors_count": 2,
+      "floors_count_source": "wall_block_items",
+      "floors_count_input": 1,
+      "setup_quantity": 2.0,
+      "timber_quantity_m3": 2.0
+    },
+    "floor_2_load_bearing_walls": {
+      "enabled": true,
+      "floor_2_total_masonry_volume_m3": 12.5
+    }
+  },
+  "estimate_lines": {
+    "floor_2_masonry_work": {
+      "quantity": 12.5,
+      "line_total": 87500
+    },
+    "floor_2_gas_block_d400_material": {
+      "quantity": 0.0,
+      "line_total": 0
+    },
+    "wall_block_other_floor_2_4": {
+      "quantity": 12.5,
+      "material_unit_price": 6800,
+      "line_total": 85000,
+      "price_code": null
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 1493354,
+    "internal_works_total": 1107096,
+    "internal_section_total": 2600450
+  }
+}

@@ -250,6 +250,7 @@ review_parameters:
     calculator_input_path: "communications_length_m"
     normalized_json_path: "sections.earthworks.parameters.communications_length_m.value"
     value_kind: scalar
+    cross_check_key: "communications_length_m_cross_check"
     parser_mapping:
       target_codes: ["communications_length_m"]
       aliases_ru: ["длина коммуникаций", "коммуникации"]

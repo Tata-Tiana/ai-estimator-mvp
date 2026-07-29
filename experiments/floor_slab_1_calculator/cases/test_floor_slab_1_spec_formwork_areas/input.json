@@ -63,14 +63,14 @@
     "max_rebar_delivery_weight_per_truck_kg": 10000,
     "rebar_delivery_rate_per_truck": 22000,
     "slab_concreting_work_rate_per_m3": 12000,
-    "beam_concreting_work_rate_per_m3": 20000,
     "concrete_waste_coeff": 1.05,
     "concrete_unit_price_per_m3": 6400,
     "mixer_capacity_m3": 9,
     "concrete_delivery_rate_per_trip": 7500,
     "concrete_pump_rate": 38000,
     "edge_beam_insulation_work_rate_per_m": 450,
-    "bottom_slab_insulation_work_rate_per_m2": 900
+    "bottom_slab_insulation_work_rate_per_m2": 900,
+    "beam_concreting_work_rate_per_m": 1500
   },
   "rebar_calc_method": "legacy_weight_parts",
   "rebar_items": [

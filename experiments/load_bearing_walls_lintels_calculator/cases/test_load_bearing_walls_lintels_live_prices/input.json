@@ -190,7 +190,7 @@
     "mode": "price_registry_with_fallback",
     "registry_path": "output/price_registry_filled_v3.xlsx"
   },
-  "lintel_monolithic_concreting_work_unit_price": 20000,
+  "lintel_monolithic_concreting_work_unit_price": 1500,
   "lintel_formwork_plywood_unit_price": 1450,
   "lintel_formwork_timber_unit_price": 23500,
   "lintel_insulation_work_unit_price": 650,

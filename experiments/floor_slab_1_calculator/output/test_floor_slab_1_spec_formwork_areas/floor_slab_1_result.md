@@ -5,12 +5,12 @@
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1152721` |
-| `internal_works_total` | `611926` |
-| `internal_section_total` | `1764647` |
-| `base_subtotal_raw_before_overheads` | `1691968.300518` |
-| `logistics_and_supply_total` | `16920` |
-| `consumables_and_tool_depreciation_total` | `50759` |
+| `internal_materials_total` | `1151589` |
+| `internal_works_total` | `583630` |
+| `internal_section_total` | `1735219` |
+| `base_subtotal_raw_before_overheads` | `1663672.300518` |
+| `logistics_and_supply_total` | `16637` |
+| `consumables_and_tool_depreciation_total` | `49910` |
 | `technical_supervision_total` | `5000` |
 
 ## Comparison Summary
@@ -175,12 +175,16 @@
 | `insulation.slab_outer_edge_eps_work_length_m` | `84.8` |
 | `insulation.insulated_beams_total_length_m` | `23.2` |
 | `insulation.beams_eps_work_length_m` | `23.2` |
+| `insulation.beams_eps_work_length_source` | `calculated_all_beams` |
+| `insulation.calculated_all_beams_eps_work_length_m` | `23.2` |
 | `insulation.total_insulation_length_m` | `108.0` |
 | `insulation.edge_beam_eps_work_length_m` | `108.0` |
 | `insulation.slab_edge_insulation_area_m2` | `15.264` |
 | `insulation.slab_edge_eps_material_area_m2` | `15.264` |
 | `insulation.beams_insulation_area_m2` | `10.516` |
 | `insulation.beams_eps_material_area_m2` | `10.516` |
+| `insulation.beams_eps_material_area_source` | `calculated_all_beams` |
+| `insulation.calculated_all_beams_eps_material_area_m2` | `10.516` |
 | `insulation.edge_and_beam_insulation_area_m2` | `25.78` |
 | `insulation.edge_and_beam_eps_material_area_m2` | `25.78` |
 | `insulation.edge_and_beam_eps_volume_m3` | `2.578` |
@@ -201,18 +205,18 @@
 | `insulation.order_eps_volume_m3_raw` | `8.319` |
 | `insulation.foam_cans_raw` | `7.77` |
 | `insulation.foam_cans_ordered` | `8` |
-| `overheads.base_subtotal_raw_before_overheads` | `1691968.300518` |
+| `overheads.base_subtotal_raw_before_overheads` | `1663672.300518` |
 | `overheads.logistics_and_supply_percent` | `0.01` |
-| `overheads.logistics_and_supply_total_raw` | `16919.683005` |
-| `overheads.logistics_and_supply_total` | `16920` |
+| `overheads.logistics_and_supply_total_raw` | `16636.723005` |
+| `overheads.logistics_and_supply_total` | `16637` |
 | `overheads.consumables_and_tool_percent` | `0.03` |
-| `overheads.consumables_and_tool_depreciation_total_raw` | `50759.049016` |
-| `overheads.consumables_and_tool_depreciation_total` | `50759` |
+| `overheads.consumables_and_tool_depreciation_total_raw` | `49910.169016` |
+| `overheads.consumables_and_tool_depreciation_total` | `49910` |
 | `manual_lines.concrete_pump_shifts` | `1` |
 | `manual_lines.technical_supervision_amount` | `5000` |
 | `control_metrics.control_geometry_area_m2` | `210.64` |
 | `control_metrics.slab_area_used_in_estimate_m2` | `207.64` |
-| `control_metrics.beam_concreting_control_total_by_length` | `46400` |
+| `control_metrics.beam_concreting_control_total_by_length` | `34800` |
 | `control_metrics.reinforcement_density_kg_per_m3` | `108.79` |
 
 ## Площади опалубки
@@ -326,7 +330,7 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `rebar_a240_d8` | Арматура класса А240 диаметром 8 мм | `48.0` | `48.0` | `мп` | `materials` | `1152.0` | `1152` | `0.0` | `0` | `1152.0` | `1152` |
 | `rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `180.0` | `180.0` | `мп` | `materials` | `2397.6` | `2398` | `0.0` | `0` | `2397.6` | `2398` |
 | `floor_slab_concreting_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `37.3752` | `37.38` | `м3` | `work` | `0.0` | `0` | `448502.4` | `448502` | `448502.4` | `448502` |
-| `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | `3.1548` | `3.15` | `м3` | `work` | `0.0` | `0` | `63096.0` | `63096` | `63096.0` | `63096` |
+| `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | `23.2` | `23.2` | `мп` | `work` | `0.0` | `0` | `34800.0` | `34800` | `34800.0` | `34800` |
 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | `43.0` | `43.0` | `м3` | `materials` | `275200.0` | `275200` | `0.0` | `0` | `275200.0` | `275200` |
 | `concrete_delivery` | Доставка бетона до объекта | `5.0` | `5.0` | `рейс` | `logistics_machinery` | `37500.0` | `37500` | `0.0` | `0` | `37500.0` | `37500` |
 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | `1.0` | `1.0` | `смена` | `machinery_fixed` | `38000.0` | `38000` | `0.0` | `0` | `38000.0` | `38000` |
@@ -335,15 +339,18 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `bottom_slab_insulation_work` | Устройство утепления низа плиты | `51.92` | `51.9` | `м2` | `work` | `0.0` | `0` | `46728.0` | `46728` | `46728.0` | `46728` |
 | `eps_penoplex_osnova_100mm` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `8.319` | `8.32` | `м3` | `materials` | `75037.38` | `75037` | `0.0` | `0` | `75037.38` | `75037` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `8.0` | `8.0` | `баллон` | `materials_consumables` | `3920.0` | `3920` | `0.0` | `0` | `3920.0` | `3920` |
-| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16919.683005` | `16920` | `0.0` | `0` | `16919.683005` | `16920` |
-| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `50759.049016` | `50759` | `0.0` | `0` | `50759.049016` | `50759` |
+| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16636.723005` | `16637` | `0.0` | `0` | `16636.723005` | `16637` |
+| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `49910.169016` | `49910` | `0.0` | `0` | `49910.169016` | `49910` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
 
 ## Warnings / Notes
+- insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.
+- insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area.
 - `formwork_delivery_return_manipulator`: До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.
 - `formwork_rebar_crane_supply`: 3-я смена пока только manual_review / override.
 - `formwork_timber_gost`: Сумма считается от quantity_raw, не от отображаемого количества.
 - `floor_slab_concreting_work`: Стоимость считается от raw 37.3752, не от display 37.38.
+- `beam_concreting_work`: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
 - `concrete_pump_32m`: Fixed/manual line; не вычислять от объёма бетона.
 - `bottom_slab_insulation_work`: Стоимость считается от raw 51.92, не от display 51.9.
 - `eps_penoplex_osnova_100mm`: Стоимость считается от закупочного raw-объёма 8.319, не от display 8.32.

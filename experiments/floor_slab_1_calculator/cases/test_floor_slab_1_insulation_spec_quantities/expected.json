@@ -1,11 +1,11 @@
 {
   "totals": {
-    "internal_materials_total": 1168899,
-    "internal_works_total": 611926,
-    "internal_section_total": 1780825,
-    "base_subtotal_raw_before_overheads": 1707526.834518,
-    "logistics_and_supply_total": 17075,
-    "consumables_and_tool_depreciation_total": 51226,
+    "internal_materials_total": 1167767,
+    "internal_works_total": 583630,
+    "internal_section_total": 1751397,
+    "base_subtotal_raw_before_overheads": 1679230.834518,
+    "logistics_and_supply_total": 16792,
+    "consumables_and_tool_depreciation_total": 50377,
     "technical_supervision_total": 5000
   },
   "calculation_blocks": {

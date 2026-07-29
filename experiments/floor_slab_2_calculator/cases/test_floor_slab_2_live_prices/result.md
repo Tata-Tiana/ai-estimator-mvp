@@ -101,10 +101,13 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - items: 0 items
 - items_count: `0`
+- items_total_length_m: `0.0`
 - items_total_concrete_volume_m3: `0.0`
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
+- eps_work_length_source: `calculated_all_beams`
+- eps_material_area_source: `calculated_all_beams`
 - concrete_volume_source: `calculated_from_beam_items`
 - calculated_concrete_volume_m3: `0.0`
 - concrete_volume_delta_m3: `None`
@@ -171,7 +174,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 293 | 0 | 1 293 |
 | 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 72 770 | 0 | 72 770 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 16.5 | 16.5 | 0 | 198 000 | 198 000 |
-| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 0 | 0 | 0 | 0 | 0 |
+| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | мп | 0 | 0 | 0 | 0 | 0 |
 | 15 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
 | 16 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
 | 17 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
@@ -302,6 +305,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
+- Примечание: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
 - Примечание: Quantity and total are 0 when no beams.items are given for this floor slab.
 
 ### 15. Бетон марки В22,5 (М300)
@@ -425,6 +429,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
+- beam_concrete_placing_work_m: price_code not found in price_registry and fallback input price is missing
 
 ## Источники цен
 
@@ -443,7 +448,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | Арматура класса А500 диаметром 12 мм | `rebar_a500_d12_m` | `45.29` | `36.85` | `price_registry` |  |
 | Арматура класса А500 диаметром 10 мм | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `concrete_placing_work_m3` | `12000` | `12000` | `price_registry` |  |
-| Бетонирование балки бетоном марки В22,5 (М300) | `beam_concrete_placing_work_m3` | `None` | `20000` | `price_registry` |  |
+| Бетонирование балки бетоном марки В22,5 (М300) | `beam_concrete_placing_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
 | Бетон марки В22,5 (М300) | `concrete_b22_5_m3` | `6400` | `6400` | `price_registry` |  |
 | Доставка бетона до объекта | `concrete_delivery_trip` | `7500` | `7500` | `price_registry` |  |
 | Работа бетононасоса 32м + гаситель | `concrete_pump_32m_shift` | `38000` | `38000` | `price_registry` |  |
@@ -462,10 +467,10 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - mode: `price_registry_with_fallback`
 - registry_path: `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx`
-- prices_from_price_registry: `17`
+- prices_from_price_registry: `16`
 - prices_from_project_overrides: `0`
-- prices_from_fallback_input: `0`
-- warnings_count: `0`
+- prices_from_fallback_input: `1`
+- warnings_count: `1`
 
 ## Comparison
 

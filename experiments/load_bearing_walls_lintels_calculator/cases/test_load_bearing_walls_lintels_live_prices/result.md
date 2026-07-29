@@ -46,7 +46,7 @@
 - `concrete_delivery_trips`: `1`
 - `concrete_delivery_unit_price`: `7500`
 - `manual_concrete_lifting_work_unit_price`: `5000`
-- `lintel_monolithic_concreting_work_unit_price`: `20000`
+- `lintel_monolithic_concreting_work_unit_price`: `1500`
 - `lintel_formwork_plywood_unit_price`: `1450`
 - `lintel_formwork_timber_unit_price`: `23500`
 - `lintel_insulation_work_unit_price`: `650`
@@ -94,11 +94,13 @@
 - `floor_2_lintel_concrete_spec_volume_m3`: `None`
 - `floor_2_concrete_delivery_trips`: `None`
 - `floor_1_lintel_monolithic_concrete_volume_m3`: `None`
+- `floor_1_lintel_monolithic_total_length_m`: `None`
 - `floor_1_lintel_monolithic_insulation_length_m`: `None`
 - `floor_1_lintel_formwork_horizontal_area_m2`: `None`
 - `floor_1_lintel_formwork_vertical_area_m2`: `None`
 - `floor_1_lintel_insulation_eps_spec_volume_m3`: `None`
 - `floor_2_lintel_monolithic_concrete_volume_m3`: `None`
+- `floor_2_lintel_monolithic_total_length_m`: `None`
 - `floor_2_lintel_monolithic_insulation_length_m`: `None`
 - `floor_2_lintel_formwork_horizontal_area_m2`: `None`
 - `floor_2_lintel_formwork_vertical_area_m2`: `None`
@@ -295,6 +297,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_2_lintel_concrete.combined_order_volume_m3` | `0.0` |
 | `floor_1_monolithic_lintels.enabled` | `False` |
 | `floor_1_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
+| `floor_1_monolithic_lintels.monolithic_total_length_m` | `0.0` |
 | `floor_1_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
 | `floor_1_monolithic_lintels.formwork_horizontal_area_m2` | `None` |
 | `floor_1_monolithic_lintels.formwork_vertical_area_m2` | `None` |
@@ -309,6 +312,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `floor_1_monolithic_lintels.glue_foam_units` | `0` |
 | `floor_2_monolithic_lintels.enabled` | `False` |
 | `floor_2_monolithic_lintels.monolithic_concrete_volume_m3` | `0.0` |
+| `floor_2_monolithic_lintels.monolithic_total_length_m` | `0.0` |
 | `floor_2_monolithic_lintels.monolithic_insulation_length_m` | `0.0` |
 | `floor_2_monolithic_lintels.formwork_horizontal_area_m2` | `None` |
 | `floor_2_monolithic_lintels.formwork_vertical_area_m2` | `None` |

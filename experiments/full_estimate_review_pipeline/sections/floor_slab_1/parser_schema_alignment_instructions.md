@@ -23,7 +23,9 @@ Known risk: do not copy the foundation slab rebar field names blindly. This cont
 
 1. `input_data["beams"]` was a hard-required key (`KeyError` if absent) in two read sites (`calculate_floor_slab_1` and `calculate_insulation_context`) — now `input_data.get("beams")`, defaulting `beam_items` to `[]` when absent.
 2. `beams_formwork_area_m2` was hard-required in `spec_formwork_areas` mode (`raise ValueError` if absent) even though the sum-of-`beams.items` fallback value was already computed and passed into the same function — now falls back to that sum (0 when there are no items) instead of raising, matching `floor_slab_2_calculator.py`'s new behavior.
-3. `rates["beam_concreting_work_rate_per_m3"]` was read unconditionally, so it was required even on projects with zero beams — now only read when `beam_items` is non-empty, otherwise the rate is 0.
+3. `rates["beam_concreting_work_rate_per_m3"]` was read unconditionally, so it was required even on projects with zero beams — after the 2026-07-28 price-rule update this became `rates["beam_concreting_work_rate_per_m"]`; the calculator reads it only when `beam_items` is non-empty, otherwise the rate is 0.
+
+**Calculator change applied 2026-07-28**: beam concreting work for floor slabs is no longer priced by beam concrete volume. Per Elena's decision, all floor-slab beams use one production rule: quantity = `sum(beam.length_m * beam.count)`, unit = `мп`, price code = `beam_concrete_placing_work_m`, rate = 1500 руб./м.п. Beam concrete material remains on the concrete material line in m3. Do not split slab beams by graphical height labels (`до 250мм` / `более 250мм`) in production logic.
 
 This makes floor_slab_1 match the same "no beams found by the parser → 0 everywhere, nothing breaks" behavior floor_slab_2 now has, so both sections can be fed the exact same way regardless of which floor (if any) actually has beams on a given project. All 6 existing test cases (which do supply beams) still pass with 0 mismatches; manually verified the no-beams path produces a zero-valued `beam_concreting_work` line and no crash.
 
@@ -158,4 +160,3 @@ same pass since they're the identical class of bug across shared parser files. S
 4. Confirm `beam_items` shape matches calculator expectations.
 5. Run JSON/YAML validation after edits.
 6. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
-

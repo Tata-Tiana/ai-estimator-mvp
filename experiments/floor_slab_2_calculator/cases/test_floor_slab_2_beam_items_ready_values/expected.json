@@ -108,6 +108,8 @@
       "items_total_formwork_area_m2": 22.04,
       "items_total_eps_material_area_m2": 10.516,
       "items_total_eps_work_length_m": 23.2,
+      "eps_work_length_source": "calculated_all_beams",
+      "eps_material_area_source": "calculated_all_beams",
       "concrete_volume_source": "spec_beams_concrete_volume",
       "calculated_concrete_volume_m3": 3.145,
       "concrete_volume_delta_m3": 0.0,

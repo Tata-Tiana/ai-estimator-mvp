@@ -3,13 +3,31 @@
   "formwork_area_calc_method": "legacy_dimensions",
   "beams": {
     "items": [
-      {"code": "beam_b1", "name": "Б-1", "length_m": 7, "width_m": 0.3, "height_m": 0.25},
-      {"code": "beam_b2", "name": "Б-2", "length_m": 7.2, "width_m": 0.3, "height_m": 0.68},
-      {"code": "beam_b3", "name": "Б-3", "length_m": 9, "width_m": 0.3, "height_m": 0.43}
+      {
+        "code": "beam_b1",
+        "name": "Б-1",
+        "length_m": 7,
+        "width_m": 0.3,
+        "height_m": 0.25
+      },
+      {
+        "code": "beam_b2",
+        "name": "Б-2",
+        "length_m": 7.2,
+        "width_m": 0.3,
+        "height_m": 0.68
+      },
+      {
+        "code": "beam_b3",
+        "name": "Б-3",
+        "length_m": 9,
+        "width_m": 0.3,
+        "height_m": 0.43
+      }
     ]
   },
   "beams_concrete_volume_m3": 3.145,
-  "beam_concreting_work_unit_price": 20000,
+  "beam_concreting_work_unit_price": 1500,
   "slab_length_m": 9,
   "slab_width_m": 9.1,
   "slab_area_m2": 81.9,

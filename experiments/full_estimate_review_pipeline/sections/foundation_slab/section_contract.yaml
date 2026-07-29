@@ -124,7 +124,7 @@ review_parameters:
     normalized_json_path: "sections.foundation_slab.parameters.slab_zones.rows"
     value_kind: repeated_rows
     row_key_field: context
-    production_input: false
+    production_input: true
     item_label_columns: [context]
     correction_columns: [concrete_volume_m3]
     columns:
@@ -134,7 +134,7 @@ review_parameters:
       target_codes: ["slab_zones"]
       aliases_ru: []
       expected_unit: ""
-      notes: "NOT YET part of the live extraction prompt (calculator_targets_compact.json/target_aliases_ru.yaml) — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (e.g. main slab + a lower zone under a porch), same shape as ТРЦ step_22's finding. context is a free string describing the zone as printed in the PDF."
+      notes: "Added 2026-07-20 only as a calculator-side + contract-side alternative input; became a live extraction target 2026-07-24 (see slab_zones_extraction_target_gap memory) — this note previously said 'NOT YET part of the live extraction prompt', corrected 2026-07-28. Use when the PDF splits the slab's concrete into multiple zones with no combined total (e.g. main slab + a lower zone under a porch), same shape as ТРЦ step_22's finding. context is a free string describing the zone as printed in the PDF."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -143,7 +143,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all pre-existing foundation_slab_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES concrete_project_volume_m3 above for this run — that field is still required by the calculator's dataclass but its value is ignored once slab_zones is non-empty (same convention as load_bearing_walls_lintels' wall_block_items). Formwork/PLANTER membrane/thermal inserts deliberately stay as independent scalars, not per-zone — confirmed on real ТРЦ data that formwork area is given as one combined figure across zones, not per-zone (see step_22 note in UNIVERSALIZATION_PLAN.md), so forcing it into slab_zones would misrepresent the source. See p1_slab_zones_shipped memory."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all pre-existing foundation_slab_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES concrete_project_volume_m3 above for this run — that field is still required by the calculator's dataclass but its value is ignored once slab_zones is non-empty (same convention as load_bearing_walls_lintels' wall_block_items). Formwork/PLANTER membrane/thermal inserts deliberately stay as independent scalars, not per-zone — confirmed on real ТРЦ data that formwork area is given as one combined figure across zones, not per-zone (see step_22 note in UNIVERSALIZATION_PLAN.md), so forcing it into slab_zones would misrepresent the source. See p1_slab_zones_shipped memory. production_input flipped false->true 2026-07-28 (found via a real ARK review-workbook build: this group was actually wired into foundation_slab_calculator.py and driving the real calculation, but collapsed to a single generic placeholder row on sheet 01 instead of rendering per-zone like thermal_insert_items/pit_items/sand_items — same visibility-gap class as the old wall_block_items bug, but here the group was already live in production, not merely diagnostic, so this was a real fix, not a deferred one."
 
   - key: thermal_insert_50_length_m
     label_ru: "Термовставка 50 мм, длина"

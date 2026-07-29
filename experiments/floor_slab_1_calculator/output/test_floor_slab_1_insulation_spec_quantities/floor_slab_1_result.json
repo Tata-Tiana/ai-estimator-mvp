@@ -69,14 +69,14 @@
       "max_rebar_delivery_weight_per_truck_kg": 10000,
       "rebar_delivery_rate_per_truck": 22000,
       "slab_concreting_work_rate_per_m3": 12000,
-      "beam_concreting_work_rate_per_m3": 20000,
       "concrete_waste_coeff": 1.05,
       "concrete_unit_price_per_m3": 6400,
       "mixer_capacity_m3": 9,
       "concrete_delivery_rate_per_trip": 7500,
       "concrete_pump_rate": 38000,
       "edge_beam_insulation_work_rate_per_m": 450,
-      "bottom_slab_insulation_work_rate_per_m2": 900
+      "bottom_slab_insulation_work_rate_per_m2": 900,
+      "beam_concreting_work_rate_per_m": 1500
     },
     "rebar_calc_method": "spec_length_items",
     "rebar_items": [
@@ -522,12 +522,16 @@
       "slab_outer_edge_eps_work_length_m": 84.8,
       "insulated_beams_total_length_m": 23.2,
       "beams_eps_work_length_m": 23.2,
+      "beams_eps_work_length_source": "calculated_all_beams",
+      "calculated_all_beams_eps_work_length_m": 23.2,
       "total_insulation_length_m": 108.0,
       "edge_beam_eps_work_length_m": 108.0,
       "slab_edge_insulation_area_m2": 15.264,
       "slab_edge_eps_material_area_m2": 15.264,
       "beams_insulation_area_m2": 10.516,
       "beams_eps_material_area_m2": 10.516,
+      "beams_eps_material_area_source": "calculated_all_beams",
+      "calculated_all_beams_eps_material_area_m2": 10.516,
       "edge_and_beam_insulation_area_m2": 25.78,
       "edge_and_beam_eps_material_area_m2": 25.78,
       "edge_and_beam_eps_volume_m3": 2.578,
@@ -550,13 +554,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1707526.834518,
+      "base_subtotal_raw_before_overheads": 1679230.834518,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 17075.268345,
-      "logistics_and_supply_total": 17075,
+      "logistics_and_supply_total_raw": 16792.308345,
+      "logistics_and_supply_total": 16792,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 51225.805036,
-      "consumables_and_tool_depreciation_total": 51226
+      "consumables_and_tool_depreciation_total_raw": 50376.925036,
+      "consumables_and_tool_depreciation_total": 50377
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -565,7 +569,7 @@
     "control_metrics": {
       "control_geometry_area_m2": 210.64,
       "slab_area_used_in_estimate_m2": 207.64,
-      "beam_concreting_control_total_by_length": 46400,
+      "beam_concreting_control_total_by_length": 34800,
       "reinforcement_density_kg_per_m3": 115.09
     }
   },
@@ -834,18 +838,20 @@
     {
       "code": "beam_concreting_work",
       "name": "Бетонирование балки бетоном марки В22,5 (М300)",
-      "unit": "м3",
+      "unit": "мп",
       "line_type": "work",
-      "quantity_raw": 3.1548,
-      "quantity_display": 3.15,
+      "quantity_raw": 23.2,
+      "quantity_display": 23.2,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 63096.0,
-      "work_total": 63096,
-      "line_total_raw": 63096.0,
-      "line_total": 63096,
-      "notes": [],
-      "price_code": "beam_concrete_placing_work_m3"
+      "work_total_raw": 34800.0,
+      "work_total": 34800,
+      "line_total_raw": 34800.0,
+      "line_total": 34800,
+      "notes": [
+        "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона."
+      ],
+      "price_code": "beam_concrete_placing_work_m"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -987,12 +993,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 17075.268345,
-      "material_total": 17075,
+      "material_total_raw": 16792.308345,
+      "material_total": 16792,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17075.268345,
-      "line_total": 17075,
+      "line_total_raw": 16792.308345,
+      "line_total": 16792,
       "notes": []
     },
     {
@@ -1002,12 +1008,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 51225.805036,
-      "material_total": 51226,
+      "material_total_raw": 50376.925036,
+      "material_total": 50377,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 51225.805036,
-      "line_total": 51226,
+      "line_total_raw": 50376.925036,
+      "line_total": 50377,
       "notes": []
     },
     {
@@ -1028,26 +1034,29 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1168899,
-    "internal_works_total": 611926,
-    "internal_section_total": 1780825,
-    "base_subtotal_raw_before_overheads": 1707526.834518,
-    "logistics_and_supply_total": 17075,
-    "consumables_and_tool_depreciation_total": 51226,
+    "internal_materials_total": 1167767,
+    "internal_works_total": 583630,
+    "internal_section_total": 1751397,
+    "base_subtotal_raw_before_overheads": 1679230.834518,
+    "logistics_and_supply_total": 16792,
+    "consumables_and_tool_depreciation_total": 50377,
     "technical_supervision_total": 5000
   },
-  "warnings": [],
+  "warnings": [
+    "insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.",
+    "insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area."
+  ],
   "case_name": "test_floor_slab_1_insulation_spec_quantities",
   "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_insulation_spec_quantities/input.json",
   "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_insulation_spec_quantities/expected.json",
   "expected": {
     "totals": {
-      "internal_materials_total": 1168899,
-      "internal_works_total": 611926,
-      "internal_section_total": 1780825,
-      "base_subtotal_raw_before_overheads": 1707526.834518,
-      "logistics_and_supply_total": 17075,
-      "consumables_and_tool_depreciation_total": 51226,
+      "internal_materials_total": 1167767,
+      "internal_works_total": 583630,
+      "internal_section_total": 1751397,
+      "base_subtotal_raw_before_overheads": 1679230.834518,
+      "logistics_and_supply_total": 16792,
+      "consumables_and_tool_depreciation_total": 50377,
       "technical_supervision_total": 5000
     },
     "calculation_blocks": {
@@ -1113,43 +1122,43 @@
     "items": [
       {
         "key": "totals.internal_materials_total",
-        "expected": 1168899,
-        "actual": 1168899,
+        "expected": 1167767,
+        "actual": 1167767,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.internal_works_total",
-        "expected": 611926,
-        "actual": 611926,
+        "expected": 583630,
+        "actual": 583630,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.internal_section_total",
-        "expected": 1780825,
-        "actual": 1780825,
+        "expected": 1751397,
+        "actual": 1751397,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.base_subtotal_raw_before_overheads",
-        "expected": 1707526.834518,
-        "actual": 1707526.834518,
+        "expected": 1679230.834518,
+        "actual": 1679230.834518,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "totals.logistics_and_supply_total",
-        "expected": 17075,
-        "actual": 17075,
+        "expected": 16792,
+        "actual": 16792,
         "diff": 0,
         "status": "ok"
       },
       {
         "key": "totals.consumables_and_tool_depreciation_total",
-        "expected": 51226,
-        "actual": 51226,
+        "expected": 50377,
+        "actual": 50377,
         "diff": 0,
         "status": "ok"
       },

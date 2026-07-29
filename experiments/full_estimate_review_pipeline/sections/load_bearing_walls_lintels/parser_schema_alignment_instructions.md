@@ -34,7 +34,21 @@ those constants from the PDF.
 - `main_wall_gas_block_250_spec_volume_m3`
 - `lintel_total_length_m`
 - `lintel_concrete_spec_volume_m3`
+- `floor_1_lintel_monolithic_concrete_volume_m3`
+- `floor_1_lintel_monolithic_total_length_m`
+- `floor_1_lintel_monolithic_insulation_length_m`
+- `floor_1_lintel_formwork_horizontal_area_m2`
+- `floor_1_lintel_formwork_vertical_area_m2`
+- `floor_1_lintel_insulation_eps_spec_volume_m3`
 - `floor_2_masonry_volume_m3`
+- `floor_2_lintel_ublock_total_length_m`
+- `floor_2_lintel_concrete_spec_volume_m3`
+- `floor_2_lintel_monolithic_concrete_volume_m3`
+- `floor_2_lintel_monolithic_total_length_m`
+- `floor_2_lintel_monolithic_insulation_length_m`
+- `floor_2_lintel_formwork_horizontal_area_m2`
+- `floor_2_lintel_formwork_vertical_area_m2`
+- `floor_2_lintel_insulation_eps_spec_volume_m3`
 - `parapet_masonry_volume_m3`
 - `vent_chimney_gas_block_spec_volume_m3`
 - `main_wall_rebar_items`
@@ -65,6 +79,8 @@ those constants from the PDF.
 - Keep wall gas block 400 mm and 250 mm volumes separate.
 - Keep lintel total length separate from lintel concrete volume.
 - Keep lintel concrete separate from slab, beam, foundation, and wall concrete.
+- For monolithic lintels, keep concrete volume separate from total lintel length: concrete material/purchase uses m3, concreting work uses total length in м.п. from 2026-07-28.
+- Do not substitute monolithic lintel insulation length for total monolithic lintel length; insulation may cover only part of the lintels.
 - Keep vent chimney gas block volume separate from Schiedel vent channel kit quantities.
 - Rebar rows must stay row-by-row; do not calculate total weight in GPT/Claude unless PDF explicitly gives it and the calculator expects it.
 

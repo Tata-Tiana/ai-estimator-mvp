@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -51,6 +52,48 @@ from build_review_workbook_from_contracts import (  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = Path(__file__).resolve().parent
+
+
+# Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
+# shape only — not a general expression evaluator. Most auto_calculated entries in
+# section_contract.yaml are internal computation notes never meant to reach sheet 01 (see plan
+# section 34); only entries a review_parameters row explicitly opts into via cross_check_key get
+# rendered, and only this one formula shape is understood. If a future cross-check needs a
+# different formula shape, extend this function narrowly rather than building a generic parser.
+_SUM_INCLUDED_RE = re.compile(r"^sum\(included (\w+)\.(\w+)\)$")
+
+
+def compute_cross_check_value(formula: str, found_groups: dict[str, list[Any]]) -> float | None:
+    match = _SUM_INCLUDED_RE.match(formula.strip())
+    if not match:
+        return None
+    group_key, field = match.groups()
+    rows = found_groups.get(group_key) or []
+    total = 0.0
+    found_any = False
+    for item in rows:
+        value = item.get("value") or {}
+        include = value.get("include_in_communications", value.get("include", True))
+        if not include:
+            continue
+        explicit_total = value.get(field)
+        if explicit_total is not None:
+            total += float(explicit_total)
+            found_any = True
+            continue
+        # Mirror earthworks_calculator.py's own pipe_items fallback: pipe_length_m * quantity when
+        # no explicit total_length_m is given on the row (e.g. straight pipe segments). Rows with
+        # no length component at all (elbows, tees, plugs) contribute 0, not an error.
+        pipe_length = value.get("pipe_length_m")
+        quantity = value.get("quantity")
+        if pipe_length is not None and quantity is not None:
+            total += float(pipe_length) * float(quantity)
+            found_any = True
+    return total if found_any else None
+
+
+def auto_calculated_by_key(contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {entry["key"]: entry for entry in (contract.get("auto_calculated") or []) if entry.get("key")}
 
 
 def index_extraction_section(extraction: dict[str, Any], sec_code: str) -> tuple[dict, dict, set]:
@@ -224,7 +267,7 @@ def build_project_sheet_from_extraction(
 ) -> dict[str, int]:
     ws = wb.create_sheet("01_Проверка проекта")
     project_title = "Разбор проекта:\n" + " + ".join(section_name(c) for c in contracts)
-    ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", ""])
+    ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", "", ""])
     ws.append([])
     ws.append([])
     ws.append(PROJECT_HEADERS)
@@ -234,6 +277,7 @@ def build_project_sheet_from_extraction(
     for contract in contracts:
         sec_code = section_code(contract)
         found_by_target, found_groups, missing = index_extraction_section(extraction, sec_code)
+        auto_calculated = auto_calculated_by_key(contract)
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
 
         for param in scalar_review_rows_for_contract(contract):
@@ -258,11 +302,22 @@ def build_project_sheet_from_extraction(
                 status = "Проверьте"
                 source = ""
                 fragment = ""
+
+            cross_check_display = ""
+            cross_check_key = param.get("cross_check_key")
+            if cross_check_key:
+                cc_entry = auto_calculated.get(cross_check_key)
+                if cc_entry:
+                    cc_value = compute_cross_check_value(cc_entry.get("formula", ""), found_groups)
+                    if cc_value is not None:
+                        cross_check_display = f"{cc_value:g} — {cc_entry.get('label_ru', cross_check_key)}"
+
             ws.append([
                 param.get("label_ru", param.get("key", "")),
                 found_value,
                 param.get("unit", ""),
                 status,
+                cross_check_display,
                 review_behavior.get("action_ru", "Проверьте значение."),
                 source,
                 fragment,
@@ -313,6 +368,7 @@ def build_project_sheet_from_extraction(
                     summary,
                     param.get("unit", ""),
                     status,
+                    "",
                     action_ru,
                     item.get("source_pdf") or "",
                     item.get("raw_text") or item.get("notes") or "",
@@ -336,13 +392,13 @@ def build_project_sheet_from_extraction(
     restyle_block_sheet(ws)
     ws.freeze_panes = "A5"
     set_widths = {
-        "A": 30, "B": 26, "C": 10, "D": 20, "E": 62, "F": 30, "G": 64,
-        "H": 28, "I": 28, "J": 20, "K": 28, "L": 18, "M": 24,
-        "N": 24, "O": 24, "P": 24, "Q": 24,
+        "A": 30, "B": 26, "C": 10, "D": 20, "E": 20, "F": 62, "G": 30, "H": 64,
+        "I": 28, "J": 28, "K": 20, "L": 28, "M": 18, "N": 24,
+        "O": 24, "P": 24, "Q": 24,
     }
     for col, width in set_widths.items():
         ws.column_dimensions[col].width = width
-    for column in ["J", "K", "L", "M", "R"]:
+    for column in ["K", "L", "M", "N", "S"]:
         ws.column_dimensions[column].hidden = True
 
     return counts

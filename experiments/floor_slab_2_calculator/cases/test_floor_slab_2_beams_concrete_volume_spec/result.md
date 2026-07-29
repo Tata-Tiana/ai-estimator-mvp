@@ -101,10 +101,13 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - items: 3 items
 - items_count: `3`
+- items_total_length_m: `23.2`
 - items_total_concrete_volume_m3: `3.145`
 - items_total_formwork_area_m2: `27.992`
 - items_total_eps_material_area_m2: `10.516`
 - items_total_eps_work_length_m: `23.2`
+- eps_work_length_source: `calculated_all_beams`
+- eps_material_area_source: `calculated_all_beams`
 - concrete_volume_source: `spec_beams_concrete_volume`
 - calculated_concrete_volume_m3: `3.1548`
 - concrete_volume_delta_m3: `-0.0098`
@@ -148,11 +151,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ### addons
 
-- direct_cost_base_before_addons_raw: `735567.471`
+- direct_cost_base_before_addons_raw: `707467.471`
 - logistics_rate: `0.01`
-- logistics_total_raw: `7355.67471`
+- logistics_total_raw: `7074.67471`
 - consumables_rate: `0.03`
-- consumables_total_raw: `22067.02413`
+- consumables_total_raw: `21224.02413`
 
 ## Estimate Lines
 
@@ -171,7 +174,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 11 | `rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | мп | 35.1 | 35.1 | 1 590 | 0 | 1 590 |
 | 12 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 2 679.3 | 2 679.3 | 87 667 | 0 | 87 667 |
 | 13 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 13.36 | 13.36 | 0 | 160 260 | 160 260 |
-| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 3.15 | 3.15 | 0 | 62 900 | 62 900 |
+| 14 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | мп | 23.2 | 23.2 | 0 | 34 800 | 34 800 |
 | 15 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 17.5 | 17.5 | 112 000 | 0 | 112 000 |
 | 16 | `concrete_delivery` | Доставка бетона до объекта | рейс | 2 | 2 | 15 000 | 0 | 15 000 |
 | 17 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
@@ -179,8 +182,8 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 19 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 59.4 | 59.4 | 0 | 26 730 | 26 730 |
 | 20 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 1.94 | 1.94 | 17 509 | 0 | 17 509 |
 | 21 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 2 | 2 | 980 | 0 | 980 |
-| 22 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 7 356 | 0 | 7 356 |
-| 23 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 22 067 | 0 | 22 067 |
+| 22 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 7 075 | 0 | 7 075 |
+| 23 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 21 224 | 0 | 21 224 |
 | 24 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
 | 25 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
 | 26 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
@@ -298,10 +301,11 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 ### 14. Бетонирование балки бетоном марки В22,5 (М300)
 
 - Тип строки: `work`
-- Количество raw/display: `3.145` / `3.145`
+- Количество raw/display: `23.2` / `23.2`
 - Материалы raw/display: `0.0` / `0`
-- Работы raw/display: `62900.0` / `62900`
-- Итого raw/display: `62900.0` / `62900`
+- Работы raw/display: `34800.0` / `34800`
+- Итого raw/display: `34800.0` / `34800`
+- Примечание: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
 - Примечание: Quantity and total are 0 when no beams.items are given for this floor slab.
 
 ### 15. Бетон марки В22,5 (М300)
@@ -365,17 +369,17 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `7355.67471` / `7356`
+- Материалы raw/display: `7074.67471` / `7075`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `7355.67471` / `7356`
+- Итого raw/display: `7074.67471` / `7075`
 
 ### 23. Расходные материалы, амортизация инструмента
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
-- Материалы raw/display: `22067.02413` / `22067`
+- Материалы raw/display: `21224.02413` / `21224`
 - Работы raw/display: `0.0` / `0`
-- Итого raw/display: `22067.02413` / `22067`
+- Итого raw/display: `21224.02413` / `21224`
 
 ### 24. Технический надзор
 
@@ -411,20 +415,22 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ## Totals
 
-- internal_materials_total_raw: `515100.16984`
-- internal_materials_total: `515100`
-- internal_works_total_raw: `249890.0`
-- internal_works_total: `249890`
-- internal_section_total_raw: `764990.16984`
-- internal_section_total: `764990`
-- sum_of_displayed_line_material_totals: `515101`
-- sum_of_displayed_line_work_totals: `249890`
-- sum_of_displayed_line_totals: `764991`
+- internal_materials_total_raw: `513976.16984`
+- internal_materials_total: `513976`
+- internal_works_total_raw: `221790.0`
+- internal_works_total: `221790`
+- internal_section_total_raw: `735766.16984`
+- internal_section_total: `735766`
+- sum_of_displayed_line_material_totals: `513977`
+- sum_of_displayed_line_work_totals: `221790`
+- sum_of_displayed_line_totals: `735767`
 
 ## Warnings
 
 - concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
+- beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.
+- beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area.
 
 ## Comparison
 
@@ -434,15 +440,15 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
-| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 515100.16984 | 515100.16984 | ok |
-| totals | `internal_materials_total` | `internal_materials_total` | 515100 | 515100 | ok |
-| totals | `internal_works_total_raw` | `internal_works_total_raw` | 249890.0 | 249890.0 | ok |
-| totals | `internal_works_total` | `internal_works_total` | 249890 | 249890 | ok |
-| totals | `internal_section_total_raw` | `internal_section_total_raw` | 764990.16984 | 764990.16984 | ok |
-| totals | `internal_section_total` | `internal_section_total` | 764990 | 764990 | ok |
-| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 515101 | 515101 | ok |
-| totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 249890 | 249890 | ok |
-| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 764991 | 764991 | ok |
+| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 513976.16984 | 513976.16984 | ok |
+| totals | `internal_materials_total` | `internal_materials_total` | 513976 | 513976 | ok |
+| totals | `internal_works_total_raw` | `internal_works_total_raw` | 221790.0 | 221790.0 | ok |
+| totals | `internal_works_total` | `internal_works_total` | 221790 | 221790 | ok |
+| totals | `internal_section_total_raw` | `internal_section_total_raw` | 735766.16984 | 735766.16984 | ok |
+| totals | `internal_section_total` | `internal_section_total` | 735766 | 735766 | ok |
+| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 513977 | 513977 | ok |
+| totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 221790 | 221790 | ok |
+| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 735767 | 735767 | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `name` | Монтаж опалубки под монолитное перекрытие 2-го этажа | Монтаж опалубки под монолитное перекрытие 2-го этажа | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `unit` | м2 | м2 | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |
@@ -613,18 +619,18 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | estimate_lines | `concrete_placing_work` | `line_total_raw` | 160260.0 | 160260.0 | ok |
 | estimate_lines | `concrete_placing_work` | `line_total` | 160260 | 160260 | ok |
 | estimate_lines | `beam_concreting_work` | `name` | Бетонирование балки бетоном марки В22,5 (М300) | Бетонирование балки бетоном марки В22,5 (М300) | ok |
-| estimate_lines | `beam_concreting_work` | `unit` | м3 | м3 | ok |
+| estimate_lines | `beam_concreting_work` | `unit` | мп | мп | ok |
 | estimate_lines | `beam_concreting_work` | `line_type` | work | work | ok |
-| estimate_lines | `beam_concreting_work` | `quantity_raw` | 3.145 | 3.145 | ok |
-| estimate_lines | `beam_concreting_work` | `quantity_display` | 3.145 | 3.145 | ok |
+| estimate_lines | `beam_concreting_work` | `quantity_raw` | 23.2 | 23.2 | ok |
+| estimate_lines | `beam_concreting_work` | `quantity_display` | 23.2 | 23.2 | ok |
 | estimate_lines | `beam_concreting_work` | `material_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `beam_concreting_work` | `material_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `beam_concreting_work` | `material_total` | 0 | 0 | ok |
-| estimate_lines | `beam_concreting_work` | `work_unit_price` | 20000.0 | 20000.0 | ok |
-| estimate_lines | `beam_concreting_work` | `work_total_raw` | 62900.0 | 62900.0 | ok |
-| estimate_lines | `beam_concreting_work` | `work_total` | 62900 | 62900 | ok |
-| estimate_lines | `beam_concreting_work` | `line_total_raw` | 62900.0 | 62900.0 | ok |
-| estimate_lines | `beam_concreting_work` | `line_total` | 62900 | 62900 | ok |
+| estimate_lines | `beam_concreting_work` | `work_unit_price` | 1500.0 | 1500.0 | ok |
+| estimate_lines | `beam_concreting_work` | `work_total_raw` | 34800.0 | 34800.0 | ok |
+| estimate_lines | `beam_concreting_work` | `work_total` | 34800 | 34800 | ok |
+| estimate_lines | `beam_concreting_work` | `line_total_raw` | 34800.0 | 34800.0 | ok |
+| estimate_lines | `beam_concreting_work` | `line_total` | 34800 | 34800 | ok |
 | estimate_lines | `concrete_b22_5_m300_material` | `name` | Бетон марки В22,5 (М300) | Бетон марки В22,5 (М300) | ok |
 | estimate_lines | `concrete_b22_5_m300_material` | `unit` | м3 | м3 | ok |
 | estimate_lines | `concrete_b22_5_m300_material` | `line_type` | materials | materials | ok |
@@ -722,26 +728,26 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | estimate_lines | `logistics_and_supply` | `quantity_raw` | 1.0 | 1.0 | ok |
 | estimate_lines | `logistics_and_supply` | `quantity_display` | 1.0 | 1.0 | ok |
 | estimate_lines | `logistics_and_supply` | `material_unit_price` | 0.0 | 0.0 | ok |
-| estimate_lines | `logistics_and_supply` | `material_total_raw` | 7355.67471 | 7355.67471 | ok |
-| estimate_lines | `logistics_and_supply` | `material_total` | 7356 | 7356 | ok |
+| estimate_lines | `logistics_and_supply` | `material_total_raw` | 7074.67471 | 7074.67471 | ok |
+| estimate_lines | `logistics_and_supply` | `material_total` | 7075 | 7075 | ok |
 | estimate_lines | `logistics_and_supply` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `logistics_and_supply` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `logistics_and_supply` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `logistics_and_supply` | `line_total_raw` | 7355.67471 | 7355.67471 | ok |
-| estimate_lines | `logistics_and_supply` | `line_total` | 7356 | 7356 | ok |
+| estimate_lines | `logistics_and_supply` | `line_total_raw` | 7074.67471 | 7074.67471 | ok |
+| estimate_lines | `logistics_and_supply` | `line_total` | 7075 | 7075 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `name` | Расходные материалы, амортизация инструмента | Расходные материалы, амортизация инструмента | ok |
 | estimate_lines | `consumables_tool_depreciation` | `unit` | комплект | комплект | ok |
 | estimate_lines | `consumables_tool_depreciation` | `line_type` | materials_overhead_percent | materials_overhead_percent | ok |
 | estimate_lines | `consumables_tool_depreciation` | `quantity_raw` | 1.0 | 1.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `quantity_display` | 1.0 | 1.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `material_unit_price` | 0.0 | 0.0 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `material_total_raw` | 22067.02413 | 22067.02413 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `material_total` | 22067 | 22067 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `material_total_raw` | 21224.02413 | 21224.02413 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `material_total` | 21224 | 21224 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `line_total_raw` | 22067.02413 | 22067.02413 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `line_total` | 22067 | 22067 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `line_total_raw` | 21224.02413 | 21224.02413 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `line_total` | 21224 | 21224 | ok |
 | estimate_lines | `technical_supervision` | `name` | Технический надзор | Технический надзор | ok |
 | estimate_lines | `technical_supervision` | `unit` | - | - | ok |
 | estimate_lines | `technical_supervision` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |

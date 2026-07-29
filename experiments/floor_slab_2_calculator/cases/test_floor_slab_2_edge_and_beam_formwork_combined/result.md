@@ -103,10 +103,13 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 
 - items: 0 items
 - items_count: `0`
+- items_total_length_m: `0.0`
 - items_total_concrete_volume_m3: `0.0`
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
+- eps_work_length_source: `calculated_all_beams`
+- eps_material_area_source: `calculated_all_beams`
 - concrete_volume_source: `calculated_from_beam_items`
 - calculated_concrete_volume_m3: `0.0`
 - concrete_volume_delta_m3: `None`
@@ -172,7 +175,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | 10 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | мп | 70.2 | 70.2 | 5 657 | 0 | 5 657 |
 | 11 | `rebar_a500_d10` | Арматура класса А500 диаметром 10 мм | мп | 1 193.4 | 1 193.4 | 39 048 | 0 | 39 048 |
 | 12 | `concrete_placing_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | м3 | 17.5 | 17.5 | 0 | 210 000 | 210 000 |
-| 13 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | м3 | 0 | 0 | 0 | 0 | 0 |
+| 13 | `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | мп | 0 | 0 | 0 | 0 | 0 |
 | 14 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | м3 | 18.5 | 18.5 | 118 400 | 0 | 118 400 |
 | 15 | `concrete_delivery` | Доставка бетона до объекта | рейс | 3 | 3 | 22 500 | 0 | 22 500 |
 | 16 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
@@ -295,6 +298,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
+- Примечание: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
 - Примечание: Quantity and total are 0 when no beams.items are given for this floor slab.
 
 ### 14. Бетон марки В22,5 (М300)

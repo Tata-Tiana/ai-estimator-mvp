@@ -583,6 +583,33 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         "edge_insulation_height_m = 0.18 m is confirmed by specification; "
         "200 mm in the section title is considered a naming error."
     )
+    beams_eps_work_length_override = input_data.get("beams_eps_work_length_m")
+    if beams_eps_work_length_override is not None:
+        beams_items_eps_work_length = d(beams_eps_work_length_override)
+        beams_eps_work_length_source = "specification"
+    else:
+        beams_eps_work_length_source = "calculated_all_beams"
+        if beam_items:
+            warnings.append(
+                "beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. "
+                "Elena confirmed beams may be insulated only partially, so review this length."
+            )
+    beams_eps_material_area_override = input_data.get("beams_eps_material_area_m2")
+    if beams_eps_material_area_override is not None:
+        beams_items_eps_material_area = d(beams_eps_material_area_override)
+        beams_eps_material_area_source = "specification"
+    else:
+        beams_eps_material_area_source = "calculated_all_beams"
+        if beam_items:
+            warnings.append(
+                "beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. "
+                "Elena confirmed beams may be insulated only partially, so review this area."
+            )
+    if beams_items_eps_work_length < D0:
+        raise ValueError("beams_eps_work_length_m must be >= 0.")
+    if beams_items_eps_material_area < D0:
+        raise ValueError("beams_eps_material_area_m2 must be >= 0.")
+
     edge_insulation_area = slab_edge_perimeter * edge_insulation_height
     edge_and_beam_insulation_area = edge_insulation_area + beams_items_eps_material_area
     total_insulation_length = slab_edge_perimeter + beams_items_eps_work_length
@@ -952,6 +979,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "items_total_formwork_area_m2": round_decimal(beams_items_formwork_area),
             "items_total_eps_material_area_m2": round_decimal(beams_items_eps_material_area),
             "items_total_eps_work_length_m": round_decimal(beams_items_eps_work_length),
+            "eps_work_length_source": beams_eps_work_length_source,
+            "eps_material_area_source": beams_eps_material_area_source,
             "concrete_volume_source": beams_concrete_volume_source,
             "calculated_concrete_volume_m3": round_decimal(calculated_beams_concrete_volume),
             "concrete_volume_delta_m3": None

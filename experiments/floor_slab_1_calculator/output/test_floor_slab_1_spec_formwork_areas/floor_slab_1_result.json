@@ -70,14 +70,14 @@
       "max_rebar_delivery_weight_per_truck_kg": 10000,
       "rebar_delivery_rate_per_truck": 22000,
       "slab_concreting_work_rate_per_m3": 12000,
-      "beam_concreting_work_rate_per_m3": 20000,
       "concrete_waste_coeff": 1.05,
       "concrete_unit_price_per_m3": 6400,
       "mixer_capacity_m3": 9,
       "concrete_delivery_rate_per_trip": 7500,
       "concrete_pump_rate": 38000,
       "edge_beam_insulation_work_rate_per_m": 450,
-      "bottom_slab_insulation_work_rate_per_m2": 900
+      "bottom_slab_insulation_work_rate_per_m2": 900,
+      "beam_concreting_work_rate_per_m": 1500
     },
     "rebar_calc_method": "legacy_weight_parts",
     "rebar_items": [
@@ -517,12 +517,16 @@
       "slab_outer_edge_eps_work_length_m": 84.8,
       "insulated_beams_total_length_m": 23.2,
       "beams_eps_work_length_m": 23.2,
+      "beams_eps_work_length_source": "calculated_all_beams",
+      "calculated_all_beams_eps_work_length_m": 23.2,
       "total_insulation_length_m": 108.0,
       "edge_beam_eps_work_length_m": 108.0,
       "slab_edge_insulation_area_m2": 15.264,
       "slab_edge_eps_material_area_m2": 15.264,
       "beams_insulation_area_m2": 10.516,
       "beams_eps_material_area_m2": 10.516,
+      "beams_eps_material_area_source": "calculated_all_beams",
+      "calculated_all_beams_eps_material_area_m2": 10.516,
       "edge_and_beam_insulation_area_m2": 25.78,
       "edge_and_beam_eps_material_area_m2": 25.78,
       "edge_and_beam_eps_volume_m3": 2.578,
@@ -545,13 +549,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1691968.300518,
+      "base_subtotal_raw_before_overheads": 1663672.300518,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 16919.683005,
-      "logistics_and_supply_total": 16920,
+      "logistics_and_supply_total_raw": 16636.723005,
+      "logistics_and_supply_total": 16637,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 50759.049016,
-      "consumables_and_tool_depreciation_total": 50759
+      "consumables_and_tool_depreciation_total_raw": 49910.169016,
+      "consumables_and_tool_depreciation_total": 49910
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -560,7 +564,7 @@
     "control_metrics": {
       "control_geometry_area_m2": 210.64,
       "slab_area_used_in_estimate_m2": 207.64,
-      "beam_concreting_control_total_by_length": 46400,
+      "beam_concreting_control_total_by_length": 34800,
       "reinforcement_density_kg_per_m3": 108.79
     }
   },
@@ -829,18 +833,20 @@
     {
       "code": "beam_concreting_work",
       "name": "Бетонирование балки бетоном марки В22,5 (М300)",
-      "unit": "м3",
+      "unit": "мп",
       "line_type": "work",
-      "quantity_raw": 3.1548,
-      "quantity_display": 3.15,
+      "quantity_raw": 23.2,
+      "quantity_display": 23.2,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 63096.0,
-      "work_total": 63096,
-      "line_total_raw": 63096.0,
-      "line_total": 63096,
-      "notes": [],
-      "price_code": "beam_concrete_placing_work_m3"
+      "work_total_raw": 34800.0,
+      "work_total": 34800,
+      "line_total_raw": 34800.0,
+      "line_total": 34800,
+      "notes": [
+        "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона."
+      ],
+      "price_code": "beam_concrete_placing_work_m"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -982,12 +988,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 16919.683005,
-      "material_total": 16920,
+      "material_total_raw": 16636.723005,
+      "material_total": 16637,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 16919.683005,
-      "line_total": 16920,
+      "line_total_raw": 16636.723005,
+      "line_total": 16637,
       "notes": []
     },
     {
@@ -997,12 +1003,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 50759.049016,
-      "material_total": 50759,
+      "material_total_raw": 49910.169016,
+      "material_total": 49910,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 50759.049016,
-      "line_total": 50759,
+      "line_total_raw": 49910.169016,
+      "line_total": 49910,
       "notes": []
     },
     {
@@ -1023,15 +1029,18 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1152721,
-    "internal_works_total": 611926,
-    "internal_section_total": 1764647,
-    "base_subtotal_raw_before_overheads": 1691968.300518,
-    "logistics_and_supply_total": 16920,
-    "consumables_and_tool_depreciation_total": 50759,
+    "internal_materials_total": 1151589,
+    "internal_works_total": 583630,
+    "internal_section_total": 1735219,
+    "base_subtotal_raw_before_overheads": 1663672.300518,
+    "logistics_and_supply_total": 16637,
+    "consumables_and_tool_depreciation_total": 49910,
     "technical_supervision_total": 5000
   },
-  "warnings": [],
+  "warnings": [
+    "insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.",
+    "insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area."
+  ],
   "case_name": "test_floor_slab_1_spec_formwork_areas",
   "input_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/input.json",
   "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_spec_formwork_areas/expected.json",

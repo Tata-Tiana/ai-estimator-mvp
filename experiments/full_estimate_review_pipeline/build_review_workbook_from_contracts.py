@@ -38,6 +38,7 @@ PROJECT_HEADERS = [
     "Найдено в проекте",
     "Ед.",
     "Статус",
+    "Сверка",
     "Что нужно сделать",
     "Источник",
     "Фрагмент проекта",
@@ -364,7 +365,7 @@ def correction_headers(param: dict[str, Any]) -> list[str]:
 def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     ws = wb.create_sheet("01_Проверка проекта")
     project_title = "Разбор проекта:\n" + " + ".join(section_name(contract) for contract in contracts)
-    ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", ""])
+    ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", "", ""])
     review_count = sum(len(review_rows_for_contract(contract)) for contract in contracts)
     ws.append([
         "Найдено уверенно: 0",
@@ -391,6 +392,7 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
                 None,
                 param.get("unit", ""),
                 "Проверьте",
+                "",
                 review_behavior.get("action_ru", "Проверьте значение."),
                 "",
                 "",
@@ -430,21 +432,21 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         "B": 22,
         "C": 10,
         "D": 16,
-        "E": 62,
-        "F": 48,
-        "G": 64,
-        "H": 28,
+        "E": 20,
+        "F": 62,
+        "G": 48,
+        "H": 64,
         "I": 28,
-        "J": 20,
-        "K": 28,
-        "L": 18,
-        "M": 24,
+        "J": 28,
+        "K": 20,
+        "L": 28,
+        "M": 18,
         "N": 24,
         "O": 24,
         "P": 24,
         "Q": 24,
     })
-    for column in ["J", "K", "L", "M", "R"]:
+    for column in ["K", "L", "M", "N", "S"]:
         ws.column_dimensions[column].hidden = True
 
 

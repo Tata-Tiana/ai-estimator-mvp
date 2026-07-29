@@ -258,7 +258,30 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте объем бетона."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15. When present (>0), triggers the whole monolithic block: concreting work, formwork materials, and edge insulation (Elena: monolithic lintels are always insulated)."
+    notes: "Added 2026-07-15. When present (>0), triggers the monolithic concrete/formwork block. Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length, so insulation uses its own floor_X_lintel_monolithic_insulation_length_m and must not be inferred from concrete volume."
+
+  - key: floor_1_lintel_monolithic_total_length_m
+    label_ru: "Монолитные перемычки, общая длина, 1-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_1_lintel_monolithic_total_length"
+    calculator_input_path: "floor_1_lintel_monolithic_total_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_1_lintel_monolithic_total_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_1_lintel_monolithic_total_length"]
+      aliases_ru: ["общая длина монолитных перемычек", "длина монолитных перемычек", "монолитные перемычки общая длина"]
+      expected_unit: "мп"
+      notes: "Added 2026-07-28. Work quantity for monolithic lintel concreting. Do not use concrete volume and do not substitute insulation length — insulation may cover only part of monolithic lintels."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте их общую длину для строки бетонирования."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-28. Needed because monolithic lintel concreting work is priced by length in м.п.; concrete volume remains a separate material/purchase input."
 
   - key: floor_1_lintel_monolithic_insulation_length_m
     label_ru: "Утепление торца монолитной перемычки, длина, 1-й этаж"
@@ -281,7 +304,7 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте длину утепления торца. Не все монолитные перемычки обязательно утеплены — берите длину только тех, что реально утеплены по спецификации, не всю длину монолитных перемычек."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15. Added 2026-07-26 (real project case, confirmed against the real costed smeta): edge insulation does not always cover every monolithic lintel on a floor — this must be the length of only the insulated lintels (real case: 2,8 of 5,4 м.пог combined monolithic length insulated; the smeta's own work-line quantity confirms 2,8, not 5,4). Feeds both the insulation work line and the glue-foam quantity, so an inflated length overcounts both."
+    notes: "Added 2026-07-15. Confirmed by Elena 2026-07-29 and by a real project case: edge insulation does not always cover every monolithic lintel on a floor — this must be the length of only the insulated part of lintels, not the total monolithic lintel length. Feeds both the insulation work line and the glue-foam quantity, so an inflated length overcounts both."
 
   - key: floor_1_lintel_formwork_plywood_qty
     label_ru: "Фанера для опалубки монолитных перемычек, 1-й этаж"
@@ -373,6 +396,29 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте объем бетона."
     validation: {numeric: true, min_value: 0, max_value: null}
+
+  - key: floor_2_lintel_monolithic_total_length_m
+    label_ru: "Монолитные перемычки, общая длина, 2-й этаж"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_2_lintel_monolithic_total_length"
+    calculator_input_path: "floor_2_lintel_monolithic_total_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.floor_2_lintel_monolithic_total_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_2_lintel_monolithic_total_length"]
+      aliases_ru: ["общая длина монолитных перемычек 2 этаж", "длина монолитных перемычек 2 этаж", "монолитные перемычки 2 этаж общая длина"]
+      expected_unit: "мп"
+      notes: "Added 2026-07-28. Work quantity for monolithic lintel concreting on floor 2. Do not use concrete volume and do not substitute insulation length."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте их общую длину для строки бетонирования."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-28. Needed because monolithic lintel concreting work is priced by length in м.п.; concrete volume remains a separate material/purchase input."
     notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
 
   - key: floor_2_lintel_monolithic_insulation_length_m
@@ -396,7 +442,7 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте длину утепления торца. Не все монолитные перемычки обязательно утеплены — берите длину только тех, что реально утеплены по спецификации."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15. Mirrors floor_1_lintel_monolithic_insulation_length_m, including its 2026-07-26 note."
+    notes: "Added 2026-07-15. Mirrors floor_1_lintel_monolithic_insulation_length_m. Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length."
 
   - key: floor_2_lintel_formwork_plywood_qty
     label_ru: "Фанера для опалубки монолитных перемычек, 2-й этаж"
@@ -757,7 +803,7 @@ price_keys:
   - {key: concrete_m300_unit_price, estimate_line_code: lintel_concrete_b22_5_m300_material, label_ru: "Бетон В22,5 М300 для перемычек", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_b22_5_m3", fallback_key: "concrete_m300_unit_price", allow_manual_override: true, notes: ""}
   - {key: concrete_delivery_unit_price, estimate_line_code: lintel_concrete_delivery, label_ru: "Доставка бетона до объекта", price_kind: material, unit: "рейс", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_delivery_trip", fallback_key: "concrete_delivery_unit_price", allow_manual_override: true, notes: ""}
   - {key: manual_concrete_lifting_work_unit_price, estimate_line_code: manual_concrete_lifting, label_ru: "Перенос, подъем бетона вручную", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "manual_concrete_lifting_m3", fallback_key: "manual_concrete_lifting_work_unit_price", allow_manual_override: true, notes: ""}
-  - {key: lintel_monolithic_concreting_work_unit_price, estimate_line_code: floor_1_lintel_monolithic_concreting_work, label_ru: "Бетонирование монолитных перемычек", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_monolithic_concreting_work_m3", fallback_key: "lintel_monolithic_concreting_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors — reused for floor_2_lintel_monolithic_concreting_work too."}
+  - {key: lintel_monolithic_concreting_work_unit_price, estimate_line_code: floor_1_lintel_monolithic_concreting_work, label_ru: "Бетонирование монолитных перемычек", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_monolithic_concreting_work_m", fallback_key: "lintel_monolithic_concreting_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors — reused for floor_2_lintel_monolithic_concreting_work too. Updated 2026-07-28: work is priced by total monolithic lintel length, not by concrete volume."}
   - {key: lintel_formwork_plywood_unit_price, estimate_line_code: floor_1_lintel_formwork_plywood_material, label_ru: "Фанера для опалубки монолитных перемычек", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_formwork_plywood_sheet", fallback_key: "lintel_formwork_plywood_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
   - {key: lintel_formwork_timber_unit_price, estimate_line_code: floor_1_lintel_formwork_timber_material, label_ru: "Пиломатериал для опалубки монолитных перемычек", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_formwork_timber_m3", fallback_key: "lintel_formwork_timber_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
   - {key: lintel_insulation_work_unit_price, estimate_line_code: floor_1_lintel_edge_insulation_work, label_ru: "Устройство утепления по наружной стороне монолитной перемычки", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "lintel_edge_insulation_work_m", fallback_key: "lintel_insulation_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-15. Same rate on both floors."}
@@ -1275,16 +1321,16 @@ estimate_lines:
 
   - code: floor_1_lintel_monolithic_concreting_work
     name_ru: "Бетонирование монолитных перемычек, 1-й этаж"
-    unit: "м3"
+    unit: "мп"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=floor_1_lintel_monolithic_concreting_work]"
     quantity:
-      formula: "floor_1_lintel_monolithic_concrete_volume_m3"
+      formula: "floor_1_lintel_monolithic_total_length_m"
       leaf_inputs:
-        - {ref: "review_parameters.floor_1_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_1_lintel_monolithic_total_length_m", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: lintel_monolithic_concreting_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Added 2026-07-15. Only returned when floor_1_lintel_monolithic_concrete_volume_m3 > 0. Concrete material itself is combined with the U-block portion in lintel_concrete_b22_5_m300_material, not a separate material line here — this line is work only."
+    notes: "Added 2026-07-15. Updated 2026-07-28: work quantity is total monolithic lintel length in м.п.; concrete material itself is still combined with the U-block portion in lintel_concrete_b22_5_m300_material by m3."
 
   - code: floor_1_lintel_formwork_plywood_material
     name_ru: "Фанера для опалубки монолитных перемычек, 1-й этаж"
@@ -1323,7 +1369,7 @@ estimate_lines:
         - {ref: "review_parameters.floor_1_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: lintel_insulation_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Added 2026-07-15. Elena, 2026-07-15: monolithic lintels are always insulated, so this shares the monolithic block's single enable gate rather than a separate condition."
+    notes: "Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length. Quantity must be floor_1_lintel_monolithic_insulation_length_m, not the total monolithic lintel length."
 
   - code: floor_1_lintel_edge_insulation_eps_material
     name_ru: "Экструдированный пенополистирол Пеноплэкс Основа, 1-й этаж"
@@ -1357,16 +1403,16 @@ estimate_lines:
 
   - code: floor_2_lintel_monolithic_concreting_work
     name_ru: "Бетонирование монолитных перемычек, 2-й этаж"
-    unit: "м3"
+    unit: "мп"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=floor_2_lintel_monolithic_concreting_work]"
     quantity:
-      formula: "floor_2_lintel_monolithic_concrete_volume_m3"
+      formula: "floor_2_lintel_monolithic_total_length_m"
       leaf_inputs:
-        - {ref: "review_parameters.floor_2_lintel_monolithic_concrete_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_2_lintel_monolithic_total_length_m", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: lintel_monolithic_concreting_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Added 2026-07-15. Mirrors floor_1_lintel_monolithic_concreting_work, independent per floor. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+    notes: "Added 2026-07-15. Updated 2026-07-28: mirrors floor 1, work quantity is total monolithic lintel length in м.п.; concrete material remains a m3 purchase input."
 
   - code: floor_2_lintel_formwork_plywood_material
     name_ru: "Фанера для опалубки монолитных перемычек, 2-й этаж"
@@ -1405,7 +1451,7 @@ estimate_lines:
         - {ref: "review_parameters.floor_2_lintel_monolithic_insulation_length_m", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: lintel_insulation_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Added 2026-07-15. Mirrors floor_1_lintel_edge_insulation_work."
+    notes: "Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length. Quantity must be floor_2_lintel_monolithic_insulation_length_m, not the total monolithic lintel length."
 
   - code: floor_2_lintel_edge_insulation_eps_material
     name_ru: "Экструдированный пенополистирол Пеноплэкс Основа, 2-й этаж"

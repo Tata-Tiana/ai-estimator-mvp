@@ -11,7 +11,7 @@
   "cutoff_waterproofing_material_unit_price": 250,
   "cutoff_waterproofing_work_unit_price": 100,
   "main_wall_gas_block_400_spec_volume_m3": 58.05,
-  "main_wall_gas_block_250_spec_volume_m3": 28.80,
+  "main_wall_gas_block_250_spec_volume_m3": 28.8,
   "main_wall_masonry_work_unit_price": 7000,
   "gas_block_waste_coeff": 1.05,
   "gas_block_d400_pallet_volume_m3": 2.15,
@@ -105,7 +105,7 @@
   "waste_removal_truck_unit_price": 10000,
   "waste_removal_work_unit_price": 3500,
   "technical_supervision_amount": 10000,
-  "lintel_monolithic_concreting_work_unit_price": 20000,
+  "lintel_monolithic_concreting_work_unit_price": 1500,
   "lintel_formwork_plywood_unit_price": 1450,
   "lintel_formwork_timber_unit_price": 23500,
   "lintel_insulation_work_unit_price": 650,
@@ -127,5 +127,7 @@
   "floor_2_lintel_monolithic_insulation_length_m": 1.2,
   "floor_2_lintel_formwork_horizontal_area_m2": 0.4,
   "floor_2_lintel_formwork_vertical_area_m2": 2.1,
-  "floor_2_lintel_insulation_eps_spec_volume_m3": 0.25
+  "floor_2_lintel_insulation_eps_spec_volume_m3": 0.25,
+  "floor_1_lintel_monolithic_total_length_m": 5.4,
+  "floor_2_lintel_monolithic_total_length_m": 2.0
 }
