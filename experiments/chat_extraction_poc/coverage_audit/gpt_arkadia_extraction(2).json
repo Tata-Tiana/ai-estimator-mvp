@@ -40,227 +40,279 @@
           "notes": "Единой глубины котлована в PDF нет; использовать pit_items с готовыми объёмами."
         },
         {
-          "context": "Песок засыпки пазух стен и дна траншей",
-          "volume_m3": 236.0,
           "group_code": "sand_items",
-          "target_code": "sand_items"
+          "target_code": "sand_items",
+          "value": {
+            "context": "Песок засыпки пазух стен и дна траншей",
+            "volume_m3": 236.0
+          }
         },
         {
-          "context": "Песок дна котлована подпятников",
-          "volume_m3": 1.2,
           "group_code": "sand_items",
-          "target_code": "sand_items"
+          "target_code": "sand_items",
+          "value": {
+            "context": "Песок дна котлована подпятников",
+            "volume_m3": 1.2
+          }
         },
         {
-          "context": "Котлован",
-          "volume_m3": 185.0,
           "group_code": "pit_items",
-          "target_code": "pit_items"
+          "target_code": "pit_items",
+          "value": {
+            "context": "Котлован",
+            "volume_m3": 185.0
+          }
         },
         {
-          "context": "Приямки подпятников",
-          "volume_m3": 27.5,
           "group_code": "pit_items",
-          "target_code": "pit_items"
+          "target_code": "pit_items",
+          "value": {
+            "context": "Приямки подпятников",
+            "volume_m3": 27.5
+          }
         },
         {
-          "route_code": "К1",
-          "name": "К1",
-          "length_m": 41.0,
-          "depth_m": 1.0,
-          "width_m": 0.4,
-          "volume_m3": 16.4,
-          "depth_reference": "0,4 м от дна котлована",
           "group_code": "trench_routes",
-          "target_code": "trench_routes"
+          "target_code": "trench_routes",
+          "value": {
+            "route_code": "К1",
+            "name": "К1",
+            "length_m": 41.0,
+            "depth_m": 1.0,
+            "width_m": 0.4,
+            "volume_m3": 16.4,
+            "depth_reference": "0,4 м от дна котлована"
+          }
         },
         {
-          "route_code": "К2",
-          "name": "К2",
-          "length_m": 63.3,
-          "depth_m": 0.9,
-          "width_m": 0.4,
-          "volume_m3": 23.0,
-          "depth_reference": "0,3 м от дна котлована",
           "group_code": "trench_routes",
-          "target_code": "trench_routes"
+          "target_code": "trench_routes",
+          "value": {
+            "route_code": "К2",
+            "name": "К2",
+            "length_m": 63.3,
+            "depth_m": 0.9,
+            "width_m": 0.4,
+            "volume_m3": 23.0,
+            "depth_reference": "0,3 м от дна котлована"
+          }
         },
         {
-          "route_code": "В1",
-          "name": "В1",
-          "length_m": 3.3,
-          "depth_m": 1.8,
-          "width_m": 0.4,
-          "volume_m3": 2.4,
-          "depth_reference": "1,3 м от дна котлована",
           "group_code": "trench_routes",
-          "target_code": "trench_routes"
+          "target_code": "trench_routes",
+          "value": {
+            "route_code": "В1",
+            "name": "В1",
+            "length_m": 3.3,
+            "depth_m": 1.8,
+            "width_m": 0.4,
+            "volume_m3": 2.4,
+            "depth_reference": "1,3 м от дна котлована"
+          }
         },
         {
-          "route_code": "ЭО",
-          "name": "ЭО",
-          "length_m": 35.2,
-          "depth_m": 1.3,
-          "width_m": 0.4,
-          "volume_m3": 18.3,
-          "depth_reference": "0,7 м от дна котлована",
           "group_code": "trench_routes",
-          "target_code": "trench_routes"
+          "target_code": "trench_routes",
+          "value": {
+            "route_code": "ЭО",
+            "name": "ЭО",
+            "length_m": 35.2,
+            "depth_m": 1.3,
+            "width_m": 0.4,
+            "volume_m3": 18.3,
+            "depth_reference": "0,7 м от дна котлована"
+          }
         },
         {
-          "code": "pipe_1m_d110",
-          "name": "К1/К2: Труба 1м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 1.0,
-          "quantity": 15,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "pipe_1m_d110",
+            "name": "К1/К2: Труба 1м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 1.0,
+            "quantity": 15
+          }
         },
         {
-          "code": "pipe_2m_d110",
-          "name": "К1/К2: Труба 2м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 2.0,
-          "quantity": 30,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "pipe_2m_d110",
+            "name": "К1/К2: Труба 2м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 2.0,
+            "quantity": 30
+          }
         },
         {
-          "code": "pipe_3m_d110",
-          "name": "К1/К2: Труба 3м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 3.0,
-          "quantity": 23,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "pipe_3m_d110",
+            "name": "К1/К2: Труба 3м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 3.0,
+            "quantity": 23
+          }
         },
         {
-          "code": "elbow45_d110",
-          "name": "К1/К2: Угол 45°, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 39,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "elbow45_d110",
+            "name": "К1/К2: Угол 45°, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 39
+          }
         },
         {
-          "code": "tee45_d110",
-          "name": "К1/К2: Тройник 45°, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 12,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "tee45_d110",
+            "name": "К1/К2: Тройник 45°, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 12
+          }
         },
         {
-          "code": "cap_d110",
-          "name": "К1/К2: Заглушка, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 11,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "cap_d110",
+            "name": "К1/К2: Заглушка, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 11
+          }
         },
         {
-          "code": "sleeve_1m_d200",
-          "name": "К1/К2: Труба 1м, Ø200 (рыжая)",
-          "diameter_mm": 200,
-          "pipe_length_m": 1.0,
-          "quantity": 14,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "sleeve_1m_d200",
+            "name": "К1/К2: Труба 1м, Ø200 (рыжая)",
+            "diameter_mm": 200,
+            "pipe_length_m": 1.0,
+            "quantity": 14
+          }
         },
         {
-          "code": "sleeve_1m_d160",
-          "name": "К1/К2: Труба 1,0м, Ø160 (рыжая)",
-          "diameter_mm": 160,
-          "pipe_length_m": 1.0,
-          "quantity": 11,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "sleeve_1m_d160",
+            "name": "К1/К2: Труба 1,0м, Ø160 (рыжая)",
+            "diameter_mm": 160,
+            "pipe_length_m": 1.0,
+            "quantity": 11
+          }
         },
         {
-          "code": "v1_pipe_3m_d110",
-          "name": "В1: Труба 3м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 3.0,
-          "quantity": 1,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "v1_pipe_3m_d110",
+            "name": "В1: Труба 3м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 3.0,
+            "quantity": 1
+          }
         },
         {
-          "code": "v1_pipe_2m_d110",
-          "name": "В1: Труба 2м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 2.0,
-          "quantity": 1,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "v1_pipe_2m_d110",
+            "name": "В1: Труба 2м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 2.0,
+            "quantity": 1
+          }
         },
         {
-          "code": "v1_elbow30_d110",
-          "name": "В1: Угол 30°, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 3,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "v1_elbow30_d110",
+            "name": "В1: Угол 30°, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 3
+          }
         },
         {
-          "code": "v1_cap_d110",
-          "name": "В1: Заглушка, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 1,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "v1_cap_d110",
+            "name": "В1: Заглушка, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 1
+          }
         },
         {
-          "code": "v1_sleeve_1m_d160",
-          "name": "В1: Труба 1,0м, Ø160 (рыжая)",
-          "diameter_mm": 160,
-          "pipe_length_m": 1.0,
-          "quantity": 1,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "v1_sleeve_1m_d160",
+            "name": "В1: Труба 1,0м, Ø160 (рыжая)",
+            "diameter_mm": 160,
+            "pipe_length_m": 1.0,
+            "quantity": 1
+          }
         },
         {
-          "code": "eo_pipe_3m_d110",
-          "name": "ЭО: Труба 3м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 3.0,
-          "quantity": 8,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "eo_pipe_3m_d110",
+            "name": "ЭО: Труба 3м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 3.0,
+            "quantity": 8
+          }
         },
         {
-          "code": "eo_pipe_2m_d110",
-          "name": "ЭО: Труба 2м, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "pipe_length_m": 2.0,
-          "quantity": 16,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "eo_pipe_2m_d110",
+            "name": "ЭО: Труба 2м, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "pipe_length_m": 2.0,
+            "quantity": 16
+          }
         },
         {
-          "code": "eo_elbow30_d110",
-          "name": "ЭО: Угол 30°, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 24,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "eo_elbow30_d110",
+            "name": "ЭО: Угол 30°, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 24
+          }
         },
         {
-          "code": "eo_cap_d110",
-          "name": "ЭО: Заглушка, Ø110 (рыжая)",
-          "diameter_mm": 110,
-          "quantity": 8,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "eo_cap_d110",
+            "name": "ЭО: Заглушка, Ø110 (рыжая)",
+            "diameter_mm": 110,
+            "quantity": 8
+          }
         },
         {
-          "code": "eo_sleeve_1m_d160",
-          "name": "ЭО: Труба 1,0м, Ø160 (рыжая)",
-          "diameter_mm": 160,
-          "pipe_length_m": 1.0,
-          "quantity": 4,
           "group_code": "communications_pipe_items",
-          "target_code": "communications_pipe_items"
+          "target_code": "communications_pipe_items",
+          "value": {
+            "code": "eo_sleeve_1m_d160",
+            "name": "ЭО: Труба 1,0м, Ø160 (рыжая)",
+            "diameter_mm": 160,
+            "pipe_length_m": 1.0,
+            "quantity": 4
+          }
         }
       ],
       "trench_volume_m3": 60.1,
@@ -296,122 +348,150 @@
           "notes": "Общего итога по ФП1+ФП2 в PDF нет."
         },
         {
-          "context": "ФП1",
-          "concrete_volume_m3": 49.5,
           "group_code": "slab_zones",
-          "target_code": "slab_zones"
+          "target_code": "slab_zones",
+          "value": {
+            "context": "ФП1",
+            "concrete_volume_m3": 49.5
+          }
         },
         {
-          "context": "ФП2",
-          "concrete_volume_m3": 10.5,
           "group_code": "slab_zones",
-          "target_code": "slab_zones"
+          "target_code": "slab_zones",
+          "value": {
+            "context": "ФП2",
+            "concrete_volume_m3": 10.5
+          }
         },
         {
-          "code": "ФП1_поз.1_5",
-          "name": "ФП1: А500С ф-10 L=1,1м",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 464.2,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП1_поз.1_5",
+            "name": "ФП1: А500С ф-10 L=1,1м",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 464.2
+          }
         },
         {
-          "code": "ФП1_поз.2_6",
-          "name": "ФП1: А500С ф-10 L=1,1м",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 1364.0,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП1_поз.2_6",
+            "name": "ФП1: А500С ф-10 L=1,1м",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 1364.0
+          }
         },
         {
-          "code": "ФП1_background_7",
-          "name": "ФП1: А500С ф-10 фоновое армирование",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 6324.0,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП1_background_7",
+            "name": "ФП1: А500С ф-10 фоновое армирование",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 6324.0
+          }
         },
         {
-          "code": "ФП2_поз.1_8",
-          "name": "ФП2: А500С ф-10 L=1,1м",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 321.2,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП2_поз.1_8",
+            "name": "ФП2: А500С ф-10 L=1,1м",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 321.2
+          }
         },
         {
-          "code": "ФП2_поз.2_9",
-          "name": "ФП2: А500С ф-10 L=1,1м",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 281.6,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП2_поз.2_9",
+            "name": "ФП2: А500С ф-10 L=1,1м",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 281.6
+          }
         },
         {
-          "code": "ФП2_поз.3_10",
-          "name": "ФП2: А500С ф-10 L=2,0м",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 32.0,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП2_поз.3_10",
+            "name": "ФП2: А500С ф-10 L=2,0м",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 32.0
+          }
         },
         {
-          "code": "ФП2_background_11",
-          "name": "ФП2: А500С ф-10 фоновое армирование",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "source_length_m": 1306.0,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "ФП2_background_11",
+            "name": "ФП2: А500С ф-10 фоновое армирование",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "source_length_m": 1306.0
+          }
         },
         {
-          "code": "T1_A500C_D12",
-          "name": "А500С ф-12, L=2,1м, 152шт",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "source_length_m": 319.2,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "T1_A500C_D12",
+            "name": "А500С ф-12, L=2,1м, 152шт",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "source_length_m": 319.2
+          }
         },
         {
-          "code": "T1_A240_D6",
-          "name": "А240 ф-6 (хомуты), l=0,7м, 152шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "source_length_m": 106.4,
           "group_code": "foundation_rebar_items",
-          "target_code": "foundation_rebar_items"
+          "target_code": "foundation_rebar_items",
+          "value": {
+            "code": "T1_A240_D6",
+            "name": "А240 ф-6 (хомуты), l=0,7м, 152шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "source_length_m": 106.4
+          }
         },
         {
-          "eps_size": "100x400x160(h)",
-          "length_m": 14.2,
-          "material_spec_qty_m3": 0.09,
           "group_code": "thermal_insert_items",
-          "target_code": "thermal_insert_items"
+          "target_code": "thermal_insert_items",
+          "value": {
+            "eps_size": "100x400x160(h)",
+            "length_m": 14.2,
+            "material_spec_qty_m3": 0.09
+          }
         },
         {
-          "context": "Стены фундамента",
-          "concrete_volume_m3": 33.0,
-          "vertical_formwork_area_m2": 163.0,
-          "planter_membrane_area_m2": 134.3,
-          "waterproofing_coating_area_m2": 163.0,
           "group_code": "foundation_wall_items",
-          "target_code": "foundation_wall_items"
+          "target_code": "foundation_wall_items",
+          "value": {
+            "context": "Стены фундамента",
+            "concrete_volume_m3": 33.0,
+            "vertical_formwork_area_m2": 163.0,
+            "planter_membrane_area_m2": 134.3,
+            "waterproofing_coating_area_m2": 163.0
+          }
         },
         {
-          "context": "Подколонники фундамента",
-          "concrete_volume_m3": 1.6,
-          "vertical_formwork_area_m2": 6.9,
-          "planter_membrane_area_m2": 5.2,
-          "waterproofing_coating_area_m2": 11.9,
           "group_code": "column_footing_items",
-          "target_code": "column_footing_items"
+          "target_code": "column_footing_items",
+          "value": {
+            "context": "Подколонники фундамента",
+            "concrete_volume_m3": 1.6,
+            "vertical_formwork_area_m2": 6.9,
+            "planter_membrane_area_m2": 5.2,
+            "waterproofing_coating_area_m2": 11.9
+          }
         }
       ],
       "missing": [
@@ -523,178 +603,214 @@
           "needs_review": false
         },
         {
-          "context": "Основные наружные стены",
-          "wall_role": "main_walls",
-          "block_density": "D400",
-          "block_size": "600x400x250",
-          "volume_m3": 75.2,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Основные наружные стены",
+            "wall_role": "main_walls",
+            "block_density": "D400",
+            "block_size": "600x400x250",
+            "volume_m3": 75.2
+          }
         },
         {
-          "context": "Основные внутренние несущие стены",
-          "wall_role": "main_walls",
-          "block_density": "D500",
-          "block_size": "600x250x250",
-          "volume_m3": 35.6,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Основные внутренние несущие стены",
+            "wall_role": "main_walls",
+            "block_density": "D500",
+            "block_size": "600x250x250",
+            "volume_m3": 35.6
+          }
         },
         {
-          "context": "Перегородки",
-          "wall_role": "partitions",
-          "block_density": "D500",
-          "block_size": "600x150x250",
-          "volume_m3": 26.4,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Перегородки",
+            "wall_role": "partitions",
+            "block_density": "D500",
+            "block_size": "600x150x250",
+            "volume_m3": 26.4
+          }
         },
         {
-          "context": "Стены надстройки / второго света",
-          "wall_role": "floor_2",
-          "block_density": "D400",
-          "block_size": "600x400x250",
-          "volume_m3": 13.0,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Стены надстройки / второго света",
+            "wall_role": "floor_2",
+            "block_density": "D400",
+            "block_size": "600x400x250",
+            "volume_m3": 13.0
+          }
         },
         {
-          "context": "Парапет плиты ПМ1",
-          "wall_role": "parapet",
-          "block_density": "D400",
-          "block_size": "600x400x250",
-          "volume_m3": 14.8,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Парапет плиты ПМ1",
+            "wall_role": "parapet",
+            "block_density": "D400",
+            "block_size": "600x400x250",
+            "volume_m3": 14.8
+          }
         },
         {
-          "context": "Парапет плиты ПМ2",
-          "wall_role": "parapet",
-          "block_density": "D400",
-          "block_size": "600x400x250",
-          "volume_m3": 8.2,
           "group_code": "wall_block_items",
-          "target_code": "wall_block_items"
+          "target_code": "wall_block_items",
+          "value": {
+            "context": "Парапет плиты ПМ2",
+            "wall_role": "parapet",
+            "block_density": "D400",
+            "block_size": "600x400x250",
+            "volume_m3": 8.2
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D10_MAIN",
-          "name": "Несущие стены: блок 400мм, блок 250мм",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 483.0,
           "group_code": "main_wall_rebar_items",
-          "target_code": "main_wall_rebar_items"
+          "target_code": "main_wall_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D10_MAIN",
+            "name": "Несущие стены: блок 400мм, блок 250мм",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 483.0
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D10_WINDOW",
-          "name": "Подоконное армирование",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 4.4,
           "group_code": "main_wall_rebar_items",
-          "target_code": "main_wall_rebar_items"
+          "target_code": "main_wall_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D10_WINDOW",
+            "name": "Подоконное армирование",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 4.4
+          }
         },
         {
-          "floor": 2,
-          "code": "A500C_D10_SECOND_LIGHT",
-          "name": "Стены надстройки",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 114.8,
           "group_code": "main_wall_rebar_items",
-          "target_code": "main_wall_rebar_items"
+          "target_code": "main_wall_rebar_items",
+          "value": {
+            "floor": 2,
+            "code": "A500C_D10_SECOND_LIGHT",
+            "name": "Стены надстройки",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 114.8
+          }
         },
         {
-          "floor": 1,
-          "code": "A240_D6_PB1",
-          "name": "ПБ1: А240 ф-6 (хомут), L=1,05м, 15шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 15.8,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A240_D6_PB1",
+            "name": "ПБ1: А240 ф-6 (хомут), L=1,05м, 15шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 15.8
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D12_PB1",
-          "name": "ПБ1: А500С ф-12",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "spec_length_m": 5.6,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D12_PB1",
+            "name": "ПБ1: А500С ф-12",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "spec_length_m": 5.6
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D16_PB1",
-          "name": "ПБ1: А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 8.4,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D16_PB1",
+            "name": "ПБ1: А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 8.4
+          }
         },
         {
-          "floor": 1,
-          "code": "A240_D6_PB2",
-          "name": "ПБ2: А240 ф-6 (хомут), L=0,95м, 14шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 13.3,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A240_D6_PB2",
+            "name": "ПБ2: А240 ф-6 (хомут), L=0,95м, 14шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 13.3
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D12_PB2",
-          "name": "ПБ2: А500С ф-12",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "spec_length_m": 5.2,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D12_PB2",
+            "name": "ПБ2: А500С ф-12",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "spec_length_m": 5.2
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D16_PB2",
-          "name": "ПБ2: А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 7.8,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D16_PB2",
+            "name": "ПБ2: А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 7.8
+          }
         },
         {
-          "floor": 1,
-          "code": "A240_D6_PR12",
-          "name": "ПР1/ПР2: А240 ф-6 (хомут), L=0,45м, 48шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 21.6,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A240_D6_PR12",
+            "name": "ПР1/ПР2: А240 ф-6 (хомут), L=0,45м, 48шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 21.6
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D12_PR12",
-          "name": "ПР1/ПР2: А500С ф-12",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "spec_length_m": 34.0,
           "group_code": "lintel_rebar_items",
-          "target_code": "lintel_rebar_items"
+          "target_code": "lintel_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D12_PR12",
+            "name": "ПР1/ПР2: А500С ф-12",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "spec_length_m": 34.0
+          }
         },
         {
-          "floor": 1,
-          "code": "A500C_D12_PR3",
-          "name": "ПР3: А500С ф-12",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "spec_length_m": 11.3,
           "group_code": "lintel_groove_rebar_items",
-          "target_code": "lintel_groove_rebar_items"
+          "target_code": "lintel_groove_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "A500C_D12_PR3",
+            "name": "ПР3: А500С ф-12",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "spec_length_m": 11.3
+          }
         }
       ],
       "missing": [
@@ -796,284 +912,338 @@
           "needs_review": false
         },
         {
-          "code": "Б1",
-          "name": "Б1",
-          "length_m": 7.3,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": null,
-          "concrete_volume_m3": 0.95,
-          "formwork_area_m2": null,
           "group_code": "beam_items",
-          "target_code": "beam_items"
+          "target_code": "beam_items",
+          "value": {
+            "code": "Б1",
+            "name": "Б1",
+            "length_m": 7.3,
+            "width_m": 0.3,
+            "height_m": 0.43,
+            "count": null,
+            "concrete_volume_m3": 0.95,
+            "formwork_area_m2": null
+          }
         },
         {
-          "code": "Б2",
-          "name": "Б2",
-          "length_m": 10.8,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": null,
-          "concrete_volume_m3": 1.4,
-          "formwork_area_m2": null,
           "group_code": "beam_items",
-          "target_code": "beam_items"
+          "target_code": "beam_items",
+          "value": {
+            "code": "Б2",
+            "name": "Б2",
+            "length_m": 10.8,
+            "width_m": 0.3,
+            "height_m": 0.43,
+            "count": null,
+            "concrete_volume_m3": 1.4,
+            "formwork_area_m2": null
+          }
         },
         {
-          "code": "Б3",
-          "name": "Б3",
-          "length_m": 13.1,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": null,
-          "concrete_volume_m3": 1.7,
-          "formwork_area_m2": null,
           "group_code": "beam_items",
-          "target_code": "beam_items"
+          "target_code": "beam_items",
+          "value": {
+            "code": "Б3",
+            "name": "Б3",
+            "length_m": 13.1,
+            "width_m": 0.3,
+            "height_m": 0.43,
+            "count": null,
+            "concrete_volume_m3": 1.7,
+            "formwork_area_m2": null
+          }
         },
         {
-          "code": "Б4/Б4-1",
-          "name": "Б4/Б4-1",
-          "length_m": 24.1,
-          "width_m": null,
-          "height_m": 0.68,
-          "count": null,
-          "concrete_volume_m3": 5.3,
-          "formwork_area_m2": null,
           "needs_review": true,
           "notes": "Сечение Б4/Б4-1 объединяет разные ширины; высота 0,68м взята по сечению листа 15, тогда как подписи на плане требуют проверки.",
           "group_code": "beam_items",
-          "target_code": "beam_items"
+          "target_code": "beam_items",
+          "value": {
+            "code": "Б4/Б4-1",
+            "name": "Б4/Б4-1",
+            "length_m": 24.1,
+            "width_m": null,
+            "height_m": 0.68,
+            "count": null,
+            "concrete_volume_m3": 5.3,
+            "formwork_area_m2": null
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_POS1",
-          "name": "ПМ1 поз.1 А500С ф-10 L=1,15м, 595шт",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 684.3,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_POS1",
+            "name": "ПМ1 поз.1 А500С ф-10 L=1,15м, 595шт",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 684.3
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_POS2",
-          "name": "ПМ1 поз.2 А500С ф-10 L=1,1м, 1216шт",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 1337.6,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_POS2",
+            "name": "ПМ1 поз.2 А500С ф-10 L=1,1м, 1216шт",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 1337.6
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_POS3",
-          "name": "ПМ1 поз.3 А240 ф-6 L=0,95м, 24шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 22.8,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_POS3",
+            "name": "ПМ1 поз.3 А240 ф-6 L=0,95м, 24шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 22.8
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_POS4",
-          "name": "ПМ1 поз.4 А240 ф-6 L=0,95м, 16шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 15.2,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_POS4",
+            "name": "ПМ1 поз.4 А240 ф-6 L=0,95м, 16шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 15.2
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_BG_D10",
-          "name": "ПМ1 А500С ф-10 фоновое армирование",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 6202.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_BG_D10",
+            "name": "ПМ1 А500С ф-10 фоновое армирование",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 6202.0
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_REINF_D10",
-          "name": "ПМ1 А500С ф-10 усиление",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 361.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_REINF_D10",
+            "name": "ПМ1 А500С ф-10 усиление",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 361.0
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_OPEN_D12",
-          "name": "ПМ1 А500С ф-12 усиление проемов",
-          "steel_class": "А500С",
-          "diameter_mm": 12,
-          "spec_length_m": 73.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_OPEN_D12",
+            "name": "ПМ1 А500С ф-12 усиление проемов",
+            "steel_class": "А500С",
+            "diameter_mm": 12,
+            "spec_length_m": 73.0
+          }
         },
         {
-          "floor": 1,
-          "code": "PM1_REINF_D16",
-          "name": "ПМ1 А500С ф-16 усиление",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 75.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "PM1_REINF_D16",
+            "name": "ПМ1 А500С ф-16 усиление",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 75.0
+          }
         },
         {
-          "floor": 1,
-          "code": "B1_A240_D6",
-          "name": "Б1 А240 ф-6 L=1,47м, 37шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 54.4,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B1_A240_D6",
+            "name": "Б1 А240 ф-6 L=1,47м, 37шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 54.4
+          }
         },
         {
-          "floor": 1,
-          "code": "B1_A500C_D16",
-          "name": "Б1 А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 29.2,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B1_A500C_D16",
+            "name": "Б1 А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 29.2
+          }
         },
         {
-          "floor": 1,
-          "code": "B2_A240_D6",
-          "name": "Б2 А240 ф-6 L=1,47м, 57шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 83.8,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B2_A240_D6",
+            "name": "Б2 А240 ф-6 L=1,47м, 57шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 83.8
+          }
         },
         {
-          "floor": 1,
-          "code": "B2_A500C_D10",
-          "name": "Б2 А500С ф-10",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 21.6,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B2_A500C_D10",
+            "name": "Б2 А500С ф-10",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 21.6
+          }
         },
         {
-          "floor": 1,
-          "code": "B2_A500C_D16",
-          "name": "Б2 А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 21.6,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B2_A500C_D16",
+            "name": "Б2 А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 21.6
+          }
         },
         {
-          "floor": 1,
-          "code": "B3_A240_D6",
-          "name": "Б3 А240 ф-6 L=1,47м, 73шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 107.3,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B3_A240_D6",
+            "name": "Б3 А240 ф-6 L=1,47м, 73шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 107.3
+          }
         },
         {
-          "floor": 1,
-          "code": "B3_A500C_D10",
-          "name": "Б3 А500С ф-10",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 52.4,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B3_A500C_D10",
+            "name": "Б3 А500С ф-10",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 52.4
+          }
         },
         {
-          "floor": 1,
-          "code": "B4_A240_D6_L2",
-          "name": "Б4/Б4-1 А240 ф-6 L=2,0м, 86шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 172.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B4_A240_D6_L2",
+            "name": "Б4/Б4-1 А240 ф-6 L=2,0м, 86шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 172.0
+          }
         },
         {
-          "floor": 1,
-          "code": "B4_A240_D6_L04",
-          "name": "Б4/Б4-1 А240 ф-6 L=0,4м, 86шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 34.4,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B4_A240_D6_L04",
+            "name": "Б4/Б4-1 А240 ф-6 L=0,4м, 86шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 34.4
+          }
         },
         {
-          "floor": 1,
-          "code": "B41_A240_D6_L22",
-          "name": "Б4-1 А240 ф-6 L=2,2м, 30шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 66.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B41_A240_D6_L22",
+            "name": "Б4-1 А240 ф-6 L=2,2м, 30шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 66.0
+          }
         },
         {
-          "floor": 1,
-          "code": "B41_A240_D6_L05",
-          "name": "Б4-1 А240 ф-6 L=0,5м, 30шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 15.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B41_A240_D6_L05",
+            "name": "Б4-1 А240 ф-6 L=0,5м, 30шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 15.0
+          }
         },
         {
-          "floor": 1,
-          "code": "B41_A500C_D16_ANCH",
-          "name": "Б4-1 А500С ф-16 L=2,25м, 12шт",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 27.0,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B41_A500C_D16_ANCH",
+            "name": "Б4-1 А500С ф-16 L=2,25м, 12шт",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 27.0
+          }
         },
         {
-          "floor": 1,
-          "code": "B4_A500C_D10",
-          "name": "Б4/Б4-1 А500С ф-10",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 48.2,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B4_A500C_D10",
+            "name": "Б4/Б4-1 А500С ф-10",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 48.2
+          }
         },
         {
-          "floor": 1,
-          "code": "B4_A500C_D16",
-          "name": "Б4/Б4-1 А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 48.2,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B4_A500C_D16",
+            "name": "Б4/Б4-1 А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 48.2
+          }
         },
         {
-          "floor": 1,
-          "code": "B4_A500C_D20",
-          "name": "Б4/Б4-1 А500С ф-20",
-          "steel_class": "А500С",
-          "diameter_mm": 20,
-          "spec_length_m": 72.3,
           "group_code": "floor_slab_1_rebar_items",
-          "target_code": "floor_slab_1_rebar_items"
+          "target_code": "floor_slab_1_rebar_items",
+          "value": {
+            "floor": 1,
+            "code": "B4_A500C_D20",
+            "name": "Б4/Б4-1 А500С ф-20",
+            "steel_class": "А500С",
+            "diameter_mm": 20,
+            "spec_length_m": 72.3
+          }
         }
       ],
       "missing": [
@@ -1140,109 +1310,131 @@
           "needs_review": false
         },
         {
-          "code": "Б1",
-          "name": "Б1",
-          "length_m": 5.8,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": null,
-          "concrete_volume_m3": 0.75,
-          "formwork_area_m2": null,
           "group_code": "floor_slab_2_beam_items",
-          "target_code": "floor_slab_2_beam_items"
+          "target_code": "floor_slab_2_beam_items",
+          "value": {
+            "code": "Б1",
+            "name": "Б1",
+            "length_m": 5.8,
+            "width_m": 0.3,
+            "height_m": 0.43,
+            "count": null,
+            "concrete_volume_m3": 0.75,
+            "formwork_area_m2": null
+          }
         },
         {
-          "code": "Б2",
-          "name": "Б2",
-          "length_m": 4.4,
-          "width_m": 0.3,
-          "height_m": 0.43,
-          "count": null,
-          "concrete_volume_m3": 0.57,
-          "formwork_area_m2": null,
           "group_code": "floor_slab_2_beam_items",
-          "target_code": "floor_slab_2_beam_items"
+          "target_code": "floor_slab_2_beam_items",
+          "value": {
+            "code": "Б2",
+            "name": "Б2",
+            "length_m": 4.4,
+            "width_m": 0.3,
+            "height_m": 0.43,
+            "count": null,
+            "concrete_volume_m3": 0.57,
+            "formwork_area_m2": null
+          }
         },
         {
-          "code": "PM2_POS1",
-          "name": "ПМ2 поз.1 А500С ф-10 L=1,15м, 219шт",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 251.9,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "PM2_POS1",
+            "name": "ПМ2 поз.1 А500С ф-10 L=1,15м, 219шт",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 251.9
+          }
         },
         {
-          "code": "PM2_POS2",
-          "name": "ПМ2 поз.2 А500С ф-10 L=1,1м, 332шт",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 365.2,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "PM2_POS2",
+            "name": "ПМ2 поз.2 А500С ф-10 L=1,1м, 332шт",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 365.2
+          }
         },
         {
-          "code": "PM2_BG_D10",
-          "name": "ПМ2 А500С ф-10 фоновое армирование",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 1974.0,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "PM2_BG_D10",
+            "name": "ПМ2 А500С ф-10 фоновое армирование",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 1974.0
+          }
         },
         {
-          "code": "B1_A240_D6",
-          "name": "Б1 А240 ф-6 L=1,47м, 30шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 44.1,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B1_A240_D6",
+            "name": "Б1 А240 ф-6 L=1,47м, 30шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 44.1
+          }
         },
         {
-          "code": "B1_A500C_D10",
-          "name": "Б1 А500С ф-10",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 11.6,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B1_A500C_D10",
+            "name": "Б1 А500С ф-10",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 11.6
+          }
         },
         {
-          "code": "B1_A500C_D20",
-          "name": "Б1 А500С ф-20",
-          "steel_class": "А500С",
-          "diameter_mm": 20,
-          "spec_length_m": 17.4,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B1_A500C_D20",
+            "name": "Б1 А500С ф-20",
+            "steel_class": "А500С",
+            "diameter_mm": 20,
+            "spec_length_m": 17.4
+          }
         },
         {
-          "code": "B2_A240_D6",
-          "name": "Б2 А240 ф-6 L=1,47м, 23шт",
-          "steel_class": "А240",
-          "diameter_mm": 6,
-          "spec_length_m": 33.8,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B2_A240_D6",
+            "name": "Б2 А240 ф-6 L=1,47м, 23шт",
+            "steel_class": "А240",
+            "diameter_mm": 6,
+            "spec_length_m": 33.8
+          }
         },
         {
-          "code": "B2_A500C_D10",
-          "name": "Б2 А500С ф-10",
-          "steel_class": "А500С",
-          "diameter_mm": 10,
-          "spec_length_m": 8.8,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B2_A500C_D10",
+            "name": "Б2 А500С ф-10",
+            "steel_class": "А500С",
+            "diameter_mm": 10,
+            "spec_length_m": 8.8
+          }
         },
         {
-          "code": "B2_A500C_D16",
-          "name": "Б2 А500С ф-16",
-          "steel_class": "А500С",
-          "diameter_mm": 16,
-          "spec_length_m": 8.8,
           "group_code": "floor_slab_2_rebar_items",
-          "target_code": "floor_slab_2_rebar_items"
+          "target_code": "floor_slab_2_rebar_items",
+          "value": {
+            "code": "B2_A500C_D16",
+            "name": "Б2 А500С ф-16",
+            "steel_class": "А500С",
+            "diameter_mm": 16,
+            "spec_length_m": 8.8
+          }
         }
       ],
       "missing": [
@@ -1271,123 +1463,153 @@
           "needs_review": false
         },
         {
-          "context": "Отм. +3,730, кровля Тип А",
-          "area_m2": 224.3,
-          "parapet_length_m": 66.3,
-          "wall_abutment_length_m": 22.6,
-          "operability": "non_exploitable",
           "needs_review": true,
           "notes": "На плане зоны Тип А подписаны 168,6м2 и 57,5м2 (226,1м2); в спецификации — 224,3м2; взято по приоритету спецификации.",
           "group_code": "roof_zones",
-          "target_code": "roof_zones"
+          "target_code": "roof_zones",
+          "value": {
+            "context": "Отм. +3,730, кровля Тип А",
+            "area_m2": 224.3,
+            "parapet_length_m": 66.3,
+            "wall_abutment_length_m": 22.6,
+            "operability": "non_exploitable"
+          }
         },
         {
-          "context": "Отм. +3,730, кровля Тип Б",
-          "area_m2": 54.8,
-          "parapet_length_m": 29.6,
-          "wall_abutment_length_m": 0.0,
-          "operability": "non_exploitable",
           "needs_review": true,
           "notes": "Таблица спецификации называет мембрану LOGICROOF V-GR; узел на том же листе — LOGICROOF V-RP.",
           "group_code": "roof_zones",
-          "target_code": "roof_zones"
+          "target_code": "roof_zones",
+          "value": {
+            "context": "Отм. +3,730, кровля Тип Б",
+            "area_m2": 54.8,
+            "parapet_length_m": 29.6,
+            "wall_abutment_length_m": 0.0,
+            "operability": "non_exploitable"
+          }
         },
         {
-          "context": "Отм. +5,160, кровля Тип А",
-          "area_m2": 84.9,
-          "parapet_length_m": 37.9,
-          "wall_abutment_length_m": 0.0,
-          "operability": "non_exploitable",
           "needs_review": true,
           "notes": "Подпись на плане 84,8м2, в спецификации 84,9м2; взято по приоритету спецификации.",
           "group_code": "roof_zones",
-          "target_code": "roof_zones"
+          "target_code": "roof_zones",
+          "value": {
+            "context": "Отм. +5,160, кровля Тип А",
+            "area_m2": 84.9,
+            "parapet_length_m": 37.9,
+            "wall_abutment_length_m": 0.0,
+            "operability": "non_exploitable"
+          }
         },
         {
-          "name": "Тип А: Пароизоляционный слой (плёнка ПЭ)",
-          "quantity": 226.1,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А: Пароизоляционный слой (плёнка ПЭ)",
+            "quantity": 226.1
+          }
         },
         {
-          "name": "Тип А: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 100+100мм",
-          "quantity": 45.2,
           "unit": "м3",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 100+100мм",
+            "quantity": 45.2
+          }
         },
         {
-          "name": "Тип А: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
-          "quantity": 295.0,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
+            "quantity": 295.0
+          }
         },
         {
-          "name": "Тип А: Полимерная мембрана LOGICROOF V-GR",
-          "quantity": 295.0,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А: Полимерная мембрана LOGICROOF V-GR",
+            "quantity": 295.0
+          }
         },
         {
-          "name": "Тип Б: Пароизоляционный слой (плёнка ПЭ)",
-          "quantity": 54.8,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип Б: Пароизоляционный слой (плёнка ПЭ)",
+            "quantity": 54.8
+          }
         },
         {
-          "name": "Тип Б: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 50мм",
-          "quantity": 2.7,
           "unit": "м3",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип Б: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 50мм",
+            "quantity": 2.7
+          }
         },
         {
-          "name": "Тип Б: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
-          "quantity": 77.3,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип Б: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
+            "quantity": 77.3
+          }
         },
         {
-          "name": "Тип Б: Полимерная мембрана LOGICROOF V-GR",
-          "quantity": 77.3,
           "unit": "м2",
           "needs_review": true,
           "notes": "В узле устройства слоёв Тип Б указано LOGICROOF V-RP; по правилу приоритета спецификации сохранена табличная V-GR.",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип Б: Полимерная мембрана LOGICROOF V-GR",
+            "quantity": 77.3
+          }
         },
         {
-          "name": "Тип А +5,160: Пароизоляционный слой (плёнка ПЭ)",
-          "quantity": 84.8,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А +5,160: Пароизоляционный слой (плёнка ПЭ)",
+            "quantity": 84.8
+          }
         },
         {
-          "name": "Тип А +5,160: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 100+100мм",
-          "quantity": 17.0,
           "unit": "м3",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А +5,160: Экструзионный пенополистирол ТехноНИКОЛЬ CARBON PROF 100+100мм",
+            "quantity": 17.0
+          }
         },
         {
-          "name": "Тип А +5,160: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
-          "quantity": 115.0,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А +5,160: Стеклохолст ТЕХНОНИКОЛЬ 100 г/м2",
+            "quantity": 115.0
+          }
         },
         {
-          "name": "Тип А +5,160: Полимерная мембрана LOGICROOF V-GR",
-          "quantity": 115.0,
           "unit": "м2",
           "group_code": "roof_raw_material_spec_rows",
-          "target_code": "roof_raw_material_spec_rows"
+          "target_code": "roof_raw_material_spec_rows",
+          "value": {
+            "name": "Тип А +5,160: Полимерная мембрана LOGICROOF V-GR",
+            "quantity": 115.0
+          }
         }
       ],
       "missing": [
@@ -1408,10 +1630,12 @@
     "schiedel_vent_channels": {
       "found": [
         {
-          "density": "D400",
-          "volume_m3": 1.6,
           "group_code": "schiedel_masonry_gas_block_items",
-          "target_code": "schiedel_masonry_gas_block_items"
+          "target_code": "schiedel_masonry_gas_block_items",
+          "value": {
+            "density": "D400",
+            "volume_m3": 1.6
+          }
         }
       ],
       "missing": [

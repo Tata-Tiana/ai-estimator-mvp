@@ -3,9 +3,11 @@ does, but fills sheet 01 with real values from a chat-extraction extraction_outp
 instead of leaving it blank. This is the missing "step 2" from ADAPTER_BUILD_PLAN.md's
 "Полный путь PDF -> смета" section - the first real test of it against a real JSON.
 
-Only sheet 01 is filled here. Sheet 02 (prices) still needs the separate
-price_registry-based fill (not in scope for this pass). Sheets 03-06 are unchanged,
-built the same way as the empty-template script.
+Sheet 01 is filled from the extraction JSON, sheet 02 (prices) is filled from a
+price_registry_filled_v*.xlsx (see build_rebar_lookup for the one templated-code
+expansion that needs project data; see reports/step_27_sheet02_price_fill_plan.md for
+the rest). Sheet 03 is filled from raw_table_rows in the extraction JSON. Sheets 00/04-06
+are unchanged, built the same way as the empty-template script.
 """
 
 from __future__ import annotations
@@ -39,8 +41,10 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     build_raw_contracts_sheet,
     correction_headers,
     default_contract_paths,
+    load_price_registry,
     load_yaml_contract,
     production_repeated_row_params,
+    rebar_group_keys_for_contract,
     restyle_block_sheet,
     restyle_section_bands,
     scalar_review_rows_for_contract,
@@ -53,6 +57,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = Path(__file__).resolve().parent
+DEFAULT_PRICE_REGISTRY = ROOT / "output" / "price_registry_filled_v4.xlsx"
 
 
 # Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
@@ -460,16 +465,48 @@ def build_project_sheet_from_extraction(
     return counts
 
 
+def build_rebar_lookup(
+    contracts: list[dict[str, Any]], extraction: dict[str, Any]
+) -> dict[str, list[dict[str, Any]]]:
+    """section_code -> real rebar rows (steel_class/diameter_mm) found by extraction, pooled
+    across every rebar-shaped group in that section (see rebar_group_keys_for_contract). Used to
+    expand sheet 02's rebar_<class>_d<diameter>_m templated price row into one row per
+    diameter/class actually present in this project."""
+    lookup: dict[str, list[dict[str, Any]]] = {}
+    for contract in contracts:
+        sec_code = section_code(contract)
+        group_keys = rebar_group_keys_for_contract(contract)
+        if not group_keys:
+            continue
+        _, found_groups, _ = index_extraction_section(extraction, sec_code)
+        items = [
+            item.get("value") or {}
+            for group_key in group_keys
+            for item in found_groups.get(group_key, [])
+        ]
+        if items:
+            lookup[sec_code] = items
+    return lookup
+
+
 def build_workbook_from_extraction(
-    contract_paths: list[Path], extraction_path: Path, output_path: Path
+    contract_paths: list[Path],
+    extraction_path: Path,
+    output_path: Path,
+    price_registry_path: Path | None = DEFAULT_PRICE_REGISTRY,
 ) -> dict[str, Any]:
     contracts = [load_yaml_contract(path) for path in contract_paths]
     extraction = json.loads(extraction_path.read_text(encoding="utf-8"))
 
+    price_registry = None
+    if price_registry_path is not None and price_registry_path.exists():
+        price_registry = load_price_registry(price_registry_path)
+    rebar_lookup = build_rebar_lookup(contracts, extraction)
+
     wb = Workbook()
     build_constructor_sheet(wb, contracts)
     counts = build_project_sheet_from_extraction(wb, contracts, extraction)
-    build_prices_sheet(wb, contracts)
+    build_prices_sheet(wb, contracts, price_registry=price_registry, rebar_lookup=rebar_lookup)
     detail_counts = build_details_sheet_from_extraction(wb, extraction)
     build_instruction_sheet(wb)
     build_contracts_summary_sheet(wb, contracts)
@@ -488,13 +525,19 @@ def parse_args() -> argparse.Namespace:
         "--output",
         default=str(PIPELINE_DIR / "output" / "step_20_populated_from_real_extraction.xlsx"),
     )
+    parser.add_argument(
+        "--price-registry",
+        default=str(DEFAULT_PRICE_REGISTRY),
+        help="Path to a price_registry_filled_v*.xlsx; pass an empty string to skip price fill.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    price_registry_path = Path(args.price_registry) if args.price_registry else None
     result = build_workbook_from_extraction(
-        default_contract_paths(), Path(args.extraction_json), Path(args.output)
+        default_contract_paths(), Path(args.extraction_json), Path(args.output), price_registry_path
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -271,6 +272,69 @@ def price_role_ru(price_kind: str) -> str:
     }.get(price_kind, price_kind)
 
 
+def load_price_registry(path: Path) -> dict[str, dict[str, Any]]:
+    """Reads a price_registry_filled_v*.xlsx into {price_code: {price, unit, name, comment}}.
+    Rows without a price_code are skipped (they don't participate in automatic lookup)."""
+    wb = load_workbook(path, read_only=True, data_only=True)
+    ws = wb["price_registry"] if "price_registry" in wb.sheetnames else wb[wb.sheetnames[0]]
+    rows = ws.iter_rows(values_only=True)
+    headers = [str(cell).strip() if cell is not None else "" for cell in next(rows)]
+    registry: dict[str, dict[str, Any]] = {}
+    for raw in rows:
+        row = dict(zip(headers, raw))
+        code = row.get("price_code")
+        if not code:
+            continue
+        code = str(code).strip()
+        registry[code] = {
+            "section": row.get("Раздел") or "",
+            "name": row.get("Наименование") or "",
+            "unit": row.get("Ед. изм.") or "",
+            "price": row.get("Цена"),
+            "comment": row.get("Комментарий") or "",
+        }
+    return registry
+
+
+# Registry codes that vary per project (rebar diameter/class, roof slope plate letter) instead of
+# being a fixed literal string. Contract price_keys mark these with "<...>" placeholders. See
+# reports/step_27_sheet02_price_fill_plan.md section 27.5.
+ROOF_SLOPE_PLATE_LETTERS = ["a", "b", "j", "k"]
+
+
+def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
+    if not steel_class or diameter_mm in (None, ""):
+        return None
+    try:
+        diameter = int(float(diameter_mm))
+    except (TypeError, ValueError):
+        return None
+    # steel_class as extracted is Russian text (e.g. "А500С", Cyrillic А + weldability suffix
+    # С) — the registry's price_code only encodes the numeric class ("rebar_a500_d10_m"), so
+    # match on digits rather than transliterating letters that vary by suffix/alphabet.
+    digits = re.sub(r"\D", "", str(steel_class))
+    if not digits:
+        return None
+    return f"rebar_a{digits}_d{diameter}_m"
+
+
+def resolve_price_entry(
+    registry_code: str, price_registry: dict[str, dict[str, Any]] | None
+) -> tuple[Any, Any, str, str, str]:
+    """Returns (price_from_registry, price_for_calc, source, needs_attention, comment) for a
+    single, literal (non-templated) registry_code against the given price registry."""
+    if price_registry is None:
+        return None, None, "", "да", "Заполнить цену из price registry/fallback/review."
+    if not registry_code:
+        return None, None, "no_registry_code", "да", "В контракте не указан registry_code — цену нужно ввести вручную."
+    entry = price_registry.get(registry_code)
+    if entry is None:
+        return None, None, "not_found", "да", "Код не найден в актуальном прайсе — уточнить цену вручную."
+    if entry["price"] is None:
+        return None, None, "price_registry_empty", "да", "Код найден в прайсе, но цена не заполнена — уточнить у Елены."
+    return entry["price"], entry["price"], "price_registry", "нет", entry.get("comment") or ""
+
+
 def review_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
     return (contract.get("review_parameters") or []) + (contract.get("supplier_inputs") or [])
 
@@ -333,6 +397,22 @@ def production_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, A
         for param in (contract.get("review_parameters") or [])
         if param.get("value_kind") == "repeated_rows" and param.get("production_input") is True
     ]
+
+
+def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
+    """Repeated-row groups shaped like rebar (steel_class + diameter_mm columns) — structural
+    detection by column shape, not a hardcoded group-name list, so it keeps working if a new
+    rebar-shaped group is added to a contract. A section can have more than one (e.g.
+    load_bearing_walls_lintels has main_wall_rebar_items and lintel_rebar_items, both priced by
+    the same rebar_<class>_d<diameter>_m registry_code)."""
+    keys = []
+    for param in contract.get("review_parameters") or []:
+        if param.get("value_kind") != "repeated_rows":
+            continue
+        column_keys = {c.get("key") for c in (param.get("columns") or [])}
+        if {"steel_class", "diameter_mm"} <= column_keys:
+            keys.append(param.get("key"))
+    return keys
 
 
 def scalar_review_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, Any]]:
@@ -450,31 +530,134 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
         ws.column_dimensions[column].hidden = True
 
 
-def build_prices_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
+def expand_rebar_codes(rebar_items: list[dict[str, Any]]) -> list[tuple[str, str]]:
+    """Given a section's real rebar rows (steel_class/diameter_mm), returns deduped
+    (label_suffix, actual_registry_code) pairs, e.g. (" — A500 Ø10", "rebar_a500_d10_m")."""
+    seen: dict[str, tuple[str, str]] = {}
+    for item in rebar_items:
+        steel_class = item.get("steel_class")
+        diameter_mm = item.get("diameter_mm")
+        code = _rebar_registry_code(steel_class, diameter_mm)
+        if code is None:
+            continue
+        seen[code] = (f" — {steel_class} Ø{diameter_mm}", code)
+    return [seen[code] for code in sorted(seen)]
+
+
+def find_roof_slope_code(price_registry: dict[str, dict[str, Any]], letter: str) -> str | None:
+    suffix = f"_plate_{letter}_m3"
+    matches = [
+        code
+        for code in price_registry
+        if code.startswith("roof_eps_slope_") and code.endswith(suffix)
+    ]
+    return matches[0] if matches else None
+
+
+def expand_roof_slope_codes(price_registry: dict[str, dict[str, Any]]) -> list[tuple[str, str | None]]:
+    result = []
+    for letter in ROOF_SLOPE_PLATE_LETTERS:
+        code = find_roof_slope_code(price_registry, letter)
+        result.append((f" — плита {letter.upper()}", code))
+    return result
+
+
+_SOURCE_LABEL_RU = {
+    "price_registry": "price_registry",
+    "not_found": "не найдено в прайсе",
+    "price_registry_empty": "прайс: цена пустая",
+    "no_registry_code": "нет registry_code",
+    "price_registry_template": "шаблонный код",
+}
+
+_SOURCE_FILL = {
+    "price_registry": FILL_FOUND,
+    "not_found": FILL_MISSING,
+    "price_registry_empty": FILL_REVIEW,
+    "no_registry_code": FILL_MISSING,
+    "price_registry_template": FILL_REVIEW,
+}
+
+
+def _append_price_row(
+    ws,
+    label_ru: str,
+    price: dict[str, Any],
+    sec_code: str,
+    registry_code_actual: str,
+    price_registry: dict[str, dict[str, Any]] | None,
+) -> None:
+    if price_registry is not None and "<" in registry_code_actual:
+        # Unresolvable template (no per-project expansion available for this pattern).
+        price_from, price_for_calc, source, needs_attention, comment = (
+            None, None, "price_registry_template", "да",
+            "Шаблонный код цены — раскрывается по фактическим строкам проекта (см. лист 01/03).",
+        )
+    else:
+        price_from, price_for_calc, source, needs_attention, comment = resolve_price_entry(
+            registry_code_actual, price_registry
+        )
+    source_label = _SOURCE_LABEL_RU.get(source, source) if price_registry is not None else price.get("default_source", "")
+    fill = _SOURCE_FILL.get(source, FILL_REVIEW) if price_registry is not None else FILL_PRICE
+    ws.append([
+        label_ru,
+        price_role_ru(str(price.get("price_kind", ""))),
+        price.get("unit", ""),
+        price_from,
+        None,
+        price_for_calc,
+        "",
+        source_label,
+        needs_attention,
+        comment,
+        sec_code,
+        price.get("key", ""),
+        registry_code_actual,
+        price.get("fallback_key", ""),
+        source,
+    ])
+    for cell in ws[ws.max_row]:
+        cell.fill = fill
+
+
+def build_prices_sheet(
+    wb: Workbook,
+    contracts: list[dict[str, Any]],
+    price_registry: dict[str, dict[str, Any]] | None = None,
+    rebar_lookup: dict[str, list[dict[str, Any]]] | None = None,
+) -> None:
+    """Builds sheet 02. With no price_registry (default), behaves exactly as before: an empty
+    price template. Pass price_registry (see load_price_registry) to fill it from the real
+    price list. rebar_lookup (section_code -> real rebar rows with steel_class/diameter_mm,
+    only available when building from a real extraction) expands the rebar_<class>_d<diameter>_m
+    template into one row per diameter/class actually present in the project; without it, that
+    template renders as a single flagged placeholder row. See
+    reports/step_27_sheet02_price_fill_plan.md."""
     ws = wb.create_sheet("02_Цены себестоимости")
     ws.append(PRICE_HEADERS)
     for contract in contracts:
         append_section_band(ws, [section_name(contract)], len(PRICE_HEADERS))
+        sec_code = section_code(contract)
         for price in contract.get("price_keys") or []:
-            ws.append([
-                price.get("label_ru", ""),
-                price_role_ru(str(price.get("price_kind", ""))),
-                price.get("unit", ""),
-                None,
-                None,
-                None,
-                "",
-                price.get("default_source", ""),
-                "да",
-                "Заполнить цену из price registry/fallback/review.",
-                section_code(contract),
-                price.get("key", ""),
-                price.get("registry_code", ""),
-                price.get("fallback_key", ""),
-                "",
-            ])
-            for cell in ws[ws.max_row]:
-                cell.fill = FILL_PRICE
+            registry_code = price.get("registry_code", "") or ""
+            label_ru = price.get("label_ru", "")
+
+            rebar_expansion = (
+                expand_rebar_codes(rebar_lookup[sec_code])
+                if registry_code == "rebar_<class>_d<diameter>_m" and rebar_lookup and rebar_lookup.get(sec_code)
+                else []
+            )
+            if rebar_expansion:
+                for suffix, actual_code in rebar_expansion:
+                    _append_price_row(ws, label_ru + suffix, price, sec_code, actual_code, price_registry)
+            elif registry_code == "roof_eps_slope_<type>_m3" and price_registry is not None:
+                for suffix, actual_code in expand_roof_slope_codes(price_registry):
+                    if actual_code is None:
+                        _append_price_row(ws, label_ru + suffix, price, sec_code, registry_code, price_registry)
+                    else:
+                        _append_price_row(ws, label_ru + suffix, price, sec_code, actual_code, price_registry)
+            else:
+                _append_price_row(ws, label_ru, price, sec_code, registry_code, price_registry)
 
     apply_table_style(ws)
     restyle_section_bands(ws)
