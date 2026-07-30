@@ -109,6 +109,259 @@ def compute_cross_check_value(formula: str, found_groups: dict[str, list[Any]]) 
     return total if found_any else None
 
 
+def group_items(found_groups: dict[str, list[Any]], group_key: str) -> list[dict[str, Any]]:
+    return [item for item in found_groups.get(group_key, []) if isinstance(item, dict)]
+
+
+def sum_group_numeric_field(found_groups: dict[str, list[Any]], group_key: str, field_key: str) -> float | None:
+    total = 0.0
+    found_any = False
+    for item in group_items(found_groups, group_key):
+        value = item.get("value") or {}
+        field_value = value.get(field_key)
+        if field_value is None:
+            continue
+        total += float(field_value)
+        found_any = True
+    return round(total, 3) if found_any else None
+
+
+def sum_communications_pipe_items(found_groups: dict[str, list[Any]]) -> float | None:
+    total = 0.0
+    found_any = False
+    for item in group_items(found_groups, "communications_pipe_items"):
+        value = item.get("value") or {}
+        if not value.get("include_in_communications", True):
+            continue
+        explicit_total = value.get("total_length_m")
+        if explicit_total is not None:
+            total += float(explicit_total)
+            found_any = True
+            continue
+        pipe_length = value.get("pipe_length_m")
+        quantity = value.get("quantity")
+        if pipe_length is not None and quantity is not None:
+            total += float(pipe_length) * float(quantity)
+            found_any = True
+    return round(total, 3) if found_any else None
+
+
+def min_group_confidence(found_groups: dict[str, list[Any]], group_key: str) -> str:
+    values: list[float] = []
+    for item in group_items(found_groups, group_key):
+        try:
+            values.append(float(item.get("confidence")))
+        except (TypeError, ValueError):
+            continue
+    return f"{min(values):.2f}" if values else ""
+
+
+def earthworks_alternative_scalar(
+    target_code: str,
+    found_groups: dict[str, list[Any]],
+) -> tuple[Any, str, str, str, str] | None:
+    """Return a sheet-01 scalar replacement when earthworks data is present as item rows."""
+    if target_code == "pit_excavation_depth_m" and group_items(found_groups, "pit_items"):
+        total = sum_group_numeric_field(found_groups, "pit_items", "volume_m3")
+        return (
+            "",
+            "Не требуется (есть готовые объёмы выемки ниже)",
+            "",
+            f"Глубина не используется: объём механизированной выемки берётся из pit_items. Сумма: {total:g} м3.",
+            min_group_confidence(found_groups, "pit_items"),
+        )
+    if target_code == "sand_base_volume_m3" and group_items(found_groups, "sand_items"):
+        total = sum_group_numeric_field(found_groups, "sand_items", "volume_m3")
+        return (
+            "",
+            "Не требуется (есть готовые объёмы песка ниже)",
+            "",
+            "Песок берётся из sand_items по категориям, не из одной строки 'под основание'. "
+            f"Сумма до коэффициента: {total:g} м3.",
+            min_group_confidence(found_groups, "sand_items"),
+        )
+    if target_code == "communications_length_m" and group_items(found_groups, "communications_pipe_items"):
+        total = sum_communications_pipe_items(found_groups)
+        return (
+            total,
+            "Найдено (автосумма строк труб ниже)",
+            "",
+            "Сумма включённых позиций communications_pipe_items: "
+            f"{total:g} м. Позиции без линейной длины (углы, тройники, заглушки) не добавляют метры.",
+            min_group_confidence(found_groups, "communications_pipe_items"),
+        )
+    if target_code == "trench_volume_m3" and group_items(found_groups, "trench_routes"):
+        total = sum_group_numeric_field(found_groups, "trench_routes", "volume_m3")
+        return (
+            total,
+            "Найдено (автосумма маршрутов ниже)",
+            "",
+            f"Сумма volume_m3 из trench_routes: {total:g} м3.",
+            min_group_confidence(found_groups, "trench_routes"),
+        )
+    return None
+
+
+def candidate_sum_scalar(item: dict[str, Any] | None, target_code: str) -> tuple[float, str, str] | None:
+    if item is None or item.get("value") is not None:
+        return None
+    candidates = [candidate for candidate in item.get("candidates") or [] if isinstance(candidate, dict)]
+    matching_values: list[float] = []
+    fragments: list[str] = []
+    confidences: list[float] = []
+    for candidate in candidates:
+        if candidate.get("target_code") != target_code:
+            continue
+        value = candidate.get("value")
+        if value is None:
+            continue
+        try:
+            matching_values.append(float(value))
+        except (TypeError, ValueError):
+            continue
+        raw_text = candidate.get("raw_text")
+        if raw_text:
+            fragments.append(str(raw_text))
+        try:
+            confidences.append(float(candidate.get("confidence")))
+        except (TypeError, ValueError):
+            pass
+    if len(matching_values) < 2:
+        return None
+    confidence = f"{min(confidences):.2f}" if confidences else display_confidence(item)
+    return round(sum(matching_values), 3), "; ".join(fragments), confidence
+
+
+def group_sources(found_groups: dict[str, list[Any]], group_key: str) -> str:
+    sources: list[str] = []
+    for item in group_items(found_groups, group_key):
+        parts = []
+        if item.get("source_pdf"):
+            parts.append(str(item["source_pdf"]))
+        if item.get("page_number") is not None:
+            parts.append(f"стр. {item['page_number']}")
+        source = ", ".join(parts)
+        if source and source not in sources:
+            sources.append(source)
+    return "; ".join(sources)
+
+
+def group_fragments(found_groups: dict[str, list[Any]], group_key: str, limit: int = 5) -> str:
+    fragments: list[str] = []
+    for item in group_items(found_groups, group_key):
+        raw_text = item.get("raw_text") or item.get("notes")
+        if raw_text:
+            fragments.append(str(raw_text))
+    if len(fragments) > limit:
+        fragments = fragments[:limit] + [f"... ещё {len(fragments) - limit} строк"]
+    return "; ".join(fragments)
+
+
+THERMAL_INSERT_SCALAR_TARGETS = {
+    "thermal_insert_50_length",
+    "thermal_insert_100_length",
+    "thermal_insert_combined_length_m",
+    "thermal_insert_50_material_spec_qty",
+    "thermal_insert_100_material_spec_qty",
+}
+
+
+def foundation_alternative_scalar(
+    target_code: str,
+    found: dict[str, Any] | None,
+    found_groups: dict[str, list[Any]],
+) -> tuple[Any, str, str, str, str] | None:
+    if target_code == "membrane_area_m2":
+        candidate_sum = candidate_sum_scalar(found, target_code)
+        if candidate_sum is None:
+            return None
+        total, fragments, confidence = candidate_sum
+        return (
+            total,
+            "Проверьте (автосумма компонентов)",
+            found.get("source_pdf") or "",
+            f"Автосумма компонентов: {fragments}. Общего итога в PDF нет.",
+            confidence,
+        )
+    if target_code == "concrete_project_volume" and group_items(found_groups, "slab_zones"):
+        total = sum_group_numeric_field(found_groups, "slab_zones", "concrete_volume_m3")
+        return (
+            total,
+            "Найдено (через slab_zones)",
+            group_sources(found_groups, "slab_zones"),
+            "Единый итог бетона в PDF не указан; для расчёта используется сумма строк slab_zones. "
+            f"Строки: {group_fragments(found_groups, 'slab_zones')}",
+            min_group_confidence(found_groups, "slab_zones"),
+        )
+    if target_code in THERMAL_INSERT_SCALAR_TARGETS and group_items(found_groups, "thermal_insert_items"):
+        length_total = sum_group_numeric_field(found_groups, "thermal_insert_items", "length_m")
+        material_total = sum_group_numeric_field(found_groups, "thermal_insert_items", "material_spec_qty_m3")
+        totals = []
+        if length_total is not None:
+            totals.append(f"длина {length_total:g} мп")
+        if material_total is not None:
+            totals.append(f"материал {material_total:g} м3")
+        totals_text = f" ({', '.join(totals)})" if totals else ""
+        return (
+            "",
+            "Не требуется (есть thermal_insert_items)",
+            group_sources(found_groups, "thermal_insert_items"),
+            "Скалярные поля 50/100 мм не заполняются, потому что PDF дал термовставки "
+            f"произвольными типоразмерами; рабочий источник — строки thermal_insert_items{totals_text}. "
+            f"Строки: {group_fragments(found_groups, 'thermal_insert_items')}",
+            min_group_confidence(found_groups, "thermal_insert_items"),
+        )
+    return None
+
+
+def earthworks_group_total_row(
+    sec_code: str,
+    group_key: str,
+    found_groups: dict[str, list[Any]],
+    headers_len: int,
+) -> list[Any] | None:
+    if sec_code != "earthworks":
+        return None
+    if group_key == "pit_items":
+        total = sum_group_numeric_field(found_groups, group_key, "volume_m3")
+        unit = "м3"
+        note = "Сумма готовых объёмов выемки грунта; используется вместо площадь*глубина."
+    elif group_key == "sand_items":
+        total = sum_group_numeric_field(found_groups, group_key, "volume_m3")
+        unit = "м3"
+        note = "Сумма готовых объёмов песка до коэффициента уплотнения."
+    elif group_key == "trench_routes":
+        total = sum_group_numeric_field(found_groups, group_key, "volume_m3")
+        unit = "м3"
+        note = "Сумма готовых объёмов траншей из строк маршрутов."
+    elif group_key == "communications_pipe_items":
+        total = sum_communications_pipe_items(found_groups)
+        unit = "м"
+        note = "Сумма включённых линейных труб; фитинги без длины в метры не входят."
+    else:
+        return None
+    if total is None:
+        return None
+
+    row = [
+        "Итого по строкам блока",
+        total,
+        unit,
+        "Итого (авто по строкам блока)",
+        min_group_confidence(found_groups, group_key),
+        "",
+        "",
+        note,
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
+    return row + [""] * max(0, headers_len - len(row))
+
+
 def auto_calculated_by_key(contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {entry["key"]: entry for entry in (contract.get("auto_calculated") or []) if entry.get("key")}
 
@@ -172,6 +425,18 @@ def display_value(value: Any) -> Any:
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False)
     return value
+
+
+def display_confidence(item: dict[str, Any] | None) -> str:
+    if item is None:
+        return ""
+    confidence = item.get("confidence")
+    if confidence is None:
+        return ""
+    try:
+        return f"{float(confidence):.2f}"
+    except (TypeError, ValueError):
+        return str(confidence)
 
 
 DETAIL_RAW_HEADERS = [
@@ -331,35 +596,53 @@ def build_project_sheet_from_extraction(
     counts = {"found": 0, "needs_review": 0, "missing": 0, "missing_confirmed_required": 0, "item_rows": 0}
 
     rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction)
-    rebar_crane_allocation = compute_rebar_crane_allocation(rebar_weights_by_section)
+    rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section)
+    box_total_metal_weight_kg = round(sum(rebar_weights_by_section.values()), 1)
 
     for contract in contracts:
         sec_code = section_code(contract)
         found_by_target, found_groups, missing = index_extraction_section(extraction, sec_code)
         confirmed_required = compute_confirmed_required(found_by_target, sec_code)
-        auto_calculated = auto_calculated_by_key(contract)
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
 
-        box_crane_key = REBAR_CRANE_FIELD_BY_SECTION.get(sec_code)
+        box_delivery_key = REBAR_METAL_DELIVERY_FIELD_BY_SECTION.get(sec_code)
 
         for param in scalar_review_rows_for_contract(contract):
             review_behavior = param.get("review_behavior") or {}
             target_code = param.get("target_code", "")
             found = found_by_target.get(target_code)
             row_fill = FILL_INPUT
+            param_key = param.get("key")
 
-            if box_crane_key is not None and param.get("key") == box_crane_key:
-                # Box-calculator-allocated crane shifts (2026-07-30) - computed from this
+            box_row: tuple[Any, str, str] | None = None
+            if box_delivery_key is not None and param_key == box_delivery_key:
+                # Box-calculator-allocated delivery trucks (2026-07-30) - computed from this
                 # project's real rebar weight, not looked up in found_by_target/missing at all.
-                # See compute_rebar_crane_allocation/REBAR_CRANE_FIELD_BY_SECTION.
-                found_value = rebar_crane_allocation.get(sec_code, 0)
-                status = "Найдено (авто, box-калькулятор)"
-                source = ""
-                fragment = (
-                    f"Вес арматуры раздела: {rebar_weights_by_section.get(sec_code, 0):g} кг. "
-                    f"Автораспределение по накоплению {int(METAL_TRUCK_CAPACITY_KG // 1000)} т — "
-                    "проверьте и поправьте при необходимости."
+                # Crane-shift fields are NOT special-cased here anymore (Elena's ruling: no real
+                # crane-shift-count formula exists, they render through the normal found/missing
+                # path below like any other manual field). See
+                # compute_rebar_metal_delivery_allocation/REBAR_METAL_DELIVERY_FIELD_BY_SECTION.
+                box_row = (
+                    rebar_metal_delivery_allocation.get(sec_code, 0),
+                    "",
+                    (
+                        f"Вес арматуры раздела: {rebar_weights_by_section.get(sec_code, 0):g} кг. "
+                        f"Автораспределение по накоплению {int(METAL_TRUCK_CAPACITY_KG // 1000)} т — "
+                        "проверьте и поправьте при необходимости."
+                    ),
                 )
+            elif param_key == BOX_TOTAL_METAL_WEIGHT_KEY:
+                box_row = (
+                    box_total_metal_weight_kg,
+                    "",
+                    "Сумма веса арматуры по всем 4 разделам с арматурой (включая стены/перемычки, "
+                    "у которых нет отдельной строки доставки) - используется калькулятором фундаментной "
+                    "плиты только для контрольного предупреждения.",
+                )
+
+            if box_row is not None:
+                found_value, source, fragment = box_row
+                status = "Найдено (авто, box-калькулятор)"
                 counts["found"] += 1
                 ws.append([
                     param.get("label_ru", param.get("key", "")),
@@ -382,8 +665,15 @@ def build_project_sheet_from_extraction(
                 ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
                 continue
 
+            confidence = display_confidence(found)
+            alternative_scalar = earthworks_alternative_scalar(target_code, found_groups) if sec_code == "earthworks" else None
+            if alternative_scalar is None and sec_code == "foundation_slab":
+                alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None
-            if target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
+            if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
+                found_value, status, source, fragment, confidence = alternative_scalar
+                counts["needs_review" if status.startswith("Проверьте") else "found"] += 1
+            elif target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
                 # A sibling field in the same presence pair was found — this project definitely
                 # has this construction, so a still-blank value here (whether never attempted, in
                 # section.missing, or a needs_review entry that only has candidates — e.g. the real
@@ -415,21 +705,12 @@ def build_project_sheet_from_extraction(
                 source = ""
                 fragment = ""
 
-            cross_check_display = ""
-            cross_check_key = param.get("cross_check_key")
-            if cross_check_key:
-                cc_entry = auto_calculated.get(cross_check_key)
-                if cc_entry:
-                    cc_value = compute_cross_check_value(cc_entry.get("formula", ""), found_groups)
-                    if cc_value is not None:
-                        cross_check_display = f"{cc_value:g} — {cc_entry.get('label_ru', cross_check_key)}"
-
             ws.append([
                 param.get("label_ru", param.get("key", "")),
                 found_value,
                 param.get("unit", ""),
                 status,
-                cross_check_display,
+                confidence,
                 review_behavior.get("action_ru", "Проверьте значение."),
                 source,
                 fragment,
@@ -481,7 +762,7 @@ def build_project_sheet_from_extraction(
                     summary,
                     param.get("unit", ""),
                     status,
-                    "",
+                    display_confidence(item),
                     "",  # action_ru already stated once in the block title above, not per row -
                          # repeating a ~100-char sentence on every item row was the main cause of
                          # tall wrapped rows (2026-07-29 design fix)
@@ -502,12 +783,20 @@ def build_project_sheet_from_extraction(
             if rows:
                 for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
                     ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
+                total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
+                if total_row:
+                    ws.append(total_row)
+                    for cell in ws[ws.max_row]:
+                        cell.fill = FILL_HEADER
+                        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+                        cell.alignment = Alignment(wrap_text=True, vertical="top")
+                    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
     # Итог по коробке (2026-07-30): one cross-section summary row after all 8 sections, so
-    # Elena can see the real total before deciding how to redistribute crane shifts between
-    # sections herself. See compute_rebar_weights_by_section/compute_rebar_crane_allocation.
+    # Elena can see the real total driving the box-calculator's delivery-truck allocation above
+    # (crane shifts are manual and not related to this total - see REBAR_METAL_DELIVERY_FIELD_BY_SECTION).
+    # See compute_rebar_weights_by_section/compute_rebar_metal_delivery_allocation.
     section_names_by_code = {section_code(c): section_name(c) for c in contracts}
-    grand_total_weight = sum(rebar_weights_by_section.values())
     breakdown = "; ".join(
         f"{section_names_by_code.get(code, code)}: {weight:g} кг"
         for code, weight in rebar_weights_by_section.items()
@@ -516,11 +805,11 @@ def build_project_sheet_from_extraction(
     append_section_band(ws, ["Итог по коробке"], len(PROJECT_HEADERS))
     ws.append([
         "Общий вес арматуры по проекту (все разделы с арматурой), кг",
-        round(grand_total_weight, 1),
+        box_total_metal_weight_kg,
         "кг",
         "Найдено (авто, box-калькулятор)",
         "",
-        "Справочно — используется для решения, где ставить больше 1 крана на разделе.",
+        "Справочно — сумма веса, из которой считается автораспределение машин доставки арматуры/металла по разделам.",
         "",
         breakdown,
         "",
@@ -581,18 +870,31 @@ def build_rebar_lookup(
     return lookup
 
 
-# section_code -> the one review_parameters/supplier_inputs key that holds "crane shifts for
-# rebar delivery" in that section. Only the 4 sections with rebar have one; must match
-# METAL_SECTION_ORDER's box_calculator convention (experiments/box_calculator/section_registry.py)
-# so allocation order lines up with these keys 1:1.
-REBAR_CRANE_FIELD_BY_SECTION = {
-    "foundation_slab": "rebar_crane_shifts",
-    "load_bearing_walls_lintels": "wall_rebar_crane_shifts",
-    "floor_slab_1": "formwork_rebar_crane_shifts",
-    "floor_slab_2": "crane_shifts",
+# Crane-shift counts are NOT automated (Elena's 2026-07-30 ruling: no real crane-shift-count
+# formula exists anywhere in the codebase - see rebar_crane_manual_and_box_delivery_final memory).
+# Only rebar/metal DELIVERY TRUCKS are automated here, which is what metal_delivery_allocator.py
+# was actually designed and named for.
+#
+# section_code -> the one review_parameters/supplier_inputs key that holds "delivery trucks for
+# rebar/metal" in that section. load_bearing_walls_lintels is deliberately absent - 3 independent
+# real smetas (ARK/USV/TRC) never show a metal-delivery line there (rebar in that section is
+# comparatively light and its crane lines only ever name "блоков", never "арматуры"); its rebar
+# weight is still counted in METAL_SECTION_ORDER's box-wide total below since it still needs to
+# physically arrive on site, it just never gets its own dedicated billed line.
+REBAR_METAL_DELIVERY_FIELD_BY_SECTION = {
+    "foundation_slab": "rebar_metal_delivery_trucks",
+    "floor_slab_1": "rebar_metal_delivery_trucks",
+    "floor_slab_2": "rebar_metal_delivery_trucks",
 }
-METAL_SECTION_ORDER = list(REBAR_CRANE_FIELD_BY_SECTION.keys())
+# All 4 rebar-bearing sections (experiments/box_calculator/section_registry.py convention) - used
+# for the weight total and the box-wide truck allocation, even though load_bearing_walls_lintels
+# has no field of its own to render an allocated count into.
+METAL_SECTION_ORDER = ["foundation_slab", "load_bearing_walls_lintels", "floor_slab_1", "floor_slab_2"]
 METAL_TRUCK_CAPACITY_KG = 10000.0
+# foundation_slab's own field: the box-wide total weight, used only for its internal calculator
+# warning (see foundation_slab_calculator.py's suggested_box_metal_delivery_trucks check) - same
+# number as the "Итог по коробке" summary row below, not a separate calculation.
+BOX_TOTAL_METAL_WEIGHT_KEY = "box_total_metal_weight_kg"
 
 
 def compute_rebar_weights_by_section(
@@ -616,8 +918,8 @@ def compute_rebar_weights_by_section(
     return weights
 
 
-def compute_rebar_crane_allocation(weights_by_section: dict[str, float]) -> dict[str, int]:
-    """section_code -> automatically allocated crane/truck shifts for rebar delivery, using the
+def compute_rebar_metal_delivery_allocation(weights_by_section: dict[str, float]) -> dict[str, int]:
+    """section_code -> automatically allocated delivery trucks for rebar/metal, using the
     existing box_calculator threshold-by-10-tonnes logic (experiments/box_calculator/
     metal_delivery_allocator.py) - the first truck goes to the first section with any weight,
     later trucks go to whichever section's cumulative weight crosses the next 10-tonne boundary.
