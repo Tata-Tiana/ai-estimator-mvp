@@ -907,6 +907,22 @@ supplier_inputs:
       action_ru: "Укажите смены крана для парапета, если применимо."
     notes: ""
 
+  - key: wall_rebar_crane_shifts
+    label_ru: "Кран для арматуры стен и перемычек, смены"
+    unit: "смена"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: ""
+    normalized_json_path: "sections.load_bearing_walls_lintels.supplier_inputs.wall_rebar_crane_shifts.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    notes: "Added 2026-07-30 - this section had no dedicated crane-for-rebar field at all (unlike foundation_slab/floor_slab_1/floor_slab_2, which each already had one); the only existing crane logic here (main_walls_crane_shifts) is for gas-block/mix delivery, computed from block volume, not rebar weight. Value comes from compute_rebar_crane_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections). calculator_input_path intentionally empty - NOT YET wired into load_bearing_walls_lintels_calculator.py as a priced estimate line (would need a new dataclass field + estimate_line there); this entry only surfaces the number on sheet 01 for Elena to see and act on manually for now. Needs a separate step + go-ahead to actually bill it."
+
   - key: waste_removal_trucks
     label_ru: "Вывоз мусора, машины"
     unit: "маш"

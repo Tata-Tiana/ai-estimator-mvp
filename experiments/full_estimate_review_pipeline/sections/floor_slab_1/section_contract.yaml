@@ -622,7 +622,7 @@ supplier_inputs:
   - key: formwork_rebar_crane_shifts
     label_ru: "Подача опалубки и арматуры краном"
     unit: "смена"
-    source_class: SUPPLIER_INPUT
+    source_class: AUTO_CALCULATED
     required: true
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "manual_lines.formwork_rebar_crane_shifts"
@@ -632,8 +632,8 @@ supplier_inputs:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Укажите смены крана для подачи опалубки и арматуры."
-    notes: "Manual/supplier line in current calculator."
+      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости. Расчёт учитывает только вес арматуры, не опалубку — если для подачи опалубки нужен отдельный подъём, поправьте вручную."
+    notes: "source_class SUPPLIER_INPUT -> AUTO_CALCULATED 2026-07-30: value now comes from compute_rebar_crane_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections). Label names both опалубка and арматура but the allocation is rebar-weight-only - a real ARK smeta cross-check (2026-07-29) found this section's own line only ever names 'Подача арматуры автокраном', so this is consistent with what's actually billed, but flagged here in case a project needs formwork lifting counted separately."
 
   - key: concrete_pump_shifts
     label_ru: "Работа бетононасоса"

@@ -514,6 +514,50 @@ def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
 COMPACT_ROW_HEIGHT = 15
 
 
+# GOST 34028-2016 standard linear mass (kg per meter) by nominal rebar diameter - a physical
+# constant, identical for every project, not a business judgment call. Confirmed against two real
+# projects independently (2026-07-30): USV's PDF gives kg_per_meter directly and matches this
+# table exactly for every diameter seen; TRC's PDF instead gives a pre-multiplied total weight_kg
+# per spec line, and dividing that by the item's length reproduces this table to the rounding
+# digit for every item checked. Used only as the fallback rate when an item's own kg_per_meter
+# isn't given (e.g. ARK's PDF gives length only, no mass column at all) - see
+# rebar_weight_standard_gost_table memory/plan entry.
+GOST_REBAR_KG_PER_METER = {
+    6: 0.222,
+    8: 0.395,
+    10: 0.617,
+    12: 0.888,
+    16: 1.6,
+    20: 2.47,
+    25: 3.85,
+}
+
+
+def rebar_item_weight_kg(item: dict[str, Any]) -> float | None:
+    """One rebar item's total weight in kg = length_m * rate. rate is the item's own
+    kg_per_meter if the PDF/extraction gave it, else GOST_REBAR_KG_PER_METER by diameter. A
+    PDF-given total weight_kg (when present, e.g. TRC) is deliberately NOT read here as an
+    independent input - per the 2026-07-30 decision, length x rate is the only path to a rebar
+    item's weight, so there is exactly one way to get the number, never two that could disagree.
+    Returns None (does not guess) if there's no length, or no rate is available anywhere."""
+    length = item.get("spec_length_m")
+    if length is None:
+        length = item.get("source_length_m")
+    if length is None:
+        return None
+    rate = item.get("kg_per_meter")
+    if rate is None:
+        diameter = item.get("diameter_mm")
+        try:
+            diameter_int = int(round(float(diameter))) if diameter is not None else None
+        except (TypeError, ValueError):
+            diameter_int = None
+        rate = GOST_REBAR_KG_PER_METER.get(diameter_int) if diameter_int is not None else None
+    if rate is None:
+        return None
+    return float(length) * float(rate)
+
+
 # source_class values with no PDF signal at all - Elena types/confirms these regardless of
 # project, they're never something the parser could find. Moved off sheet 01 onto sheet 01-1
 # (manual values catalog) 2026-07-29 so sheet 01 is exclusively parser-found data, per the

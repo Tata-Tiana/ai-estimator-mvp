@@ -23,6 +23,9 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "experiments" / "box_calculator"))
+
+from metal_delivery_allocator import MetalSection, allocate_metal_deliveries  # noqa: E402
 
 from build_review_workbook_from_contracts import (  # noqa: E402
     COMPACT_ROW_HEIGHT,
@@ -51,6 +54,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     merge_row_full_width,
     production_repeated_row_params,
     rebar_group_keys_for_contract,
+    rebar_item_weight_kg,
     restyle_block_sheet,
     restyle_section_bands,
     scalar_review_rows_for_contract,
@@ -326,6 +330,9 @@ def build_project_sheet_from_extraction(
 
     counts = {"found": 0, "needs_review": 0, "missing": 0, "missing_confirmed_required": 0, "item_rows": 0}
 
+    rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction)
+    rebar_crane_allocation = compute_rebar_crane_allocation(rebar_weights_by_section)
+
     for contract in contracts:
         sec_code = section_code(contract)
         found_by_target, found_groups, missing = index_extraction_section(extraction, sec_code)
@@ -333,11 +340,48 @@ def build_project_sheet_from_extraction(
         auto_calculated = auto_calculated_by_key(contract)
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
 
+        box_crane_key = REBAR_CRANE_FIELD_BY_SECTION.get(sec_code)
+
         for param in scalar_review_rows_for_contract(contract):
             review_behavior = param.get("review_behavior") or {}
             target_code = param.get("target_code", "")
             found = found_by_target.get(target_code)
             row_fill = FILL_INPUT
+
+            if box_crane_key is not None and param.get("key") == box_crane_key:
+                # Box-calculator-allocated crane shifts (2026-07-30) - computed from this
+                # project's real rebar weight, not looked up in found_by_target/missing at all.
+                # See compute_rebar_crane_allocation/REBAR_CRANE_FIELD_BY_SECTION.
+                found_value = rebar_crane_allocation.get(sec_code, 0)
+                status = "Найдено (авто, box-калькулятор)"
+                source = ""
+                fragment = (
+                    f"Вес арматуры раздела: {rebar_weights_by_section.get(sec_code, 0):g} кг. "
+                    f"Автораспределение по накоплению {int(METAL_TRUCK_CAPACITY_KG // 1000)} т — "
+                    "проверьте и поправьте при необходимости."
+                )
+                counts["found"] += 1
+                ws.append([
+                    param.get("label_ru", param.get("key", "")),
+                    found_value,
+                    param.get("unit", ""),
+                    status,
+                    "",
+                    review_behavior.get("action_ru", "Проверьте значение."),
+                    source,
+                    fragment,
+                    "",
+                    "",
+                    sec_code,
+                    param.get("key", ""),
+                    param.get("source_class", ""),
+                    target_code,
+                ])
+                for cell in ws[ws.max_row]:
+                    cell.fill = row_fill
+                ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+                continue
+
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
                 # A sibling field in the same presence pair was found — this project definitely
@@ -459,6 +503,37 @@ def build_project_sheet_from_extraction(
                 for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
                     ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
 
+    # Итог по коробке (2026-07-30): one cross-section summary row after all 8 sections, so
+    # Elena can see the real total before deciding how to redistribute crane shifts between
+    # sections herself. See compute_rebar_weights_by_section/compute_rebar_crane_allocation.
+    section_names_by_code = {section_code(c): section_name(c) for c in contracts}
+    grand_total_weight = sum(rebar_weights_by_section.values())
+    breakdown = "; ".join(
+        f"{section_names_by_code.get(code, code)}: {weight:g} кг"
+        for code, weight in rebar_weights_by_section.items()
+        if weight > 0
+    )
+    append_section_band(ws, ["Итог по коробке"], len(PROJECT_HEADERS))
+    ws.append([
+        "Общий вес арматуры по проекту (все разделы с арматурой), кг",
+        round(grand_total_weight, 1),
+        "кг",
+        "Найдено (авто, box-калькулятор)",
+        "",
+        "Справочно — используется для решения, где ставить больше 1 крана на разделе.",
+        "",
+        breakdown,
+        "",
+        "",
+        "",
+        "total_rebar_weight_kg",
+        "AUTO_CALCULATED",
+        "",
+    ])
+    for cell in ws[ws.max_row]:
+        cell.fill = FILL_INPUT
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
     ws.cell(1, 1).fill = FILL_HEADER
     apply_table_style(ws, header_row=4)
@@ -504,6 +579,56 @@ def build_rebar_lookup(
         if items:
             lookup[sec_code] = items
     return lookup
+
+
+# section_code -> the one review_parameters/supplier_inputs key that holds "crane shifts for
+# rebar delivery" in that section. Only the 4 sections with rebar have one; must match
+# METAL_SECTION_ORDER's box_calculator convention (experiments/box_calculator/section_registry.py)
+# so allocation order lines up with these keys 1:1.
+REBAR_CRANE_FIELD_BY_SECTION = {
+    "foundation_slab": "rebar_crane_shifts",
+    "load_bearing_walls_lintels": "wall_rebar_crane_shifts",
+    "floor_slab_1": "formwork_rebar_crane_shifts",
+    "floor_slab_2": "crane_shifts",
+}
+METAL_SECTION_ORDER = list(REBAR_CRANE_FIELD_BY_SECTION.keys())
+METAL_TRUCK_CAPACITY_KG = 10000.0
+
+
+def compute_rebar_weights_by_section(
+    contracts: list[dict[str, Any]], extraction: dict[str, Any]
+) -> dict[str, float]:
+    """section_code -> total rebar weight in kg for that section, length x rate summed across
+    every rebar item found (see rebar_item_weight_kg - rate is the item's own kg_per_meter if
+    given, else the fixed GOST catalog by diameter). Only the 4 rebar-bearing sections can appear;
+    a section with items but zero computable weight (no length/diameter data at all) still gets an
+    entry of 0.0, not omitted, so downstream code doesn't have to guess whether "missing" means
+    "no rebar" or "rebar present but unweighable"."""
+    lookup = build_rebar_lookup(contracts, extraction)
+    weights: dict[str, float] = {}
+    for sec_code in METAL_SECTION_ORDER:
+        total = 0.0
+        for item in lookup.get(sec_code, []):
+            weight = rebar_item_weight_kg(item)
+            if weight is not None:
+                total += weight
+        weights[sec_code] = total
+    return weights
+
+
+def compute_rebar_crane_allocation(weights_by_section: dict[str, float]) -> dict[str, int]:
+    """section_code -> automatically allocated crane/truck shifts for rebar delivery, using the
+    existing box_calculator threshold-by-10-tonnes logic (experiments/box_calculator/
+    metal_delivery_allocator.py) - the first truck goes to the first section with any weight,
+    later trucks go to whichever section's cumulative weight crosses the next 10-tonne boundary.
+    unit_price is 0 here - this call only needs allocated_trucks, not a cost (pricing for these
+    lines already comes from the normal price_keys mechanism on sheet 02)."""
+    sections = [
+        MetalSection(section_code=code, section_name=code, metal_weight_kg=weights_by_section.get(code, 0.0))
+        for code in METAL_SECTION_ORDER
+    ]
+    result = allocate_metal_deliveries(sections=sections, capacity_kg=METAL_TRUCK_CAPACITY_KG, unit_price=0.0)
+    return {item["section_code"]: item["allocated_trucks"] for item in result["sections"]}
 
 
 def build_workbook_from_extraction(

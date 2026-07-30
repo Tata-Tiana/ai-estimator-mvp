@@ -406,7 +406,7 @@ supplier_inputs:
   - key: crane_shifts
     label_ru: "Подача опалубки и арматуры краном"
     unit: "смена"
-    source_class: SUPPLIER_INPUT
+    source_class: AUTO_CALCULATED
     required: true
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "crane_shifts"
@@ -416,8 +416,8 @@ supplier_inputs:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Укажите смены крана для подачи опалубки и арматуры."
-    notes: "Manual/supplier line in current calculator."
+      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости. Расчёт учитывает только вес арматуры, не опалубку — если для подачи опалубки нужен отдельный подъём, поправьте вручную."
+    notes: "source_class SUPPLIER_INPUT -> AUTO_CALCULATED 2026-07-30: value now comes from compute_rebar_crane_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections). Same formwork/rebar label caveat as floor_slab_1's formwork_rebar_crane_shifts - see that entry's notes."
 
   - key: concrete_pump_shifts
     label_ru: "Работа бетононасоса"
