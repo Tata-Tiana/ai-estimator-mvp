@@ -109,6 +109,7 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
         "Бетонирование балки бетоном марки В22,5 (М300) (высотой до 250мм)",
         "мп",
     ): "beam_concrete_placing_work_m",
+    row_key("Вывоз мусора с объекта", "маш"): "waste_removal_loading_work_truck",
     row_key("Кладка парапета из газобетонных блоков", "м3"): "gas_block_masonry_work_m3",
     row_key(
         "Обкладка дымохода и вентканалов толщ. 150мм из из газобетонных блоков",
@@ -127,6 +128,132 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
     row_key("Кладка вентканалов Schiedel", "мп"): "schiedel_masonry_work_m",
     row_key("Доставка вентканалов/ разгрузка в ручную на объекте", "маш"): "schiedel_delivery_truck",
 }
+
+IGNORED_WORK_PRICE_ROWS: set[tuple[str, str]] = {
+    row_key(
+        "Бетонирование балки бетоном марки В22,5 (М300) (высотой более 250мм)",
+        "м3",
+    ),
+}
+
+OBSOLETE_PREVIOUS_PRICE_CODES = {
+    "beam_concrete_placing_work_m3",
+    "waste_removal_truck",
+}
+
+PRICE_CODE_NAME_OVERRIDES = {
+    "edge_insulation_work_m": "Устройство утепления по наружной стороне торцов плиты, балок, перемычек",
+}
+
+DERIVED_PRICE_ROWS = [
+    {
+        "section": "Работы",
+        "name": "Устройство утепления по наружной стороне торцов плиты, балок, перемычек",
+        "unit": "мп",
+        "min_quantity": 1,
+        "price": 450,
+        "price_code": "lintel_edge_insulation_work_m",
+        "comment": "Добавлено по ответу Елены 2026-07-30: ставка такая же, как утепление балок и торца плиты.",
+    },
+    {
+        "section": "Работы",
+        "name": "Установка аэратора кровельного PVC, А75х375",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 2500,
+        "price_code": "roof_pvc_aerator_75x375_installation_item",
+        "comment": "Добавлено по ответу Елены 2026-07-30: 587 руб. — материал аэратора, работа отдельно 2500 руб./шт.",
+    },
+    {
+        "section": "Работы",
+        "name": "Вывоз мусора с объекта, контейнер/машина",
+        "unit": "маш",
+        "min_quantity": 1,
+        "price": 10000,
+        "price_code": "waste_removal_container_truck",
+        "comment": "Перенесено из v3 и уточнено 2026-07-30: контейнер/машина идет в материальной колонке сметы.",
+    },
+]
+
+SORT_BLOCK_ORDER = {
+    "general": 0,
+    "earthworks": 1,
+    "concrete_sand": 2,
+    "formwork_timber": 3,
+    "insulation_thermal": 4,
+    "waterproofing": 5,
+    "walls_lintels": 6,
+    "flat_roof": 7,
+    "schiedel": 8,
+    "other": 9,
+}
+
+SECTION_SORT_BLOCK = {
+    "бетон": "concrete_sand",
+    "песок": "concrete_sand",
+    "пиломатериал": "formwork_timber",
+    "арматура": "walls_lintels",
+    "газобетон": "walls_lintels",
+    "поротерм": "walls_lintels",
+    "несущие стены и перемычки": "walls_lintels",
+    "плоская кровля": "flat_roof",
+    "кровельное покрытие дома": "flat_roof",
+    "schiedel": "schiedel",
+    "земляные работы": "earthworks",
+    "устройство фундаментной плиты": "formwork_timber",
+    "ж/б монолитная плита перекрытия 1-го этажа": "formwork_timber",
+    "фундамент": "insulation_thermal",
+}
+
+
+def row_sort_block(row: list[Any]) -> str:
+    section = normalize_text(row[REGISTRY_HEADERS.index("Раздел")])
+    name = normalize_text(row[REGISTRY_HEADERS.index("Наименование")])
+    code = normalize_text(row[REGISTRY_HEADERS.index("price_code")])
+
+    text = f"{section} {name} {code}"
+    if section in SECTION_SORT_BLOCK and section != "работы":
+        return SECTION_SORT_BLOCK[section]
+    if code in {
+        "axis_marking_shift",
+        "construction_camp_setup_item",
+        "site_cabin_connection_item",
+        "waste_removal_container_truck",
+        "waste_removal_loading_work_truck",
+    } or "строительный городок" in text or "бытовк" in text or "вынос осей" in text:
+        return "general"
+    if any(term in text for term in ("excavator", "землян", "грунт", "котлован", "геотекст", "песок", "коммуникац")):
+        return "earthworks"
+    if any(term in text for term in ("газобетон", "поротерм", "кладк", "перемыч", "парапет", "блок", "арматур", "lintel", "rebar")):
+        return "walls_lintels"
+    if any(term in text for term in ("бетон", "concrete", "насос", "миксер", "перенос, подъем бетона")):
+        return "concrete_sand"
+    if any(term in text for term in ("опалуб", "фанер", "пиломатериал", "timber", "plywood", "formwork")):
+        return "formwork_timber"
+    if any(term in text for term in ("утепл", "эппс", "eps", "термов", "пеноплэкс", "пеноплекс")):
+        return "insulation_thermal"
+    if any(term in text for term in ("гидроизоляц", "мастик", "битум", "planter", "waterproof")):
+        return "waterproofing"
+    if any(term in text for term in ("кров", "roof", "мембран", "воронк", "аэратор", "водосток", "пвх")):
+        return "flat_roof"
+    if "schiedel" in text or "вентканал" in text:
+        return "schiedel"
+    return SECTION_SORT_BLOCK.get(section, "other")
+
+
+def sort_registry_rows(rows: list[list[Any]]) -> list[list[Any]]:
+    indexed_rows = list(enumerate(rows))
+    return [
+        row
+        for original_index, row in sorted(
+            indexed_rows,
+            key=lambda item: (
+                SORT_BLOCK_ORDER[row_sort_block(item[1])],
+                clean_text(item[1][REGISTRY_HEADERS.index("Раздел")]).lower(),
+                item[0],
+            ),
+        )
+    ]
 
 
 def headers(ws) -> dict[str, int]:
@@ -229,7 +356,11 @@ def build_registry_workbook(
 
     previous_codes = previous_code_index(previous_registry_path)
     source_rows = extract_work_price_rows(source_path)
-    registry_rows = previous_registry_rows(previous_registry_path)
+    registry_rows = [
+        row
+        for row in previous_registry_rows(previous_registry_path)
+        if clean_text(row[REGISTRY_HEADERS.index("price_code")]) not in OBSOLETE_PREVIOUS_PRICE_CODES
+    ]
     merged_rows, removed_existing_duplicates = deduplicate_rows_by_price_code(registry_rows)
 
     wb = Workbook()
@@ -241,9 +372,13 @@ def build_registry_workbook(
     manual = 0
     ambiguous: list[dict[str, Any]] = []
     unmatched: list[dict[str, Any]] = []
+    ignored: list[dict[str, Any]] = []
     replaced_codes: set[str] = set()
     for item in source_rows:
         key = row_key(item["name"], item["unit"])
+        if key in IGNORED_WORK_PRICE_ROWS:
+            ignored.append(item)
+            continue
         manual_code = MANUAL_WORK_PRICE_CODES.get(key)
         codes = sorted(previous_codes.get(key, set()))
         price_code = ""
@@ -266,7 +401,7 @@ def build_registry_workbook(
 
         new_row = [
             item["section"],
-            item["name"],
+            PRICE_CODE_NAME_OVERRIDES.get(price_code, item["name"]),
             item["unit"],
             item["min_quantity"],
             item["price"],
@@ -288,7 +423,29 @@ def build_registry_workbook(
         else:
             merged_rows.append(new_row)
 
+    for item in DERIVED_PRICE_ROWS:
+        new_row = [
+            item["section"],
+            item["name"],
+            item["unit"],
+            item["min_quantity"],
+            item["price"],
+            date.today().isoformat(),
+            item["comment"],
+            item["price_code"],
+        ]
+        replaced = False
+        for index, existing_row in enumerate(merged_rows):
+            if clean_text(existing_row[REGISTRY_HEADERS.index("price_code")]) == item["price_code"]:
+                merged_rows[index] = new_row
+                replaced = True
+                break
+        if not replaced:
+            merged_rows.append(new_row)
+        replaced_codes.add(item["price_code"])
+
     final_rows, removed_final_duplicates = deduplicate_rows_by_price_code(merged_rows)
+    final_rows = sort_registry_rows(final_rows)
     for row in final_rows:
         ws.append(row)
 
@@ -318,6 +475,7 @@ def build_registry_workbook(
         "final_rows": len(final_rows),
         "ambiguous": ambiguous,
         "unmatched": unmatched,
+        "ignored": ignored,
     }
 
 
@@ -338,6 +496,7 @@ def write_report(summary: dict[str, Any], report_path: Path) -> None:
         f"- Final registry rows: `{summary['final_rows']}`",
         f"- Ambiguous matches: `{len(summary['ambiguous'])}`",
         f"- Unmatched rows: `{len(summary['unmatched'])}`",
+        f"- Ignored source rows: `{len(summary['ignored'])}`",
         "",
     ]
     if summary["replaced_codes"]:
@@ -353,6 +512,15 @@ def write_report(summary: dict[str, Any], report_path: Path) -> None:
         lines.extend(["## Unmatched", "| source row | name | unit | price |", "|---:|---|---|---:|"])
         for row in summary["unmatched"]:
             lines.append(f"| {row['source_row']} | {row['name']} | {row['unit']} | {row['price']} |")
+        lines.append("")
+    if summary["ignored"]:
+        lines.extend(["## Ignored Source Rows", "| source row | name | unit | price | reason |", "|---:|---|---|---:|---|"])
+        for row in summary["ignored"]:
+            lines.append(
+                f"| {row['source_row']} | {row['name']} | {row['unit']} | {row['price']} | "
+                "Елена 2026-07-30: балки перекрытий считаем единой строкой по м.п. "
+                "`beam_concrete_placing_work_m`; строку `м3 > 250мм` не используем. |"
+            )
         lines.append("")
     report_path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -383,6 +551,7 @@ def main() -> None:
         f"replaced={len(summary['replaced_codes'])}",
         f"ambiguous={len(summary['ambiguous'])}",
         f"unmatched={len(summary['unmatched'])}",
+        f"ignored={len(summary['ignored'])}",
         f"output={summary['output_path']}",
     )
 

@@ -5,6 +5,112 @@
 **Если контекст сессии прервался/сжался — читай этот файл первым, прежде чем начинать
 раздел заново или гадать, что уже сделано.** Отмечай чекбоксы по мере готовности.
 
+## 🔥 Актуальный план сборки сметы по АРК (добавлено 2026-07-30)
+
+Этот раздел обновляет старые заметки ниже. Если ниже написано, что
+`extraction_output.json -> review workbook` ещё не существует, это уже устарело: такой
+шаг теперь есть в `populate_review_workbook_from_extraction.py`.
+
+Текущий статус:
+
+- `PDF/chat extraction -> extraction_output.json`: готово на стороне chat/API parser.
+- `extraction_output.json -> review workbook`: готово.
+  Скрипт: `experiments/full_estimate_review_pipeline/populate_review_workbook_from_extraction.py`.
+- Лист `01_Проверка проекта`: заполняется из extraction JSON, включая scalar rows,
+  production repeated rows и diagnostic repeated rows.
+- Лист `01-1_Справочник`: заполняется из `output/manual_values_registry.xlsx`.
+- Лист `02_Цены себестоимости`: заполняется из `output/price_registry_filled_v4.xlsx`.
+- Лист `03_Детали объемов`: заполняется из `raw_table_rows` как evidence/control, не как
+  источник калькулятора.
+- `review workbook -> normalized_review`: core-reader готов
+  (`review_to_calculator/core/workbook_reader.py`).
+- `normalized_review prices -> resolved_prices`: core-resolver готов
+  (`review_to_calculator/core/price_resolver.py`).
+- `normalized_review -> calculator input`: НЕ ГОТОВО. Нет
+  `review_to_calculator/sections/<section_code>/build_input.py`.
+- `calculator results -> final estimate workbook`: НЕ ГОТОВО для all-section сметы.
+
+Ближайший план для АРК:
+
+1. **Зафиксировать входы.**
+   - Выбрать один canonical ARK extraction JSON. На 2026-07-30 самый свежий файл в Downloads:
+     `/Users/tatanamedzidova/Downloads/gpt_arkadia_extraction(3).json`.
+   - Скопировать его в repo/run folder, чтобы сборка не зависела от Downloads.
+   - Не исправлять JSON вручную ради совпадения со сметой. Допустима только структурная
+     нормализация под официальную schema, если файл невалиден.
+
+2. **Пересобрать ARK review workbook.**
+   - Использовать `populate_review_workbook_from_extraction.py`.
+   - Обязательно брать свежие:
+     `output/price_registry_filled_v4.xlsx` и `output/manual_values_registry.xlsx`.
+   - Важно: `ark_review_workbook_with_prices_v5.xlsx` был создан раньше последней правки
+     `price_registry_filled_v4.xlsx`, поэтому для реального прогона нужен новый workbook
+     (`_v6` или следующий).
+
+3. **Сделать audit gate перед калькуляторами.**
+   - Проверить required rows sheet 01: found / needs_review / missing по каждому разделу.
+   - Проверить required prices sheet 02: `price_registry`, `price_registry_empty`,
+     `not_found`, `no_registry_code`.
+   - Проверить sheet 01-1: какие manual/default-like values заполнены, какие остаются
+     пустыми и должны быть заполнены Еленой.
+   - Отдельно вывести blockers: поля, без которых adapter/calculator не должен стартовать.
+
+4. **Передать workbook Елене / получить исправленный workbook обратно.**
+   - Елена правит листы `01`, `01-1`, `02`.
+   - Sheet `03` остаётся справочным: смотреть можно, но adapter не читает его как источник.
+
+5. **Написать adapters по одному разделу.**
+   Target path:
+   `experiments/full_estimate_review_pipeline/review_to_calculator/sections/<section_code>/build_input.py`.
+   Каждый adapter должен:
+   - брать только `normalized_review`, `resolved_prices`, contract defaults/manual values;
+   - не читать sheet 03;
+   - не брать значения из old cases/output/screenshot/old estimate;
+   - fail loudly, если required value/price отсутствует;
+   - явно выставлять production `*_calc_method`, чтобы calculator не упал в legacy.
+
+6. **Порядок adapters для АРК.**
+   - `earthworks` — есть старый earthworks-specific образец, но переносить только смысл, не
+     старое чтение sheet 03.
+   - `waterproofing` — маленький пилот для core.
+   - `foundation_slab`.
+   - `load_bearing_walls_lintels`.
+   - `floor_slab_1`.
+   - `floor_slab_2`.
+   - `schiedel_vent_channels`.
+   - `flat_roof`.
+
+7. **Особые ARK риски, которые adapter/audit должен показать явно.**
+   - Балки плит: бетон идёт по спецификации материалов, длина отдельно; ширина теперь не
+     обязательна для работы, но нужна как diagnostic/context, если есть.
+   - Утепление балок/перемычек не всегда на всю длину. Нельзя автоматически считать всю длину
+     балки утепляемой, если PDF даёт отдельную длину утепления.
+   - Монолитные перемычки: работа по длине, материал бетона по объёму.
+   - Б4/Б4-1 в АРК может быть общей строкой по бетону/длине — не раскладывать по маркам без
+     данных проектировщика.
+   - Schiedel/вентканалы: различать брендированные покупные элементы Schiedel и generic
+     газоблочные вентшахты. АРК может быть не Schiedel-case.
+   - Flat roof: temporary door must not appear in calculator/final estimate; roof is flat roof,
+     not a generic roof.
+
+8. **Run calculators.**
+   - Сначала запускать один раздел, не все 8 сразу.
+   - Сохранять `normalized_review.json`, `calculator_input.json`, `calculator_result.json`,
+     `adapter_report.md` в project run folder.
+   - Calculator result source of final quantities is `estimate_lines`, not old Excel cells.
+
+9. **Build final estimate workbook.**
+   - Написать all-section exporter отдельно.
+   - Источник строк: calculator `estimate_lines` + `catalogs/estimate_line_catalog.yaml` for
+     ordering/layout metadata.
+   - Review workbook and final estimate workbook remain separate artifacts.
+
+10. **Compare against the real ARK estimate.**
+    - Не подгонять код под ARK totals.
+    - Отчёт должен классифицировать расхождения:
+      parser missing, workbook/manual missing, price mismatch, calculator methodology mismatch,
+      out-of-MVP/excluded row, real design/smeta ambiguity.
+
 ## ⚠️ Полный путь PDF → смета: что реально есть, а чего нет (добавлено 2026-07-13)
 
 Этот файл называется «adapter build plan» и описывает только последний кусок пути —
@@ -425,11 +531,12 @@ experiments/full_estimate_review_pipeline/review_to_calculator/
 
 ### Этап 1 — пилот на одном разделе
 
-**ОТЛОЖЕНО 2026-07-13.** Перед тем как писать `build_input.py`, нужно сначала закрыть
-шаг 2 из раздела «Полный путь PDF → смета» в самом верху этого файла — построить и
-проверить на реальном `extraction_output.json`, что данные корректно заполняют лист 01
-текущей структуры. Такого шага сейчас не существует нигде в репозитории. Не начинать
-Этап 1, пока это не сделано и не проверено глазами.
+**РАЗБЛОКИРОВАНО 2026-07-30.** Старый блокер от 2026-07-13 закрыт:
+`populate_review_workbook_from_extraction.py` теперь строит review workbook из реального
+`extraction_output.json`, заполняет sheet 01/01-1/02/03 и уже проверялся на ARK. Перед
+первым `build_input.py` всё равно нужно сделать свежий ARK rebuild на последнем JSON и
+последнем `price_registry_filled_v4.xlsx`, затем пройти audit gate из раздела
+"Актуальный план сборки сметы по АРК" выше.
 
 - [ ] Раздел-пилот: **waterproofing** (самый маленький калькулятор, 8 строк сметы,
       плоский вход, 0 обязательных supplier_inputs, уже 0 mismatch на всех тестах).

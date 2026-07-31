@@ -876,11 +876,10 @@ def build_rebar_lookup(
 # was actually designed and named for.
 #
 # section_code -> the one review_parameters/supplier_inputs key that holds "delivery trucks for
-# rebar/metal" in that section. load_bearing_walls_lintels is deliberately absent - 3 independent
-# real smetas (ARK/USV/TRC) never show a metal-delivery line there (rebar in that section is
-# comparatively light and its crane lines only ever name "блоков", never "арматуры"); its rebar
-# weight is still counted in METAL_SECTION_ORDER's box-wide total below since it still needs to
-# physically arrive on site, it just never gets its own dedicated billed line.
+# rebar/metal" in that section. load_bearing_walls_lintels is deliberately absent because this
+# section does not have its own dedicated billed metal-delivery line in the current estimate
+# structure; its rebar weight is still counted in METAL_SECTION_ORDER's box-wide total below since
+# it still needs to physically arrive on site.
 REBAR_METAL_DELIVERY_FIELD_BY_SECTION = {
     "foundation_slab": "rebar_metal_delivery_trucks",
     "floor_slab_1": "rebar_metal_delivery_trucks",
@@ -969,9 +968,9 @@ def build_workbook_from_extraction(
 
 def next_versioned_path(path: Path) -> Path:
     """Appends/bumps a _vN suffix so repeated builds never overwrite the previous one (a real
-    review session rebuilds this file many times while iterating) - ark_review_workbook_with_
-    prices.xlsx -> ..._v1.xlsx, then _v2.xlsx, etc., based on the highest _vN already present
-    in the target directory. Re-versions cleanly if the given path already ends in _vN."""
+    review session rebuilds this file many times while iterating) - review_workbook.xlsx ->
+    ..._v1.xlsx, then _v2.xlsx, etc., based on the highest _vN already present in the target
+    directory. Re-versions cleanly if the given path already ends in _vN."""
     match = re.match(r"^(.*)_v(\d+)$", path.stem)
     base_stem = match.group(1) if match else path.stem
     max_version = 0

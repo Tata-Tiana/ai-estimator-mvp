@@ -50,7 +50,9 @@ review_parameters:
     label_ru: "Глубина котлована"
     unit: "м"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
+    required_if:
+      absent_group: "pit_items"
     review_sheet: "01_Проверка проекта"
     target_code: "pit_excavation_depth_m"
     calculator_input_path: "pit_excavation_depth_m"
@@ -64,13 +66,13 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте глубину котлована."
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте глубину котлована только если ниже нет готовых объёмов выемки pit_items."
     validation:
       numeric: true
       min_value: 0
       max_value: null
-    notes: ""
+    notes: "Conditional input. Required only for area*depth calculation when the project does not provide ready pit_items volumes."
 
   - key: pit_items
     label_ru: "Готовые объёмы выемки грунта по записям (котлован, приямки)"
@@ -108,7 +110,9 @@ review_parameters:
     label_ru: "Объем песка под основание"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
+    required_if:
+      absent_group: "sand_items"
     review_sheet: "01_Проверка проекта"
     target_code: "sand_base_volume_m3"
     calculator_input_path: "sand_base_volume_m3"
@@ -122,13 +126,13 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте объем песка из спецификации."
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте объем песка из спецификации только если ниже нет готовых объёмов sand_items."
     validation:
       numeric: true
       min_value: 0
       max_value: null
-    notes: ""
+    notes: "Conditional input. Required only for legacy scalar mode when the project does not provide sand_items."
 
   - key: sand_items
     label_ru: "Готовые объёмы песка по категориям"
@@ -244,7 +248,9 @@ review_parameters:
     label_ru: "Длина коммуникаций"
     unit: "м"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
+    required_if:
+      absent_group: "communications_pipe_items"
     review_sheet: "01_Проверка проекта"
     target_code: "communications_length_m"
     calculator_input_path: "communications_length_m"
@@ -255,17 +261,17 @@ review_parameters:
       target_codes: ["communications_length_m"]
       aliases_ru: ["длина коммуникаций", "коммуникации"]
       expected_unit: "м"
-      notes: "This is the calculator input. The pipe-items breakdown below is a sheet-01 cross-check row group, not an override source."
+      notes: "This is the legacy scalar calculator input. If communications_pipe_items exists, the calculator can use pipe_items mode instead."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте длину коммуникаций; сверьте с составом труб ниже."
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте длину коммуникаций; если ниже есть состав труб, сверьте автосумму строк."
     validation:
       numeric: true
       min_value: 0
       max_value: null
-    notes: ""
+    notes: "Conditional input. Required only when the project does not provide communications_pipe_items suitable for pipe_items calculation."
 
   - key: trench_routes
     label_ru: "Маршруты траншей"
@@ -342,7 +348,7 @@ review_parameters:
     normalized_json_path: "sections.earthworks.parameters.communications_pipe_items.rows"
     value_kind: repeated_rows
     row_key_field: code
-    production_input: false
+    production_input: true
     item_label_columns: [name]
     correction_columns: [diameter_mm, pipe_length_m, quantity, total_length_m]
     columns:
@@ -391,9 +397,9 @@ review_parameters:
       status_if_missing: "manual_required"
       action_ru: "Проверьте состав труб построчно; сверьте сумму длин с communications_length_m выше."
     mirror_to_details_sheet: true
-    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is communications_length_m (scalar above), not this breakdown."
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. In production this group can feed calculator pipe_items mode when the scalar communications_length_m is absent."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; scalar communications_length_m remains the reviewed calculator quantity. code is required so this group can also feed calculator pipe_items mode safely if that mode is deliberately enabled. item_label_columns/correction_columns added 2026-07-29, same fix and reason as trench_routes above — renders per-pipe now instead of one dead scalar row."
+    notes: "Production repeated rows for communications_length_calc_method=pipe_items. If a project provides one explicit total communications_length_m, that scalar may still be used; otherwise the adapter should pass these rows to the calculator and use the summed included pipe lengths."
 
 price_keys:
   - key: axis_marking_work_unit_price

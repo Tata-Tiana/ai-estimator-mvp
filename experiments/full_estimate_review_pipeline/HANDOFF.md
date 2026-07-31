@@ -33,6 +33,36 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+## ARK Estimate Assembly Status (updated 2026-07-30)
+
+If the user asks "что нужно, чтобы собрать смету по АРК", do not start from the old
+2026-07-13 adapter note as if the review workbook builder were still missing. That note is
+historical. Current state:
+
+- `extraction_output.json -> review workbook` exists now:
+  `populate_review_workbook_from_extraction.py`.
+- It fills sheets `00`, `01`, `01-1`, `02`, `03`, `04`, `05`, `06`.
+- Sheet `02` is filled from `output/price_registry_filled_v4.xlsx`.
+- Sheet `01-1` is filled from `output/manual_values_registry.xlsx`.
+- Current ARK workbook outputs already exist under
+  `experiments/full_estimate_review_pipeline/output/ark_review_workbook_with_prices_v*.xlsx`.
+- Important freshness check: on 2026-07-30 `output/price_registry_filled_v4.xlsx` was edited
+  after `ark_review_workbook_with_prices_v5.xlsx`, so the next real ARK review workbook must be
+  rebuilt before giving it to Elena or reading it into calculators.
+
+What is still missing for a real ARK final estimate:
+
+- choose/copy the canonical latest ARK extraction JSON into the repo run folder;
+- rebuild the ARK review workbook from that JSON and the latest price/manual registries;
+- audit required missing values and required blank prices before calculator run;
+- write `review_to_calculator/sections/<section_code>/build_input.py` adapters;
+- run each section calculator from the reviewed workbook;
+- build a shared final estimate workbook from calculator `estimate_lines`.
+
+Do not let sheet `03_Детали объемов` become a hidden data source during this work. Sheet 03 is
+only evidence/control for Elena. Calculator inputs must come from sheet 01, sheet 01-1, sheet 02,
+contract defaults, and explicit supplier/manual values.
+
 ## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
 
 **There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**

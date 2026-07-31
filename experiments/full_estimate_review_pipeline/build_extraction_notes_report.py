@@ -86,6 +86,12 @@ AUTO_SUM_CANDIDATE_TARGETS = {
     "foundation_slab": {
         "membrane_area_m2": "Можно автосуммировать компоненты мембраны PLANTER, если все candidates относятся к одной мембране и одному разделу фундаментной плиты.",
     },
+    "load_bearing_walls_lintels": {
+        "lintel_concrete_volume": "Можно автосуммировать компоненты бетона перемычек в U-блоках, если все candidates относятся к одному этажу и одному типу перемычек.",
+        "floor_2_lintel_concrete_volume": "Можно автосуммировать компоненты бетона перемычек в U-блоках, если все candidates относятся к одному этажу и одному типу перемычек.",
+        "floor_1_lintel_monolithic_concrete_volume": "Можно автосуммировать компоненты бетона монолитных перемычек, если все candidates относятся к одному этажу и одному типу перемычек.",
+        "floor_2_lintel_monolithic_concrete_volume": "Можно автосуммировать компоненты бетона монолитных перемычек, если все candidates относятся к одному этажу и одному типу перемычек.",
+    },
 }
 
 
@@ -135,11 +141,11 @@ def source_text(item: dict[str, Any]) -> str:
     return " | ".join(parts)
 
 
-def candidate_sum_text(item: dict[str, Any], section_code: str) -> str:
+def candidate_sum_info(item: dict[str, Any], section_code: str) -> dict[str, str] | None:
     code = item_code(item)
     rule_note = AUTO_SUM_CANDIDATE_TARGETS.get(section_code, {}).get(code)
     if not rule_note or item.get("value") is not None:
-        return ""
+        return None
     values = []
     raw_parts = []
     for candidate in item.get("candidates") or []:
@@ -155,10 +161,23 @@ def candidate_sum_text(item: dict[str, Any], section_code: str) -> str:
         if candidate.get("raw_text"):
             raw_parts.append(str(candidate["raw_text"]))
     if len(values) < 2:
-        return ""
+        return None
     total = round(sum(values), 3)
     value_expr = " + ".join(f"{value:g}" for value in values)
-    return f"{rule_note} Автосумма: {value_expr} = {total:g}. Компоненты: {'; '.join(raw_parts)}"
+    return {
+        "value": f"{total:g}",
+        "status": "needs_review_autosum",
+        "notes": (
+            f"В JSON нет единого итогового значения, но есть компоненты одной позиции. "
+            f"{rule_note} Проверьте компоненты и используйте автосумму."
+        ),
+        "auto_sum": f"{value_expr} = {total:g}. Компоненты: {'; '.join(raw_parts)}",
+    }
+
+
+def candidate_sum_text(item: dict[str, Any], section_code: str) -> str:
+    info = candidate_sum_info(item, section_code)
+    return info["auto_sum"] if info else ""
 
 
 def item_code(item: dict[str, Any]) -> str:
@@ -236,17 +255,26 @@ def collect_section_items(
         if key in seen:
             return
         seen.add(key)
+        auto_sum = candidate_sum_info(item, section_code)
+        display_status = auto_sum["status"] if auto_sum else status
+        display_value = auto_sum["value"] if auto_sum else short(item.get("value"), 220)
+        display_notes = auto_sum["notes"] if auto_sum else short(item.get("notes"), 420)
+        display_auto_sum = auto_sum["auto_sum"] if auto_sum else ""
+        # When the report can render candidates as a clear autosum, do not also print the raw
+        # candidates JSON wall. The raw JSON remains in extraction_output.json; this report is for
+        # human review.
+        display_candidates = "" if auto_sum else short(item.get("candidates"), 420)
         collected.append(
             {
-                "status": status,
+                "status": display_status,
                 "title": item_title(item),
                 "confidence": confidence_text(item),
-                "value": short(item.get("value"), 220),
+                "value": display_value,
                 "source": source_text(item),
                 "raw_text": short(item.get("raw_text"), 320),
-                "notes": short(item.get("notes"), 420),
-                "auto_sum": short(candidate_sum_text(item, section_code), 520),
-                "candidates": short(item.get("candidates"), 420),
+                "notes": display_notes,
+                "auto_sum": short(display_auto_sum, 520),
+                "candidates": display_candidates,
             }
         )
 
