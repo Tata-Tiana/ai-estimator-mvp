@@ -1495,6 +1495,14 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
                     line("parapet_gas_block_d500_250_material", "Газобетонный блок D500 600x250x250 мм для парапета", "м3", parapet["parapet_d500_250"]["order_volume_m3"], material_unit_price=data.gas_block_d500_250_unit_price, notes="Добавлено 2026-07-15. Елена: парапет обычно D400 (80-90%), но может быть частично или полностью D500 600x250x250, тот же блок, что и второй материал основных стен.", price_code="gas_block_d500_m3")
                 )
             lines.extend(wall_block_other_density_lines(data.wall_block_items or [], "parapet"))
+            if d(data.parapet_chasing_base_length_m) > 0:
+                lines.append(
+                    line("parapet_chasing_for_d10_reinforcement", "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", data.parapet_chasing_base_length_m, notes="Контрольная строка: базовая длина берется из проектной спецификации парапета.")
+                )
+            if d(data.parapet_rebar_base_length_m) > 0:
+                lines.append(
+                    line("parapet_rebar_a500_d10", "Арматура A500 Ø10 для парапета", "мп", overheads["parapet_rebar"]["order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"], notes="Закупочная длина считается из проектной базовой длины парапета с запасом и округлением до прутка.", price_code="rebar_a500_d10_m")
+                )
 
     if vent["vent_chimney_cladding_enabled_calculated"]:
         lines.extend([

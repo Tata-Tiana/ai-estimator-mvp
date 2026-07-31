@@ -650,6 +650,52 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Added 2026-07-15. Independent of parapet_masonry_volume_m3 — no formula relates them; both are direct spec values that can be 0, nonzero, or both nonzero (mixed parapet) independently."
 
+  - key: parapet_chasing_base_length_m
+    label_ru: "Штробление/армирование парапета, базовая длина"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "parapet_chasing_base_length"
+    calculator_input_path: "parapet_chasing_base_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.parapet_chasing_base_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["parapet_chasing_base_length"]
+      aliases_ru: ["штробление парапета", "армирование парапета", "арматура парапета"]
+      expected_unit: "мп"
+      notes: "Use explicit parapet reinforcement/chasing linear rows only. If the PDF gives several parapet levels/zones, sum parapet rows and keep candidates/source rows. Do not include main walls, lintels, partitions, slabs, beams, foundation, or second-light rows."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Если в проекте есть армирование парапета, проверьте базовую длину для штробления/армирования. Это не арматура основных стен и не перемычки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-31. Production input for the parapet chasing/work line. It may intentionally use the same PDF source rows as parapet_rebar_base_length_m because work and material share one base length."
+
+  - key: parapet_rebar_base_length_m
+    label_ru: "Арматура A500 Ø10 парапета, базовая длина"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "parapet_rebar_base_length"
+    calculator_input_path: "parapet_rebar_base_length_m"
+    normalized_json_path: "sections.load_bearing_walls_lintels.parameters.parapet_rebar_base_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["parapet_rebar_base_length"]
+      aliases_ru: ["арматура парапета", "армирование парапета", "парапет А500С ф-10", "парапет A500C ф-10"]
+      expected_unit: "мп"
+      notes: "Use explicit parapet A500 Ø10 linear rows only. If the PDF gives several parapet levels/zones, sum parapet rows and keep candidates/source rows. Do not put these rows into main_wall_rebar_items or lintel_rebar_items."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Если в проекте есть арматура парапета A500 Ø10, проверьте базовую длину для закупки. Это отдельная строка сметы, не арматура основных стен."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-31. Production input for the calculator's A500 Ø10 parapet rebar helper."
+
   - key: vent_chimney_gas_block_spec_volume_m3
     label_ru: "Газобетон 150 мм для обкладки вентканалов, объем"
     unit: "м3"
@@ -812,10 +858,10 @@ price_keys:
   - {key: parapet_masonry_work_unit_price, estimate_line_code: parapet_masonry_work, label_ru: "Кладка парапета", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_masonry_work_m3", fallback_key: "parapet_masonry_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: vent_chimney_cladding_work_unit_price, estimate_line_code: vent_chimney_gas_block_cladding_work, label_ru: "Обкладка дымохода и вентканалов 150 мм", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_cladding_work_m2", fallback_key: "vent_chimney_cladding_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_d500_150_unit_price, estimate_line_code: vent_chimney_gas_block_d500_600x150x250_material, label_ru: "Газобетонный блок D500 600x150x250 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_d500_150_m3", fallback_key: "gas_block_d500_150_unit_price", allow_manual_override: true, notes: ""}
-  - {key: waste_removal_truck_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, машина", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_truck", fallback_key: "waste_removal_truck_unit_price", allow_manual_override: true, notes: ""}
-  - {key: waste_removal_work_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, работа", price_kind: work, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_truck", fallback_key: "waste_removal_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: waste_removal_truck_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_container_truck", fallback_key: "waste_removal_truck_unit_price", allow_manual_override: true, notes: "Elena 2026-07-30: container/machine cost is material column."}
+  - {key: waste_removal_work_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_loading_work_truck", fallback_key: "waste_removal_work_unit_price", allow_manual_override: true, notes: "Elena 2026-07-30: work column is loading waste into the same container."}
   - {key: technical_supervision_amount, estimate_line_code: walls_technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: ""}
-  - {key: rebar_a500_d10_unit_price_per_m, estimate_line_code: null, label_ru: "Арматура A500 Ø10 (служебная цена конструктора калькулятора)", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_a500_d10_m", fallback_key: "rebar_a500_d10_unit_price_per_m", allow_manual_override: true, notes: "Found missing 2026-07-10: LoadBearingWallsLintelsInput.rebar_a500_d10_unit_price_per_m has no dataclass default, so the adapter must supply it even in production spec_length_items mode — it is still read unconditionally inside calculate_blocks() for the parapet/second-light base-length rebar helper, even though that helper's own estimate line only appears in legacy_second_light_addon mode. Not shown as its own estimate_lines row in production."}
+  - {key: rebar_a500_d10_unit_price_per_m, estimate_line_code: parapet_rebar_a500_d10, label_ru: "Арматура A500 Ø10 для парапета", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_a500_d10_m", fallback_key: "rebar_a500_d10_unit_price_per_m", allow_manual_override: true, notes: "Adapter must supply this even in production spec_length_items mode: calculate_blocks() reads it for the parapet/second-light base-length rebar helper. Since 2026-07-31 it is used by the active production line parapet_rebar_a500_d10 when parapet_rebar_base_length_m is present."}
 
 defaults:
   - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Filled from job metadata.", allow_override_later: false, notes: ""}
@@ -856,7 +902,7 @@ defaults:
   - {key: rebar_a500_d10_kg_per_m, label_ru: "Масса 1 м арматуры A500 Ø10", source_class: DEFAULT, value: 0.617, unit: "кг/м", calculator_input_path: "rebar_a500_d10_kg_per_m", source_note: "Physical steel property, same value used elsewhere in this project for A500 Ø10 (e.g. floor slab rebar catalogs). Found missing 2026-07-10 — required by the calculator (no dataclass default) even in production spec_length_items mode, because calculate_blocks() unconditionally builds the parapet/second-light base-length rebar helper.", allow_override_later: true, notes: ""}
   - {key: rebar_a500_d10_rod_length_m, label_ru: "Длина прутка арматуры A500 Ø10", source_class: DEFAULT, value: 11.7, unit: "м", calculator_input_path: "rebar_a500_d10_rod_length_m", source_note: "Standard supply rod length, same value used elsewhere in this project. Found missing 2026-07-10, same class of gap as rebar_a500_d10_kg_per_m.", allow_override_later: true, notes: ""}
   - {key: main_wall_legacy_geometry_placeholder_zero, label_ru: "Заглушки геометрии для legacy-метода арматуры несущих стен (не используются в production)", source_class: DEFAULT, value: 0, unit: "", calculator_input_path: "main_wall_external_length_m|main_wall_internal_250_control_length_m|main_wall_reinforcement_rows|main_wall_400_reinforcement_threads|main_wall_250_reinforcement_threads|main_wall_reinforcement_overlap_coeff", source_note: "Found missing 2026-07-10: these 6 fields have no dataclass default and are only mathematically used by main_wall_rebar_calc_method=legacy_wall_geometry, but production uses spec_length_items — the constructor still requires some value. Safe placeholder 0 for all 6 (none are in the calculator's require_positive list, only require_non_negative).", allow_override_later: false, notes: "Single documentation entry covering 6 dead-in-production calculator fields; adapter must still set all 6 individually to 0."}
-  - {key: parapet_second_light_legacy_base_length_placeholder_zero, label_ru: "Заглушки базовой длины для legacy-строк парапета и второго света (не используются в production)", source_class: DEFAULT, value: 0, unit: "м", calculator_input_path: "parapet_chasing_base_length_m|second_light_chasing_base_length_m|parapet_rebar_base_length_m|second_light_rebar_base_length_m", source_note: "Found missing 2026-07-10: these 4 fields have no dataclass default. calculate_blocks() always computes parapet_rebar/second_light_rebar from them via rebar_from_base_length, but the resulting values are only turned into a priced estimate line when upper_floor_calc_method=legacy_second_light_addon (production uses floor_2_spec_volume, so the computed control values are simply unused). Safe placeholder 0 for all 4 (not in require_positive list; rod_length denominator is rebar_a500_d10_rod_length_m, never these fields, so no division-by-zero risk).", allow_override_later: false, notes: "Single documentation entry covering 4 dead-in-production calculator fields; adapter must still set all 4 individually to 0."}
+  - {key: second_light_legacy_base_length_placeholder_zero, label_ru: "Заглушки базовой длины для legacy-строк второго света (не используются в production)", source_class: DEFAULT, value: 0, unit: "м", calculator_input_path: "second_light_chasing_base_length_m|second_light_rebar_base_length_m", source_note: "Compatibility placeholders for legacy_second_light_addon only. Production uses floor_2_spec_volume/wall_block_items for upper masonry; second-light chasing/rebar rows are not active production estimate lines.", allow_override_later: false, notes: "Parapet base lengths are no longer part of this placeholder: parapet_chasing_base_length_m and parapet_rebar_base_length_m are AUTO_PROJECT review parameters as of 2026-07-31."}
 
 supplier_inputs:
   - key: flat_roof_enabled
@@ -1576,6 +1622,36 @@ estimate_lines:
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "Added 2026-07-15. Elena: parapet is usually D400 (80-90%) but can rarely be entirely or partially D500 600x250x250, same SKU as main walls' second material — no new price key needed, reuses gas_block_d500_250_unit_price/gas_block_d500_250_pallet_volume_m3."
     notes: "Purchased D400 volume for parapet."
+
+  - code: parapet_chasing_for_d10_reinforcement
+    name_ru: "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_chasing_for_d10_reinforcement]"
+    quantity:
+      formula: "parapet_chasing_base_length_m when flat_roof_enabled and parapet_chasing_base_length_m > 0"
+      leaf_inputs:
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "review_parameters.parapet_chasing_base_length_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-31. Control/zero-priced row matching the calculator's existing treatment: show the project length, but do not add a separate price unless pricing is explicitly expanded later."
+
+  - code: parapet_rebar_a500_d10
+    name_ru: "Арматура A500 Ø10 для парапета"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_rebar_a500_d10]"
+    quantity:
+      formula: "ceil_to_rod(parapet_rebar_base_length_m * rebar_waste_coeff, rebar_a500_d10_rod_length_m) when flat_roof_enabled and parapet_rebar_base_length_m > 0"
+      leaf_inputs:
+        - {ref: "supplier_inputs.flat_roof_enabled", source_class: MANUAL_REVIEW}
+        - {ref: "review_parameters.parapet_rebar_base_length_m", source_class: AUTO_PROJECT}
+        - {ref: "defaults.rebar_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.rebar_a500_d10_rod_length_m", source_class: DEFAULT}
+    prices: {material_unit_price_key: rebar_a500_d10_unit_price_per_m, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-31. Separate from main_wall_rebar_items and lintel_rebar_items; uses the parapet base-length helper already present in the calculator."
 
   - code: vent_chimney_gas_block_cladding_work
     name_ru: "Обкладка дымохода и вентканалов 150 мм"

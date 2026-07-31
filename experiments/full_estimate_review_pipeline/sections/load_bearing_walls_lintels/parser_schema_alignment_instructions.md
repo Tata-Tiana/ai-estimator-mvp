@@ -53,6 +53,8 @@ those constants from the PDF.
 - `vent_chimney_gas_block_spec_volume_m3`
 - `main_wall_rebar_items`
 - `lintel_rebar_items`
+- `parapet_chasing_base_length_m`
+- `parapet_rebar_base_length_m`
 
 ## Repeated-row shapes
 
@@ -83,6 +85,9 @@ those constants from the PDF.
 - Do not substitute monolithic lintel insulation length for total monolithic lintel length; insulation may cover only part of the lintels.
 - Keep vent chimney gas block volume separate from Schiedel vent channel kit quantities.
 - Rebar rows must stay row-by-row; do not calculate total weight in GPT/Claude unless PDF explicitly gives it and the calculator expects it.
+- Keep parapet reinforcement separate from `main_wall_rebar_items` and `lintel_rebar_items`.
+  Parapet A500 Ø10 rows feed `parapet_chasing_base_length_m` and `parapet_rebar_base_length_m`
+  as base linear lengths. They are not main-wall masonry rebar and not lintel rebar.
 
 ## Check before marking section ready
 
@@ -106,9 +111,7 @@ calculator input:
 - `sand_concrete_thickness_factor`
 - `gas_block_delivery_truck_capacity_m3`
 - `gas_block_d500_150_pallet_volume_m3`
-- `parapet_chasing_base_length_m`
 - `second_light_chasing_base_length_m`
-- `parapet_rebar_base_length_m`
 - `second_light_rebar_base_length_m`
 
 **All of the above declared in the contract 2026-07-10** — see the dated entry in

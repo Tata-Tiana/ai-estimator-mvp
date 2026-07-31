@@ -2181,6 +2181,50 @@ sections:
         zero_policy: disabled_if_zero
         notes: "Added 2026-07-15. Elena: parapet is usually D400 (80-90%) but can rarely be entirely or partially D500 600x250x250 — same SKU as main walls' second material (main_wall_gas_block_250_spec_volume_m3), no new price key."
 
+      parapet_chasing_for_d10_reinforcement:
+        code: "parapet_chasing_for_d10_reinforcement"
+        row_id: "load_bearing_walls_lintels.parapet_chasing_for_d10_reinforcement"
+        name_ru: "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм"
+        unit: "мп"
+        line_kind: control
+        current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_parapet_chasing_base_length_present
+        quantity:
+          formula: "parapet_chasing_base_length_m"
+          leaf_inputs:
+            - ref: "review_parameters.parapet_chasing_base_length_m"
+              source_class: AUTO_PROJECT
+        prices:
+          material_unit_price_key: null
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: null
+        zero_policy: disabled_if_zero
+        notes: "Added 2026-07-31. Mirrors the calculator's existing legacy/control treatment of this row: quantity is shown, but no separate price is applied here unless the pricing layer is explicitly expanded later."
+
+      parapet_rebar_a500_d10:
+        code: "parapet_rebar_a500_d10"
+        row_id: "load_bearing_walls_lintels.parapet_rebar_a500_d10"
+        name_ru: "Арматура A500 Ø10 для парапета"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_parapet_rebar_base_length_present
+        quantity:
+          formula: "ceil_to_rod(parapet_rebar_base_length_m * rebar_waste_coeff, rebar_a500_d10_rod_length_m)"
+          leaf_inputs:
+            - ref: "review_parameters.parapet_rebar_base_length_m"
+              source_class: AUTO_PROJECT
+            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.rebar_waste_coeff"
+              source_class: DEFAULT
+            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.rebar_a500_d10_rod_length_m"
+              source_class: DEFAULT
+        prices:
+          material_unit_price_key: "rebar_a500_d10_unit_price_per_m"
+          work_unit_price_key: null
+          fixed_amount_key: null
+          price_registry_code: "rebar_a500_d10_m"
+        zero_policy: disabled_if_zero
+        notes: "Added 2026-07-31. Separate from main_wall_rebar_items and lintel_rebar_items; it uses the calculator's base-length helper for parapet A500 Ø10."
+
       vent_chimney_gas_block_cladding_work:
         code: "vent_chimney_gas_block_cladding_work"
         row_id: "load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"

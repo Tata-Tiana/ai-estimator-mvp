@@ -724,6 +724,30 @@ parapet_gas_block_d500_250_volume:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Added 2026-07-15. Elena: parapet can rarely be entirely or partially D500 600x250x250 instead of D400 — same physical block/SKU as main_wall_gas_block_250_spec_volume (main walls' second material), just a different application. Independent of parapet_masonry_volume — no formula relates the two, both are direct spec values. Single value only — same multi-level caveat as parapet_masonry_volume, use wall_block_items instead if the spec splits by level/zone."
 
+parapet_chasing_base_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Штробление/армирование парапета — базовая длина"
+  pdf_aliases: ["Армирование парапета", "Арматура парапета", "Штробление парапета", "Штробление блоков парапета", "Армирование кладки парапета", "Парапет А500С ф-10", "Парапет A500C ф-10"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация парапета", "Кладочный план парапета", "Спецификация расхода арматуры", "Кладочный план стен второго света и парапетов", "План кровли"]
+  required_context: ["парапет", "арматур|армирован|штроб|А500|A500|ф-10|Ø10"]
+  negative_context: ["несущие стены", "кладка несущих", "основные стены", "перемычк", "плита", "балк", "перегородк", "фундамент"]
+  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Production scalar for parapet reinforcement/chasing work base length. Use explicit parapet reinforcement/chasing rows only. If several parapet levels/zones are listed, sum parapet rows and keep candidates/source rows. Do not route these rows to main_wall_rebar_items or lintel_rebar_items. The same source rows may also map to parapet_rebar_base_length because work and material share the same base length. A table/page title may mention both second-light walls and parapets; decide by the row itself, not only by the shared title."
+
+parapet_rebar_base_length:
+  section_code: load_bearing_walls_lintels
+  ru_label: "Арматура A500 Ø10 парапета — базовая длина"
+  pdf_aliases: ["Арматура парапета", "Армирование парапета", "Парапет А500С ф-10", "Парапет A500C ф-10", "Арматура А500С ф10 парапет", "Арматура A500 Ø10 парапет"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация парапета", "Кладочный план парапета", "Спецификация расхода арматуры", "Кладочный план стен второго света и парапетов", "План кровли"]
+  required_context: ["парапет", "А500|A500|ф-10|Ø10|арматур|армирован"]
+  negative_context: ["несущие стены", "кладка несущих", "основные стены", "перемычк", "плита", "балк", "перегородк", "фундамент"]
+  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
+  notes: "Production scalar for A500 Ø10 parapet rebar. Use explicit parapet rows only; if the PDF gives several parapet levels/zones, sum them and keep candidates/source rows. Do not mix with main-wall, lintel, partition, slab, beam, or foundation rebar. A table/page title may mention both second-light walls and parapets; decide by the row itself, not only by the shared title."
+
 wall_block_items:
   section_code: load_bearing_walls_lintels
   ru_label: "Кладка газобетонных блоков по строкам (роль + плотность)"
