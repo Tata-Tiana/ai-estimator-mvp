@@ -342,6 +342,27 @@ def load_bearing_walls_lintels_alternative_scalar(
     return None
 
 
+def floor_slab_1_alternative_scalar(
+    target_code: str,
+    found_groups: dict[str, list[Any]],
+) -> tuple[Any, str, str, str, str] | None:
+    if target_code != "floor_slab_1_beams_concrete_volume":
+        return None
+    if not group_items(found_groups, "beam_items"):
+        return None
+    total = sum_group_numeric_field(found_groups, "beam_items", "concrete_volume_m3")
+    if total is None:
+        return None
+    return (
+        total,
+        "Найдено (автосумма beam_items)",
+        group_sources(found_groups, "beam_items"),
+        "Готовый итог бетона балок в PDF не указан; для расчёта используется сумма "
+        f"beam_items.concrete_volume_m3: {total:g} м3. Это не применяется к утеплению балок.",
+        min_group_confidence(found_groups, "beam_items"),
+    )
+
+
 def earthworks_group_total_row(
     sec_code: str,
     group_key: str,
@@ -737,6 +758,8 @@ def build_project_sheet_from_extraction(
                 alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups)
             if alternative_scalar is None and sec_code == "load_bearing_walls_lintels":
                 alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found_groups)
+            if alternative_scalar is None and sec_code == "floor_slab_1":
+                alternative_scalar = floor_slab_1_alternative_scalar(target_code, found_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
                 found_value, status, source, fragment, confidence = alternative_scalar

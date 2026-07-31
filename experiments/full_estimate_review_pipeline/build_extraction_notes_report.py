@@ -94,6 +94,12 @@ CONDITIONAL_MISSING_ALTERNATIVES = {
             "note": "Фиксированный scalar парапета D500 не требуется: объём парапета может прийти через wall_block_items с ролью parapet.",
         },
     },
+    "floor_slab_1": {
+        "floor_slab_1_beams_concrete_volume": {
+            "group": "beam_items",
+            "note": "Готовый scalar итога бетона балок не требуется, если PDF дал балки строками: калькулятор суммирует beam_items.concrete_volume_m3. Это не относится к утеплению балок — его нельзя выводить из общей длины балок.",
+        },
+    },
 }
 
 CONDITIONAL_ABSENT_TARGETS = {
