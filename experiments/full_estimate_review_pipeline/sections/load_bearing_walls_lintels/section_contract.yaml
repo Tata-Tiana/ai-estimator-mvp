@@ -25,7 +25,7 @@ review_parameters:
     label_ru: "Количество этажей для расчета стен"
     unit: "эт."
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "floors_count"
     calculator_input_path: "floors_count"
@@ -39,8 +39,8 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте этажность для раздела стен."
+      status_if_missing: "manual_fallback_if_no_wall_block_items"
+      action_ru: "Проверьте этажность только если нет строк wall_block_items, по которым калькулятор может определить второй уровень."
     validation: {numeric: true, min_value: 1, max_value: 2}
     notes: "2026-07-23: no longer the source of truth for floor_2 wall masonry OR scaffolding tier
       count when wall_block_items[] is used — both now derive from whether a wall_block_items row
@@ -51,7 +51,6 @@ review_parameters:
       (ЮСВ: text says 1, real second tier exists; АРК: no text at all). See
       fact_of_data_vs_text_signal_principle memory and
       ARK_TRC_USV_WALL_ROOF_LINTEL_FINDINGS_PLAN.md section 10."
-    notes: "Used for floors_based scaffolding and optional 2nd floor wall block."
 
   - key: cutoff_waterproofing_load_bearing_walls_area_m2
     label_ru: "Гидроизоляция под первый ряд несущих стен, площадь"

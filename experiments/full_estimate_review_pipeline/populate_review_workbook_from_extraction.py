@@ -314,6 +314,34 @@ def foundation_alternative_scalar(
     return None
 
 
+def load_bearing_walls_lintels_alternative_scalar(
+    target_code: str,
+    found_groups: dict[str, list[Any]],
+) -> tuple[Any, str, str, str, str] | None:
+    if target_code == "floors_count" and group_items(found_groups, "wall_block_items"):
+        return (
+            "",
+            "Не требуется (этажность выводится из wall_block_items)",
+            group_sources(found_groups, "wall_block_items"),
+            "Текстовая этажность PDF не используется как главный источник: при наличии wall_block_items "
+            "калькулятор определяет второй уровень по строкам кладки.",
+            min_group_confidence(found_groups, "wall_block_items"),
+        )
+    if target_code in {"parapet_masonry_volume", "parapet_gas_block_d500_250_volume"} and group_items(
+        found_groups, "wall_block_items"
+    ):
+        return (
+            "",
+            "Не требуется (парапет может быть в wall_block_items)",
+            group_sources(found_groups, "wall_block_items"),
+            "Фиксированный scalar парапета не требуется, если объёмы кладки пришли строками "
+            "wall_block_items с ролью parapet. Калькулятор берёт production repeated rows, "
+            "а не старые одиночные поля.",
+            min_group_confidence(found_groups, "wall_block_items"),
+        )
+    return None
+
+
 def earthworks_group_total_row(
     sec_code: str,
     group_key: str,
@@ -388,6 +416,27 @@ SECTION_PRESENCE_PAIRS: dict[str, list[list[str]]] = {
     ],
 }
 
+CONDITIONAL_ABSENT_TARGETS: dict[str, dict[str, str]] = {
+    "load_bearing_walls_lintels": {
+        "vent_chimney_gas_block_150_volume": "Не блокер, если в проекте нет обкладки вентканалов/дымохода газобетоном 150 мм. Это не Schiedel.",
+        "floor_2_lintel_total_length": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
+        "floor_2_lintel_concrete_volume": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
+        "floor_2_lintel_monolithic_concrete_volume": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_monolithic_total_length": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_insulation_length": "Не блокер, если на 2-м этаже нет утепляемых монолитных перемычек.",
+        "floor_2_lintel_formwork_horizontal_area": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_formwork_vertical_area": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_insulation_eps_volume": "Не блокер, если на 2-м этаже нет утепляемых монолитных перемычек.",
+    },
+}
+
+DIAGNOSTIC_ONLY_MISSING_TARGETS: dict[str, dict[str, str]] = {
+    "load_bearing_walls_lintels": {
+        "floor_1_lintel_groove_length": "Диагностическое поле: перемычки в штробе пока фиксируются для будущей доработки и не участвуют в смете.",
+        "floor_2_lintel_groove_length": "Диагностическое поле: перемычки в штробе пока фиксируются для будущей доработки и не участвуют в смете.",
+    },
+}
+
 
 def compute_confirmed_required(found_by_target: dict[str, Any], sec_code: str) -> set[str]:
     """Returns target_codes that are confirmed required for this project because a sibling
@@ -403,6 +452,16 @@ def compute_confirmed_required(found_by_target: dict[str, Any], sec_code: str) -
         if signal_fired:
             confirmed.update(pair)
     return confirmed
+
+
+def classified_missing_target(sec_code: str, target_code: str) -> tuple[str, str] | None:
+    diagnostic_note = DIAGNOSTIC_ONLY_MISSING_TARGETS.get(sec_code, {}).get(target_code)
+    if diagnostic_note:
+        return "Не требуется (диагностическое поле)", diagnostic_note
+    conditional_note = CONDITIONAL_ABSENT_TARGETS.get(sec_code, {}).get(target_code)
+    if conditional_note:
+        return "Не требуется / условно отсутствует", conditional_note
+    return None
 
 
 def index_extraction_section(extraction: dict[str, Any], sec_code: str) -> tuple[dict, dict, set]:
@@ -593,7 +652,14 @@ def build_project_sheet_from_extraction(
     ws.append([])
     ws.append(PROJECT_HEADERS)
 
-    counts = {"found": 0, "needs_review": 0, "missing": 0, "missing_confirmed_required": 0, "item_rows": 0}
+    counts = {
+        "found": 0,
+        "needs_review": 0,
+        "missing": 0,
+        "missing_confirmed_required": 0,
+        "conditional_absent": 0,
+        "item_rows": 0,
+    }
 
     rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction)
     rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section)
@@ -669,6 +735,8 @@ def build_project_sheet_from_extraction(
             alternative_scalar = earthworks_alternative_scalar(target_code, found_groups) if sec_code == "earthworks" else None
             if alternative_scalar is None and sec_code == "foundation_slab":
                 alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups)
+            if alternative_scalar is None and sec_code == "load_bearing_walls_lintels":
+                alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
                 found_value, status, source, fragment, confidence = alternative_scalar
@@ -695,10 +763,16 @@ def build_project_sheet_from_extraction(
                 counts["needs_review" if needs_review else "found"] += 1
             elif target_code and target_code in missing:
                 found_value = None
-                status = "Не найдено"
                 source = ""
-                fragment = ""
-                counts["missing"] += 1
+                classified_missing = classified_missing_target(sec_code, target_code)
+                if classified_missing is not None:
+                    status, fragment = classified_missing
+                    counts["conditional_absent"] += 1
+                    row_fill = FILL_WHITE
+                else:
+                    status = "Не найдено"
+                    fragment = ""
+                    counts["missing"] += 1
             else:
                 found_value = None
                 status = "Проверьте"

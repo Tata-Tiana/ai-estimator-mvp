@@ -63,6 +63,27 @@ Do not let sheet `03_Детали объемов` become a hidden data source du
 only evidence/control for Elena. Calculator inputs must come from sheet 01, sheet 01-1, sheet 02,
 contract defaults, and explicit supplier/manual values.
 
+## Missing Classification Gate (updated 2026-07-31)
+
+Do not treat every parser `missing` target as a calculator blocker. The review workbook and notes
+report now classify common all-project patterns before the adapter stage:
+
+- `missing_confirmed_required` / "Не найдено — ОБЯЗАТЕЛЬНО" means a sibling field proves the
+  construction exists, so the value must be filled before calculator input is built. Real example:
+  monolithic lintel length exists, but combined concrete volume is missing because PDF gave only
+  component rows.
+- `not_required_alt` / "Не требуется (...)" means a legacy scalar is covered by production repeated
+  rows such as `wall_block_items`, `pit_items`, `sand_items`, `communications_pipe_items`,
+  `slab_zones`, or `thermal_insert_items`.
+- `conditional_absent_ok` means the target is only needed when that construction exists in this
+  project, for example floor-2 lintels or gas-block vent/chimney cladding.
+- `diagnostic_only` means the parser can capture the row for future work, but the current smeta
+  calculator must not require it.
+
+The adapter must still fail loudly on `missing_confirmed_required` and real `missing` blockers. It
+must not read sheet 03 to "fix" those values; the reviewed source remains sheet 01 / sheet 01-1 /
+sheet 02 / defaults.
+
 ## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
 
 **There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**

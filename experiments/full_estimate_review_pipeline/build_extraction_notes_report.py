@@ -80,6 +80,41 @@ CONDITIONAL_MISSING_ALTERNATIVES = {
             "note": "Скаляр материала 100 мм не требуется: объём материала пришёл в строках thermal_insert_items.",
         },
     },
+    "load_bearing_walls_lintels": {
+        "floors_count": {
+            "group": "wall_block_items",
+            "note": "Этажность из текста PDF не нужна как главный источник: при наличии wall_block_items калькулятор определяет второй уровень по строкам кладки.",
+        },
+        "parapet_masonry_volume": {
+            "group": "wall_block_items",
+            "note": "Фиксированный scalar парапета D400 не требуется: объём парапета может прийти через wall_block_items с ролью parapet.",
+        },
+        "parapet_gas_block_d500_250_volume": {
+            "group": "wall_block_items",
+            "note": "Фиксированный scalar парапета D500 не требуется: объём парапета может прийти через wall_block_items с ролью parapet.",
+        },
+    },
+}
+
+CONDITIONAL_ABSENT_TARGETS = {
+    "load_bearing_walls_lintels": {
+        "vent_chimney_gas_block_150_volume": "Не блокер, если в проекте нет обкладки вентканалов/дымохода газобетоном 150 мм. Это не Schiedel.",
+        "floor_2_lintel_total_length": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
+        "floor_2_lintel_concrete_volume": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
+        "floor_2_lintel_monolithic_concrete_volume": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_monolithic_total_length": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_insulation_length": "Не блокер, если на 2-м этаже нет утепляемых монолитных перемычек.",
+        "floor_2_lintel_formwork_horizontal_area": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_formwork_vertical_area": "Не блокер, если на 2-м этаже нет монолитных перемычек.",
+        "floor_2_lintel_insulation_eps_volume": "Не блокер, если на 2-м этаже нет утепляемых монолитных перемычек.",
+    },
+}
+
+DIAGNOSTIC_ONLY_MISSING_TARGETS = {
+    "load_bearing_walls_lintels": {
+        "floor_1_lintel_groove_length": "Диагностическое поле: перемычки в штробе пока фиксируются для будущей доработки и не участвуют в смете.",
+        "floor_2_lintel_groove_length": "Диагностическое поле: перемычки в штробе пока фиксируются для будущей доработки и не участвуют в смете.",
+    },
 }
 
 AUTO_SUM_CANDIDATE_TARGETS = {
@@ -224,6 +259,7 @@ def collect_section_items(
         if isinstance(item, dict) and item.get("group_code")
     }
     closed_by_alternative: set[str] = set()
+    classified_missing: list[dict[str, str]] = []
 
     def close_by_alternative(code: str) -> bool:
         rule = CONDITIONAL_MISSING_ALTERNATIVES.get(section_code, {}).get(code)
@@ -237,6 +273,29 @@ def collect_section_items(
             title = f"{code} -> {alternative_group}"
             closed_by_alternative.add(title)
             alternative_notes[title] = note
+            return True
+        return False
+
+    def classify_missing(code: str) -> bool:
+        diagnostic_note = DIAGNOSTIC_ONLY_MISSING_TARGETS.get(section_code, {}).get(code)
+        if diagnostic_note:
+            classified_missing.append(
+                {
+                    "status": "diagnostic_only",
+                    "title": code,
+                    "notes": diagnostic_note,
+                }
+            )
+            return True
+        conditional_note = CONDITIONAL_ABSENT_TARGETS.get(section_code, {}).get(code)
+        if conditional_note:
+            classified_missing.append(
+                {
+                    "status": "conditional_absent_ok",
+                    "title": code,
+                    "notes": conditional_note,
+                }
+            )
             return True
         return False
 
@@ -292,10 +351,25 @@ def collect_section_items(
 
     for item in as_list(section.get("missing")):
         if isinstance(item, str):
-            if not close_by_alternative(item):
+            if not close_by_alternative(item) and not classify_missing(item):
                 missing_codes.append(item)
         elif isinstance(item, dict):
             add("missing", item)
+
+    for item in classified_missing:
+        collected.append(
+            {
+                "status": item["status"],
+                "title": item["title"],
+                "confidence": "",
+                "value": "",
+                "source": "",
+                "raw_text": "",
+                "notes": item["notes"],
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
 
     for text in sorted(closed_by_alternative):
         collected.append(
