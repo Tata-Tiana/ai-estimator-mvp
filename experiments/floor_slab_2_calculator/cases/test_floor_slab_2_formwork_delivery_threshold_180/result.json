@@ -77,7 +77,9 @@
     "foam_can_unit_price": 490,
     "logistics_rate": 0.01,
     "consumables_rate": 0.03,
-    "rebar_calc_method": "legacy_weight_kg"
+    "rebar_calc_method": "legacy_weight_kg",
+    "rebar_metal_delivery_trucks": 0,
+    "rebar_metal_delivery_unit_price": 22000
   },
   "calculation_blocks": {
     "geometry": {
@@ -330,6 +332,26 @@
       "line_total": 60000,
       "notes": [],
       "price_code": "crane_shift"
+    },
+    {
+      "code": "rebar_metal_delivery",
+      "name": "Доставка арматуры, металла",
+      "unit": "маш",
+      "line_type": "logistics_machinery",
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
+      "material_unit_price": 22000.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": [
+        "Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой)."
+      ],
+      "price_code": "metal_delivery_truck"
     },
     {
       "code": "formwork_consumables",

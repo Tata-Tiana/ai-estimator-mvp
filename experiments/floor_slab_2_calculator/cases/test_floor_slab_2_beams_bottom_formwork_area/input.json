@@ -67,5 +67,7 @@
   "logistics_rate": 0.01,
   "consumables_rate": 0.03,
   "rebar_calc_method": "legacy_weight_kg",
-  "beams_bottom_formwork_area_m2": 3.1
+  "beams_bottom_formwork_area_m2": 3.1,
+  "rebar_metal_delivery_trucks": 0,
+  "rebar_metal_delivery_unit_price": 22000
 }

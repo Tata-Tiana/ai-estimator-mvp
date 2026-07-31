@@ -919,6 +919,28 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 price_code="metal_delivery_truck",
             )
         )
+    elif metal_delivery_context["box_level_delivery_required"]:
+        # section_output_only (production, 2026-07-30): this section no longer computes its own
+        # delivery-truck count from a slab_1+slab_2-only context (see legacy branch above) - the
+        # count comes from the box_calculator's 10-tonne threshold allocation across all 4
+        # rebar-bearing sections (populate_review_workbook_from_extraction.py), same mechanism as
+        # foundation_slab.rebar_metal_delivery_trucks. Naturally 0 for projects where this section's
+        # own rebar weight doesn't cross a threshold - same zero-when-absent pattern as
+        # beam_concreting_work above.
+        rebar_delivery_trucks = d(manual_lines["rebar_metal_delivery_trucks"])
+        lines.append(
+            estimate_line(
+                "rebar_metal_delivery",
+                "Доставка арматуры, металла",
+                "маш",
+                "logistics_machinery",
+                rebar_delivery_trucks,
+                rebar_delivery_trucks,
+                rebar_delivery_trucks * d(rates["rebar_metal_delivery_unit_price"]),
+                notes=["Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой)."],
+                price_code="metal_delivery_truck",
+            )
+        )
 
     lines.extend(
         [

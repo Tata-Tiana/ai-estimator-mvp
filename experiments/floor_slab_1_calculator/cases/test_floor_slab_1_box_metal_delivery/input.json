@@ -1,9 +1,9 @@
 {
   "case_meta": {
-    "project": "test_floor_slab_1_rebar_spec_lengths",
-    "section": "floor_slab_1_with_beams",
-    "validated_with_elena": true,
-    "confidence": "high"
+    "project": "test_floor_slab_1_box_metal_delivery",
+    "section": "floor_slab_1_no_beams",
+    "validated_with_elena": false,
+    "confidence": "synthetic"
   },
   "geometry": {
     "total_concrete_volume_from_spec_m3": 40.53,
@@ -15,29 +15,7 @@
     "edge_formwork_height_m": 0.2
   },
   "beams": {
-    "items": [
-      {
-        "code": "beam_b1",
-        "name": "Б-1",
-        "length_m": 7,
-        "width_m": 0.3,
-        "height_m": 0.25
-      },
-      {
-        "code": "beam_b2",
-        "name": "Б-2",
-        "length_m": 7.2,
-        "width_m": 0.3,
-        "height_m": 0.68
-      },
-      {
-        "code": "beam_b3",
-        "name": "Б-3",
-        "length_m": 9,
-        "width_m": 0.3,
-        "height_m": 0.43
-      }
-    ]
+    "items": []
   },
   "rates": {
     "formwork_rate_calc_method": "direct_section_rate",
@@ -139,8 +117,11 @@
     }
   ],
   "insulation": {
-    "insulation_calc_method": "legacy_fixed_edge_length",
+    "insulation_calc_method": "spec_work_quantities",
     "edge_insulation_height_m": 0.18,
+    "slab_outer_edge_eps_work_length_m": 84.8,
+    "slab_edge_eps_material_area_m2": 15.264,
+    "bottom_slab_eps_work_area_m2": 51.92,
     "total_eps_volume_from_spec_m3": 7.77,
     "eps_thickness_m": 0.1,
     "eps_waste_coeff": 1.05,
@@ -157,7 +138,7 @@
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
     "technical_supervision_amount": 5000,
-    "rebar_metal_delivery_trucks": 0
+    "rebar_metal_delivery_trucks": 2
   },
   "formwork_areas_calc_method": "legacy_calculated_from_geometry"
 }

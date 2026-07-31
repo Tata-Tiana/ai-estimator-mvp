@@ -83,7 +83,9 @@
       "mode": "price_registry_with_fallback",
       "registry_path": "output/price_registry_filled_v3.xlsx"
     },
-    "rebar_calc_method": "legacy_weight_kg"
+    "rebar_calc_method": "legacy_weight_kg",
+    "rebar_metal_delivery_trucks": 0,
+    "rebar_metal_delivery_unit_price": 22000
   },
   "calculation_blocks": {
     "geometry": {
@@ -351,6 +353,30 @@
       "unit_price_source": "price_registry",
       "unit_price_original": "30000",
       "unit_price_used": "30000",
+      "price_warning": null
+    },
+    {
+      "code": "rebar_metal_delivery",
+      "name": "Доставка арматуры, металла",
+      "unit": "маш",
+      "line_type": "logistics_machinery",
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
+      "material_unit_price": 22000.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": [
+        "Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой)."
+      ],
+      "price_code": "metal_delivery_truck",
+      "unit_price_source": "price_registry",
+      "unit_price_original": "22000",
+      "unit_price_used": "22000",
       "price_warning": null
     },
     {
@@ -881,7 +907,7 @@
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 16,
+    "prices_from_price_registry": 17,
     "prices_from_project_overrides": 0,
     "prices_from_fallback_input": 1,
     "warnings_count": 1

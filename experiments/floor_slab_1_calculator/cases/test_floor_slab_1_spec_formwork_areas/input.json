@@ -70,7 +70,8 @@
     "concrete_pump_rate": 38000,
     "edge_beam_insulation_work_rate_per_m": 450,
     "bottom_slab_insulation_work_rate_per_m2": 900,
-    "beam_concreting_work_rate_per_m": 1500
+    "beam_concreting_work_rate_per_m": 1500,
+    "rebar_metal_delivery_unit_price": 22000
   },
   "rebar_calc_method": "legacy_weight_parts",
   "rebar_items": [
@@ -169,6 +170,7 @@
   "manual_lines": {
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
-    "technical_supervision_amount": 5000
+    "technical_supervision_amount": 5000,
+    "rebar_metal_delivery_trucks": 0
   }
 }

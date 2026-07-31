@@ -514,6 +514,14 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     formwork_delivery = calculate_formwork_delivery_context(input_data, main_formwork_area)
     formwork_delivery_total_raw = d(formwork_delivery["formwork_delivery_total_raw"])
     crane_total_raw = d(input_data["crane_shifts"]) * d(input_data["crane_unit_price"])
+    # rebar_metal_delivery_trucks/unit_price: added 2026-07-30 - this section had no metal-delivery
+    # line at all before (unlike foundation_slab, which already had one, and floor_slab_1, whose own
+    # line existed only for a legacy mode). Count comes from the box_calculator's 10-tonne threshold
+    # allocation across all 4 rebar-bearing sections (populate_review_workbook_from_extraction.py),
+    # naturally 0 for projects where this section's rebar weight doesn't cross a threshold.
+    rebar_metal_delivery_total_raw = d(input_data["rebar_metal_delivery_trucks"]) * d(
+        input_data["rebar_metal_delivery_unit_price"]
+    )
     formwork_consumables_total_raw = main_formwork_area * d(input_data["formwork_consumables_rate_per_m2"])
 
     # beams_bottom_formwork_area_m2: additive, real-project case (2026-07-26, ported from floor_slab_1)
@@ -697,6 +705,17 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             material_unit_price=input_data["crane_unit_price"],
             material_total_raw=crane_total_raw,
             price_code="crane_shift",
+        ),
+        estimate_line(
+            "rebar_metal_delivery",
+            "Доставка арматуры, металла",
+            "маш",
+            "logistics_machinery",
+            input_data["rebar_metal_delivery_trucks"],
+            material_unit_price=input_data["rebar_metal_delivery_unit_price"],
+            material_total_raw=rebar_metal_delivery_total_raw,
+            notes=["Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой)."],
+            price_code="metal_delivery_truck",
         ),
         estimate_line(
             "formwork_consumables",

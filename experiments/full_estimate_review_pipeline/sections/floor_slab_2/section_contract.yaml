@@ -352,6 +352,7 @@ price_keys:
   - {key: formwork_rental_used_rate_per_m2, estimate_line_code: formwork_rental_set, label_ru: "Комплект опалубки перекрытия", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_rental_m2", fallback_key: "formwork_rental_used_rate_per_m2", allow_manual_override: true, notes: ""}
   - {key: formwork_delivery_unit_price, estimate_line_code: formwork_delivery_manipulator, label_ru: "Доставка, вывоз опалубки манипулятором", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_delivery_truck", fallback_key: "formwork_delivery_unit_price", allow_manual_override: true, notes: ""}
   - {key: crane_unit_price, estimate_line_code: crane_supply_formwork_rebar, label_ru: "Подача опалубки, арматуры автокраном", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "crane_shift", fallback_key: "crane_unit_price", allow_manual_override: true, notes: ""}
+  - {key: rebar_metal_delivery_unit_price, estimate_line_code: rebar_metal_delivery, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "metal_delivery_truck", fallback_key: "rebar_metal_delivery_unit_price", allow_manual_override: true, notes: "Added 2026-07-30, same registry_code as foundation_slab/floor_slab_1's rebar_metal_delivery_unit_price."}
   - {key: formwork_consumables_rate_per_m2, estimate_line_code: formwork_consumables, label_ru: "Расходные материалы для установки опалубки", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_consumables_m2", fallback_key: "formwork_consumables_rate_per_m2", allow_manual_override: true, notes: ""}
   - {key: plywood_unit_price, estimate_line_code: plywood_for_edges, label_ru: "Фанера ФК 1,52 x 1,52 толщиной 18 мм", price_kind: material, unit: "лист", required: true, default_source: price_registry_with_fallback, registry_code: "plywood_1520x1520_18mm_sheet", fallback_key: "plywood_unit_price", allow_manual_override: true, notes: ""}
   - {key: timber_unit_price, estimate_line_code: timber_for_formwork, label_ru: "Пиломатериал обрезной для устройства опалубки", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "timber_unit_price", allow_manual_override: true, notes: ""}
@@ -406,7 +407,7 @@ supplier_inputs:
   - key: crane_shifts
     label_ru: "Подача опалубки и арматуры краном"
     unit: "смена"
-    source_class: AUTO_CALCULATED
+    source_class: SUPPLIER_INPUT
     required: true
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "crane_shifts"
@@ -416,8 +417,24 @@ supplier_inputs:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости. Расчёт учитывает только вес арматуры, не опалубку — если для подачи опалубки нужен отдельный подъём, поправьте вручную."
-    notes: "source_class SUPPLIER_INPUT -> AUTO_CALCULATED 2026-07-30: value now comes from compute_rebar_crane_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections). Same formwork/rebar label caveat as floor_slab_1's formwork_rebar_crane_shifts - see that entry's notes."
+      action_ru: "Укажите смены подачи опалубки и арматуры краном."
+    notes: "source_class AUTO_CALCULATED -> SUPPLIER_INPUT 2026-07-30 (reverted): no real crane-shift-count formula exists anywhere in the codebase. The 2026-07-30 automation wrongly reused the box_calculator's delivery-truck allocation for crane shifts; real ARK smeta data disproved the underlying assumption (crane count 2 != delivery count 1 for the same section, floor_slab_1). Elena's final ruling: crane stays purely manual, no invented formula - box_calculator is repurposed for rebar/metal delivery trucks instead (see foundation_slab.rebar_metal_delivery_trucks)."
+
+  - key: rebar_metal_delivery_trucks
+    label_ru: "Доставка арматуры и металла, машины"
+    unit: "маш"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "rebar_metal_delivery_trucks"
+    normalized_json_path: "sections.floor_slab_2.supplier_inputs.rebar_metal_delivery_trucks.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    notes: "Added 2026-07-30. This section had no metal-delivery field/line at all before. Value comes from compute_rebar_metal_delivery_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections) - naturally 0 for projects where this section doesn't cross a threshold. Still allow_manual_override: true."
 
   - key: concrete_pump_shifts
     label_ru: "Работа бетононасоса"
@@ -637,6 +654,19 @@ estimate_lines:
     prices: {material_unit_price_key: crane_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: ""
+
+  - code: rebar_metal_delivery
+    name_ru: "Доставка арматуры, металла"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=rebar_metal_delivery]"
+    quantity:
+      formula: "rebar_metal_delivery_trucks"
+      leaf_inputs:
+        - {ref: "supplier_inputs.rebar_metal_delivery_trucks", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: rebar_metal_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Added 2026-07-30. This section had no metal-delivery line at all before. Quantity naturally 0 for projects where this section's rebar weight doesn't cross a box-level 10-tonne threshold - same convention as foundation_slab/floor_slab_1's own rebar_metal_delivery."
 
   - code: formwork_consumables
     name_ru: "Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки)"
@@ -927,5 +957,5 @@ checks:
     - "floor_slab_2 workbook rows are copied from an old project workbook instead of this contract"
     - "project quantities or old fixture values are stored as defaults"
     - "review parameter count differs from 9 without explanation"
-    - "price key count differs from 15 without explanation"
-    - "estimate line count differs from 25 without explanation (rebar_items_dynamic is one contract entry but produces a variable number of real calculator lines, one per rebar row)"
+    - "price key count differs from 16 without explanation (rebar_metal_delivery_unit_price added 2026-07-30)"
+    - "estimate line count differs from 26 without explanation (rebar_items_dynamic is one contract entry but produces a variable number of real calculator lines, one per rebar row; rebar_metal_delivery added 2026-07-30)"

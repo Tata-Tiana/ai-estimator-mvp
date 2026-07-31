@@ -1,0 +1,18 @@
+{
+  "totals": {
+    "internal_materials_total": 524761,
+    "internal_works_total": 214290,
+    "internal_section_total": 739051
+  },
+  "estimate_lines": [
+    {
+      "code": "rebar_metal_delivery",
+      "quantity_raw": 1.0,
+      "quantity_display": 1.0,
+      "material_unit_price": 22000.0,
+      "material_total_raw": 22000.0,
+      "material_total": 22000,
+      "line_total": 22000
+    }
+  ]
+}

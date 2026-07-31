@@ -73,7 +73,8 @@
       "concrete_pump_rate": 38000,
       "edge_beam_insulation_work_rate_per_m": 450,
       "bottom_slab_insulation_work_rate_per_m2": 900,
-      "beam_concreting_work_rate_per_m": 1500
+      "beam_concreting_work_rate_per_m": 1500,
+      "rebar_metal_delivery_unit_price": 22000
     },
     "rebar_calc_method": "spec_length_items",
     "rebar_items": [
@@ -162,7 +163,8 @@
     "manual_lines": {
       "formwork_rebar_crane_shifts": 2,
       "concrete_pump_shifts": 1,
-      "technical_supervision_amount": 5000
+      "technical_supervision_amount": 5000,
+      "rebar_metal_delivery_trucks": 0
     },
     "formwork_areas_calc_method": "legacy_calculated_from_geometry"
   },
@@ -810,6 +812,24 @@
       "line_total": 2557,
       "notes": [],
       "price_code": "rebar_a240_d6_m"
+    },
+    {
+      "code": "rebar_metal_delivery",
+      "name": "Доставка арматуры, металла",
+      "unit": "маш",
+      "line_type": "logistics_machinery",
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": [
+        "Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой)."
+      ],
+      "price_code": "metal_delivery_truck"
     },
     {
       "code": "floor_slab_concreting_work",

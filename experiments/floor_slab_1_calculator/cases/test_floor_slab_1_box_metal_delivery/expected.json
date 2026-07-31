@@ -1,0 +1,25 @@
+{
+  "totals": {
+    "internal_materials_total": 1176804,
+    "internal_works_total": 576248,
+    "internal_section_total": 1753052
+  },
+  "calculation_blocks": {
+    "rebar": {
+      "metal_delivery_calc_method": "section_output_only",
+      "legacy_delivery_line_enabled": false,
+      "box_level_delivery_required": true
+    }
+  },
+  "estimate_lines": {
+    "rebar_metal_delivery": {
+      "quantity_raw": 2.0,
+      "quantity_display": 2.0,
+      "unit": "маш",
+      "material_total_raw": 44000.0,
+      "material_total": 44000,
+      "line_total": 44000,
+      "price_code": "metal_delivery_truck"
+    }
+  }
+}
