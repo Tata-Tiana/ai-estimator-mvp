@@ -130,9 +130,33 @@ referenced by any `target_code` in the current contract — verified against `ca
 `floor_slab_1`'s `total_eps_volume_from_spec_m3` is — this section's architecture never asks for an
 EPS volume scalar, so the old target was dead weight from before that design was settled, not a gap.
 
-After this pass, `calculator_targets_compact.json`'s `floor_slab_2` section has exactly the 7 scalar
-targets and 2 extract_groups (`floor_slab_2_beam_items`, `floor_slab_2_rebar_items`) the contract's 9
-`target_code`s require — verified programmatically, 1:1 match, no extras, no gaps.
+After this pass, `calculator_targets_compact.json`'s `floor_slab_2` section covered the then-current
+7 scalar targets and 2 extract_groups (`floor_slab_2_beam_items`, `floor_slab_2_rebar_items`). Later
+passes added explicit beam EPS and bottom-slab EPS targets; do not use the old 7-scalar count as a
+current readiness check.
+
+## Bottom beam formwork and bottom slab EPS added (2026-07-31)
+
+Two real production gaps were found while reviewing parser `notes` from a project extraction. Both are
+generic patterns, not project-specific rules:
+
+- A row like `Нижняя опалубка ж/б балок в составе ПМ2` is not the same thing as vertical/edge formwork.
+  The calculator already had `beams_bottom_formwork_area_m2`, so the parser and contract now have
+  `floor_slab_2_beams_bottom_formwork_area`. This area is added to the combined formwork material/work
+  basis together with main slab formwork and edge formwork.
+- A row like `Площадь горизонтального утепления плиты ... ЭППС 100мм` is not beam edge insulation and
+  not slab edge perimeter. Added a separate optional target `floor_slab_2_bottom_eps_work_area` and
+  calculator input `bottom_slab_eps_work_area_m2`. If absent, it is zero. If present, it creates the
+  estimate line `bottom_slab_insulation_work`, adds EPS material volume using `eps100_thickness_m`, and
+  participates in glue-foam quantity.
+
+Do not infer either value from geometry. Extract them only when the project has an explicit row/table
+for bottom beam formwork or horizontal/bottom slab insulation.
+
+Also fixed the calculator's old fallback for beam EPS: if `beams_eps_work_length_m` or
+`beams_eps_material_area_m2` is absent, the beam EPS contribution is now 0 with a warning. It is no
+longer inferred from total `beam_items` length/height, because beams and lintels may be insulated only
+partly or not insulated at all.
 
 ## Calculator silent legacy defaults fixed (2026-07-11)
 
@@ -160,4 +184,3 @@ every fixture. All 6 cases still pass 0 mismatches.
 5. Confirm prompt/schema/aliases cover `beam_items` the same way `floor_slab_1`'s beam group is covered, once that section's parser files are done.
 6. Run JSON/YAML validation after edits.
 7. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
-

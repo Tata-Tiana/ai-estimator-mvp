@@ -596,22 +596,24 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         beams_items_eps_work_length = d(beams_eps_work_length_override)
         beams_eps_work_length_source = "specification"
     else:
-        beams_eps_work_length_source = "calculated_all_beams"
+        beams_items_eps_work_length = D0
+        beams_eps_work_length_source = "not_provided"
         if beam_items:
             warnings.append(
-                "beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. "
-                "Elena confirmed beams may be insulated only partially, so review this length."
+                "beams_eps_work_length_m is not provided; beam EPS work length is treated as 0. "
+                "Provide the explicit project value when beams are insulated."
             )
     beams_eps_material_area_override = input_data.get("beams_eps_material_area_m2")
     if beams_eps_material_area_override is not None:
         beams_items_eps_material_area = d(beams_eps_material_area_override)
         beams_eps_material_area_source = "specification"
     else:
-        beams_eps_material_area_source = "calculated_all_beams"
+        beams_items_eps_material_area = D0
+        beams_eps_material_area_source = "not_provided"
         if beam_items:
             warnings.append(
-                "beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. "
-                "Elena confirmed beams may be insulated only partially, so review this area."
+                "beams_eps_material_area_m2 is not provided; beam EPS material area is treated as 0. "
+                "Provide the explicit project value when beams are insulated."
             )
     if beams_items_eps_work_length < D0:
         raise ValueError("beams_eps_work_length_m must be >= 0.")
@@ -621,15 +623,34 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
     edge_insulation_area = slab_edge_perimeter * edge_insulation_height
     edge_and_beam_insulation_area = edge_insulation_area + beams_items_eps_material_area
     total_insulation_length = slab_edge_perimeter + beams_items_eps_work_length
-    eps100_required_without_waste = edge_and_beam_insulation_area * d(input_data["eps100_thickness_m"])
+    bottom_slab_eps_work_area = d(input_data.get("bottom_slab_eps_work_area_m2") or 0)
+    if bottom_slab_eps_work_area < D0:
+        raise ValueError("bottom_slab_eps_work_area_m2 must be >= 0.")
+    bottom_slab_eps_volume = bottom_slab_eps_work_area * d(input_data["eps100_thickness_m"])
+    eps100_required_without_waste = (
+        edge_and_beam_insulation_area * d(input_data["eps100_thickness_m"]) + bottom_slab_eps_volume
+    )
     eps100_required_with_waste = eps100_required_without_waste * d(input_data["eps_waste_coeff"])
     eps100_packs_raw = eps100_required_with_waste / d(input_data["eps100_pack_volume_m3"])
     eps100_packs = ceil_decimal(eps100_packs_raw)
     eps100_order_volume = d(eps100_packs) * d(input_data["eps100_pack_volume_m3"])
     eps100_total_raw = eps100_order_volume * d(input_data["eps100_unit_price"])
     edge_insulation_work_total_raw = total_insulation_length * d(input_data["edge_insulation_work_unit_price_per_m"])
+    if bottom_slab_eps_work_area > D0 and "bottom_slab_insulation_work_unit_price_per_m2" not in input_data:
+        raise ValueError(
+            "bottom_slab_insulation_work_unit_price_per_m2 is required when "
+            "bottom_slab_eps_work_area_m2 is provided."
+        )
+    bottom_slab_insulation_work_unit_price = d(
+        input_data.get("bottom_slab_insulation_work_unit_price_per_m2") or 0
+    )
+    bottom_slab_insulation_work_total_raw = (
+        bottom_slab_eps_work_area * bottom_slab_insulation_work_unit_price
+    )
 
-    foam_cans_raw = edge_and_beam_insulation_area / d(input_data["foam_coverage_area_per_can_m2"])
+    foam_cans_raw = (edge_and_beam_insulation_area + bottom_slab_eps_work_area) / d(
+        input_data["foam_coverage_area_per_can_m2"]
+    )
     foam_cans_ordered = max(int(input_data["foam_min_cans"]), ceil_decimal(foam_cans_raw))
     foam_total_raw = d(foam_cans_ordered) * d(input_data["foam_can_unit_price"])
 
@@ -647,6 +668,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         + concrete_delivery_total_raw
         + concrete_pump_total_raw
         + edge_insulation_work_total_raw
+        + bottom_slab_insulation_work_total_raw
         + eps100_total_raw
         + foam_total_raw
     )
@@ -842,10 +864,24 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             work_unit_price=input_data["edge_insulation_work_unit_price_per_m"],
             work_total_raw=edge_insulation_work_total_raw,
             notes=[
-                "Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; "
-                "equals slab_edge_perimeter_m alone when no beams.items are given."
+                "Quantity is slab_edge_perimeter_m plus beams_eps_work_length_m when the project "
+                "explicitly gives insulated beam length; beam length is not inferred from beam_items."
             ],
             price_code="edge_insulation_work_m",
+        ),
+        estimate_line(
+            "bottom_slab_insulation_work",
+            "Устройство утепления низа плиты",
+            "м2",
+            "work",
+            bottom_slab_eps_work_area,
+            work_unit_price=bottom_slab_insulation_work_unit_price,
+            work_total_raw=bottom_slab_insulation_work_total_raw,
+            notes=[
+                "Optional production quantity from PDF: horizontal/bottom EPS insulation area of the slab itself. "
+                "Defaults to 0 when the project has no such separate line."
+            ],
+            price_code="eps_bottom_slab_insulation_work_m2",
         ),
         estimate_line(
             "eps100_penoplex_material",
@@ -1037,6 +1073,8 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "edge_insulation_height_source": edge_insulation_height_source,
             "edge_insulation_area_m2": round_decimal(edge_insulation_area),
             "edge_and_beam_insulation_area_m2": round_decimal(edge_and_beam_insulation_area),
+            "bottom_slab_eps_work_area_m2": round_decimal(bottom_slab_eps_work_area),
+            "bottom_slab_eps_volume_m3": round_decimal(bottom_slab_eps_volume),
             "total_insulation_length_m": round_decimal(total_insulation_length),
             "eps100_required_volume_without_waste_m3": round_decimal(eps100_required_without_waste),
             "eps100_required_volume_with_waste_m3": round_decimal(eps100_required_with_waste),

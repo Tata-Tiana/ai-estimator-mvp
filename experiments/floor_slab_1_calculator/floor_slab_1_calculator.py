@@ -311,23 +311,23 @@ def calculate_insulation_context(
         beams_eps_work_length = d(beams_eps_work_length_override)
         beams_eps_work_length_source = "specification"
     else:
-        beams_eps_work_length = calculated_beams_eps_work_length
-        beams_eps_work_length_source = "calculated_all_beams"
+        beams_eps_work_length = D0
+        beams_eps_work_length_source = "not_provided"
         if beam_items:
             warnings.append(
-                "insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. "
-                "Elena confirmed beams may be insulated only partially, so review this length."
+                "insulation.beams_eps_work_length_m is not provided; beam EPS work length is treated as 0. "
+                "Provide the explicit project value when beams are insulated."
             )
     if beams_eps_material_area_override is not None:
         beams_eps_material_area = d(beams_eps_material_area_override)
         beams_eps_material_area_source = "specification"
     else:
-        beams_eps_material_area = calculated_beams_eps_material_area
-        beams_eps_material_area_source = "calculated_all_beams"
+        beams_eps_material_area = D0
+        beams_eps_material_area_source = "not_provided"
         if beam_items:
             warnings.append(
-                "insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. "
-                "Elena confirmed beams may be insulated only partially, so review this area."
+                "insulation.beams_eps_material_area_m2 is not provided; beam EPS material area is treated as 0. "
+                "Provide the explicit project value when beams are insulated."
             )
     if beams_eps_work_length < D0:
         raise ValueError("insulation.beams_eps_work_length_m must be >= 0")

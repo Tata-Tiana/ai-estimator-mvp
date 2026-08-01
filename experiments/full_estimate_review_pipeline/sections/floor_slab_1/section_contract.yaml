@@ -947,14 +947,13 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=edge_beam_insulation_work]"
     quantity:
-      formula: "slab_outer_edge_eps_work_length_m + beams_eps_work_length_m (or fallback sum(beam.length_m * beam.count) only when no explicit beam insulation length is provided)"
+      formula: "slab_outer_edge_eps_work_length_m + beams_eps_work_length_m"
       leaf_inputs:
         - {ref: "review_parameters.slab_outer_edge_eps_work_length_m", source_class: AUTO_PROJECT}
         - {ref: "review_parameters.beams_eps_work_length_m", source_class: AUTO_PROJECT}
-        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: edge_beam_insulation_work_rate_per_m, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Do not assume every beam is insulated along its full length. Elena confirmed beams may be uninsulated or insulated only partially; use beams_eps_work_length_m when the project gives the actual insulated portion."
+    notes: "Do not infer beam insulation from all beam length. Elena confirmed beams may be uninsulated or insulated only partially; use only an explicit beams_eps_work_length_m from the project."
 
   - code: bottom_slab_insulation_work
     name_ru: "Устройство утепления низа плиты"

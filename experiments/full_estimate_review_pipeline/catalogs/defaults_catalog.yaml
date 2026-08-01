@@ -1497,29 +1497,31 @@ sections:
         source_note: "Floor slab 2 section contract; EPS 100 mm method."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "EPS thickness for edge/beam insulation material calculation."
+        notes: "EPS thickness for edge/beam and optional bottom/horizontal slab insulation material calculation."
 
       eps_waste_coeff:
         value: 1.05
         unit: "ratio"
         source_class: BUSINESS_DEFAULT
         calculator_input_path: "eps_waste_coeff"
-        used_by_estimate_lines: ["floor_slab_2.eps100_penoplex_material"]
+        used_by_estimate_lines:
+          - "floor_slab_2.eps100_penoplex_material"
         source_note: "Floor slab 2 section contract."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "EPS material waste coefficient."
+        notes: "EPS material waste coefficient; the work line itself is priced by area, while material order uses this coefficient."
 
       foam_coverage_area_per_can_m2:
         value: 10.0
         unit: "m2/can"
         source_class: BUSINESS_DEFAULT
         calculator_input_path: "foam_coverage_area_per_can_m2"
-        used_by_estimate_lines: ["floor_slab_2.eps_foam_glue"]
+        used_by_estimate_lines:
+          - "floor_slab_2.eps_foam_glue"
         source_note: "Floor slab 2 section contract."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "Coverage default for EPS glue foam."
+        notes: "Coverage default for EPS glue foam across edge/beam and optional bottom/horizontal slab insulation."
 
       foam_min_cans:
         value: 1.0
