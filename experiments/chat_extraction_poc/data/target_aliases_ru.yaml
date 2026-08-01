@@ -221,7 +221,7 @@ thermal_insert_50_length:
   negative_context: ["100 мм", "м3", "объем", "материал"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Length for work quantity, not material volume. Use ONLY when the PDF gives this 50mm layer its OWN separate length, distinct from the 100mm layer. Updated 2026-07-27: if the PDF gives one shared length for both layers together (not two separate lengths), do not fill this field — use thermal_insert_combined_length_m instead and leave this null. Do not copy the same combined number into both this field and thermal_insert_100_length — that double-counts installation work."
+  notes: "Optional length for work quantity, not material volume. Use ONLY when the PDF gives an actual 50mm thermal-insert layer with its OWN separate length, distinct from the 100mm layer. If the project has only 100mm thermal inserts, leave this field empty. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length for both layers together (not two separate lengths), use thermal_insert_combined_length_m instead. Do not copy the same combined number into both this field and thermal_insert_100_length — that double-counts installation work. Do not confuse thermal inserts with regular slab edge/side insulation."
 
 thermal_insert_100_length:
   section_code: foundation_slab
@@ -233,7 +233,7 @@ thermal_insert_100_length:
   negative_context: ["50 мм", "м3", "объем", "материал"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Length for work quantity, not material volume. Use ONLY when the PDF gives this 100mm layer its OWN separate length, distinct from the 50mm layer. Updated 2026-07-27: if the PDF gives one shared length for both layers together (not two separate lengths), do not fill this field — use thermal_insert_combined_length_m instead and leave this null. Do not copy the same combined number into both this field and thermal_insert_50_length — that double-counts installation work."
+  notes: "Optional length for work quantity, not material volume. Use ONLY when the PDF gives an actual 100mm thermal-insert layer with its OWN separate length, distinct from the 50mm layer. It is valid for this to be the only standard thermal-insert layer in the project. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length for both layers together (not two separate lengths), use thermal_insert_combined_length_m instead. Do not copy the same combined number into both this field and thermal_insert_50_length — that double-counts installation work. Do not confuse thermal inserts with regular slab edge/side insulation."
 
 thermal_insert_combined_length_m:
   section_code: foundation_slab
@@ -245,7 +245,7 @@ thermal_insert_combined_length_m:
   negative_context: ["м3", "объем", "материал"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Added 2026-07-27 (calculator support shipped 2026-07-25, this closes the missing extraction routing — real ТРЦ finding: one '7,15 м.пог' length covers both the 50mm and 100mm EPS layers together, while material stays split by thickness). Use this field INSTEAD OF thermal_insert_50_length/thermal_insert_100_length ONLY when the PDF gives ONE shared installation length for the whole thermal-insert node, not two separate lengths per thickness. Material targets (thermal_insert_50_material_spec_qty/thermal_insert_100_material_spec_qty) are unaffected either way — they stay split by thickness regardless of which length path is used. Do NOT copy the same combined number into both thermal_insert_50_length and thermal_insert_100_length — that double-counts installation work, which is exactly the bug this field prevents. If the PDF genuinely gives two distinct lengths, one per thickness, use the old scalar targets as before and leave this field empty — don't fill both paths. LIVE, not diagnostic — wired into foundation_slab_calculator.py (calculator_input_path: thermal_insert_combined_length_m, requires thermal_insert_mode='standard_50_100')."
+  notes: "Use this field INSTEAD OF thermal_insert_50_length/thermal_insert_100_length ONLY when the PDF gives ONE shared installation length for the whole thermal-insert node, not two separate lengths per thickness. This normally means a combined 50mm+100mm thermal insert; do not use it for a clearly single-layer 100mm row, which belongs to thermal_insert_100_length if it has its own length. Material targets are unaffected — they stay split by thickness when PDF gives them. Do NOT copy the same combined number into both thermal_insert_50_length and thermal_insert_100_length. If the PDF genuinely gives two distinct lengths, one per thickness, use the scalar targets above and leave this field empty. If there are no thermal inserts, leave it empty/missing. Do not confuse thermal inserts with regular slab edge/side insulation."
 
 thermal_insert_50_material_spec_qty:
   section_code: foundation_slab
@@ -257,7 +257,7 @@ thermal_insert_50_material_spec_qty:
   negative_context: ["100 мм", "м.п.", "длина", "работ"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Material volume, not length."
+  notes: "Optional material volume, not length. Fill only when the PDF explicitly gives material for an actual 50mm thermal-insert layer. If the project has only 100mm thermal inserts or no thermal inserts, leave empty/missing; do not invent zero found values. Do not confuse with regular EPS 50mm under slab or slab edge/side insulation."
 
 thermal_insert_100_material_spec_qty:
   section_code: foundation_slab
@@ -269,7 +269,7 @@ thermal_insert_100_material_spec_qty:
   negative_context: ["50 мм", "м.п.", "длина", "работ"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Material volume, not length."
+  notes: "Optional material volume, not length. Fill only when the PDF explicitly gives material for an actual 100mm thermal-insert layer. It can be present without a 50mm thermal-insert row. If the project has no thermal inserts, leave empty/missing; do not invent zero found values. Do not confuse with regular EPS 100mm slab edge/side insulation."
 
 foundation_rebar_items:
   section_code: foundation_slab
@@ -333,7 +333,7 @@ thermal_insert_items:
   negative_context: ["несущ", "перекрыти", "перемычк", "плита фундамент"]
   value_column_hint: ["длина", "объем", "кол-во"]
   unit_column_hint: ["м.пог", "м/п", "мп", "м3", "м³"]
-  notes: "Added 2026-07-26 (real project case). Use this group instead of thermal_insert_50_length/thermal_insert_100_length/thermal_insert_50_material_spec_qty/thermal_insert_100_material_spec_qty ONLY when the PDF gives thermal inserts by an arbitrary size (eps_size, e.g. '100x400x160') instead of the classic 50mm+100mm split. eps_size — free string exactly as printed in the PDF, do not normalize into a thickness number. LIVE, not diagnostic — wired into foundation_slab_calculator.py/section_contract.yaml (calculator_input_path: thermal_insert_items, requires thermal_insert_mode='items'). If the PDF genuinely gives the 50/100mm split, use the old scalar targets as before and leave this group empty — don't fill both."
+  notes: "Use this group instead of thermal_insert_50_length/thermal_insert_100_length/thermal_insert_50_material_spec_qty/thermal_insert_100_material_spec_qty ONLY when the PDF gives thermal inserts by an arbitrary size (eps_size, e.g. '100x400x160') instead of the classic 50mm+100mm split. eps_size — free string exactly as printed in the PDF, do not normalize into a thickness number. LIVE, not diagnostic — wired into foundation_slab_calculator.py/section_contract.yaml (calculator_input_path: thermal_insert_items, requires thermal_insert_mode='items'). If the PDF genuinely gives the 50/100mm split, use scalar targets as before and leave this group empty. If there are no thermal inserts, leave this group empty; do not create zero rows. Do not confuse with regular EPS insulation of slab bottom, slab edge/side, beams, or lintels."
 
 waterproofing:
   section_code: waterproofing

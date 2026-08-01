@@ -75,10 +75,8 @@
 - Фанера legacy: `plywood_sheets = ceil(formwork_area / plywood_sheet_working_area_m2)`.
 - Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.
 - ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.
-- Работы термовставок 50 мм: `quantity = thermal_insert_50_length_m`.
-- Работы термовставок 100 мм: `quantity = thermal_insert_100_length_m`.
-- Материал термовставок 50 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)`.
-- Материал термовставок 100 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)`.
+- Работы термовставок: по раздельным длинам 50/100 мм либо одной общей длине `thermal_insert_combined_length_m`.
+- Материалы термовставок: только для тех слоев, которые явно есть в проекте; `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, pack_multiple_qty)`.
 - Арматура legacy: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.
 - Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.
 - Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.

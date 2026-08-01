@@ -149,7 +149,7 @@ review_parameters:
     label_ru: "Термовставка 50 мм, длина"
     unit: "мп"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "thermal_insert_50_length"
     calculator_input_path: "thermal_insert_50_length_m"
@@ -163,16 +163,16 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте длину термовставок 50 мм."
+      status_if_missing: "not_required"
+      action_ru: "Заполняйте только если в проекте явно есть термовставка 50 мм с отдельной длиной. Если термовставок нет или есть только 100 мм — оставьте пустым."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Optional production input. Thermal inserts can be absent, can be only 100 mm, can be classic 50+100 mm, or can be represented by thermal_insert_items for arbitrary sizes. Do not force a missing 50 mm layer into zero/found."
 
   - key: thermal_insert_100_length_m
     label_ru: "Термовставка 100 мм, длина"
     unit: "мп"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "thermal_insert_100_length"
     calculator_input_path: "thermal_insert_100_length_m"
@@ -186,10 +186,10 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте длину термовставок 100 мм."
+      status_if_missing: "not_required"
+      action_ru: "Заполняйте только если в проекте явно есть термовставка 100 мм с отдельной длиной. Если термовставок нет — оставьте пустым."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Optional production input. May be the only standard thermal-insert layer in a project; in that case the 50 mm fields stay empty."
 
   - key: thermal_insert_combined_length_m
     label_ru: "Термовставка, длина (общая на оба слоя)"
@@ -212,13 +212,13 @@ review_parameters:
       status_if_missing: "not_required"
       action_ru: "Заполняйте это поле ТОЛЬКО если в спецификации одна общая длина термовставок на оба слоя ЭППС. Если длины даны раздельно по 50мм/100мм — используйте два поля выше, это оставьте пустым."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-27. Closes the extraction-routing gap for the thermal_insert_combined_length_m calculator support shipped 2026-07-25 (real ТРЦ finding: one shared length would otherwise get duplicated into both thermal_insert_50_length_m and thermal_insert_100_length_m, double-billing installation work). Mutually exclusive with the two length fields above — fill this one OR those two, never both."
+    notes: "Added 2026-07-27. Closes the extraction-routing gap for projects where one shared length would otherwise get duplicated into both thermal_insert_50_length_m and thermal_insert_100_length_m, double-billing installation work. Mutually exclusive with the two length fields above — fill this one OR those two, never both. Optional: leave empty when thermal inserts are absent or when only one layer has its own explicit length."
 
   - key: thermal_insert_50_material_spec_qty
     label_ru: "Термовставка 50 мм, материал по спецификации"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "thermal_insert_50_material_spec_qty"
     calculator_input_path: "thermal_insert_50_material_spec_qty"
@@ -232,16 +232,16 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте материал термовставок 50 мм по спецификации."
+      status_if_missing: "not_required"
+      action_ru: "Заполняйте только если в проекте явно есть материал термовставок 50 мм. Если слой 50 мм отсутствует — оставьте пустым."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Optional production input. Missing is valid when the project has no 50 mm thermal-insert layer."
 
   - key: thermal_insert_100_material_spec_qty
     label_ru: "Термовставка 100 мм, материал по спецификации"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "thermal_insert_100_material_spec_qty"
     calculator_input_path: "thermal_insert_100_material_spec_qty"
@@ -255,10 +255,10 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте материал термовставок 100 мм по спецификации."
+      status_if_missing: "not_required"
+      action_ru: "Заполняйте только если в проекте явно есть материал термовставок 100 мм. Если термовставок нет — оставьте пустым."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: ""
+    notes: "Optional production input. May be present without a matching 50 mm material row."
 
   - key: thermal_insert_items
     label_ru: "Термовставки произвольного типоразмера (альтернатива 50/100 мм)"
@@ -407,11 +407,11 @@ price_keys:
   - {key: timber_unit_price, estimate_line_code: formwork_timber, label_ru: "Пиломатериал обрезной хвойных пород ГОСТ", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "timber_unit_price", allow_manual_override: true, notes: ""}
   - {key: eps50_laying_work_unit_price, estimate_line_code: eps50_laying_under_slab, label_ru: "Укладка ЭППС 50 мм под плитой", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "eps_laying_work_m2", fallback_key: "eps50_laying_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: eps50_unit_price, estimate_line_code: eps50_penoplex_geo_material, label_ru: "Пеноплэкс ГЕО 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_geo_50_m3", fallback_key: "eps50_unit_price", allow_manual_override: true, notes: ""}
-  - {key: thermal_insert_50_work_unit_price, estimate_line_code: thermal_insert_50_installation, label_ru: "Устройство и монтаж термовставок 50 мм", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_installation_work_m", fallback_key: "thermal_insert_50_work_unit_price", allow_manual_override: true, notes: ""}
-  - {key: thermal_insert_100_work_unit_price, estimate_line_code: thermal_insert_100_installation, label_ru: "Устройство и монтаж термовставок 100 мм", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_installation_work_m", fallback_key: "thermal_insert_100_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_50_work_unit_price, estimate_line_code: thermal_insert_50_installation, label_ru: "Устройство и монтаж термовставок 50 мм", price_kind: work, unit: "мп", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_installation_work_m", fallback_key: "thermal_insert_50_work_unit_price", allow_manual_override: true, notes: "Only required if thermal_insert_50_length_m is present and greater than 0."}
+  - {key: thermal_insert_100_work_unit_price, estimate_line_code: thermal_insert_100_installation, label_ru: "Устройство и монтаж термовставок 100 мм", price_kind: work, unit: "мп", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_installation_work_m", fallback_key: "thermal_insert_100_work_unit_price", allow_manual_override: true, notes: "Only required if thermal_insert_100_length_m is present and greater than 0."}
   - {key: thermal_insert_combined_work_unit_price, estimate_line_code: thermal_insert_combined_installation, label_ru: "Устройство и монтаж термовставок (общая длина)", price_kind: work, unit: "мп", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_combined_installation_work_m", fallback_key: "thermal_insert_combined_work_unit_price", allow_manual_override: true, notes: "Added 2026-07-27. Only used when thermal_insert_combined_length_m is given (one shared work line instead of the separate 50mm/100mm work lines)."}
-  - {key: thermal_insert_50_material_unit_price, estimate_line_code: thermal_insert_50_material, label_ru: "Материал термовставок 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_material_m3", fallback_key: "thermal_insert_50_material_unit_price", allow_manual_override: true, notes: ""}
-  - {key: thermal_insert_100_material_unit_price, estimate_line_code: thermal_insert_100_material, label_ru: "Материал термовставок 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_material_m3", fallback_key: "thermal_insert_100_material_unit_price", allow_manual_override: true, notes: ""}
+  - {key: thermal_insert_50_material_unit_price, estimate_line_code: thermal_insert_50_material, label_ru: "Материал термовставок 50 мм", price_kind: material, unit: "м3", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_50_material_m3", fallback_key: "thermal_insert_50_material_unit_price", allow_manual_override: true, notes: "Only required if thermal_insert_50_material_spec_qty is present and greater than 0."}
+  - {key: thermal_insert_100_material_unit_price, estimate_line_code: thermal_insert_100_material, label_ru: "Материал термовставок 100 мм", price_kind: material, unit: "м3", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_100_material_m3", fallback_key: "thermal_insert_100_material_unit_price", allow_manual_override: true, notes: "Only required if thermal_insert_100_material_spec_qty is present and greater than 0."}
   - {key: thermal_insert_items_work_unit_price, estimate_line_code: thermal_insert_items_installation, label_ru: "Устройство и монтаж термовставок (произвольный типоразмер)", price_kind: work, unit: "мп", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_items_installation_work_m", fallback_key: "thermal_insert_items_work_unit_price", allow_manual_override: true, notes: "Only used when thermal_insert_mode='items'; one combined work line by total length across all thermal_insert_items rows."}
   - {key: thermal_insert_item_material_unit_price, estimate_line_code: thermal_insert_items_material, label_ru: "Материал термовставок (произвольный типоразмер)", price_kind: material, unit: "м3", required: false, default_source: price_registry_with_fallback, registry_code: "thermal_insert_item_material_m3", fallback_key: "thermal_insert_items.material_unit_price", allow_manual_override: true, notes: "Only used when thermal_insert_mode='items'; resolved per row of thermal_insert_items, same one registry_code for every size since it's the same EPS product family."}
   - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of foundation_rebar_items."}

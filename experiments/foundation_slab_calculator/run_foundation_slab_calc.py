@@ -300,11 +300,17 @@ def format_markdown(
     if input_data.thermal_insert_mode == "standard_50_100":
         formula_lines.extend(
             [
-                "- Работы термовставок 50 мм: `quantity = thermal_insert_50_length_m`.",
-                "- Работы термовставок 100 мм: `quantity = thermal_insert_100_length_m`.",
-                "- Материал термовставок 50 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)`.",
-                "- Материал термовставок 100 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)`.",
+                "- Работы термовставок: по раздельным длинам 50/100 мм либо одной общей длине `thermal_insert_combined_length_m`.",
+                "- Материалы термовставок: только для тех слоев, которые явно есть в проекте; `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, pack_multiple_qty)`.",
             ]
+        )
+    elif input_data.thermal_insert_mode == "items":
+        formula_lines.append(
+            "- Термовставки произвольного типоразмера: работа по сумме `thermal_insert_items[].length_m`, материалы построчно из `thermal_insert_items[].material_spec_qty_m3`."
+        )
+    elif input_data.thermal_insert_mode == "none":
+        formula_lines.append(
+            "- Термовставок в проекте нет: строки работ и материалов термовставок не формируются."
         )
     else:
         formula_lines.append(
