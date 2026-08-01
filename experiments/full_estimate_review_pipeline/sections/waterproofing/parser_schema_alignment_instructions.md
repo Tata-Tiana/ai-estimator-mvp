@@ -19,6 +19,7 @@ Parser-side targets were aligned to production calculator inputs:
 
 - `waterproofing_area_m2`
 - `eps100_wall_volume_m3`
+- `eps100_wall_insulation_area_m2`
 
 The older name `waterproofing_eps_100_edge_volume` must not be used as the production target code.
 
@@ -40,17 +41,22 @@ elsewhere in the codebase; it never fed `material_total`/`work_total`/`line_tota
 - If PDF has no direct waterproofing area, Elena's production rule allows:
   `waterproofing.waterproofing_area_m2 = foundation_slab.slab_side_formwork_area`.
 - When this reuse happens, keep the same source/raw text/page and mark `needs_review: true`.
-- `eps100_wall_volume_m3` is volume in m3. The calculator converts it to work area by dividing by EPS thickness.
+- `eps100_wall_insulation_area_m2` is the explicit work area in m2 for EPS 100 mm slab edge/board insulation. If PDF gives it, use it.
+- `eps100_wall_volume_m3` is material volume in m3 for the same EPS 100 mm slab edge/board insulation.
+- If the explicit area is absent, the calculator falls back to `eps100_wall_volume_m3 / eps100_wall_thickness_m`.
 
 ## Important distinctions
 
 - `waterproofing_area_m2` is mastics/waterproofing area in m2.
-- `eps100_wall_volume_m3` is EPS 100 mm wall/edge insulation volume in m3.
+- `eps100_wall_insulation_area_m2` is EPS 100 mm slab edge/board work area in m2.
+- `eps100_wall_volume_m3` is EPS 100 mm slab edge/board material volume in m3.
+- Torец плиты, борт плиты and вертикальная поверхность плит фундамента are the same MVP entity.
+- Foundation walls/ростверк are excluded from the current MVP calculation.
 - Do not mix either of these with foundation slab formwork material lines, roof waterproofing, or floor slab EPS.
 
 ## Check before marking section ready
 
-1. Confirm parser targets use `waterproofing_area_m2` and `eps100_wall_volume_m3`.
+1. Confirm parser targets use `waterproofing_area_m2`, `eps100_wall_insulation_area_m2`, and `eps100_wall_volume_m3`.
 2. Confirm prompt includes the allowed reuse rule from foundation slab side formwork area.
 3. Confirm schema can carry both scalar values.
 4. Confirm no legacy perimeter/height reconstruction is used as a production PDF extraction path.

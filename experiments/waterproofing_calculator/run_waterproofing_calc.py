@@ -240,7 +240,7 @@ def format_markdown(
             f"- Площадь, которая ушла в работы, праймер и мастику: `{waterproofing_block.get('waterproofing_area_m2')}` м2.",
             "- Праймер: `primer_required_liters = waterproofing_area_m2 * primer_consumption_l_per_m2`; `primer_units = ceil(primer_required_liters / primer_canister_volume_l)`.",
             "- Мастика: `mastic_required_kg = waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers`; `mastic_units = ceil(mastic_required_kg / mastic_bucket_weight_kg)`.",
-            "- Основная площадь работ по ЭППС 100 мм торец: `eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m`.",
+            "- Основная площадь работ по ЭППС 100 мм торец/борт плиты: если в проекте есть явная площадь `eps100_wall_insulation_area_m2`, используется она; иначе fallback `eps100_wall_volume_m3 / eps100_wall_thickness_m`.",
             "- Геометрическая проверка по участкам без утепления включается только если заданы `slab_formwork_perimeter_m`, `slab_edge_height_m` и `non_insulated_edge_lengths_m`.",
             "- Если геометрическая проверка выключена, площадь ЭППС берётся из спецификации через `объём / толщину`.",
             f"- Геометрическая проверка включена: `{waterproofing_block.get('eps100_wall_geometry_check_enabled')}`.",

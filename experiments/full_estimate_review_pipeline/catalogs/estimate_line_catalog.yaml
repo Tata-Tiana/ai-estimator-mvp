@@ -1009,13 +1009,16 @@ sections:
       eps100_wall_insulation_work:
         code: "eps100_wall_insulation_work"
         row_id: "waterproofing.eps100_wall_insulation_work"
-        name_ru: "Утепление стен плиты ЭППС 100 мм"
+        name_ru: "Утепление торца/борта фундаментной плиты ЭППС 100 мм"
         unit: "м2"
         line_kind: normal
         current_calculator_status: returned_by_waterproofing_calculator
         quantity:
-          formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+          formula: "eps100_wall_insulation_area_m2 from project when present, else eps100_wall_volume_m3 / eps100_wall_thickness_m"
           leaf_inputs:
+            - ref: "review_parameters.eps100_wall_insulation_area_m2"
+              source_class: AUTO_PROJECT
+              optional: true
             - ref: "review_parameters.eps100_wall_volume_m3"
               source_class: AUTO_PROJECT
             - ref: "defaults_catalog.sections.waterproofing.defaults.eps100_wall_thickness_m"
@@ -1055,7 +1058,7 @@ sections:
       eps50_wall_insulation_work:
         code: "eps50_wall_insulation_work"
         row_id: "waterproofing.eps50_wall_insulation_work"
-        name_ru: "Утепление стен плиты ЭППС 50 мм"
+        name_ru: "Утепление торца/борта фундаментной плиты ЭППС 50 мм"
         unit: "м2"
         line_kind: normal
         current_calculator_status: returned_by_waterproofing_calculator

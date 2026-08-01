@@ -71,7 +71,7 @@ review_parameters:
         - "утепление торца плиты эппс 100 мм объем"
         - "пеноплэкс гео 100 мм торец плиты"
       expected_unit: "м3"
-      notes: "Must stay volume in m3. Do not confuse with EPS work area in m2."
+      notes: "Must stay volume in m3. Do not confuse with EPS work area in m2. Torец плиты / борт плиты / вертикальная поверхность плит фундамента are the same MVP entity, but foundation walls/rostverk are excluded."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -81,7 +81,37 @@ review_parameters:
       numeric: true
       min_value: 0
       max_value: null
-    notes: "Calculator derives EPS work area as volume / thickness."
+    notes: "Material volume for EPS 100 mm slab edge/board insulation. If the PDF gives an explicit m2 area for the same work, use eps100_wall_insulation_area_m2 for the work quantity; do not force volume/thickness when an explicit area exists."
+
+  - key: eps100_wall_insulation_area_m2
+    label_ru: "ЭППС 100 мм по торцу фундаментной плиты, площадь работ"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "eps100_wall_insulation_area_m2"
+    calculator_input_path: "eps100_wall_insulation_area_m2"
+    normalized_json_path: "sections.waterproofing.parameters.eps100_wall_insulation_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes:
+        - "eps100_wall_insulation_area_m2"
+      aliases_ru:
+        - "площадь утепления торца плиты эппс 100 мм"
+        - "площадь утепления бортов фундаментной плиты эппс 100 мм"
+        - "площадь вертикальных поверхностей плит фундамента под утепление эппс 100мм"
+      expected_unit: "м2"
+      notes: "Torец плиты, борт плиты и вертикальная поверхность плит фундамента are the same MVP entity. This is the work area, not the EPS material volume. Exclude foundation walls/rostverk."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "ok_if_volume_present"
+      action_ru: "Если в проекте есть отдельная площадь утепления торца/борта фундаментной плиты ЭППС 100 мм, проверьте ее. Если отдельной площади нет, калькулятор рассчитает работу из объема ЭППС 100 мм и толщины."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Optional explicit work area for EPS 100 mm slab edge/board insulation. When present, calculator uses it for the work row. Material remains eps100_wall_volume_m3."
 
   - key: eps50_wall_volume_m3
     label_ru: "ЭППС 50 мм по торцу фундаментной плиты, объем"
@@ -375,14 +405,17 @@ auto_calculated:
   - key: eps100_wall_insulation_area_m2
     label_ru: "Площадь работ по ЭППС 100 мм торца"
     source_class: AUTO_CALCULATED
-    formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+    formula: "eps100_wall_insulation_area_m2 from project when present, else eps100_wall_volume_m3 / eps100_wall_thickness_m"
     leaf_inputs:
+      - ref: review_parameters.eps100_wall_insulation_area_m2
+        source_class: AUTO_PROJECT
+        optional: true
       - ref: review_parameters.eps100_wall_volume_m3
         source_class: AUTO_PROJECT
       - ref: defaults.eps100_wall_thickness_m
         source_class: DEFAULT
-    calculator_input_path: ""
-    notes: "Work area in m2; not a project volume."
+    calculator_input_path: "eps100_wall_insulation_area_m2"
+    notes: "Work area in m2; not a project volume. If PDF explicitly gives slab edge/board/vertical-slab area, use it. Fallback to volume/thickness only when explicit area is absent."
 
   - key: eps50_wall_insulation_area_m2
     label_ru: "Площадь работ по ЭППС 50 мм торца"
@@ -543,6 +576,16 @@ calculator_input_mapping:
     fallback: null
     notes: ""
 
+  - input_path: "eps100_wall_insulation_area_m2"
+    from:
+      ref: "review_parameters.eps100_wall_insulation_area_m2"
+      source_class: AUTO_PROJECT
+      optional: true
+    required: false
+    transform: number_m2
+    fallback: null
+    notes: "Optional explicit work area. If absent, calculator derives work area from eps100_wall_volume_m3 / eps100_wall_thickness_m."
+
   - input_path: "eps50_wall_volume_m3"
     from:
       ref: "review_parameters.eps50_wall_volume_m3"
@@ -649,17 +692,21 @@ estimate_lines:
     notes: ""
 
   - code: eps100_wall_insulation_work
-    name_ru: "Утепление стен плиты ЭППС 100 мм"
+    name_ru: "Утепление торца/борта фундаментной плиты ЭППС 100 мм"
     unit: "м2"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=eps100_wall_insulation_work]"
     quantity:
-      formula: "eps100_wall_volume_m3 / eps100_wall_thickness_m"
+      formula: "eps100_wall_insulation_area_m2 from project when present, else eps100_wall_volume_m3 / eps100_wall_thickness_m"
       formula_model:
-        type: divide
+        type: optional_project_value_else_divide
+        project_value_ref: "review_parameters.eps100_wall_insulation_area_m2"
         numerator_ref: "review_parameters.eps100_wall_volume_m3"
         denominator_ref: "defaults.eps100_wall_thickness_m"
       leaf_inputs:
+        - ref: "review_parameters.eps100_wall_insulation_area_m2"
+          source_class: AUTO_PROJECT
+          optional: true
         - ref: "review_parameters.eps100_wall_volume_m3"
           source_class: AUTO_PROJECT
         - ref: "defaults.eps100_wall_thickness_m"
@@ -704,7 +751,7 @@ estimate_lines:
     notes: "This remains material volume in m3."
 
   - code: eps50_wall_insulation_work
-    name_ru: "Утепление стен плиты ЭППС 50 мм"
+    name_ru: "Утепление торца/борта фундаментной плиты ЭППС 50 мм"
     unit: "м2"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=eps50_wall_insulation_work]"

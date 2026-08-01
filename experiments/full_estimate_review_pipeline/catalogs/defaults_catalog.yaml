@@ -1926,6 +1926,10 @@ not_defaults:
       reason: "Project EPS volume from PDF/review, not a default."
       belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "waterproofing.eps100_wall_penoplex_geo_material"
+    eps100_wall_insulation_area_m2:
+      reason: "Optional project EPS work area from PDF/review, not a default. If absent, calculator falls back to eps100_wall_volume_m3 / eps100_wall_thickness_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.eps100_wall_insulation_work"
     waterproofing_work_unit_price:
       reason: "Work unit price, not a default."
       belongs_to: "price registry / fallback / review sheet 02"

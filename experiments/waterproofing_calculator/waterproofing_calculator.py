@@ -78,6 +78,7 @@ class WaterproofingInput:
     waterproofing_consumables_coeff: float
     waterproofing_area_calc_method: str = "legacy_perimeter_height"
     waterproofing_area_m2: float | None = None
+    eps100_wall_insulation_area_m2: float | None = None
     eps50_wall_volume_m3: float | None = None
     slab_formwork_perimeter_m: float | None = None
     slab_edge_height_m: float | None = None
@@ -137,6 +138,13 @@ class WaterproofingInput:
 
         if self.eps50_wall_volume_m3 is not None and self.eps50_wall_volume_m3 < 0:
             raise ValueError("eps50_wall_volume_m3 must be greater than or equal to 0")
+        if (
+            self.eps100_wall_insulation_area_m2 is not None
+            and self.eps100_wall_insulation_area_m2 < 0
+        ):
+            raise ValueError(
+                "eps100_wall_insulation_area_m2 must be greater than or equal to 0"
+            )
 
         if self.waterproofing_area_calc_method == "spec_area":
             _require_positive("waterproofing_area_m2", self.waterproofing_area_m2)
@@ -364,9 +372,17 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
     )
     mastic_units = int(ceil(mastic_raw_units))
 
-    eps100_wall_insulation_area_m2 = _round_decimal(
-        _to_decimal(data.eps100_wall_volume_m3) / _to_decimal(data.eps100_wall_thickness_m)
-    )
+    if data.eps100_wall_insulation_area_m2 is not None:
+        eps100_wall_insulation_area_m2 = _round_decimal(
+            _to_decimal(data.eps100_wall_insulation_area_m2)
+        )
+        eps100_wall_insulation_area_source = "spec_area"
+    else:
+        eps100_wall_insulation_area_m2 = _round_decimal(
+            _to_decimal(data.eps100_wall_volume_m3)
+            / _to_decimal(data.eps100_wall_thickness_m)
+        )
+        eps100_wall_insulation_area_source = "volume_div_thickness"
     geometry_check_enabled = (
         data.slab_formwork_perimeter_m is not None
         and data.slab_edge_height_m is not None
@@ -455,6 +471,7 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
         "mastic_raw_units": mastic_raw_units,
         "mastic_units": mastic_units,
         "eps100_wall_insulation_area_m2": eps100_wall_insulation_area_m2,
+        "eps100_wall_insulation_area_source": eps100_wall_insulation_area_source,
         "eps100_wall_geometry_check_enabled": geometry_check_enabled,
         "non_insulated_edge_lengths_total_m": non_insulated_edge_lengths_total_m,
         "insulated_edge_length_m": insulated_edge_length_m,
@@ -506,7 +523,7 @@ def calculate_primary_estimate_lines(
         ),
         calculate_line(
             code="eps100_wall_insulation_work",
-            name="Утепление стен плиты ЭППС 100 мм",
+            name="Утепление торца/борта фундаментной плиты ЭППС 100 мм",
             unit="м2",
             quantity=waterproofing["eps100_wall_insulation_area_m2"],
             work_unit_price=data.eps100_wall_insulation_work_unit_price,
@@ -537,7 +554,7 @@ def calculate_primary_estimate_lines(
         lines.extend([
             calculate_line(
                 code="eps50_wall_insulation_work",
-                name="Утепление стен плиты ЭППС 50 мм",
+                name="Утепление торца/борта фундаментной плиты ЭППС 50 мм",
                 unit="м2",
                 quantity=waterproofing["eps50_wall_insulation_area_m2"],
                 work_unit_price=data.eps50_wall_insulation_work_unit_price,
