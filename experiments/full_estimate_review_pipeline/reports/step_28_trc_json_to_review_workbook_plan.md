@@ -113,20 +113,25 @@ experiments/chat_extraction_poc/coverage_audit/trc_service_memo_report_2026-08-0
 
 Что сделать:
 
-- [ ] Расширить или закрепить `build_extraction_notes_report.py` как production diagnostic report.
-- [ ] Группировать entries по разделам сметы.
-- [ ] Выводить:
+- [x] Расширить или закрепить `build_extraction_notes_report.py` как production diagnostic report.
+- [x] Группировать entries по разделам сметы.
+- [x] Выводить:
   - все `needs_review`;
   - все `missing`;
   - все `raw_table_rows` с важным `notes`;
   - все candidates, где `value=null` или нет принятого scalar;
   - все автосуммы/предлагаемые суммы, если они есть.
-- [ ] Сделать текст не разработческий, а сметный: "что найдено", "почему не принято", "что проверить".
+- [x] Добавить сводку по статусам и разделам в начало отчета.
+- [x] Убрать часть безопасного технического шума, например found-notes вида `Количество по PDF`.
+- [x] Пересобрать TRC notes report:
+  `experiments/chat_extraction_poc/reports/trc_extraction_notes_report_2026-08-02.md`.
+- [ ] Сделать текст еще более сметным: "что найдено", "почему не принято", "что проверить".
 
 Проверка:
 
-- [ ] Количество `needs_review` в JSON равно количеству видимых пунктов в отчете.
-- [ ] Отчет не дублирует одинаковую raw row пять раз без пользы.
+- [x] Количество `needs_review` в JSON равно количеству видимых пунктов в отчете:
+  в validation было 35 `needs_review`, в notes report summary тоже `needs_review: 35`.
+- [x] Отчет не дублирует одинаковую raw row пять раз без пользы для простых found/raw дублей.
 - [ ] Для grouped candidates видно, из каких компонентов может собраться итог.
 
 Решение по роли:

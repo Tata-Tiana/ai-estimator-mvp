@@ -139,6 +139,11 @@ AUTO_SUM_CANDIDATE_TARGETS = {
     },
 }
 
+BENIGN_FOUND_NOTE_PREFIXES = (
+    "Количество по PDF:",
+    "Масса дана явно",
+)
+
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -237,8 +242,22 @@ def item_title(item: dict[str, Any]) -> str:
     return code
 
 
-def should_include_item(item: dict[str, Any], confidence_threshold: float) -> bool:
+def is_benign_found_note(note: Any) -> bool:
+    if not note:
+        return False
+    text = str(note).strip()
+    return any(text.startswith(prefix) for prefix in BENIGN_FOUND_NOTE_PREFIXES)
+
+
+def should_include_item(item: dict[str, Any], confidence_threshold: float, status: str) -> bool:
     if item.get("notes"):
+        if (
+            status == "found"
+            and not item.get("needs_review")
+            and not item.get("candidates")
+            and is_benign_found_note(item.get("notes"))
+        ):
+            return False
         return True
     if item.get("needs_review"):
         return True
@@ -261,6 +280,7 @@ def collect_section_items(
     collected: list[dict[str, str]] = []
     missing_codes: list[str] = []
     seen: set[tuple[str, str, str, str]] = set()
+    seen_evidence_notes: set[tuple[str, str]] = set()
     alternative_notes: dict[str, str] = {}
 
     found_group_codes = {
@@ -313,7 +333,10 @@ def collect_section_items(
         code = item_code(item)
         if status in {"needs_review", "found", "missing"} and item.get("value") in (None, "") and close_by_alternative(code):
             return
-        if not should_include_item(item, confidence_threshold):
+        if not should_include_item(item, confidence_threshold, status):
+            return
+        evidence_key = (short(item.get("raw_text"), 240), short(item.get("notes"), 240))
+        if status == "raw_table_rows" and evidence_key in seen_evidence_notes:
             return
         key = (
             item_code(item),
@@ -324,6 +347,8 @@ def collect_section_items(
         if key in seen:
             return
         seen.add(key)
+        if evidence_key != ("", ""):
+            seen_evidence_notes.add(evidence_key)
         auto_sum = candidate_sum_info(item, section_code)
         display_status = auto_sum["status"] if auto_sum else status
         display_value = auto_sum["value"] if auto_sum else short(item.get("value"), 220)
@@ -404,29 +429,12 @@ def collect_section_items(
 
 def render_report(extraction: dict[str, Any], input_path: Path, confidence_threshold: float) -> str:
     project_name = extraction.get("project_name") or "проект не указан"
-    lines = [
-        "# Приложение к служебной записке: все notes из extraction JSON",
-        "",
-        f"Источник JSON: `{input_path}`",
-        f"Проект: {project_name}",
-        "",
-        "Это техническое приложение собрано кодом из JSON, а не написано нейронкой.",
-        "Сюда попадают: `needs_review`, все непустые `notes`, кандидаты, низкая уверенность и `missing`.",
-        f"Порог низкой уверенности: ниже {confidence_threshold:.2f}.",
-        "",
-    ]
-
-    warnings = extraction.get("extraction_warnings") or []
-    if warnings:
-        lines.extend(["## Общие предупреждения parser", ""])
-        for warning in warnings:
-            lines.append(f"- {short(warning, 500)}")
-        lines.append("")
-
     sections = extraction.get("sections") or {}
     ordered_codes = [code for code in SECTION_ORDER if code in sections]
     ordered_codes.extend(sorted(code for code in sections if code not in set(ordered_codes)))
 
+    section_reports: list[tuple[str, list[dict[str, str]], list[str]]] = []
+    status_counts: dict[str, int] = {}
     total_items = 0
     for section_code in ordered_codes:
         section_items, missing_codes = collect_section_items(
@@ -436,7 +444,49 @@ def render_report(extraction: dict[str, Any], input_path: Path, confidence_thres
         )
         if not section_items and not missing_codes:
             continue
+        section_reports.append((section_code, section_items, missing_codes))
         total_items += len(section_items) + len(missing_codes)
+        for item in section_items:
+            status = item.get("status") or "unknown"
+            status_counts[status] = status_counts.get(status, 0) + 1
+        if missing_codes:
+            status_counts["missing_code"] = status_counts.get("missing_code", 0) + len(missing_codes)
+
+    warnings = extraction.get("extraction_warnings") or []
+    lines = [
+        "# Приложение к служебной записке: все notes из extraction JSON",
+        "",
+        f"Источник JSON: `{input_path}`",
+        f"Проект: {project_name}",
+        "",
+        "Это техническое приложение собрано кодом из JSON, а не написано нейронкой.",
+        "Сюда попадают: `needs_review`, значимые `notes`, кандидаты, низкая уверенность и `missing`.",
+        "Безопасные технические notes вида `Количество по PDF` для найденных строк не выводятся, чтобы не прятать реальные сомнения в шуме.",
+        f"Порог низкой уверенности: ниже {confidence_threshold:.2f}.",
+        "",
+    ]
+
+    lines.extend(["## Сводка", ""])
+    lines.append(f"- Общие предупреждения parser: {len(warnings)}")
+    lines.append(f"- Пунктов в приложении: {total_items}")
+    if status_counts:
+        status_text = ", ".join(f"`{status}`: {count}" for status, count in sorted(status_counts.items()))
+        lines.append(f"- По статусам: {status_text}")
+    if section_reports:
+        section_text = "; ".join(
+            f"{SECTION_NAMES.get(code, code)}: {len(items) + len(missing)}"
+            for code, items, missing in section_reports
+        )
+        lines.append(f"- По разделам: {section_text}")
+    lines.append("")
+
+    if warnings:
+        lines.extend(["## Общие предупреждения parser", ""])
+        for warning in warnings:
+            lines.append(f"- {short(warning, 500)}")
+        lines.append("")
+
+    for section_code, section_items, missing_codes in section_reports:
         section_name = SECTION_NAMES.get(section_code, section_code)
         lines.extend([f"## {section_name}", ""])
         for index, item in enumerate(section_items, start=1):
