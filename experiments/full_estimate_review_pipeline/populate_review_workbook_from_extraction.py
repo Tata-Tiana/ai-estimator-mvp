@@ -261,6 +261,16 @@ def unresolved_candidate_fragment(item: dict[str, Any]) -> str:
     return f"{note} Автосумма не применена; проверьте компоненты: {fragments}"
 
 
+def item_fragment(item: dict[str, Any] | None) -> str:
+    if item is None:
+        return ""
+    raw_text = str(item.get("raw_text") or "")
+    notes = str(item.get("notes") or "")
+    if raw_text and notes and notes not in raw_text:
+        return f"{raw_text}\nNotes: {notes}"
+    return raw_text or notes
+
+
 AUTO_SUM_CANDIDATE_TARGETS = {
     "foundation_slab": {
         "membrane_area_m2": "компонентов мембраны",
@@ -850,7 +860,7 @@ def build_project_sheet_from_extraction(
                 status = "Не найдено — ОБЯЗАТЕЛЬНО (раздел точно есть в проекте)"
                 row_fill = FILL_MISSING
                 source = found.get("source_pdf") if found is not None else ""
-                fragment = (found.get("raw_text") or found.get("notes") or "") if found is not None else ""
+                fragment = item_fragment(found)
                 counts["missing_confirmed_required"] += 1
             elif found is not None:
                 found_value = display_value(found.get("value"))
@@ -860,7 +870,7 @@ def build_project_sheet_from_extraction(
                 if found.get("candidates") and found.get("value") is None:
                     fragment = unresolved_candidate_fragment(found)
                 else:
-                    fragment = found.get("raw_text") or found.get("notes") or ""
+                    fragment = item_fragment(found)
                 counts["needs_review" if needs_review else "found"] += 1
             elif target_code and target_code in missing:
                 found_value = None
@@ -939,10 +949,10 @@ def build_project_sheet_from_extraction(
                     status,
                     display_confidence(item),
                     "",  # action_ru already stated once in the block title above, not per row -
-                         # repeating a ~100-char sentence on every item row was the main cause of
-                         # tall wrapped rows (2026-07-29 design fix)
+                    # repeating a ~100-char sentence on every item row was the main cause of
+                    # tall wrapped rows (2026-07-29 design fix)
                     item.get("source_pdf") or "",
-                    item.get("raw_text") or item.get("notes") or "",
+                    item_fragment(item),
                     "",
                     "",
                     sec_code,

@@ -77,6 +77,9 @@ Done before the next active step:
   source data. TRC validation is now 0 warnings.
 - Candidate/autosum handling on sheet 01 is explicit: only listed safe targets autosum; unresolved
   candidates render their components in `Фрагмент проекта` with "Автосумма не применена".
+- Sheet 01 now appends parser `notes` to `Фрагмент проекта` when a JSON item has both `raw_text`
+  and `notes`. Do not regress this to `raw_text` only: visible review would hide exactly the doubts
+  Elena needs to see.
 
 Next:
 
