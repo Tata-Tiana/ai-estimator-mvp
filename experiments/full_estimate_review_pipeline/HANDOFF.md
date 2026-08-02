@@ -80,6 +80,9 @@ Done before the next active step:
 - Sheet 01 now appends parser `notes` to `Фрагмент проекта` when a JSON item has both `raw_text`
   and `notes`. Do not regress this to `raw_text` only: visible review would hide exactly the doubts
   Elena needs to see.
+- Prompt/code boundary fixed on 2026-08-02: chat extraction preserves PDF facts and components;
+  review/calculator code decides safe autosums, blocking, and workbook display. Do not move
+  project-specific production decisions into the prompt.
 
 Next:
 
