@@ -75,10 +75,12 @@ Done before the next active step:
   validation dropped from 52 warnings to 11; the remaining warnings are all rebar `weight_kg`.
 - Rebar validation now distinguishes printed total kg (`... п.м; ... кг`) from kg-per-meter
   source data. TRC validation is now 0 warnings.
+- Candidate/autosum handling on sheet 01 is explicit: only listed safe targets autosum; unresolved
+  candidates render their components in `Фрагмент проекта` with "Автосумма не применена".
 
 Next:
 
-1. Add explicit candidates/autosum logic for safe component totals.
+1. Decide how to represent multi-zone floor slabs (`floor_slab_1`/`floor_slab_2`) before adapters.
 2. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
 
 Guardrail:

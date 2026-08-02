@@ -232,6 +232,45 @@ def candidate_sum_scalar(item: dict[str, Any] | None, target_code: str) -> tuple
     return round(sum(matching_values), 3), "; ".join(fragments), confidence
 
 
+def candidate_component_fragments(item: dict[str, Any], limit: int = 4) -> str:
+    fragments: list[str] = []
+    for candidate in item.get("candidates") or []:
+        if not isinstance(candidate, dict):
+            continue
+        value = candidate.get("value")
+        unit = candidate.get("unit") or candidate.get("normalized_unit") or ""
+        raw_text = candidate.get("raw_text") or candidate.get("notes") or candidate.get("item_name")
+        parts = []
+        if value is not None:
+            parts.append(f"{value}{' ' + str(unit) if unit else ''}")
+        if raw_text:
+            parts.append(str(raw_text))
+        if parts:
+            fragments.append(" — ".join(parts))
+    if len(fragments) > limit:
+        fragments = fragments[:limit] + [f"... ещё {len(fragments) - limit} кандидатов"]
+    return "; ".join(fragments)
+
+
+def unresolved_candidate_fragment(item: dict[str, Any]) -> str:
+    fragments = candidate_component_fragments(item)
+    note = item.get("notes") or "Есть несколько candidates, но для этого target_code нет универсального правила автосуммы."
+    if not fragments:
+        return str(note)
+    return f"{note} Автосумма не применена; проверьте компоненты: {fragments}"
+
+
+AUTO_SUM_CANDIDATE_TARGETS = {
+    "foundation_slab": {
+        "membrane_area_m2": "компонентов мембраны",
+    },
+    "flat_roof": {
+        "roof_internal_drains_count": "внутренних кровельных воронок",
+        "roof_parapet_drains_count": "парапетных воронок",
+    },
+}
+
+
 def group_sources(found_groups: dict[str, list[Any]], group_key: str) -> str:
     sources: list[str] = []
     for item in group_items(found_groups, group_key):
@@ -272,6 +311,9 @@ def foundation_alternative_scalar(
     found_groups: dict[str, list[Any]],
 ) -> tuple[Any, str, str, str, str] | None:
     if target_code == "membrane_area_m2":
+        label = AUTO_SUM_CANDIDATE_TARGETS.get("foundation_slab", {}).get(target_code)
+        if not label:
+            return None
         candidate_sum = candidate_sum_scalar(found, target_code)
         if candidate_sum is None:
             return None
@@ -280,7 +322,7 @@ def foundation_alternative_scalar(
             total,
             "Проверьте (автосумма компонентов)",
             found.get("source_pdf") or "",
-            f"Автосумма компонентов: {fragments}. Общего итога в PDF нет.",
+            f"Автосумма {label}: {fragments}. Общего итога в PDF нет.",
             confidence,
         )
     if target_code == "concrete_project_volume" and group_items(found_groups, "slab_zones"):
@@ -363,17 +405,11 @@ def floor_slab_1_alternative_scalar(
     )
 
 
-FLAT_ROOF_CANDIDATE_SUM_TARGETS = {
-    "roof_internal_drains_count": "внутренних кровельных воронок",
-    "roof_parapet_drains_count": "парапетных воронок",
-}
-
-
 def flat_roof_alternative_scalar(
     target_code: str,
     found: dict[str, Any] | None,
 ) -> tuple[Any, str, str, str, str] | None:
-    label = FLAT_ROOF_CANDIDATE_SUM_TARGETS.get(target_code)
+    label = AUTO_SUM_CANDIDATE_TARGETS.get("flat_roof", {}).get(target_code)
     if not label:
         return None
     candidate_sum = candidate_sum_scalar(found, target_code)
@@ -810,7 +846,10 @@ def build_project_sheet_from_extraction(
                 needs_review = bool(found.get("needs_review"))
                 status = "Проверьте (needs_review)" if needs_review else "Найдено"
                 source = found.get("source_pdf") or ""
-                fragment = found.get("raw_text") or found.get("notes") or ""
+                if found.get("candidates") and found.get("value") is None:
+                    fragment = unresolved_candidate_fragment(found)
+                else:
+                    fragment = found.get("raw_text") or found.get("notes") or ""
                 counts["needs_review" if needs_review else "found"] += 1
             elif target_code and target_code in missing:
                 found_value = None
