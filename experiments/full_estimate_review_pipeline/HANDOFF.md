@@ -33,6 +33,49 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+## Current Active Step — TRC JSON To Review Workbook Plan (updated 2026-08-02)
+
+The current planning baseline is:
+
+```text
+reports/step_28_trc_json_to_review_workbook_plan.md
+```
+
+Read it before changing prompt/schema/validator/workbook logic.
+
+Context:
+
+- Fresh TRC one-prompt chat extraction has been saved under
+  `experiments/chat_extraction_poc/outputs/trc/`.
+- Human audit is saved as
+  `experiments/chat_extraction_poc/reports/trc_json_and_memo_human_audit_2026-08-02.md`.
+- Validation, coverage audit, and service memo coverage reports have been generated.
+- The four-step parsing experiment is closed; do not edit or restart it unless the user explicitly
+  reopens that experiment. Current production/chat path is the one-prompt `chat_extraction_poc`
+  upload pack.
+
+Main conclusion:
+
+- The prompt is now good enough to expose many real project ambiguities.
+- The next bottleneck is code/schema/workbook handling of real project structures:
+  repeated slab zones, candidates, safe autosums, complex units, visible notes, confidence, and
+  complete `needs_review` reporting.
+
+Immediate next actions, in order:
+
+1. Commit the TRC baseline reports if the user asks to preserve them in git.
+2. Improve service-note coverage: every `needs_review` item must be visible to Elena, either in
+   the model memo or in an automatic notes report.
+3. Remove empty `Сверка` from sheet `01_Проверка проекта` and add `Уверенность`.
+4. Fix validator/schema handling of complex repeated rows (`mixed` units).
+5. Strengthen rebar rules so model does not calculate `weight_kg` unless total kg is explicit in PDF.
+6. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
+
+Guardrail:
+
+Do not solve TRC by hardcoding TRC values or by using old project estimates as hidden sources.
+TRC, ARK, and USV are test projects; production logic must stay universal.
+
 ## ARK Estimate Assembly Status (updated 2026-07-30)
 
 If the user asks "что нужно, чтобы собрать смету по АРК", do not start from the old
