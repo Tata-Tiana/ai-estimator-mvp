@@ -63,13 +63,20 @@ Main conclusion:
 
 Immediate next actions, in order:
 
-1. Commit the TRC baseline reports if the user asks to preserve them in git.
-2. Improve service-note coverage: every `needs_review` item must be visible to Elena, either in
-   the model memo or in an automatic notes report.
-3. Remove empty `Сверка` from sheet `01_Проверка проекта` and add `Уверенность`.
-4. Fix validator/schema handling of complex repeated rows (`mixed` units).
-5. Strengthen rebar rules so model does not calculate `weight_kg` unless total kg is explicit in PDF.
-6. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
+Done before the next active step:
+
+- TRC baseline reports committed.
+- Service-note coverage rule added to the one-prompt chat extraction prompt.
+- Automatic extraction notes report generated and summarized.
+- Sheet `01_Проверка проекта` verified on
+  `experiments/full_estimate_review_pipeline/output/trc_review_workbook_2026-08-02_v1.xlsx`:
+  empty `Сверка` is absent, `Уверенность` is visible.
+
+Next:
+
+1. Fix validator/schema handling of complex repeated rows (`mixed` units).
+2. Strengthen rebar rules so model does not calculate `weight_kg` unless total kg is explicit in PDF.
+3. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
 
 Guardrail:
 
