@@ -344,12 +344,12 @@ Coverage audit сейчас считает "never mentioned" по всем expec
 
 Что сделать:
 
-- [ ] Добавить в contract/catalog классификацию:
+- [x] Добавить в coverage audit классификацию:
   - required for calculator;
   - required for review only;
   - optional if present in project;
   - legacy/diagnostic.
-- [ ] Научить coverage audit показывать severity:
+- [x] Научить coverage audit показывать severity:
   - blocker;
   - review_needed;
   - optional_absent;
@@ -357,8 +357,19 @@ Coverage audit сейчас считает "never mentioned" по всем expec
 
 Проверка:
 
-- [ ] Отчет не пугает optional-дырками как production blocker.
-- [ ] Реально обязательные поля не пропадают среди optional.
+- [x] Отчет не пугает optional-дырками как production blocker.
+- [x] Реально обязательные поля не пропадают среди optional.
+
+Проверено 2026-08-02 на TRC coverage audit:
+
+`experiments/chat_extraction_poc/coverage_audit/trc_coverage_report_2026-08-02.md`
+
+Старые `gaps_found` по `pit_items`, `sand_items`, `column_footing_items`,
+`foundation_wall_items`, `vent_chimney_cladding_segments`, `schiedel_masonry_gas_block_items`
+теперь классифицируются как `optional_absent`, а `lintel_groove_rebar_items` — как
+`legacy_ignored`. После включения `floor_slab_1/slab_zones` эта группа тоже классифицирована как
+`optional_absent`, потому что это альтернативный путь только для проектов без общего итога бетона
+плиты.
 
 ## Шаг 28.10. Собрать Google review workbook по ТРЦ и проверить глазами
 

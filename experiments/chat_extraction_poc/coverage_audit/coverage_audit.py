@@ -19,6 +19,46 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 LIVE_TARGETS_PATH = HERE.parent / "data" / "calculator_targets_compact.json"
 
+OPTIONAL_IF_PRESENT: dict[str, dict[str, str]] = {
+    "earthworks": {
+        "pit_items": "Optional detail group: only needed when the project gives pit/foundation excavation as separate item rows.",
+        "sand_items": "Optional detail group: only needed when the project gives sand volumes as separate item rows.",
+    },
+    "foundation_slab": {
+        "column_footing_items": "Optional future/detail group: only needed when the project has column footings below zero.",
+        "foundation_wall_items": "Optional future/detail group: only needed when the project has foundation/rostverк walls below zero.",
+    },
+    "floor_slab_1": {
+        "slab_zones": "Optional alternative input: only needed when the project gives floor-slab concrete by zones with no ready total.",
+    },
+    "load_bearing_walls_lintels": {
+        "vent_chimney_cladding_segments": "Optional detail group: only needed when the project has gas-block cladding around vent/chimney shafts.",
+    },
+    "schiedel_vent_channels": {
+        "schiedel_masonry_gas_block_items": "Optional detail group: only needed when the Schiedel/vent section has separate gas-block masonry rows.",
+    },
+}
+
+DIAGNOSTIC_OR_FUTURE: dict[str, dict[str, str]] = {
+    "load_bearing_walls_lintels": {
+        "lintel_groove_rebar_items": "Diagnostic/future group: captures groove lintel rebar for later logic; current calculator does not require it.",
+    },
+}
+
+
+def classify_never_mentioned(section_code: str, code: str) -> dict[str, str]:
+    optional_note = OPTIONAL_IF_PRESENT.get(section_code, {}).get(code)
+    if optional_note:
+        return {"code": code, "severity": "optional_absent", "note": optional_note}
+    diagnostic_note = DIAGNOSTIC_OR_FUTURE.get(section_code, {}).get(code)
+    if diagnostic_note:
+        return {"code": code, "severity": "legacy_ignored", "note": diagnostic_note}
+    return {
+        "code": code,
+        "severity": "blocker_or_schema_gap",
+        "note": "Expected by calculator_targets_compact.json but not mentioned in found/missing/needs_review.",
+    }
+
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -76,17 +116,24 @@ def audit(targets_schema: dict, extraction: dict) -> list[dict[str, Any]]:
         mentioned = found_codes | missing_codes | needs_review_codes
 
         never_mentioned = sorted(expected_all - mentioned)
+        classified_never_mentioned = [classify_never_mentioned(section_code, code) for code in never_mentioned]
+        severity_counts: dict[str, int] = {}
+        for item in classified_never_mentioned:
+            severity_counts[item["severity"]] = severity_counts.get(item["severity"], 0) + 1
         unknown_codes = sorted(mentioned - expected_all)
+        has_blocking_gap = bool(severity_counts.get("blocker_or_schema_gap")) or bool(unknown_codes)
 
         results.append(
             {
                 "section_code": section_code,
-                "status": "ok" if not never_mentioned and not unknown_codes else "gaps_found",
+                "status": "ok" if not never_mentioned and not unknown_codes else ("gaps_found" if has_blocking_gap else "optional_only"),
                 "expected_total": len(expected_all),
                 "found_count": len(found_codes & expected_all),
                 "missing_count": len(missing_codes & expected_all),
                 "needs_review_count": len(needs_review_codes & expected_all),
                 "never_mentioned": never_mentioned,
+                "classified_never_mentioned": classified_never_mentioned,
+                "severity_counts": severity_counts,
                 "never_mentioned_count": len(never_mentioned),
                 "unknown_codes_used": unknown_codes,
             }
@@ -101,10 +148,20 @@ def render_report(results: list[dict[str, Any]], extraction_path: Path) -> str:
 
     total_expected = sum(r.get("expected_total", 0) for r in results)
     total_never_mentioned = sum(r.get("never_mentioned_count", 0) for r in results)
+    severity_totals: dict[str, int] = {}
+    for r in results:
+        for severity, count in (r.get("severity_counts") or {}).items():
+            severity_totals[severity] = severity_totals.get(severity, 0) + count
     lines.append(
         f"Sections checked: {len(results)}. Total expected targets/groups: {total_expected}. "
         f"Never mentioned anywhere: {total_never_mentioned}."
     )
+    if severity_totals:
+        lines.append(
+            "Never-mentioned severity: "
+            + ", ".join(f"{severity}={count}" for severity, count in sorted(severity_totals.items()))
+            + "."
+        )
     lines.append("")
 
     for r in results:
@@ -126,11 +183,11 @@ def render_report(results: list[dict[str, Any]], extraction_path: Path) -> str:
             f"missing: {r['missing_count']} | needs_review: {r['needs_review_count']} | "
             f"**never mentioned: {r['never_mentioned_count']}**"
         )
-        if r["never_mentioned"]:
+        if r["classified_never_mentioned"]:
             lines.append("")
-            lines.append("Never mentioned anywhere (not found/missing/needs_review):")
-            for code in r["never_mentioned"]:
-                lines.append(f"  - `{code}`")
+            lines.append("Never mentioned anywhere (not found/missing/needs_review), classified:")
+            for item in r["classified_never_mentioned"]:
+                lines.append(f"  - `{item['code']}` — {item['severity']}: {item['note']}")
         if r["unknown_codes_used"]:
             lines.append("")
             lines.append("Codes used by the model that aren't in the current schema (typo, or schema drifted):")

@@ -144,6 +144,12 @@ sheet 02 / defaults.
 as `floor_slab_1_concrete_volume` when PDF has no printed total. Do not add `floor_slab_2_slab_zones`
 until the floor_slab_2 calculator/adapter explicitly supports that repeated group.
 
+2026-08-02 update: `experiments/chat_extraction_poc/coverage_audit/coverage_audit.py` classifies
+never-mentioned targets/groups by severity. Current severities are `optional_absent`,
+`legacy_ignored`, and `blocker_or_schema_gap`; default is the blocking/schema-gap class unless the
+code is explicitly listed as optional/diagnostic. This prevents optional detail groups from looking
+like production blockers in human reports.
+
 ## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
 
 **There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**
