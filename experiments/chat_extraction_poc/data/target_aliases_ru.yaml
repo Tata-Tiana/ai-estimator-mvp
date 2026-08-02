@@ -1380,27 +1380,27 @@ roof_parapet_length_level_2:
 
 roof_vent_wall_abutment_level_1:
   section_code: flat_roof
-  ru_label: "Длина примыкания кровли к стенам уровня 1"
-  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
+  ru_label: "Длина примыкания кровли к стенам/ВК уровня 1"
+  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям", "Примыкание к ВК", "Примыкания к ВК", "Примыкание к вентканалам", "Примыкания к вентканалам", "Примыкание к вентшахтам", "Примыкания к вентшахтам"]
   expected_unit: linear_m
   table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
-  required_context: ["примыкан", "стен|вертикальн"]
-  negative_context: ["парапет", "вентканал", "воронка"]
+  required_context: ["примыкан", "стен|вертикальн|ВК|вентканал|вентшахт"]
+  negative_context: ["парапет", "воронка", "шт"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Abutment to walls, not parapet length."
+  notes: "Linear roof abutment length. Includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. Do not map piece counts here."
 
 roof_vent_wall_abutment_level_2:
   section_code: flat_roof
-  ru_label: "Длина примыкания кровли к стенам уровня 2"
-  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям"]
+  ru_label: "Длина примыкания кровли к стенам/ВК уровня 2"
+  pdf_aliases: ["Длина примыкания к стенам", "Примыкания к стенам", "Примыкание кровли к стене", "Примыкания к вертикальным поверхностям", "Примыкание к ВК", "Примыкания к ВК", "Примыкание к вентканалам", "Примыкания к вентканалам", "Примыкание к вентшахтам", "Примыкания к вентшахтам"]
   expected_unit: linear_m
   table_hints: ["План кровли", "Спецификация к плану кровли", "Узлы кровли"]
-  required_context: ["примыкан", "стен|вертикальн"]
-  negative_context: ["парапет", "вентканал", "воронка"]
+  required_context: ["примыкан", "стен|вертикальн|ВК|вентканал|вентшахт"]
+  negative_context: ["парапет", "воронка", "шт"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "If several levels are present, keep candidates."
+  notes: "Linear roof abutment length. Includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. If several levels are present, keep candidates."
 
 roof_zones:
   section_code: flat_roof
@@ -1423,10 +1423,10 @@ vent_shaft_abutment_count:
   expected_unit: pcs
   table_hints: ["План кровли", "Узлы кровли"]
   required_context: ["примыкан", "вентшахт|вентканал"]
-  negative_context: ["стены", "парапет"]
+  negative_context: ["стены", "парапет", "м.п", "м/п", "мп", "п.м", "метр", "длина"]
   value_column_hint: ["кол-во", "количество"]
   unit_column_hint: ["шт", "шт."]
-  notes: "Count of abutments, not linear length unless target outside list is added separately."
+  notes: "Optional legacy/manual count only. Use only when the PDF explicitly gives a piece count in шт. If the PDF gives VK/vent-channel/vent-shaft abutment in м.п., map it to roof_vent_wall_abutment_level_* or roof_zones.wall_abutment_length_m, not here."
 
 roof_aerators_count:
   section_code: flat_roof

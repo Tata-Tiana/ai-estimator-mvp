@@ -67,11 +67,14 @@ identical in every production test case) but its notes now document that it fans
 - `roof_raw_material_spec_rows` (the diagnostic spec-table breakdown declared in the contract) was
   completely missing from `calculator_targets_compact.json`'s `extract_groups`,
   `target_aliases_ru.yaml`, and the schema's `group_value_shapes`. Added to all three.
-- `vent_shaft_abutment_count` and `gas_block_wall_holes_count` were already present as *grounded*
-  parser targets (verified against real candidate PDFs) but the contract's `supplier_inputs` entries
-  for them had no `target_code` at all, so any extracted value had nowhere to land. Added
-  `target_code` to both `supplier_inputs` entries — still `SUPPLIER_INPUT`/`manual_required` (try to
-  extract, but always confirm manually), same pattern as `schiedel_vent_channels`'s material counts.
+- `gas_block_wall_holes_count` was already present as a *grounded* parser target (verified against
+  real candidate PDFs) but the contract's `supplier_inputs` entry had no `target_code` at all, so any
+  extracted value had nowhere to land. Added `target_code`.
+- `vent_shaft_abutment_count` was initially wired the same way, but the 2026-08-02 ARK/TRC/USV
+  estimate check showed the production rule is different: VK/vent-channel/vent-shaft abutments given
+  in `м.п.` belong to the general linear roof abutment length (`pvc_membrane_abutment_installation`).
+  `vent_shaft_abutment_count` is optional legacy/manual-only and should be filled only when the PDF
+  explicitly gives a separate piece count in `шт`.
 
 After this pass, `calculator_targets_compact.json`'s `flat_roof` section matches the contract's 14
 `target_code`s (12 `review_parameters` + 2 `supplier_inputs`) 1:1 — verified programmatically, zero
@@ -128,4 +131,3 @@ behavior. All 3 cases still pass 0 mismatches.
 4. Confirm prompt/aliases distinguish roof materials from foundation membrane and waterproofing.
 5. Run JSON/YAML validation after edits.
 6. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
-

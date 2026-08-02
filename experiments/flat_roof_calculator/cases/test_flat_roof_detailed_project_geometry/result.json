@@ -111,6 +111,13 @@
       "required_area_m2": "438.74",
       "roll_area_m2": "42",
       "rolls_ordered": 11
+    },
+    "pvc_membrane_vgr": {
+      "exploitable_roof_area_m2": "0",
+      "exploitable_parapet_and_abutment_length_m": "0",
+      "required_area_m2": "0",
+      "roll_area_m2": "0",
+      "rolls_ordered": 0
     }
   },
   "estimate_lines": [
@@ -561,7 +568,7 @@
       "line_type": "materials",
       "quantity_raw": "11",
       "quantity_display": "11",
-      "quantity_source": "flat and abutment membrane areas rounded to rolls",
+      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
       "internal_cost": {
         "material_unit_price": "51431",
         "material_total_raw": "565741",
@@ -1273,7 +1280,7 @@
         "line_type": "materials",
         "quantity_raw": "11",
         "quantity_display": "11",
-        "quantity_source": "flat and abutment membrane areas rounded to rolls",
+        "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
         "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
         "internal_cost": {
           "material_unit_price": "51431",
@@ -3789,8 +3796,8 @@
         "scope": "estimate_lines",
         "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
         "field": "quantity_source",
-        "expected": "flat and abutment membrane areas rounded to rolls",
-        "actual": "flat and abutment membrane areas rounded to rolls",
+        "expected": "non-exploitable flat and abutment membrane areas rounded to rolls",
+        "actual": "non-exploitable flat and abutment membrane areas rounded to rolls",
         "status": "ok"
       },
       {

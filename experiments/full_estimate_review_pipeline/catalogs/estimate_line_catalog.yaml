@@ -3764,7 +3764,7 @@ sections:
           leaf_inputs:
             - {ref: "supplier_inputs.slope_plate_a_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_a_pack_volume_m3", source_class: DEFAULT}
-        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_2_1_plate_a_m3"}
         zero_policy: not_expected
         notes: "Shared reviewed SLOPE plate price is fanned out to plate types by adapter."
 
@@ -3780,7 +3780,7 @@ sections:
           leaf_inputs:
             - {ref: "supplier_inputs.slope_plate_b_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_b_pack_volume_m3", source_class: DEFAULT}
-        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_2_1_plate_b_m3"}
         zero_policy: not_expected
         notes: "Supplier/Technonikol required volume."
 
@@ -3796,7 +3796,7 @@ sections:
           leaf_inputs:
             - {ref: "supplier_inputs.slope_plate_j_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_j_pack_volume_m3", source_class: DEFAULT}
-        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_4_2_plate_j_m3"}
         zero_policy: not_expected
         notes: "Supplier/Technonikol required volume."
 
@@ -3812,7 +3812,7 @@ sections:
           leaf_inputs:
             - {ref: "supplier_inputs.slope_plate_k_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_k_pack_volume_m3", source_class: DEFAULT}
-        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_plate_m3"}
+        prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_4_2_plate_k_m3"}
         zero_policy: not_expected
         notes: "Supplier/Technonikol required volume."
 
@@ -3829,7 +3829,7 @@ sections:
             - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_coeff", source_class: DEFAULT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_roll_area_m2", source_class: DEFAULT}
-        prices: {material_unit_price_key: "geotextile_flat_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_prof_300_m2"}
+        prices: {material_unit_price_key: "geotextile_flat_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_technonikol_prof_300_m2"}
         zero_policy: not_expected
         notes: "Flat roof layer."
 
@@ -3846,7 +3846,7 @@ sections:
             - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_parapet_coeff", source_class: DEFAULT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_parapet_roll_area_m2", source_class: DEFAULT}
-        prices: {material_unit_price_key: "geotextile_parapet_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_prof_150_m2"}
+        prices: {material_unit_price_key: "geotextile_parapet_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_technonikol_prof_150_m2"}
         zero_policy: not_expected
         notes: "Parapet and abutment layer."
 
@@ -3885,15 +3885,15 @@ sections:
         row_id: "flat_roof.vent_shaft_abutment_installation"
         name_ru: "Монтаж примыкания к вентшахтам"
         unit: "шт"
-        line_kind: normal
-        current_calculator_status: returned_by_flat_roof_calculator
+        line_kind: optional_legacy_manual
+        current_calculator_status: returned_by_flat_roof_calculator_only_when_quantity_positive
         quantity:
           formula: "vent_shaft_abutment_count"
           leaf_inputs:
             - {ref: "supplier_inputs.vent_shaft_abutment_count", source_class: SUPPLIER_INPUT}
         prices: {material_unit_price_key: null, work_unit_price_key: "vent_shaft_abutment_work_rate_per_item", fixed_amount_key: null, price_registry_code: "roof_vent_shaft_abutment_installation_item"}
-        zero_policy: not_expected
-        notes: "Manual/project count requiring review."
+        zero_policy: omit_when_zero
+        notes: "Optional legacy/manual-only. Production linear abutments to walls/VK/vent channels are included in flat_roof.pvc_membrane_abutment_installation by мп; use this line only when a project explicitly prices a separate per-item vent-shaft abutment."
 
       aluminum_pressure_rail_3m:
         code: "aluminum_pressure_rail_3m"
@@ -3938,7 +3938,7 @@ sections:
           formula: "ceil((roof_area_total_m2 * pvc_membrane_flat_coeff + parapet_and_abutment_total_length_m * pvc_membrane_parapet_coeff) / (pvc_membrane_roll_width_m * pvc_membrane_roll_length_m))"
           leaf_inputs:
             - {ref: "auto_calculated.pvc_membrane_rolls", source_class: AUTO_CALCULATED}
-        prices: {material_unit_price_key: "pvc_membrane_unit_price_per_roll_display", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_pvc_membrane_logicroof_vrp_roll"}
+        prices: {material_unit_price_key: "pvc_membrane_unit_price_per_roll_display", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll"}
         zero_policy: not_expected
         notes: "Roll count is calculated, not copied from an Excel result."
 
@@ -3977,15 +3977,15 @@ sections:
         row_id: "flat_roof.gas_block_wall_hole_drilling"
         name_ru: "Пробивка отверстий в стенах из газоблока толщ.400мм"
         unit: "шт"
-        line_kind: normal
-        current_calculator_status: returned_by_flat_roof_calculator
+        line_kind: optional_manual
+        current_calculator_status: returned_by_flat_roof_calculator_only_for_special_projects
         quantity:
           formula: "gas_block_wall_holes_count"
           leaf_inputs:
             - {ref: "supplier_inputs.gas_block_wall_holes_count", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: null, work_unit_price_key: "gas_block_wall_hole_drilling_rate", fixed_amount_key: null, price_registry_code: "roof_gas_block_wall_hole_drilling_item"}
-        zero_policy: not_expected
-        notes: "Manual quantity; not always equal to parapet drain count."
+        prices: {material_unit_price_key: null, work_unit_price_key: "gas_block_wall_hole_drilling_rate", fixed_amount_key: null, price_registry_code: null}
+        zero_policy: omit_when_zero
+        notes: "Elena 2026-07-30: this is not a standard work item; keep only for exceptional projects/manual override, do not require a registry price."
 
       internal_roof_drain_with_heating:
         code: "internal_roof_drain_with_heating"
@@ -4059,7 +4059,7 @@ sections:
           formula: "roof_waste_removal_trucks"
           leaf_inputs:
             - {ref: "supplier_inputs.roof_waste_removal_trucks", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: "roof_waste_removal_truck_unit_price", work_unit_price_key: "roof_waste_removal_work_rate_per_truck", fixed_amount_key: null, price_registry_code: "roof_waste_removal_truck"}
+        prices: {material_unit_price_key: "roof_waste_removal_truck_unit_price", work_unit_price_key: "roof_waste_removal_work_rate_per_truck", fixed_amount_key: null, price_registry_code: "waste_removal_container_truck"}
         zero_policy: not_expected
         notes: ""
 

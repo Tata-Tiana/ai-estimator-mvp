@@ -2205,7 +2205,7 @@ not_defaults:
       belongs_to: "review sheet 01 / SUPPLIER_INPUT"
       estimate_line_code: "flat_roof.eps_slope_4_2_plate_k"
     vent_shaft_abutment_count:
-      reason: "Manual/project count requiring review, not a default."
+      reason: "Optional manual/project count requiring review, not a default. Use only when a separate per-item vent-shaft abutment line is explicitly needed; linear VK/vent-channel abutments belong to the general roof abutment length."
       belongs_to: "review sheet 01 / SUPPLIER_INPUT"
       estimate_line_code: "flat_roof.vent_shaft_abutment_installation"
     gas_block_wall_holes_count:

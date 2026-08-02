@@ -466,18 +466,23 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 work_unit_price=input_data["pvc_membrane_abutment_work_rate_per_m"],
                 work_total_raw=parapet_and_abutment * d(input_data["pvc_membrane_abutment_work_rate_per_m"]),
             ),
+        ]
+    )
+
+    vent_shaft_abutment_count = d(input_data.get("vent_shaft_abutment_count") or 0)
+    if vent_shaft_abutment_count > D0:
+        lines.append(
             estimate_line(
                 code="vent_shaft_abutment_installation",
                 name="Монтаж примыкания к вентшахтам",
                 unit="шт",
                 line_type="work",
-                quantity_raw=input_data["vent_shaft_abutment_count"],
+                quantity_raw=vent_shaft_abutment_count,
                 quantity_source="vent_shaft_abutment_count",
                 work_unit_price=input_data["vent_shaft_abutment_work_rate_per_item"],
-                work_total_raw=d(input_data["vent_shaft_abutment_count"]) * d(input_data["vent_shaft_abutment_work_rate_per_item"]),
-            ),
-        ]
-    )
+                work_total_raw=vent_shaft_abutment_count * d(input_data["vent_shaft_abutment_work_rate_per_item"]),
+            )
+        )
 
     rail_pieces = ceil_decimal(parapet_and_abutment / d(input_data["rail_piece_length_m"]))
     rail_ordered_length = d(rail_pieces) * d(input_data["rail_piece_length_m"])

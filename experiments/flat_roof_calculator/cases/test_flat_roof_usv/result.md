@@ -370,7 +370,7 @@ AI не используется для расчёта. Калькулятор �
 - Ед. изм.: `рул`
 - Количество raw: `11`
 - Количество display: `11`
-- Источник количества: `flat and abutment membrane areas rounded to rolls`
+- Источник количества: `non-exploitable flat and abutment membrane areas rounded to rolls`
 - price_code: `roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll`
 
 Формула:
@@ -871,7 +871,7 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `line_type` | materials | materials | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_raw` | 11 | 11 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_display` | 11 | 11 | ok |
-| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_source` | flat and abutment membrane areas rounded to rolls | flat and abutment membrane areas rounded to rolls | ok |
+| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_source` | non-exploitable flat and abutment membrane areas rounded to rolls | non-exploitable flat and abutment membrane areas rounded to rolls | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `price_code` | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_unit_price` | 51431 | 51431 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_total_raw` | 565741 | 565741 | ok |
