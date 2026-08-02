@@ -294,20 +294,39 @@ experiments/chat_extraction_poc/coverage_audit/trc_service_memo_report_2026-08-0
 
 Что сделать:
 
-- [ ] Проверить `floor_slab_1` и `floor_slab_2` contracts: где реально нужны repeated zones.
-- [ ] Решить, нужны ли новые группы:
+- [x] Проверить `floor_slab_1` и `floor_slab_2` contracts: где реально нужны repeated zones.
+- [x] Решить, нужны ли новые группы:
   - `floor_slab_1_slab_zones`;
   - `floor_slab_2_slab_zones`;
   - `floor_slab_1_insulation_zones`;
   - `floor_slab_2_insulation_zones`;
   - отдельные beam/control rows.
-- [ ] Не ломать калькуляторы сразу. Сначала дать review workbook нормальную форму для проверки.
-- [ ] Adapter к калькулятору должен брать только утвержденный итог, а не сырые компоненты.
+- [x] Не ломать калькуляторы сразу. Сначала дать review workbook нормальную форму для проверки.
+- [x] Adapter к калькулятору должен брать только утвержденный итог, а не сырые компоненты.
 
 Решение 2026-08-02:
 
 - `floor_slab_1` уже поддерживает `slab_zones` в `section_contract.yaml` и
   `floor_slab_1_calculator.py`; это не новая логика расчета, а недовключенный путь extraction.
+
+Аудит contracts/calculators 2026-08-02:
+
+- `floor_slab_1/slab_zones` уже живой production-путь: есть в contract, calculator и extraction
+  targets. Его оставляем как альтернативу scalar `floor_slab_1_concrete_volume`, когда PDF даёт
+  бетон плиты несколькими зонами без общего итога.
+- `floor_slab_2_slab_zones` сейчас НЕ добавляем. У `floor_slab_2_calculator.py` пока есть только
+  scalar `concrete_placing_volume_m3` и `beam_items`/`beams_concrete_volume_m3`; добавление
+  `slab_zones` потребует отдельной симметричной calculator/contract/schema правки. Делать это
+  нужно только когда появится реальный проект, где у плиты 2 бетон дан зонами без общего итога.
+- `floor_slab_1_insulation_zones` и `floor_slab_2_insulation_zones` сейчас НЕ добавляем.
+  По методике Елены утепление торца плиты, балок и перемычек должно приходить отдельными явными
+  строками/длинами/площадями из проекта. Если проект не дал длину утепляемой части балок или
+  перемычек, это `needs_review`/ручная проверка, а не повод выводить длину из общей геометрии.
+- Отдельные beam/control rows уже есть: `beam_items` для плиты 1, `floor_slab_2_beam_items` для
+  плиты 2, `beam_table_controls` для плиты 1. Для review workbook этого достаточно; новые control
+  rows не нужны до появления конкретной непокрытой таблицы.
+- Граница для adapter: в калькулятор уходит scalar-итог или утвержденная разрешенная автосумма.
+  Сырые candidates и raw_table_rows не должны автоматически становиться calculator input.
 - В live `calculator_targets_compact.json` добавлена группа `slab_zones` внутри `floor_slab_1`.
 - `target_aliases_ru.yaml` расширен: `slab_zones` теперь допустим для `foundation_slab` и
   `floor_slab_1`, но балки по-прежнему исключены.

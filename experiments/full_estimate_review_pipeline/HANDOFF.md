@@ -83,11 +83,17 @@ Done before the next active step:
 - Prompt/code boundary fixed on 2026-08-02: chat extraction preserves PDF facts and components;
   review/calculator code decides safe autosums, blocking, and workbook display. Do not move
   project-specific production decisions into the prompt.
+- Floor slab zones decision fixed on 2026-08-02: keep `floor_slab_1/slab_zones` live; do not add
+  `floor_slab_2_slab_zones` until a real project needs it and the calculator/contract/schema are
+  changed together. Do not add generic insulation zones now; beam/lintel/slab insulation must come
+  from explicit project lines or remain `needs_review`/manual.
 
 Next:
 
-1. Decide how to represent multi-zone floor slabs (`floor_slab_1`/`floor_slab_2`) before adapters.
-2. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
+1. Run the next real chat extraction test with the rebuilt one-prompt pack.
+2. Rebuild the review workbook from the new JSON and compare visible sheet 01/02 against the
+   diagnostic notes report.
+3. Only after the review workbook is stable, start adapter work section by section.
 
 Guardrail:
 
