@@ -48,6 +48,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     correction_headers,
     default_contract_paths,
     diagnostic_repeated_row_params,
+    hide_diagnostic_sheets,
     load_manual_values_registry,
     load_price_registry,
     load_yaml_contract,
@@ -1133,6 +1134,7 @@ def build_workbook_from_extraction(
     build_instruction_sheet(wb)
     build_contracts_summary_sheet(wb, contracts)
     build_raw_contracts_sheet(wb, contracts)
+    hide_diagnostic_sheets(wb)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output_path)

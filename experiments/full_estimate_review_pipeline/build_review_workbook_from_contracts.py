@@ -161,6 +161,18 @@ GENERIC_DETAIL_TEMPLATES = [
     },
 ]
 
+DIAGNOSTIC_SHEETS_HIDDEN_BY_DEFAULT = {
+    "03_Детали объемов",
+    "05_Кандидаты parser",
+    "06_Сырые данные parser",
+}
+
+
+def hide_diagnostic_sheets(wb: Workbook) -> None:
+    for title in DIAGNOSTIC_SHEETS_HIDDEN_BY_DEFAULT:
+        if title in wb.sheetnames:
+            wb[title].sheet_state = "hidden"
+
 
 def load_yaml_contract(path: Path) -> dict[str, Any]:
     ruby = (
@@ -1174,6 +1186,7 @@ def build_workbook(contract_paths: list[Path], output_path: Path) -> dict[str, A
     build_instruction_sheet(wb)
     build_contracts_summary_sheet(wb, contracts)
     build_raw_contracts_sheet(wb, contracts)
+    hide_diagnostic_sheets(wb)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output_path)

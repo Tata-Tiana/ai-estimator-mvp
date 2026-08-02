@@ -150,6 +150,11 @@ never-mentioned targets/groups by severity. Current severities are `optional_abs
 code is explicitly listed as optional/diagnostic. This prevents optional detail groups from looking
 like production blockers in human reports.
 
+2026-08-02 update: review workbook builders hide diagnostic/noisy sheets by default:
+`03_Детали объемов`, `05_Кандидаты parser`, `06_Сырые данные parser`. They are still present in the
+XLSX for developers, but not visible to Elena on first open. Applies to both the empty template
+builder and extraction-populated workbook builder.
+
 ## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
 
 **There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**
