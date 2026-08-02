@@ -73,10 +73,12 @@ Done before the next active step:
   empty `Сверка` is absent, `Уверенность` is visible.
 - `normalized_unit: mixed` is now allowed only for `raw_table_rows` and repeated group rows. TRC
   validation dropped from 52 warnings to 11; the remaining warnings are all rebar `weight_kg`.
+- Rebar validation now distinguishes printed total kg (`... п.м; ... кг`) from kg-per-meter
+  source data. TRC validation is now 0 warnings.
 
 Next:
 
-1. Strengthen rebar rules so model does not calculate `weight_kg` unless total kg is explicit in PDF.
+1. Add explicit candidates/autosum logic for safe component totals.
 2. Build/rebuild TRC review workbook and verify what Elena will actually see on sheets 01 and 02.
 
 Guardrail:

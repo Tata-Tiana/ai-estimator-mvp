@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,7 @@ REBAR_GROUP_CODES = {
 REBAR_DIRECT_TARGETS: set[str] = set()
 LINEAR_REBAR_UNIT_TOKENS = ["м/п", "м.п", "п.м", "мп", "linear_m"]
 MASS_PER_M_TOKENS = ["масса ед", "масса 1", "кг/м", "кг / м", "кг/п.м", "кг/м.п"]
+EXPLICIT_KG_RE = re.compile(r"\d[\d\s,.]*\s*кг\b")
 
 
 def load_json(path: Path) -> Any:
@@ -117,6 +119,13 @@ def _raw_mentions_mass_per_m(item: dict) -> bool:
     return any(tok in f"{raw_text} {table_context}" for tok in MASS_PER_M_TOKENS)
 
 
+def _raw_mentions_explicit_weight_kg(item: dict) -> bool:
+    raw_text = str(item.get("raw_text") or "").lower()
+    if not EXPLICIT_KG_RE.search(raw_text):
+        return False
+    return not _raw_mentions_mass_per_m(item)
+
+
 def check_rebar_item(group_code: str | None, item: dict, path: str, warnings: list[str]) -> None:
     value = item.get("value")
     if not isinstance(value, dict):
@@ -157,7 +166,7 @@ def check_rebar_item(group_code: str | None, item: dict, path: str, warnings: li
         )
     if _raw_mentions_mass_per_m(item) and mass_per_m_kg is None:
         warnings.append(f"{path}: rebar row mentions mass per meter but value.{mass_per_m_field} is missing")
-    if weight_kg is not None:
+    if weight_kg is not None and not _raw_mentions_explicit_weight_kg(item):
         warnings.append(
             f"{path}: model appears to have calculated rebar weight; "
             "weight_kg should be null unless kg is explicit as the row quantity in PDF"

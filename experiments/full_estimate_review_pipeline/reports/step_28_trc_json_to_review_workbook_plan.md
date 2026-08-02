@@ -215,10 +215,10 @@ experiments/chat_extraction_poc/coverage_audit/trc_service_memo_report_2026-08-0
 
 Что сделать:
 
-- [ ] В prompt явно повторить: `weight_kg` заполнять только если общий вес/масса прямо напечатан в PDF.
-- [ ] Если в PDF есть длина в м.п. и `kg_per_meter`, сохранять оба поля, но `weight_kg=null`.
-- [ ] Если в PDF есть отдельная колонка "масса", тогда можно заполнить `weight_kg`, но source/raw_text должен это подтверждать.
-- [ ] Проверить schema для всех rebar groups:
+- [x] В prompt явно повторить: `weight_kg` заполнять только если общий вес/масса прямо напечатан в PDF.
+- [x] Если в PDF есть длина в м.п. и `kg_per_meter`, сохранять оба поля, но `weight_kg=null`.
+- [x] Если в PDF есть отдельная колонка "масса"/"кг" с готовым весом строки, тогда можно заполнить `weight_kg`, но source/raw_text должен это подтверждать.
+- [x] Проверить schema для всех rebar groups:
   - foundation;
   - floor_slab_1;
   - floor_slab_2;
@@ -226,8 +226,14 @@ experiments/chat_extraction_poc/coverage_audit/trc_service_memo_report_2026-08-0
 
 Проверка:
 
-- [ ] Новый validator run не дает warning "model appears to have calculated rebar weight".
-- [ ] В raw_text можно понять, откуда взята масса.
+- [x] Новый validator run не дает warning "model appears to have calculated rebar weight".
+- [x] В raw_text можно понять, откуда взята масса.
+
+Проверено 2026-08-02 на TRC JSON:
+
+- валидатор теперь отличает явно напечатанный общий вес строки (`... п.м; ... кг`) от массы погонного метра (`кг/м`, `Масса ед. шт.`);
+- `weight_kg` разрешен только в первом случае;
+- повторная валидация TRC дала `0 warnings`.
 
 ## Шаг 28.7. Ввести явную логику candidates и автосумм
 
