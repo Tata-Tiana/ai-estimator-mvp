@@ -139,6 +139,11 @@ The adapter must still fail loudly on `missing_confirmed_required` and real `mis
 must not read sheet 03 to "fix" those values; the reviewed source remains sheet 01 / sheet 01-1 /
 sheet 02 / defaults.
 
+2026-08-02 update: `slab_zones` is live for `foundation_slab` and `floor_slab_1` only. The
+`floor_slab_1` contract/calculator already consume it, and the review workbook can now show its sum
+as `floor_slab_1_concrete_volume` when PDF has no printed total. Do not add `floor_slab_2_slab_zones`
+until the floor_slab_2 calculator/adapter explicitly supports that repeated group.
+
 ## Sheet 01/02/03 Rule (fixed 2026-07-09, read this before touching any section_contract.yaml)
 
 **There is no `DETAIL_TABLE` source class and no separate "detail table" data source.**

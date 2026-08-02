@@ -312,16 +312,16 @@ column_footing_items:
   notes: "Added 2026-07-20. Only the footing below +0,000 belongs here (2026-07-18 decision) — an above-grade column is out of MVP scope, do not extract it into this group. Same field conventions as foundation_wall_items, kept as a separate group_code. Diagnostic-only, not yet in the calculator."
 
 slab_zones:
-  section_code: foundation_slab
+  section_code: foundation_slab, floor_slab_1
   ru_label: "Бетон плиты по зонам/толщинам"
-  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "Зона плиты"]
+  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "ПМ1", "Зона плиты"]
   expected_unit: m3
-  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты"]
+  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты", "Спецификация материалов на устройство плиты", "Плита покрытия стен 1 этажа", "ПМ1"]
   required_context: ["бетон", "плита"]
-  negative_context: ["перемычк", "балк", "перекрыти", "стяжк", "ростверк"]
+  negative_context: ["перемычк", "балк", "стяжк", "ростверк", "ПМ2"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-24 (Elena). Use this group instead of concrete_project_volume ONLY when the spec gives slab concrete as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', or ФП1/ФП2) with no ready 'Итого' row. Return each row as context (the zone/thickness label exactly as printed) + concrete_volume_m3. LIVE, not diagnostic — wired into foundation_slab_calculator.py/section_contract.yaml (calculator_input_path: slab_zones); the sum of all rows' concrete_volume_m3 automatically overrides concrete_project_volume, works for any zone count including one. If the PDF gives one ready combined figure instead, use scalar concrete_project_volume as usual and leave this group empty — don't fill both."
+  notes: "Added 2026-07-24 (Elena), extended 2026-08-02 to floor_slab_1. Use this group instead of concrete_project_volume or floor_slab_1_concrete_volume ONLY when the spec gives slab concrete as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', ФП1/ФП2, or ПМ1 zones) with no ready 'Итого' row. Return each row as context (the zone/thickness/slab label exactly as printed) + concrete_volume_m3. LIVE, not diagnostic — wired into foundation_slab_calculator.py and floor_slab_1_calculator.py through their section_contract.yaml calculator_input_path: slab_zones. If the PDF gives one ready combined figure instead, use the scalar target as usual and leave this group empty — don't fill both. Do not include beam concrete in slab_zones."
 
 thermal_insert_items:
   section_code: foundation_slab

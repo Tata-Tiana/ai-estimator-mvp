@@ -388,21 +388,31 @@ def floor_slab_1_alternative_scalar(
     target_code: str,
     found_groups: dict[str, list[Any]],
 ) -> tuple[Any, str, str, str, str] | None:
-    if target_code != "floor_slab_1_beams_concrete_volume":
-        return None
-    if not group_items(found_groups, "beam_items"):
-        return None
-    total = sum_group_numeric_field(found_groups, "beam_items", "concrete_volume_m3")
-    if total is None:
-        return None
-    return (
-        total,
-        "Найдено (автосумма beam_items)",
-        group_sources(found_groups, "beam_items"),
-        "Готовый итог бетона балок в PDF не указан; для расчёта используется сумма "
-        f"beam_items.concrete_volume_m3: {total:g} м3. Это не применяется к утеплению балок.",
-        min_group_confidence(found_groups, "beam_items"),
-    )
+    if target_code == "floor_slab_1_concrete_volume" and group_items(found_groups, "slab_zones"):
+        total = sum_group_numeric_field(found_groups, "slab_zones", "concrete_volume_m3")
+        if total is None:
+            return None
+        return (
+            total,
+            "Найдено (через slab_zones)",
+            group_sources(found_groups, "slab_zones"),
+            "Единый итог бетона плиты в PDF не указан; для расчёта используется сумма строк "
+            f"slab_zones. Строки: {group_fragments(found_groups, 'slab_zones')}",
+            min_group_confidence(found_groups, "slab_zones"),
+        )
+    if target_code == "floor_slab_1_beams_concrete_volume" and group_items(found_groups, "beam_items"):
+        total = sum_group_numeric_field(found_groups, "beam_items", "concrete_volume_m3")
+        if total is None:
+            return None
+        return (
+            total,
+            "Найдено (автосумма beam_items)",
+            group_sources(found_groups, "beam_items"),
+            "Готовый итог бетона балок в PDF не указан; для расчёта используется сумма "
+            f"beam_items.concrete_volume_m3: {total:g} м3. Это не применяется к утеплению балок.",
+            min_group_confidence(found_groups, "beam_items"),
+        )
+    return None
 
 
 def flat_roof_alternative_scalar(

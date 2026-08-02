@@ -205,6 +205,13 @@
       ],
       "extract_groups": [
         {
+          "group_code": "slab_zones",
+          "description": "Бетон плиты перекрытия 1-го этажа, когда спецификация даёт его несколькими отдельными зонами/плитами без готовой строки 'Итого'.",
+          "fields": ["context", "concrete_volume_m3"],
+          "grounded": true,
+          "notes": "Added to live extraction 2026-08-02. ЖИВАЯ группа — уже подключена в floor_slab_1_calculator.py/section_contract.yaml (calculator_input_path: slab_zones). Используй эту группу вместо floor_slab_1_concrete_volume, когда PDF даёт несколько строк бетона плиты 1-го этажа/ПМ1 без общего итога; context — название зоны/плиты как в PDF, concrete_volume_m3 — готовый объём этой строки. Не включай сюда балки: бетон балок идёт в beam_items или floor_slab_1_beams_concrete_volume. Если PDF даёт один готовый общий объём плиты, используй scalar floor_slab_1_concrete_volume и оставь эту группу пустой — не дублируй."
+        },
+        {
           "group_code": "floor_slab_1_rebar_items",
           "description": "Арматура плиты перекрытия 1-го этажа — несколько строк по диаметру/классу стали.",
           "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],

@@ -304,11 +304,26 @@ experiments/chat_extraction_poc/coverage_audit/trc_service_memo_report_2026-08-0
 - [ ] Не ломать калькуляторы сразу. Сначала дать review workbook нормальную форму для проверки.
 - [ ] Adapter к калькулятору должен брать только утвержденный итог, а не сырые компоненты.
 
+Решение 2026-08-02:
+
+- `floor_slab_1` уже поддерживает `slab_zones` в `section_contract.yaml` и
+  `floor_slab_1_calculator.py`; это не новая логика расчета, а недовключенный путь extraction.
+- В live `calculator_targets_compact.json` добавлена группа `slab_zones` внутри `floor_slab_1`.
+- `target_aliases_ru.yaml` расширен: `slab_zones` теперь допустим для `foundation_slab` и
+  `floor_slab_1`, но балки по-прежнему исключены.
+- Workbook-populator теперь умеет подставить сумму `slab_zones.concrete_volume_m3` в строку
+  `floor_slab_1_concrete_volume`, если общего итога в PDF нет.
+- `floor_slab_2_slab_zones` пока не заводим: калькулятор второй плиты не принимает такую группу,
+  значит это отдельный будущий шаг, а не тихая правка в extraction.
+
 Проверка:
 
-- [ ] В JSON и workbook можно увидеть зоны отдельно.
-- [ ] Если есть общий итог в PDF, он не теряется.
-- [ ] Если общего итога нет, workbook показывает candidates и требует решения.
+- [x] В JSON и workbook можно увидеть зоны отдельно для `floor_slab_1`, если GPT вернет
+  `group_code: slab_zones`.
+- [x] Если есть общий итог в PDF, он не теряется: scalar `floor_slab_1_concrete_volume` остается
+  основным путем.
+- [x] Если общего итога нет, workbook может использовать живую repeated group `slab_zones`;
+  для неподдержанных случаев остаются candidates и ручная проверка.
 
 ## Шаг 28.9. Пересмотреть coverage audit: required / optional / legacy
 
