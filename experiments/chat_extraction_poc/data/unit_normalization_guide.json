@@ -1,7 +1,8 @@
 {
   "_meta": {
     "purpose": "Mapping from raw unit strings as they appear in Russian construction PDFs to normalized internal unit codes used by the calculators.",
-    "normalized_units": ["m3", "m2", "linear_m", "pcs", "kg", "mm", "cm", "m"]
+    "normalized_units": ["m3", "m2", "linear_m", "pcs", "kg", "mm", "cm", "m", "mixed"],
+    "mixed_rule": "Use mixed only for raw_table_rows or repeated group rows that preserve one PDF/specification row with several numeric fields in different units. Do not use mixed for scalar targets."
   },
   "м3": "m3", "м³": "m3", "куб.м": "m3", "куб. м": "m3",
   "м2": "m2", "м²": "m2", "кв.м": "m2", "кв. м": "m2",

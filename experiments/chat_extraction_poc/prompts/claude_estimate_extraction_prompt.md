@@ -618,6 +618,13 @@ extraction.
 
 Также заполняй `normalized_unit` по таблице из `unit_normalization_guide.json`.
 
+`normalized_unit: "mixed"` разрешено только для:
+
+- `raw_table_rows`, когда одна исходная строка таблицы содержит несколько чисел в разных единицах;
+- repeated group rows (`*_items`, `*_routes`, `roof_zones` и т.п.), где объект строки хранит несколько полей с разными единицами.
+
+Для обычного scalar `target_code` нельзя писать `mixed`: выбери конкретную единицу (`m2`, `m3`, `linear_m`, `pcs`, `kg`, `m`, `mm`, `cm`) или оставь `normalized_unit: null`, если единица не нормализуется.
+
 Если единицы нет в таблице нормализации, оставь:
 
 `normalized_unit: null`

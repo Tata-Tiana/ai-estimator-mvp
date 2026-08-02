@@ -62,13 +62,21 @@ def check_sourcing(item: dict, path: str, warnings: list[str]) -> None:
             warnings.append(f"{path}: confidence={confidence} (<{HIGH_CONFIDENCE_THRESHOLD}) but needs_review is not set")
 
 
-def check_unit(item: dict, path: str, unit_guide: dict, warnings: list[str]) -> None:
+def check_unit(item: dict, path: str, unit_guide: dict, warnings: list[str], *, allow_mixed: bool = False) -> None:
     normalized = item.get("normalized_unit")
     if normalized is None:
         return
-    valid_normalized = set(unit_guide.values())
+    meta_units = set(unit_guide.get("_meta", {}).get("normalized_units") or [])
+    mapped_units = {value for key, value in unit_guide.items() if not str(key).startswith("_")}
+    valid_normalized = mapped_units | meta_units
     if normalized not in valid_normalized:
         warnings.append(f"{path}: normalized_unit '{normalized}' not in unit_normalization_guide.json values {sorted(valid_normalized)}")
+        return
+    if normalized == "mixed" and not allow_mixed:
+        warnings.append(
+            f"{path}: normalized_unit 'mixed' is allowed only for raw_table_rows or repeated group rows; "
+            "scalar targets must use a concrete normalized unit or null"
+        )
 
 
 def check_forbidden_target(item: dict, path: str, warnings: list[str]) -> None:
@@ -217,7 +225,7 @@ def validate(data: dict, unit_guide: dict) -> tuple[list[str], dict[str, int]]:
                 warnings.append(f"{path}: missing source_pdf/page_number")
             if not row.get("raw_text") and not row.get("cells"):
                 warnings.append(f"{path}: missing raw_text/cells")
-            check_unit(row, path, unit_guide, warnings)
+            check_unit(row, path, unit_guide, warnings, allow_mixed=True)
             row_text = " ".join(
                 str(part or "")
                 for part in [row.get("table_title"), row.get("raw_text"), " ".join(map(str, row.get("cells") or []))]
@@ -233,9 +241,9 @@ def validate(data: dict, unit_guide: dict) -> tuple[list[str], dict[str, int]]:
         for i, item in enumerate(found_items):
             path = f"{section_code}.found[{i}] ({item.get('target_code')})"
             check_sourcing(item, path, warnings)
-            check_unit(item, path, unit_guide, warnings)
-            check_forbidden_target(item, path, warnings)
             group_code = item.get("group_code")
+            check_unit(item, path, unit_guide, warnings, allow_mixed=bool(group_code))
+            check_forbidden_target(item, path, warnings)
             if group_code:
                 check_group_item(group_code, item, path, warnings)
             elif _is_rebar_item(group_code, item):
@@ -272,7 +280,6 @@ def main() -> int:
 
     data = load_json(args.input)
     unit_guide = load_json(HERE / "data" / "unit_normalization_guide.json")
-    unit_guide = {k: v for k, v in unit_guide.items() if not k.startswith("_")}
 
     warnings, stats = validate(data, unit_guide)
     report = render_report(warnings, stats)
