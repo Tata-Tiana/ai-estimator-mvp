@@ -42,7 +42,7 @@ review_parameters:
         - "кладку вентблока вести"
         - "высота вентканалов общая"
       expected_unit: "мп"
-      notes: "Primary quantity for masonry work. If PDF gives separate heights, keep candidates and calculate only after review."
+      notes: "Primary quantity for masonry work. If PDF gives a ready total like 'Общая высота вентканалов'/'Высота вентканалов общая' in linear meters, map it here even if component channel-type meter rows do not sum to it; keep needs_review and explain the mismatch. If PDF gives only separate heights with no ready total, keep candidates and calculate only after review."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -52,7 +52,7 @@ review_parameters:
       numeric: true
       min_value: 0
       max_value: null
-    notes: "Do not use old displayed rounded quantity as calculator quantity."
+    notes: "Do not use old displayed rounded quantity as calculator quantity. Ready PDF total height/length is the production source for the masonry work row; channel-type meter rows are not module counts."
 
   - key: schiedel_channel_items
     label_ru: "Вентканалы Schiedel по типам (модули)"

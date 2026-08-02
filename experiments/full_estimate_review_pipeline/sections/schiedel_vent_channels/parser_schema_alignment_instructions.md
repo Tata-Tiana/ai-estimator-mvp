@@ -72,6 +72,24 @@ touch.
 - `vent_channel_2_count`
 - `schiedel_vent_chimney_cladding_segments`
 
+## Extraction rule for ready total length/height
+
+Updated 2026-08-02 after checking a parser output where the model saw `Высота вентканалов общая`
+but left `schiedel_masonry_total_length_m` missing.
+
+For production extraction:
+
+- A ready PDF row like `Общая высота вентканалов`, `Высота вентканалов общая`, or
+  `Общая длина кладки вентканалов` in `м.п.` / `м.пог` maps to `schiedel_masonry_total_length_m`.
+- This remains true even when the word `Schiedel` is not printed on the sheet; if the sheet belongs
+  to this estimate section, the estimate uses Schiedel product logic.
+- If the PDF also lists individual channel types in linear meters and those values do not sum to the
+  ready total, keep the ready total in `schiedel_masonry_total_length_m` with `needs_review: true`
+  and explain the mismatch in notes. Do not leave the target missing.
+- Linear-meter rows by channel type are NOT `schiedel_channel_items`: that group requires piece/module
+  counts in `шт`. When only meters are given, keep `schiedel_channel_items` empty and add a visible
+  `needs_review` entry saying that module quantities need manual input.
+
 ## Repeated-row shape
 
 `schiedel_vent_chimney_cladding_segments` (renamed 2026-07-10, see "Current status" above):
@@ -90,4 +108,3 @@ touch.
 5. Confirm prompt/aliases do not ask GPT to infer quantities that the calculator should calculate.
 6. Run JSON/YAML validation after edits.
 7. Confirm no project-specific values, page numbers, or USV-only facts were added to production config.
-
