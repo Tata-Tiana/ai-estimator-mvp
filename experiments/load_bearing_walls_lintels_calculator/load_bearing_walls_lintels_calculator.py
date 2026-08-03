@@ -228,6 +228,8 @@ class LoadBearingWallsLintelsInput:
     parapet_gas_block_d500_250_spec_volume_m3: float | None = None
     vent_chimney_cladding_calc_method: str = "legacy_manual_toggle"
     vent_chimney_cladding_enabled: bool | None = None
+    walls_consumables_calc_method: str = "legacy_fixed_amount"
+    walls_consumables_rate: float = 0.0
     vent_chimney_gas_block_spec_volume_m3: float | None = None
     vent_chimney_geometry_calc_method: str = "legacy_segments_rows"
     vent_chimney_block_thickness_m: float = 0.15
@@ -1357,6 +1359,8 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
             "second_light_rebar": second_light_rebar,
             "parapet_and_second_light_rebar_order_length_m": q(d(parapet_rebar["order_length_m"]) + d(second_light_rebar["order_length_m"])),
             "walls_consumables_tool_amortization_amount_raw": data.walls_consumables_tool_amortization_amount_raw,
+            "walls_consumables_calc_method": data.walls_consumables_calc_method,
+            "walls_consumables_rate": data.walls_consumables_rate,
         },
     }
     if data.upper_floor_calc_method != "legacy_second_light_addon":
@@ -1527,8 +1531,33 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         line("parapet_and_second_light_rebar_a500_d10", "Арматура A500 Ø10 для парапета и второго света", "мп", overheads["parapet_and_second_light_rebar_order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"] + overheads["second_light_rebar"]["material_total_raw"], is_case_specific=second_case_specific, notes="Две группы округления и закупки прутков", price_code="rebar_a500_d10_m"),
         ])
 
+    if data.walls_consumables_calc_method not in {"legacy_fixed_amount", "section_total_rate"}:
+        raise ValueError(
+            "walls_consumables_calc_method must be legacy_fixed_amount or section_total_rate"
+        )
+    require_non_negative("walls_consumables_rate", data.walls_consumables_rate)
+    walls_consumables_amount_raw = data.walls_consumables_tool_amortization_amount_raw
+    if data.walls_consumables_calc_method == "section_total_rate":
+        direct_cost_base_raw = sum(d(item.line_total_raw) for item in lines)
+        walls_consumables_amount_raw = q(
+            direct_cost_base_raw * d(data.walls_consumables_rate),
+            "0.000001",
+        )
+
     lines.extend([
-        line("walls_consumables_tool_amortization", "Расходные материалы, амортизация инструмента", "комплект", 1, material_unit_price=money(data.walls_consumables_tool_amortization_amount_raw), material_total_raw_override=data.walls_consumables_tool_amortization_amount_raw, notes="manual/fixed amount, формула требует подтверждения"),
+        line(
+            "walls_consumables_tool_amortization",
+            "Расходные материалы, амортизация инструмента",
+            "комплект",
+            1,
+            material_unit_price=money(walls_consumables_amount_raw),
+            material_total_raw_override=walls_consumables_amount_raw,
+            notes=(
+                "section_total_rate from direct cost base before consumables"
+                if data.walls_consumables_calc_method == "section_total_rate"
+                else "manual/fixed amount"
+            ),
+        ),
         line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line", price_code="waste_removal_truck"),
         line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_fixed"),
     ])

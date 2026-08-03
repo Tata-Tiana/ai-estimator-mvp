@@ -306,21 +306,22 @@ review_parameters:
     validation: {min_rows: 0, sum_checks: []}
     notes: "Diagnostics only; calculator inputs are the scalar geometry/project/supplier fields above, not this breakdown."
 
+  - {key: slope_plate_a_supplier_required_volume_m3, label_ru: "SLOPE плиты A, объем по спецификации", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "roof_slope_plate_a_volume", calculator_input_path: "slope_plate_a_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_a_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: ["roof_slope_plate_a_volume"], aliases_ru: ["SLOPE плиты A", "плиты A SLOPE", "CARBON PROF SLOPE плиты A"], expected_unit: "м3", notes: "Project/specification volume for roof slope plate A; not a manual value."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте объем SLOPE плит A из спецификации кровли."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Moved from supplier_inputs/manual sheet 2026-08-03 after ARK/TRC/USV roof PDF check: SLOPE volumes are project specification values, not ordinary manual inputs."}
+  - {key: slope_plate_b_supplier_required_volume_m3, label_ru: "SLOPE плиты B, объем по спецификации", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "roof_slope_plate_b_volume", calculator_input_path: "slope_plate_b_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_b_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: ["roof_slope_plate_b_volume"], aliases_ru: ["SLOPE плиты B", "плиты B SLOPE", "CARBON PROF SLOPE плиты B"], expected_unit: "м3", notes: "Project/specification volume for roof slope plate B; not a manual value."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте объем SLOPE плит B из спецификации кровли."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Moved from supplier_inputs/manual sheet 2026-08-03 after ARK/TRC/USV roof PDF check: SLOPE volumes are project specification values, not ordinary manual inputs."}
+  - {key: slope_plate_j_supplier_required_volume_m3, label_ru: "SLOPE плиты J, объем по спецификации", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "roof_slope_plate_j_volume", calculator_input_path: "slope_plate_j_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_j_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: ["roof_slope_plate_j_volume"], aliases_ru: ["SLOPE плиты J", "плиты J SLOPE", "CARBON PROF SLOPE плиты J"], expected_unit: "м3", notes: "Project/specification volume for roof slope plate J; not a manual value."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте объем SLOPE плит J из спецификации кровли."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Moved from supplier_inputs/manual sheet 2026-08-03 after ARK/TRC/USV roof PDF check: SLOPE volumes are project specification values, not ordinary manual inputs."}
+  - {key: slope_plate_k_supplier_required_volume_m3, label_ru: "SLOPE плиты K, объем по спецификации", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "roof_slope_plate_k_volume", calculator_input_path: "slope_plate_k_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_k_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: ["roof_slope_plate_k_volume"], aliases_ru: ["SLOPE плиты K", "плиты K SLOPE", "CARBON PROF SLOPE плиты K"], expected_unit: "м3", notes: "Project/specification volume for roof slope plate K; not a manual value."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте объем SLOPE плит K из спецификации кровли."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Moved from supplier_inputs/manual sheet 2026-08-03 after ARK/TRC/USV roof PDF check: SLOPE volumes are project specification values, not ordinary manual inputs."}
+
 supplier_inputs:
   - {key: roof_work_coeff, label_ru: "Коэффициент работ кровли", unit: "", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_work_coeff", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_work_coeff.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте коэффициент работ кровли."}, notes: "Project/business parameter; do not hardcode."}
   - {key: eps50_supplier_required_volume_m3, label_ru: "ЭППС 50 мм, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "eps50_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.eps50_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем ЭППС 50 мм от поставщика/Технониколь."}, notes: "Slope/EPS supplier volume; not geometry-derived."}
-  - {key: slope_plate_a_supplier_required_volume_m3, label_ru: "SLOPE плиты A, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_a_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_a_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит A от поставщика."}, notes: ""}
-  - {key: slope_plate_b_supplier_required_volume_m3, label_ru: "SLOPE плиты B, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_b_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_b_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит B от поставщика."}, notes: ""}
-  - {key: slope_plate_j_supplier_required_volume_m3, label_ru: "SLOPE плиты J, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_j_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_j_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит J от поставщика."}, notes: ""}
-  - {key: slope_plate_k_supplier_required_volume_m3, label_ru: "SLOPE плиты K, требуемый объем поставщика", unit: "м3", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "slope_plate_k_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.supplier_inputs.slope_plate_k_supplier_required_volume_m3.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите объем SLOPE плит K от поставщика."}, notes: ""}
-  - {key: vent_shaft_abutment_count, label_ru: "Примыкания к вентшахтам, количество", unit: "шт", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "vent_shaft_abutment_count", calculator_input_path: "vent_shaft_abutment_count", normalized_json_path: "sections.flat_roof.supplier_inputs.vent_shaft_abutment_count.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "optional", action_ru: "Заполняйте только если в проекте или смете есть отдельная работа примыкания к вентшахтам в штуках. Если примыкания к ВК/вентканалам даны в м.п., они входят в общую длину примыканий кровли."}, notes: "Updated 2026-08-02 after ARK/TRC/USV estimate check: production abutments to walls/VK/vent channels are normally linear meters in pvc_membrane_abutment_installation. This count is optional legacy/manual-only for projects that explicitly price a separate per-item vent-shaft abutment line."}
-  - {key: gas_block_wall_holes_count, label_ru: "Отверстия в стенах из газоблока", unit: "шт", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", target_code: "gas_block_wall_holes_count", calculator_input_path: "gas_block_wall_holes_count", normalized_json_path: "sections.flat_roof.supplier_inputs.gas_block_wall_holes_count.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Проверьте количество отверстий в газоблоке."}, notes: "May differ from parapet drain count. target_code added 2026-07-10, same reason as vent_shaft_abutment_count above."}
+  - {key: vent_shaft_abutment_count, label_ru: "Примыкания к вентшахтам, количество", unit: "шт", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "vent_shaft_abutment_count", normalized_json_path: "sections.flat_roof.supplier_inputs.vent_shaft_abutment_count.value", exclude_from_manual_values_registry: true, value_kind: scalar, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy/special-case only. В обычном production линейные примыкания к ВК/вентканалам идут в общую длину примыканий кровли."}, notes: "Hidden legacy optional field. Use only if a future special project explicitly prices a separate per-item vent-shaft abutment line. Linear abutments in м.п. are production roof geometry, not this count."}
+  - {key: gas_block_wall_holes_count, label_ru: "Отверстия в стенах из газоблока", unit: "шт", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "gas_block_wall_holes_count", normalized_json_path: "sections.flat_roof.supplier_inputs.gas_block_wall_holes_count.value", exclude_from_manual_values_registry: true, value_kind: scalar, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Special-case only; стандартной работы нет."}, notes: "Elena 2026-07-30: not a standard work item except exceptional projects. Hidden from normal review/manual flow so it does not appear as a missing required field."}
   - {key: roof_crane_lifting_shifts, label_ru: "Подъем материалов автокраном", unit: "смена", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_crane_lifting_shifts", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_crane_lifting_shifts.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите смены автокрана для кровли."}, notes: ""}
-  - {key: roof_consumables_total_raw, label_ru: "Расходные материалы кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_consumables_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_consumables_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите сумму расходников кровли или будущую формулу."}, notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from a section subtotal by a consumables/tool coefficient."}
+  - {key: roof_consumables_total_raw, label_ru: "Расходные материалы кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_consumables_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_consumables_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production расходники кровли считаются коэффициентом от прямой базы раздела."}, notes: "Legacy compatibility only. Production uses roof_consumables_calc_method + roof_consumables_rate."}
   - {key: roof_waste_removal_trucks, label_ru: "Вывоз мусора кровли", unit: "маш", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_waste_removal_trucks", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_waste_removal_trucks.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите количество машин вывоза мусора по кровле."}, notes: ""}
-  - {key: roof_logistics_and_supply_total_raw, label_ru: "Логистика и снабжение кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_logistics_and_supply_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_logistics_and_supply_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите сумму логистики и снабжения кровли или будущую формулу."}, notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from a section subtotal by a logistics coefficient."}
-  - {key: technical_supervision_work_total, label_ru: "Технический надзор кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "technical_supervision_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.technical_supervision_work_total.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите технический надзор по кровле."}, notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from a section work subtotal by a technical-supervision coefficient."}
-  - {key: procurement_storage_work_total, label_ru: "Заготовительно-складские расходы кровли", unit: "руб.", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "procurement_storage_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.procurement_storage_work_total.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите заготовительно-складские расходы по кровле."}, notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from selected material rows by a procurement/storage coefficient."}
+  - {key: roof_logistics_and_supply_total_raw, label_ru: "Логистика и снабжение кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_logistics_and_supply_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_logistics_and_supply_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production логистика кровли считается коэффициентом от прямой базы раздела."}, notes: "Legacy compatibility only. Production uses roof_logistics_and_supply_calc_method + roof_logistics_and_supply_rate."}
+  - {key: technical_supervision_work_total, label_ru: "Технический надзор кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "technical_supervision_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.technical_supervision_work_total.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production технадзор кровли считается коэффициентом от базы работ раздела."}, notes: "Legacy compatibility only. Production uses technical_supervision_calc_method + technical_supervision_rate."}
+  - {key: procurement_storage_work_total, label_ru: "Заготовительно-складские расходы кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "procurement_storage_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.procurement_storage_work_total.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production ЗСР кровли считается коэффициентом от базы материалов раздела."}, notes: "Legacy compatibility only. Production uses procurement_storage_calc_method + procurement_storage_rate."}
 
 price_keys:
   - {key: vapor_barrier_work_rate_per_m2, estimate_line_code: vapor_barrier_installation, label_ru: "Пароизоляция основания пленкой ПВХ", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_installation_work_m2", fallback_key: "vapor_barrier_work_rate_per_m2", allow_manual_override: true, notes: ""}
@@ -372,6 +373,14 @@ defaults:
   - {key: slope_plate_b_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит B", source_class: DEFAULT, value: 0.2736, unit: "м3", calculator_input_path: "slope_plate_b_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
   - {key: slope_plate_j_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит J", source_class: DEFAULT, value: 0.2916, unit: "м3", calculator_input_path: "slope_plate_j_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
   - {key: slope_plate_k_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит K", source_class: DEFAULT, value: 0.2736, unit: "м3", calculator_input_path: "slope_plate_k_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
+  - {key: roof_consumables_calc_method, label_ru: "Метод расчета расходников кровли", source_class: DEFAULT, value: "section_total_rate", unit: "", calculator_input_path: "roof_consumables_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: roof_consumables_rate, label_ru: "Коэффициент расходников кровли", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "roof_consumables_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient, not a project quantity or price."}
+  - {key: roof_logistics_and_supply_calc_method, label_ru: "Метод расчета логистики и снабжения кровли", source_class: DEFAULT, value: "section_total_rate", unit: "", calculator_input_path: "roof_logistics_and_supply_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: roof_logistics_and_supply_rate, label_ru: "Коэффициент логистики и снабжения кровли", source_class: DEFAULT, value: 0.02, unit: "", calculator_input_path: "roof_logistics_and_supply_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient, not a project quantity or price."}
+  - {key: technical_supervision_calc_method, label_ru: "Метод расчета технадзора кровли", source_class: DEFAULT, value: "section_work_rate", unit: "", calculator_input_path: "technical_supervision_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: technical_supervision_rate, label_ru: "Коэффициент технадзора кровли", source_class: DEFAULT, value: 0.01, unit: "", calculator_input_path: "technical_supervision_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient from work subtotal, not a project quantity or price."}
+  - {key: procurement_storage_calc_method, label_ru: "Метод расчета ЗСР кровли", source_class: DEFAULT, value: "section_material_rate", unit: "", calculator_input_path: "procurement_storage_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: procurement_storage_rate, label_ru: "Коэффициент ЗСР кровли", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "procurement_storage_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient from material subtotal, not a project quantity or price."}
 
 auto_calculated:
   - {key: roof_area_total_m2, label_ru: "Площадь кровли, суммарная", source_class: AUTO_CALCULATED, formula: "roof_area_level_1_m2 + roof_area_level_2_m2", leaf_inputs: [{ref: review_parameters.roof_area_level_1_m2, source_class: AUTO_PROJECT}, {ref: review_parameters.roof_area_level_2_m2, source_class: AUTO_PROJECT}], calculator_input_path: "", notes: "Production detailed_project_geometry mode; feeds almost every area-based line below."}
@@ -485,7 +494,7 @@ estimate_lines:
     quantity:
       formula: "ceil(slope_plate_a_supplier_required_volume_m3 / slope_plate_a_pack_volume_m3) * slope_plate_a_pack_volume_m3"
       leaf_inputs:
-        - {ref: "supplier_inputs.slope_plate_a_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+        - {ref: "review_parameters.slope_plate_a_supplier_required_volume_m3", source_class: AUTO_PROJECT}
         - {ref: "defaults.slope_plate_a_pack_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
@@ -499,7 +508,7 @@ estimate_lines:
     quantity:
       formula: "ceil(slope_plate_b_supplier_required_volume_m3 / slope_plate_b_pack_volume_m3) * slope_plate_b_pack_volume_m3"
       leaf_inputs:
-        - {ref: "supplier_inputs.slope_plate_b_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+        - {ref: "review_parameters.slope_plate_b_supplier_required_volume_m3", source_class: AUTO_PROJECT}
         - {ref: "defaults.slope_plate_b_pack_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
@@ -513,7 +522,7 @@ estimate_lines:
     quantity:
       formula: "ceil(slope_plate_j_supplier_required_volume_m3 / slope_plate_j_pack_volume_m3) * slope_plate_j_pack_volume_m3"
       leaf_inputs:
-        - {ref: "supplier_inputs.slope_plate_j_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+        - {ref: "review_parameters.slope_plate_j_supplier_required_volume_m3", source_class: AUTO_PROJECT}
         - {ref: "defaults.slope_plate_j_pack_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
@@ -527,7 +536,7 @@ estimate_lines:
     quantity:
       formula: "ceil(slope_plate_k_supplier_required_volume_m3 / slope_plate_k_pack_volume_m3) * slope_plate_k_pack_volume_m3"
       leaf_inputs:
-        - {ref: "supplier_inputs.slope_plate_k_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+        - {ref: "review_parameters.slope_plate_k_supplier_required_volume_m3", source_class: AUTO_PROJECT}
         - {ref: "defaults.slope_plate_k_pack_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
@@ -670,7 +679,7 @@ estimate_lines:
   - code: gas_block_wall_hole_drilling
     name_ru: "Пробивка отверстий в стенах из газоблока толщ.400мм"
     unit: "шт"
-    enabled_by_default: true
+    enabled_by_default: false
     calculator_result_path: "estimate_lines[code=gas_block_wall_hole_drilling]"
     quantity:
       formula: "gas_block_wall_holes_count"
@@ -678,7 +687,7 @@ estimate_lines:
         - {ref: "supplier_inputs.gas_block_wall_holes_count", source_class: SUPPLIER_INPUT}
     prices: {material_unit_price_key: null, work_unit_price_key: gas_block_wall_hole_drilling_rate, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Manual quantity; not always equal to the parapet drain count."
+    notes: "Special-case only. Elena 2026-07-30: this is not a standard work item; calculator returns this line only when gas_block_wall_holes_count > 0."
 
   - code: internal_roof_drain_with_heating
     name_ru: "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)"
@@ -723,15 +732,16 @@ estimate_lines:
     name_ru: "Расходные материалы, амортизация инструмента"
     unit: "комплект"
     enabled_by_default: true
-    line_kind: fixed_amount
+    line_kind: calculated_amount
     calculator_result_path: "estimate_lines[code=roof_consumables_tool_depreciation]"
     quantity:
-      formula: "1"
+      formula: "1; amount = direct_roof_cost_base * roof_consumables_rate"
       leaf_inputs:
-        - {ref: "supplier_inputs.roof_consumables_total_raw", source_class: SUPPLIER_INPUT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: roof_consumables_total_raw}
+        - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.roof_consumables_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Manual/fixed amount pending formula confirmation. Fixed 2026-07-10: previously required a separate roof_consumables_total override field instead of rounding roof_consumables_total_raw; now computed honestly."
+    notes: "Production coefficient row. Legacy fixed amount remains supported by calculator only for old cases."
 
   - code: roof_waste_removal
     name_ru: "Вывоз мусора с объекта"
@@ -750,43 +760,46 @@ estimate_lines:
     name_ru: "Логистика, и снабжение"
     unit: "-"
     enabled_by_default: true
-    line_kind: fixed_amount
+    line_kind: calculated_amount
     calculator_result_path: "estimate_lines[code=roof_logistics_and_supply]"
     quantity:
-      formula: "1"
+      formula: "1; amount = direct_roof_cost_base * roof_logistics_and_supply_rate"
       leaf_inputs:
-        - {ref: "supplier_inputs.roof_logistics_and_supply_total_raw", source_class: SUPPLIER_INPUT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: roof_logistics_and_supply_total_raw}
+        - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.roof_logistics_and_supply_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Fixed 2026-07-10: previously required a separate roof_logistics_and_supply_total override field instead of rounding roof_logistics_and_supply_total_raw; now computed honestly."
+    notes: "Production coefficient row. Legacy fixed amount remains supported by calculator only for old cases."
 
   - code: technical_supervision
     name_ru: "Технический надзор"
     unit: "-"
     enabled_by_default: true
-    line_kind: fixed_amount
+    line_kind: calculated_amount
     calculator_result_path: "estimate_lines[code=technical_supervision]"
     quantity:
-      formula: "1"
+      formula: "1; amount = direct_roof_work_base * technical_supervision_rate"
       leaf_inputs:
-        - {ref: "supplier_inputs.technical_supervision_work_total", source_class: SUPPLIER_INPUT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: technical_supervision_work_total}
+        - {ref: "auto_calculated.direct_roof_work_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.technical_supervision_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Gray internal work total provided directly, not calculated from a rate."
+    notes: "Production coefficient row from work subtotal. Legacy fixed amount remains supported by calculator only for old cases."
 
   - code: procurement_storage
     name_ru: "Заготовительно-складские расходы"
     unit: "-"
     enabled_by_default: true
-    line_kind: fixed_amount
+    line_kind: calculated_amount
     calculator_result_path: "estimate_lines[code=procurement_storage]"
     quantity:
-      formula: "1"
+      formula: "1; amount = direct_roof_material_base * procurement_storage_rate"
       leaf_inputs:
-        - {ref: "supplier_inputs.procurement_storage_work_total", source_class: SUPPLIER_INPUT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: procurement_storage_work_total}
+        - {ref: "auto_calculated.direct_roof_material_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.procurement_storage_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Gray internal work total provided directly, not calculated from a rate."
+    notes: "Production coefficient row from material subtotal. Legacy fixed amount remains supported by calculator only for old cases."
 
   - code: overhead_zero
     name_ru: "Накладные и общехозяйственные расходы"
@@ -827,14 +840,19 @@ checks:
     - parapet_roof_drains_count
     - internal_roof_drains_count
     - internal_drain_height_per_drain_m
+    - slope_plate_a_supplier_required_volume_m3
+    - slope_plate_b_supplier_required_volume_m3
+    - slope_plate_j_supplier_required_volume_m3
+    - slope_plate_k_supplier_required_volume_m3
   forbidden_production_inputs:
     - old_fixture_values
     - old_expected_result_values
     - display_quantity_overrides
     - excel_match_total_overrides
-  expected_estimate_line_count: 31
+  expected_estimate_line_count: 29
+  optional_estimate_line_count: 2
   contamination_check:
     old_project_markers_allowed: false
     fixture_values_allowed: false
     old_expected_result_values_allowed: false
-  notes: "estimate_lines fully built out 2026-07-10 from calculate_flat_roof()'s real line-by-line output (31 lines total — matches docs/report_flat_roof_calculator.md's own count), after removing the calculator's hardcoded Excel-match overrides (explicit user authorization, see docs/report_flat_roof_calculator.md and experiments/flat_roof_calculator/calculator.py history for that fix). Also closed 18 previously-undeclared required calculator input fields (6 pack-volume defaults, 1 shared slope-plate price key fanned out to 4 fixed calculator fields, 8 new work/material price_keys) — without them the adapter could not have constructed a valid calculator input at all. forbidden_production_inputs now also lists excel_match_total_overrides, since that was this section's specific contamination pattern."
+  notes: "estimate_lines fully built out 2026-07-10 from calculate_flat_roof()'s real line-by-line output (originally 31 lines total — matches docs/report_flat_roof_calculator.md's own count), after removing the calculator's hardcoded Excel-match overrides (explicit user authorization, see docs/report_flat_roof_calculator.md and experiments/flat_roof_calculator/calculator.py history for that fix). Also closed previously-undeclared required calculator input fields (pack-volume defaults, shared slope-plate price key fanned out to 4 fixed calculator fields, work/material price_keys) — without them the adapter could not have constructed a valid calculator input at all. 2026-08-03: SLOPE required volumes moved from manual/supplier review to AUTO_PROJECT because they are project specification values; vent_shaft_abutment_count and gas_block_wall_holes_count stay hidden optional legacy/special-case fields, so normal production output has 29 lines and can add up to 2 optional special-case lines only when positive counts are explicitly supplied. forbidden_production_inputs now also lists excel_match_total_overrides, since that was this section's specific contamination pattern."

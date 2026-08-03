@@ -304,11 +304,8 @@ def supplier_pack_material_line(
 def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     warnings = [
         "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
-        "Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.",
-        "Roof consumables use provided raw total; base formula is to be confirmed later.",
-        "Logistics and supply uses provided raw total from the reviewed gray estimate.",
-        "Technical supervision uses provided gray work total from the reviewed estimate.",
-        "Procurement/storage uses provided gray work total from the reviewed estimate.",
+        "Slope insulation plate volumes are project/specification values; calculator field names keep supplier_required for compatibility.",
+        "Roof consumables/logistics/technical supervision/procurement-storage can be calculated by rates; legacy fixed totals are still accepted for old cases.",
     ]
     geometry = calculate_roof_geometry(input_data, warnings)
     roof_area = geometry["roof_area"]
@@ -408,7 +405,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         ("eps_slope_4_2_plate_k", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)", "roof_eps_slope_4_2_plate_k_m3", "slope_plate_k"),
     ]
     for code, name, price_code, prefix in slope_specs:
-        notes = ["supplier_required_volume_m3 берётся вручную от поставщика / Технониколь."]
+        notes = ["Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости."]
         lines.append(
             supplier_pack_material_line(
                 code=code,
@@ -614,20 +611,25 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         [
             material_and_work("roof_pvc_aerator_75x375", "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)", "шт", input_data["roof_aerators_count"], "roof_aerators_count", "roof_pvc_aerator_75x375_item", input_data["roof_aerator_unit_price"], input_data["roof_aerator_installation_rate"]),
             material_and_work("parapet_roof_drain_installation", "Установка воронки парапетной (без пробивки отверстий)", "шт", input_data["parapet_roof_drains_count"], "parapet_roof_drains_count", "roof_parapet_drain_item", input_data["parapet_roof_drain_unit_price"], input_data["parapet_roof_drain_installation_rate"]),
+            material_and_work("internal_roof_drain_with_heating", "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)", "шт", input_data["internal_roof_drains_count"], "internal_roof_drains_count", "roof_internal_drain_with_heating_item", input_data["internal_roof_drain_unit_price"], input_data["internal_roof_drain_installation_rate"]),
+        ]
+    )
+
+    gas_block_wall_holes_count = d(input_data.get("gas_block_wall_holes_count") or 0)
+    if gas_block_wall_holes_count > D0:
+        lines.append(
             estimate_line(
                 code="gas_block_wall_hole_drilling",
                 name="Пробивка отверстий в стенах из газоблока толщ.400мм",
                 unit="шт",
                 line_type="work",
-                quantity_raw=input_data["gas_block_wall_holes_count"],
+                quantity_raw=gas_block_wall_holes_count,
                 quantity_source="gas_block_wall_holes_count",
                 work_unit_price=input_data["gas_block_wall_hole_drilling_rate"],
-                work_total_raw=d(input_data["gas_block_wall_holes_count"]) * d(input_data["gas_block_wall_hole_drilling_rate"]),
-                notes=["Ручная строка; количество отверстий не всегда равно количеству парапетных воронок."],
-            ),
-            material_and_work("internal_roof_drain_with_heating", "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)", "шт", input_data["internal_roof_drains_count"], "internal_roof_drains_count", "roof_internal_drain_with_heating_item", input_data["internal_roof_drain_unit_price"], input_data["internal_roof_drain_installation_rate"]),
-        ]
-    )
+                work_total_raw=gas_block_wall_holes_count * d(input_data["gas_block_wall_hole_drilling_rate"]),
+                notes=["Special-case only: Elena 2026-07-30 confirmed this is not a standard roof work item."],
+            )
+        )
 
     internal_drain_length = d(input_data["internal_roof_drains_count"]) * d(input_data["internal_drain_height_per_drain_m"])
     lines.append(
@@ -656,16 +658,46 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             material_total_raw=d(input_data["roof_crane_lifting_shifts"]) * d(input_data["roof_crane_lifting_unit_price_per_shift"]),
         )
     )
+
+    direct_cost_base_raw = sum((d(line["internal_cost"]["line_total_raw"]) for line in lines), D0)
+    direct_material_base_raw = sum((d(line["internal_cost"]["material_total_raw"]) for line in lines), D0)
+    direct_work_base_raw = sum((d(line["internal_cost"]["work_total_raw"]) for line in lines), D0)
+
+    roof_consumables_total_raw = d(input_data.get("roof_consumables_total_raw", 0))
+    if input_data.get("roof_consumables_calc_method", "legacy_fixed_amount") == "section_total_rate":
+        roof_consumables_total_raw = direct_cost_base_raw * d(input_data.get("roof_consumables_rate", 0))
+    roof_logistics_and_supply_total_raw = d(input_data.get("roof_logistics_and_supply_total_raw", 0))
+    if input_data.get("roof_logistics_and_supply_calc_method", "legacy_fixed_amount") == "section_total_rate":
+        roof_logistics_and_supply_total_raw = direct_cost_base_raw * d(input_data.get("roof_logistics_and_supply_rate", 0))
+    technical_supervision_work_total = d(input_data.get("technical_supervision_work_total", 0))
+    if input_data.get("technical_supervision_calc_method", "legacy_fixed_amount") == "section_work_rate":
+        technical_supervision_work_total = direct_work_base_raw * d(input_data.get("technical_supervision_rate", 0))
+    procurement_storage_work_total = d(input_data.get("procurement_storage_work_total", 0))
+    if input_data.get("procurement_storage_calc_method", "legacy_fixed_amount") == "section_material_rate":
+        procurement_storage_work_total = direct_material_base_raw * d(input_data.get("procurement_storage_rate", 0))
+
     lines.append(
         estimate_line(
             code="roof_consumables_tool_depreciation",
             name="Расходные материалы, амортизация инструмента",
             unit="комплект",
-            line_type="manual_percentage_addon",
+            line_type="calculated_percentage_addon"
+            if input_data.get("roof_consumables_calc_method") == "section_total_rate"
+            else "manual_percentage_addon",
             quantity_raw=1,
-            quantity_source="provided roof_consumables_total_raw",
-            material_total_raw=input_data["roof_consumables_total_raw"],
-            notes=["temporarily uses provided raw total; base formula to be confirmed later."],
+            quantity_source="direct_cost_base_raw * roof_consumables_rate"
+            if input_data.get("roof_consumables_calc_method") == "section_total_rate"
+            else "provided roof_consumables_total_raw",
+            material_total_raw=roof_consumables_total_raw,
+            formula={
+                "direct_cost_base_raw": decimal_str(direct_cost_base_raw),
+                "roof_consumables_rate": decimal_str(input_data.get("roof_consumables_rate", 0)),
+            }
+            if input_data.get("roof_consumables_calc_method") == "section_total_rate"
+            else {},
+            notes=["Calculated from direct roof cost base before overhead rows."]
+            if input_data.get("roof_consumables_calc_method") == "section_total_rate"
+            else ["Uses provided legacy raw total."],
         )
     )
     lines.append(
@@ -685,12 +717,24 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             code="roof_logistics_and_supply",
             name="Логистика, и снабжение",
             unit="-",
-            line_type="manual_fixed_material",
+            line_type="calculated_percentage_addon"
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else "manual_fixed_material",
             quantity_raw=1,
-            quantity_source="provided roof_logistics_and_supply_total_raw",
-            material_unit_price=input_data["roof_logistics_and_supply_total_raw"],
-            material_total_raw=input_data["roof_logistics_and_supply_total_raw"],
-            notes=["Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."],
+            quantity_source="direct_cost_base_raw * roof_logistics_and_supply_rate"
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else "provided roof_logistics_and_supply_total_raw",
+            material_unit_price=roof_logistics_and_supply_total_raw,
+            material_total_raw=roof_logistics_and_supply_total_raw,
+            formula={
+                "direct_cost_base_raw": decimal_str(direct_cost_base_raw),
+                "roof_logistics_and_supply_rate": decimal_str(input_data.get("roof_logistics_and_supply_rate", 0)),
+            }
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else {},
+            notes=["Calculated from direct roof cost base before overhead rows."]
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else ["Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."],
         )
     )
     lines.append(
@@ -698,12 +742,24 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             code="technical_supervision",
             name="Технический надзор",
             unit="-",
-            line_type="manual_fixed_work",
+            line_type="calculated_percentage_addon"
+            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
+            else "manual_fixed_work",
             quantity_raw=1,
-            quantity_source="provided technical_supervision_work_total",
-            work_unit_price=input_data["technical_supervision_work_total"],
-            work_total_raw=input_data["technical_supervision_work_total"],
-            notes=["Строка включена по уточнению: это серая внутренняя работа текущего раздела."],
+            quantity_source="direct_work_base_raw * technical_supervision_rate"
+            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
+            else "provided technical_supervision_work_total",
+            work_unit_price=technical_supervision_work_total,
+            work_total_raw=technical_supervision_work_total,
+            formula={
+                "direct_work_base_raw": decimal_str(direct_work_base_raw),
+                "technical_supervision_rate": decimal_str(input_data.get("technical_supervision_rate", 0)),
+            }
+            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
+            else {},
+            notes=["Calculated from direct roof work subtotal before overhead rows."]
+            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
+            else ["Строка включена по уточнению: это серая внутренняя работа текущего раздела."],
         )
     )
     lines.append(
@@ -711,12 +767,24 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             code="procurement_storage",
             name="Заготовительно-складские расходы",
             unit="-",
-            line_type="manual_fixed_work",
+            line_type="calculated_percentage_addon"
+            if input_data.get("procurement_storage_calc_method") == "section_material_rate"
+            else "manual_fixed_work",
             quantity_raw=1,
-            quantity_source="provided procurement_storage_work_total",
-            work_unit_price=input_data["procurement_storage_work_total"],
-            work_total_raw=input_data["procurement_storage_work_total"],
-            notes=["Строка включена по сверке с серой зоной: 15 000 входит во внутреннюю себестоимость."],
+            quantity_source="direct_material_base_raw * procurement_storage_rate"
+            if input_data.get("procurement_storage_calc_method") == "section_material_rate"
+            else "provided procurement_storage_work_total",
+            work_unit_price=procurement_storage_work_total,
+            work_total_raw=procurement_storage_work_total,
+            formula={
+                "direct_material_base_raw": decimal_str(direct_material_base_raw),
+                "procurement_storage_rate": decimal_str(input_data.get("procurement_storage_rate", 0)),
+            }
+            if input_data.get("procurement_storage_calc_method") == "section_material_rate"
+            else {},
+            notes=["Calculated from direct roof material subtotal before overhead rows."]
+            if input_data.get("procurement_storage_calc_method") == "section_material_rate"
+            else ["Строка включена по сверке с серой зоной: это внутренняя себестоимость."],
         )
     )
 
@@ -778,6 +846,23 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 "required_area_m2": decimal_str(vgr_membrane_required_area),
                 "roll_area_m2": decimal_str(vgr_membrane_roll_area),
                 "rolls_ordered": vgr_membrane_rolls,
+            },
+            "overheads": {
+                "direct_cost_base_raw": decimal_str(direct_cost_base_raw),
+                "direct_material_base_raw": decimal_str(direct_material_base_raw),
+                "direct_work_base_raw": decimal_str(direct_work_base_raw),
+                "roof_consumables_calc_method": input_data.get("roof_consumables_calc_method", "legacy_fixed_amount"),
+                "roof_consumables_rate": decimal_str(input_data.get("roof_consumables_rate", 0)),
+                "roof_consumables_total_raw": decimal_str(roof_consumables_total_raw),
+                "roof_logistics_and_supply_calc_method": input_data.get("roof_logistics_and_supply_calc_method", "legacy_fixed_amount"),
+                "roof_logistics_and_supply_rate": decimal_str(input_data.get("roof_logistics_and_supply_rate", 0)),
+                "roof_logistics_and_supply_total_raw": decimal_str(roof_logistics_and_supply_total_raw),
+                "technical_supervision_calc_method": input_data.get("technical_supervision_calc_method", "legacy_fixed_amount"),
+                "technical_supervision_rate": decimal_str(input_data.get("technical_supervision_rate", 0)),
+                "technical_supervision_work_total": decimal_str(technical_supervision_work_total),
+                "procurement_storage_calc_method": input_data.get("procurement_storage_calc_method", "legacy_fixed_amount"),
+                "procurement_storage_rate": decimal_str(input_data.get("procurement_storage_rate", 0)),
+                "procurement_storage_work_total": decimal_str(procurement_storage_work_total),
             },
         },
         "estimate_lines": lines,

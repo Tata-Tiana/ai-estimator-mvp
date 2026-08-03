@@ -1416,17 +1416,53 @@ roof_zones:
 
 Added 2026-07-26 (real project case): a roof plan/spec page can carry its own zone labeling system (e.g. 'Тип А' + elevation mark) that is completely separate from any ПМ1/ПМ2-style slab identifiers used on a different page (masonry/slab plan) for the underlying floor_slab_1/floor_slab_2 structure — even though the roof sits at a slightly different elevation than the slab it covers (roof build-up adds thickness). Always take the zone `context` from the ROOF's own specification sheet, never from a slab/masonry plan's ПМ1/ПМ2 labeling, even if both refer to physically the same area of the building — they are different naming systems for different purposes (slab identity vs. roof material zone), do not merge or substitute one for the other."
 
-vent_shaft_abutment_count:
+roof_slope_plate_a_volume:
   section_code: flat_roof
-  ru_label: "Количество примыканий к вентшахтам"
-  pdf_aliases: ["Примыкания к вентшахтам", "Примыкание к вентканалам", "Примыкания к вентканалам", "Вентшахта примыкание"]
-  expected_unit: pcs
-  table_hints: ["План кровли", "Узлы кровли"]
-  required_context: ["примыкан", "вентшахт|вентканал"]
-  negative_context: ["стены", "парапет", "м.п", "м/п", "мп", "п.м", "метр", "длина"]
+  ru_label: "SLOPE плиты A, объем по спецификации"
+  pdf_aliases: ["SLOPE плиты A", "плиты A SLOPE", "CARBON PROF SLOPE плиты A", "уклон 2,1% плиты A", "SLOPE A"]
+  expected_unit: m3
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
+  required_context: ["SLOPE|разуклон", "A|А|плит"]
+  negative_context: ["плиты B", "плиты В", "плиты J", "плиты K", "шт", "м2", "м.п"]
   value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["шт", "шт."]
-  notes: "Optional legacy/manual count only. Use only when the PDF explicitly gives a piece count in шт. If the PDF gives VK/vent-channel/vent-shaft abutment in м.п., map it to roof_vent_wall_abutment_level_* or roof_zones.wall_abutment_length_m, not here."
+  unit_column_hint: ["м3", "м³"]
+  notes: "Project/specification value for flat-roof slope plates. This is not a manual input. If the project lists SLOPE plates by type, map each type to its own target; do not sum A/B/J/K into one scalar."
+
+roof_slope_plate_b_volume:
+  section_code: flat_roof
+  ru_label: "SLOPE плиты B, объем по спецификации"
+  pdf_aliases: ["SLOPE плиты B", "плиты B SLOPE", "плиты В SLOPE", "CARBON PROF SLOPE плиты B", "уклон 2,1% плиты B", "SLOPE B"]
+  expected_unit: m3
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
+  required_context: ["SLOPE|разуклон", "B|В|плит"]
+  negative_context: ["плиты A", "плиты А", "плиты J", "плиты K", "шт", "м2", "м.п"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["м3", "м³"]
+  notes: "Project/specification value for flat-roof slope plates. Latin B and Cyrillic В can look identical in PDFs; keep raw_text/source."
+
+roof_slope_plate_j_volume:
+  section_code: flat_roof
+  ru_label: "SLOPE плиты J, объем по спецификации"
+  pdf_aliases: ["SLOPE плиты J", "плиты J SLOPE", "CARBON PROF SLOPE плиты J", "уклон 4,2% плиты J", "SLOPE J"]
+  expected_unit: m3
+  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
+  required_context: ["SLOPE|разуклон", "J|плит"]
+  negative_context: ["плиты A", "плиты А", "плиты B", "плиты В", "плиты K", "шт", "м2", "м.п"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["м3", "м³"]
+  notes: "Project/specification value for flat-roof slope plates. This is not a manual input."
+
+roof_slope_plate_k_volume:
+  section_code: flat_roof
+  ru_label: "SLOPE плиты K, объем по спецификации"
+  pdf_aliases: ["SLOPE плиты K", "плиты K SLOPE", "CARBON PROF SLOPE плиты K", "уклон 4,2% плиты K", "SLOPE K"]
+  expected_unit: m3
+  table_hints: ["Спецификация к плану кровли", "План кровли"]
+  required_context: ["SLOPE|разуклон", "K|плит"]
+  negative_context: ["плиты A", "плиты А", "плиты B", "плиты В", "плиты J", "шт", "м2", "м.п"]
+  value_column_hint: ["кол-во", "количество"]
+  unit_column_hint: ["м3", "м³"]
+  notes: "Project/specification value for flat-roof slope plates. This is not a manual input."
 
 roof_aerators_count:
   section_code: flat_roof
@@ -1436,18 +1472,6 @@ roof_aerators_count:
   table_hints: ["Спецификация к плану кровли", "План кровли"]
   required_context: ["аэратор"]
   negative_context: ["воронка", "вентканал"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["шт", "шт."]
-  notes: "Piece count only."
-
-gas_block_wall_holes_count:
-  section_code: flat_roof
-  ru_label: "Количество отверстий в стенах из газоблока"
-  pdf_aliases: ["Отверстия в стенах из газоблока", "Отверстия в газобетоне", "Проходки через газоблок", "Отверстия под вентканалы"]
-  expected_unit: pcs
-  table_hints: ["Узлы кровли", "План кровли", "Пояснительная записка"]
-  required_context: ["отверсти|проходк", "газоблок|газобетон|стен"]
-  negative_context: ["воронка", "аэратор"]
   value_column_hint: ["кол-во", "количество"]
   unit_column_hint: ["шт", "шт."]
   notes: "Piece count only."

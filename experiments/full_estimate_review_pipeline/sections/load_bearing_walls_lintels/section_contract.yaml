@@ -898,6 +898,8 @@ defaults:
   - {key: sand_concrete_consumption_kg_per_m2_per_10mm, label_ru: "Расход пескобетона на м2 на 10мм толщины", source_class: DEFAULT, value: 19, unit: "кг/м2/10мм", calculator_input_path: "sand_concrete_consumption_kg_per_m2_per_10mm", source_note: "Catalog consumption rate; found missing 2026-07-10 — required by the calculator (no dataclass default) and feeds the unconditional sand_concrete_m300_first_row line.", allow_override_later: true, notes: ""}
   - {key: sand_concrete_thickness_factor, label_ru: "Коэффициент толщины слоя пескобетона", source_class: DEFAULT, value: 2, unit: "", calculator_input_path: "sand_concrete_thickness_factor", source_note: "Catalog/formula factor; found missing 2026-07-10, same class of gap as sand_concrete_consumption_kg_per_m2_per_10mm.", allow_override_later: true, notes: ""}
   - {key: gas_block_delivery_truck_capacity_m3, label_ru: "Вместимость машины доставки блоков", source_class: DEFAULT, value: 32, unit: "м3", calculator_input_path: "gas_block_delivery_truck_capacity_m3", source_note: "Catalog/supplier truck capacity; found missing 2026-07-10 — required by the calculator (no dataclass default) and feeds gas_blocks_and_mix_delivery, gas_blocks_unloading_manipulator and the crane-shift threshold line.", allow_override_later: true, notes: ""}
+  - {key: walls_consumables_calc_method, label_ru: "Метод расчета расходников стен и перемычек", source_class: DEFAULT, value: "section_total_rate", unit: "", calculator_input_path: "walls_consumables_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: walls_consumables_rate, label_ru: "Коэффициент расходников стен и перемычек", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "walls_consumables_rate", source_note: "Reusable default from checked estimate templates; sub-blocks varied, section production default is 3%.", allow_override_later: true, notes: "Editable business coefficient; not a project quantity and not a price."}
   - {key: rebar_a500_d10_kg_per_m, label_ru: "Масса 1 м арматуры A500 Ø10", source_class: DEFAULT, value: 0.617, unit: "кг/м", calculator_input_path: "rebar_a500_d10_kg_per_m", source_note: "Physical steel property, same value used elsewhere in this project for A500 Ø10 (e.g. floor slab rebar catalogs). Found missing 2026-07-10 — required by the calculator (no dataclass default) even in production spec_length_items mode, because calculate_blocks() unconditionally builds the parapet/second-light base-length rebar helper.", allow_override_later: true, notes: ""}
   - {key: rebar_a500_d10_rod_length_m, label_ru: "Длина прутка арматуры A500 Ø10", source_class: DEFAULT, value: 11.7, unit: "м", calculator_input_path: "rebar_a500_d10_rod_length_m", source_note: "Standard supply rod length, same value used elsewhere in this project. Found missing 2026-07-10, same class of gap as rebar_a500_d10_kg_per_m.", allow_override_later: true, notes: ""}
   - {key: main_wall_legacy_geometry_placeholder_zero, label_ru: "Заглушки геометрии для legacy-метода арматуры несущих стен (не используются в production)", source_class: DEFAULT, value: 0, unit: "", calculator_input_path: "main_wall_external_length_m|main_wall_internal_250_control_length_m|main_wall_reinforcement_rows|main_wall_400_reinforcement_threads|main_wall_250_reinforcement_threads|main_wall_reinforcement_overlap_coeff", source_note: "Found missing 2026-07-10: these 6 fields have no dataclass default and are only mathematically used by main_wall_rebar_calc_method=legacy_wall_geometry, but production uses spec_length_items — the constructor still requires some value. Safe placeholder 0 for all 6 (none are in the calculator's require_positive list, only require_non_negative).", allow_override_later: false, notes: "Single documentation entry covering 6 dead-in-production calculator fields; adapter must still set all 6 individually to 0."}
@@ -969,21 +971,21 @@ supplier_inputs:
     notes: ""
 
   - key: walls_consumables_tool_amortization_amount_raw
-    label_ru: "Расходные материалы и амортизация инструмента"
+    label_ru: "Расходные материалы и амортизация инструмента, legacy сумма"
     unit: "руб."
     source_class: SUPPLIER_INPUT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "walls_consumables_tool_amortization_amount_raw"
     normalized_json_path: "sections.load_bearing_walls_lintels.supplier_inputs.walls_consumables_tool_amortization_amount_raw.value"
     exclude_from_manual_values_registry: true
     value_kind: money
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Укажите фиксированную сумму расходников или замените будущей формулой."
-    notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from a section subtotal by a consumables/tool coefficient."
+      status_if_missing: "optional"
+      action_ru: "Legacy fixed amount only; production uses walls_consumables_rate."
+    notes: "Legacy compatibility only. Production calculates this row from section subtotal by walls_consumables_rate."
 
 auto_calculated:
   - {key: lintel_concrete_order_volume_m3, label_ru: "Заказной объем бетона перемычек в U-блоке, 1-й этаж (без монолита)", source_class: AUTO_CALCULATED, formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))", leaf_inputs: [{ref: review_parameters.lintel_concrete_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.lintel_concrete_min_order_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Diagnostic-only as of 2026-07-15 — no longer feeds any estimate line directly. lintel_concrete_b22_5_m300_material and manual_concrete_lifting now use the combined U-block+monolithic formula (see those estimate_lines entries) instead of this U-block-only value. Production spec_volume mode does NOT apply concrete_waste_coeff (only the legacy_length_section mode does) — found 2026-07-10 that the pre-existing lintel_concrete_b22_5_m300_material line in this contract incorrectly multiplied by concrete_waste_coeff; fixed alongside this entry."}
@@ -1688,15 +1690,16 @@ estimate_lines:
     name_ru: "Расходные материалы, амортизация инструмента"
     unit: "комплект"
     enabled_by_default: true
-    line_kind: fixed_amount
+    line_kind: calculated_amount
     calculator_result_path: "estimate_lines[code=walls_consumables_tool_amortization]"
     quantity:
-      formula: "1"
+      formula: "1; amount = direct_walls_lintels_cost_base * walls_consumables_rate"
       leaf_inputs:
-        - {ref: "supplier_inputs.walls_consumables_tool_amortization_amount_raw", source_class: SUPPLIER_INPUT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: walls_consumables_tool_amortization_amount_raw}
+        - {ref: "auto_calculated.direct_walls_lintels_cost_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.walls_consumables_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Manual/fixed amount until a universal formula is confirmed; do not store this amount as a reusable default."
+    notes: "Production coefficient row added 2026-08-03. Legacy fixed_amount input still exists only for old cases."
 
   - code: construction_waste_removal
     name_ru: "Вывоз мусора с объекта"

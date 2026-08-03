@@ -33,13 +33,15 @@ genuine per-line sums. Real computed values differ from the old hardcoded ones b
 own git history. Both cases with `expected.json` coverage pass 0 mismatches after the fix.
 
 **`estimate_lines` built out 2026-07-10**: contract previously declared only 3 of the calculator's 31
-real output lines. Rebuilt the full list directly from `calculate_flat_roof()`'s line-by-line
-execution order (matches `docs/report_flat_roof_calculator.md`'s own "31 lines" count). Added a new
+possible output lines. Rebuilt the full list directly from `calculate_flat_roof()`'s line-by-line
+execution order (matches `docs/report_flat_roof_calculator.md`'s own historical "31 lines" count). After
+the 2026-08-03 cleanup, normal production output has 29 lines; two special-case lines remain optional
+and appear only when their counts are explicitly positive. Added a new
 `auto_calculated` section (6 entries: `roof_area_total_m2`, `parapet_and_abutment_total_length_m`,
 `rail_ordered_length_m`, `pvc_membrane_required_area_m2`, `pvc_membrane_rolls`,
 `internal_drain_total_length_m`) and a `checks` section, neither of which existed before.
 
-**18 previously-undeclared required calculator inputs found and added** (without them the adapter
+**Previously-undeclared required calculator inputs found and added** (without them the adapter
 could not have constructed a valid calculator input at all, in any mode): 6 catalog pack-volume
 `defaults` (`eps100_pack_volume_m3`, `eps50_pack_volume_m3`, `slope_plate_{a,b,j,k}_pack_volume_m3`)
 and 8 new work/material `price_keys` (`gas_block_wall_hole_drilling_rate`,
@@ -67,18 +69,23 @@ identical in every production test case) but its notes now document that it fans
 - `roof_raw_material_spec_rows` (the diagnostic spec-table breakdown declared in the contract) was
   completely missing from `calculator_targets_compact.json`'s `extract_groups`,
   `target_aliases_ru.yaml`, and the schema's `group_value_shapes`. Added to all three.
-- `gas_block_wall_holes_count` was already present as a *grounded* parser target (verified against
-  real candidate PDFs) but the contract's `supplier_inputs` entry had no `target_code` at all, so any
-  extracted value had nowhere to land. Added `target_code`.
-- `vent_shaft_abutment_count` was initially wired the same way, but the 2026-08-02 ARK/TRC/USV
-  estimate check showed the production rule is different: VK/vent-channel/vent-shaft abutments given
-  in `м.п.` belong to the general linear roof abutment length (`pvc_membrane_abutment_installation`).
-  `vent_shaft_abutment_count` is optional legacy/manual-only and should be filled only when the PDF
-  explicitly gives a separate piece count in `шт`.
+- 2026-08-03 update: SLOPE plate A/B/J/K required volumes are no longer ordinary manual/supplier
+  values. In all checked roof workflows they are project specification values, so the active parser
+  targets are now `roof_slope_plate_a_volume`, `roof_slope_plate_b_volume`,
+  `roof_slope_plate_j_volume`, `roof_slope_plate_k_volume`; the calculator input names still contain
+  `supplier_required_volume_m3` for compatibility, but the source class in the contract is
+  `AUTO_PROJECT`.
+- 2026-08-03 update: `gas_block_wall_holes_count` is no longer an active parser target and is hidden
+  from the normal manual-values registry. Elena confirmed this is not a standard work item except
+  special projects; the calculator returns the line only when a positive count is explicitly supplied.
+- 2026-08-03 update: `vent_shaft_abutment_count` is hidden optional legacy/special-case input. The
+  production rule is different: VK/vent-channel/vent-shaft abutments given in `м.п.` belong to the
+  general linear roof abutment length (`pvc_membrane_abutment_installation`). A piece-count field is
+  not a normal manual value and should not appear as a required gap in every project.
 
-After this pass, `calculator_targets_compact.json`'s `flat_roof` section matches the contract's 14
-`target_code`s (12 `review_parameters` + 2 `supplier_inputs`) 1:1 — verified programmatically, zero
-missing, zero orphaned.
+After the 2026-08-03 pass, active extraction targets intentionally match only visible PDF/chat
+project parameters. Hidden legacy/special-case inputs have blank `target_code` in the contract and
+must not be counted as parser gaps.
 
 ## AUTO_PROJECT values expected from PDF/chat JSON
 
@@ -94,6 +101,10 @@ missing, zero orphaned.
 - `internal_roof_drains_count`
 - `internal_drain_height_per_drain_m`
 - `roof_raw_material_spec_rows`
+- `slope_plate_a_supplier_required_volume_m3`
+- `slope_plate_b_supplier_required_volume_m3`
+- `slope_plate_j_supplier_required_volume_m3`
+- `slope_plate_k_supplier_required_volume_m3`
 
 ## Repeated-row shape
 
@@ -108,7 +119,14 @@ missing, zero orphaned.
 - Roof PVC membrane/waterproofing must not be mixed with foundation waterproofing or PLANTER membrane.
 - Level 1 and level 2 roof areas must stay separate if the PDF separates them.
 - Parapet lengths, vent-wall abutments, aerators, and drains are separate calculator inputs.
-- Supplier-required material volumes remain manual/supplier inputs unless the calculator contract explicitly marks them as AUTO_PROJECT.
+- SLOPE plate A/B/J/K volumes are project/specification values. Extract each plate type separately
+  when present; do not sum A/B/J/K into one scalar and do not invent a missing type.
+- The calculator field names for SLOPE still contain `supplier_required_volume_m3` for compatibility;
+  the production source is the roof PDF/specification, not the manual-values sheet.
+- Linear roof abutments to walls/VK/vent channels go into the general abutment lengths in `м.п.`.
+  Do not map those linear rows to `vent_shaft_abutment_count`.
+- Do not extract "Пробивка отверстий в стенах из газоблока" as a standard roof target. This is a
+  hidden special-case/manual override only.
 
 ## Calculator silent legacy default fixed (2026-07-11)
 

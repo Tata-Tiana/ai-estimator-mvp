@@ -443,6 +443,50 @@ sections:
         allow_override: true
         notes: "Used only for suggested delivery-truck control; actual delivery line remains manual."
 
+      logistics_and_supply_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "logistics_and_supply_calc_method"
+        used_by_estimate_lines: ["foundation_slab.logistics_and_supply"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates the amount from the direct foundation slab subtotal; legacy fixed amount remains accepted only for old cases."
+
+      logistics_and_supply_rate:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "logistics_and_supply_rate"
+        used_by_estimate_lines: ["foundation_slab.logistics_and_supply"]
+        source_note: "Middle default from old estimate templates: foundation logistics appears as 1.5%-2.5% of the direct section base."
+        confidence: estimated_from_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      consumables_tool_amortization_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "consumables_tool_amortization_calc_method"
+        used_by_estimate_lines: ["foundation_slab.consumables_tool_amortization"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates the amount from the direct foundation slab subtotal; legacy fixed amount remains accepted only for old cases."
+
+      consumables_tool_amortization_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_tool_amortization_rate"
+        used_by_estimate_lines: ["foundation_slab.consumables_tool_amortization"]
+        source_note: "Repeated in checked estimate templates as 3% of the direct section base."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
   waterproofing:
     status: draft_cataloged
     source_refs:
@@ -1049,6 +1093,28 @@ sections:
         confidence: confirmed_from_code
         allow_override: true
         notes: "Thickness used to convert vent/chimney block volume into work area."
+
+      walls_consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "walls_consumables_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.walls_consumables_tool_amortization"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates walls/lintels consumables from direct section cost; legacy fixed amount remains accepted only for old cases."
+
+      walls_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "walls_consumables_rate"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.walls_consumables_tool_amortization"]
+        source_note: "Estimate templates vary by sub-block, but 3% is the reusable default for the section-level production row."
+        confidence: estimated_from_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
 
   floor_slab_1:
     status: draft_cataloged
@@ -1873,6 +1939,94 @@ sections:
         allow_override: true
         notes: "Package volume for SLOPE plate K."
 
+      roof_consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_consumables_calc_method"
+        used_by_estimate_lines: ["flat_roof.roof_consumables_tool_depreciation"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates roof consumables from direct roof cost base; legacy fixed amount remains accepted only for old cases."
+
+      roof_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_consumables_rate"
+        used_by_estimate_lines: ["flat_roof.roof_consumables_tool_depreciation"]
+        source_note: "Repeated in checked flat-roof estimate templates as 3%."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      roof_logistics_and_supply_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_logistics_and_supply_calc_method"
+        used_by_estimate_lines: ["flat_roof.roof_logistics_and_supply"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates roof logistics/supply from direct roof cost base; legacy fixed amount remains accepted only for old cases."
+
+      roof_logistics_and_supply_rate:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_logistics_and_supply_rate"
+        used_by_estimate_lines: ["flat_roof.roof_logistics_and_supply"]
+        source_note: "Repeated in checked flat-roof estimate templates as 2%."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      technical_supervision_calc_method:
+        value: "section_work_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "technical_supervision_calc_method"
+        used_by_estimate_lines: ["flat_roof.technical_supervision"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates technical supervision from the direct roof work subtotal; legacy fixed amount remains accepted only for old cases."
+
+      technical_supervision_rate:
+        value: 0.01
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "technical_supervision_rate"
+        used_by_estimate_lines: ["flat_roof.technical_supervision"]
+        source_note: "Estimate template header coefficient for technical supervision in checked control files."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      procurement_storage_calc_method:
+        value: "section_material_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "procurement_storage_calc_method"
+        used_by_estimate_lines: ["flat_roof.procurement_storage"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates procurement/storage from the direct roof material subtotal; legacy fixed amount remains accepted only for old cases."
+
+      procurement_storage_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "procurement_storage_rate"
+        used_by_estimate_lines: ["flat_roof.procurement_storage"]
+        source_note: "Estimate template header coefficient for procurement/storage in checked control files."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
   schiedel_vent_channels:
     status: draft_cataloged
     source_refs:
@@ -2211,28 +2365,28 @@ not_defaults:
       belongs_to: "review sheet 01 / SUPPLIER_INPUT"
       estimate_line_code: "flat_roof.eps50_technonikol_carbon_eco"
     slope_plate_a_supplier_required_volume_m3:
-      reason: "Supplier/Technonikol SLOPE volume, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "flat_roof.eps_slope_2_1_plate_a"
     slope_plate_b_supplier_required_volume_m3:
-      reason: "Supplier/Technonikol SLOPE volume, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "flat_roof.eps_slope_2_1_plate_b"
     slope_plate_j_supplier_required_volume_m3:
-      reason: "Supplier/Technonikol SLOPE volume, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "flat_roof.eps_slope_4_2_plate_j"
     slope_plate_k_supplier_required_volume_m3:
-      reason: "Supplier/Technonikol SLOPE volume, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "flat_roof.eps_slope_4_2_plate_k"
     vent_shaft_abutment_count:
-      reason: "Optional manual/project count requiring review, not a default. Use only when a separate per-item vent-shaft abutment line is explicitly needed; linear VK/vent-channel abutments belong to the general roof abutment length."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Hidden optional legacy/special-case count, not a default and not a normal manual row. Use only when a future project explicitly prices a separate per-item vent-shaft abutment; linear VK/vent-channel abutments belong to the general roof abutment length."
+      belongs_to: "hidden optional supplier input / not in manual_values_registry"
       estimate_line_code: "flat_roof.vent_shaft_abutment_installation"
     gas_block_wall_holes_count:
-      reason: "Manual/project count requiring review, not a default and not necessarily equal to drain count."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Hidden optional special-case count. Elena 2026-07-30: this is not a standard work item."
+      belongs_to: "hidden optional supplier input / not in manual_values_registry"
       estimate_line_code: "flat_roof.gas_block_wall_hole_drilling"
     roof_crane_lifting_shifts:
       reason: "Manual/supplier quantity, not a default."

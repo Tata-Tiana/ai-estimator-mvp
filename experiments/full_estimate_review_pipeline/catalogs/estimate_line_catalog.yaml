@@ -842,40 +842,44 @@ sections:
         row_id: "foundation_slab.logistics_and_supply"
         name_ru: "Логистика и снабжение"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_foundation_slab_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = direct_foundation_slab_cost_base * logistics_and_supply_rate"
           leaf_inputs:
-            - ref: "literal.1"
+            - ref: "auto_calculated.direct_foundation_slab_cost_base"
               source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.logistics_and_supply_rate"
+              source_class: DEFAULT
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "logistics_and_supply_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
-        notes: "Manual/fixed amount; not a default and not from PDF."
+        notes: "Production coefficient row. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       consumables_tool_amortization:
         code: "consumables_tool_amortization"
         row_id: "foundation_slab.consumables_tool_amortization"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_foundation_slab_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = direct_foundation_slab_cost_base * consumables_tool_amortization_rate"
           leaf_inputs:
-            - ref: "literal.1"
+            - ref: "auto_calculated.direct_foundation_slab_cost_base"
               source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.foundation_slab.defaults.consumables_tool_amortization_rate"
+              source_class: DEFAULT
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "consumables_tool_amortization_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
-        notes: "Manual/fixed amount; not a default and not from PDF."
+        notes: "Production coefficient row. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       technical_supervision:
         code: "technical_supervision"
@@ -2284,20 +2288,22 @@ sections:
         row_id: "load_bearing_walls_lintels.walls_consumables_tool_amortization"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = direct_walls_lintels_cost_base * walls_consumables_rate"
           leaf_inputs:
-            - ref: "supplier_inputs.walls_consumables_tool_amortization_amount_raw"
-              source_class: SUPPLIER_INPUT
+            - ref: "auto_calculated.direct_walls_lintels_cost_base"
+              source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.walls_consumables_rate"
+              source_class: DEFAULT
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "walls_consumables_tool_amortization_amount_raw"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
-        notes: "Manual/fixed amount until business formula is confirmed; do not store the amount as a default."
+        notes: "Production coefficient row. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       construction_waste_removal:
         code: "construction_waste_removal"
@@ -3765,11 +3771,11 @@ sections:
         quantity:
           formula: "ceil(slope_plate_a_supplier_required_volume_m3 / slope_plate_a_pack_volume_m3) * slope_plate_a_pack_volume_m3"
           leaf_inputs:
-            - {ref: "supplier_inputs.slope_plate_a_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "review_parameters.slope_plate_a_supplier_required_volume_m3", source_class: AUTO_PROJECT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_a_pack_volume_m3", source_class: DEFAULT}
         prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_2_1_plate_a_m3"}
         zero_policy: not_expected
-        notes: "Shared reviewed SLOPE plate price is fanned out to plate types by adapter."
+        notes: "SLOPE required volume is a project/specification value from the roof sheet, not manual input. Shared reviewed SLOPE plate price is fanned out to plate types by adapter."
 
       eps_slope_2_1_plate_b:
         code: "eps_slope_2_1_plate_b"
@@ -3781,11 +3787,11 @@ sections:
         quantity:
           formula: "ceil(slope_plate_b_supplier_required_volume_m3 / slope_plate_b_pack_volume_m3) * slope_plate_b_pack_volume_m3"
           leaf_inputs:
-            - {ref: "supplier_inputs.slope_plate_b_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "review_parameters.slope_plate_b_supplier_required_volume_m3", source_class: AUTO_PROJECT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_b_pack_volume_m3", source_class: DEFAULT}
         prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_2_1_plate_b_m3"}
         zero_policy: not_expected
-        notes: "Supplier/Technonikol required volume."
+        notes: "SLOPE required volume is a project/specification value from the roof sheet, not manual input."
 
       eps_slope_4_2_plate_j:
         code: "eps_slope_4_2_plate_j"
@@ -3797,11 +3803,11 @@ sections:
         quantity:
           formula: "ceil(slope_plate_j_supplier_required_volume_m3 / slope_plate_j_pack_volume_m3) * slope_plate_j_pack_volume_m3"
           leaf_inputs:
-            - {ref: "supplier_inputs.slope_plate_j_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "review_parameters.slope_plate_j_supplier_required_volume_m3", source_class: AUTO_PROJECT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_j_pack_volume_m3", source_class: DEFAULT}
         prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_4_2_plate_j_m3"}
         zero_policy: not_expected
-        notes: "Supplier/Technonikol required volume."
+        notes: "SLOPE required volume is a project/specification value from the roof sheet, not manual input."
 
       eps_slope_4_2_plate_k:
         code: "eps_slope_4_2_plate_k"
@@ -3813,11 +3819,11 @@ sections:
         quantity:
           formula: "ceil(slope_plate_k_supplier_required_volume_m3 / slope_plate_k_pack_volume_m3) * slope_plate_k_pack_volume_m3"
           leaf_inputs:
-            - {ref: "supplier_inputs.slope_plate_k_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "review_parameters.slope_plate_k_supplier_required_volume_m3", source_class: AUTO_PROJECT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.slope_plate_k_pack_volume_m3", source_class: DEFAULT}
         prices: {material_unit_price_key: "slope_plate_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps_slope_4_2_plate_k_m3"}
         zero_policy: not_expected
-        notes: "Supplier/Technonikol required volume."
+        notes: "SLOPE required volume is a project/specification value from the roof sheet, not manual input."
 
       geotextile_prof_300_flat:
         code: "geotextile_prof_300_flat"
@@ -4041,15 +4047,16 @@ sections:
         row_id: "flat_roof.roof_consumables_tool_depreciation"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "1; amount = roof_consumables_total_raw"
+          formula: "1; amount = direct_roof_cost_base * roof_consumables_rate"
           leaf_inputs:
-            - {ref: "supplier_inputs.roof_consumables_total_raw", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "roof_consumables_total_raw", price_registry_code: null}
+            - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_consumables_rate", source_class: DEFAULT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: requires_review_if_zero
-        notes: "Manual/fixed amount until a universal formula is confirmed."
+        notes: "Production coefficient row. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       roof_waste_removal:
         code: "roof_waste_removal"
@@ -4071,45 +4078,48 @@ sections:
         row_id: "flat_roof.roof_logistics_and_supply"
         name_ru: "Логистика, и снабжение"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "1; amount = roof_logistics_and_supply_total_raw"
+          formula: "1; amount = direct_roof_cost_base * roof_logistics_and_supply_rate"
           leaf_inputs:
-            - {ref: "supplier_inputs.roof_logistics_and_supply_total_raw", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "roof_logistics_and_supply_total_raw", price_registry_code: null}
+            - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_logistics_and_supply_rate", source_class: DEFAULT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: requires_review_if_zero
-        notes: "Manual/fixed amount until a universal formula is confirmed."
+        notes: "Production coefficient row. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       technical_supervision:
         code: "technical_supervision"
         row_id: "flat_roof.technical_supervision"
         name_ru: "Технический надзор"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "1; amount = technical_supervision_work_total"
+          formula: "1; amount = direct_roof_work_base * technical_supervision_rate"
           leaf_inputs:
-            - {ref: "supplier_inputs.technical_supervision_work_total", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "technical_supervision_work_total", price_registry_code: null}
+            - {ref: "auto_calculated.direct_roof_work_base", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.technical_supervision_rate", source_class: DEFAULT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: requires_review_if_zero
-        notes: "Gray internal work total provided directly."
+        notes: "Production coefficient row from work subtotal. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       procurement_storage:
         code: "procurement_storage"
         row_id: "flat_roof.procurement_storage"
         name_ru: "Заготовительно-складские расходы"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "1; amount = procurement_storage_work_total"
+          formula: "1; amount = direct_roof_material_base * procurement_storage_rate"
           leaf_inputs:
-            - {ref: "supplier_inputs.procurement_storage_work_total", source_class: SUPPLIER_INPUT}
-        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "procurement_storage_work_total", price_registry_code: null}
+            - {ref: "auto_calculated.direct_roof_material_base", source_class: AUTO_CALCULATED}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.procurement_storage_rate", source_class: DEFAULT}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: requires_review_if_zero
-        notes: "Gray internal work total provided directly."
+        notes: "Production coefficient row from material subtotal. Default rate is editable in review/config layer; legacy fixed amount remains supported by calculator only for old cases."
 
       overhead_zero:
         code: "overhead_zero"

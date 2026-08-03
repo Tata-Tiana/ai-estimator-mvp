@@ -188,6 +188,10 @@ class FoundationSlabInput:
     logistics_and_supply_amount: float
     consumables_tool_amortization_amount: float
     technical_supervision_amount: float
+    logistics_and_supply_calc_method: str = "legacy_fixed_amount"
+    logistics_and_supply_rate: float = 0.0
+    consumables_tool_amortization_calc_method: str = "legacy_fixed_amount"
+    consumables_tool_amortization_rate: float = 0.0
     plywood_calc_method: str = "actual_area_with_waste"
     plywood_sheet_working_area_m2: float = 2.25
     plywood_sheet_width_m: float = 1.52
@@ -320,9 +324,28 @@ class FoundationSlabInput:
             "logistics_and_supply_amount",
             "consumables_tool_amortization_amount",
             "technical_supervision_amount",
+            "logistics_and_supply_rate",
+            "consumables_tool_amortization_rate",
         ]
         for field_name in non_negative_fields:
             _require_non_negative(field_name, getattr(self, field_name))
+
+        if self.logistics_and_supply_calc_method not in {
+            "legacy_fixed_amount",
+            "section_total_rate",
+        }:
+            raise ValueError(
+                "logistics_and_supply_calc_method must be "
+                "'legacy_fixed_amount' or 'section_total_rate'"
+            )
+        if self.consumables_tool_amortization_calc_method not in {
+            "legacy_fixed_amount",
+            "section_total_rate",
+        }:
+            raise ValueError(
+                "consumables_tool_amortization_calc_method must be "
+                "'legacy_fixed_amount' or 'section_total_rate'"
+            )
 
         for zone in self.slab_zones or []:
             if not zone.context:
@@ -1096,6 +1119,8 @@ def calculate_concrete_block(
 
 
 def calculate_manual_lines_block(data: FoundationSlabInput) -> dict[str, Any]:
+    logistics_amount = data.logistics_and_supply_amount
+    consumables_amount = data.consumables_tool_amortization_amount
     return {
         "rebar_crane_supply": {
             "quantity": data.rebar_crane_shifts,
@@ -1114,13 +1139,17 @@ def calculate_manual_lines_block(data: FoundationSlabInput) -> dict[str, Any]:
         },
         "logistics_and_supply": {
             "quantity": 1,
-            "unit_price": data.logistics_and_supply_amount,
-            "line_type": "fixed/manual",
+            "unit_price": logistics_amount,
+            "calc_method": data.logistics_and_supply_calc_method,
+            "rate": data.logistics_and_supply_rate,
+            "line_type": "fixed/manual or section_total_rate",
         },
         "consumables_tool_amortization": {
             "quantity": 1,
-            "unit_price": data.consumables_tool_amortization_amount,
-            "line_type": "fixed/manual",
+            "unit_price": consumables_amount,
+            "calc_method": data.consumables_tool_amortization_calc_method,
+            "rate": data.consumables_tool_amortization_rate,
+            "line_type": "fixed/manual or section_total_rate",
         },
         "technical_supervision": {
             "quantity": 1,
@@ -1263,50 +1292,74 @@ def calculate_internal_estimate_lines(
             work_unit_price=data.formwork_dismantling_work_unit_price,
             price_code="formwork_dismantling_work_m2",
         ),
-        calculate_line(
-            code="logistics_and_supply",
-            name="Логистика и снабжение",
-            unit="-",
-            quantity=1,
-            material_unit_price=data.logistics_and_supply_amount,
-        ),
-        calculate_line(
-            code="consumables_tool_amortization",
-            name="Расходные материалы, амортизация инструмента",
-            unit="комплект",
-            quantity=1,
-            material_unit_price=data.consumables_tool_amortization_amount,
-        ),
-        calculate_line(
-            code="technical_supervision",
-            name="Технический надзор",
-            unit="-",
-            quantity=1,
-            work_unit_price=data.technical_supervision_amount,
-            price_code="technical_supervision_fixed",
-        ),
-        calculate_line(
-            code="procurement_warehouse_costs_excel_structure",
-            name="Заготовительно-складские расходы",
-            unit="-",
-            quantity=1,
-            line_type="zero_excel_structure_line",
-        ),
-        calculate_line(
-            code="overhead_general_business_costs_excel_structure",
-            name="Накладные и общехозяйственные расходы",
-            unit="-",
-            quantity=1,
-            line_type="zero_excel_structure_line",
-        ),
-        calculate_line(
-            code="estimated_profit_excel_structure",
-            name="Сметная прибыль",
-            unit="-",
-            quantity=1,
-            line_type="zero_excel_structure_line",
-        ),
     ]
+
+    direct_cost_base = sum(line.line_total for line in lines)
+    logistics_amount = data.logistics_and_supply_amount
+    if data.logistics_and_supply_calc_method == "section_total_rate":
+        logistics_amount = _round_money(
+            _to_decimal(direct_cost_base) * _to_decimal(data.logistics_and_supply_rate)
+        )
+    consumables_amount = data.consumables_tool_amortization_amount
+    if data.consumables_tool_amortization_calc_method == "section_total_rate":
+        consumables_amount = _round_money(
+            _to_decimal(direct_cost_base)
+            * _to_decimal(data.consumables_tool_amortization_rate)
+        )
+
+    lines.extend(
+        [
+            calculate_line(
+                code="logistics_and_supply",
+                name="Логистика и снабжение",
+                unit="-",
+                quantity=1,
+                material_unit_price=logistics_amount,
+                line_type="calculated_percentage_addon"
+                if data.logistics_and_supply_calc_method == "section_total_rate"
+                else None,
+            ),
+            calculate_line(
+                code="consumables_tool_amortization",
+                name="Расходные материалы, амортизация инструмента",
+                unit="комплект",
+                quantity=1,
+                material_unit_price=consumables_amount,
+                line_type="calculated_percentage_addon"
+                if data.consumables_tool_amortization_calc_method == "section_total_rate"
+                else None,
+            ),
+            calculate_line(
+                code="technical_supervision",
+                name="Технический надзор",
+                unit="-",
+                quantity=1,
+                work_unit_price=data.technical_supervision_amount,
+                price_code="technical_supervision_fixed",
+            ),
+            calculate_line(
+                code="procurement_warehouse_costs_excel_structure",
+                name="Заготовительно-складские расходы",
+                unit="-",
+                quantity=1,
+                line_type="zero_excel_structure_line",
+            ),
+            calculate_line(
+                code="overhead_general_business_costs_excel_structure",
+                name="Накладные и общехозяйственные расходы",
+                unit="-",
+                quantity=1,
+                line_type="zero_excel_structure_line",
+            ),
+            calculate_line(
+                code="estimated_profit_excel_structure",
+                name="Сметная прибыль",
+                unit="-",
+                quantity=1,
+                line_type="zero_excel_structure_line",
+            ),
+        ]
+    )
 
     return lines
 
