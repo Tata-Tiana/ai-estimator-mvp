@@ -16,6 +16,7 @@ zero_policy_values:
 line_kinds:
   normal: "Regular estimate row returned by calculator."
   fixed_amount: "Estimate row with quantity 1 and a fixed amount/price key."
+  calculated_amount: "Estimate row with quantity 1 and an amount calculated from another subtotal and coefficient."
   structural_zero: "Excel/form structure row, often zero."
   control: "Calculator/formula-ready control row, not necessarily a payable row."
   legacy_alternative: "Calculator compatibility row returned only by an old/legacy mode; not active production default."
@@ -259,20 +260,22 @@ sections:
         row_id: "earthworks.consumables"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_earthworks_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = earthworks_direct_cost_base_before_consumables * consumables_rate"
           leaf_inputs:
-            - ref: "literal.1"
+            - ref: "auto_calculated.earthworks_direct_cost_base_before_consumables"
               source_class: AUTO_CALCULATED
+            - ref: "defaults_catalog.sections.earthworks.defaults.consumables_rate"
+              source_class: DEFAULT
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
           fixed_amount_key: "consumables_amount"
-          price_registry_code: "earthworks_consumables_fixed"
+          price_registry_code: null
         zero_policy: requires_review_if_zero
-        notes: "This is a fixed amount/price row. It belongs to sheet 02 / price fallback / manual review, not defaults_catalog."
+        notes: "Production amount is calculated from the direct earthworks cost base and consumables_rate. Legacy earthworks_consumables_fixed price row is no longer production."
 
     structural_rows_from_excel_template:
       technical_supervision_zero:
@@ -1136,10 +1139,10 @@ sections:
         row_id: "waterproofing.waterproofing_logistics_and_supply"
         name_ru: "Логистика и снабжение"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_waterproofing_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = waterproofing_base_subtotal * waterproofing_logistics_coeff"
           leaf_inputs:
             - ref: "calculator_result.waterproofing_base_subtotal"
               source_class: AUTO_CALCULATED
@@ -1148,7 +1151,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "waterproofing_logistics_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Calculator stores the calculated amount as material_unit_price with quantity 1. It is formula-calculated, not a price registry value."
@@ -1158,10 +1161,10 @@ sections:
         row_id: "waterproofing.waterproofing_consumables_tool_amortization"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_waterproofing_calculator
         quantity:
-          formula: "1"
+          formula: "1; amount = waterproofing_base_subtotal * waterproofing_consumables_coeff"
           leaf_inputs:
             - ref: "calculator_result.waterproofing_base_subtotal"
               source_class: AUTO_CALCULATED
@@ -1170,7 +1173,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "waterproofing_consumables_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Calculator stores the calculated amount as material_unit_price with quantity 1. It is formula-calculated, not a price registry value."
@@ -2915,7 +2918,7 @@ sections:
         row_id: "floor_slab_1.logistics_and_supply"
         name_ru: "Логистика, и снабжение"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_floor_slab_1_calculator
         quantity:
           formula: "1; amount = base_subtotal_raw * logistics_and_supply_percent"
@@ -2927,7 +2930,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "logistics_and_supply_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Percent overhead line calculated by calculator."
@@ -2937,7 +2940,7 @@ sections:
         row_id: "floor_slab_1.consumables_tool_depreciation"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_floor_slab_1_calculator
         quantity:
           formula: "1; amount = base_subtotal_raw * consumables_and_tool_percent"
@@ -2949,7 +2952,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "consumables_tool_depreciation_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Percent overhead line calculated by calculator."
@@ -3517,7 +3520,7 @@ sections:
         row_id: "floor_slab_2.logistics_and_supply"
         name_ru: "Логистика, и снабжение"
         unit: "-"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_floor_slab_2_calculator
         quantity:
           formula: "1; amount = direct_cost_base_before_addons_raw * logistics_rate"
@@ -3529,7 +3532,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "logistics_and_supply_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Percent overhead line calculated by calculator."
@@ -3539,7 +3542,7 @@ sections:
         row_id: "floor_slab_2.consumables_tool_depreciation"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_floor_slab_2_calculator
         quantity:
           formula: "1; amount = direct_cost_base_before_addons_raw * consumables_rate"
@@ -3551,7 +3554,7 @@ sections:
         prices:
           material_unit_price_key: null
           work_unit_price_key: null
-          fixed_amount_key: "consumables_tool_depreciation_amount"
+          fixed_amount_key: null
           price_registry_code: null
         zero_policy: requires_review_if_zero
         notes: "Percent consumables/tool line calculated by calculator."
@@ -4213,14 +4216,14 @@ sections:
         row_id: "schiedel_vent_channels.schiedel_consumables_tool_depreciation"
         name_ru: "Расходные материалы, амортизация инструмента"
         unit: "комплект"
-        line_kind: fixed_amount
+        line_kind: calculated_amount
         current_calculator_status: returned_by_schiedel_vent_channels_calculator
         quantity:
           formula: "1; amount = schiedel_direct_cost_base_before_consumables * consumables_rate"
           leaf_inputs:
             - {ref: "auto_calculated.schiedel_direct_cost_base_before_consumables", source_class: AUTO_CALCULATED}
             - {ref: "defaults_catalog.sections.schiedel_vent_channels.defaults.consumables_rate", source_class: DEFAULT}
-        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: "schiedel_consumables_amount", price_registry_code: null}
+        prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: requires_review_if_zero
         notes: "Percentage add-on calculated by calculator."
 

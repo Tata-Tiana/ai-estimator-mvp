@@ -523,18 +523,6 @@ price_keys:
     fallback_key: "communications_material_unit_price"
     allow_manual_override: true
     notes: ""
-  - key: consumables_amount
-    estimate_line_code: consumables
-    label_ru: "Расходные материалы"
-    price_kind: fixed
-    unit: "комплект"
-    required: true
-    default_source: price_registry_with_fallback
-    registry_code: "earthworks_consumables_fixed"
-    fallback_key: "consumables_amount"
-    allow_manual_override: true
-    notes: ""
-
 defaults:
   - key: excavator_shifts_calc_method
     label_ru: "Метод расчета смен экскаватора"
@@ -635,6 +623,24 @@ defaults:
     source_note: "Business/default quantity from earthworks constants."
     allow_override_later: true
     notes: ""
+  - key: consumables_calc_method
+    label_ru: "Метод расчета расходных материалов"
+    source_class: DEFAULT
+    value: "section_total_rate"
+    unit: ""
+    calculator_input_path: "consumables_calc_method"
+    source_note: "Production earthworks mode: calculate consumables as a percentage of direct earthworks lines before consumables."
+    allow_override_later: false
+    notes: "Legacy calculator mode legacy_fixed_amount is kept only for old review workbooks that still provide consumables_amount from sheet 02."
+  - key: consumables_rate
+    label_ru: "Коэффициент расходников и амортизации"
+    source_class: DEFAULT
+    value: 0.03
+    unit: ""
+    calculator_input_path: "consumables_rate"
+    source_note: "Business coefficient; not extracted from project PDF and not a price registry row."
+    allow_override_later: true
+    notes: "Applied to earthworks direct cost base before the consumables line."
 
 auto_calculated:
   - key: manual_excavation_quantity_for_estimate_m3
@@ -659,6 +665,30 @@ auto_calculated:
         source_class: AUTO_PROJECT
     calculator_input_path: ""
     notes: "Cross-check only, shown next to communications_length_m for Elena to compare. Never wired into calculator_input_mapping or an estimate line — the calculator input is the reviewed review_parameters.communications_length_m scalar. See fix note on communications_pipe_items above."
+  - key: earthworks_direct_cost_base_before_consumables
+    label_ru: "База прямых затрат земли до расходников"
+    source_class: AUTO_CALCULATED
+    formula: "sum(axis_marking, excavator_jcb, manual_excavation, geotextile_laying, geotextile_material, sand_filling, sand_material, sand_manual_moving, communications_work, communications_material)"
+    leaf_inputs:
+      - ref: review_parameters
+        source_class: AUTO_PROJECT
+      - ref: defaults
+        source_class: DEFAULT
+      - ref: price_keys
+        source_class: PRICE
+    calculator_input_path: ""
+    notes: "Calculated from earthworks estimate lines before consumables; no project-specific totals stored here."
+  - key: consumables_amount
+    label_ru: "Расходные материалы, амортизация инструмента"
+    source_class: AUTO_CALCULATED
+    formula: "earthworks_direct_cost_base_before_consumables * consumables_rate"
+    leaf_inputs:
+      - ref: auto_calculated.earthworks_direct_cost_base_before_consumables
+        source_class: AUTO_CALCULATED
+      - ref: defaults.consumables_rate
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: "Production calculated amount; do not place it on sheet 02 as a price or on sheet 01-1 as manual input."
 
 supplier_inputs: []
 
@@ -887,10 +917,12 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=consumables]"
     quantity:
-      formula: "1"
+      formula: "1; amount = earthworks_direct_cost_base_before_consumables * consumables_rate"
       leaf_inputs:
-        - ref: price_keys.consumables_amount
-          source_class: PRICE
+        - ref: auto_calculated.earthworks_direct_cost_base_before_consumables
+          source_class: AUTO_CALCULATED
+        - ref: defaults.consumables_rate
+          source_class: DEFAULT
     prices:
       material_unit_price_key: null
       work_unit_price_key: null
@@ -899,7 +931,7 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Fixed price row, not project quantity."
+    notes: "Production calculated amount from the section direct-cost base and consumables_rate. Legacy fixed amount is no longer a price_registry row."
 
 workbook_layout:
   review_workbook:

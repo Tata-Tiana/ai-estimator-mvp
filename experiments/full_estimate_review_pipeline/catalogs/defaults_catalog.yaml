@@ -142,6 +142,28 @@ sections:
         allow_override: true
         notes: "Default quantity for axis marking. The work unit price is PRICE and is not stored in this catalog."
 
+      consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "consumables_calc_method"
+        used_by_estimate_lines: ["earthworks.consumables"]
+        source_note: "Production mode from earthworks section contract and calculator."
+        confidence: confirmed_from_code
+        allow_override: false
+        notes: "Legacy fixed amount mode is kept only for old earthworks workbooks that still provide consumables_amount from sheet 02."
+
+      consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_rate"
+        used_by_estimate_lines: ["earthworks.consumables"]
+        source_note: "Earthworks section contract and calculator method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Applied to direct earthworks cost base before the consumables line."
+
   foundation_slab:
     status: draft_cataloged
     source_refs:
@@ -1887,8 +1909,8 @@ sections:
 not_defaults:
   earthworks:
     consumables_amount:
-      reason: "Fixed estimate-line amount / price key, not a formula default."
-      belongs_to: "price registry / fallback / review sheet 02"
+      reason: "Legacy fixed estimate-line amount. Production earthworks calculates this amount from direct section cost and consumables_rate."
+      belongs_to: "legacy review sheet 02 only; do not use as production price/default/manual value"
       estimate_line_code: "earthworks.consumables"
     axis_marking_work_unit_price:
       reason: "Work unit price, not a default."
@@ -1900,12 +1922,12 @@ not_defaults:
       estimate_line_code: "earthworks.sand_manual_moving"
   foundation_slab:
     logistics_and_supply_amount:
-      reason: "Fixed estimate-line amount / manual review value, not a formula default."
-      belongs_to: "supplier/manual review or price registry fallback"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a formula default."
+      belongs_to: "future estimate formula from section subtotal and logistics coefficient"
       estimate_line_code: "foundation_slab.logistics_and_supply"
     consumables_tool_amortization_amount:
-      reason: "Fixed estimate-line amount / manual review value, not a formula default."
-      belongs_to: "supplier/manual review or price registry fallback"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a formula default."
+      belongs_to: "future estimate formula from section subtotal and consumables/tool coefficient"
       estimate_line_code: "foundation_slab.consumables_tool_amortization"
     technical_supervision_amount:
       reason: "Fixed amount / price key. It may be displayed as a row with quantity 1, but the amount is not a DEFAULT."
@@ -1994,8 +2016,8 @@ not_defaults:
       belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
     walls_consumables_tool_amortization_amount_raw:
-      reason: "Manual/fixed amount pending business formula confirmation, not a reusable default."
-      belongs_to: "supplier/manual review or future formula"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a reusable default."
+      belongs_to: "future estimate formula from section subtotal and consumables/tool coefficient"
       estimate_line_code: "load_bearing_walls_lintels.walls_consumables_tool_amortization"
     waste_removal_trucks:
       reason: "Manual/supplier quantity, not a default."
@@ -2217,24 +2239,24 @@ not_defaults:
       belongs_to: "review sheet 01 / SUPPLIER_INPUT"
       estimate_line_code: "flat_roof.roof_crane_lifting"
     roof_consumables_total_raw:
-      reason: "Manual/fixed amount pending a universal formula, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from roof subtotal and consumables/tool coefficient"
       estimate_line_code: "flat_roof.roof_consumables_tool_depreciation"
     roof_waste_removal_trucks:
       reason: "Manual/supplier quantity, not a default."
       belongs_to: "review sheet 01 / SUPPLIER_INPUT"
       estimate_line_code: "flat_roof.roof_waste_removal"
     roof_logistics_and_supply_total_raw:
-      reason: "Manual/fixed amount pending a universal formula, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from roof subtotal and logistics coefficient"
       estimate_line_code: "flat_roof.roof_logistics_and_supply"
     technical_supervision_work_total:
-      reason: "Manual/fixed amount, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from work subtotal and technical-supervision coefficient"
       estimate_line_code: "flat_roof.technical_supervision"
     procurement_storage_work_total:
-      reason: "Manual/fixed amount, not a default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from selected material subtotal and procurement/storage coefficient"
       estimate_line_code: "flat_roof.procurement_storage"
     slope_plate_unit_price_per_m3:
       reason: "Material unit price shared by SLOPE plate lines, not a default."

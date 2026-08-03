@@ -950,8 +950,10 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=logistics_and_supply]"
     quantity:
-      formula: "1"
-      leaf_inputs: []
+      formula: "1; amount = direct_cost_base_before_addons_raw * logistics_rate"
+      leaf_inputs:
+        - {ref: "auto_calculated.direct_cost_base_before_addons", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.logistics_rate", source_class: DEFAULT}
     prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "material_total_raw = direct_cost_base_before_addons * logistics_rate, computed internally by the calculator; not a quantity*price line."
@@ -962,8 +964,10 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=consumables_tool_depreciation]"
     quantity:
-      formula: "1"
-      leaf_inputs: []
+      formula: "1; amount = direct_cost_base_before_addons_raw * consumables_rate"
+      leaf_inputs:
+        - {ref: "auto_calculated.direct_cost_base_before_addons", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.consumables_rate", source_class: DEFAULT}
     prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "material_total_raw = direct_cost_base_before_addons * consumables_rate, computed internally by the calculator; not a quantity*price line."

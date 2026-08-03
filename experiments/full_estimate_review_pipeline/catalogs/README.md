@@ -49,7 +49,8 @@
 
 Пример: `manual_refinement_depth_m = 0.08` для земли — дефолт формулы.
 
-Не пример: `consumables_amount` — это фиксированная сумма строки сметы/цена, а не дефолт формулы.
+Не пример: legacy `consumables_amount` из старого калькулятора земли. В production это не цена и
+не ручное значение, а рассчитанная сумма: база прямых затрат раздела * коэффициент расходников.
 
 ### `estimate_line_catalog.yaml`
 
@@ -299,7 +300,8 @@ experiments/earthworks_review_to_calculator/constants.py
 
 - дефолты земли сейчас живут в `GENERIC_CALCULATOR_DEFAULTS`;
 - цены собираются из rows sheet 02;
-- `consumables_amount` отдельно вынимается из цен;
+- legacy `consumables_amount` отдельно вынимается из цен только для старых workbook; production
+  считает расходники земли по `consumables_calc_method = section_total_rate` и `consumables_rate`;
 - `communications_length_m` имеет аккуратную legacy/pipe-items семантику.
 
 ### 4. Formula-ready builder
@@ -414,4 +416,3 @@ confidence: needs_elena
 - все `MANUAL_REVIEW`/`SUPPLIER_INPUT` значения заполнены или отмечены как blocking;
 - каждая строка из `estimate_line_catalog.yaml` либо возвращается калькулятором, либо имеет
   понятный статус `structural_zero`, `disabled`, `not_in_current_calculator`.
-

@@ -62,6 +62,8 @@ class EarthworksInput:
     excavator_shifts: float = 0.0
     geotextile_laying_area_m2: float = 0.0
     manual_excavation_quantity_for_estimate_m3: float | None = None
+    consumables_calc_method: str = "legacy_fixed_amount"
+    consumables_rate: float = 0.0
     consumables_amount: float = 0.0
     enabled_lines: list[str] | None = None
     quantity_overrides: dict[str, float] = field(default_factory=dict)
@@ -99,6 +101,13 @@ class EarthworksInput:
             raise ValueError(
                 "communications_length_calc_method must be legacy_direct_length or pipe_items"
             )
+        if self.consumables_calc_method not in {
+            "legacy_fixed_amount",
+            "section_total_rate",
+        }:
+            raise ValueError(
+                "consumables_calc_method must be legacy_fixed_amount or section_total_rate"
+            )
 
         _require_non_negative("pit_area_m2", self.pit_area_m2)
         _require_positive(
@@ -134,6 +143,7 @@ class EarthworksInput:
             self.geotextile_laying_area_m2,
         )
         _require_non_negative("consumables_amount", self.consumables_amount)
+        _require_non_negative("consumables_rate", self.consumables_rate)
 
         if self.manual_excavation_quantity_for_estimate_m3 is not None:
             _require_non_negative(
@@ -624,6 +634,12 @@ def calculate_internal_estimate_lines(
             )
         )
     if _line_enabled(data, "consumables"):
+        consumables_amount = data.consumables_amount
+        if data.consumables_calc_method == "section_total_rate":
+            direct_cost_base = sum(line.line_total for line in lines)
+            consumables_amount = _round_money(
+                _to_decimal(direct_cost_base) * _to_decimal(data.consumables_rate)
+            )
         lines.append(
             calculate_line(
                 code="consumables",
@@ -634,7 +650,7 @@ def calculate_internal_estimate_lines(
                 ),
                 unit="комплект",
                 quantity=1,
-                material_unit_price=data.consumables_amount,
+                material_unit_price=consumables_amount,
             )
         )
 

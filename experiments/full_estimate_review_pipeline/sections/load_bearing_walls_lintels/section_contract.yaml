@@ -976,13 +976,14 @@ supplier_inputs:
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "walls_consumables_tool_amortization_amount_raw"
     normalized_json_path: "sections.load_bearing_walls_lintels.supplier_inputs.walls_consumables_tool_amortization_amount_raw.value"
+    exclude_from_manual_values_registry: true
     value_kind: money
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
       action_ru: "Укажите фиксированную сумму расходников или замените будущей формулой."
-    notes: "Calculator currently keeps this as manual/fixed pending formula confirmation."
+    notes: "Temporary calculator input; exclude from manual_values_registry because estimate checks show this line should be calculated from a section subtotal by a consumables/tool coefficient."
 
 auto_calculated:
   - {key: lintel_concrete_order_volume_m3, label_ru: "Заказной объем бетона перемычек в U-блоке, 1-й этаж (без монолита)", source_class: AUTO_CALCULATED, formula: "max(lintel_concrete_min_order_volume_m3, ceil(lintel_concrete_spec_volume_m3))", leaf_inputs: [{ref: review_parameters.lintel_concrete_spec_volume_m3, source_class: AUTO_PROJECT}, {ref: defaults.lintel_concrete_min_order_volume_m3, source_class: DEFAULT}], calculator_input_path: "", notes: "Diagnostic-only as of 2026-07-15 — no longer feeds any estimate line directly. lintel_concrete_b22_5_m300_material and manual_concrete_lifting now use the combined U-block+monolithic formula (see those estimate_lines entries) instead of this U-block-only value. Production spec_volume mode does NOT apply concrete_waste_coeff (only the legacy_length_section mode does) — found 2026-07-10 that the pre-existing lintel_concrete_b22_5_m300_material line in this contract incorrectly multiplied by concrete_waste_coeff; fixed alongside this entry."}

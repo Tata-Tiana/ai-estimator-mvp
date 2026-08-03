@@ -47,6 +47,8 @@ LINEAGE_REQUIRED_GENERIC_DEFAULTS = {
     "geotextile_overlap_coeff",
     "geotextile_roll_area_m2",
     "axis_marking_shifts",
+    "consumables_calc_method",
+    "consumables_rate",
     "enabled_lines",
     "quantity_overrides",
     "line_name_overrides",
@@ -406,7 +408,14 @@ def validate_calculator_input(
                 errors.append(f"internal_prices unexpected keys: {', '.join(unexpected)}")
 
     if expected_consumables_amount is None:
-        errors.append("consumables_amount must be mapped from review sheet")
+        if calculator_input.get("consumables_calc_method") != "section_total_rate":
+            errors.append(
+                "consumables_calc_method must be section_total_rate when no consumables_amount price row exists"
+            )
+        if _as_number(calculator_input.get("consumables_rate")) is None:
+            errors.append("consumables_rate must be provided for section_total_rate mode")
+        if _as_number(calculator_input.get("consumables_amount")) != 0.0:
+            errors.append("consumables_amount must stay 0 in section_total_rate mode")
     elif _as_number(calculator_input.get("consumables_amount")) != expected_consumables_amount:
         errors.append("consumables_amount must match normalized review value")
 

@@ -59,6 +59,8 @@ GENERIC_CALCULATOR_DEFAULTS = {
     "geotextile_overlap_coeff": 1.10,
     "geotextile_roll_area_m2": 100.0,
     "axis_marking_shifts": 1.0,
+    "consumables_calc_method": "section_total_rate",
+    "consumables_rate": 0.03,
     "enabled_lines": None,
     "quantity_overrides": {},
     "line_name_overrides": {},
@@ -76,5 +78,4 @@ REQUIRED_CALC_PRICE_KEYS = [
     "sand_manual_moving_work_unit_price",
     "communications_work_unit_price",
     "communications_material_unit_price",
-    "consumables_amount",
 ]

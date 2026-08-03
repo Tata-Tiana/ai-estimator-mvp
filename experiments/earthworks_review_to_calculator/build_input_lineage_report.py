@@ -307,6 +307,8 @@ def build_lineage(
         "geotextile_overlap_coeff",
         "geotextile_roll_area_m2",
         "axis_marking_shifts",
+        "consumables_calc_method",
+        "consumables_rate",
         "enabled_lines",
         "quantity_overrides",
         "line_name_overrides",
@@ -362,15 +364,26 @@ def build_lineage(
         )
 
     consumables_row = _first_price_row(prices, "consumables_amount") or {}
+    if consumables_row:
+        consumables_source_type = "normalized.prices by calc_price_key"
+        consumables_source_path = "prices[calc_price_key=consumables_amount]"
+        consumables_source_note = (
+            f"{str(consumables_row.get('estimate_line', '')).strip()} / "
+            f"{cell_text(consumables_row.get('selected_price_source')) or 'fallback'}"
+        ).strip(" /")
+    else:
+        consumables_source_type = "legacy_compatibility_zero"
+        consumables_source_path = "consumables_amount"
+        consumables_source_note = (
+            "zero legacy field; production consumables amount is calculated by "
+            "consumables_calc_method and consumables_rate"
+        )
     add(
         input_path="consumables_amount",
         value=calculator_input.get("consumables_amount"),
-        source_type="normalized.prices by calc_price_key",
-        source_path="prices[calc_price_key=consumables_amount]",
-        source_note=(
-            f"{str(consumables_row.get('estimate_line', '')).strip()} / "
-            f"{cell_text(consumables_row.get('selected_price_source')) or 'fallback'}"
-        ).strip(" /"),
+        source_type=consumables_source_type,
+        source_path=consumables_source_path,
+        source_note=consumables_source_note,
         group="prices",
         calc_price_key="consumables_amount",
         selected_price=calculator_input.get("consumables_amount"),

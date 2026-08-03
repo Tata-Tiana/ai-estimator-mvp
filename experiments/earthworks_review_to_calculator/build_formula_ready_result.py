@@ -1153,7 +1153,20 @@ def _build_formula_ready(
         line = _estimate_line_by_code(result_lines, "consumables", errors)
         if line is None:
             return missing_row("consumables", "комплект")
-        cons_source = price_source("consumables_amount")
+        if calculator_input.get("consumables_calc_method") == "section_total_rate":
+            cons_source = {
+                "source_type": "calculator_formula",
+                "source_path": "earthworks_direct_cost_base_before_consumables * consumables_rate",
+                "source_note": (
+                    "calculated from preceding direct earthworks line totals and "
+                    "GENERIC_CALCULATOR_DEFAULTS.consumables_rate"
+                ),
+                "trace_status": "traced",
+            }
+            cons_price_key = None
+        else:
+            cons_source = price_source("consumables_amount")
+            cons_price_key = "consumables_amount"
         return _build_row(
             code="consumables",
             estimate_line=line["name"],
@@ -1164,7 +1177,7 @@ def _build_formula_ready(
             quantity_source_path="literal_quantity_1",
             quantity_source_note="fixed consumables quantity",
             material_unit_price_value=_number(line.get("material_unit_price")) or 0.0,
-            material_unit_price_key="consumables_amount",
+            material_unit_price_key=cons_price_key,
             material_unit_price_source=cons_source,
             material_total_value=_number(line.get("material_total")) or 0.0,
             work_unit_price_value=_number(line.get("work_unit_price")) or 0.0,

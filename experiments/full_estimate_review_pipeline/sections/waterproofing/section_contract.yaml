@@ -846,7 +846,7 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=waterproofing_logistics_and_supply]"
     quantity:
-      formula: "1"
+      formula: "1; amount = waterproofing_base_subtotal * waterproofing_logistics_coeff"
       formula_model:
         type: fixed_quantity
         value: 1
@@ -858,12 +858,12 @@ estimate_lines:
     prices:
       material_unit_price_key: null
       work_unit_price_key: null
-      fixed_amount_key: waterproofing_logistics_amount
+      fixed_amount_key: null
     helper_cells: []
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Amount is calculated as base subtotal times logistics coefficient."
+    notes: "Calculated amount from waterproofing_base_subtotal and waterproofing_logistics_coeff; not a price/manual fixed amount."
 
   - code: waterproofing_consumables_tool_amortization
     name_ru: "Расходные материалы, амортизация инструмента"
@@ -871,7 +871,7 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=waterproofing_consumables_tool_amortization]"
     quantity:
-      formula: "1"
+      formula: "1; amount = waterproofing_base_subtotal * waterproofing_consumables_coeff"
       formula_model:
         type: fixed_quantity
         value: 1
@@ -883,12 +883,12 @@ estimate_lines:
     prices:
       material_unit_price_key: null
       work_unit_price_key: null
-      fixed_amount_key: waterproofing_consumables_amount
+      fixed_amount_key: null
     helper_cells: []
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Amount is calculated as base subtotal times consumables coefficient."
+    notes: "Calculated amount from waterproofing_base_subtotal and waterproofing_consumables_coeff; not a price/manual fixed amount."
 
 workbook_layout:
   review_workbook:

@@ -244,7 +244,10 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
 
     internal_prices, consumables_amount, price_warnings = _build_internal_prices(prices)
     if consumables_amount is None:
+        consumables_calc_method = defaults.get("consumables_calc_method", "section_total_rate")
         consumables_amount = 0.0
+    else:
+        consumables_calc_method = "legacy_fixed_amount"
 
     payload: dict[str, Any] = {}
     payload["project_name"] = PROJECT_NAME
@@ -301,6 +304,8 @@ def build_calculator_input(normalized_data: dict[str, Any]) -> tuple[dict[str, A
         geotextile_laying_area_m2 if geotextile_laying_area_m2 is not None else 0.0
     )
     payload["manual_excavation_quantity_for_estimate_m3"] = None
+    payload["consumables_calc_method"] = consumables_calc_method
+    payload["consumables_rate"] = defaults.get("consumables_rate", 0.0)
     payload["consumables_amount"] = consumables_amount
     payload["enabled_lines"] = copy.deepcopy(defaults["enabled_lines"])
     payload["quantity_overrides"] = copy.deepcopy(defaults["quantity_overrides"])

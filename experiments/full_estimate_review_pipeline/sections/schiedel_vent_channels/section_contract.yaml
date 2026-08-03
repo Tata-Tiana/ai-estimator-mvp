@@ -403,7 +403,7 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=schiedel_consumables_tool_depreciation]"
     quantity:
-      formula: "1"
+      formula: "1; amount = schiedel_direct_cost_base_before_consumables * consumables_rate"
       formula_model:
         type: fixed_quantity
         value: 1
@@ -415,12 +415,12 @@ estimate_lines:
     prices:
       material_unit_price_key: null
       work_unit_price_key: null
-      fixed_amount_key: schiedel_consumables_amount
+      fixed_amount_key: null
     helper_cells: []
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Amount is calculated as direct Schiedel base times consumables rate."
+    notes: "Calculated amount from direct Schiedel cost base and consumables_rate; not a price/manual fixed amount."
 
   - code: technical_supervision_zero
     name_ru: "Технический надзор"
