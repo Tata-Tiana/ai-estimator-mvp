@@ -29,9 +29,11 @@ from metal_delivery_allocator import MetalSection, allocate_metal_deliveries  # 
 
 from build_review_workbook_from_contracts import (  # noqa: E402
     COMPACT_ROW_HEIGHT,
+    FILL_FOUND,
     FILL_HEADER,
     FILL_INPUT,
     FILL_MISSING,
+    FILL_REVIEW,
     FILL_WHITE,
     FONT_NAME,
     ITEM_BLOCK_HEADERS,
@@ -70,6 +72,19 @@ ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_PRICE_REGISTRY = ROOT / "output" / "price_registry_filled_v4.xlsx"
 DEFAULT_MANUAL_VALUES_REGISTRY = ROOT / "output" / "manual_values_registry.xlsx"
+
+
+def project_status_fill(status: str):
+    """Visual status colors for sheet 01 rows."""
+    if status.startswith("Найдено"):
+        return FILL_FOUND
+    if status.startswith("Проверьте"):
+        return FILL_REVIEW
+    if status.startswith("Не найдено"):
+        return FILL_MISSING
+    if status.startswith("Не требуется"):
+        return FILL_WHITE
+    return FILL_REVIEW
 
 
 # Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
@@ -813,6 +828,7 @@ def build_project_sheet_from_extraction(
             if box_row is not None:
                 found_value, source, fragment = box_row
                 status = "Найдено (авто, box-калькулятор)"
+                row_fill = project_status_fill(status)
                 counts["found"] += 1
                 ws.append([
                     param.get("label_ru", param.get("key", "")),
@@ -848,6 +864,7 @@ def build_project_sheet_from_extraction(
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
                 found_value, status, source, fragment, confidence = alternative_scalar
+                row_fill = project_status_fill(status)
                 counts["needs_review" if status.startswith("Проверьте") else "found"] += 1
             elif target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
                 # A sibling field in the same presence pair was found — this project definitely
@@ -866,6 +883,7 @@ def build_project_sheet_from_extraction(
                 found_value = display_value(found.get("value"))
                 needs_review = bool(found.get("needs_review"))
                 status = "Проверьте (needs_review)" if needs_review else "Найдено"
+                row_fill = project_status_fill(status)
                 source = found.get("source_pdf") or ""
                 if found.get("candidates") and found.get("value") is None:
                     fragment = unresolved_candidate_fragment(found)
@@ -883,10 +901,12 @@ def build_project_sheet_from_extraction(
                 else:
                     status = "Не найдено"
                     fragment = ""
+                    row_fill = project_status_fill(status)
                     counts["missing"] += 1
             else:
                 found_value = None
                 status = "Проверьте"
+                row_fill = project_status_fill(status)
                 source = ""
                 fragment = ""
 
@@ -939,6 +959,7 @@ def build_project_sheet_from_extraction(
                 summary = ", ".join(summary_parts)
 
                 status = "Проверьте (needs_review)" if needs_review else "Найдено"
+                row_fill = project_status_fill(status)
                 counts["needs_review" if needs_review else "found"] += 1
                 counts["item_rows"] += 1
 
@@ -967,6 +988,10 @@ def build_project_sheet_from_extraction(
             append_block(ws, title, headers, rows)
             if rows:
                 for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
+                    status = str(ws.cell(row_idx, 4).value or "")
+                    row_fill = project_status_fill(status)
+                    for cell in ws[row_idx]:
+                        cell.fill = row_fill
                     ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
                 total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
                 if total_row:
@@ -1005,7 +1030,7 @@ def build_project_sheet_from_extraction(
         "",
     ])
     for cell in ws[ws.max_row]:
-        cell.fill = FILL_INPUT
+        cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
     ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)

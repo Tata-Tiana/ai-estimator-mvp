@@ -163,6 +163,7 @@ GENERIC_DETAIL_TEMPLATES = [
 
 DIAGNOSTIC_SHEETS_HIDDEN_BY_DEFAULT = {
     "03_Детали объемов",
+    "04_Инструкция",
     "05_Кандидаты parser",
     "06_Сырые данные parser",
 }
@@ -611,6 +612,7 @@ def manual_values_rows_for_contract(contract: dict[str, Any]) -> list[dict[str, 
         for param in params
         if param.get("value_kind") != "repeated_rows"
         and not is_hidden_from_sheet01(param)
+        and not param.get("exclude_from_manual_values_registry")
         and param.get("source_class") in MANUAL_VALUE_SOURCE_CLASSES
     ]
 

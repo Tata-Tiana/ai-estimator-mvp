@@ -1,10 +1,11 @@
 """Regenerates output/manual_values_registry.xlsx from the current section contracts.
 
-Preserves already-filled "Типовое значение"/"Комментарий" values for rows that still exist
-(matched by (section_code, key)); drops rows for fields that are no longer MANUAL_REVIEW/
-SUPPLIER_INPUT (e.g. once a field becomes AUTO_CALCULATED); adds rows for newly-manual fields
-blank. See sheet01_1_manual_values_catalog_shipped / manual_values_registry_filled_from_ark_smeta
-memories for the registry's origin and fill history.
+This registry is a universal manual-input template, not a project sample. It may preserve
+already-filled values only when those values are approved as project-independent defaults.
+Do not store quantities, fixed amounts, or comments copied from ARK/TRC/USV estimates here.
+
+Matched by (section_code, key); drops rows for fields that are no longer MANUAL_REVIEW/
+SUPPLIER_INPUT (e.g. once a field becomes AUTO_CALCULATED); adds newly-manual fields blank.
 """
 
 from __future__ import annotations
