@@ -3048,3 +3048,187 @@ PDF или утверждённого правила расчёта.
 памятка по выбору корректного проектного листа для ручной сверки ЮСВ: старые/альтернативные листы
 по этой теме не использовать как основание для выводов, пока Елена или пользователь явно не
 подтвердят обратное.
+
+## 54. Manual values registry: убрать суммы, считаемые коэффициентами (2026-08-03)
+
+### 54.1 Что проверяли
+
+Проверяли справочник ручных строк `output/manual_values_registry.xlsx` и источник его сборки.
+Задача: убрать из ручного ввода строки, которые в нормальной смете не должны вводиться готовой
+рублевой суммой, а должны считаться по коэффициенту/проценту от базы раздела.
+
+Важно различать два типа данных:
+
+- коэффициент как входное значение, например процент/множитель, который можно хранить и проверять;
+- итоговая рублевая сумма, рассчитанная этим коэффициентом от работ, материалов или всего раздела.
+
+Из `manual_values_registry.xlsx` убираются именно рассчитанные суммы. Сам коэффициент может остаться
+ручным/поставочным входом, если калькулятор пока действительно просит его как отдельное поле.
+
+### 54.2 Что убрано из manual values
+
+В контракты добавлен флаг `exclude_from_manual_values_registry: true`, а сборщик листа `01-1`
+теперь этот флаг учитывает.
+
+Исключены из ручного справочника:
+
+- `foundation_slab.logistics_and_supply_amount`;
+- `foundation_slab.consumables_tool_amortization_amount`;
+- `load_bearing_walls_lintels.walls_consumables_tool_amortization_amount_raw`;
+- `flat_roof.roof_consumables_total_raw`;
+- `flat_roof.roof_logistics_and_supply_total_raw`;
+- `flat_roof.technical_supervision_work_total`;
+- `flat_roof.procurement_storage_work_total`.
+
+После пересборки `output/manual_values_registry.xlsx` стало 24 строки: 24 существующих значения
+сохранены, 0 новых строк добавлено, 7 устаревших строк удалено.
+
+### 54.3 Что осталось ручным
+
+Остались реальные ручные/поставочные количества и параметры: смены крана, смены бетононасоса,
+доставка бетона/вентканалов, коммерческое предложение поставщика по опалубке, поставочные объемы
+кровельного ЭППС/SLOPE, количество воронок/отверстий/вывоза мусора и т.п.
+
+`flat_roof.roof_work_coeff` оставлен: это сам коэффициент работ кровли, а не рассчитанная по нему
+рублевая сумма.
+
+### 54.4 Что еще не решено этим шагом
+
+Этот шаг только очищает ручной справочник. Он не переписывает формулы сметы.
+
+В каталогах строк сметы еще есть временные `fixed_amount_key` для части таких позиций. Следующий
+отдельный шаг: перевести строки "расходные материалы", "логистика и снабжение", "технический надзор",
+"заготовительно-складские расходы", "накладные" и "сметная прибыль" на явные формулы от базы раздела
+и подтвержденных коэффициентов.
+
+Earthworks проверен следующим отдельным шагом: см. раздел 55 ниже.
+
+### 54.5 Проверка универсальности
+
+В правке нет проектных количеств, адресов, названий домов и чисел из конкретных смет. Логика
+универсальная: если поле помечено как сумма, которая должна считаться коэффициентом, оно не попадает
+в ручной справочник `01-1`.
+
+## 55. Earthworks: расходные материалы переведены с price/fallback на коэффициент (2026-08-03)
+
+### 55.1 Почему это понадобилось
+
+В земле `consumables_amount` исторически был сделан как строка цены на листе 02:
+`earthworks_consumables_fixed` / fallback `consumables_amount`. Это повторяло старый рабочий
+эксперимент земли, но не соответствует логике финальной сметы: "Расходные материалы, амортизация
+инструмента" должны считаться процентом от базы раздела, а не вводиться готовой рублевой суммой.
+
+### 55.2 Что изменено
+
+- В `earthworks_calculator.py` добавлен production-режим `consumables_calc_method =
+  section_total_rate`.
+- В этом режиме сумма строки `consumables` считается как сумма прямых строк земли до расходников *
+  `consumables_rate`.
+- Старый режим `legacy_fixed_amount` оставлен для совместимости со старыми workbook, где
+  `consumables_amount` уже приходит с листа 02.
+- В `sections/earthworks/section_contract.yaml` удален price key `consumables_amount`; добавлены
+  дефолты `consumables_calc_method` и `consumables_rate`, а строка сметы описана как calculated
+  amount.
+- В `defaults_catalog.yaml` и `estimate_line_catalog.yaml` земляные расходники больше не описываются
+  как production price/fallback.
+- В earthworks review-to-calculator builder добавлен выбор: если старый workbook все еще содержит
+  `consumables_amount`, используется legacy-режим; если строки цены нет, включается production
+  коэффициентный режим.
+
+### 55.3 Что проверить дальше
+
+Это первый раздел в серии. Следующие аналогичные проверки нужны для остальных coefficient rows:
+
+- логистика и снабжение;
+- технический надзор;
+- заготовительно-складские расходы;
+- накладные и общехозяйственные расходы;
+- сметная прибыль;
+- расходники/амортизация в разделах, где они пока еще временно описаны как fixed amount.
+
+### 55.4 Проверка универсальности
+
+Правка не содержит проектных количеств, адресов, названий домов и сметных итогов конкретных проектов.
+Единственное числовое значение — `consumables_rate`, бизнес-коэффициент из дефолтов, а не значение из
+PDF или готовой сметы конкретного дома.
+
+## 56. Production anti-cheat отложен, вместо него делаем audit gate (2026-08-03)
+
+Проверено текущее состояние:
+
+- старый `anti_cheat.py` реально существует и работает в earthworks-specific пайплайне;
+- в новом all-section `full_estimate_review_pipeline` универсального production anti-cheat сейчас
+  нет;
+- в `review_to_calculator/ADAPTER_BUILD_PLAN.md` старые lineage/anti-cheat/excel-export отчеты прямо
+  отмечены как отсутствующие в новой архитектуре на текущем этапе.
+
+Решение: универсальный `anti_cheat.py` для production пока не делать и не пытаться автоматически
+переносить старый earthworks anti-cheat на все 8 разделов.
+
+Текущий правильный слой контроля:
+
+- audit gate перед калькуляторами;
+- отчеты по found / needs_review / missing;
+- видимые notes/confidence в review workbook и служебных отчетах;
+- проверка обязательных цен и ручных значений;
+- loud fail в adapter/calculator, если обязательный input или цена отсутствуют.
+
+Когда adapters и final estimate export стабилизируются, универсальный anti-cheat можно будет
+спроектировать отдельно, но сейчас это не активная задача production.
+
+## 57. Confirmed coefficient estimate rows marked as calculated_amount (2026-08-03)
+
+### 57.1 Что сделали
+
+Следующим шагом после земли перевели уже подтвержденные коэффициентные строки из вида
+"фиксированная сумма" в вид "рассчитанная сумма" в контрактах/каталоге сметных строк.
+
+Земля уже была сделана раньше:
+
+- `earthworks.consumables` = `earthworks_direct_cost_base_before_consumables * consumables_rate`;
+- `consumables_rate = 0.03`.
+
+Этим шагом догнали разделы, где коэффициенты уже явно были в defaults/contract/calculator:
+
+- `waterproofing.waterproofing_logistics_and_supply` =
+  `waterproofing_base_subtotal * waterproofing_logistics_coeff`, коэффициент `0.02`;
+- `waterproofing.waterproofing_consumables_tool_amortization` =
+  `waterproofing_base_subtotal * waterproofing_consumables_coeff`, коэффициент `0.03`;
+- `floor_slab_1.logistics_and_supply` = `base_subtotal_raw * logistics_and_supply_percent`,
+  коэффициент `0.01`;
+- `floor_slab_1.consumables_tool_depreciation` = `base_subtotal_raw *
+  consumables_and_tool_percent`, коэффициент `0.03`;
+- `floor_slab_2.logistics_and_supply` = `direct_cost_base_before_addons_raw * logistics_rate`,
+  коэффициент `0.01`;
+- `floor_slab_2.consumables_tool_depreciation` = `direct_cost_base_before_addons_raw *
+  consumables_rate`, коэффициент `0.03`;
+- `schiedel_vent_channels.schiedel_consumables_tool_depreciation` =
+  `schiedel_direct_cost_base_before_consumables * consumables_rate`, коэффициент `0.03`.
+
+### 57.2 Где правили
+
+- `catalogs/estimate_line_catalog.yaml`: для перечисленных строк `line_kind` теперь
+  `calculated_amount`, `fixed_amount_key` убран.
+- `sections/waterproofing/section_contract.yaml`: формулы логистики и расходников записаны явно,
+  fixed amount key убран.
+- `sections/floor_slab_2/section_contract.yaml`: leaf inputs для логистики и расходников теперь
+  явно указывают на расчетную базу и коэффициент.
+- `sections/schiedel_vent_channels/section_contract.yaml`: расходники Schiedel больше не описаны
+  как fixed amount.
+
+### 57.3 Что сознательно не трогали
+
+Не переводили строки, где коэффициент еще не подтвержден:
+
+- фундаментная плита: логистика и расходники пока только помечены как будущие формулы, но проценты
+  не заведены;
+- стены/перемычки: расходники помечены как будущая формула, но процент не подтвержден;
+- кровля: расходники, логистика, технадзор и ЗСР помечены как будущие формулы, но точные проценты и
+  базы расчета еще надо отдельно подтвердить;
+- ЗСР, накладные и сметная прибыль по всем разделам не менялись этим шагом.
+
+### 57.4 Проверка
+
+- YAML прочитан для общего каталога и четырех измененных contracts.
+- `git diff --check` чистый.
+- В выбранных строках больше нет `fixed_amount_key` на старые рассчитанные суммы.

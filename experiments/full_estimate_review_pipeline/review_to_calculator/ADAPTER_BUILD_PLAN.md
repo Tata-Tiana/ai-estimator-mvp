@@ -30,6 +30,12 @@
   `review_to_calculator/sections/<section_code>/build_input.py`.
 - `calculator results -> final estimate workbook`: НЕ ГОТОВО для all-section сметы.
 
+Важное решение от 2026-08-03: универсальный `anti_cheat.py` в новый production-пайплайн пока не
+делаем. Старый earthworks anti-cheat остается референсом, но не переносится как обязательный слой.
+На текущем этапе нужен **audit gate** перед калькуляторами: явные blockers, проверки полноты листов
+`01`/`01-1`/`02`, notes/confidence/needs_review, и громкое падение adapter при отсутствии обязательных
+данных.
+
 Ближайший план для АРК:
 
 1. **Зафиксировать входы.**
@@ -54,6 +60,8 @@
    - Проверить sheet 01-1: какие manual/default-like values заполнены, какие остаются
      пустыми и должны быть заполнены Еленой.
    - Отдельно вывести blockers: поля, без которых adapter/calculator не должен стартовать.
+   - Не называть этот слой `anti_cheat` и не пытаться сейчас воспроизвести старый earthworks
+     `anti_cheat.py` для всех 8 разделов.
 
 4. **Передать workbook Елене / получить исправленный workbook обратно.**
    - Елена правит листы `01`, `01-1`, `02`.
@@ -360,7 +368,8 @@ tingly-wiggling-mountain.md`, если он ещё существует; кра�
 | `review_workbook_reader.py`, лист 03 (`read_details_sheet`, `build_trench_item`, `build_communication_item`) | **Антипример, не образец.** В earthworks лист 03 читался как источник данных для калькулятора (`trench_routes`/`communications_pipe_items` уходили прямо в calculator input). Теперь так делать нельзя — см. правило выше. Репитед-роу данные (арматура/балки/т.п.) читаются с листа 01 (после Этапа -1), лист 03 в `core/workbook_reader.py` не читается вовсе. |
 | `calculator_input_builder.py` → `build_calculator_input()` | **Не обобщается принципиально.** У каждого калькулятора свои имена полей и вложенность (пример: `floor_slab_1_calculator.py` — единственный с вложенной структурой `geometry/rates/insulation/beams/manual_lines`; `load_bearing_walls_lintels` — 9 разных `*_calc_method` с disjoint required-полями). Писать маленькую функцию на раздел, опираясь на `calculator_input_mapping` из соответствующего `section_contract.yaml` как на спецификацию. Дополнительно: earthworks-версия читала `trench_routes`/`communications_pipe_items` из sheet-03-данных — при переносе на новую архитектуру брать их из репитед-роу блоков листа 01, не с листа 03. |
 | `run_full_review_flow.py` (8-шаговый CLI-оркестратор) | Параметризуется по `section_code`, структура шагов переиспользуется. |
-| `anti_cheat.py`, `job_state.py`, `job_locator.py`, `build_job.py` | Вероятно обобщаются почти без изменений — не читала в деталях, проверить при реализации. |
+| `anti_cheat.py` | **Не переносить сейчас в production.** Старый earthworks anti-cheat оставить как reference; вместо него на текущем этапе делать audit gate и loud-fail adapters. |
+| `job_state.py`, `job_locator.py`, `build_job.py` | Вероятно обобщаются почти без изменений — не читала в деталях, проверить при реализации. |
 
 ## Целевая архитектура
 

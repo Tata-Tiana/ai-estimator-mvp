@@ -17,6 +17,21 @@ The important distinction:
 
 Do not confuse `AUTO_PROJECT` rows with final estimate rows.
 
+## Explicit Decision — No Universal Production Anti-Cheat For Now
+
+As of 2026-08-03, do not build or wire a universal `anti_cheat.py` gate into the new all-section
+production pipeline.
+
+There is an older earthworks-specific anti-cheat in `experiments/earthworks_review_to_calculator/`.
+It is useful as historical reference, but it must not be copied wholesale into the new 8-section
+pipeline. The current production direction is:
+
+- keep the Google review workbook human-readable and auditable;
+- use validation, coverage reports, notes reports, and explicit blockers;
+- fail adapters/calculators loudly when required reviewed values or prices are missing;
+- postpone a separate universal anti-cheat layer until the review workbook -> adapters -> final
+  estimate flow is stable.
+
 ## Canonical Pipeline
 
 The target pipeline is:
