@@ -2129,8 +2129,8 @@ sections:
         quantity:
           formula: "(parapet_masonry_volume_m3 + parapet_gas_block_d500_250_spec_volume_m3) when flat_roof_enabled"
           leaf_inputs:
-            - ref: "supplier_inputs.flat_roof_enabled"
-              source_class: MANUAL_REVIEW
+            - ref: "auto_calculated.flat_roof_enabled"
+              source_class: AUTO_CALCULATED
             - ref: "review_parameters.parapet_masonry_volume_m3"
               source_class: AUTO_PROJECT
             - ref: "review_parameters.parapet_gas_block_d500_250_spec_volume_m3"
@@ -2249,8 +2249,8 @@ sections:
               source_class: AUTO_PROJECT
             - ref: "defaults_catalog.sections.load_bearing_walls_lintels.defaults.vent_chimney_block_thickness_m"
               source_class: DEFAULT
-            - ref: "supplier_inputs.flat_roof_enabled"
-              source_class: MANUAL_REVIEW
+            - ref: "auto_calculated.flat_roof_enabled"
+              source_class: AUTO_CALCULATED
         prices:
           material_unit_price_key: null
           work_unit_price_key: "vent_chimney_cladding_work_unit_price"
@@ -2627,7 +2627,7 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_floor_slab_1_calculator
         quantity:
-          formula: "(edge_formwork_area_m2 + beams_formwork_area_m2) * timber_thickness_m + (((main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2) + overhang_sheet_equivalent) * additional_timber_coeff * additional_timber_thickness_m"
+          formula: "(edge_formwork_area_m2 + beams_formwork_area_m2) * timber_thickness_m + (((main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2) + legacy_overhang_sheet_equivalent_0) * additional_timber_coeff * additional_timber_thickness_m"
           leaf_inputs:
             - ref: "review_parameters.main_formwork_area_m2"
               source_class: AUTO_PROJECT
@@ -2641,8 +2641,8 @@ sections:
               source_class: DEFAULT
             - ref: "defaults_catalog.sections.floor_slab_1.defaults.plywood_sheet_working_area_m2"
               source_class: DEFAULT
-            - ref: "supplier_inputs.overhang_sheet_equivalent"
-              source_class: SUPPLIER_INPUT
+            - ref: "defaults_catalog.sections.floor_slab_1.defaults.overhang_sheet_equivalent"
+              source_class: DEFAULT
             - ref: "defaults_catalog.sections.floor_slab_1.defaults.additional_timber_coeff"
               source_class: DEFAULT
             - ref: "defaults_catalog.sections.floor_slab_1.defaults.additional_timber_thickness_m"
@@ -2653,7 +2653,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "timber_m3"
         zero_policy: not_expected
-        notes: "overhang_sheet_equivalent is supplier/manual until a universal formula is confirmed."
+        notes: "overhang_sheet_equivalent is a hidden legacy compatibility default of 0; ordinary plywood/timber stays calculated from project formwork areas."
 
       floor_slab_rebar_frame_assembly_control:
         code: "floor_slab_rebar_frame_assembly_control"
@@ -3672,13 +3672,12 @@ sections:
         line_kind: control
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "roof_area_level_1_m2 + roof_area_level_2_m2"
+          formula: "roof_area_total_m2"
           leaf_inputs:
-            - {ref: "review_parameters.roof_area_level_1_m2", source_class: AUTO_PROJECT}
-            - {ref: "review_parameters.roof_area_level_2_m2", source_class: AUTO_PROJECT}
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
         prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null, price_registry_code: null}
         zero_policy: allowed
-        notes: "Zero/internal control row for flat roof base preparation."
+        notes: "Zero/internal control row for flat roof base preparation. Production roof_area_total_m2 comes from roof_zones[]; old level fields are fallback only."
 
       vapor_barrier_installation:
         code: "vapor_barrier_installation"
@@ -3725,7 +3724,7 @@ sections:
             - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
         prices: {material_unit_price_key: null, work_unit_price_key: "eps_insulation_work_rate_per_m2", fixed_amount_key: null, price_registry_code: "roof_eps_insulation_installation_work_m2"}
         zero_policy: not_expected
-        notes: "Work price may include roof_work_coeff upstream; calculator takes reviewed combined rate."
+        notes: "Calculator takes reviewed combined work rate directly; legacy roof_work_coeff is not an active manual input."
 
       eps100_technonikol_carbon_eco:
         code: "eps100_technonikol_carbon_eco"
@@ -3755,11 +3754,11 @@ sections:
         quantity:
           formula: "ceil(eps50_supplier_required_volume_m3 / eps50_pack_volume_m3) * eps50_pack_volume_m3"
           leaf_inputs:
-            - {ref: "supplier_inputs.eps50_supplier_required_volume_m3", source_class: SUPPLIER_INPUT}
+            - {ref: "review_parameters.eps50_supplier_required_volume_m3", source_class: AUTO_PROJECT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.eps50_pack_volume_m3", source_class: DEFAULT}
         prices: {material_unit_price_key: "eps50_unit_price_per_m3", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_eps50_technonikol_carbon_eco_m3"}
         zero_policy: not_expected
-        notes: "Supplier/Technonikol required volume, not geometry-derived."
+        notes: "Project/specification roof EPS 50 mm volume, not a manual value."
 
       eps_slope_2_1_plate_a:
         code: "eps_slope_2_1_plate_a"

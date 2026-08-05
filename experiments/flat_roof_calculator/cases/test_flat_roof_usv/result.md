@@ -103,13 +103,13 @@ AI не используется для расчёта. Калькулятор �
 Формула:
 - roof_area_total_m2: `248.92`
 - rate_per_m2: `770`
-- rate_context: `likely eps_insulation_base_work_rate_per_m2 * roof_work_coeff`
+- rate_context: `reviewed combined work rate from price registry/review`
 
 Округление и итог:
 - Материалы raw/display: `0` / `0`
 - Работы raw/display: `191668.4` / `191 668`
 - Итого raw/display: `191668.4` / `191 668`
-- Примечание: Для текущего проекта ставка 770 вероятно равна 700 * roof_work_coeff 1.10.
+- Примечание: Ставка работы принимается как готовая проверенная ставка из прайса/ревью.
 
 ### 5. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (100мм)
 
@@ -151,7 +151,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `28361.67288` / `28 362`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `28361.67288` / `28 362`
-- Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
+- Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
 ### 7. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)
 
@@ -173,7 +173,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `41304.5568` / `41 305`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `41304.5568` / `41 305`
-- Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
+- Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
 ### 8. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)
 
@@ -195,7 +195,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `62604.0576` / `62 604`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `62604.0576` / `62 604`
-- Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
+- Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
 ### 9. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)
 
@@ -217,7 +217,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `15886.368` / `15 886`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `15886.368` / `15 886`
-- Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
+- Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
 ### 10. Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)
 
@@ -239,7 +239,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `17886.8736` / `17 887`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `17886.8736` / `17 887`
-- Примечание: supplier_required_volume_m3 берётся вручную от поставщика / Технониколь.
+- Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
 ### 11. Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м
 
@@ -415,22 +415,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `11000` / `11 000`
 - Итого raw/display: `21000` / `21 000`
 
-### 21. Пробивка отверстий в стенах из газоблока толщ.400мм
-
-- Код: `gas_block_wall_hole_drilling`
-- Тип строки: `work`
-- Ед. изм.: `шт`
-- Количество raw: `2`
-- Количество display: `2`
-- Источник количества: `gas_block_wall_holes_count`
-
-Округление и итог:
-- Материалы raw/display: `0` / `0`
-- Работы raw/display: `6000` / `6 000`
-- Итого raw/display: `6000` / `6 000`
-- Примечание: Ручная строка; количество отверстий не всегда равно количеству парапетных воронок.
-
-### 22. Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)
+### 21. Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)
 
 - Код: `internal_roof_drain_with_heating`
 - Тип строки: `material_and_work`
@@ -444,6 +429,21 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `15000` / `15 000`
 - Работы raw/display: `16500` / `16 500`
 - Итого raw/display: `31500` / `31 500`
+
+### 22. Пробивка отверстий в стенах из газоблока толщ.400мм
+
+- Код: `gas_block_wall_hole_drilling`
+- Тип строки: `work`
+- Ед. изм.: `шт`
+- Количество raw: `2`
+- Количество display: `2`
+- Источник количества: `gas_block_wall_holes_count`
+
+Округление и итог:
+- Материалы raw/display: `0` / `0`
+- Работы raw/display: `6000` / `6 000`
+- Итого raw/display: `6000` / `6 000`
+- Примечание: Special-case only: Elena 2026-07-30 confirmed this is not a standard roof work item.
 
 ### 23. Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)
 
@@ -489,7 +489,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `75297.06` / `75 297`
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `75297.06` / `75 297`
-- Примечание: temporarily uses provided raw total; base formula to be confirmed later.
+- Примечание: Uses provided legacy raw total.
 
 ### 26. Вывоз мусора с объекта
 
@@ -548,7 +548,7 @@ AI не используется для расчёта. Калькулятор �
 - Материалы raw/display: `0` / `0`
 - Работы raw/display: `15000` / `15 000`
 - Итого raw/display: `15000` / `15 000`
-- Примечание: Строка включена по сверке с серой зоной: 15 000 входит во внутреннюю себестоимость.
+- Примечание: Строка включена по сверке с серой зоной: это внутренняя себестоимость.
 
 ### 30. Накладные и общехозяйственные расходы
 
@@ -585,11 +585,8 @@ AI не используется для расчёта. Калькулятор �
 ## Warnings
 
 - project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.
-- Slope insulation plate volumes are supplier/Technonikol manual inputs, not geometry-derived values.
-- Roof consumables use provided raw total; base formula is to be confirmed later.
-- Logistics and supply uses provided raw total from the reviewed gray estimate.
-- Technical supervision uses provided gray work total from the reviewed estimate.
-- Procurement/storage uses provided gray work total from the reviewed estimate.
+- Slope insulation plate volumes are project/specification values; calculator field names keep supplier_required for compatibility.
+- Roof consumables/logistics/technical supervision/procurement-storage can be calculated by rates; legacy fixed totals are still accepted for old cases.
 
 ## Итоги
 

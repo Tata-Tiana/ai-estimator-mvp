@@ -1715,7 +1715,7 @@ sections:
         notes: "Filled from job metadata, not from PDF quantities."
 
       roof_geometry_calc_method:
-        value: "detailed_project_geometry"
+        value: "roof_zones"
         unit: ""
         source_class: METHOD_DEFAULT
         calculator_input_path: "roof_geometry_calc_method"
@@ -1723,10 +1723,10 @@ sections:
           - "flat_roof.roof_base_preparation_control"
           - "flat_roof.vapor_barrier_installation"
           - "flat_roof.eps_roof_insulation_installation"
-        source_note: "Production mode from flat roof section contract."
+        source_note: "Production default from flat roof section contract after roof_zones support."
         confidence: confirmed_from_contract
         allow_override: false
-        notes: "Use reviewed roof areas by level; project_spec_roof_area_m2 is control only."
+        notes: "Use reviewed roof_zones[] as primary geometry. Old roof_area_level_1/2 and level abutment fields are compatibility fallback only; project_spec_roof_area_m2 is control only."
 
       vapor_barrier_film_overlap_coeff:
         value: 1.15
@@ -2239,8 +2239,8 @@ not_defaults:
       belongs_to: "review sheet 01 / supplier input"
       estimate_line_code: "floor_slab_1.concrete_pump_32m"
     overhang_sheet_equivalent:
-      reason: "Manual/supplier input until a universal formula is confirmed."
-      belongs_to: "review sheet 01 / supplier input"
+      reason: "Hidden legacy compatibility default set to 0. Three-control-estimate check found no universal project/smeta row; ordinary plywood/timber is already calculated from formwork areas."
+      belongs_to: "defaults / legacy compatibility only"
       estimate_line_code: "floor_slab_1.formwork_timber_gost"
     technical_supervision_amount:
       reason: "Fixed amount / price key, not a formula default."
@@ -2284,8 +2284,8 @@ not_defaults:
       belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "floor_slab_2.rebar_items_dynamic"
     formwork_rental_supplier_quote_total:
-      reason: "Supplier/control value required by the calculator, not a formula default."
-      belongs_to: "review sheet 01 / supplier input"
+      reason: "Compatibility/control value required by the calculator, not a reusable default and not a manual value."
+      belongs_to: "adapter auto-calculated compatibility field"
       estimate_line_code: "floor_slab_2.formwork_rental_set"
     crane_shifts:
       reason: "Manual/supplier quantity, not a default."
@@ -2309,33 +2309,37 @@ not_defaults:
       estimate_line_code: "floor_slab_2.eps100_penoplex_material"
   flat_roof:
     roof_area_level_1_m2:
-      reason: "Project roof area by level, not a default."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project roof area by level, not a default. Primary production geometry is roof_zones[]."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.vapor_barrier_installation"
     roof_area_level_2_m2:
-      reason: "Project roof area by level, not a default. Use 0 only when the level is absent and reviewed."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project roof area by level, not a default. Primary production geometry is roof_zones[]."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.vapor_barrier_installation"
     project_spec_roof_area_m2:
-      reason: "Optional control value from project/specification, not a default and not a substitute for detailed roof geometry without review."
+      reason: "Optional control value from project/specification, not a default and not a substitute for roof_zones[] or reviewed fallback geometry."
       belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: null
     parapet_length_level_1_m:
-      reason: "Project parapet length, not a default."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project parapet length, not a default. Primary production geometry is roof_zones[].parapet_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
     parapet_length_level_2_m:
-      reason: "Project parapet length, not a default. Use 0 only when the level is absent and reviewed."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project parapet length, not a default. Primary production geometry is roof_zones[].parapet_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
     vent_wall_abutment_level_1_m:
-      reason: "Project abutment length, not a default."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project abutment length, not a default. Primary production geometry is roof_zones[].wall_abutment_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
     vent_wall_abutment_level_2_m:
-      reason: "Project abutment length, not a default. Use 0 only when the level is absent and reviewed."
-      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      reason: "Compatibility fallback project abutment length, not a default. Primary production geometry is roof_zones[].wall_abutment_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
       estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    roof_zones:
+      reason: "Primary project geometry for flat roof: zones/types/floors with area, parapet length, wall/VK/vent-channel abutment length, and operability. This is not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT repeated_rows"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
     roof_aerators_count:
       reason: "Project/spec count, not a default."
       belongs_to: "review sheet 01 / AUTO_PROJECT"
@@ -2357,12 +2361,12 @@ not_defaults:
       belongs_to: "review sheet 01 / details sheet 03"
       estimate_line_code: null
     roof_work_coeff:
-      reason: "Project/business supplier input, not a reusable default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Legacy diagnostic field only. Production uses reviewed combined work prices from price registry/review, not a separate manual roof work multiplier."
+      belongs_to: "hidden legacy / not manual input"
       estimate_line_code: "flat_roof.eps_roof_insulation_installation"
     eps50_supplier_required_volume_m3:
-      reason: "Supplier/Technonikol volume, not geometry-derived default."
-      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      reason: "Project/specification roof EPS 50 mm volume, not a reusable default or manual value."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
       estimate_line_code: "flat_roof.eps50_technonikol_carbon_eco"
     slope_plate_a_supplier_required_volume_m3:
       reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."

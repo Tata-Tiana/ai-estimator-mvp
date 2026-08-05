@@ -75,6 +75,13 @@ identical in every production test case) but its notes now document that it fans
   `roof_slope_plate_j_volume`, `roof_slope_plate_k_volume`; the calculator input names still contain
   `supplier_required_volume_m3` for compatibility, but the source class in the contract is
   `AUTO_PROJECT`.
+- 2026-08-03 update: `eps50_supplier_required_volume_m3` is also not a normal manual/supplier value.
+  Despite the legacy calculator input name, production expects it from the flat-roof PDF/material
+  specification via target `roof_eps50_volume`. It must not appear in `manual_values_registry.xlsx`.
+- 2026-08-04 update: the user-facing meaning is "ЭППС 50 мм кровли — объем по проекту/кровельной
+  спецификации". Accept both `CARBON ECO 50 мм` and `CARBON PROF 50 мм` naming variants, and allow
+  the source to be a roof specification, roof node, or roof layer/pie if the `м3` volume is explicit.
+  Do not infer the volume from a supplier/manual assumption.
 - 2026-08-03 update: `gas_block_wall_holes_count` is no longer an active parser target and is hidden
   from the normal manual-values registry. Elena confirmed this is not a standard work item except
   special projects; the calculator returns the line only when a positive count is explicitly supplied.
@@ -105,6 +112,7 @@ must not be counted as parser gaps.
 - `slope_plate_b_supplier_required_volume_m3`
 - `slope_plate_j_supplier_required_volume_m3`
 - `slope_plate_k_supplier_required_volume_m3`
+- `eps50_supplier_required_volume_m3`
 
 ## Repeated-row shape
 
@@ -123,10 +131,50 @@ must not be counted as parser gaps.
   when present; do not sum A/B/J/K into one scalar and do not invent a missing type.
 - The calculator field names for SLOPE still contain `supplier_required_volume_m3` for compatibility;
   the production source is the roof PDF/specification, not the manual-values sheet.
+- Roof EPS 50 mm volume is also a project/specification value (`roof_eps50_volume`), not a manual
+  value. ECO/PROF are naming variants of the same target when thickness is 50 mm and the context is
+  flat roof. Keep it distinct from foundation EPS 50 mm, slab-edge EPS, thermal inserts, and SLOPE
+  plates.
 - Linear roof abutments to walls/VK/vent channels go into the general abutment lengths in `м.п.`.
   Do not map those linear rows to `vent_shaft_abutment_count`.
 - Do not extract "Пробивка отверстий в стенах из газоблока" as a standard roof target. This is a
   hidden special-case/manual override only.
+
+## Roof zones as production geometry (2026-08-04)
+
+After the TRC recheck, the production path for flat roof geometry is `roof_zones[]`, not the old
+two-level scalar shape. The calculator already supports `roof_geometry_calc_method = "roof_zones"`:
+it sums every row's `area_m2` into the total roof area and every row's
+`parapet_length_m + wall_abutment_length_m` into the combined parapet/abutment length.
+
+Keep `roof_area_level_1_m2`, `roof_area_level_2_m2`, `parapet_length_level_1_m`,
+`parapet_length_level_2_m`, `vent_wall_abutment_level_1_m`, and `vent_wall_abutment_level_2_m` only as
+compatibility fallback fields for old/simple cases. Do not count them as missing blockers when
+`roof_zones[]` is present.
+
+For `roof_zones[]`:
+- `context` is the roof zone name exactly as printed on the roof sheet; do not borrow slab labels
+  like ПМ1/ПМ2 from other sheets.
+- `area_m2` is required.
+- `parapet_length_m` and `wall_abutment_length_m` are optional per zone; if the PDF has no such line
+  for a zone, leave the field empty/0 rather than inventing it.
+- Linear abutments to walls, VK, vent shafts, or vent channels belong in
+  `wall_abutment_length_m`, not in the legacy `vent_shaft_abutment_count`.
+- When a zone table gives wall abutments and VK/vent-channel/vent-shaft abutments as separate
+  linear-meter rows under the same zone column, the production value is their sum in that zone's
+  `wall_abutment_length_m`. Keep the components in notes/raw evidence.
+- Do not keep `roof_vent_wall_abutment_level_1/2` as a parallel live value when `roof_zones[]` is
+  present; those scalar fields are fallback only.
+- `operability` is `exploitable` only when the PDF explicitly says the zone is exploitable; otherwise
+  use `non_exploitable`.
+
+The contract and defaults catalog now default `roof_geometry_calc_method` to `roof_zones` as the
+preferred production path. Any future adapter/review-workbook reader must:
+1. use `roof_geometry_calc_method = "roof_zones"` and pass `roof_zones[]` through when at least one
+   reviewed roof-zone row exists;
+2. otherwise switch explicitly to the old reviewed fallback shape (`detailed_project_geometry` or
+   `legacy_totals`, depending on which fields are actually present);
+3. fail loudly only if neither roof zones nor fallback geometry exists.
 
 ## Calculator silent legacy default fixed (2026-07-11)
 

@@ -368,9 +368,9 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             formula={
                 "roof_area_total_m2": decimal_str(roof_area),
                 "rate_per_m2": input_data["eps_insulation_work_rate_per_m2"],
-                "rate_context": "likely eps_insulation_base_work_rate_per_m2 * roof_work_coeff",
+                "rate_context": "reviewed combined work rate from price registry/review",
             },
-            notes=["Для текущего проекта ставка 770 вероятно равна 700 * roof_work_coeff 1.10."],
+            notes=["Ставка работы принимается как готовая проверенная ставка из прайса/ревью."],
         )
     )
 
