@@ -282,14 +282,7 @@
         {"code": "roof_parapet_length_level_1", "label_ru": "Длина парапета, уровень 1", "unit": "linear_m", "grounded": true},
         {"code": "roof_parapet_length_level_2", "label_ru": "Длина парапета, уровень 2", "unit": "linear_m", "grounded": true},
         {"code": "roof_vent_wall_abutment_level_1", "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 1", "unit": "linear_m", "grounded": true, "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."},
-        {"code": "roof_vent_wall_abutment_level_2", "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 2", "unit": "linear_m", "grounded": true, "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."},
-        {"code": "roof_slope_plate_a_volume", "label_ru": "SLOPE плиты A — объем по спецификации", "unit": "m3", "grounded": true, "notes": "Проектная строка из спецификации кровли/разуклонки. Не ручной ввод; не придумывать, если тип A не указан."},
-        {"code": "roof_slope_plate_b_volume", "label_ru": "SLOPE плиты B — объем по спецификации", "unit": "m3", "grounded": true, "notes": "Проектная строка из спецификации кровли/разуклонки. Не ручной ввод; не придумывать, если тип B не указан."},
-        {"code": "roof_slope_plate_j_volume", "label_ru": "SLOPE плиты J — объем по спецификации", "unit": "m3", "grounded": true, "notes": "Проектная строка из спецификации кровли/разуклонки. Не ручной ввод; не придумывать, если тип J не указан."},
-        {"code": "roof_slope_plate_k_volume", "label_ru": "SLOPE плиты K — объем по спецификации", "unit": "m3", "grounded": true, "notes": "Проектная строка из спецификации кровли/разуклонки. Не ручной ввод; не придумывать, если тип K не указан."},
-        {"code": "roof_eps50_volume", "label_ru": "ЭППС 50 мм кровли — объем по проекту/кровельной спецификации", "unit": "m3", "grounded": true, "notes": "Проектная строка из спецификации, узла или пирога кровли. Принимать варианты CARBON ECO 50 мм и CARBON PROF 50 мм. Не ручной ввод и не требуемый объем поставщика; не придумывать, если в проектных кровельных данных нет явного объема ЭППС 50 мм в м3."},
-        {"code": "roof_aerators_count", "label_ru": "Количество кровельных аэраторов", "unit": "pcs", "grounded": true},
-        {"code": "roof_internal_drain_height_per_drain", "label_ru": "Высота внутреннего водостока на одну воронку", "unit": "m", "grounded": true}
+        {"code": "roof_vent_wall_abutment_level_2", "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 2", "unit": "linear_m", "grounded": true, "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."}
       ],
       "extract_groups": [
         {

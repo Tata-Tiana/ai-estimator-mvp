@@ -1428,89 +1428,17 @@ roof_zones:
 
 Added 2026-07-26 (real project case): a roof plan/spec page can carry its own zone labeling system (e.g. 'Тип А' + elevation mark) that is completely separate from any ПМ1/ПМ2-style slab identifiers used on a different page (masonry/slab plan) for the underlying floor_slab_1/floor_slab_2 structure — even though the roof sits at a slightly different elevation than the slab it covers (roof build-up adds thickness). Always take the zone `context` from the ROOF's own specification sheet, never from a slab/masonry plan's ПМ1/ПМ2 labeling, even if both refer to physically the same area of the building — they are different naming systems for different purposes (slab identity vs. roof material zone), do not merge or substitute one for the other."
 
-roof_slope_plate_a_volume:
-  section_code: flat_roof
-  ru_label: "SLOPE плиты A, объем по спецификации"
-  pdf_aliases: ["SLOPE плиты A", "плиты A SLOPE", "CARBON PROF SLOPE плиты A", "уклон 2,1% плиты A", "SLOPE A"]
-  expected_unit: m3
-  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
-  required_context: ["SLOPE|разуклон", "A|А|плит"]
-  negative_context: ["плиты B", "плиты В", "плиты J", "плиты K", "шт", "м2", "м.п"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["м3", "м³"]
-  notes: "Project/specification value for flat-roof slope plates. This is not a manual input. If the project lists SLOPE plates by type, map each type to its own target; do not sum A/B/J/K into one scalar."
-
-roof_slope_plate_b_volume:
-  section_code: flat_roof
-  ru_label: "SLOPE плиты B, объем по спецификации"
-  pdf_aliases: ["SLOPE плиты B", "плиты B SLOPE", "плиты В SLOPE", "CARBON PROF SLOPE плиты B", "уклон 2,1% плиты B", "SLOPE B"]
-  expected_unit: m3
-  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
-  required_context: ["SLOPE|разуклон", "B|В|плит"]
-  negative_context: ["плиты A", "плиты А", "плиты J", "плиты K", "шт", "м2", "м.п"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["м3", "м³"]
-  notes: "Project/specification value for flat-roof slope plates. Latin B and Cyrillic В can look identical in PDFs; keep raw_text/source."
-
-roof_slope_plate_j_volume:
-  section_code: flat_roof
-  ru_label: "SLOPE плиты J, объем по спецификации"
-  pdf_aliases: ["SLOPE плиты J", "плиты J SLOPE", "CARBON PROF SLOPE плиты J", "уклон 4,2% плиты J", "SLOPE J"]
-  expected_unit: m3
-  table_hints: ["План кровли", "Спецификация к плану кровли", "Спецификация материалов кровли", "Разуклонка"]
-  required_context: ["SLOPE|разуклон", "J|плит"]
-  negative_context: ["плиты A", "плиты А", "плиты B", "плиты В", "плиты K", "шт", "м2", "м.п"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["м3", "м³"]
-  notes: "Project/specification value for flat-roof slope plates. This is not a manual input."
-
-roof_slope_plate_k_volume:
-  section_code: flat_roof
-  ru_label: "SLOPE плиты K, объем по спецификации"
-  pdf_aliases: ["SLOPE плиты K", "плиты K SLOPE", "CARBON PROF SLOPE плиты K", "уклон 4,2% плиты K", "SLOPE K"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плану кровли", "План кровли"]
-  required_context: ["SLOPE|разуклон", "K|плит"]
-  negative_context: ["плиты A", "плиты А", "плиты B", "плиты В", "плиты J", "шт", "м2", "м.п"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["м3", "м³"]
-  notes: "Project/specification value for flat-roof slope plates. This is not a manual input."
-
-roof_eps50_volume:
-  section_code: flat_roof
-  ru_label: "ЭППС 50 мм кровли, объем по проекту/кровельной спецификации"
-  pdf_aliases: ["ЭППС 50 мм", "ЭППС 50мм", "Утеплитель ЭППС 50 мм", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO 50", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF 50", "CARBON ECO 50мм", "CARBON ECO (50мм)", "CARBON PROF 50мм", "CARBON PROF (50мм)", "CARBON PROF 50 мм"]
-  expected_unit: m3
-  table_hints: ["План кровли", "Узел кровли", "Кровельный пирог", "Спецификация к плану кровли", "Спецификация материалов кровли", "Кровельное покрытие"]
-  required_context: ["кровл|покрыт|утепл", "50"]
-  negative_context: ["фундамент", "плита фундамент", "стен фундамент", "торец плиты", "низ плиты", "под плитой", "термовставк", "SLOPE|разуклон"]
-  value_column_hint: ["кол-во", "количество", "объем"]
-  unit_column_hint: ["м3", "м³"]
-  notes: "Project/specification volume for flat-roof EPS 50 mm. Accept ECO/PROF naming variants. This is not a manual/supplier input. Keep distinct from foundation EPS 50 mm and from SLOPE plates."
-
-roof_aerators_count:
-  section_code: flat_roof
-  ru_label: "Количество кровельных аэраторов"
-  pdf_aliases: ["Кровельный аэратор", "Аэратор кровли", "Аэраторы", "Аэратор"]
-  expected_unit: pcs
-  table_hints: ["Спецификация к плану кровли", "План кровли"]
-  required_context: ["аэратор"]
-  negative_context: ["воронка", "вентканал"]
-  value_column_hint: ["кол-во", "количество"]
-  unit_column_hint: ["шт", "шт."]
-  notes: "Piece count only."
-
-roof_internal_drain_height_per_drain:
-  section_code: flat_roof
-  ru_label: "Высота внутреннего водостока на одну воронку"
-  pdf_aliases: ["Высота внутреннего водостока", "Высота стояка внутреннего водостока", "Внутренний водосток высота", "Воронка внутреннего водостока высота"]
-  expected_unit: m
-  table_hints: ["Узлы кровли", "Разрез кровли", "План кровли"]
-  required_context: ["водосток|воронк", "высот"]
-  negative_context: ["парапетная", "количество", "шт"]
-  value_column_hint: ["высота", "длина", "значение"]
-  unit_column_hint: ["м"]
-  notes: "Linear height per drain, not drain count."
+# Reverted 2026-08-05: roof_slope_plate_a/b/j/k_volume, roof_eps50_volume, roof_aerators_count,
+# roof_internal_drain_height_per_drain removed as extraction targets (were defined right below this
+# line until now). Direct check of all 3 real projects' KR2 PDFs (ARK/TRC/USV) found none print a
+# letter-split SLOPE volume or aerator count as extractable text — the SLOPE line is always one
+# undivided figure or "Уточнить у монтажной организации". Confirmed against Elena's real delivered
+# estimates (АРК для ИИ.xlsx, Сметный расчет ЮСВ): all of these are hand-typed fixed numbers from a
+# separate installer/"расчётная организация" calculation, not formulas from roof area/PDF geometry —
+# ЮСВ's own row label says so directly ("требуется расчет уклонов у расчетной организации"). These
+# are SUPPLIER_INPUT/manual fields in section_contract.yaml now (see its checks.notes for the full
+# evidence); do not ask the extraction model to find them, it would just churn on absent data and
+# hurt the found/missing statistics.
 
 roof_raw_material_spec_rows:
   section_code: flat_roof

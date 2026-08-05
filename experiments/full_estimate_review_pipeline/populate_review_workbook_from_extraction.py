@@ -569,10 +569,30 @@ def floor_slab_2_alternative_scalar(
     return None
 
 
+ROOF_ZONES_FALLBACK_ONLY_TARGETS = {
+    "roof_area_level_1",
+    "roof_area_level_2",
+    "roof_parapet_length_level_1",
+    "roof_parapet_length_level_2",
+    "roof_vent_wall_abutment_level_1",
+    "roof_vent_wall_abutment_level_2",
+}
+
+
 def flat_roof_alternative_scalar(
     target_code: str,
     found: dict[str, Any] | None,
+    found_groups: dict[str, list[Any]],
 ) -> tuple[Any, str, str, str, str] | None:
+    if target_code in ROOF_ZONES_FALLBACK_ONLY_TARGETS and group_items(found_groups, "roof_zones"):
+        return (
+            "",
+            "Не требуется (есть roof_zones)",
+            group_sources(found_groups, "roof_zones"),
+            "Fallback-поле уровня 1/2 не заполняется: площадь/парапет/примыкания уже пришли по зонам "
+            f"в roof_zones ниже. Строки: {group_fragments(found_groups, 'roof_zones')}",
+            min_group_confidence(found_groups, "roof_zones"),
+        )
     label = AUTO_SUM_CANDIDATE_TARGETS.get("flat_roof", {}).get(target_code)
     if not label:
         return None
@@ -991,7 +1011,7 @@ def build_project_sheet_from_extraction(
             if alternative_scalar is None and sec_code == "floor_slab_2":
                 alternative_scalar = floor_slab_2_alternative_scalar(target_code, found_groups)
             if alternative_scalar is None and sec_code == "flat_roof":
-                alternative_scalar = flat_roof_alternative_scalar(target_code, found)
+                alternative_scalar = flat_roof_alternative_scalar(target_code, found, found_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
                 found_value, status, source, fragment, confidence = alternative_scalar
