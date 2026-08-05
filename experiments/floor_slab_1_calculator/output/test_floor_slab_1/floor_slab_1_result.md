@@ -5,18 +5,18 @@
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1174469` |
-| `internal_works_total` | `583630` |
-| `internal_section_total` | `1758099` |
-| `base_subtotal_raw_before_overheads` | `1685672.300518` |
-| `logistics_and_supply_total` | `16857` |
-| `consumables_and_tool_depreciation_total` | `50570` |
+| `internal_materials_total` | `1174430` |
+| `internal_works_total` | `582654` |
+| `internal_section_total` | `1757084` |
+| `base_subtotal_raw_before_overheads` | `1684696.700518` |
+| `logistics_and_supply_total` | `16847` |
+| `consumables_and_tool_depreciation_total` | `50541` |
 | `technical_supervision_total` | `5000` |
 
 ## Comparison Summary
-- status: `ok`
-- ok: `194`
-- mismatch: `0`
+- status: `mismatch`
+- ok: `169`
+- mismatch: `25`
 
 ## Расчётные блоки
 | Показатель | Значение |
@@ -183,24 +183,24 @@
 | `insulation.edge_insulation_height_source` | `specification` |
 | `insulation.slab_outer_edge_length_m` | `84.8` |
 | `insulation.slab_outer_edge_eps_work_length_m` | `84.8` |
-| `insulation.insulated_beams_total_length_m` | `23.2` |
-| `insulation.beams_eps_work_length_m` | `23.2` |
-| `insulation.beams_eps_work_length_source` | `calculated_all_beams` |
+| `insulation.insulated_beams_total_length_m` | `0.0` |
+| `insulation.beams_eps_work_length_m` | `0.0` |
+| `insulation.beams_eps_work_length_source` | `not_provided` |
 | `insulation.calculated_all_beams_eps_work_length_m` | `23.2` |
-| `insulation.total_insulation_length_m` | `108.0` |
-| `insulation.edge_beam_eps_work_length_m` | `108.0` |
+| `insulation.total_insulation_length_m` | `84.8` |
+| `insulation.edge_beam_eps_work_length_m` | `84.8` |
 | `insulation.slab_edge_insulation_area_m2` | `15.264` |
 | `insulation.slab_edge_eps_material_area_m2` | `15.264` |
-| `insulation.beams_insulation_area_m2` | `10.516` |
-| `insulation.beams_eps_material_area_m2` | `10.516` |
-| `insulation.beams_eps_material_area_source` | `calculated_all_beams` |
+| `insulation.beams_insulation_area_m2` | `0.0` |
+| `insulation.beams_eps_material_area_m2` | `0.0` |
+| `insulation.beams_eps_material_area_source` | `not_provided` |
 | `insulation.calculated_all_beams_eps_material_area_m2` | `10.516` |
-| `insulation.edge_and_beam_insulation_area_m2` | `25.78` |
-| `insulation.edge_and_beam_eps_material_area_m2` | `25.78` |
-| `insulation.edge_and_beam_eps_volume_m3` | `2.578` |
-| `insulation.bottom_slab_eps_volume_m3` | `5.192` |
-| `insulation.bottom_slab_insulation_area_m2_raw` | `51.92` |
-| `insulation.bottom_slab_eps_work_area_m2` | `51.92` |
+| `insulation.edge_and_beam_insulation_area_m2` | `15.264` |
+| `insulation.edge_and_beam_eps_material_area_m2` | `15.264` |
+| `insulation.edge_and_beam_eps_volume_m3` | `1.5264` |
+| `insulation.bottom_slab_eps_volume_m3` | `6.2436` |
+| `insulation.bottom_slab_insulation_area_m2_raw` | `62.436` |
+| `insulation.bottom_slab_eps_work_area_m2` | `62.436` |
 | `insulation.total_insulation_area_m2` | `77.7` |
 | `insulation.foam_base_area_m2` | `77.7` |
 | `insulation.total_eps_volume_from_spec_m3` | `7.77` |
@@ -215,13 +215,13 @@
 | `insulation.order_eps_volume_m3_raw` | `8.319` |
 | `insulation.foam_cans_raw` | `7.77` |
 | `insulation.foam_cans_ordered` | `8` |
-| `overheads.base_subtotal_raw_before_overheads` | `1685672.300518` |
+| `overheads.base_subtotal_raw_before_overheads` | `1684696.700518` |
 | `overheads.logistics_and_supply_percent` | `0.01` |
-| `overheads.logistics_and_supply_total_raw` | `16856.723005` |
-| `overheads.logistics_and_supply_total` | `16857` |
+| `overheads.logistics_and_supply_total_raw` | `16846.967005` |
+| `overheads.logistics_and_supply_total` | `16847` |
 | `overheads.consumables_and_tool_percent` | `0.03` |
-| `overheads.consumables_and_tool_depreciation_total_raw` | `50570.169016` |
-| `overheads.consumables_and_tool_depreciation_total` | `50570` |
+| `overheads.consumables_and_tool_depreciation_total_raw` | `50540.901016` |
+| `overheads.consumables_and_tool_depreciation_total` | `50541` |
 | `manual_lines.concrete_pump_shifts` | `1` |
 | `manual_lines.technical_supervision_amount` | `5000` |
 | `control_metrics.control_geometry_area_m2` | `210.64` |
@@ -300,12 +300,12 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | --- | ---: |
 | `insulation_calc_method` | `legacy_fixed_edge_length` |
 | `slab_outer_edge_eps_work_length_m` | `84.8` |
-| `beams_eps_work_length_m` | `23.2` |
-| `edge_beam_eps_work_length_m` | `108.0` |
+| `beams_eps_work_length_m` | `0.0` |
+| `edge_beam_eps_work_length_m` | `84.8` |
 | `slab_edge_eps_material_area_m2` | `15.264` |
-| `beams_eps_material_area_m2` | `10.516` |
-| `edge_and_beam_eps_material_area_m2` | `25.78` |
-| `bottom_slab_eps_work_area_m2` | `51.92` |
+| `beams_eps_material_area_m2` | `0.0` |
+| `edge_and_beam_eps_material_area_m2` | `15.264` |
+| `bottom_slab_eps_work_area_m2` | `62.436` |
 | `total_eps_volume_from_spec_m3` | `7.77` |
 | `calculated_clean_eps_volume_m3` | `7.77` |
 | `eps_volume_delta_m3` | `0.0` |
@@ -342,17 +342,17 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `concrete_delivery` | Доставка бетона до объекта | `5.0` | `5.0` | `рейс` | `logistics_machinery` | `37500.0` | `37500` | `0.0` | `0` | `37500.0` | `37500` |
 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | `1.0` | `1.0` | `смена` | `machinery_fixed` | `38000.0` | `38000` | `0.0` | `0` | `38000.0` | `38000` |
 | `formwork_dismantling_zero_internal` | Демонтаж опалубки после завершения бетонирования | `207.64` | `207.6` | `м2` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
-| `edge_beam_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | `108.0` | `108.0` | `мп` | `work` | `0.0` | `0` | `48600.0` | `48600` | `48600.0` | `48600` |
-| `bottom_slab_insulation_work` | Устройство утепления низа плиты | `51.92` | `51.9` | `м2` | `work` | `0.0` | `0` | `46728.0` | `46728` | `46728.0` | `46728` |
+| `edge_beam_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | `84.8` | `84.8` | `мп` | `work` | `0.0` | `0` | `38160.0` | `38160` | `38160.0` | `38160` |
+| `bottom_slab_insulation_work` | Устройство утепления низа плиты | `62.436` | `51.9` | `м2` | `work` | `0.0` | `0` | `56192.4` | `56192` | `56192.4` | `56192` |
 | `eps_penoplex_osnova_100mm` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `8.319` | `8.32` | `м3` | `materials` | `75037.38` | `75037` | `0.0` | `0` | `75037.38` | `75037` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `8.0` | `8.0` | `баллон` | `materials_consumables` | `3920.0` | `3920` | `0.0` | `0` | `3920.0` | `3920` |
-| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16856.723005` | `16857` | `0.0` | `0` | `16856.723005` | `16857` |
-| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `50570.169016` | `50570` | `0.0` | `0` | `50570.169016` | `50570` |
+| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16846.967005` | `16847` | `0.0` | `0` | `16846.967005` | `16847` |
+| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `50540.901016` | `50541` | `0.0` | `0` | `50540.901016` | `50541` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
 
 ## Warnings / Notes
-- insulation.beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.
-- insulation.beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area.
+- insulation.beams_eps_work_length_m is not provided; beam EPS work length is treated as 0. Provide the explicit project value when beams are insulated.
+- insulation.beams_eps_material_area_m2 is not provided; beam EPS material area is treated as 0. Provide the explicit project value when beams are insulated.
 - `formwork_delivery_return_manipulator`: До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; более 180 м2: 2 привоза + 2 вывоза = 4 машины.
 - `formwork_rebar_crane_supply`: 3-я смена пока только manual_review / override.
 - `formwork_timber_gost`: Сумма считается от quantity_raw, не от отображаемого количества.
@@ -366,12 +366,12 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 ## Comparison
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
-| `totals.internal_materials_total` | `1174469` | `1174469` | `0` | `ok` |
-| `totals.internal_works_total` | `583630` | `583630` | `0` | `ok` |
-| `totals.internal_section_total` | `1758099` | `1758099` | `0` | `ok` |
-| `totals.base_subtotal_raw_before_overheads` | `1685672.300518` | `1685672.300518` | `0.0` | `ok` |
-| `totals.logistics_and_supply_total` | `16857` | `16857` | `0` | `ok` |
-| `totals.consumables_and_tool_depreciation_total` | `50570` | `50570` | `0` | `ok` |
+| `totals.internal_materials_total` | `1174469` | `1174430` | `-39` | `mismatch` |
+| `totals.internal_works_total` | `583630` | `582654` | `-976` | `mismatch` |
+| `totals.internal_section_total` | `1758099` | `1757084` | `-1015` | `mismatch` |
+| `totals.base_subtotal_raw_before_overheads` | `1685672.300518` | `1684696.700518` | `-975.6` | `mismatch` |
+| `totals.logistics_and_supply_total` | `16857` | `16847` | `-10` | `mismatch` |
+| `totals.consumables_and_tool_depreciation_total` | `50570` | `50541` | `-29` | `mismatch` |
 | `totals.technical_supervision_total` | `5000` | `5000` | `0` | `ok` |
 | `calculation_blocks.geometry.slab_concrete_volume_m3_raw` | `37.3752` | `37.3752` | `0.0` | `ok` |
 | `calculation_blocks.geometry.slab_concrete_volume_m3_display` | `37.38` | `37.38` | `0.0` | `ok` |
@@ -394,16 +394,16 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `calculation_blocks.concrete.concrete_volume_with_waste_m3_display` | `42.56` | `42.56` | `0.0` | `ok` |
 | `calculation_blocks.concrete.order_concrete_volume_m3` | `43` | `43` | `0` | `ok` |
 | `calculation_blocks.concrete.concrete_delivery_trips` | `5` | `5` | `0` | `ok` |
-| `calculation_blocks.insulation.total_insulation_length_m` | `108` | `108.0` | `0.0` | `ok` |
-| `calculation_blocks.insulation.edge_and_beam_insulation_area_m2` | `25.78` | `25.78` | `0.0` | `ok` |
-| `calculation_blocks.insulation.bottom_slab_insulation_area_m2_raw` | `51.92` | `51.92` | `0.0` | `ok` |
+| `calculation_blocks.insulation.total_insulation_length_m` | `108` | `84.8` | `-23.2` | `mismatch` |
+| `calculation_blocks.insulation.edge_and_beam_insulation_area_m2` | `25.78` | `15.264` | `-10.516` | `mismatch` |
+| `calculation_blocks.insulation.bottom_slab_insulation_area_m2_raw` | `51.92` | `62.436` | `10.516` | `mismatch` |
 | `calculation_blocks.insulation.total_insulation_area_m2` | `77.7` | `77.7` | `0.0` | `ok` |
 | `calculation_blocks.insulation.eps_packs_ordered` | `30` | `30` | `0` | `ok` |
 | `calculation_blocks.insulation.order_eps_volume_m3_raw` | `8.319` | `8.319` | `0.0` | `ok` |
 | `calculation_blocks.insulation.foam_cans_ordered` | `8` | `8` | `0` | `ok` |
-| `calculation_blocks.overheads.base_subtotal_raw_before_overheads` | `1685672.300518` | `1685672.300518` | `0.0` | `ok` |
-| `calculation_blocks.overheads.logistics_and_supply_total` | `16857` | `16857` | `0` | `ok` |
-| `calculation_blocks.overheads.consumables_and_tool_depreciation_total` | `50570` | `50570` | `0` | `ok` |
+| `calculation_blocks.overheads.base_subtotal_raw_before_overheads` | `1685672.300518` | `1684696.700518` | `-975.6` | `mismatch` |
+| `calculation_blocks.overheads.logistics_and_supply_total` | `16857` | `16847` | `-10` | `mismatch` |
+| `calculation_blocks.overheads.consumables_and_tool_depreciation_total` | `50570` | `50541` | `-29` | `mismatch` |
 | `estimate_lines.slab_formwork_installation_control.quantity_raw` | `207.64` | `207.64` | `0.0` | `ok` |
 | `estimate_lines.slab_formwork_installation_control.quantity_display` | `207.64` | `207.64` | `0.0` | `ok` |
 | `estimate_lines.slab_formwork_installation_control.material_total` | `0` | `0` | `0` | `ok` |
@@ -522,16 +522,16 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `estimate_lines.formwork_dismantling_zero_internal.material_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_dismantling_zero_internal.work_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.formwork_dismantling_zero_internal.line_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.quantity_raw` | `108` | `108.0` | `0.0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.quantity_display` | `108` | `108.0` | `0.0` | `ok` |
+| `estimate_lines.edge_beam_insulation_work.quantity_raw` | `108` | `84.8` | `-23.2` | `mismatch` |
+| `estimate_lines.edge_beam_insulation_work.quantity_display` | `108` | `84.8` | `-23.2` | `mismatch` |
 | `estimate_lines.edge_beam_insulation_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.work_total` | `48600` | `48600` | `0` | `ok` |
-| `estimate_lines.edge_beam_insulation_work.line_total` | `48600` | `48600` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.quantity_raw` | `51.92` | `51.92` | `0.0` | `ok` |
+| `estimate_lines.edge_beam_insulation_work.work_total` | `48600` | `38160` | `-10440` | `mismatch` |
+| `estimate_lines.edge_beam_insulation_work.line_total` | `48600` | `38160` | `-10440` | `mismatch` |
+| `estimate_lines.bottom_slab_insulation_work.quantity_raw` | `51.92` | `62.436` | `10.516` | `mismatch` |
 | `estimate_lines.bottom_slab_insulation_work.quantity_display` | `51.9` | `51.9` | `0.0` | `ok` |
 | `estimate_lines.bottom_slab_insulation_work.material_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.work_total` | `46728` | `46728` | `0` | `ok` |
-| `estimate_lines.bottom_slab_insulation_work.line_total` | `46728` | `46728` | `0` | `ok` |
+| `estimate_lines.bottom_slab_insulation_work.work_total` | `46728` | `56192` | `9464` | `mismatch` |
+| `estimate_lines.bottom_slab_insulation_work.line_total` | `46728` | `56192` | `9464` | `mismatch` |
 | `estimate_lines.eps_penoplex_osnova_100mm.quantity_raw` | `8.319` | `8.319` | `0.0` | `ok` |
 | `estimate_lines.eps_penoplex_osnova_100mm.quantity_display` | `8.32` | `8.32` | `0.0` | `ok` |
 | `estimate_lines.eps_penoplex_osnova_100mm.material_total_raw` | `75037.38` | `75037.38` | `0.0` | `ok` |
@@ -545,16 +545,16 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `estimate_lines.eps_glue_foam.line_total` | `3920` | `3920` | `0` | `ok` |
 | `estimate_lines.logistics_and_supply.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
 | `estimate_lines.logistics_and_supply.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_total_raw` | `16856.723005` | `16856.723005` | `0.0` | `ok` |
-| `estimate_lines.logistics_and_supply.material_total` | `16857` | `16857` | `0` | `ok` |
+| `estimate_lines.logistics_and_supply.material_total_raw` | `16856.723005` | `16846.967005` | `-9.756` | `mismatch` |
+| `estimate_lines.logistics_and_supply.material_total` | `16857` | `16847` | `-10` | `mismatch` |
 | `estimate_lines.logistics_and_supply.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.logistics_and_supply.line_total` | `16857` | `16857` | `0` | `ok` |
+| `estimate_lines.logistics_and_supply.line_total` | `16857` | `16847` | `-10` | `mismatch` |
 | `estimate_lines.consumables_tool_depreciation.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
 | `estimate_lines.consumables_tool_depreciation.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.material_total_raw` | `50570.169016` | `50570.169016` | `0.0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.material_total` | `50570` | `50570` | `0` | `ok` |
+| `estimate_lines.consumables_tool_depreciation.material_total_raw` | `50570.169016` | `50540.901016` | `-29.268` | `mismatch` |
+| `estimate_lines.consumables_tool_depreciation.material_total` | `50570` | `50541` | `-29` | `mismatch` |
 | `estimate_lines.consumables_tool_depreciation.work_total` | `0` | `0` | `0` | `ok` |
-| `estimate_lines.consumables_tool_depreciation.line_total` | `50570` | `50570` | `0` | `ok` |
+| `estimate_lines.consumables_tool_depreciation.line_total` | `50570` | `50541` | `-29` | `mismatch` |
 | `estimate_lines.technical_supervision.quantity_raw` | `1` | `1.0` | `0.0` | `ok` |
 | `estimate_lines.technical_supervision.quantity_display` | `1` | `1.0` | `0.0` | `ok` |
 | `estimate_lines.technical_supervision.material_total` | `0` | `0` | `0` | `ok` |

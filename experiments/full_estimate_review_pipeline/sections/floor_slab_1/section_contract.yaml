@@ -68,7 +68,7 @@ review_parameters:
     notes: "Added 2026-07-26 (real project case). Purely descriptive — calculator_input_path intentionally empty, never gates pricing/calculation. This slab still occupies the floor_slab_1 pipeline slot and is calculated there as usual regardless of this value. Do not confuse this slab's own PDF label (e.g. ПМ1) with roof zone identifiers used in flat_roof's roof_zones — those must come from the roof's own specification sheet, a separate labeling system even when it covers the same physical area."
 
   - key: slab_zones
-    label_ru: "Объём бетона по зонам плиты перекрытия 1-го этажа (альтернатива единому объёму)"
+    label_ru: "Объём бетона и опалубка по зонам плиты перекрытия 1-го этажа (альтернатива единым полям)"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -80,23 +80,27 @@ review_parameters:
     row_key_field: context
     production_input: true
     item_label_columns: [context]
-    correction_columns: [concrete_volume_m3]
+    correction_columns: [concrete_volume_m3, edge_perimeter_m, under_slab_formwork_area_m2, edge_and_beam_formwork_area_m2]
     columns:
       - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
       - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: edge_perimeter_m, label_ru: "Периметр торца зоны", unit: "мп", value_kind: number}
+      - {key: under_slab_formwork_area_m2, label_ru: "Опалубка под плитой зоны", unit: "м2", value_kind: number}
+      - {key: edge_and_beam_formwork_area_m2, label_ru: "Опалубка торца зоны (+ балок, если PDF даёт вместе)", unit: "м2", value_kind: number}
     parser_mapping:
       target_codes: ["slab_zones"]
       aliases_ru: []
       expected_unit: ""
-      notes: "NOT YET part of the live extraction prompt — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (real ТРЦ case: main slab 25.337 + kitchen/dining slab 5.975 m3, no printed sum). Same shape as foundation_slab's slab_zones."
+      notes: "NOT YET part of the live extraction prompt — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (real ТРЦ case: main slab 25.337 + kitchen/dining slab 5.975 m3, no printed sum). Same shape as foundation_slab's slab_zones. Formwork columns added 2026-08-05 (UNIVERSALIZATION_PLAN.md P1 follow-up) — see their own notes below."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Необязательная альтернатива total_concrete_volume_from_spec_m3 выше. Используйте, если PDF даёт бетон плиты несколькими зонами без общего итога — иначе оставьте пустым."
+      action_ru: "Необязательная альтернатива фиксированным полям объёма/опалубки выше. Используйте, если PDF даёт бетон и/или опалубку плиты несколькими зонами без общего итога — иначе оставьте пустым."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
+    formwork_notes: "Added 2026-08-05 (real ТРЦ case, Elena's idea): edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 are OPTIONAL per zone, but if any zone provides any of the three, ALL zones must provide ALL three (calculator raises otherwise — no silently-dropped zone). edge_and_beam_formwork_area_m2 is per-zone whatever the PDF actually gives for THAT zone's vertical formwork — pure slab edge only (no beams in that zone) for one zone, edge+beam merged-and-unsplittable for another zone, doesn't matter which per zone. Safe to just sum across zones because every downstream estimate line (installation, plywood, timber) already only ever reads the final combined total, never an edge/beam split — see calculate_formwork_areas_context's own note. This is exactly the real ТРЦ case: main zone gives one merged 36.6 m2 (torец плиты и ж/б балок, can't split), second zone (kitchen/dining) gives its own pure edge-only 5.6 m2 with no beams at all — the old flat scalar fields could only represent ONE of these two situations project-wide (mutual exclusion), not both at once across zones. When zones provide edge_perimeter_m, it REPLACES the flat slab_edge_perimeter_m requirement too (used for the geometry control-check multiplication, not for money)."
     notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all 9 pre-existing floor_slab_1_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES total_concrete_volume_from_spec_m3 above for this run (same convention as foundation_slab's slab_zones and load_bearing_walls_lintels' wall_block_items). Unlike foundation_slab, this calculator has no dataclass/validate() layer — the override and per-zone validation happen as plain checks inside calculate_floor_slab_1() itself. See p1_slab_zones_shipped memory. production_input corrected false -> true 2026-07-29, same class of bug as wall_block_items: floor_slab_1_calculator.py has read this group since the 2026-07-20 ship, the flag was just never updated to match, so it rendered as a dead single row on sheet 01 instead of a real per-item table. foundation_slab's own slab_zones already had production_input: true correctly."
 
   - key: slab_thickness_m
@@ -616,6 +620,7 @@ defaults:
   - {key: timber_thickness_m, label_ru: "Толщина пиломатериала для опалубки", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "rates.timber_thickness_m", source_note: "Catalog/formula default.", allow_override_later: true, notes: ""}
   - {key: additional_timber_coeff, label_ru: "Коэффициент дополнительного пиломатериала для доборов", source_class: DEFAULT, value: 0.1, unit: "", calculator_input_path: "rates.additional_timber_coeff", source_note: "Formula default from floor slab calculator production cases.", allow_override_later: true, notes: ""}
   - {key: additional_timber_thickness_m, label_ru: "Толщина дополнительного пиломатериала для доборов", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "rates.additional_timber_thickness_m", source_note: "Catalog/formula default from floor slab calculator production cases.", allow_override_later: true, notes: ""}
+  - {key: overhang_sheet_equivalent, label_ru: "Legacy-эквивалент листов фанеры для свесов и доборов", source_class: DEFAULT, value: 0, unit: "лист", calculator_input_path: "rates.overhang_sheet_equivalent", source_note: "Legacy compatibility default. Three-control-estimate check 2026-08-04 found no universal project/smeta row for this field; ordinary plywood/timber is already calculated from formwork areas.", allow_override_later: false, exclude_from_manual_values_registry: true, notes: "Do not show on manual sheet 01-1. If a future universal method for overhang/additional timber is approved, add it symmetrically instead of using the old project-specific fallback."}
   - {key: logistics_and_supply_percent, label_ru: "Коэффициент логистики и снабжения", source_class: DEFAULT, value: 0.01, unit: "", calculator_input_path: "overheads.logistics_and_supply_percent", source_note: "Business overhead default.", allow_override_later: true, notes: ""}
   - {key: consumables_and_tool_percent, label_ru: "Коэффициент расходников и амортизации", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "overheads.consumables_and_tool_percent", source_note: "Business overhead default.", allow_override_later: true, notes: ""}
 
@@ -667,22 +672,6 @@ supplier_inputs:
       status_if_missing: "manual_required"
       action_ru: "Укажите смены бетононасоса."
     notes: "Fixed/manual line; do not compute from concrete volume."
-
-  - key: overhang_sheet_equivalent
-    label_ru: "Эквивалент листов фанеры для свесов и доборов"
-    unit: "лист"
-    source_class: SUPPLIER_INPUT
-    required: true
-    review_sheet: "01_Проверка проекта"
-    calculator_input_path: "rates.overhang_sheet_equivalent"
-    normalized_json_path: "sections.floor_slab_1.supplier_inputs.overhang_sheet_equivalent.value"
-    value_kind: scalar
-    review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Укажите эквивалент листов фанеры для свесов и доборов; не брать проектный fallback как универсальный дефолт."
-    notes: "Calculator requires rates.overhang_sheet_equivalent. Existing fallback values look project/template-specific, so keep as manual/supplier input until Elena confirms a universal formula."
 
 calculator_input_mapping:
   - input_path: "*"
@@ -802,7 +791,7 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=formwork_timber_gost]"
     quantity:
-      formula: "(edge_formwork_area_m2 + beams_formwork_area_m2) * timber_thickness_m + (((main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2) + overhang_sheet_equivalent) * additional_timber_coeff * additional_timber_thickness_m"
+      formula: "(edge_formwork_area_m2 + beams_formwork_area_m2) * timber_thickness_m + (((main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2) + legacy_overhang_sheet_equivalent_0) * additional_timber_coeff * additional_timber_thickness_m"
       leaf_inputs:
         - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
         - {ref: "review_parameters.edge_formwork_area_m2", source_class: AUTO_PROJECT}
@@ -810,12 +799,12 @@ estimate_lines:
         - {ref: "defaults.timber_thickness_m", source_class: DEFAULT}
         - {ref: "defaults.non_multiple_places_coeff", source_class: DEFAULT}
         - {ref: "defaults.plywood_sheet_working_area_m2", source_class: DEFAULT}
-        - {ref: "supplier_inputs.overhang_sheet_equivalent", source_class: SUPPLIER_INPUT}
+        - {ref: "defaults.overhang_sheet_equivalent", source_class: DEFAULT}
         - {ref: "defaults.additional_timber_coeff", source_class: DEFAULT}
         - {ref: "defaults.additional_timber_thickness_m", source_class: DEFAULT}
     prices: {material_unit_price_key: timber_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "overhang_sheet_equivalent is manual/supplier until a universal formula is approved."
+    notes: "overhang_sheet_equivalent is a hidden legacy compatibility default of 0. Ordinary plywood/timber stays calculated from project formwork areas; no project-specific fallback is used."
 
   - code: floor_slab_rebar_frame_assembly_control
     name_ru: "Изготовление и монтаж каркаса армирования перекрытия из арматуры"

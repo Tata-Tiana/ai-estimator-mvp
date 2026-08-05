@@ -1,0 +1,26 @@
+{
+  "calculation_blocks": {
+    "slab_zones": {
+      "used": true,
+      "zone_count": 2
+    },
+    "geometry": {
+      "slab_edge_perimeter_m": 77.8,
+      "edge_formwork_height_m": 0.18
+    },
+    "formwork": {
+      "formwork_areas_source": "spec_formwork_areas_combined_edge_and_beam",
+      "main_formwork_area_m2": 122.16,
+      "slab_formwork_area_m2": 122.16,
+      "edge_formwork_area_m2": null,
+      "beams_formwork_area_m2": null,
+      "edge_and_beam_formwork_area_combined_m2": 42.2,
+      "edge_and_beam_formwork_area_m2": 42.2
+    }
+  },
+  "totals": {
+    "internal_materials_total": 1045886,
+    "internal_works_total": 582654,
+    "internal_section_total": 1628540
+  }
+}

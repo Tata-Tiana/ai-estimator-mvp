@@ -449,6 +449,8 @@ def calculate_formwork_areas_context(
     calculated_edge_formwork_area: Decimal | None,
     calculated_beams_formwork_area: Decimal | None,
     warnings: list[str],
+    zone_main_formwork_area: Decimal | None = None,
+    zone_edge_and_beam_formwork_area: Decimal | None = None,
 ) -> dict[str, Any]:
     method = input_data.get("formwork_areas_calc_method")
     if method not in {"legacy_calculated_from_geometry", "spec_formwork_areas"}:
@@ -476,7 +478,11 @@ def calculate_formwork_areas_context(
         beams_formwork_area = calculated_beams_formwork_area
         source = "legacy_calculated_from_geometry"
     else:
-        main_formwork_area = first_optional_decimal(
+        # slab_zones[]-derived formwork sums (2026-08-05) win over both input_data and geometry_in
+        # when present, same precedence as slab_zones' own concrete_volume_m3 override elsewhere in
+        # this file — see calculate_floor_slab_1's zone-formwork block for why summing across zones
+        # is safe (every downstream line only reads the final combined total).
+        main_formwork_area = zone_main_formwork_area if zone_main_formwork_area is not None else first_optional_decimal(
             (input_data, "main_formwork_area_m2"),
             (geometry_in, "main_formwork_area_m2"),
         )
@@ -487,15 +493,19 @@ def calculate_formwork_areas_context(
         # plywood sheets, timber volume) already reads only the edge+beams SUM, never the two parts
         # separately for money math — so accepting the merged figure directly is safe. When absent,
         # behavior is byte-for-byte identical to before.
-        edge_and_beam_formwork_area_combined = first_optional_decimal(
-            (input_data, "edge_and_beam_formwork_area_combined_m2"),
-            (geometry_in, "edge_and_beam_formwork_area_combined_m2"),
+        edge_and_beam_formwork_area_combined = (
+            zone_edge_and_beam_formwork_area
+            if zone_edge_and_beam_formwork_area is not None
+            else first_optional_decimal(
+                (input_data, "edge_and_beam_formwork_area_combined_m2"),
+                (geometry_in, "edge_and_beam_formwork_area_combined_m2"),
+            )
         )
-        edge_formwork_area = first_optional_decimal(
+        edge_formwork_area = None if zone_edge_and_beam_formwork_area is not None else first_optional_decimal(
             (input_data, "edge_formwork_area_m2"),
             (geometry_in, "edge_formwork_area_m2"),
         )
-        beams_formwork_area = first_optional_decimal(
+        beams_formwork_area = None if zone_edge_and_beam_formwork_area is not None else first_optional_decimal(
             (input_data, "beams_formwork_area_m2"),
             (geometry_in, "beams_formwork_area_m2"),
         )
@@ -701,7 +711,49 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     slab_thickness = d(geometry_in["slab_thickness_m"])
     slab_concrete_volume = total_concrete_volume - beams_concrete_volume
     calculated_main_formwork_area = slab_concrete_volume / slab_thickness
-    calculated_edge_formwork_area = d(geometry_in["slab_edge_perimeter_m"]) * d(geometry_in["edge_formwork_height_m"])
+
+    # slab_zones[]-level formwork (2026-08-05, Elena's idea): purely additive alternative to the
+    # flat slab_edge_perimeter_m/main_formwork_area_m2/edge_and_beam_formwork_area_combined_m2
+    # scalars below. Optional per zone, but once any zone gives any of the three fields, every zone
+    # must give all three (no silently-dropped zone). Real ТРЦ case this fixes: the flat scalars can
+    # only represent ONE project-wide situation (either a clean edge/beam split, or one merged
+    # edge+beam number) — but this project has BOTH at once across its two zones: the main zone's
+    # vertical formwork is one unsplittable merged number (torец плиты + балки), while the second
+    # (kitchen/dining) zone gives its own pure edge-only number with no beams at all. Each zone's
+    # edge_and_beam_formwork_area_m2 already represents whatever mix applies to THAT zone - summing
+    # across zones is safe because calculate_formwork_areas_context only ever needs the final total.
+    zone_formwork_fields = ("edge_perimeter_m", "under_slab_formwork_area_m2", "edge_and_beam_formwork_area_m2")
+    zones_have_formwork = any(zone.get(f) is not None for zone in slab_zones_in for f in zone_formwork_fields)
+    zone_edge_perimeter_m: Decimal | None = None
+    zone_main_formwork_area_m2: Decimal | None = None
+    zone_edge_and_beam_formwork_area_m2: Decimal | None = None
+    if zones_have_formwork:
+        for zone in slab_zones_in:
+            for field in zone_formwork_fields:
+                if zone.get(field) is None:
+                    raise ValueError(
+                        f"slab_zones.{zone['context']}.{field} is required once any zone provides "
+                        "zone-level formwork data (all zones must give all three formwork fields, "
+                        "not just some — otherwise a zone's real area would be silently dropped)"
+                    )
+                if d(zone[field]) < D0:
+                    raise ValueError(f"slab_zones.{zone['context']}.{field} must be >= 0")
+        zone_edge_perimeter_m = dec_sum([d(zone["edge_perimeter_m"]) for zone in slab_zones_in])
+        zone_main_formwork_area_m2 = dec_sum([d(zone["under_slab_formwork_area_m2"]) for zone in slab_zones_in])
+        zone_edge_and_beam_formwork_area_m2 = dec_sum(
+            [d(zone["edge_and_beam_formwork_area_m2"]) for zone in slab_zones_in]
+        )
+
+    slab_edge_perimeter_m = zone_edge_perimeter_m if zone_edge_perimeter_m is not None else d(geometry_in["slab_edge_perimeter_m"])
+    # edge_formwork_height_m: control-calc-only input (never money-critical, see its two usages
+    # below). Added 2026-08-05: falls back to slab_thickness_m when not given a value of its own,
+    # matching this field's own documented behavior ("если отдельной строки нет, она принимается
+    # равной толщине плиты") - previously this fallback was only described in the contract, never
+    # actually implemented, so a real project without this line would hard-crash with a KeyError.
+    edge_formwork_height_m = geometry_in.get("edge_formwork_height_m")
+    if edge_formwork_height_m is None:
+        edge_formwork_height_m = geometry_in["slab_thickness_m"]
+    calculated_edge_formwork_area = slab_edge_perimeter_m * d(edge_formwork_height_m)
     calculated_beams_formwork_area = beams_formwork_area
     formwork_area_warnings: list[str] = []
     formwork_areas_context = calculate_formwork_areas_context(
@@ -711,6 +763,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         calculated_edge_formwork_area,
         calculated_beams_formwork_area,
         formwork_area_warnings,
+        zone_main_formwork_area=zone_main_formwork_area_m2,
+        zone_edge_and_beam_formwork_area=zone_edge_and_beam_formwork_area_m2,
     )
     slab_formwork_area = d(formwork_areas_context["slab_formwork_area_m2"])
     edge_formwork_area_ctx = formwork_areas_context["edge_formwork_area_m2"]
@@ -1121,8 +1175,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "slab_concrete_volume_m3_display": display_decimal(slab_concrete_volume),
             "slab_formwork_area_m2": display_decimal(slab_formwork_area),
             "slab_control_geometry_area_m2": geometry_in["slab_control_geometry_area_m2"],
-            "slab_edge_perimeter_m": geometry_in["slab_edge_perimeter_m"],
-            "edge_formwork_height_m": geometry_in["edge_formwork_height_m"],
+            "slab_edge_perimeter_m": round_decimal(slab_edge_perimeter_m),
+            "edge_formwork_height_m": round_decimal(d(edge_formwork_height_m)),
         },
         "beams": {
             "items": beam_items,
