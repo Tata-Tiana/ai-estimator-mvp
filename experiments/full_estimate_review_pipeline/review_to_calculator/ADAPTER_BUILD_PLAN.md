@@ -547,13 +547,86 @@ experiments/full_estimate_review_pipeline/review_to_calculator/
 последнем `price_registry_filled_v4.xlsx`, затем пройти audit gate из раздела
 "Актуальный план сборки сметы по АРК" выше.
 
-- [ ] Раздел-пилот: **waterproofing** (самый маленький калькулятор, 8 строк сметы,
+- [x] Раздел-пилот: **waterproofing** (самый маленький калькулятор, 8 строк сметы,
       плоский вход, 0 обязательных supplier_inputs, уже 0 mismatch на всех тестах).
       Цель — проверить весь core/ end-to-end на дешёвом случае, прежде чем писать
       остальные 7 `build_input.py`.
-- [ ] `sections/waterproofing/build_input.py` написан.
-- [ ] Прогнан против `experiments/waterproofing_calculator/cases/*/expected.json` —
-      0 mismatch.
+- [x] `sections/waterproofing/build_input.py` написан.
+- [x] Прогнан против `experiments/waterproofing_calculator/cases/test_waterproofing_
+      spec_area/expected.json` — 0 mismatch (`calculation_blocks` и `estimate_lines`
+      оба сверены программно, не на глаз).
+
+**ЭТАП 1 ЗАКРЫТ 2026-08-05.** Первый в проекте реально работающий путь
+«заполненная таблица → вход калькулятора → результат» подтверждён сквозным прогоном
+(`core.job_runner`-эквивалент вручную: `read_review_workbook` →
+`resolve_prices` → `build_calculator_input` → `WaterproofingInput.from_dict` →
+`calculate_waterproofing`). Три находки по ходу:
+
+1. **Реальный (пока не сработавший) баг в `core/workbook_reader.py`, исправлен**:
+   `CORRECTION_COLUMN_LETTERS`/`JSON_COLUMN_LETTER` были захардкожены под
+   13-колоночный лист 01 (N-Q + R) от 2026-07-13 — с тех пор лист вырос до 14 колонок
+   (добавился `target_code`), реальные позиции сейчас O-R + S. На waterproofing не
+   сработал (у неё нет ни одной `repeated_rows`-группы), но сломал бы каждый
+   следующий раздел с арматурой/балками молча (не тот столбец, не то поле). Исправлено
+   и сверено напрямую с `build_review_workbook_from_contracts.py`'s
+   `PROJECT_HEADERS`/`ITEM_BLOCK_HEADERS`, не подбором.
+2. **`project_name` — добавлено чтение**: `core/workbook_reader.py` вообще не читал
+   его никак. Добавлена `read_project_name(wb)` — берёт заголовок листа 01 (A1,
+   `"Разбор проекта: <адрес>"`, пишется `populate_review_workbook_from_extraction.py`),
+   срезает префикс. Общий код в `core/`, не костыль в одном `build_input.py`.
+3. **Найден и ЗАКРЫТ реальный, уже задокументированный пробел в контракте** (не баг
+   адаптера): `eps50_pack_volume_m3`'s `defaults.value` был буквально `None`, с
+   пометкой «not yet resolved», тот же пробел был и у `foundation_slab`. Проверила в
+   3 реальных сметах подряд (АРК для ИИ.xlsx строка 108, Сметный расчет ЮСВ строки
+   55-56, ТРЦ_3_точный_расчет строки 74-75) — объём пачки Пеноплэкс ГЕО буквально
+   `0,2776` м3 в каждом случае, одинаковый и для 50мм, и для 100мм слоя (тот же
+   физический короб упаковки, просто разное количество листов внутри). Вписано в оба
+   контракта (`waterproofing`, `foundation_slab`) 2026-08-05. Пилот перепрогнан целиком
+   через `core.job_runner.run_section()` без единого ручного патча — 0 расхождений
+   подтверждены заново.
+
+**Освежённый конкретный план (2026-08-05), после чтения `WaterproofingInput`
+(~26 полей, плоский dataclass с `from_dict()`), `section_contract.yaml`'s
+`calculator_input_mapping` и `core/`'s реального API:**
+
+1. Таблица соответствия полей `WaterproofingInput` → источник:
+   - 4 поля из `review_parameters` (через `normalized_review["scalar_parameters"][key]
+     ["value_number"]`): `waterproofing_area_m2` (required), `eps100_wall_volume_m3`
+     (required), `eps100_wall_insulation_area_m2` (optional), `eps50_wall_volume_m3`
+     (optional, null когда отсутствует — не 0, см. поле notes в контракте).
+   - `waterproofing_area_calc_method` — фиксированно `"spec_area"` (contract fallback).
+   - `project_name` — спецтрансформ `job_metadata_project_name`. **Открытый вопрос**:
+     `core/workbook_reader.py`'s `read_review_workbook()` вообще не читает
+     project_name — нет такого источника в `normalized_review`. Решить до/во время
+     написания `build_input.py` (варианты: читать из листа `00_Конструктор сметы`,
+     передавать отдельным параметром в `run_section()`, или как временную заглушку
+     взять имя файла книги — выбрать самый дешёвый вариант, не изобретать новый слой
+     контракта ради одного поля).
+   - Остальные ~20 полей (цены, коэффициенты, объёмы упаковки) — механически из
+     `contract_loader.defaults(contract)`/`default_by_key(contract)` и из
+     `normalized_review["resolved_prices"]` по совпадению имени ключа с именем поля
+     dataclass (проверено по `calculator_input_mapping`'s wildcard-запись
+     `input_path: "*", from: {ref: "defaults + price_keys"}, transform:
+     fill_remaining_calculator_fields` — так и назван transform в контракте, эта
+     функция и есть его реализация).
+2. Написать `sections/waterproofing/build_input.py`:
+   `build_calculator_input(normalized_review: dict) -> dict`. Подгружает контракт сам
+   (`core.contract_loader.load_contract("waterproofing")`), не полагается на то, что
+   `normalized_review` несёт дефолты/цены-по-ключу — там только то, что реально
+   прочитано с листов 01/02 плюс `resolved_prices`, добавленные `job_runner.py`.
+3. Прогнать через `core.job_runner.run_section("waterproofing", <path>)` на копии
+   пустого шаблона книги (`output/step_12_all_sections_review_template.xlsx` или
+   свежесобранный аналог), куда вручную вписаны те же значения, что в
+   `experiments/waterproofing_calculator/cases/test_waterproofing_spec_area/input.json`
+   (готовый реальный тест-кейс калькулятора, `spec_area`-метод, 0 mismatch) — построчно
+   на листы 01 (значения) и 02 (цены).
+4. Сравнить `result` с `cases/test_waterproofing_spec_area/expected.json` — 0
+   расхождений = адаптер верный. При необходимости повторить со вторым кейсом
+   (`test_waterproofing_foundation_slab`, `legacy_perimeter_height` метод) для
+   уверенности, что оба `waterproofing_area_calc_method` пути работают.
+5. Отметить чекбоксы выше, задокументировать паттерн (явные review_parameters +
+   механический defaults/price fallback по имени поля) как образец для следующих 7
+   `build_input.py` — но не обобщать сам код раньше времени, только паттерн/подход.
 
 ### Этап 2 — раскатка на оставшиеся 7 (порядок — от простого к сложному)
 

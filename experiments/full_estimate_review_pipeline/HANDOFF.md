@@ -1045,14 +1045,37 @@ Completed (checklist above under-reports this — verified against files on disk
   carefully: some checks are against real extraction JSON, some are structural parser/contract/
   calculator-name checks. The remaining sections still need the same pass.
 
+2026-08-05 update: Этап 1 of `review_to_calculator/ADAPTER_BUILD_PLAN.md` is now DONE — the
+first-ever working review-workbook-to-calculator-result path exists, for `waterproofing`:
+`sections/waterproofing/build_input.py` written, run end to end (`workbook_reader.py` →
+`price_resolver.py` → `build_calculator_input()` → `WaterproofingInput.from_dict()` →
+`calculate_waterproofing()`), 0 mismatch against `cases/test_waterproofing_spec_area/
+expected.json` (calculation_blocks AND estimate_lines both compared programmatically). Also
+fixed a real latent column-position bug in `core/workbook_reader.py` (stale N-Q+R from a
+13-column sheet 01, current layout is O-R+S — didn't affect waterproofing since it has no
+repeated_rows groups, but would have silently broken every section with rebar/beams) and added
+`read_project_name()` (sheet 01's own title, previously not read by `core/` at all). See
+`ADAPTER_BUILD_PLAN.md`'s Этап 1 section for the full writeup. Also closed the one open
+contract gap found along the way: `eps50_pack_volume_m3` default was `None` in both
+`waterproofing` and `foundation_slab` — checked 3 real delivered estimates (АРК для ИИ.xlsx,
+Сметный расчет ЮСВ, ТРЦ_3_точный_расчет), Пеноплэкс ГЕО pack volume is identically 0.2776 m3
+for both 50mm and 100mm layers in every case (same physical package, different board count).
+Filled into both contracts; pilot re-verified end to end via `core.job_runner.run_section()`
+with zero manual patches — still 0 mismatch.
+
 Next:
 
 - Continue Cross-Check Stage for the remaining sections, per the no-value-leakage rule.
-- Steps 7 and 9 (multi-section normalized review JSON; waterproofing review-to-calculator adapter)
-  are still genuinely not started — do not assume the contract work above means the
-  adapter/normalized-JSON layer exists too. It doesn't yet.
+- Этап 2: repeat `build_input.py` for the remaining 7 sections, easiest-to-hardest order
+  already chosen in `ADAPTER_BUILD_PLAN.md`: `earthworks` (has an old reference to adapt) →
+  `schiedel_vent_channels` → `foundation_slab` → `floor_slab_2` → `floor_slab_1` → `flat_roof`
+  → `load_bearing_walls_lintels` (hardest, 9 `*_calc_method` modes).
+- Still not built at all: the shared final-estimate-workbook exporter that combines all 8
+  sections' `estimate_lines` into one smeta (Step 9/final step of the canonical pipeline).
 
-Do not start coding all 8 sections' adapters at once.
+Do not start coding all remaining 7 sections' adapters at once — one at a time, verified
+against that section's own `cases/*/expected.json` before moving to the next, same as the
+waterproofing pilot.
 
 ## Current Note 2026-08-04: flat roof vent-channel abutments
 
