@@ -9,6 +9,7 @@ from typing import Any
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 
@@ -18,7 +19,7 @@ DEFAULT_OUTPUT = PIPELINE_DIR / "output" / "step_12_all_sections_review_template
 
 FONT_NAME = "Arial"
 FILL_HEADER = PatternFill("solid", fgColor="D9D9D9")
-FILL_SECTION = PatternFill("solid", fgColor="E7E6E6")
+FILL_SECTION = PatternFill("solid", fgColor="C5CAE9")  # light indigo — 2026-08-04 design request
 FILL_FOUND = PatternFill("solid", fgColor="D9EAD3")
 FILL_REVIEW = PatternFill("solid", fgColor="FCE4D6")
 FILL_MISSING = PatternFill("solid", fgColor="F4CCCC")
@@ -202,6 +203,19 @@ def cell_text(value: Any) -> str:
     return "" if value is None else str(value)
 
 
+_BLOCK_TITLE_RE = re.compile(r"^Блок \d+:")
+
+
+def is_block_title_row(text: str) -> bool:
+    """True only for real block-title rows ('Блок 0: Summary запуска', 'Блок 1: ...'), never for
+    construction data that happens to start with the same Russian word for a masonry block (e.g.
+    wall_block_items labels like 'Блок 150х600х250 D500, 1 этаж...'). A bare .startswith('Блок ')
+    check collided with those on sheet 01 - restyle_block_sheet was merging every wall_block_items
+    data row full-width as if it were a title, wiping out columns B onward (2026-08-05 real user
+    report: found/status/source/fragment all blank for every masonry-block row)."""
+    return bool(_BLOCK_TITLE_RE.match(text))
+
+
 def style_header_row(ws, row_idx: int, max_col: int) -> None:
     for col in range(1, max_col + 1):
         cell = ws.cell(row_idx, col)
@@ -249,9 +263,9 @@ def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
     for col in range(1, max_col + 1):
         cell = ws.cell(row_idx, col)
         cell.fill = FILL_SECTION
-        cell.font = Font(name=FONT_NAME, bold=True, color="000000", size=12)
+        cell.font = Font(name=FONT_NAME, bold=True, color="1A237E", size=13)
         cell.alignment = Alignment(horizontal="left", vertical="center")
-    ws.row_dimensions[row_idx].height = 22
+    ws.row_dimensions[row_idx].height = 28
     # Merge across the full row width so the section name (Фундаментная плита, ...) reads as
     # one wide banner instead of bold text sitting alone in column A, which made these rows
     # visually disappear next to the much wider block-title rows below them (2026-07-29 design
@@ -260,13 +274,17 @@ def _style_section_band_row(ws, row_idx: int, max_col: int) -> None:
 
 
 def append_section_band(ws, row_values: list[Any], max_col: int) -> None:
+    # Blank white spacer row above every indigo section band (2026-08-05 design request) so
+    # section boundaries read clearly instead of the band sitting flush against the previous
+    # section's last data row.
+    ws.append([""] * max(1, max_col))
     ws.append(row_values + [""] * max(0, max_col - len(row_values)))
     _style_section_band_row(ws, ws.max_row, max_col)
 
 
 def restyle_section_bands(ws) -> None:
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
-        if row[0].fill.fgColor.rgb == "00E7E6E6":
+        if row[0].fill.fgColor.rgb == "00C5CAE9":
             _style_section_band_row(ws, row[0].row, ws.max_column)
 
 
@@ -299,7 +317,7 @@ def append_block(ws, title: str, headers: list[str], rows: list[list[Any]]) -> N
 def restyle_block_sheet(ws) -> None:
     for row_idx in range(1, ws.max_row + 1):
         first_value = cell_text(ws.cell(row_idx, 1).value)
-        if first_value.startswith("Блок "):
+        if is_block_title_row(first_value):
             style_block_title_row(ws, row_idx, ws.max_column)
             if row_idx + 1 <= ws.max_row:
                 style_header_row(ws, row_idx + 1, ws.max_column)
@@ -308,7 +326,7 @@ def restyle_block_sheet(ws) -> None:
 def block_header_rows(ws) -> set[int]:
     rows = set()
     for row_idx in range(1, ws.max_row + 1):
-        if cell_text(ws.cell(row_idx, 1).value).startswith("Блок ") and row_idx + 1 <= ws.max_row:
+        if is_block_title_row(cell_text(ws.cell(row_idx, 1).value)) and row_idx + 1 <= ws.max_row:
             rows.add(row_idx + 1)
     return rows
 
@@ -525,6 +543,54 @@ def rebar_group_keys_for_contract(contract: dict[str, Any]) -> list[str]:
 # строки узкие, кроме заголовков и шапочек табличек"). Applied to every scalar and per-item data
 # row; title/section-band/header rows are styled separately and never touch this constant.
 COMPACT_ROW_HEIGHT = 15
+
+
+def estimate_row_height(ws, row_idx: int, line_height: float = 13.5) -> float:
+    """Excel does not auto-grow a row for wrap_text once an explicit height is set - openpyxl has
+    no autofit API, so COMPACT_ROW_HEIGHT clips any comment/fragment cell whose text needs more
+    than one line (2026-08-04 real user report: long "Комментарий Елены"/"Фрагмент проекта" text
+    invisible below the fixed 15pt row). Estimates wrapped-line count per cell from that cell's own
+    column width (chars) and returns the taller of that and the row's current height, so short rows
+    (section bands, block titles, most scalar rows) never shrink - only rows whose actual text is
+    longer than one line grow."""
+    current = ws.row_dimensions[row_idx].height or COMPACT_ROW_HEIGHT
+    max_lines = 1
+    merged_ranges_by_anchor = {
+        (rng.min_row, rng.min_col): rng for rng in ws.merged_cells.ranges if rng.min_row == row_idx
+    }
+    for cell in ws[row_idx]:
+        if not (cell.alignment and cell.alignment.wrap_text):
+            continue
+        value = cell.value
+        if value in (None, ""):
+            continue
+        col_letter = getattr(cell, "column_letter", None)
+        if not col_letter or ws.column_dimensions[col_letter].hidden:
+            # A hidden column (e.g. the internal row_data_json adapter payload in column S) never
+            # actually wraps on screen - its text length must not inflate a visible row's height
+            # (2026-08-04 fix: a 250-char hidden JSON blob was forcing 300pt+ rows).
+            continue
+        merged_range = merged_ranges_by_anchor.get((row_idx, cell.column))
+        if merged_range is not None:
+            # A merged title/section-band cell wraps across its full merged width, not just its
+            # own column - using only that column's width here undercounted the available line
+            # width and made these rows implausibly tall (2026-08-04 fix).
+            width = sum(
+                ws.column_dimensions[get_column_letter(c)].width or 10
+                for c in range(merged_range.min_col, merged_range.max_col + 1)
+            )
+        else:
+            width = ws.column_dimensions[col_letter].width or 10
+        chars_per_line = max(1, int(width * 0.9))  # conservative (Arial is wider than Calibri)
+        for line in str(value).split("\n"):
+            max_lines = max(max_lines, -(-len(line) // chars_per_line))  # ceil division
+    return max(current, max_lines * line_height)
+
+
+def autofit_row_heights(ws, min_row: int, max_row: int | None = None) -> None:
+    """Call once column widths are final (autofit reads them), after all rows are appended."""
+    for row_idx in range(min_row, (max_row or ws.max_row) + 1):
+        ws.row_dimensions[row_idx].height = estimate_row_height(ws, row_idx)
 
 
 # GOST 34028-2016 standard linear mass (kg per meter) by nominal rebar diameter - a physical
@@ -1133,7 +1199,7 @@ def build_contracts_summary_sheet(wb: Workbook, contracts: list[dict[str, Any]])
     header_rows = block_header_rows(ws)
     for row in ws.iter_rows(min_row=1):
         for cell in row:
-            if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
+            if not is_block_title_row(cell_text(ws.cell(cell.row, 1).value)) and cell.row not in header_rows:
                 cell.fill = FILL_WHITE
 
 
@@ -1173,7 +1239,7 @@ def build_raw_contracts_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> 
     header_rows = block_header_rows(ws)
     for row in ws.iter_rows(min_row=1):
         for cell in row:
-            if not cell_text(ws.cell(cell.row, 1).value).startswith("Блок ") and cell.row not in header_rows:
+            if not is_block_title_row(cell_text(ws.cell(cell.row, 1).value)) and cell.row not in header_rows:
                 cell.fill = FILL_WHITE
 
 
