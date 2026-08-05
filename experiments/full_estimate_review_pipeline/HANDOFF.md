@@ -102,13 +102,166 @@ Done before the next active step:
   `floor_slab_2_slab_zones` until a real project needs it and the calculator/contract/schema are
   changed together. Do not add generic insulation zones now; beam/lintel/slab insulation must come
   from explicit project lines or remain `needs_review`/manual.
+- 2026-08-04 update: beam concrete scalar rows may be closed by repeated beam rows in the review
+  workbook. `floor_slab_1_beams_concrete_volume` can be shown as a sum of
+  `beam_items.concrete_volume_m3`; `floor_slab_2_beams_concrete_volume` can be shown as a sum of
+  `floor_slab_2_beam_items.concrete_volume_m3`. This rule is only for beam concrete volumes, not
+  beam insulation lengths/areas.
+- 2026-08-04 update (see step 28.17): `build_extraction_notes_report.py:semantic_diagnostics()` got
+  5 more checks — duplicate/missing `code` in `*_rebar_items` groups, a generalized forbidden-source
+  mapping table (`FORBIDDEN_SOURCE_TERMS`), thermal-insert scalar-vs-`thermal_insert_items`
+  conflict, `roof_zones[].operability` enum, and partition rebar wrongly tagged
+  `component=load_bearing_walls`. This is not a new subsystem — same narrow-binary-rule pattern as
+  the existing `wall_role`/beam-concrete-scalar checks. Do not add a "field is absent" style check
+  here; that already failed once as the original ungraded `coverage_audit.py` (see `da35e2a`) — every
+  new rule here must check a concrete violation of an already-documented rule, tested against ARK
+  before shipping so it stays silent where the data is already correct.
+- 2026-08-04 update (see step 28.18): first full run of the step 28.12 loop end-to-end — fresh
+  extraction -> `build_extraction_notes_report.py` -> correction prompt
+  (`prompts/notes_report_correction_prompt.md`) run in the same chat with PDFs loaded ->
+  `extraction_output_corrected.json` -> heavy audit prompt
+  (`prompts/service_note_technical_audit_prompt.md`) on the corrected file. All 27 `semantic_error`
+  findings from the code pass were genuinely fixed (verified by JSON diff, not just the report
+  counter); the heavy audit itself confirmed the code layer was clean and surfaced one new bug class
+  code can't see: a `candidates[]` entry carrying a `target_code` that doesn't match the item it's
+  attached to. Added 6th check `candidate_target_code_mismatch_diagnostics`, same narrow-binary-rule
+  pattern, 0 false positives on ARK/TRC 08-02/03/04, fires on the known bug in both the pre- and
+  post-correction TRC files (that bug is outside the code-report/correction-prompt scope; only the
+  heavy audit catches it). Synthesis in
+  `reports/trc_json_and_memo_human_audit_2026-08-04.md`. Practical ordering confirmed: run the cheap
+  code-report correction pass *before* the heavy audit prompt, not after — the heavy audit explicitly
+  self-reported it wasn't re-flagging anything the code pass already fixed.
+- 2026-08-05 real money bug found and fixed in `sections/load_bearing_walls_lintels/section_contract.yaml`:
+  `floor_1/2_lintel_formwork_horizontal_area_m2`/`vertical_area_m2` are real calculator dataclass
+  fields (since the 2026-07-25 formwork-from-area fix) and real extraction target_codes (same date,
+  `calculator_targets_compact.json`) — TRC's own JSON has real values (0.5/1.4 m2 floor 1, 0.45/3.25
+  m2 floor 2) — but had ZERO `review_parameters` entries wiring extraction to the calculator input.
+  Real project area was silently never reaching the calculator; formwork_plywood_qty/timber_volume_m3
+  computed from a missing area defaulted toward zero — plywood/timber cost silently dropped from the
+  estimate with no needs_review/missing flag anywhere (this specific field pair isn't in
+  SECTION_PRESENCE_PAIRS, so the "confirmed_required" escalation never caught it either). Added the 4
+  missing review_parameters entries + 2 new `defaults` entries (`lintel_formwork_plywood_sheet_area_m2`,
+  `lintel_formwork_board_thickness_m` — already-hardcoded calculator constants, now traceable in the
+  contract) + corrected the `formula`/`leaf_inputs` on all 4 formwork material estimate_lines, which
+  had been silently pointing at the *other* stale bug (the direct plywood-qty/timber-volume fields
+  removed from the calculator 2026-07-25 but left in the contract, hidden from sheet 01 the same day
+  as this fix). Verified: workbook build shows all 4 new area rows as real "Найдено" values from the
+  TRC JSON, found-count +4. Same investigation also fixed a real display bug: `lintel_groove_rebar_items`
+  had `value_kind: rows` (the only occurrence of that string in the whole codebase; every other
+  repeated-row group uses `value_kind: repeated_rows`), so it fell through to the generic scalar
+  review path and rendered as a dead "Проверьте" row instead of a real per-item diagnostic table.
+- 2026-08-05 `floor_slab_1/slab_zones[]` extended with per-zone formwork (Elena's own idea, mirroring
+  how foundation already does zones): 3 new optional columns `edge_perimeter_m`,
+  `under_slab_formwork_area_m2`, `edge_and_beam_formwork_area_m2` in
+  `sections/floor_slab_1/section_contract.yaml`. Real ТРЦ case this fixes: the flat scalar formwork
+  fields can only represent ONE project-wide situation (either a clean edge/beam split, or one merged
+  edge+beam number) at a time — but this project needs BOTH simultaneously across its two zones: the
+  main zone's vertical formwork is one unsplittable merged number (torец плиты + балки), while the
+  kitchen/dining zone gives its own pure edge-only number with no beams. `calculate_floor_slab_1()` in
+  `floor_slab_1_calculator.py` now validates all-or-nothing per zone (any zone giving any of the three
+  fields means every zone must give all three, or `ValueError`), sums each field across zones, and
+  routes the sums into `calculate_formwork_areas_context()` (now taking two new optional kwargs
+  `zone_main_formwork_area`/`zone_edge_and_beam_formwork_area`) ahead of the flat scalars — same
+  precedence pattern as the existing concrete-volume zone override. Also fixed two latent bugs found
+  while wiring this: `edge_formwork_height_m` had no fallback to `slab_thickness_m` despite the
+  contract already documenting that behavior (would hard-`KeyError` on a real project omitting the
+  line); and the diagnostic `calculation_blocks.geometry` echo block read the raw un-overridden
+  `geometry_in["slab_edge_perimeter_m"]`/`["edge_formwork_height_m"]` instead of the locally resolved
+  values, which would misreport the actual perimeter/height used once zones are in play. Verified
+  additive: re-ran all 15 pre-existing `floor_slab_1_calculator` regression cases against both the
+  pre-session baseline (`git show HEAD:...`) and the edited file — byte-identical pass/fail counts on
+  every case, including the 3 pre-existing mismatches in `test_slab_zones_equivalence` and the 23 in
+  `test_floor_slab_1_insulation_spec_quantities` (confirmed pre-existing, unrelated to this change, not
+  something introduced this session). Added a 16th case,
+  `cases/test_slab_zones_formwork_equivalence`, using the real TRC zone numbers (main zone: perimeter
+  67.2, under-slab area 97.11, combined edge+beam 36.6; kitchen zone: perimeter 10.6, under-slab area
+  25.05, pure edge 5.6, no beams) — passes clean, confirms zone sums (122.16 m2 main, 42.2 m2
+  edge+beam, 77.8 m perimeter) and the height fallback all land correctly. Extraction-side JSON not yet
+  patched with these per-zone values and the TRC review workbook not yet rebuilt with this change —
+  both still pending, only requested if/when the user confirms.
+- 2026-08-05 (same investigation, different layer): `floor_slab_1_alternative_scalar()` in
+  `populate_review_workbook_from_extraction.py` got 4 fixes at the review-workbook layer (separate
+  from the calculator/contract zone work above — pre-approved as "mechanical, no questions" before the
+  zone architecture was even proposed). Signature extended to take `found`/`found_by_target` like the
+  other section alternative-scalar functions: (1) `floor_slab_1_slab_edge_perimeter` and (2)
+  `floor_slab_1_under_slab_formwork_area` now auto-sum same-target_code candidates via the existing
+  `candidate_sum_scalar` pattern (new `AUTO_SUM_CANDIDATE_TARGETS["floor_slab_1"]` entry) — real TRC
+  case: PDF gives these per zone (main slab + kitchen/dining) with no combined total, same shape as
+  the already-shipped `cutoff_waterproofing_load_bearing_walls_area` sum; (3)
+  `floor_slab_1_beams_formwork_area` now falls back to summing `beam_items[].formwork_area_m2` when
+  the scalar is missing/unreliable — the contract already documented this as calculator behavior, the
+  workbook display just never implemented it; (4) `floor_slab_1_edge_formwork_height` now shows
+  "Найдено (=толщина плиты)" using `found_by_target["floor_slab_1_slab_thickness"]` instead of a blank
+  "Проверьте" row when no separate height line exists — matches the field's own long-documented
+  auto_calculated fallback, control-calc only, never money-relevant. Verified on the real TRC JSON
+  (`extraction_output_corrected.json`, workbook rebuilt as `trc_review_workbook_2026-08-05_v5.xlsx`):
+  perimeter → 77.8 мп, under-slab area → 122.16 м2, beams formwork → 34.339 м2 (live sum from the real
+  beam_items rows), edge height → 0.2 м. Extraction JSON itself was explicitly NOT touched this round —
+  user will redo the chat extraction pass from scratch, so JSON patching is off the table for now.
+- 2026-08-05 follow-up, two more fixes after user reviewed the rebuilt workbook row-by-row (screenshot
+  walkthrough of the remaining empty floor_slab_1 EPS/formwork rows):
+  1. **Extraction prompt updated for the new zone-formwork columns** (this was the important one —
+     without it, redoing the chat extraction pass would reproduce the exact same broken state, since
+     GPT never learned the new `slab_zones` formwork columns or the
+     `floor_slab_1_edge_and_beam_formwork_area_combined` scalar even existed).
+     `chat_extraction_poc/data/calculator_targets_compact.json`: `slab_zones` group's `fields` extended
+     with `edge_perimeter_m`/`under_slab_formwork_area_m2`/`edge_and_beam_formwork_area_m2` plus a
+     detailed notes block (all-or-nothing rule, when to use merged-vs-pure-edge in
+     `edge_and_beam_formwork_area_m2`); added the missing `floor_slab_1_edge_and_beam_formwork_area_combined`
+     scalar target (was referenced only in a comment before, never an actual target GPT could fill —
+     confirmed absent from `found`/`needs_review`/`missing` in the real TRC JSON, not even attempted);
+     updated notes on `floor_slab_1_slab_edge_perimeter`/`floor_slab_1_under_slab_formwork_area`/
+     `floor_slab_1_edge_formwork_area` to point at `slab_zones` when the PDF gives per-zone data, and
+     to explicitly warn against summing a merged slab+beam candidate (e.g. 36.6 м2) into the
+     slab-edge-only scalar (real bug pattern seen this session: candidates 36.6+5.6 sitting unresolved
+     in `floor_slab_1_edge_formwork_area` precisely because 36.6 already includes beam area — summing
+     would double-count). Same 5 changes mirrored in `chat_extraction_poc/data/target_aliases_ru.yaml`
+     (`slab_zones` entry extended, 3 scalar entries' notes updated, new
+     `floor_slab_1_edge_and_beam_formwork_area_combined` alias entry added). Both files validated
+     (JSON/YAML parse clean).
+  2. **`floor_slab_1_eps100_volume` auto-sum shipped** (the one genuinely safe leftover item from the
+     row-by-row review) — new `AUTO_SUM_CANDIDATE_TARGETS["floor_slab_1"]` entry + branch in
+     `floor_slab_1_alternative_scalar()`, same `candidate_sum_scalar` pattern as the perimeter/area
+     fixes above. Real TRC case: PDF gives EPS-100 volume as 3 non-overlapping components (edge
+     1.478 + under-slab 1.549 + kitchen zone 0.263 m3) with no combined total — these are genuinely
+     additive (unlike the edge-formwork-area case above, which is NOT safe to sum because one
+     candidate already includes the other's content). Verified on real TRC JSON: autosum → 3.29 m3.
+     Rebuilt workbook as `trc_review_workbook_2026-08-05_v6.xlsx`.
+  Two other items flagged in the same review were deliberately left alone: the
+  `floor_slab_1_edge_eps_work_length` needs_review row has candidates carrying the WRONG target_code
+  (`floor_slab_1_slab_edge_perimeter` instead of its own) — this is exactly what the 6th diagnostic
+  check (`candidate_target_code_mismatch_diagnostics`, see step 28.18) already catches; no code fix
+  needed, it'll surface automatically next time this JSON goes through
+  `build_extraction_notes_report.py`. And the 4 genuinely-missing EPS/beam-insulation rows
+  (`floor_slab_1_beams_eps_work_length`, `floor_slab_1_beams_eps_material_area`,
+  `floor_slab_1_edge_eps_material_area`, `floor_slab_1_bottom_eps_work_area`) have zero candidates in
+  the JSON at all — not a bug, just data genuinely not present on the pages the model read; needs a
+  manual PDF check, not a code change.
+- 2026-08-05 manual PDF check done (`КР2_ТРЦ_30,07,2026.pdf` on Desktop, стр. 26-38/41-44) — confirmed
+  the 4 "missing" floor_slab_1 fields above AND their floor_slab_2 counterparts
+  (`floor_slab_2_beams_bottom_formwork_area`, `floor_slab_2_beams_eps_material_area`,
+  `floor_slab_2_bottom_eps_work_area`, `floor_slab_2_slab_area`) are genuine PDF-level gaps, not parser
+  misses: the material-spec tables (стр. 31, 36) only give EPS insulation as a VOLUME total in m3 per
+  location ("Утепление вертикальных поверхностей плиты" / "...под плитой"), never a separate m2 area
+  figure for the same locations, and never a beam-specific EPS row at all. Floor 2 additionally has no
+  separate horizontal-under-beam formwork line at all (floor 1 does, at 1.26 м2) — a real structural
+  difference between the two floors in this project, not missing extraction. No code change from this;
+  recorded as confirmed-not-a-bug. Same PDF check surfaced an unrelated real finding: pages 38+44 show a
+  third, fully-specified staircase landing slab (elevation +7.150) with its own real concrete/EPS/
+  formwork numbers, currently uncaptured in any section — see `[[future_estimate_sections_roadmap]]`
+  memory (updated with the confirmed numbers). Per user: "просто фиксируем" — recorded only, no schema
+  work started.
 
 Next:
 
 1. Run the next real chat extraction test with the rebuilt one-prompt pack.
 2. Rebuild the review workbook from the new JSON and compare visible sheet 01/02 against the
    diagnostic notes report.
-3. Only after the review workbook is stable, start adapter work section by section.
+3. After the current TRC review is finished, test a correction loop:
+   `extraction JSON -> build_extraction_notes_report.py -> same chat with PDFs already loaded ->
+   corrected JSON -> repeated notes/validation report -> Google review workbook`.
+   This is still the one-prompt chat extraction pipeline, not the closed `four_step_parsing_test`.
+4. Only after the review workbook is stable, start adapter work section by section.
 
 Guardrail:
 
@@ -841,3 +994,17 @@ Next:
   adapter/normalized-JSON layer exists too. It doesn't yet.
 
 Do not start coding all 8 sections' adapters at once.
+
+## Current Note 2026-08-04: flat roof vent-channel abutments
+
+For flat roof production geometry, `roof_zones[]` is the live source when present. Linear roof
+abutments to walls, VK, vent channels, and vent shafts in linear meters belong in
+`roof_zones[].wall_abutment_length_m` for the matching roof zone.
+
+Do not keep `roof_vent_wall_abutment_level_1/2` as a parallel live value when `roof_zones[]` exists;
+those fields are fallback only. Do not map linear meters to `vent_shaft_abutment_count`, which is a
+hidden optional per-piece special-case field. Do not move roof abutment lengths to Schiedel; Schiedel
+is for vent-channel masonry/items, not PVC roof abutment work.
+
+`build_extraction_notes_report.py` now raises a semantic diagnostic if a JSON has `roof_zones[]` and
+also leaves a linear VK/vent-channel abutment outside the zone rows.
