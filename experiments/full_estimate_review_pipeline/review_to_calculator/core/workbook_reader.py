@@ -43,8 +43,12 @@ from core.normalization import cell_text, is_blank, parse_number
 SHEET_01_NAME = "01_Проверка проекта"
 SHEET_02_NAME = "02_Цены себестоимости"
 
-CORRECTION_COLUMN_LETTERS = ["N", "O", "P", "Q"]
-JSON_COLUMN_LETTER = "R"
+# 2026-08-05: PROJECT_HEADERS (A-N, 14 columns incl. target_code) grew by one column since this
+# was first written 2026-07-13 against a 13-column layout - correction slots and row_data_json
+# shifted right by one (O-R + S, not N-Q + R). Verified against build_review_workbook_from_
+# contracts.py's PROJECT_HEADERS/CORRECTION_SLOTS/ITEM_BLOCK_HEADERS directly, not by trial.
+CORRECTION_COLUMN_LETTERS = ["O", "P", "Q", "R"]
+JSON_COLUMN_LETTER = "S"
 TECHNICAL_KEY_HEADER = "technical_key"
 
 
@@ -203,9 +207,24 @@ def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
+def read_project_name(wb) -> str:
+    """Sheet 01's merged A1 title is "Разбор проекта: <адрес с титульного листа>" (set by
+    populate_review_workbook_from_extraction.py's build_project_sheet_from_extraction()) - the
+    only place a real project label exists on the reviewed workbook. Strips the fixed prefix;
+    falls back to the raw cell text if the prefix isn't there (e.g. an empty-template workbook
+    with no extraction JSON behind it yet)."""
+    ws = wb[SHEET_01_NAME]
+    title = cell_text(ws["A1"].value)
+    prefix = "Разбор проекта: "
+    if title.startswith(prefix):
+        return title[len(prefix):]
+    return title
+
+
 def read_review_workbook(wb, contract: dict[str, Any]) -> dict[str, Any]:
     return {
         "section_code": contract["section"]["code"],
+        "project_name": read_project_name(wb),
         "scalar_parameters": read_scalar_parameters(wb, contract),
         "production_items": read_production_item_rows(wb, contract),
         "prices": read_prices(wb, contract),
