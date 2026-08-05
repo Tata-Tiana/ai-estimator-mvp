@@ -76,6 +76,29 @@ those constants from the PDF.
 - `spec_length_m`
 - `kg_per_meter`
 
+`wall_block_items`:
+
+- `context`
+- `wall_role`
+- `block_density`
+- `block_size`
+- `volume_m3`
+- `material_unit_price`
+
+`wall_role` must be one of exactly four calculator roles:
+
+- `main_walls` — external/internal load-bearing walls of the 1st floor.
+- `floor_2` — external/internal load-bearing walls of the 2nd floor, upper-level walls,
+  "second light", or superstructure zones.
+- `parapet` — any parapet level/zone.
+- `partitions` — partition walls; captured for diagnostics, not priced in this section.
+
+Do not create semantic/free-text roles such as `load_bearing_outer`, `load_bearing_inner`,
+`external_walls`, `internal_walls`, `second_light_walls`, `parapet_level_1`, `parapet_level_2`,
+`partition`, or `vent_channel_cladding`. Those PDF words belong in `context`/`item_name`.
+Vent/chimney cladding block volume belongs to `vent_chimney_gas_block_150_volume`, not
+`wall_block_items`.
+
 ## Critical extraction rules
 
 - Keep wall gas block 400 mm and 250 mm volumes separate.
