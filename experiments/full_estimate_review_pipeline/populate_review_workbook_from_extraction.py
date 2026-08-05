@@ -40,6 +40,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     PROJECT_HEADERS,
     apply_table_style,
     append_block,
+    autofit_row_heights,
     append_section_band,
     build_constructor_sheet,
     build_contracts_summary_sheet,
@@ -294,6 +295,29 @@ AUTO_SUM_CANDIDATE_TARGETS = {
         "roof_internal_drains_count": "внутренних кровельных воронок",
         "roof_parapet_drains_count": "парапетных воронок",
     },
+    "load_bearing_walls_lintels": {
+        # Elena's rule 2026-07-25: external + internal load-bearing wall areas are the same
+        # continuous wall body (differ only by block thickness) - sum them when the PDF gives no
+        # ready total. Already in the extraction prompt (calculator_targets_compact.json), but the
+        # model doesn't always apply it - this is the workbook-side safety net so it doesn't just
+        # sit as an unresolved needs_review when it doesn't. See
+        # cutoff_waterproofing_external_internal_sum memory.
+        "cutoff_waterproofing_load_bearing_walls_area": "наружных и внутренних несущих стен",
+    },
+    "floor_slab_1": {
+        # Real ТРЦ case, 2026-08-05: PDF gives the slab's edge perimeter and under-slab formwork
+        # area as two zone components (main slab + kitchen/dining) with no combined total for either,
+        # same shape as the existing slab_zones concrete-volume case. Safe to auto-sum: both are
+        # simple linear/area components of one physical slab, not alternative readings of the same
+        # thing.
+        "floor_slab_1_slab_edge_perimeter": "периметра торца плиты по зонам",
+        "floor_slab_1_under_slab_formwork_area": "площади опалубки под плитой по зонам",
+        # Real ТРЦ case, 2026-08-05: PDF gives EPS-100 volume as three distinct, non-overlapping
+        # components of the SAME total (edge insulation + under-slab insulation + kitchen zone
+        # insulation), not alternative readings of one measurement — safe to sum into the single
+        # total_eps_volume_from_spec_m3 target.
+        "floor_slab_1_eps100_volume": "объёма ЭППС-100 по компонентам утепления",
+    },
 }
 
 
@@ -335,6 +359,7 @@ def foundation_alternative_scalar(
     target_code: str,
     found: dict[str, Any] | None,
     found_groups: dict[str, list[Any]],
+    found_by_target: dict[str, Any],
 ) -> tuple[Any, str, str, str, str] | None:
     if target_code == "membrane_area_m2":
         label = AUTO_SUM_CANDIDATE_TARGETS.get("foundation_slab", {}).get(target_code)
@@ -379,11 +404,26 @@ def foundation_alternative_scalar(
             f"Строки: {group_fragments(found_groups, 'thermal_insert_items')}",
             min_group_confidence(found_groups, "thermal_insert_items"),
         )
+    combined_length_found = found_by_target.get("thermal_insert_combined_length_m")
+    if target_code in {"thermal_insert_50_length", "thermal_insert_100_length"} and combined_length_found is not None:
+        combined_value = combined_length_found.get("value")
+        value_text = f"{combined_value:g} мп" if isinstance(combined_value, (int, float)) else ""
+        return (
+            "",
+            "Не требуется (есть общая длина термовставок)",
+            combined_length_found.get("source_pdf") or "",
+            "Раздельная длина монтажа для этой толщины не заполняется: PDF даёт одну общую длину узла"
+            f"{(' ' + value_text) if value_text else ''} на оба слоя термовставки — копировать её в оба "
+            "раздельных поля нельзя, это задвоило бы работу по монтажу. Рабочий источник — "
+            "thermal_insert_combined_length_m.",
+            display_confidence(combined_length_found),
+        )
     return None
 
 
 def load_bearing_walls_lintels_alternative_scalar(
     target_code: str,
+    found: dict[str, Any] | None,
     found_groups: dict[str, list[Any]],
 ) -> tuple[Any, str, str, str, str] | None:
     if target_code == "floors_count" and group_items(found_groups, "wall_block_items"):
@@ -395,24 +435,45 @@ def load_bearing_walls_lintels_alternative_scalar(
             "калькулятор определяет второй уровень по строкам кладки.",
             min_group_confidence(found_groups, "wall_block_items"),
         )
-    if target_code in {"parapet_masonry_volume", "parapet_gas_block_d500_250_volume"} and group_items(
-        found_groups, "wall_block_items"
-    ):
+    if target_code in {
+        "parapet_masonry_volume",
+        "parapet_gas_block_d500_250_volume",
+        "main_wall_gas_block_400_spec_volume",
+        "main_wall_gas_block_250_spec_volume",
+        "floor_2_masonry_volume",
+    } and group_items(found_groups, "wall_block_items"):
         return (
             "",
-            "Не требуется (парапет может быть в wall_block_items)",
+            "Не требуется (объём есть в wall_block_items)",
             group_sources(found_groups, "wall_block_items"),
-            "Фиксированный scalar парапета не требуется, если объёмы кладки пришли строками "
-            "wall_block_items с ролью parapet. Калькулятор берёт production repeated rows, "
-            "а не старые одиночные поля.",
+            "Фиксированный scalar объёма кладки не требуется, если объёмы пришли строками "
+            "wall_block_items (по ролям main_walls/floor_2/parapet). Калькулятор берёт "
+            "production repeated rows, а не старые одиночные поля.",
             min_group_confidence(found_groups, "wall_block_items"),
+        )
+    if target_code == "cutoff_waterproofing_load_bearing_walls_area":
+        label = AUTO_SUM_CANDIDATE_TARGETS.get("load_bearing_walls_lintels", {}).get(target_code)
+        candidate_sum = candidate_sum_scalar(found, target_code) if label else None
+        if candidate_sum is None:
+            return None
+        total, fragments, confidence = candidate_sum
+        return (
+            total,
+            "Проверьте (автосумма компонентов)",
+            found.get("source_pdf") or "" if found else "",
+            f"Автосумма {label}: {fragments}. Общего итога в PDF нет — наружные и внутренние "
+            "несущие стены суммируются как одна стена (Elena, 2026-07-25); перегородки в сумму "
+            "не входят.",
+            confidence,
         )
     return None
 
 
 def floor_slab_1_alternative_scalar(
     target_code: str,
+    found: dict[str, Any] | None,
     found_groups: dict[str, list[Any]],
+    found_by_target: dict[str, Any],
 ) -> tuple[Any, str, str, str, str] | None:
     if target_code == "floor_slab_1_concrete_volume" and group_items(found_groups, "slab_zones"):
         total = sum_group_numeric_field(found_groups, "slab_zones", "concrete_volume_m3")
@@ -437,6 +498,73 @@ def floor_slab_1_alternative_scalar(
             "Готовый итог бетона балок в PDF не указан; для расчёта используется сумма "
             f"beam_items.concrete_volume_m3: {total:g} м3. Это не применяется к утеплению балок.",
             min_group_confidence(found_groups, "beam_items"),
+        )
+    if target_code in {
+        "floor_slab_1_slab_edge_perimeter",
+        "floor_slab_1_under_slab_formwork_area",
+        "floor_slab_1_eps100_volume",
+    }:
+        label = AUTO_SUM_CANDIDATE_TARGETS.get("floor_slab_1", {}).get(target_code)
+        candidate_sum = candidate_sum_scalar(found, target_code) if label else None
+        if candidate_sum is None:
+            return None
+        total, fragments, confidence = candidate_sum
+        return (
+            total,
+            "Проверьте (автосумма компонентов)",
+            found.get("source_pdf") or "" if found else "",
+            f"Автосумма {label}: {fragments}. Общего итога в PDF нет — плита дана по зонам "
+            "(основная + кухня/гостиная), компоненты суммируются как один физический торец/площадь/объём.",
+            confidence,
+        )
+    if target_code == "floor_slab_1_beams_formwork_area" and group_items(found_groups, "beam_items"):
+        total = sum_group_numeric_field(found_groups, "beam_items", "formwork_area_m2")
+        if total is None:
+            return None
+        return (
+            total,
+            "Найдено (автосумма beam_items)",
+            group_sources(found_groups, "beam_items"),
+            "Готовый итог площади опалубки балок в PDF не указан или ненадёжен; для расчёта "
+            f"используется сумма beam_items.formwork_area_m2: {total:g} м2 (контракт уже "
+            "документирует этот fallback как поведение калькулятора).",
+            min_group_confidence(found_groups, "beam_items"),
+        )
+    if target_code == "floor_slab_1_edge_formwork_height":
+        thickness_found = found_by_target.get("floor_slab_1_slab_thickness")
+        if thickness_found is None or thickness_found.get("value") is None:
+            return None
+        thickness_value = thickness_found.get("value")
+        return (
+            thickness_value,
+            "Найдено (=толщина плиты)",
+            thickness_found.get("source_pdf") or "",
+            "Отдельной строки высоты торцевой опалубки в PDF нет; для контрольного расчёта "
+            f"принимается равной толщине плиты: {thickness_value} м (см. floor_slab_1_slab_thickness). "
+            "На стоимость не влияет — используется только для контрольной сверки площади торца.",
+            display_confidence(thickness_found),
+        )
+    return None
+
+
+def floor_slab_2_alternative_scalar(
+    target_code: str,
+    found_groups: dict[str, list[Any]],
+) -> tuple[Any, str, str, str, str] | None:
+    if target_code == "floor_slab_2_beams_concrete_volume" and group_items(
+        found_groups, "floor_slab_2_beam_items"
+    ):
+        total = sum_group_numeric_field(found_groups, "floor_slab_2_beam_items", "concrete_volume_m3")
+        if total is None:
+            return None
+        return (
+            total,
+            "Найдено (автосумма floor_slab_2_beam_items)",
+            group_sources(found_groups, "floor_slab_2_beam_items"),
+            "Готовый итог бетона балок в PDF не указан; для расчёта используется сумма "
+            f"floor_slab_2_beam_items.concrete_volume_m3: {total:g} м3. "
+            "Это не применяется к утеплению балок.",
+            min_group_confidence(found_groups, "floor_slab_2_beam_items"),
         )
     return None
 
@@ -765,7 +893,8 @@ def build_project_sheet_from_extraction(
     wb: Workbook, contracts: list[dict[str, Any]], extraction: dict[str, Any]
 ) -> dict[str, int]:
     ws = wb.create_sheet("01_Проверка проекта")
-    project_title = "Разбор проекта:\n" + " + ".join(section_name(c) for c in contracts)
+    project_address = (extraction.get("project_name") or "").strip()
+    project_title = f"Разбор проекта: {project_address}" if project_address else "Разбор проекта"
     ws.append([project_title, "", "", "", "", "", "", "", "", "", "", "", "", ""])
     ws.append([])
     ws.append([])
@@ -854,11 +983,13 @@ def build_project_sheet_from_extraction(
             confidence = display_confidence(found)
             alternative_scalar = earthworks_alternative_scalar(target_code, found_groups) if sec_code == "earthworks" else None
             if alternative_scalar is None and sec_code == "foundation_slab":
-                alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups)
+                alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups, found_by_target)
             if alternative_scalar is None and sec_code == "load_bearing_walls_lintels":
-                alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found_groups)
+                alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found, found_groups)
             if alternative_scalar is None and sec_code == "floor_slab_1":
-                alternative_scalar = floor_slab_1_alternative_scalar(target_code, found_groups)
+                alternative_scalar = floor_slab_1_alternative_scalar(target_code, found, found_groups, found_by_target)
+            if alternative_scalar is None and sec_code == "floor_slab_2":
+                alternative_scalar = floor_slab_2_alternative_scalar(target_code, found_groups)
             if alternative_scalar is None and sec_code == "flat_roof":
                 alternative_scalar = flat_roof_alternative_scalar(target_code, found)
             is_unresolved_needs_review = found is not None and found.get("value") is None
@@ -889,6 +1020,20 @@ def build_project_sheet_from_extraction(
                     fragment = unresolved_candidate_fragment(found)
                 else:
                     fragment = item_fragment(found)
+                if (
+                    sec_code == "load_bearing_walls_lintels"
+                    and target_code == "floors_count"
+                    and group_items(found_groups, "wall_block_items")
+                ):
+                    # Value stays visible (real cross-check value - a mismatch with wall_block_items'
+                    # own floor_2 presence would be worth catching), but the calculator itself never
+                    # reads this field once wall_block_items is present - see
+                    # load_bearing_walls_lintels_alternative_scalar's floors_count branch, which only
+                    # fires when this field is missing, not when it's found like here.
+                    fragment = (fragment + "\n" if fragment else "") + (
+                        "Справочно: калькулятор определяет этажность по наличию объёма 2-го этажа "
+                        "в wall_block_items, а не по этому текстовому значению из PDF."
+                    )
                 counts["needs_review" if needs_review else "found"] += 1
             elif target_code and target_code in missing:
                 found_value = None
@@ -1046,12 +1191,16 @@ def build_project_sheet_from_extraction(
     set_widths = {
         "A": 30, "B": 26, "C": 10, "D": 20, "E": 20, "F": 62, "G": 30, "H": 64,
         "I": 28, "J": 28, "K": 20, "L": 28, "M": 18, "N": 24,
-        "O": 24, "P": 24, "Q": 24,
+        "O": 24, "P": 24, "Q": 24, "R": 24,
     }
     for col, width in set_widths.items():
         ws.column_dimensions[col].width = width
     for column in ["K", "L", "M", "N", "S"]:
         ws.column_dimensions[column].hidden = True
+
+    # Column widths are final now - autofit reads them to grow any row whose wrapped text needs
+    # more than COMPACT_ROW_HEIGHT's one line (see estimate_row_height docstring).
+    autofit_row_heights(ws, 1, ws.max_row)
 
     return counts
 

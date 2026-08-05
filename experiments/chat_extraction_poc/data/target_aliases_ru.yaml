@@ -313,15 +313,15 @@ column_footing_items:
 
 slab_zones:
   section_code: foundation_slab, floor_slab_1
-  ru_label: "Бетон плиты по зонам/толщинам"
-  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "ПМ1", "Зона плиты"]
+  ru_label: "Бетон и опалубка плиты по зонам/толщинам"
+  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "ПМ1", "Зона плиты", "Вертикальные поверхности плиты и ж/б балок", "Вертикальные поверхности плиты кухни/гостиной"]
   expected_unit: m3
-  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты", "Спецификация материалов на устройство плиты", "Плита покрытия стен 1 этажа", "ПМ1"]
+  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты", "Спецификация материалов на устройство плиты", "Плита покрытия стен 1 этажа", "ПМ1", "Опалубочные работы плита перекрытия"]
   required_context: ["бетон", "плита"]
   negative_context: ["перемычк", "балк", "стяжк", "ростверк", "ПМ2"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-24 (Elena), extended 2026-08-02 to floor_slab_1. Use this group instead of concrete_project_volume or floor_slab_1_concrete_volume ONLY when the spec gives slab concrete as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', ФП1/ФП2, or ПМ1 zones) with no ready 'Итого' row. Return each row as context (the zone/thickness/slab label exactly as printed) + concrete_volume_m3. LIVE, not diagnostic — wired into foundation_slab_calculator.py and floor_slab_1_calculator.py through their section_contract.yaml calculator_input_path: slab_zones. If the PDF gives one ready combined figure instead, use the scalar target as usual and leave this group empty — don't fill both. Do not include beam concrete in slab_zones."
+  value_column_hint: ["объем", "кол-во", "количество", "площадь", "периметр", "длина"]
+  unit_column_hint: ["м3", "м³", "куб.м", "м2", "м²", "мп", "м.п."]
+  notes: "Added 2026-07-24 (Elena), extended 2026-08-02 to floor_slab_1 (concrete_volume_m3), extended 2026-08-05 with formwork columns (real ТРЦ case). Use this group instead of concrete_project_volume/floor_slab_1_concrete_volume or the flat floor_slab_1_slab_edge_perimeter/floor_slab_1_under_slab_formwork_area/floor_slab_1_edge_formwork_area/floor_slab_1_edge_and_beam_formwork_area_combined scalars ONLY when the spec gives slab concrete/formwork as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', ФП1/ФП2, ПМ1 zones, or floor_slab_1's main slab + kitchen/dining zones) with no ready 'Итого' row. Return each row as context (the zone/thickness/slab label exactly as printed) + concrete_volume_m3, and for floor_slab_1 also edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 when the PDF gives that zone's own formwork numbers. edge_and_beam_formwork_area_m2 takes whatever the PDF gives for THAT zone's vertical formwork, merged-with-beams or pure-edge-only — the calculator only needs the per-zone total, not a split. Formwork columns are all-or-nothing: either every zone gets all three, or fill none of them (leave the group formwork-columns-free and use flat scalars instead) — never fill formwork for only some zones. LIVE, not diagnostic — wired into foundation_slab_calculator.py and floor_slab_1_calculator.py through their section_contract.yaml calculator_input_path: slab_zones. If the PDF gives one ready combined figure instead (no zone split), use the scalar target as usual and leave this group/column empty — don't fill both. Do not include beam concrete in slab_zones."
 
 thermal_insert_items:
   section_code: foundation_slab
@@ -478,12 +478,12 @@ main_wall_rebar_items:
   unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
   table_hints: ["Спецификация стен", "Узлы армирования кладки", "Пояснительная записка"]
   required_context: ["ф10|Ø10", "А500|A500", "кладк|стен"]
-  negative_context: ["перемычк", "фундамент", "перекрыти", "балк", "перегородк"]
+  negative_context: ["перемычк", "фундамент", "перекрыти", "балк", "перегородк", "парапет"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
   notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use legacy masonry_rebar_a500_d10_weight in production extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback.
 
-Added 2026-07-26 (real project case): the spec sometimes gives ONE combined row for two block widths at once (e.g. 'Блок 400мм, блок 250мм (несущие стены)' as a single ф10 length) — return it as one item as printed, do not try to split it by block width, component stays load_bearing_walls. A tiny separate 'подоконное армирование' (under-window reinforcement) row, when present, also belongs here as component=load_bearing_walls — if the PDF doesn't say which floor, default floor=1. When this creates a second row with the exact same floor+component+steel_class+diameter_mm as another row (e.g. the combined block-width row above), you MUST set an explicit distinct `code` on at least one of them (e.g. append '_subwindow') — without a distinct code the calculator now raises an error on the collision (updated 2026-07-27; it used to silently keep only one of the two rows before that fix) rather than losing either row's data, but the run will fail until a distinct code is supplied. Never route 'перегородки'/150мм block rebar into this group under component=load_bearing_walls, even disguised inside a combined line — partitions rebar must either be tagged component=partitions (which the calculator hard-rejects by design) or left out of this group entirely; a real past extraction run mistagged partition rebar as load_bearing_walls and it got silently priced as if it were load-bearing — do not repeat that."
+Added 2026-07-26 (real project case): the spec sometimes gives ONE combined row for two block widths at once (e.g. 'Блок 400мм, блок 250мм (несущие стены)' as a single ф10 length) — return it as one item as printed, do not try to split it by block width, component stays load_bearing_walls. A tiny separate 'подоконное армирование' (under-window reinforcement) row, when present, also belongs here as component=load_bearing_walls — if the PDF doesn't say which floor, default floor=1. When this creates a second row with the exact same floor+component+steel_class+diameter_mm as another row (e.g. the combined block-width row above), you MUST set an explicit distinct `code` on at least one of them (e.g. append '_subwindow') — without a distinct code the calculator now raises an error on the collision (updated 2026-07-27; it used to silently keep only one of the two rows before that fix) rather than losing either row's data, but the run will fail until a distinct code is supplied. Never route 'перегородки'/150мм block rebar into this group under component=load_bearing_walls, even disguised inside a combined line — partitions rebar must either be tagged component=partitions (which the calculator hard-rejects by design) or left out of this group entirely; a real past extraction run mistagged partition rebar as load_bearing_walls and it got silently priced as if it were load-bearing — do not repeat that. Same rule for 'парапет'/'парапеты' rows — route these to parapet_chasing_base_length and parapet_rebar_base_length instead (sum across floors, see their own notes), never into main_wall_rebar_items even with component=load_bearing_walls. Added 2026-08-05 (real ТРЦ case): two parapet rebar rows (47,36 m floor 1 + 105,68 m floor 2, both explicitly labelled 'парапеты X этаж' in the PDF) were mistagged this way — the material length still got priced (folded into the main-wall rebar total, wrong rate but not lost), but the separate parapet chasing/groove-cutting work line stayed at zero because parapet_chasing_base_length_m was never filled. Do not repeat."
 
 lintel_total_length:
   section_code: load_bearing_walls_lintels
@@ -770,7 +770,7 @@ wall_block_items:
   negative_context: ["перемычк", "вентканал", "150х250", "150*250"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-24 (Elena, ТРЦ/АРК review). LIVE group — wired into load_bearing_walls_lintels_calculator.py (calculator_input_path: wall_block_items). Use this instead of floor_2_masonry_volume/parapet_masonry_volume/parapet_gas_block_d500_250_volume whenever the spec gives masonry volume for that role split across several rows (D400+D500 for the same role, e.g. floor 2 внутренние/наружные стены, or several levels/zones like парапет 1-й/2-й этаж or ПМ1/ПМ2) with no ready combined total. wall_role: main_walls/floor_2/parapet/partitions — the structural role, not the block width. block_density: D400 or D500 for the normal case, required for every role except partitions (partitions volume is captured but not yet priced). Rows with the same wall_role+block_density are summed automatically by the calculator — return each PDF row as its own item, do not pre-sum them yourself. Only main_walls, floor_2, and parapet have a priced material path for both D400 and D500 today. Updated 2026-07-28 (Elena: rare non-D400/D500 blocks do occur, but very rarely): if the spec genuinely gives a different density/size (e.g. 'D350' or a size other than 600x400x250/600x250x250) for main_walls/floor_2/parapet, still record it with that literal block_density (and block_size) AND also fill material_unit_price on that same row from the project's own smeta/price data if available — the calculator will price it directly from that value. If no price is available anywhere in the project's own materials, leave material_unit_price empty and flag needs_review; the calculator will reject the run loudly rather than silently drop the volume, which is expected until a price is supplied manually. If the spec gives one ready combined figure for the whole role, use the matching scalar target as before and leave this group empty for that role — don't duplicate.
+  notes: "Added 2026-07-24 (Elena, ТРЦ/АРК review). LIVE group — wired into load_bearing_walls_lintels_calculator.py (calculator_input_path: wall_block_items). Use this instead of floor_2_masonry_volume/parapet_masonry_volume/parapet_gas_block_d500_250_volume whenever the spec gives masonry volume for that role split across several rows (D400+D500 for the same role, e.g. floor 2 внутренние/наружные стены, or several levels/zones like парапет 1-й/2-й этаж or ПМ1/ПМ2) with no ready combined total. wall_role is an enum, not free text: ONLY main_walls, floor_2, parapet, partitions are valid. Canonical mapping: 1st-floor наружные/внутренние несущие walls -> main_walls; 2nd-floor/надстройка/второй свет наружные/внутренние несущие walls -> floor_2; any parapet level/zone -> parapet; перегородки/partition walls -> partitions (plural, never partition). Do not invent load_bearing_outer, load_bearing_inner, external_walls, internal_walls, second_light_walls, parapet_level_1, parapet_level_2, partition, or vent_channel_cladding roles; keep those PDF words only in context/item_name. Vent-channel/chimney cladding volume is not wall_block_items at all — map it to vent_chimney_gas_block_150_volume (or leave raw/needs_review if the row is a Schiedel shaft item). block_density: D400 or D500 for the normal case, required for every role except partitions (partitions volume is captured but not yet priced). Rows with the same wall_role+block_density are summed automatically by the calculator — return each PDF row as its own item, do not pre-sum them yourself. Only main_walls, floor_2, and parapet have a priced material path for both D400 and D500 today. Updated 2026-07-28 (Elena: rare non-D400/D500 blocks do occur, but very rarely): if the spec genuinely gives a different density/size (e.g. 'D350' or a size other than 600x400x250/600x250x250) for main_walls/floor_2/parapet, still record it with that literal block_density (and block_size) AND also fill material_unit_price on that same row from the project's own smeta/price data if available — the calculator will price it directly from that value. If no price is available anywhere in the project's own materials, leave material_unit_price empty and flag needs_review; the calculator will reject the run loudly rather than silently drop the volume, which is expected until a price is supplied manually. If the spec gives one ready combined figure for the whole role, use the matching scalar target as before and leave this group empty for that role — don't duplicate.
 
 Added 2026-07-26 (real project case): a PDF can label an extra masonry zone above the 1st-floor main walls as 'Стены надстройки' / 'Стены второго света' / 'Второй свет' (an intermediate volume between two elevation marks, e.g. between +3,730 and +4,980) instead of literally saying '2 этаж' — this is still wall_role: floor_2, not a new role. Do not invent a separate role like 'second_light_walls' for it — the existing floor_2 role plus the same-role summing mechanism already covers any number of these extra zones. Likewise, when parapet appears at multiple separate elevation levels (e.g. ПМ1 and ПМ2, each with its own spec sheet/table), each level is still wall_role: parapet, just another row — do not invent parapet_level_1/parapet_level_2 roles."
 
@@ -876,7 +876,7 @@ floor_slab_1_slab_edge_perimeter:
   negative_context: ["опалубка м2", "ЭППС м3", "фундамент", "2 этажа"]
   value_column_hint: ["длина", "периметр", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "м/п", "мп", "м"]
-  notes: "Linear value only. Do not map m2 formwork area here."
+  notes: "Linear value only. Do not map m2 formwork area here. Updated 2026-08-05: if the PDF gives this per zone (e.g. main slab + kitchen/dining, no combined total), use slab_zones group's edge_perimeter_m per zone instead of guessing a single figure here — see slab_zones above."
 
 floor_slab_1_eps100_volume:
   section_code: floor_slab_1
@@ -900,7 +900,7 @@ floor_slab_1_under_slab_formwork_area:
   negative_context: ["ЭППС", "утепление", "торец", "вертикальн", "балк", "2 этажа"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Production target. Keep separate from EPS bottom work area and EPS volume."
+  notes: "Production target. Keep separate from EPS bottom work area and EPS volume. Updated 2026-08-05: if the PDF gives this per zone with no combined total, use slab_zones group's under_slab_formwork_area_m2 per zone instead — see slab_zones above."
 
 floor_slab_1_edge_formwork_area:
   section_code: floor_slab_1
@@ -912,7 +912,19 @@ floor_slab_1_edge_formwork_area:
   negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "2 этажа"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Production target. Keep separate from EPS 100 mm edge area/volume."
+  notes: "Production target. Keep separate from EPS 100 mm edge area/volume. Updated 2026-08-05: do NOT sum candidates here if one of them is actually a merged slab+beam number (e.g. 'Вертикальные поверхности плиты и ж/б балок — 36,60 м2') — that double-counts beam area into a slab-edge-only field. If a zone's vertical formwork is genuinely merged edge+beam, use slab_zones group's edge_and_beam_formwork_area_m2 for that zone (or the flat floor_slab_1_edge_and_beam_formwork_area_combined scalar for a single-zone whole-project case) instead — see slab_zones and floor_slab_1_edge_and_beam_formwork_area_combined."
+
+floor_slab_1_edge_and_beam_formwork_area_combined:
+  section_code: floor_slab_1
+  ru_label: "Опалубка торца плиты + балок перекрытия 1-го этажа (объединено, разделить нельзя)"
+  pdf_aliases: ["Вертикальные поверхности плиты и ж/б балок", "Опалубка торца плиты и балок", "Опалубка торца плиты и балок 1 этажа"]
+  expected_unit: m2
+  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Опалубочные работы плита перекрытия 1 этажа"]
+  required_context: ["вертикальн|торц", "балк"]
+  negative_context: ["горизонтальная", "ЭППС", "утепление", "2 этажа"]
+  value_column_hint: ["площадь", "кол-во", "количество"]
+  unit_column_hint: ["м2", "м²", "кв.м"]
+  notes: "Added 2026-08-05 (real ТРЦ case: 'Вертикальные поверхности плиты и ж/б балок 1 этажа — 36,60 м2'). Use ONLY when the PDF gives slab-edge and beam vertical formwork as ONE merged number with no way to split it. Do not use as a shortcut when floor_slab_1_edge_formwork_area/floor_slab_1_beams_formwork_area are actually separable — those remain the default path. If the project has multiple slab zones and only some are merged this way (e.g. main zone merged, kitchen/dining zone pure-edge-only), use slab_zones group's edge_and_beam_formwork_area_m2 per zone instead of this flat scalar — this scalar is only for a single whole-project merged figure with no zone split. Mutually exclusive with floor_slab_1_edge_formwork_area/floor_slab_1_beams_formwork_area; the calculator raises if both are supplied."
 
 floor_slab_1_beams_formwork_area:
   section_code: floor_slab_1
@@ -1388,7 +1400,7 @@ roof_vent_wall_abutment_level_1:
   negative_context: ["парапет", "воронка", "шт"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Linear roof abutment length. Includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. Do not map piece counts here."
+  notes: "Compatibility fallback only. Linear roof abutment length includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. If roof_zones is used, do not fill this scalar separately: add this length to roof_zones[].wall_abutment_length_m for the matching roof zone. Do not map piece counts here."
 
 roof_vent_wall_abutment_level_2:
   section_code: flat_roof
@@ -1400,7 +1412,7 @@ roof_vent_wall_abutment_level_2:
   negative_context: ["парапет", "воронка", "шт"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Linear roof abutment length. Includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. If several levels are present, keep candidates."
+  notes: "Compatibility fallback only. Linear roof abutment length includes walls and VK/vent-channel/vent-shaft abutments when the PDF gives them in linear meters. If roof_zones is used, do not fill this scalar separately: add this length to roof_zones[].wall_abutment_length_m for the matching roof zone. If several levels are present and roof_zones is not used, keep candidates."
 
 roof_zones:
   section_code: flat_roof
@@ -1412,7 +1424,7 @@ roof_zones:
   negative_context: ["мембран", "стеклохолст", "пароизоляц"]
   value_column_hint: ["площадь", "длина", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "м.п.", "п.м."]
-  notes: "Added 2026-07-26 (Elena, ТРЦ review). LIVE group — wired into flat_roof_calculator/calculator.py (roof_geometry_calc_method: roof_zones). Use this instead of roof_area_level_1/2 (and the matching parapet/wall-abutment level_1/2 targets) whenever the roof spec splits into more than two zones by floor and/or type — e.g. 1 этаж Тип1, 1 этаж Тип2, 2 этаж Тип2, кровля лестницы. Return each zone as its own row: context (zone label exactly as printed, e.g. '1 этаж, Тип1 (эксплуатируемая)'), area_m2, parapet_length_m, wall_abutment_length_m (omit the length fields for a zone if the PDF genuinely gives none for it — e.g. a staircase roof may have no wall-abutment row), operability. The calculator sums area_m2 across all rows into the total roof area, and sums parapet_length_m+wall_abutment_length_m across all rows into the combined parapet-and-abutment length — works for any zone count. operability drives membrane brand: 'exploitable' ONLY when the sheet explicitly labels the zone 'эксплуатируемая' — every other case (explicitly 'неэксплуатируемая', or no operability label given at all) is 'non_exploitable' (V-RP); 'exploitable' zones get V-GR membrane instead. Default to 'non_exploitable' when unsure, don't guess exploitable. If the PDF gives one ready combined figure for the whole roof instead, use the scalar level_1/level_2 (or project_spec_roof_area) targets as before and leave this group empty — don't duplicate.
+  notes: "Added 2026-07-26 (Elena, ТРЦ review). LIVE group — wired into flat_roof_calculator/calculator.py (roof_geometry_calc_method: roof_zones). Use this instead of roof_area_level_1/2 (and the matching parapet/wall-abutment level_1/2 targets) whenever the roof spec splits into more than two zones by floor and/or type — e.g. 1 этаж Тип1, 1 этаж Тип2, 2 этаж Тип2, кровля лестницы. Return each zone as its own row: context (zone label exactly as printed, e.g. '1 этаж, Тип1 (эксплуатируемая)'), area_m2, parapet_length_m, wall_abutment_length_m (omit the length fields for a zone if the PDF genuinely gives none for it — e.g. a staircase roof may have no wall-abutment row), operability. Linear abutments to walls, VK, vent channels, and vent shafts in м.п. all belong in wall_abutment_length_m of the matching roof zone; if the PDF gives 'примыкания к стенам' and 'примыкания к вентканалам/ВК' as separate rows under the same zone column, sum those components inside wall_abutment_length_m and explain the components in notes/raw_text. Do not put those linear meters into roof_vent_wall_abutment_level_1/2 while roof_zones is used, and do not put them into the piece-count vent_shaft_abutment_count. The calculator sums area_m2 across all rows into the total roof area, and sums parapet_length_m+wall_abutment_length_m across all rows into the combined parapet-and-abutment length — works for any zone count. operability drives membrane brand: 'exploitable' ONLY when the sheet explicitly labels the zone 'эксплуатируемая' — every other case (explicitly 'неэксплуатируемая', or no operability label given at all) is 'non_exploitable' (V-RP); 'exploitable' zones get V-GR membrane instead. Default to 'non_exploitable' when unsure, don't guess exploitable. If the PDF gives one ready combined figure for the whole roof instead, use the scalar level_1/level_2 (or project_spec_roof_area) targets as before and leave this group empty — don't duplicate.
 
 Added 2026-07-26 (real project case): a roof plan/spec page can carry its own zone labeling system (e.g. 'Тип А' + elevation mark) that is completely separate from any ПМ1/ПМ2-style slab identifiers used on a different page (masonry/slab plan) for the underlying floor_slab_1/floor_slab_2 structure — even though the roof sits at a slightly different elevation than the slab it covers (roof build-up adds thickness). Always take the zone `context` from the ROOF's own specification sheet, never from a slab/masonry plan's ПМ1/ПМ2 labeling, even if both refer to physically the same area of the building — they are different naming systems for different purposes (slab identity vs. roof material zone), do not merge or substitute one for the other."
 
@@ -1463,6 +1475,18 @@ roof_slope_plate_k_volume:
   value_column_hint: ["кол-во", "количество"]
   unit_column_hint: ["м3", "м³"]
   notes: "Project/specification value for flat-roof slope plates. This is not a manual input."
+
+roof_eps50_volume:
+  section_code: flat_roof
+  ru_label: "ЭППС 50 мм кровли, объем по проекту/кровельной спецификации"
+  pdf_aliases: ["ЭППС 50 мм", "ЭППС 50мм", "Утеплитель ЭППС 50 мм", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO 50", "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF 50", "CARBON ECO 50мм", "CARBON ECO (50мм)", "CARBON PROF 50мм", "CARBON PROF (50мм)", "CARBON PROF 50 мм"]
+  expected_unit: m3
+  table_hints: ["План кровли", "Узел кровли", "Кровельный пирог", "Спецификация к плану кровли", "Спецификация материалов кровли", "Кровельное покрытие"]
+  required_context: ["кровл|покрыт|утепл", "50"]
+  negative_context: ["фундамент", "плита фундамент", "стен фундамент", "торец плиты", "низ плиты", "под плитой", "термовставк", "SLOPE|разуклон"]
+  value_column_hint: ["кол-во", "количество", "объем"]
+  unit_column_hint: ["м3", "м³"]
+  notes: "Project/specification volume for flat-roof EPS 50 mm. Accept ECO/PROF naming variants. This is not a manual/supplier input. Keep distinct from foundation EPS 50 mm and from SLOPE plates."
 
 roof_aerators_count:
   section_code: flat_roof
