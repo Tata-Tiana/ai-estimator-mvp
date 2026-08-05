@@ -392,6 +392,18 @@ def has_roof_zone_rows(section: dict[str, Any]) -> bool:
 
 
 def is_roof_vent_abutment_item(item: dict[str, Any]) -> bool:
+    # Items already tied to roof_zones (its own found/needs_review row, or a raw_table_rows
+    # component row whose mapped_target_codes says it feeds roof_zones) are the CORRECT home for
+    # this data, not a legacy scalar sitting outside the zone — exclude them so a zone's own
+    # explanatory raw_text/notes (which often names "вентканал" to show its math) doesn't trigger
+    # a false positive against itself. Real bug found 2026-08-05: a zone row's raw_text literally
+    # saying "вентканалы 5,42 п.м; ... = 14,92 п.м" (the correct sum) was flagged as if it were an
+    # outside-zone duplicate, alongside the raw_table_rows component row for the same already-summed
+    # value — both are compliant, not violations.
+    if item.get("group_code") == "roof_zones" or item.get("target_code") == "roof_zones":
+        return False
+    if "roof_zones" in (item.get("mapped_target_codes") or []):
+        return False
     code = str(item.get("target_code") or "")
     if code in ROOF_VENT_ABUTMENT_SCALAR_CODES:
         return True
