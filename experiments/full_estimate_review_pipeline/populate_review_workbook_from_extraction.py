@@ -475,6 +475,23 @@ def floor_slab_1_alternative_scalar(
     found_groups: dict[str, list[Any]],
     found_by_target: dict[str, Any],
 ) -> tuple[Any, str, str, str, str] | None:
+    zone_formwork_items = [
+        item for item in group_items(found_groups, "slab_zones") if item.get("value", {}).get("edge_perimeter_m") is not None
+    ]
+    if target_code in {
+        "floor_slab_1_slab_edge_perimeter",
+        "floor_slab_1_under_slab_formwork_area",
+        "floor_slab_1_edge_formwork_area",
+    } and zone_formwork_items:
+        return (
+            "",
+            "Не требуется (есть в slab_zones)",
+            group_sources(found_groups, "slab_zones"),
+            "Плоский scalar не нужен: опалубка пришла по зонам в slab_zones (edge_perimeter_m/"
+            "under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2), калькулятор суммирует зоны "
+            f"вместо этого поля. Строки: {group_fragments(found_groups, 'slab_zones')}",
+            min_group_confidence(found_groups, "slab_zones"),
+        )
     if target_code == "floor_slab_1_concrete_volume" and group_items(found_groups, "slab_zones"):
         total = sum_group_numeric_field(found_groups, "slab_zones", "concrete_volume_m3")
         if total is None:
