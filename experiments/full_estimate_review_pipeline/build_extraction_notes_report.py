@@ -100,6 +100,12 @@ CONDITIONAL_MISSING_ALTERNATIVES = {
             "note": "Готовый scalar итога бетона балок не требуется, если PDF дал балки строками: калькулятор суммирует beam_items.concrete_volume_m3. Это не относится к утеплению балок — его нельзя выводить из общей длины балок.",
         },
     },
+    "floor_slab_2": {
+        "floor_slab_2_beams_concrete_volume": {
+            "group": "floor_slab_2_beam_items",
+            "note": "Готовый scalar итога бетона балок не требуется, если PDF дал балки строками: калькулятор суммирует floor_slab_2_beam_items.concrete_volume_m3. Это не относится к утеплению балок — его нельзя выводить из общей длины балок.",
+        },
+    },
 }
 
 CONDITIONAL_ABSENT_TARGETS = {
@@ -144,6 +150,86 @@ BENIGN_FOUND_NOTE_PREFIXES = (
     "Масса дана явно",
 )
 
+WALL_BLOCK_ITEM_ALLOWED_ROLES = {"main_walls", "floor_2", "parapet", "partitions"}
+ROOF_VENT_ABUTMENT_SCALAR_CODES = {
+    "roof_vent_wall_abutment_level_1",
+    "roof_vent_wall_abutment_level_2",
+    "roof_vent_wall_abutment_length",
+}
+ROOF_VENT_ABUTMENT_TEXT_TERMS = (
+    "примыкание к вк",
+    "примыкания к вк",
+    "примыкание к венткан",
+    "примыкания к венткан",
+    "примыкание к вентшах",
+    "примыкания к вентшах",
+)
+BEAM_CONCRETE_SCALAR_CODES = {
+    "floor_slab_1_beams_concrete_volume",
+    "floor_slab_2_beams_concrete_volume",
+}
+BEAM_CONCRETE_TOTAL_TERMS = (
+    "итого",
+    "всего",
+    "общий объем",
+    "общий объём",
+    "общая строка",
+    "суммарный объем",
+    "суммарный объём",
+    "total",
+)
+EXPLICIT_TARGET_EXPECTED_UNITS = {
+    "roof_area_level_1": "m2",
+    "roof_area_level_2": "m2",
+    "project_spec_roof_area": "m2",
+}
+
+# All *_rebar_items group codes from group_value_shapes (schemas/claude_extraction_output_schema.json)
+# that carry an identifying (floor, component, steel_class, diameter_mm) tuple plus an optional
+# explicit `code`. A row with no `code` AND a tuple that repeats another row's tuple in the same
+# group is ambiguous: a calculator keyed by that tuple could silently drop/merge rows.
+REBAR_ITEM_GROUP_CODES = {
+    "foundation_rebar_items",
+    "floor_slab_1_rebar_items",
+    "floor_slab_2_rebar_items",
+    "main_wall_rebar_items",
+    "lintel_rebar_items",
+}
+
+ROOF_ZONE_ALLOWED_OPERABILITY = {"exploitable", "non_exploitable"}
+
+# target_code -> raw-text/table-context terms that mean the matched value almost certainly came
+# from the wrong PDF row for this target (e.g. formwork area copied into a "slab area" control
+# field). Mirrors validate_claude_extraction.py's check_forbidden_target, kept here because it is a
+# review-workbook/notes-report concern (same class as wall_role/beam-concrete-scalar checks above),
+# not an extraction-time prompt-compliance check.
+FORBIDDEN_SOURCE_TERMS = {
+    "floor_slab_2_slab_area": (
+        ("опалуб",),
+        "Это площадь опалубки, а не площадь плиты. Инструкция по этому target прямо запрещает "
+        "сопоставлять с ним строки нижней/основной опалубки. Оставьте floor_slab_2_slab_area пустым "
+        "или удалите found-элемент; значение остаётся только в floor_slab_2_main_formwork_area.",
+    ),
+}
+
+# Classic 50/100mm split (scalar target_codes) vs the arbitrary-size alternative group
+# (thermal_insert_items) are mutually exclusive inputs for the same physical thermal inserts -
+# filling both double-counts installation work. See thermal_insert_items_arbitrary_size_shipped memory.
+THERMAL_INSERT_SCALAR_CODES = {
+    "thermal_insert_50_length",
+    "thermal_insert_100_length",
+    "thermal_insert_combined_length_m",
+    "thermal_insert_50_material_spec_qty",
+    "thermal_insert_100_material_spec_qty",
+}
+
+# main_wall_rebar_items is load-bearing-wall rebar only; partition rebar must stay diagnostic-only
+# (see main_wall_rebar_subwindow_and_partitions_exclusion memory). A row whose own text names a
+# partition contradicts component=load_bearing_walls regardless of what the PDF actually says
+# elsewhere - this is an internal JSON inconsistency, not a PDF-completeness question.
+PARTITION_TEXT_TERMS = ("перегород",)
+PARAPET_TEXT_TERMS = ("парапет",)
+
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -153,6 +239,25 @@ def as_list(value: Any) -> list[Any]:
     if value is None:
         return []
     return value if isinstance(value, list) else [value]
+
+
+def iter_unique_items(section: dict[str, Any], statuses: tuple[str, ...]) -> list[dict[str, Any]]:
+    """Yields each item once across the given statuses. `needs_review` items are always a subset
+    of `found` (see found_item_shape in claude_extraction_output_schema.json), so scanning both
+    without dedup double-counts every needs_review row - this matters not just for duplicate report
+    lines but for any check that counts occurrences (e.g. rebar_duplicate_code_diagnostics)."""
+    seen: set[tuple[str, str, str]] = set()
+    unique: list[dict[str, Any]] = []
+    for status in statuses:
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict):
+                continue
+            key = (item_code(item), short(item.get("raw_text"), 240), short(item.get("value"), 240))
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(item)
+    return unique
 
 
 def short(value: Any, limit: int = 260) -> str:
@@ -249,6 +354,10 @@ def is_benign_found_note(note: Any) -> bool:
     return any(text.startswith(prefix) for prefix in BENIGN_FOUND_NOTE_PREFIXES)
 
 
+def normalized_text(*values: Any) -> str:
+    return " ".join(str(value).lower().replace("ё", "е") for value in values if value is not None)
+
+
 def should_include_item(item: dict[str, Any], confidence_threshold: float, status: str) -> bool:
     if item.get("notes"):
         if (
@@ -270,6 +379,549 @@ def should_include_item(item: dict[str, Any], confidence_threshold: float, statu
     except (TypeError, ValueError):
         return True
     return False
+
+
+def has_roof_zone_rows(section: dict[str, Any]) -> bool:
+    for status in ("needs_review", "found", "raw_table_rows"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict):
+                continue
+            if item.get("group_code") == "roof_zones" or item.get("target_code") == "roof_zones":
+                return True
+    return False
+
+
+def is_roof_vent_abutment_item(item: dict[str, Any]) -> bool:
+    code = str(item.get("target_code") or "")
+    if code in ROOF_VENT_ABUTMENT_SCALAR_CODES:
+        return True
+    text = normalized_text(
+        item.get("raw_text"),
+        item.get("item_name"),
+        item.get("notes"),
+        item.get("table_context"),
+    )
+    return any(term in text for term in ROOF_VENT_ABUTMENT_TEXT_TERMS)
+
+
+def expected_unit_for_target(code: str) -> str | None:
+    if code in EXPLICIT_TARGET_EXPECTED_UNITS:
+        return EXPLICIT_TARGET_EXPECTED_UNITS[code]
+    if code.endswith("_m2") or "_area" in code:
+        return "m2"
+    if code.endswith("_m3") or "_volume" in code:
+        return "m3"
+    return None
+
+
+def candidate_unit_mismatch_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict) or not item.get("candidates"):
+                continue
+            code = item_code(item)
+            if code == "raw_table_rows":
+                continue
+            expected_unit = expected_unit_for_target(code)
+            if not expected_unit:
+                continue
+            for candidate in as_list(item.get("candidates")):
+                if not isinstance(candidate, dict):
+                    continue
+                candidate_unit = candidate.get("normalized_unit")
+                if not candidate_unit or candidate_unit == expected_unit:
+                    continue
+                key = (
+                    code,
+                    str(candidate_unit),
+                    short(candidate.get("value"), 120),
+                    short(candidate.get("raw_text"), 220),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": f"{code}: candidate unit `{candidate_unit}` does not match `{expected_unit}`",
+                        "confidence": confidence_text(candidate) or confidence_text(item),
+                        "value": short(candidate.get("value"), 220),
+                        "source": source_text(candidate) or source_text(item),
+                        "raw_text": short(candidate.get("raw_text") or item.get("raw_text"), 320),
+                        "notes": (
+                            "Единица кандидата не совпадает с единицей target. Такой candidate нельзя "
+                            "использовать как значение поля без отдельного явного правила пересчёта. "
+                            "Оставьте строку на проверку или маппьте её в target с подходящей единицей."
+                        ),
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
+    return diagnostics
+
+
+def candidate_target_code_mismatch_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """A candidate's own `target_code` should match the target_code of the item it lives under.
+    A mismatch means the candidate was built for a different field and got attached to the wrong
+    item - the number and source may be correct, but a strict consumer keying off target_code
+    would silently misfile it. Found via the 2026-08-04 heavy-audit pass on floor_slab_1_edge_eps_
+    work_length, whose candidates both carried floor_slab_1_slab_edge_perimeter instead."""
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        item_target = item.get("target_code")
+        if not item_target or not item.get("candidates"):
+            continue
+        for candidate in as_list(item.get("candidates")):
+            if not isinstance(candidate, dict):
+                continue
+            candidate_target = candidate.get("target_code")
+            if not candidate_target or candidate_target == item_target:
+                continue
+            key = (
+                str(item_target),
+                str(candidate_target),
+                short(candidate.get("value"), 120),
+                short(candidate.get("raw_text"), 220),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{item_target}: candidate carries mismatched target_code `{candidate_target}`",
+                    "confidence": confidence_text(candidate) or confidence_text(item),
+                    "value": short(candidate.get("value"), 220),
+                    "source": source_text(candidate) or source_text(item),
+                    "raw_text": short(candidate.get("raw_text") or item.get("raw_text"), 320),
+                    "notes": (
+                        f"Candidate внутри `{item_target}` несёт `target_code`='{candidate_target}' — "
+                        "поле другого target. Число и источник могут быть верными, но candidate "
+                        "структурно привязан не к тому полю. Приведите target_code candidate к полю, "
+                        "в котором он лежит, либо перенесите candidate в тот item, которому он "
+                        "действительно принадлежит."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def roof_vent_abutment_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    if not has_roof_zone_rows(section):
+        return []
+
+    candidates: list[dict[str, Any]] = []
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if isinstance(item, dict) and is_roof_vent_abutment_item(item):
+                candidates.append(item)
+
+    if not candidates:
+        for item in as_list(section.get("raw_table_rows")):
+            if isinstance(item, dict) and is_roof_vent_abutment_item(item):
+                candidates.append(item)
+
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for item in candidates:
+        key = (
+            short(item.get("target_code") or item.get("group_code"), 80),
+            short(item.get("value"), 120),
+            short(item.get("source_pdf"), 160),
+            short(item.get("raw_text"), 220),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": "roof_zones: linear vent-channel abutment outside live roof zone",
+                "confidence": confidence_text(item),
+                "value": short(item.get("value"), 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "В JSON есть roof_zones[], значит production-источник геометрии кровли — зоны. "
+                    "Линейные примыкания к ВК/вентканалам/вентшахтам в м.п. должны быть включены в "
+                    "roof_zones[].wall_abutment_length_m соответствующей зоны, а не лежать отдельным "
+                    "legacy scalar. Это не Schiedel и не штучное поле vent_shaft_abutment_count."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
+def beam_concrete_scalar_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict):
+                continue
+            code = item_code(item)
+            if code not in BEAM_CONCRETE_SCALAR_CODES or item.get("value") in (None, ""):
+                continue
+            evidence_text = normalized_text(
+                item.get("raw_text"),
+                item.get("item_name"),
+                item.get("notes"),
+                item.get("table_context"),
+            )
+            if any(term in evidence_text for term in BEAM_CONCRETE_TOTAL_TERMS):
+                continue
+            key = (code, short(item.get("value"), 120), short(item.get("raw_text"), 220))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{code}: scalar beam concrete is filled without explicit total row",
+                    "confidence": confidence_text(item),
+                    "value": short(item.get("value"), 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Scalar бетона балок можно заполнять только из явной общей строки по всем "
+                        "маркам балок: Итого/Всего/общий объём. Если PDF даёт бетон по маркам, эти "
+                        "строки должны идти в repeated group балок, а scalar должен оставаться пустым "
+                        "или закрываться дальше кодом через сумму repeated rows."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """A rebar row with no `code` and an identifying (floor, component, steel_class, diameter_mm)
+    tuple that repeats another row's tuple in the same group is ambiguous: a calculator keyed by
+    that tuple could silently drop or merge rows. An explicit, distinct `code` on each row resolves
+    this even when the base tuple repeats (e.g. window vs main-wall rebar of the same diameter)."""
+    diagnostics: list[dict[str, str]] = []
+    by_group: dict[str, list[dict[str, Any]]] = {}
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        group_code = item.get("group_code")
+        if group_code not in REBAR_ITEM_GROUP_CODES:
+            continue
+        by_group.setdefault(group_code, []).append(item)
+
+    for group_code, items in by_group.items():
+        tuple_counts: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+        seen_codes: dict[str, int] = {}
+        for item in items:
+            value = item.get("value") if isinstance(item.get("value"), dict) else {}
+            code = value.get("code")
+            if code:
+                seen_codes[str(code)] = seen_codes.get(str(code), 0) + 1
+                continue
+            key = (
+                value.get("floor"),
+                value.get("component"),
+                value.get("steel_class"),
+                value.get("diameter_mm"),
+            )
+            tuple_counts.setdefault(key, []).append(item)
+
+        for key, dup_items in tuple_counts.items():
+            if len(dup_items) < 2:
+                continue
+            example = dup_items[0]
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{group_code}: {len(dup_items)} rows share floor/component/class/diameter with no `code`",
+                    "confidence": confidence_text(example),
+                    "value": short(example.get("value"), 220),
+                    "source": source_text(example),
+                    "raw_text": short(example.get("raw_text"), 320),
+                    "notes": (
+                        f"floor={key[0]!r}, component={key[1]!r}, steel_class={key[2]!r}, "
+                        f"diameter_mm={key[3]!r} повторяется у {len(dup_items)} строк без "
+                        "уникального `code`. Калькулятор, ключующий строки по этому набору полей, "
+                        "может молча учесть только одну из них. Назначьте стабильные уникальные "
+                        "`code` (например, по назначению строки: подоконное армирование, второй "
+                        "свет и т.п.), не полагаясь на то, что позиция в списке сохранится."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+        for code, count in seen_codes.items():
+            if count < 2:
+                continue
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{group_code}: code `{code}` used by {count} rows",
+                    "confidence": "",
+                    "value": "",
+                    "source": "",
+                    "raw_text": "",
+                    "notes": (
+                        f"Значение `code`={code!r} повторяется у {count} строк группы {group_code}. "
+                        "`code` должен однозначно определять строку внутри группы."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def forbidden_source_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """Flags a found scalar whose raw evidence text matches a known wrong-source pattern for that
+    target_code (e.g. a "slab area" control field actually sourced from a formwork-area row).
+    Mirrors validate_claude_extraction.py's check_forbidden_target, extended with a per-target term
+    list instead of one hardcoded rule."""
+    diagnostics: list[dict[str, str]] = []
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        code = item_code(item)
+        rule = FORBIDDEN_SOURCE_TERMS.get(code)
+        if not rule or item.get("value") in (None, ""):
+            continue
+        terms, note = rule
+        evidence_text = normalized_text(
+            item.get("raw_text"), item.get("notes"), item.get("table_context")
+        )
+        if not any(term in evidence_text for term in terms):
+            continue
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"{code}: value sourced from a forbidden row pattern",
+                "confidence": confidence_text(item),
+                "value": short(item.get("value"), 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": note,
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
+def thermal_insert_conflict_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """The classic 50/100mm scalar split and the arbitrary-size thermal_insert_items group are
+    mutually exclusive inputs for the same physical thermal inserts; filling both double-counts
+    installation work and material."""
+    has_items_group = False
+    filled_scalars: list[dict[str, Any]] = []
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") == "thermal_insert_items":
+            has_items_group = True
+        code = item_code(item)
+        if code in THERMAL_INSERT_SCALAR_CODES and item.get("value") not in (None, ""):
+            filled_scalars.append(item)
+
+    if not has_items_group or not filled_scalars:
+        return []
+
+    diagnostics: list[dict[str, str]] = []
+    for item in filled_scalars:
+        code = item_code(item)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"{code}: filled at the same time as thermal_insert_items",
+                "confidence": confidence_text(item),
+                "value": short(item.get("value"), 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "thermal_insert_items используется для произвольных типоразмеров и заменяет "
+                    "классический scalar-путь 50/100 мм, а не дополняет его. Один и тот же объём "
+                    "термовставок сейчас посчитан дважды. Оставьте либо scalar-поля (thermal_insert_"
+                    "50/100_length, thermal_insert_combined_length_m и соответствующий material_spec_"
+                    "qty), либо thermal_insert_items, не оба вместе."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
+def roof_zone_operability_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict) or item.get("group_code") != "roof_zones":
+                continue
+            value = item.get("value") if isinstance(item.get("value"), dict) else {}
+            operability = value.get("operability")
+            if operability is None or operability in ROOF_ZONE_ALLOWED_OPERABILITY:
+                continue
+            key = (str(operability), short(item.get("item_name"), 120))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"roof_zones: invalid operability `{operability}`",
+                    "confidence": confidence_text(item),
+                    "value": short(item.get("value"), 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Недопустимое значение operability для зоны кровли. Разрешены только "
+                        "`exploitable`, `non_exploitable` — от этого признака зависит выбор мембраны "
+                        "V-GR/V-RP."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def partition_rebar_in_main_wall_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict) or item.get("group_code") != "main_wall_rebar_items":
+                continue
+            text = normalized_text(item.get("item_name"), item.get("raw_text"))
+            if not any(term in text for term in PARTITION_TEXT_TERMS):
+                continue
+            key = (short(item.get("item_name"), 120), short(item.get("raw_text"), 220))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": "main_wall_rebar_items: row text names a partition",
+                    "confidence": confidence_text(item),
+                    "value": short(item.get("value"), 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Собственный текст строки называет перегородку, а не несущую стену, "
+                        "независимо от значения component=load_bearing_walls. Арматура перегородок "
+                        "запрещена в main_wall_rebar_items и не должна попадать в стоимость несущих "
+                        "стен. Уберите строку из производственной группы, оставьте только "
+                        "диагностически."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def parapet_rebar_in_main_wall_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """A main_wall_rebar_items row whose own text names the parapet is misfiled regardless of
+    component=load_bearing_walls: the calculator folds it into the ordinary main-wall rebar total
+    (material cost isn't lost, just mispriced), and the dedicated parapet_chasing_base_length /
+    parapet_rebar_base_length scalars stay empty, so the separate parapet chasing/groove-cutting
+    work line never fires. Real case, 2026-08-05 ТРЦ: two rows explicitly labelled 'парапеты 1/2
+    этаж' (47.36 + 105.68 m) were mistagged this way."""
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for status in ("needs_review", "found"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict) or item.get("group_code") != "main_wall_rebar_items":
+                continue
+            text = normalized_text(item.get("item_name"), item.get("raw_text"))
+            if not any(term in text for term in PARAPET_TEXT_TERMS):
+                continue
+            key = (short(item.get("item_name"), 120), short(item.get("raw_text"), 220))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": "main_wall_rebar_items: row text names the parapet",
+                    "confidence": confidence_text(item),
+                    "value": short(item.get("value"), 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Собственный текст строки называет парапет, а не несущую стену, независимо "
+                        "от component=load_bearing_walls. Материал не теряется (считается по цене "
+                        "несущих стен), но отдельная строка штробления парапета "
+                        "(parapet_chasing_base_length) остаётся пустой. Перенесите строку в "
+                        "parapet_chasing_base_length/parapet_rebar_base_length (сумма по этажам), "
+                        "уберите из main_wall_rebar_items."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
+def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    diagnostics.extend(candidate_unit_mismatch_diagnostics(section))
+    diagnostics.extend(candidate_target_code_mismatch_diagnostics(section))
+    diagnostics.extend(rebar_duplicate_code_diagnostics(section))
+    diagnostics.extend(forbidden_source_diagnostics(section))
+
+    if section_code == "flat_roof":
+        diagnostics.extend(roof_vent_abutment_diagnostics(section))
+        diagnostics.extend(roof_zone_operability_diagnostics(section))
+    if section_code in {"floor_slab_1", "floor_slab_2"}:
+        diagnostics.extend(beam_concrete_scalar_diagnostics(section))
+    if section_code == "foundation_slab":
+        diagnostics.extend(thermal_insert_conflict_diagnostics(section))
+
+    if section_code != "load_bearing_walls_lintels":
+        return diagnostics
+
+    diagnostics.extend(partition_rebar_in_main_wall_diagnostics(section))
+    diagnostics.extend(parapet_rebar_in_main_wall_diagnostics(section))
+
+    seen: set[tuple[str, str, str]] = set()
+    for status in ("needs_review", "found", "raw_table_rows"):
+        for item in as_list(section.get(status)):
+            if not isinstance(item, dict) or item.get("group_code") != "wall_block_items":
+                continue
+            value = item.get("value") if isinstance(item.get("value"), dict) else {}
+            wall_role = value.get("wall_role")
+            if wall_role in WALL_BLOCK_ITEM_ALLOWED_ROLES:
+                continue
+            key = (str(wall_role), short(item.get("raw_text"), 180), short(item.get("item_name"), 120))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"wall_block_items: invalid wall_role `{wall_role}`",
+                    "confidence": confidence_text(item),
+                    "value": short(item.get("value"), 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Недопустимая роль стены для калькулятора. Разрешены только "
+                        "`main_walls`, `floor_2`, `parapet`, `partitions`. "
+                        "Наружные/внутренние несущие стены должны различаться через context, "
+                        "а не через wall_role; обкладка вентканалов не относится к wall_block_items."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
 
 
 def collect_section_items(
@@ -405,6 +1057,8 @@ def collect_section_items(
                 "candidates": "",
             }
         )
+
+    collected.extend(semantic_diagnostics(section_code, section))
 
     for text in sorted(closed_by_alternative):
         collected.append(
