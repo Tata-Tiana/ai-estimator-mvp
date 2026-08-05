@@ -438,18 +438,19 @@ supplier_inputs:
   - key: formwork_rental_supplier_quote_total
     label_ru: "Коммерческое предложение поставщика на аренду опалубки, итого"
     unit: "руб"
-    source_class: SUPPLIER_INPUT
+    source_class: AUTO_CALCULATED
     required: true
     review_sheet: "01_Проверка проекта"
     calculator_input_path: "formwork_rental_supplier_quote_total"
-    normalized_json_path: "sections.floor_slab_2.supplier_inputs.formwork_rental_supplier_quote_total.value"
+    normalized_json_path: "sections.floor_slab_2.auto_calculated.formwork_rental_supplier_quote_total.value"
+    exclude_from_manual_values_registry: true
     value_kind: scalar
     review_behavior:
-      show_to_user: true
-      allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Укажите итоговую сумму коммерческого предложения поставщика на аренду опалубки."
-    notes: "Calculator requires this unconditionally (no fallback) but only uses it to compute a control ratio (raw_supplier_rate) shown for cross-check against formwork_rental_used_rate_per_m2 — it does not feed any estimate line total directly. Previously missing from this contract entirely; without it the calculator raises KeyError."
+      show_to_user: false
+      allow_manual_override: false
+      status_if_missing: "auto"
+      action_ru: "Служебное поле: adapter заполняет для совместимости калькулятора."
+    notes: "Calculator requires this unconditionally (no fallback) but only uses it to compute a control ratio (raw_supplier_rate) shown for cross-check against formwork_rental_used_rate_per_m2 — it does not feed any estimate line total directly. This is not Elena's manual input. Production adapter may derive a compatibility value from main_formwork_area_m2 * formwork_rental_used_rate_per_m2 when no real supplier quote is carried through."
 
   - key: crane_shifts
     label_ru: "Подача опалубки и арматуры краном"
