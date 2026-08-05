@@ -251,6 +251,65 @@ Done before the next active step:
   formwork numbers, currently uncaptured in any section — see `[[future_estimate_sections_roadmap]]`
   memory (updated with the confirmed numbers). Per user: "просто фиксируем" — recorded only, no schema
   work started.
+- 2026-08-05 flat_roof: reverted the 2026-08-03 decision that moved 7 fields
+  (`slope_plate_a/b/j/k_supplier_required_volume_m3`, `eps50_supplier_required_volume_m3`,
+  `roof_aerators_count`, `internal_drain_height_per_drain_m`) from `SUPPLIER_INPUT` to `AUTO_PROJECT`
+  on the assumption they're PDF specification values. Direct check of all 3 real projects' KR2 PDFs
+  (ARK/TRC/USV) found none print a letter-split SLOPE volume or aerator count as extractable text —
+  the SLOPE line is always one undivided figure or "Уточнить у монтажной организации". Confirmed
+  against Elena's own real delivered estimates (`АРК для ИИ.xlsx` rows 294-311, `Сметный расчет
+  _ЮСВ_28.04.2026.xlsx` rows 200-220): all 7 values are hand-typed fixed numbers, never formulas
+  from roof area/PDF geometry — ЮСВ's own row label spells it out ("требуется расчет уклонов у
+  расчетной организации"), and the internal drain height row is explicitly labelled "(ориентировочно)"
+  with a flat rule-of-thumb `3.75*3`. Moved all 7 back to `sections/flat_roof/section_contract.yaml`'s
+  `supplier_inputs`, removed them from `checks.required_review_parameters`, and deleted their entries
+  entirely from `chat_extraction_poc/data/calculator_targets_compact.json` and `target_aliases_ru.yaml`
+  — per user instruction, these are not extraction targets at all now ("не нужно искать эти все данные
+  по кровле и портить статистику... это болванка для заполнения"), same pattern as
+  `formwork_rental_supplier_quote_total`. Ran `regenerate_manual_values_registry.py`: added 7 new
+  blank rows to `output/manual_values_registry.xlsx` (dropped 0, kept 13 existing). Rebuilt TRC
+  workbook (`trc_review_workbook_2026-08-05_v8.xlsx`): flat_roof's `missing` count dropped from 22 to
+  15 — these 7 no longer count against found/missing statistics at all.
+- 2026-08-05 flat_roof follow-up: fixed the other roof gap from the same review — `roof_area_level_1/2`,
+  `roof_parapet_length_level_1/2`, `roof_vent_wall_abutment_level_1/2` (6 fields, all documented
+  "Fallback only" in the contract since `roof_zones[]` became primary geometry) were dangling as
+  "Не найдено" instead of showing they're correctly superseded. New `ROOF_ZONES_FALLBACK_ONLY_TARGETS`
+  set + branch in `flat_roof_alternative_scalar()` (signature extended to take `found_groups`, matching
+  the other section alternative-scalar functions): when `roof_zones[]` is present, these 6 show "Не
+  требуется (есть roof_zones)" with the zone rows quoted in the fragment, same pattern as
+  `wall_block_items[]` superseding its 5 scalar fields. Rebuilt workbook
+  (`trc_review_workbook_2026-08-05_v9.xlsx`): flat_roof `missing` dropped 15→9, `found` 175→181.
+- 2026-08-05 flat_roof follow-up #2: user asked to keep the 7 fields from the SLOPE/EPS50/aerators
+  revert (above) visible on sheet 01 after all, just not searched by extraction and not in
+  `manual_values_registry.xlsx` — that registry is explicitly for project-independent universal
+  defaults (its own docstring), while these are real per-project numbers from a supplier's КП
+  (commercial proposal), a different kind of data entirely. Sheet 01 vs sheet 01-1 placement in
+  `scalar_review_rows_for_contract()` is governed purely by `source_class` — anything in
+  `MANUAL_VALUE_SOURCE_CLASSES = {MANUAL_REVIEW, SUPPLIER_INPUT}` goes to 01-1 regardless of which
+  YAML section (`review_parameters`/`supplier_inputs`) declares it. Moved all 7 fields back into
+  `review_parameters` with `source_class: AUTO_PROJECT`, `target_code: ""`, and an explicit
+  `parser_mapping: {target_codes: [], ...}` (empty on purpose, with a note explaining there's no live
+  PDF signal) so they render on sheet 01 but are never attempted by extraction; `action_ru` changed to
+  "Заполните на основании КП от поставщика...". Re-ran `regenerate_manual_values_registry.py`:
+  dropped exactly the 7 stale rows, added 0. Rebuilt workbook (`trc_review_workbook_2026-08-05_v10.xlsx`)
+  — all 7 now show status "Проверьте" with the КП action text directly in the roof section of sheet 01.
+- 2026-08-05 round-trip loop run #2 on TRC (rebuilt prompt pack from this session's work): fresh
+  extraction (`gpt_trc_extraction(5).json`) → `build_extraction_notes_report.py` found 8
+  `semantic_error` (3 thermal_insert double-counted with thermal_insert_items, 4 `wall_block_items`
+  invalid `wall_role` values `partition`/`main`, 1 roof_zones vent-channel abutment flagged outside
+  the zone) → correction prompt run in the same chat → `gpt_trc_extraction_corrected_05_08.json`.
+  Re-ran the report on the corrected file: 7 of 8 genuinely fixed, but the roof_zones finding came
+  back as **2** hits instead of 0. Investigated: this was a **false positive in the diagnostic check
+  itself**, not a data problem — `is_roof_vent_abutment_item()` matched on raw_text containing
+  "вентканал" without excluding items already tied to `roof_zones` (its own found/needs_review row,
+  or a `raw_table_rows` component row whose `mapped_target_codes` already says it feeds
+  `roof_zones`). The corrected data was actually 100% correct — `wall_abutment_length_m: 14.92`
+  already equals the printed 9.5+5.42 components, both kept as diagnostic `raw_table_rows` for audit.
+  Fixed `is_roof_vent_abutment_item()` in `build_extraction_notes_report.py` to exclude items with
+  `group_code`/`target_code == "roof_zones"` or `"roof_zones" in mapped_target_codes`. Re-ran: 0
+  `semantic_error` remaining. Lesson: the round-trip loop caught a bug in the *checker*, not just the
+  *data* — worth remembering that a diagnostic re-firing after a claimed fix isn't automatically proof
+  the fix failed; check the diagnostic's own logic first when the "still broken" data looks correct.
 
 Next:
 
