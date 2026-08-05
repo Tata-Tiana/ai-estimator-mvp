@@ -354,12 +354,12 @@ defaults:
   - key: eps50_pack_volume_m3
     label_ru: "Объем пачки ЭППС 50 мм (торец плиты)"
     source_class: DEFAULT
-    value: null
+    value: 0.2776
     unit: "м3"
     calculator_input_path: "eps50_pack_volume_m3"
     source_note: "Catalog/package value, not PDF extraction."
     allow_override_later: true
-    notes: "Must be filled from catalog/price registry before calculator run — same open item as foundation_slab.eps50_pack_volume_m3 (also null), not yet resolved."
+    notes: "Resolved 2026-08-05: same pack volume as eps100_pack_volume_m3, confirmed identical (0.2776 m3) in 3 real delivered estimates (АРК для ИИ.xlsx row 108, Сметный расчет ЮСВ rows 55-56, ТРЦ_3_точный_расчет rows 74-75) — Пеноплэкс ГЕО packaging is the same physical unit regardless of board thickness (50mm vs 100mm), just holds a different board count. Same value filled in foundation_slab.eps50_pack_volume_m3."
 
   - key: glue_foam_coverage_m2_per_can
     label_ru: "Покрытие клей-пены"
