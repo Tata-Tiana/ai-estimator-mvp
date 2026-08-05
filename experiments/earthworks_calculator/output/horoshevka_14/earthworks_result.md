@@ -25,6 +25,8 @@
 - `excavator_shifts`: `3`
 - `geotextile_laying_area_m2`: `0`
 - `manual_excavation_quantity_for_estimate_m3`: `32.393`
+- `consumables_calc_method`: `legacy_fixed_amount`
+- `consumables_rate`: `0.0`
 - `consumables_amount`: `16292.16`
 - `enabled_lines`: `['axis_marking', 'excavator_jcb', 'manual_excavation', 'geotextile_material', 'sand_filling', 'sand_material', 'sand_manual_moving', 'consumables']`
 - `quantity_overrides`: `{'sand_order_volume_m3': 190, 'geotextile_material_quantity_m2': 300}`

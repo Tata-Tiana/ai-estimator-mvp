@@ -41,6 +41,10 @@
 - `logistics_and_supply_amount`: `36291.7`
 - `consumables_tool_amortization_amount`: `72583`
 - `technical_supervision_amount`: `10000`
+- `logistics_and_supply_calc_method`: `legacy_fixed_amount`
+- `logistics_and_supply_rate`: `0.0`
+- `consumables_tool_amortization_calc_method`: `legacy_fixed_amount`
+- `consumables_tool_amortization_rate`: `0.0`
 - `plywood_calc_method`: `working_area`
 - `plywood_sheet_working_area_m2`: `2.25`
 - `plywood_sheet_width_m`: `1.52`
@@ -89,16 +93,16 @@
 - Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.
 - Legacy-опалубка: борта = внешний периметр фундаментной плиты.
 - Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.
-- Термовставки считаются отдельно по 50 мм и 100 мм.
+- Термовставки стандартного типа считаются по тем слоям, которые явно есть в проекте: 50 мм, 100 мм или одна общая длина для двух слоёв.
 - Работы по термовставкам считаются по длине в м.п. из спецификации.
-- Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.
+- Материал термовставок берётся из спецификации, умножается на запас и округляется до кратности пачки.
 - Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.
 - Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.
 
 ## Промежуточные расчёты
 | Показатель | Значение |
 | --- | ---: |
-| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.', 'Legacy-опалубка: борта = внешний периметр фундаментной плиты.', 'Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.', 'Термовставки считаются отдельно по 50 мм и 100 мм.', 'Работы по термовставкам считаются по длине в м.п. из спецификации.', 'Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.', 'Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.', 'Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.']` |
+| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.', 'Legacy-опалубка: борта = внешний периметр фундаментной плиты.', 'Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.', 'Термовставки стандартного типа считаются по тем слоям, которые явно есть в проекте: 50 мм, 100 мм или одна общая длина для двух слоёв.', 'Работы по термовставкам считаются по длине в м.п. из спецификации.', 'Материал термовставок берётся из спецификации, умножается на запас и округляется до кратности пачки.', 'Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.', 'Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.']` |
 | `membrane.membrane_area_with_overlap_m2` | `352.0` |
 | `membrane.membrane_raw_rolls` | `8.8` |
 | `membrane.membrane_rolls` | `9` |
@@ -244,10 +248,14 @@
 | `manual_lines.concrete_pump_32m.line_type` | `fixed/manual` |
 | `manual_lines.logistics_and_supply.quantity` | `1` |
 | `manual_lines.logistics_and_supply.unit_price` | `36291.7` |
-| `manual_lines.logistics_and_supply.line_type` | `fixed/manual` |
+| `manual_lines.logistics_and_supply.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.logistics_and_supply.rate` | `0.0` |
+| `manual_lines.logistics_and_supply.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.consumables_tool_amortization.quantity` | `1` |
 | `manual_lines.consumables_tool_amortization.unit_price` | `72583` |
-| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual` |
+| `manual_lines.consumables_tool_amortization.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.consumables_tool_amortization.rate` | `0.0` |
+| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.technical_supervision.quantity` | `1` |
 | `manual_lines.technical_supervision.unit_price` | `10000` |
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |

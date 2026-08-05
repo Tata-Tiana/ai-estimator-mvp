@@ -35,6 +35,8 @@
     "excavator_shifts": 0,
     "geotextile_laying_area_m2": 0,
     "manual_excavation_quantity_for_estimate_m3": null,
+    "consumables_calc_method": "legacy_fixed_amount",
+    "consumables_rate": 0.0,
     "consumables_amount": 0,
     "enabled_lines": [
       "manual_excavation"

@@ -41,6 +41,10 @@
 - `logistics_and_supply_amount`: `36291.7`
 - `consumables_tool_amortization_amount`: `72583`
 - `technical_supervision_amount`: `10000`
+- `logistics_and_supply_calc_method`: `legacy_fixed_amount`
+- `logistics_and_supply_rate`: `0.0`
+- `consumables_tool_amortization_calc_method`: `legacy_fixed_amount`
+- `consumables_tool_amortization_rate`: `0.0`
 - `plywood_calc_method`: `working_area`
 - `plywood_sheet_working_area_m2`: `2.25`
 - `plywood_sheet_width_m`: `1.52`
@@ -73,10 +77,8 @@
 - Фанера legacy: `plywood_sheets = ceil(formwork_area / plywood_sheet_working_area_m2)`.
 - Пиломатериал: `timber_volume = formwork_area * timber_thickness_m`.
 - ЭППС 50 под плитой, работа: `area = eps50_under_slab_volume_m3 / eps50_thickness_m`.
-- Работы термовставок 50 мм: `quantity = thermal_insert_50_length_m`.
-- Работы термовставок 100 мм: `quantity = thermal_insert_100_length_m`.
-- Материал термовставок 50 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_50_pack_multiple_qty)`.
-- Материал термовставок 100 мм: `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, thermal_insert_100_pack_multiple_qty)`.
+- Работы термовставок: по раздельным длинам 50/100 мм либо одной общей длине `thermal_insert_combined_length_m`.
+- Материалы термовставок: только для тех слоев, которые явно есть в проекте; `purchase_qty = round_up_to_multiple(spec_qty * thermal_insert_material_waste_coeff, pack_multiple_qty)`.
 - Арматура legacy: вес -> м.п. -> запас 5% -> прутки -> закупочные м.п. -> стоимость.
 - Бетонирование: работа по проектному объёму, материал с запасом и округлением вверх.
 - Итог раздела: `internal_section_total = internal_materials_total + internal_works_total`.
@@ -90,16 +92,16 @@
 - В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.
 - Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.
 - Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.
-- Термовставки считаются отдельно по 50 мм и 100 мм.
+- Термовставки стандартного типа считаются по тем слоям, которые явно есть в проекте: 50 мм, 100 мм или одна общая длина для двух слоёв.
 - Работы по термовставкам считаются по длине в м.п. из спецификации.
-- Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.
+- Материал термовставок берётся из спецификации, умножается на запас и округляется до кратности пачки.
 - Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.
 - Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.
 
 ## Промежуточные расчёты
 | Показатель | Значение |
 | --- | ---: |
-| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.', 'В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.', 'Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.', 'Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.', 'Термовставки считаются отдельно по 50 мм и 100 мм.', 'Работы по термовставкам считаются по длине в м.п. из спецификации.', 'Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.', 'Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.', 'Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.']` |
+| `confirmed_rules` | `['PLANTERBAND = количество рулонов мембраны * 4.', 'Пиломатериал = площадь опалубки * 0.05, без дополнительного запаса.', 'Пеноплэкс = ЭППС.', 'Доставка металла ориентируется на 10 тонн на машину по листу Коробка.', 'Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.', 'В новом стандарте площадь опалубки бортов фундаментной плиты берётся из спецификации.', 'Периметр и высота борта не являются обязательными входами для расчёта опалубки в production-стандарте.', 'Фанера, пиломатериал, монтаж и демонтаж опалубки считаются от готовой площади опалубки.', 'Термовставки стандартного типа считаются по тем слоям, которые явно есть в проекте: 50 мм, 100 мм или одна общая длина для двух слоёв.', 'Работы по термовставкам считаются по длине в м.п. из спецификации.', 'Материал термовставок берётся из спецификации, умножается на запас и округляется до кратности пачки.', 'Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.', 'Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п.']` |
 | `membrane.membrane_area_with_overlap_m2` | `352.0` |
 | `membrane.membrane_raw_rolls` | `8.8` |
 | `membrane.membrane_rolls` | `9` |
@@ -243,10 +245,14 @@
 | `manual_lines.concrete_pump_32m.line_type` | `fixed/manual` |
 | `manual_lines.logistics_and_supply.quantity` | `1` |
 | `manual_lines.logistics_and_supply.unit_price` | `36291.7` |
-| `manual_lines.logistics_and_supply.line_type` | `fixed/manual` |
+| `manual_lines.logistics_and_supply.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.logistics_and_supply.rate` | `0.0` |
+| `manual_lines.logistics_and_supply.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.consumables_tool_amortization.quantity` | `1` |
 | `manual_lines.consumables_tool_amortization.unit_price` | `72583` |
-| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual` |
+| `manual_lines.consumables_tool_amortization.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.consumables_tool_amortization.rate` | `0.0` |
+| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.technical_supervision.quantity` | `1` |
 | `manual_lines.technical_supervision.unit_price` | `10000` |
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |

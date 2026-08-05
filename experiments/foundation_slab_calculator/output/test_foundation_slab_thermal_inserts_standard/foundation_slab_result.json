@@ -99,6 +99,10 @@
     "logistics_and_supply_amount": 36291.7,
     "consumables_tool_amortization_amount": 72583,
     "technical_supervision_amount": 10000,
+    "logistics_and_supply_calc_method": "legacy_fixed_amount",
+    "logistics_and_supply_rate": 0.0,
+    "consumables_tool_amortization_calc_method": "legacy_fixed_amount",
+    "consumables_tool_amortization_rate": 0.0,
     "plywood_calc_method": "working_area",
     "plywood_sheet_working_area_m2": 2.25,
     "plywood_sheet_width_m": 1.52,
@@ -134,9 +138,9 @@
       "Legacy-фанера: текущий старый кейс считает через рабочую площадь 2.25 м2.",
       "Legacy-опалубка: борта = внешний периметр фундаментной плиты.",
       "Legacy-опалубка: при разных толщинах плит можно брать максимальную толщину.",
-      "Термовставки считаются отдельно по 50 мм и 100 мм.",
+      "Термовставки стандартного типа считаются по тем слоям, которые явно есть в проекте: 50 мм, 100 мм или одна общая длина для двух слоёв.",
       "Работы по термовставкам считаются по длине в м.п. из спецификации.",
-      "Материал термовставок берётся из спецификации, умножается на 1.05 и округляется до кратности пачки.",
+      "Материал термовставок берётся из спецификации, умножается на запас и округляется до кратности пачки.",
       "Старая логика через элемент, шаг 600 мм и термовкладыш 150 мм не используется в новом стандарте.",
       "Legacy-арматура: вес из спецификации переводится в м.п. через kg_per_meter, затем запас, хлысты и стоимость по м.п."
     ],
@@ -324,12 +328,16 @@
       "logistics_and_supply": {
         "quantity": 1,
         "unit_price": 36291.7,
-        "line_type": "fixed/manual"
+        "calc_method": "legacy_fixed_amount",
+        "rate": 0.0,
+        "line_type": "fixed/manual or section_total_rate"
       },
       "consumables_tool_amortization": {
         "quantity": 1,
         "unit_price": 72583,
-        "line_type": "fixed/manual"
+        "calc_method": "legacy_fixed_amount",
+        "rate": 0.0,
+        "line_type": "fixed/manual or section_total_rate"
       },
       "technical_supervision": {
         "quantity": 1,

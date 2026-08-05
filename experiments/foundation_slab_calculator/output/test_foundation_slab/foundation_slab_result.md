@@ -41,6 +41,10 @@
 - `logistics_and_supply_amount`: `36291.7`
 - `consumables_tool_amortization_amount`: `72583`
 - `technical_supervision_amount`: `10000`
+- `logistics_and_supply_calc_method`: `legacy_fixed_amount`
+- `logistics_and_supply_rate`: `0.0`
+- `consumables_tool_amortization_calc_method`: `legacy_fixed_amount`
+- `consumables_tool_amortization_rate`: `0.0`
 - `plywood_calc_method`: `working_area`
 - `plywood_sheet_working_area_m2`: `2.25`
 - `plywood_sheet_width_m`: `1.52`
@@ -232,10 +236,14 @@
 | `manual_lines.concrete_pump_32m.line_type` | `fixed/manual` |
 | `manual_lines.logistics_and_supply.quantity` | `1` |
 | `manual_lines.logistics_and_supply.unit_price` | `36291.7` |
-| `manual_lines.logistics_and_supply.line_type` | `fixed/manual` |
+| `manual_lines.logistics_and_supply.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.logistics_and_supply.rate` | `0.0` |
+| `manual_lines.logistics_and_supply.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.consumables_tool_amortization.quantity` | `1` |
 | `manual_lines.consumables_tool_amortization.unit_price` | `72583` |
-| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual` |
+| `manual_lines.consumables_tool_amortization.calc_method` | `legacy_fixed_amount` |
+| `manual_lines.consumables_tool_amortization.rate` | `0.0` |
+| `manual_lines.consumables_tool_amortization.line_type` | `fixed/manual or section_total_rate` |
 | `manual_lines.technical_supervision.quantity` | `1` |
 | `manual_lines.technical_supervision.unit_price` | `10000` |
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |
