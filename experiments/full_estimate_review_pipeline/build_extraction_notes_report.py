@@ -199,18 +199,15 @@ REBAR_ITEM_GROUP_CODES = {
 ROOF_ZONE_ALLOWED_OPERABILITY = {"exploitable", "non_exploitable"}
 
 # target_code -> raw-text/table-context terms that mean the matched value almost certainly came
-# from the wrong PDF row for this target (e.g. formwork area copied into a "slab area" control
-# field). Mirrors validate_claude_extraction.py's check_forbidden_target, kept here because it is a
-# review-workbook/notes-report concern (same class as wall_role/beam-concrete-scalar checks above),
-# not an extraction-time prompt-compliance check.
-FORBIDDEN_SOURCE_TERMS = {
-    "floor_slab_2_slab_area": (
-        ("опалуб",),
-        "Это площадь опалубки, а не площадь плиты. Инструкция по этому target прямо запрещает "
-        "сопоставлять с ним строки нижней/основной опалубки. Оставьте floor_slab_2_slab_area пустым "
-        "или удалите found-элемент; значение остаётся только в floor_slab_2_main_formwork_area.",
-    ),
-}
+# from the wrong PDF row for this target. Mirrors validate_claude_extraction.py's
+# check_forbidden_target, kept here because it is a review-workbook/notes-report concern (same
+# class as wall_role/beam-concrete-scalar checks above), not an extraction-time prompt-compliance
+# check. Currently empty: the one entry this held (floor_slab_2_slab_area sourced from a formwork
+# row) was removed 2026-08-06 - Elena confirmed the parser MAY use waterproofing area or
+# under-slab/bottom formwork area as a substitute for slab area when slab area isn't given
+# directly in the PDF (see elena_slab_area_substitute_signals_resolved memory), so this is no
+# longer a violation. Mechanism kept for future genuinely-forbidden source patterns.
+FORBIDDEN_SOURCE_TERMS: dict[str, tuple[tuple[str, ...], str]] = {}
 
 # Classic 50/100mm split (scalar target_codes) vs the arbitrary-size alternative group
 # (thermal_insert_items) are mutually exclusive inputs for the same physical thermal inserts -

@@ -1225,10 +1225,10 @@ floor_slab_2_slab_area:
   expected_unit: m2
   table_hints: ["Спецификация плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
   required_context: ["площадь", "плит|перекрыти"]
-  negative_context: ["опалубка", "нижняя опалубка", "горизонтальная опалубка", "торец", "1 этажа", "фундамент"]
+  negative_context: ["торец", "1 этажа", "фундамент"]
   value_column_hint: ["площадь", "кол-во", "количество"]
   unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Optional control value only; does not feed the calculator directly. Do not map 'Нижняя опалубка плиты' here; that row is floor_slab_2_main_formwork_area."
+  notes: "Optional control value only; does not feed the calculator directly. Prefer a genuine 'Площадь плиты перекрытия' row. Elena confirmed 2026-08-06: if the PDF has no separate slab-area row, it is acceptable to reuse 'Нижняя опалубка плиты'/'Горизонтальная опалубка' (floor_slab_2_main_formwork_area) or the waterproofing area as a substitute value, since they are the same footprint in practice — but ALWAYS set needs_review=true and explain in notes that the value was borrowed from formwork/waterproofing rather than a direct slab-area row, so Elena can confirm it wasn't actually a separate, different number."
 
 floor_slab_2_edge_insulation_height:
   section_code: floor_slab_2
