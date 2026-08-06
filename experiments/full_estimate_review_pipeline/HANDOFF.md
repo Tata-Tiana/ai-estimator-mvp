@@ -1063,18 +1063,182 @@ for both 50mm and 100mm layers in every case (same physical package, different b
 Filled into both contracts; pilot re-verified end to end via `core.job_runner.run_section()`
 with zero manual patches — still 0 mismatch.
 
+2026-08-05 update #2: `earthworks` adapter (`sections/earthworks/build_input.py`) also done —
+second section, more involved than waterproofing (4 fixed `*_calc_method` production defaults,
+2 real production repeated_rows groups `pit_items`/`sand_items`). Verified on 2 scenarios via
+`core.job_runner.run_section()`, 0 mismatch both times: one exercising `pit_items`/`sand_items`
+with `trench_volume_m3` as a pre-summed scalar (60.1 = sum of the same case's 4 `trench_routes`,
+matching how the review-workbook layer already surfaces this — the adapter never reads
+`trench_routes` directly, it's `production_input: false`), one pure-scalar path with no repeated
+rows at all. Found AND FIXED (explicit user authorization) a real pre-existing calculator quirk:
+`earthworks_calculator.py`'s `validate()` used to always require `pit_excavation_depth_m`
+non-None in `standard_volume_productivity` mode even when `pit_items` already gives volume
+directly and the actual formula never touches depth in that branch. Now only required when
+`pit_items` is empty. All 9 `earthworks_calculator` regression cases still pass unchanged; new
+manual check confirms the previously-failing scenario (pit_items given, depth None) now computes
+cleanly. See `ADAPTER_BUILD_PLAN.md`'s Этап 2 section for full writeup.
+
+2026-08-05 update #3: `schiedel_vent_channels` adapter also done (third section; plain-dict
+calculator input, no dataclass). Three real gaps found and fixed along the way: (1) contract's
+`price_keys` only covered 2x/3x channel types, missing 1x/4x/cvent + D400/D500 masonry gas
+block prices even though real projects already use them (TRC uses 1x, ARK uses 4x) — added the
+5 missing entries; (2) `schiedel_masonry_gas_block_items[]` was never declared in
+`review_parameters` at all despite the calculator already reading it and a prior memory note
+claiming it shipped — added, mirroring `schiedel_channel_items`; (3) a real cross-section bug in
+`core/workbook_reader.py`: fields with `source_class: MANUAL_REVIEW`/`SUPPLIER_INPUT` (like
+`schiedel_delivery_trips`) render on sheet 01-1, not sheet 01, but nothing ever read sheet 01-1
+— this affects every section with required manual/supplier fields (crane shifts, concrete pump,
+waste removal trucks - the same 12-field list surfaced earlier this session), not just this one.
+Added `read_manual_values()`, merged into the same dict `read_scalar_parameters()` returns so
+every existing `build_input.py` keeps working unchanged. Verified end to end on real TRC numbers
+(`test_schiedel_vent_channels_trc`) — 0 mismatch; re-verified waterproofing and earthworks still
+0 mismatch after the core/ fix.
+
+2026-08-05 update #4: `foundation_slab` adapter also done (fourth section, most involved so
+far). First adapter with a *dynamically* chosen mode: `thermal_insert_mode` is "items" when
+`thermal_insert_items` has real rows on sheet 01, else the contract's fixed
+"standard_50_100" default — every other `*_calc_method` in this pipeline so far has been a
+single fixed default. Also the first use of `core/`'s new per-item "template" price
+mechanism (`template_price_keys()`/`read_prices()` in `core/workbook_reader.py`,
+`resolve_prices()` in `core/price_resolver.py`, added specifically to unblock this adapter):
+sheet 02 expands the contract's single `rebar_unit_price_by_item` key into one real row per
+steel_class/diameter_mm actually in the project, and `resolve_prices()` now returns
+`{price_registry_code: price}` for such keys instead of a single float. Needed by 3 more
+future sections with rebar items: floor_slab_1, floor_slab_2, load_bearing_walls_lintels.
+Two real adapter bugs found and fixed while verifying: (1) the generic "everything else from
+`defaults` by key name" fallback loop was blindly copying `rod_length_m` (a per-item catalog
+default, `calculator_input_path: "rebar_items[*].rod_length_m"`, not even a
+`foundation_rebar_items` column — PDFs never give it) as a flat top-level field, crashing
+`FoundationSlabInput.__init__()`; fixed by skipping any default with `[` in its
+`calculator_input_path` in the generic loop, injecting it per-item instead (with
+`item.setdefault()` so a row can still override); (2) `build_input.py` never read
+`supplier_inputs:` at all (6 fields: crane/pump shifts, delivery trucks, box metal weight,
+2 legacy fixed-amount fields) — `FoundationSlabInput` has no dataclass default for any of
+them, so this would have crashed on every real run. Fixed by reading `all_supplier_inputs(contract)`
+explicitly from `scalars` (already merges sheet 01 + 01-1 since the schiedel-adapter core/
+fix), defaulting `required: false` legacy fields to 0. Verified via
+`core.job_runner.run_section()` against an independently-built reference (direct
+`calculate_foundation_slab()` call) — 0 mismatch across all 30 estimate lines,
+`calculation_blocks`, `internal_totals`, warnings, once the reference's own stale
+fixture-vs-current-contract-default drift (`concrete_waste_coeff`, `concrete_mixer_volume_m3`,
+`thermal_insert_50/100_pack_multiple_qty`, `logistics_and_supply_calc_method`,
+`consumables_tool_amortization_calc_method`) was corrected to match. See
+`ADAPTER_BUILD_PLAN.md`'s Этап 2 section for the full writeup.
+
+2026-08-05 update #5: `floor_slab_2` adapter also done (fifth section). Plain-dict calculator
+input (no dataclass, like schiedel), second user of foundation_slab's per-item template
+rebar-pricing mechanism. Nothing dynamically chosen here — the contract doesn't even declare
+the alternative calc_method modes (legacy_dimensions, edge_and_beam_formwork_area_combined_m2,
+legacy_weight_kg) as review_parameters, so the adapter only ever exercises the single
+production path. Two section-specific things worth remembering: (1) `beam_items` maps to
+`beams: {"items": [...]}`, not a flat `beam_items` key — this section's own
+`calculator_input_path` is literally `"beams.items"`, easy to miss by analogy with every other
+repeated_rows group in this pipeline, which map 1:1 to their own top-level key; (2)
+`formwork_rental_supplier_quote_total` is AUTO_CALCULATED but never actually populated
+anywhere in the codebase (Elena never sees it - `show_to_user: false`), yet the calculator
+requires it unconditionally; the contract's own notes explicitly authorize synthesizing it as
+`main_formwork_area_m2 * formwork_rental_used_rate_per_m2` since it only feeds a
+self-comparison ratio, never a real estimate line. Verified via `core.job_runner.run_section()`
+against an independently hand-built reference (not a reused fixture, and not a re-run of the
+adapter's own output) — 0 mismatch. Also surfaced a pure test-construction gotcha (not a
+product bug - the real pipeline scripts never call `insert_rows()` at all, confirmed by
+`grep`): `openpyxl`'s `insert_rows()` shifts cell content but not merged-range XML
+declarations, so inserting rows before a merged group-title row silently loses data in that
+row's cells on the next file load unless you unmerge before inserting and re-merge after, in
+one session, before saving. See `ADAPTER_BUILD_PLAN.md`'s Этап 2 section for the full writeup.
+
+2026-08-05 update #6: `floor_slab_1` adapter also done (sixth section) — the first calculator
+in this pipeline whose input is namespaced into sub-dicts (`geometry.*`, `insulation.*`,
+`rates.*`, `overheads.*`, `manual_lines.*`) rather than a flat dict. The contract's own
+`calculator_input_path` already encodes these dotted paths, so the adapter reads them
+generically via a new `_set_nested()` helper instead of hand-coding which sub-dict each of
+~35 fields belongs to — a reusable pattern for any future namespaced section. Two real
+contract gaps found only by actually running the calculator (not by reading the contract):
+(1) no `rebar_waste_coeff` default existed at all (unlike every other rebar-bearing section),
+yet `calculate_rebar_item()` reads `item["waste_coeff"]` unconditionally — added the missing
+default (1.05, matching foundation_slab/floor_slab_2) with explicit authorization, injected
+per-item like foundation_slab's `rod_length_m`; (2) `calculate_rebar_item()`'s
+`spec_length_items` branch also hard-requires `item["component"] == "floor_slab_1"` and
+`item["floor"] == 1` — structural constants, not real PDF data — so the adapter force-sets
+them on every row rather than trust extraction; (3) `geometry.slab_control_geometry_area_m2`
+is required unconditionally but was never declared anywhere in the contract — confirmed by
+reading every usage that it's purely a diagnostic echo, never touches money, and per explicit
+user decision the adapter mirrors `main_formwork_area_m2` into it (no separate PDF signal
+exists for a distinct control area). Verified via `core.job_runner.run_section()` against an
+independently hand-built reference — 0 mismatch, including exact match on all 3 warnings
+produced by the deliberately-imperfect test data. See `ADAPTER_BUILD_PLAN.md`'s Этап 2 section
+for the full writeup.
+
+2026-08-05 update #7: `flat_roof` adapter also done (seventh section) — plain-dict, no
+namespacing at all (unlike floor_slab_1, every field is top-level). Fixed production
+calc_methods: `roof_geometry_calc_method=roof_zones` (plus 4 `section_*_rate` overhead
+methods), nothing dynamic. Two real gaps found only by running the calculator: (1) the same
+class of bug as floor_slab_1's `slab_control_geometry_area_m2` but on 7 fields at once -
+`roof_area_level_1/2_m2`, `project_spec_roof_area_m2`, `parapet_length_level_1/2_m`,
+`vent_wall_abutment_level_1/2_m` are all `required: false` (fallback-only for the legacy
+`detailed_project_geometry` mode) yet the calculator's result-building code reads all 7
+unconditionally for a diagnostic report block; per user decision the adapter defaults all 7
+to 0 when absent; (2) a real `core/` bug, not adapter-specific:
+`template_price_keys()` in `core/workbook_reader.py` flagged ANY `"<"` in a price's
+`registry_code` as the rebar per-item template pattern, which wrongly caught flat_roof's
+`slope_plate_unit_price_per_m3` (`registry_code: "roof_eps_slope_<type>_m3"` - a
+documentation-style placeholder, not a real expansion; sheet 02 only ever has one row for it,
+the calculator reads 4 separate top-level fields
+`slope_plate_a/b/j/k_unit_price_per_m3` built via f-string, all sharing one reviewed price per
+the contract's own note). The false positive made `resolve_prices()` return a
+`{registry_code: price}` dict instead of a float AND silently skip the "required price
+missing" check (template keys are deliberately exempt from it). Grepped every
+`section_contract.yaml` in the pipeline - this was the only false positive, every other `<...>`
+is the genuine rebar `<class>`/`<diameter>` pattern. Fixed by narrowing the detection to
+require both `<class>` and `<diameter>` together; re-verified detection is still correct
+across all sections with `<...>` in any registry_code (4 rebar-bearing sections still detect
+`rebar_unit_price_by_item`, flat_roof detects nothing). Verified via
+`core.job_runner.run_section()` against an independently hand-built reference - 0 mismatch.
+See `ADAPTER_BUILD_PLAN.md`'s Этап 2 section for the full writeup.
+
+2026-08-06 update #8: `load_bearing_walls_lintels` adapter done - the eighth and last section
+of Этап 2, and the hardest: a typed dataclass (like foundation_slab/waterproofing/earthworks,
+not plain-dict) with 12 `*_calc_method` fields (memory previously said "9" - an undercount,
+now corrected), but fully flat, no namespacing at all (unlike floor_slab_1 - not even a
+`rates.` prefix on prices). All 12 calc_methods are fixed contract defaults, nothing chosen
+dynamically. One real design decision worth remembering: `flat_roof_enabled` is an
+AUTO_CALCULATED system flag Elena never sees and nothing ever populates; the contract's own
+note says to derive it from whether parapet/vent-chimney project data is present, so the
+adapter sets it `True` when any of `parapet_masonry_volume_m3`/
+`parapet_gas_block_d500_250_spec_volume_m3`/`vent_chimney_gas_block_spec_volume_m3` has a
+real value. Found two already-self-documented dead contract entries needing no fix
+(`floor_1/2_lintel_formwork_plywood_qty`/`timber_volume_m3` point at dataclass fields removed
+from the calculator 2026-07-25; their own notes already say "hidden... pending re-wiring
+check" - adapter simply never reads them, since passing them would raise TypeError on
+construction). `main_wall_rebar_items`/`lintel_rebar_items` carry real `floor`/`component`
+extraction columns (unlike foundation_slab's `rod_length_m` default), but `component` is
+still force-set per group (structural constant within each group,
+`validate_spec_rebar_item()` hard-fails on mismatch) - same defensive pattern as floor_slab_1,
+applied per-group instead of per-section. Verified via `core.job_runner.run_section()` on a
+test workbook exercising floor_2 masonry, both U-block and monolithic lintels on floor 1,
+parapet + vent-chimney cladding (triggering `flat_roof_enabled=True`), and deliberately-wrong
+`component` values in the rebar rows (to prove the forced correction works) - compared against
+an independently hand-built reference (built completely from scratch, not reusing the
+adapter's own output) - 0 real mismatches across all 40 estimate lines and `internal_totals`.
+See `ADAPTER_BUILD_PLAN.md`'s Этап 2 section for the full writeup.
+
+**Этап 2 is now fully complete** - all 8 sections have a working, verified `build_input.py`:
+`waterproofing`, `earthworks`, `schiedel_vent_channels`, `foundation_slab`, `floor_slab_2`,
+`floor_slab_1`, `flat_roof`, `load_bearing_walls_lintels`.
+
 Next:
 
 - Continue Cross-Check Stage for the remaining sections, per the no-value-leakage rule.
-- Этап 2: repeat `build_input.py` for the remaining 7 sections, easiest-to-hardest order
-  already chosen in `ADAPTER_BUILD_PLAN.md`: `earthworks` (has an old reference to adapt) →
-  `schiedel_vent_channels` → `foundation_slab` → `floor_slab_2` → `floor_slab_1` → `flat_roof`
-  → `load_bearing_walls_lintels` (hardest, 9 `*_calc_method` modes).
-- Still not built at all: the shared final-estimate-workbook exporter that combines all 8
-  sections' `estimate_lines` into one smeta (Step 9/final step of the canonical pipeline).
+- Этап 2 is done. The next major piece of the canonical pipeline (chat extraction → review
+  workbook → normalized review JSON → calculator input → calculator result → formula-ready
+  rows → final estimate workbook) is Step 9: the shared final-estimate-workbook exporter that
+  combines all 8 sections' `estimate_lines` into one actual smeta. Still not built at all.
+  Building this is the natural next step now that every section can be turned into a
+  calculator result on its own.
 
-Do not start coding all remaining 7 sections' adapters at once — one at a time, verified
-against that section's own `cases/*/expected.json` before moving to the next, same as the
+Do not start coding all remaining sections' adapters at once — one at a time, verified
+against that section's own `cases/*/expected.json` (or an independently-built reference, when
+no clean fixture matches production defaults) before moving to the next, same as the
 waterproofing pilot.
 
 ## Current Note 2026-08-04: flat roof vent-channel abutments

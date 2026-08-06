@@ -630,17 +630,376 @@ experiments/full_estimate_review_pipeline/review_to_calculator/
 
 ### Этап 2 — раскатка на оставшиеся 7 (порядок — от простого к сложному)
 
-- [ ] `earthworks` — образец уже есть целиком, перенести под новый `core/`.
-- [ ] `schiedel_vent_channels`
-- [ ] `foundation_slab`
-- [ ] `floor_slab_2`
-- [ ] `floor_slab_1`
-- [ ] `flat_roof`
-- [ ] `load_bearing_walls_lintels` (самый сложный — 9 `*_calc_method` режимов)
+- [x] `earthworks` — образец уже есть целиком, перенести под новый `core/`.
+- [x] `schiedel_vent_channels`
+- [x] `foundation_slab`
+- [x] `floor_slab_2`
+- [x] `floor_slab_1`
+- [x] `flat_roof`
+- [x] `load_bearing_walls_lintels` (самый сложный — 12 `*_calc_method` режимов, не 9)
+
+#### `load_bearing_walls_lintels` (2026-08-06) — восьмой и последний адаптер Этапа 2
+
+Единственная typed-dataclass секция после foundation_slab/waterproofing/earthworks (не
+plain-dict), но БЕЗ вложенности вообще (в отличие от floor_slab_1) — все ~90 полей
+верхнего уровня, включая цены (никакого `rates.`-префикса). Самая большая секция пайплайна:
+12 `*_calc_method` полей (в памяти раньше значилось "9" — недосчёт, актуализировано).
+
+Фиксированные production calc_method: `scaffolding_calc_method=floors_based`,
+`cutoff_waterproofing_calc_method=spec_area`, `lintel_length_calc_method=spec_total_length`,
+`lintel_concrete_calc_method=spec_volume`, `main_wall_rebar_calc_method=spec_length_items`,
+`lintel_rebar_calc_method=spec_length_items`,
+`main_walls_crane_calc_method=delivery_trucks_threshold` (полностью автоматический — смены
+крана считаются из количества машин доставки блоков, `main_walls_crane_shifts` в этом режиме
+вообще не читается и намеренно не выставляется),
+`upper_floor_calc_method=floor_2_spec_volume`, `parapet_calc_method=flat_roof_spec_volume`,
+`vent_chimney_cladding_calc_method=flat_roof_spec_volume`,
+`vent_chimney_geometry_calc_method=spec_volume_thickness`,
+`walls_consumables_calc_method=section_total_rate`. Ничего не выбирается динамически самим
+адаптером — каждый режим фиксирован контрактом (в отличие от foundation_slab, единственной
+секции с реальным динамическим выбором).
+
+**`flat_roof_enabled`** — системный флаг (`AUTO_CALCULATED`, `required: true`,
+`show_to_user: false`, Елена его никогда не видит) без единого места, где он реально
+заполняется. Сам контракт прямо говорит, что делать: "true for flat-roof projects where
+parapet or vent/chimney cladding rows are relevant" — адаптер выводит его из наличия
+реальных (не null/не 0) значений в `parapet_masonry_volume_m3` /
+`parapet_gas_block_d500_250_spec_volume_m3` / `vent_chimney_gas_block_spec_volume_m3` (эти
+поля в принципе получают PDF-данные только на проектах с плоской кровлей).
+
+**Два мёртвых, уже самоописанных пробела контракта** (правка не нужна — сами
+`notes:` полей это подтверждают): `floor_1/2_lintel_formwork_plywood_qty` и
+`floor_1/2_lintel_formwork_timber_volume_m3` имеют реальный `calculator_input_path`, но
+указывают на поля датакласса, УДАЛЁННЫЕ из калькулятора 2026-07-25 (материал опалубки
+перемычек теперь считается из площади, а не из готового кол-ва/объёма) — сами
+`review_parameters`-записи просто не удалили следом (`show_to_user: false` уже стоит,
+собственные notes прямо говорят "hidden... pending a separate re-wiring check"). Адаптер их
+никогда не читает — передача любого из них вызвала бы `TypeError` при конструировании
+датакласса (неожиданный keyword argument).
+
+Арматура (`main_wall_rebar_items`/`lintel_rebar_items`): `floor`/`component` — настоящие
+колонки из PDF (в отличие от foundation_slab, где `rod_length_m` был чистым дефолтом).
+`component` тем не менее принудительно проставляется адаптером под каждую группу
+(`"load_bearing_walls"`/`"lintels"` соответственно), так как это структурная константа
+внутри каждой группы и `validate_spec_rebar_item()` жёстко падает при любом расхождении —
+та же защитная логика, что и у floor_slab_1's forced component/floor, только на уровне
+группы, а не всей секции. `floor` оставлен как есть из экстракции (реально варьируется:
+1 или 2 этаж).
+
+**Проверено end-to-end**: собран тестовый workbook (`floors_count=2` — включает floor_2 ветку;
+и U-block, и монолитные перемычки на 1 этаже одновременно; парапет + обкладка вентканалов —
+включает `flat_roof_enabled=True`; 4 позиции арматуры по 2 группам с намеренно НЕВЕРНЫМ
+`component` в исходных данных — проверить принудительную коррекцию). Сверено с независимо
+построенным вручную референсом (полностью с нуля, не переиспользование вывода адаптера) —
+**0 расхождений** по всем 40 строкам сметы и `internal_totals`, единственные два отличия в
+диффе — пустое поле `project_name` (не настраивала заголовок тестового workbook) и одно
+забытое мной поле в референсе (`floor_2_concrete_delivery_trips`), которое не повлияло ни на
+одну строку сметы в этом сценарии (нужно только когда есть U-block перемычки на 2 этаже,
+которых в тесте не было).
+
+**Этап 2 полностью завершён** — все 8 разделов имеют рабочий, проверенный `build_input.py`:
+`waterproofing`, `earthworks`, `schiedel_vent_channels`, `foundation_slab`, `floor_slab_2`,
+`floor_slab_1`, `flat_roof`, `load_bearing_walls_lintels`.
+
+#### `flat_roof` (2026-08-05) — седьмой адаптер
+
+Plain-dict вход, без вложенности (в отличие от floor_slab_1 — здесь абсолютно все поля
+верхнего уровня). Фиксированные production calc_method:
+`roof_geometry_calc_method=roof_zones`, `roof_consumables_calc_method=section_total_rate`,
+`roof_logistics_and_supply_calc_method=section_total_rate`,
+`technical_supervision_calc_method=section_work_rate`,
+`procurement_storage_calc_method=section_material_rate`. Ничего не выбирается динамически.
+
+**Два реальных пробела, оба найдены только при реальном прогоне калькулятора:**
+
+1. Тот же класс бага, что и `slab_control_geometry_area_m2` у floor_slab_1, но сразу на 7
+   полях: `roof_area_level_1/2_m2`, `project_spec_roof_area_m2`,
+   `parapet_length_level_1/2_m`, `vent_wall_abutment_level_1/2_m` — контракт помечает их
+   `required: false` (только фолбэк для старого режима `detailed_project_geometry`, "оставьте
+   пустым при использовании roof_zones"), но код построения результата калькулятора читает
+   все 7 безусловно для чисто диагностического блока `calculation_blocks.geometry` (не влияют
+   на деньги — проверила каждое использование). По явному решению пользователя адаптер
+   подставляет 0 для всех семи, когда их нет в проверенных данных.
+2. **Настоящий баг `core/`, не специфичный для адаптера**: `template_price_keys()` ловил ЛЮБОЙ
+   `"<"` в `registry_code` как признак шаблонной построчной цены (механизм арматуры). Но
+   `slope_plate_unit_price_per_m3`'s `registry_code` — `"roof_eps_slope_<type>_m3"` — это не
+   настоящий шаблон (на листе 02 всегда ровно одна строка, `<type>` — просто
+   документационный плейсхолдер), а калькулятор читает 4 ОТДЕЛЬНЫХ поля верхнего уровня
+   (`slope_plate_a/b/j/k_unit_price_per_m3`), собранных через f-string с одним и тем же
+   значением (контракт это явно подтверждает: "all 4 are the same real product/price in every
+   production test case"). Ложное срабатывание превращало `resolved_prices["slope_plate_..."]`
+   в словарь `{registry_code: price}` вместо числа И (хуже) тихо пропускало проверку
+   "обязательная цена не заполнена" для этого ключа, так как шаблонные ключи намеренно
+   освобождены от этой проверки. Проверила все `section_contract.yaml` в пайплайне — это
+   единственный ложный случай, всё остальное с `<...>` — настоящий арматурный
+   `<class>`/`<diameter>` паттерн. Исправлено в `core/workbook_reader.py`: детекция теперь
+   требует ОБА плейсхолдера `<class>` И `<diameter>` одновременно, а не голый `<`.
+   Перепроверила: детекция корректна на всех 5 секций с рабочими адаптерами (4 находят
+   `rebar_unit_price_by_item`, flat_roof теперь не находит ничего лишнего). Адаптер
+   дублирует одну разрешённую цену `slope_plate_unit_price_per_m3` в 4 поля
+   `slope_plate_{a,b,j,k}_unit_price_per_m3`.
+
+Отдельно (без правки — уже решено ранее по памяти `roof_membrane_vgr_vrp_open_question`):
+`pvc_membrane_vgr_*` поля (V-GR мембрана для эксплуатируемых зон) намеренно не подаются
+адаптером — калькулятор трогает их только когда у зоны `operability: exploitable`, а
+неэксплуатируемая-по-умолчанию логика уже подтверждена корректной и не критичной на
+практике. Реальный проект с эксплуатируемой зоной потребует добавить эти 3 поля отдельно.
+
+**Проверено end-to-end**: собран тестовый workbook (2 зоны кровли, все 9 обязательных
+скаляров, все фолбэк-поля намеренно пустые — проверить подстановку 0, `roof_crane_lifting_
+shifts`/`roof_waste_removal_trucks` на листе 01-1, все 26 цен на листе 02 кроме 2
+необязательных legacy-полей). Сверено с независимо построенным вручную референсом — **0
+расхождений** по всем строкам сметы, `totals` и всем 3 warnings.
+
+**Далее**: `load_bearing_walls_lintels` (самый сложный, 9 `*_calc_method` режимов) — последний
+раздел Этапа 2.
+
+#### `floor_slab_1` (2026-08-05) — шестой адаптер, первый с namespaced-входом
+
+Единственный калькулятор в этом пайплайне, чей вход разбит на под-словари: `geometry.*`,
+`insulation.*`, `rates.*`, `overheads.*`, `manual_lines.*`, плюс `case_meta` (просто
+эхо-проброс, калькулятор его не читает) и несколько по-настоящему плоских полей
+(`main_formwork_area_m2`, `edge_formwork_area_m2`, `beams_*`, `slab_zones`, `rebar_items`,
+`beams.items`, `formwork_areas_calc_method`, `rebar_calc_method`). Контракт сам уже кодирует
+это через `calculator_input_path` с точками — адаптер читает эти пути ОБЩИМ механизмом
+(`_set_nested()`), а не хардкодит для каждого из ~35 полей, в каком под-словаре оно лежит —
+это единственный по-настоящему новый архитектурный приём этого адаптера, дальше он же
+пригодится для более простой раскладки любых будущих секций.
+
+Фиксированные production calc_method (всё `allow_override_later: false`):
+`formwork_areas_calc_method=spec_formwork_areas`, `rebar_calc_method=spec_length_items`,
+`insulation.insulation_calc_method=spec_work_quantities`,
+`rates.formwork_rate_calc_method=direct_section_rate`,
+`rates.formwork_delivery_calc_method=area_threshold`,
+`rates.metal_delivery_calc_method=section_output_only`. Ничего не выбирается динамически.
+
+**Два реальных пробела контракта, оба обнаружены только при попытке реально прогнать
+калькулятор (не при чтении контракта), оба — с явной авторизацией пользователя:**
+
+1. Контракт вообще не объявлял `rebar_waste_coeff` (в отличие от foundation_slab/floor_slab_2,
+   у которых этот дефолт есть), а `calculate_rebar_item()` безусловно читает
+   `item["waste_coeff"]` без fallback — гарантированный `KeyError` на любом реальном прогоне.
+   Пользователь подтвердил природу поля (обычный коэффициент запаса материала, как
+   `concrete_waste_coeff`/`eps_waste_coeff`, только для арматуры) и авторизовал добавление
+   `rebar_waste_coeff=1.05` в `defaults:` (тот же путь `rebar_items[*].waste_coeff`, что и
+   `rod_length_m` у foundation_slab — построчное значение, инжектится адаптером в каждую
+   строку арматуры).
+2. `calculate_rebar_item()` в режиме `spec_length_items` также безусловно требует
+   `item["component"] == "floor_slab_1"` и `int(item["floor"]) == 1` — структурные константы
+   этого раздела (не PDF-данные, всегда одинаковые для любой строки), но нигде не
+   гарантированные извлечением. Вместо того чтобы доверять экстракции эти два
+   валидационных поля, адаптер принудительно проставляет их в каждую строку арматуры,
+   переопределяя то, что там было (тот же принцип, что и у `rod_length_m`-инъекции в
+   foundation_slab).
+3. `geometry.slab_control_geometry_area_m2` — требуется калькулятором безусловно
+   (`geometry_in["slab_control_geometry_area_m2"]`, без `.get()`), но нигде не объявлено в
+   контракте вообще. Проверила все места использования в калькуляторе — чисто
+   диагностическое поле (эхо в `calculation_blocks.geometry`/`control_metrics`, ни разу не
+   участвует в деньгах). Отдельного PDF-сигнала для этого контрольного числа нет, поэтому по
+   явному решению пользователя адаптер просто зеркалит `main_formwork_area_m2` — то же самое
+   производственное значение опалубки, используемое как собственный контроль.
+
+**Проверено end-to-end**: собран тестовый workbook (2 позиции балок — одна с width_m и
+вычисляемыми объёмом/опалубкой, другая с готовыми `concrete_volume_m3`/`formwork_area_m2` без
+`width_m`; 3 позиции арматуры по 2 классам/диаметрам БЕЗ `component`/`floor` — специально,
+проверить принудительную инъекцию; override balок по утеплению
+(`beams_eps_work_length_m`/`beams_eps_material_area_m2`) и по нижней опалубке
+(`beams_bottom_formwork_area_m2`); `formwork_rebar_crane_shifts`/`concrete_pump_shifts` на
+листе 01-1; развёрнутые арматурные цены на листе 02). Сверено с независимо построенным вручную
+референсом (не переиспользование старого фикстура калькулятора — там были другие
+calc_method — и не повторный прогон вывода самого адаптера) — **0 расхождений** по всем
+строкам сметы и `totals`, включая полное совпадение всех 3 контрольных warnings.
+
+**Далее**: `flat_roof` → `load_bearing_walls_lintels` (самый сложный).
+
+#### `floor_slab_2` (2026-08-05) — пятый адаптер
+
+Plain-dict вход (без dataclass, как schiedel), второй пользователь шаблонного механизма
+арматурных цен из `core/` (первый — foundation_slab). Ничего в этом разделе не выбирается
+динамически — контракт вообще не декларирует альтернативные `*_calc_method` (legacy_dimensions,
+edge_and_beam_formwork_area_combined_m2, legacy_weight_kg) как review_parameters, поэтому
+адаптер всегда идёт по единственному production-пути: `formwork_area_calc_method=
+spec_formwork_area`, `formwork_delivery_calc_method=area_threshold`,
+`rebar_calc_method=spec_length_items`.
+
+Два момента, специфичных именно для этого раздела:
+
+1. `beam_items` маппится в `beams: {"items": [...]}`, а не в плоский ключ `beam_items` —
+   `calculator_input_path` в контракте буквально `"beams.items"`, легко упустить по аналогии
+   с остальными repeated_rows группами этого пайплайна, у которых путь всегда 1:1 с именем
+   ключа.
+2. `formwork_rental_supplier_quote_total` — реальный частный случай: помечено
+   `AUTO_CALCULATED`, но нигде в кодовой базе фактически не заполняется (`show_to_user: false`,
+   `allow_manual_override: false` — Елена его никогда не видит), при этом калькулятор требует
+   его безусловно. Сам контракт прямо разрешает адаптеру синтезировать значение
+   (`main_formwork_area_m2 * formwork_rental_used_rate_per_m2`), так как оно нужно только для
+   internal-сравнения (`raw_supplier_rate`), не влияет ни на одну строку сметы. Сделано именно
+   так — ratio получается ровно 1.0, то есть «аномалий нет».
+
+`rod_length_m` в отличие от foundation_slab здесь — настоящая колонка спецификации (часть
+`columns` группы `floor_slab_2_rebar_items`), не построчный дефолт: адаптер её не трогает,
+передаёт как есть из строки; инжектится только `unit_price_per_m` (через шаблонный механизм
+`core/`), `code` намеренно не выставляется — калькулятор сам выводит его из
+`steel_class`+`diameter_mm`, как и предписывает заметка в контракте.
+
+**Проверено end-to-end** на тестовом workbook (2 позиции балок с разным набором override —
+одна с готовыми `concrete_volume_m3`/`formwork_area_m2` и `width_m`, другая без `width_m`;
+3 позиции арматуры по 2 классам/диаметрам без `unit_price_per_m` — проверить инжекцию цены;
+`crane_shifts`/`concrete_pump_shifts` на листе 01-1; развёрнутые арматурные цены на листе 02).
+Сверено с независимо построенным вручную (не через `build_input.py`) референсом — **0
+расхождений** по всем строкам сметы и `totals`.
+
+Побочная находка при сборке тестового workbook (не баг продакшн-кода — только моего
+тест-скрипта, production-скрипты этого пайплайна `insert_rows()` вообще не используют,
+проверено): `openpyxl`'s `insert_rows()` сдвигает содержимое ячеек, но НЕ XML-декларацию
+смёрженного диапазона. Если вставлять строки перед смёрженной строкой-заголовком группы, при
+следующей загрузке файла Excel/openpyxl повторно применяет старую (несдвинутую) merge-область
+к новому месту — молча стирая данные, которые там оказались. Обходится так: сначала
+`unmerge_cells()` на старом диапазоне, потом `insert_rows()`, потом `merge_cells()` на новой
+позиции — именно в этом порядке, в одной сессии до сохранения (порядок unmerge-после-insert
+даёт `KeyError` из-за внутренней рассинхронизации openpyxl).
+
+**Далее**: `floor_slab_1` → `flat_roof` → `load_bearing_walls_lintels` (самый сложный).
 
 Для каждого раздела: написать `sections/<code>/build_input.py`, прогнать получившийся
 вход через `calculate_<section>()`, сверить с `cases/*/expected.json` того же раздела.
 Если совпадает — маппер верный.
+
+#### `foundation_slab` (2026-08-05) — четвёртый адаптер, самый involved на сегодня
+
+Первая секция с (а) динамически выбираемым режимом (`thermal_insert_mode` — "items"
+если есть `thermal_insert_items` на листе 01, иначе фиксированный дефолт контракта
+"standard_50_100" — единственный `*_calc_method` во всём пайплайне, который не
+фиксирован жёстко) и (б) построчным ценообразованием арматуры через новый
+"шаблонный" механизм `core/` (см. `core/workbook_reader.py`'s `template_price_keys()`/
+`read_prices()`, `core/price_resolver.py`'s `resolve_prices()` — добавлено специально
+под этот адаптер, пригодится ещё 3 будущим арматурным разделам: floor_slab_1,
+floor_slab_2, load_bearing_walls_lintels).
+
+**Три реальных бага найдены и исправлены при сборке (не гипотетические — все три
+проявились бы на любом реальном проекте, не только на тестовом):**
+
+1. Дженерик-цикл "остальное берём из `defaults` по имени поля" (тот же паттерн, что и
+   в earthworks/schiedel) слепо копировал ВСЕ ключи `defaults:` как плоские поля
+   верхнего уровня — включая `rod_length_m`, у которого `calculator_input_path:
+   "rebar_items[*].rod_length_m"` (это дефолт хлыста, 11.7м, "каталожное значение, если
+   строка не переопределяет") — по-настоящему построчное поле, а не поле
+   `FoundationSlabInput`. Причём `rod_length_m` даже не входит в `columns` группы
+   `foundation_rebar_items` — PDF-спецификация его никогда не даёт. Исправлено: цикл
+   дефолтов теперь пропускает любой дефолт с `[` в `calculator_input_path` (не только
+   `rod_length_m` — на будущее, если появится ещё один построчный дефолт); значение
+   инжектится в каждую строку арматуры рядом с `unit_price_per_m`, с `item.setdefault()`
+   (строка может переопределить).
+2. `build_input.py` вообще не читал `supplier_inputs:` контракта (6 полей:
+   `rebar_crane_shifts`, `rebar_metal_delivery_trucks`, `box_total_metal_weight_kg`,
+   `concrete_pump_shifts`, `logistics_and_supply_amount`,
+   `consumables_tool_amortization_amount`) — калькулятор требует их все (нет дефолта в
+   dataclass ни у одного). Исправлено: явный цикл по `all_supplier_inputs(contract)`,
+   читает из `scalars` (уже мержит лист 01 и 01-1 благодаря сентябрьскому — точнее
+   августовскому — фиксу из schiedel-адаптера), `required: false` поля (два legacy
+   fixed-amount поля) по умолчанию 0, если не заполнены.
+3. (Не баг кода, ловушка тестирования.) Референс для сверки изначально строился на
+   основе существующего калькуляторского тест-кейса
+   (`test_foundation_slab_rebar_spec_length`), у которого 4 поля устарели относительно
+   текущего контракта: `concrete_waste_coeff` (1.05 вместо текущих 1.02),
+   `concrete_mixer_volume_m3` (9 вместо 7), `thermal_insert_50/100_pack_multiple_qty`
+   (0.2776 вместо текущего `null` — ещё не заполненный каталожный дефолт),
+   `logistics_and_supply_calc_method`/`consumables_tool_amortization_calc_method`
+   (`legacy_fixed_amount` вместо текущего `section_total_rate`). После подмены этих 4
+   групп полей на актуальные значения контракта — **0 расхождений** по всем 30 строкам
+   сметы, `calculation_blocks`, `internal_totals`, warnings.
+
+**Проверено end-to-end**: собран тестовый workbook (только `foundation_slab`),
+заполнены 4 обязательных скаляра, 4 строки `foundation_rebar_items` (A500⌀16/12/10,
+A240⌀6, БЕЗ `unit_price_per_m` — специально, проверить инжекцию цены), 2 supplier-поля
+на листе 01-1, 8 обычных цен + 4 развёрнутых арматурных цены на листе 02 (проверена
+корректность `insert_rows()` — сдвиг ранее заполненных строк тоже корректен). Прогнано
+через `core.job_runner.run_section()`, сверено с независимо посчитанным референсом
+(прямой вызов `calculate_foundation_slab()`) — 0 расхождений.
+
+**Далее**: `floor_slab_2` → `floor_slab_1` → `flat_roof` →
+`load_bearing_walls_lintels`.
+
+**`earthworks` ЗАКРЫТ 2026-08-05.** Заметно сложнее waterproofing: 4 независимых
+`*_calc_method` (все — фиксированные production-режимы из `defaults:`, не решаются
+адаптером динамически: `excavator_shifts_calc_method=standard_volume_productivity`,
+`manual_excavation_calc_method=standard_routes`,
+`communications_length_calc_method=legacy_direct_length`,
+`consumables_calc_method=section_total_rate`) и 2 реальные production repeated_rows
+группы (`pit_items`, `sand_items` — построчно с листа 01; `trench_routes` и
+`communications_pipe_items` НЕ читаются адаптером вообще, `production_input: false`
+у первой и намеренно проигнорирована у второй согласно собственной заметке контракта
+"Do not switch to pipe_items" — калькулятор в production-режиме читает уже
+просуммированный scalar `trench_volume_m3`/`communications_length_m`, не построчные
+данные напрямую).
+
+Прогнано на двух сценариях через `core.job_runner.run_section()` целиком (не вручную
+по кусочкам) — 0 расхождений оба раза:
+1. `test_pit_items_sand_items_depth_reference` — сложный путь, с `pit_items`/
+   `sand_items` (2+2 строки) и `trench_volume_m3` как заранее просуммированным
+   scalar'ом (60,1 = сумма 4 маршрутов `trench_routes` того же кейса — именно так,
+   как это уже делает слой построения review-таблицы, адаптер не пересчитывает сумму
+   сам).
+2. `test_excavator_shifts_standard` — простой путь, чистые scalar'ы, без построчных
+   групп; кейс в оригинале использует `manual_excavation_calc_method:
+   legacy_manual_override`, адаптер всё равно принудительно поставил
+   `standard_routes` — с `trench_volume_m3=0` оба режима дают одинаковый (нулевой)
+   результат, расхождений нет, но это узкое место стоит помнить при выборе
+   следующих тестовых кейсов для других разделов.
+
+Найден и ИСПРАВЛЕН (2026-08-05, с явного разрешения) реальный изъян в
+`earthworks_calculator.py`: `validate()` требовал `pit_excavation_depth_m` не-`None`
+всегда, когда `excavator_shifts_calc_method == "standard_volume_productivity"` — даже
+если `pit_items` уже даёт объём напрямую и глубина физически не нужна для расчёта
+(см. `calculate_excavator_shifts_context()`, ветка `if pit_items:` не трогает depth
+вообще; глубина используется только (а) как fallback-формула площадь×глубина, когда
+`pit_items` пуст, и (б) как справочное эхо в выводе `volumes.pit_excavation_depth_m`
+независимо от того, каким путём считался объём). Реальный проект с `pit_items`, но
+без отдельно данной глубины котлована, падал на этой проверке, хотя формуле глубина
+не нужна.
+
+Правка: `validate()` теперь требует `pit_excavation_depth_m` только когда
+`self.pit_items` пуст — ровно тогда, когда она реально нужна формуле. Справочное эхо
+в выводе не тронуто: при наличии глубины она по-прежнему попадает в результат, при
+отсутствии — просто `null` вместо падения. Проверено: все 9 регресс-кейсов
+`earthworks_calculator` по-прежнему проходят (`run_all_cases.py`, 0 изменений в
+поведении), плюс отдельно проверен ранее падавший сценарий (`pit_items` есть, глубина
+`None`) — теперь считает `machine_excavation_volume_m3 = 212.5` без ошибки, вместо
+`ValueError`.
+
+**`schiedel_vent_channels` ЗАКРЫТ 2026-08-05.** Плоский `dict`-вход (не typed dataclass,
+без `from_dict()` — калькулятор принимает `dict[str, Any]` напрямую). Нашлись и были
+исправлены (с явного разрешения) три реальных пробела по пути:
+
+1. **`price_keys` был неполным**: контракт объявлял цены только для 2x/3x
+   вентканалов, хотя калькулятор поддерживает 1x/2x/3x/4x/cvent + D400/D500
+   газоблок кладки шахты. Реальные проекты уже используют «недостающие» типы:
+   ТРЦ — 1x, АРК — 4x, отдельный тест — D400. Добавлены 5 недостающих
+   `price_keys` (1x/4x обязательные — реально используются; cvent/D400/D500
+   опциональные — редкие/условные).
+2. **`schiedel_masonry_gas_block_items[]` не была объявлена в `review_parameters`
+   вообще** — калькулятор её уже читал, память утверждала «SHIPPED», но по факту
+   на листе 01 для неё не было ни одной строки, то есть Елена физически не могла
+   её увидеть или поправить. Добавлена по образцу уже готовой
+   `schiedel_channel_items`.
+3. **Найден и исправлен системный баг в `core/workbook_reader.py`** (не
+   специфичный для этого раздела — касается всех 8): обязательное поле
+   `schiedel_delivery_trips` (`source_class: MANUAL_REVIEW`) физически лежит на
+   листе **01-1** («Ручные строки, справочник» — другая структура колонок), а
+   `read_scalar_parameters()` читал только лист 01. Это те же самые 12 полей
+   логистики (краны/бетононасос/вывоз мусора), которые пользователь просила
+   свести списком раньше в этой же сессии — без этой правки НИ ОДИН будущий
+   адаптер не смог бы их прочитать. Добавлена `read_manual_values()`, читает
+   лист 01-1 (приоритет: «Исправить для этого проекта» > «Типовое значение
+   (справочник)»), результат сливается в тот же словарь, что и
+   `read_scalar_parameters()`, — все уже написанные `build_input.py`
+   (waterproofing, earthworks) продолжают работать без изменений.
+
+Прогнано целиком через `core.job_runner.run_section()` на реальных числах ТРЦ
+(`test_schiedel_vent_channels_trc`: кладка 9,8 мп, 21×1x + 15×2x каналов, 1
+доставка) — 0 расхождений с `expected.json` (все 9 строк сметы + totals).
+Отдельно перепроверены waterproofing и earthworks на регресс после правки
+`core/` — 0 расхождений у обоих, правка чисто additive.
 
 ## Проверка на каждом шаге
 
