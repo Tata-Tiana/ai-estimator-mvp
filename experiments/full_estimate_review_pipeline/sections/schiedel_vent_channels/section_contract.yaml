@@ -85,6 +85,37 @@ review_parameters:
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Added 2026-07-29 - the section_contract.yaml was never updated when calculator.py was rewritten 2026-07-26 (Elena) to read this dynamic group instead of the old fixed schiedel_vent_channel_2x_count/_3x_count scalar pair. Until this fix, sheet 01 had no row for this group at all (calculator_targets_compact.json/target_aliases_ru.yaml already targeted it - the parser prompt side was correct, only the review-workbook contract was stale), so any real parser-found channel counts were silently invisible to Elena. See sheet01_schiedel_channel_items_contract_desync memory."
 
+  - key: schiedel_masonry_gas_block_items
+    label_ru: "Газоблок для кладки шахты вентканалов по плотности"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "schiedel_masonry_gas_block_items"
+    calculator_input_path: "schiedel_masonry_gas_block_items"
+    normalized_json_path: "sections.schiedel_vent_channels.parameters.schiedel_masonry_gas_block_items.rows"
+    value_kind: repeated_rows
+    row_key_field: density
+    production_input: true
+    item_label_columns: [density]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: density, label_ru: "Плотность блока", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объем", unit: "м3", value_kind: number}
+    parser_mapping:
+      group_codes: ["schiedel_masonry_gas_block_items"]
+      expected_context: ["вентканал", "Schiedel", "кладка шахты"]
+      notes: "density must be exactly D400 or D500, taken as-is from the spec next to the block - never defaulted from block width/size (distinct block family from wall_block_items, see calculator.py's own comment). This is masonry AROUND the Schiedel ceramic modules, not the modules themselves (schiedel_channel_items above) and not vent_chimney_cladding's 600x150x250 block (that one lives in load_bearing_walls_lintels, hardcoded D500)."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required_if_applicable"
+      action_ru: "Проверьте объём газоблока для кладки шахты вентканалов по плотности построчно; не все проекты имеют эту строку."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-08-05 - same class of gap as schiedel_channel_items above (see that entry's own notes): calculator.py already reads this group (SCHIEDEL_MASONRY_GAS_BLOCK_SPECS, D400/D500), a prior memory note said this was already 'SHIPPED', but the review_parameters entry was never actually added - sheet 01 had no row for this group at all, so any real parser-found gas block volumes were silently invisible to Elena and never reached the calculator via the review workbook (only via hand-built calculator test cases, which bypass the contract entirely)."
+
   - key: schiedel_vent_chimney_cladding_segments
     label_ru: "Сегменты / строки спецификации вентканалов"
     unit: "м"
@@ -143,6 +174,18 @@ price_keys:
     allow_manual_override: true
     notes: ""
 
+  - key: schiedel_vent_channel_1x_unit_price
+    estimate_line_code: schiedel_vent_channel_1x
+    label_ru: "Вентиляционный канал 1х Schiedel"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_vent_channel_1x_item"
+    fallback_key: "schiedel_vent_channel_1x_unit_price"
+    allow_manual_override: true
+    notes: "Added 2026-08-05: real calculator field/price_code existed since CHANNEL_TYPE_SPECS was built but was never wired into this contract. TRC's own schiedel_channel_items uses 1x — a real production KeyError risk without this entry."
+
   - key: schiedel_vent_channel_2x_unit_price
     estimate_line_code: schiedel_vent_channel_2x_36_25
     label_ru: "Вентиляционный канал 2х,36/25 см Schiedel"
@@ -166,6 +209,54 @@ price_keys:
     fallback_key: "schiedel_vent_channel_3x_unit_price"
     allow_manual_override: true
     notes: ""
+
+  - key: schiedel_vent_channel_4x_unit_price
+    estimate_line_code: schiedel_vent_channel_4x
+    label_ru: "Вентиляционный канал 4х Schiedel"
+    price_kind: material
+    unit: "шт"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_vent_channel_4x_item"
+    fallback_key: "schiedel_vent_channel_4x_unit_price"
+    allow_manual_override: true
+    notes: "Added 2026-08-05, same gap as 1x above. ARK's own schiedel_channel_items uses 4x."
+
+  - key: schiedel_vent_channel_cvent_unit_price
+    estimate_line_code: schiedel_vent_channel_cvent
+    label_ru: "Вентиляционный канал CVENT Schiedel"
+    price_kind: material
+    unit: "шт"
+    required: false
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_vent_channel_cvent_item"
+    fallback_key: "schiedel_vent_channel_cvent_unit_price"
+    allow_manual_override: true
+    notes: "Added 2026-08-05, same gap as 1x above. required: false — Elena: CVENT is a rare product line ('бывает достаточно редко'), no real project has used it yet; the calculator only reads this price when a schiedel_channel_items row actually has product_type=cvent."
+
+  - key: schiedel_masonry_gas_block_d400_unit_price
+    estimate_line_code: schiedel_masonry_gas_block_d400
+    label_ru: "Газобетонный блок D400 150x250x650 мм для кладки вентканалов"
+    price_kind: material
+    unit: "м3"
+    required: false
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_masonry_gas_block_d400_m3"
+    fallback_key: "schiedel_masonry_gas_block_d400_unit_price"
+    allow_manual_override: true
+    notes: "Added 2026-08-05, same gap as 1x above. required: false — schiedel_masonry_gas_block_items[] itself is optional/additive; the calculator only reads this price when a row with density=D400 is actually present."
+
+  - key: schiedel_masonry_gas_block_d500_unit_price
+    estimate_line_code: schiedel_masonry_gas_block_d500
+    label_ru: "Газобетонный блок D500 150x250x650 мм для кладки вентканалов"
+    price_kind: material
+    unit: "м3"
+    required: false
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_masonry_gas_block_d500_m3"
+    fallback_key: "schiedel_masonry_gas_block_d500_unit_price"
+    allow_manual_override: true
+    notes: "Added 2026-08-05, same gap as 1x above. required: false — same reasoning as d400 above (density=D500)."
 
   - key: schiedel_delivery_truck_price
     estimate_line_code: schiedel_delivery
