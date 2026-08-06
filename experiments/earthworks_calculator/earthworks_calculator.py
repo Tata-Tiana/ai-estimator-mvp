@@ -136,7 +136,11 @@ class EarthworksInput:
                     _require_non_negative(f"{prefix}.quantity", item.get("quantity"))
         _require_non_negative("axis_marking_shifts", self.axis_marking_shifts)
         _require_non_negative("excavator_shifts", self.excavator_shifts)
-        if self.excavator_shifts_calc_method == "standard_volume_productivity":
+        if self.excavator_shifts_calc_method == "standard_volume_productivity" and not self.pit_items:
+            # Only required for the area*depth fallback (calculate_excavator_shifts_context's
+            # `else` branch) - when pit_items gives ready per-pit volumes directly, depth never
+            # enters that formula. Still echoed into the result as a control value when given
+            # (see calculate_earthworks's "volumes" block), just no longer required to be present.
             _require_non_negative("pit_excavation_depth_m", self.pit_excavation_depth_m)
         _require_non_negative(
             "geotextile_laying_area_m2",
