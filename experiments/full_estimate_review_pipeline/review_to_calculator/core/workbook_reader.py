@@ -41,6 +41,7 @@ from core.contract_loader import (
 from core.normalization import cell_text, is_blank, parse_number
 
 SHEET_01_NAME = "01_Проверка проекта"
+SHEET_01_1_NAME = "01-1_Ручные строки (справочник)"
 SHEET_02_NAME = "02_Цены себестоимости"
 
 # 2026-08-05: PROJECT_HEADERS (A-N, 14 columns incl. target_code) grew by one column since this
@@ -117,6 +118,61 @@ def read_scalar_parameters(wb, contract: dict[str, Any]) -> dict[str, dict[str, 
             "source_class": cell_text(cell_by_header(ws, row_idx, col_map, "source_class")),
             "target_code": cell_text(cell_by_header(ws, row_idx, col_map, "target_code")),
         }
+
+    # 2026-08-05: fields with source_class in {MANUAL_REVIEW, SUPPLIER_INPUT} never render on
+    # sheet 01 at all (see build_review_workbook_from_contracts.py's scalar_review_rows_for_
+    # contract() / MANUAL_VALUE_SOURCE_CLASSES) - they render on sheet 01-1 instead, in a
+    # completely different column layout. Found via schiedel_vent_channels.schiedel_delivery_trips:
+    # `known_keys` above already included every supplier_inputs key (the set union on line 85 was
+    # correct), but nothing ever read sheet 01-1 to actually populate them, so every such field -
+    # not just this one, every section's required crane/pump/delivery-truck manual field - was
+    # silently absent from scalar_parameters no matter what Elena filled in. Merging sheet 01-1's
+    # values in here (rather than a separate top-level key in read_review_workbook()'s return)
+    # keeps every existing build_input.py's `scalars.get(key)` lookup working unchanged regardless
+    # of which sheet the field actually lives on.
+    result.update(read_manual_values(wb, contract))
+    return result
+
+
+def read_manual_values(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Reads sheet 01-1's rows - MANUAL_REVIEW/SUPPLIER_INPUT scalar fields, a different
+    layout from sheet 01 (no "Найдено в проекте"/"technical_key" headers; project value wins
+    over the sheet's own "Типовое значение (справочник)" when filled). Returns the same
+    per-key dict shape as read_scalar_parameters() so callers can treat both sources
+    identically."""
+    if SHEET_01_1_NAME not in wb.sheetnames:
+        return {}
+    known_keys = {
+        param["key"]
+        for param in all_review_parameters(contract) + all_supplier_inputs(contract)
+    }
+    section = contract["section"]["code"]
+
+    ws = wb[SHEET_01_1_NAME]
+    header_row = find_header_row(ws, ["key", "section_code"])
+    col_map = header_map(ws, header_row)
+
+    result: dict[str, dict[str, Any]] = {}
+    for row_idx in range(header_row + 1, ws.max_row + 1):
+        if cell_text(cell_by_header(ws, row_idx, col_map, "section_code")) != section:
+            continue
+        key = cell_text(cell_by_header(ws, row_idx, col_map, "key"))
+        if key not in known_keys:
+            continue
+        typical_value = cell_by_header(ws, row_idx, col_map, "Типовое значение (справочник)")
+        override_value = cell_by_header(ws, row_idx, col_map, "Исправить для этого проекта")
+        override_text = cell_text(override_value)
+        selected = override_value if not is_blank(override_text) else typical_value
+        result[key] = {
+            "value": selected,
+            "value_number": parse_number(selected),
+            "unit": cell_text(cell_by_header(ws, row_idx, col_map, "Ед.")),
+            "override_used": not is_blank(override_text),
+            "found_value": typical_value,
+            "override_value": override_value,
+            "source_class": "",
+            "target_code": "",
+        }
     return result
 
 
@@ -171,15 +227,42 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
     return result
 
 
-def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def template_price_keys(contract: dict[str, Any]) -> set[str]:
+    """Keys whose contract-declared registry_code is the rebar per-item placeholder pattern
+    (contains "<class>" and "<diameter>", e.g. "rebar_<class>_d<diameter>_m") rather than one
+    real registry code. Sheet 02 expands these into one row per steel_class/diameter_mm
+    actually found in the project (see build_review_workbook_from_contracts.py's
+    expand_rebar_codes()/_append_price_row()) - every expanded row shares the SAME
+    calc_price_key (the static contract key) but carries its own real price_registry_code, so
+    a plain {calc_price_key: row} dict would silently collide and keep only the last row. See
+    resolve_prices()/build_input.py for how these are consumed.
+
+    Matches specifically on "<class>"/"<diameter>", not a bare "<" - a bare check wrongly
+    caught flat_roof's slope_plate_unit_price_per_m3 (registry_code
+    "roof_eps_slope_<type>_m3"), which is NOT a per-item expansion: sheet 02 only ever has one
+    row for it, "<type>" is just documentation-style placeholder text in the contract. The
+    bare check would have made resolve_prices() return a single-entry {registry_code: price}
+    dict instead of a plain float for it, and - more seriously - silently skip the "required
+    price missing" check that template keys are deliberately exempted from. Found 2026-08-05
+    while building the flat_roof adapter; confirmed by grepping every section_contract.yaml
+    that no other registry_code uses any other placeholder pattern."""
+    return {
+        price["key"]
+        for price in contract_price_keys(contract)
+        if "<class>" in (price.get("registry_code") or "") and "<diameter>" in (price.get("registry_code") or "")
+    }
+
+
+def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     known_keys = {price["key"] for price in contract_price_keys(contract)}
+    templates = template_price_keys(contract)
     section = contract["section"]["code"]
 
     ws = wb[SHEET_02_NAME]
     header_row = find_header_row(ws, ["calc_price_key"])
     col_map = header_map(ws, header_row)
 
-    result: dict[str, dict[str, Any]] = {}
+    result: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
     for row_idx in range(header_row + 1, ws.max_row + 1):
         # calc_price_key is not unique across sections (e.g. eps100_unit_price is declared
         # by waterproofing, floor_slab_2, and foundation_slab) - section_code disambiguates.
@@ -194,7 +277,7 @@ def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
         override_text = cell_by_header(ws, row_idx, col_map, "Исправить цену")
         override_value = parse_number(override_text)
         selected_price = override_value if override_value is not None else price_for_calculation
-        result[calc_price_key] = {
+        row_data = {
             "price_registry_value": registry_value,
             "fallback_value": fallback_value,
             "price_for_calculation": price_for_calculation,
@@ -204,6 +287,13 @@ def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "price_registry_code": cell_text(cell_by_header(ws, row_idx, col_map, "price_registry_code")),
             "fallback_key": cell_text(cell_by_header(ws, row_idx, col_map, "fallback_key")),
         }
+        if calc_price_key in templates:
+            # Multiple rows share this calc_price_key (one per steel_class/diameter_mm) -
+            # accumulate into a list instead of overwriting a single dict.
+            result.setdefault(calc_price_key, [])
+            result[calc_price_key].append(row_data)
+        else:
+            result[calc_price_key] = row_data
     return result
 
 
