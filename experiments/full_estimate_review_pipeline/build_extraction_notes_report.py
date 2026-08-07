@@ -109,6 +109,14 @@ CONDITIONAL_MISSING_ALTERNATIVES = {
 }
 
 CONDITIONAL_ABSENT_TARGETS = {
+    "floor_slab_1": {
+        "floor_slab_1_edge_and_beam_formwork_area_combined": (
+            "Не блокер, если проект дает опалубку торца плиты и опалубку балок раздельно "
+            "или через slab_zones. Это специальное поле нужно только для редкого случая, "
+            "когда PDF дает одну общую площадь вертикальной опалубки торца плиты + балок "
+            "и разделить ее невозможно."
+        ),
+    },
     "load_bearing_walls_lintels": {
         "vent_chimney_gas_block_150_volume": "Не блокер, если в проекте нет обкладки вентканалов/дымохода газобетоном 150 мм. Это не Schiedel.",
         "floor_2_lintel_total_length": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",

@@ -175,7 +175,7 @@ review_parameters:
     notes: "Feeds beams_formwork_area_m2 (sum of formwork_area_m2) and beams_concrete_volume_m3 (sum of concrete_volume_m3) when their own scalar/aggregate inputs are absent. Production uses length_m for beam concreting work. Do not assume beam insulation follows the full beam length: use beams_eps_work_length_m/beams_eps_material_area_m2 when the PDF gives the actually insulated portion. width_m is not required when concrete_volume_m3 is already given. Combined rows must remain needs_review/manual split until a separated designer specification is available. All are 0 when this group is empty."
 
   - key: slab_edge_perimeter_m
-    label_ru: "Периметр торца плиты перекрытия 2-го этажа"
+    label_ru: "Утепление торца плиты 2-го этажа — длина работ"
     unit: "мп"
     source_class: AUTO_PROJECT
     required: true
@@ -198,7 +198,7 @@ review_parameters:
     notes: "Used for edge insulation work and EPS volume calculation."
 
   - key: edge_insulation_height_m
-    label_ru: "Высота утепления торца плиты перекрытия 2-го этажа"
+    label_ru: "Утепление торца плиты 2-го этажа — высота"
     unit: "м"
     source_class: AUTO_PROJECT
     required: true
@@ -221,7 +221,7 @@ review_parameters:
     notes: "Do not infer from section title if the specification gives a different value."
 
   - key: beams_eps_work_length_m
-    label_ru: "ЭППС 100 мм торец балок 2-го этажа, длина утепляемой части"
+    label_ru: "Утепление торца балок 2-го этажа ЭППС 100 мм — длина утепляемой части"
     unit: "мп"
     source_class: AUTO_PROJECT
     required: false
@@ -244,7 +244,7 @@ review_parameters:
     notes: "Elena 2026-07-29: beams are not always insulated, and when insulated may cover only part of the beam length."
 
   - key: beams_eps_material_area_m2
-    label_ru: "ЭППС 100 мм торец балок 2-го этажа, площадь материала"
+    label_ru: "Утепление торца балок 2-го этажа ЭППС 100 мм — площадь материала"
     unit: "м2"
     source_class: AUTO_PROJECT
     required: false
@@ -267,7 +267,7 @@ review_parameters:
     notes: "Optional override. If absent, calculator falls back to all beam length * height for backward compatibility, but production extraction should prefer the actual insulated area/length from the PDF."
 
   - key: bottom_slab_eps_work_area_m2
-    label_ru: "ЭППС 100 мм низ плиты перекрытия 2-го этажа, площадь работ"
+    label_ru: "Утепление низа плиты 2-го этажа ЭППС 100 мм — площадь работ"
     unit: "м2"
     source_class: AUTO_PROJECT
     required: false
@@ -328,7 +328,7 @@ review_parameters:
       expected_unit: ""
       notes: "roof_cover_slab when general data describes this slab as part of the roof build-up; otherwise residential_floor. Mirrors floor_slab_1_kind."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Чисто описательное поле, не влияет на расчёт. Укажите, если общие данные явно называют эту плиту частью кровельного пирога, а не жилым перекрытием."
@@ -351,7 +351,7 @@ review_parameters:
       expected_unit: "м2"
       notes: "Optional control value; main formwork area remains separate. Do not use lower/main formwork rows as slab_area_m2."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "optional"
       action_ru: "Если площадь плиты указана отдельно, проверьте ее как контроль."

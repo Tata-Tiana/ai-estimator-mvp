@@ -143,6 +143,53 @@ def sum_group_numeric_field(found_groups: dict[str, list[Any]], group_key: str, 
     return round(total, 3) if found_any else None
 
 
+def eps100_component_area_from_candidates(
+    found_by_target: dict[str, Any],
+    include_terms: tuple[str, ...],
+    exclude_terms: tuple[str, ...] = (),
+) -> tuple[float, str, str] | None:
+    item = found_by_target.get("floor_slab_1_eps100_volume")
+    if not item:
+        return None
+    candidates = [candidate for candidate in item.get("candidates") or [] if isinstance(candidate, dict)]
+    total_volume = 0.0
+    fragments: list[str] = []
+    confidences: list[float] = []
+    for candidate in candidates:
+        if candidate.get("target_code") != "floor_slab_1_eps100_volume":
+            continue
+        text = " ".join(
+            str(candidate.get(key) or "")
+            for key in ("raw_text", "table_context", "item_name", "notes")
+        ).lower()
+        if include_terms and not any(term in text for term in include_terms):
+            continue
+        if exclude_terms and any(term in text for term in exclude_terms):
+            continue
+        value = candidate.get("value")
+        if value is None:
+            continue
+        try:
+            volume = float(value)
+        except (TypeError, ValueError):
+            continue
+        total_volume += volume
+        raw_text = candidate.get("raw_text")
+        if raw_text:
+            fragments.append(str(raw_text))
+        try:
+            confidences.append(float(candidate.get("confidence")))
+        except (TypeError, ValueError):
+            pass
+    if total_volume <= 0:
+        return None
+    # Target is explicitly EPS 100 mm, so m3 / 0.1 m = m2. Keep this universal: no project
+    # quantities are baked in here; only the material thickness encoded in the target name.
+    area = round(total_volume / 0.1, 3)
+    confidence = f"{min(confidences):.2f}" if confidences else display_confidence(item)
+    return area, "; ".join(fragments), confidence
+
+
 def sum_communications_pipe_items(found_groups: dict[str, list[Any]]) -> float | None:
     total = 0.0
     found_any = False
@@ -516,6 +563,53 @@ def floor_slab_1_alternative_scalar(
             f"beam_items.concrete_volume_m3: {total:g} м3. Это не применяется к утеплению балок.",
             min_group_confidence(found_groups, "beam_items"),
         )
+    if target_code == "floor_slab_1_edge_eps_work_length" and group_items(found_groups, "slab_zones"):
+        total = sum_group_numeric_field(found_groups, "slab_zones", "edge_perimeter_m")
+        if total is None:
+            return None
+        return (
+            total,
+            "Проверьте (из периметра утепления)",
+            group_sources(found_groups, "slab_zones"),
+            "Длина работ по утеплению торца плиты взята из edge_perimeter_m в slab_zones. "
+            "Это проектный периметр утепления торца плиты по зонам; утепление балок сюда не добавляется. "
+            f"Строки: {group_fragments(found_groups, 'slab_zones')}",
+            min_group_confidence(found_groups, "slab_zones"),
+        )
+    if target_code == "floor_slab_1_edge_eps_material_area":
+        component_area = eps100_component_area_from_candidates(
+            found_by_target,
+            include_terms=("вертикаль", "торец"),
+            exclude_terms=("балк",),
+        )
+        if component_area is None:
+            return None
+        area, fragments, confidence = component_area
+        return (
+            area,
+            "Проверьте (из объёма ЭППС / 0,1)",
+            found_by_target.get("floor_slab_1_eps100_volume", {}).get("source_pdf") or "",
+            "Площадь материала ЭППС торца плиты рассчитана из компонентного объёма ЭППС 100 мм "
+            f"(м3 / 0,1 м). Компоненты: {fragments}. Балки сюда не добавляются.",
+            confidence,
+        )
+    if target_code == "floor_slab_1_bottom_eps_work_area":
+        component_area = eps100_component_area_from_candidates(
+            found_by_target,
+            include_terms=("под", "низ", "ниж", "горизонталь", "кух", "столов"),
+            exclude_terms=("вертикаль", "торец", "балк"),
+        )
+        if component_area is None:
+            return None
+        area, fragments, confidence = component_area
+        return (
+            area,
+            "Проверьте (из объёма ЭППС / 0,1)",
+            found_by_target.get("floor_slab_1_eps100_volume", {}).get("source_pdf") or "",
+            "Площадь работ по утеплению низа плиты рассчитана из компонентного объёма ЭППС 100 мм "
+            f"(м3 / 0,1 м). Компоненты: {fragments}. Вертикальный торец и балки сюда не добавляются.",
+            confidence,
+        )
     if target_code in {
         "floor_slab_1_slab_edge_perimeter",
         "floor_slab_1_under_slab_formwork_area",
@@ -567,6 +661,7 @@ def floor_slab_1_alternative_scalar(
 def floor_slab_2_alternative_scalar(
     target_code: str,
     found_groups: dict[str, list[Any]],
+    found_by_target: dict[str, Any],
 ) -> tuple[Any, str, str, str, str] | None:
     if target_code == "floor_slab_2_beams_concrete_volume" and group_items(
         found_groups, "floor_slab_2_beam_items"
@@ -583,6 +678,42 @@ def floor_slab_2_alternative_scalar(
             "Это не применяется к утеплению балок.",
             min_group_confidence(found_groups, "floor_slab_2_beam_items"),
         )
+    if target_code == "floor_slab_2_beams_eps_material_area":
+        length_found = found_by_target.get("floor_slab_2_beams_eps_work_length")
+        beam_rows = group_items(found_groups, "floor_slab_2_beam_items")
+        if (
+            length_found
+            and length_found.get("value") is not None
+            and len(beam_rows) == 1
+            and isinstance(beam_rows[0].get("value"), dict)
+        ):
+            beam_value = beam_rows[0]["value"]
+            height = beam_value.get("height_m")
+            if height is None:
+                return None
+            try:
+                length = float(length_found["value"])
+                height_value = float(height)
+            except (TypeError, ValueError):
+                return None
+            area = round(length * height_value, 3)
+            confidences: list[float] = []
+            for value in (length_found.get("confidence"), beam_rows[0].get("confidence")):
+                try:
+                    confidences.append(float(value))
+                except (TypeError, ValueError):
+                    pass
+            confidence = f"{min(confidences):.2f}" if confidences else ""
+            return (
+                area,
+                "Проверьте (длина утепления × высота балки)",
+                length_found.get("source_pdf") or group_sources(found_groups, "floor_slab_2_beam_items"),
+                "Площадь материала ЭППС по балке рассчитана из найденной длины утепляемой части "
+                f"({length:g} мп) и высоты единственной балки ({height_value:g} м). "
+                "Это допустимо только когда в проекте одна утепляемая балка/одна строка beam_items; "
+                "если утепляется не вся длина или высота отличается по узлу, поправьте вручную.",
+                confidence,
+            )
     return None
 
 
@@ -701,6 +832,38 @@ SECTION_PRESENCE_PAIRS: dict[str, list[list[str]]] = {
 }
 
 CONDITIONAL_ABSENT_TARGETS: dict[str, dict[str, str]] = {
+    "floor_slab_1": {
+        "floor_slab_1_edge_and_beam_formwork_area_combined": (
+            "Не блокер, если проект дает опалубку торца плиты и опалубку балок раздельно "
+            "или через slab_zones. Это специальное поле нужно только для редкого случая, "
+            "когда PDF дает одну общую площадь вертикальной опалубки торца плиты + балок "
+            "и разделить ее невозможно."
+        ),
+        "floor_slab_1_beams_eps_work_length": (
+            "Не блокер, если в проекте нет отдельной строки длины утепляемой части балок. "
+            "Балки могут не утепляться или утепляться только частично; без явного проектного значения "
+            "калькулятор считает длину утепления балок как 0."
+        ),
+        "floor_slab_1_beams_eps_material_area": (
+            "Не блокер, если в проекте нет отдельной площади ЭППС по утепляемым граням балок. "
+            "Без явного проектного значения калькулятор считает площадь утепления балок как 0."
+        ),
+    },
+    "floor_slab_2": {
+        "floor_slab_2_beams_bottom_formwork_area": (
+            "Не блокер, если в проекте нет отдельной строки нижней опалубки балок 2-го этажа. "
+            "Если такая строка появится в другом проекте, ее нужно заполнить; иначе оставьте пустым."
+        ),
+        "floor_slab_2_beams_eps_material_area": (
+            "Не блокер, если в проекте нет отдельной площади ЭППС по утепляемым граням балок 2-го этажа. "
+            "Если есть длина утепления и одна понятная балка, таблица может посчитать площадь как длина × высота; "
+            "иначе без явного проектного значения калькулятор считает площадь утепления балок как 0."
+        ),
+        "floor_slab_2_bottom_eps_work_area": (
+            "Не блокер, если в проекте нет отдельной площади нижнего/горизонтального утепления плиты 2-го этажа. "
+            "Если нижнее утепление этой плиты есть, оно должно быть указано отдельной площадью в проекте."
+        ),
+    },
     "load_bearing_walls_lintels": {
         "vent_chimney_gas_block_150_volume": "Не блокер, если в проекте нет обкладки вентканалов/дымохода газобетоном 150 мм. Это не Schiedel.",
         "floor_2_lintel_total_length": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
@@ -1026,7 +1189,7 @@ def build_project_sheet_from_extraction(
             if alternative_scalar is None and sec_code == "floor_slab_1":
                 alternative_scalar = floor_slab_1_alternative_scalar(target_code, found, found_groups, found_by_target)
             if alternative_scalar is None and sec_code == "floor_slab_2":
-                alternative_scalar = floor_slab_2_alternative_scalar(target_code, found_groups)
+                alternative_scalar = floor_slab_2_alternative_scalar(target_code, found_groups, found_by_target)
             if alternative_scalar is None and sec_code == "flat_roof":
                 alternative_scalar = flat_roof_alternative_scalar(target_code, found, found_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None

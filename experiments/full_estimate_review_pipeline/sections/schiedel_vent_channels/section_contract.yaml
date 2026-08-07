@@ -272,15 +272,15 @@ price_keys:
 
   - key: schiedel_delivery_work_price
     estimate_line_code: schiedel_delivery
-    label_ru: "Доставка вентканалов, работа"
+    label_ru: "Доставка вентканалов, разгрузка вручную"
     price_kind: work
     unit: "маш"
     required: true
-    default_source: fallback_manual_review
-    registry_code: ""
+    default_source: price_registry_with_fallback
+    registry_code: "schiedel_delivery_unloading_work"
     fallback_key: "schiedel_delivery_work_price"
     allow_manual_override: true
-    notes: "No registry code in current calculator; review/fallback price is required."
+    notes: "Found 2026-08-06: registry_code was empty, so this price could never be auto-matched - a real contract bug, not a pricing gap. Elena's own price-list line ('Доставка вентканалов/ разгрузка в ручную на объекте') bundles delivery+unloading into one number, matching АРК's real smeta pattern (material-only, work=0 there). But ЮСВ's real smeta prices unloading as its own separate work line, consistently 2500 руб./маш regardless of the delivery/material price (2500 in one sheet, 15000 in another, unloading always 2500) - confirmed by checking both files directly. User decided 2026-08-06: material and work should always be priced separately (more universal across projects), so this is wired to its own registry_code rather than left folded into schiedel_delivery_truck_price."
 
 defaults:
   - key: project_name

@@ -1254,3 +1254,29 @@ is for vent-channel masonry/items, not PVC roof abutment work.
 
 `build_extraction_notes_report.py` now raises a semantic diagnostic if a JSON has `roof_zones[]` and
 also leaves a linear VK/vent-channel abutment outside the zone rows.
+
+## Current Note 2026-08-06: `gas_block_wall_hole_drilling` removed from `flat_roof`
+
+While building a real estimate from the TRC project's Google Sheets review workbook (goal:
+zero unresolved/"red" prices on sheet 02), `gas_block_wall_hole_drilling_rate` turned up with
+no price anywhere in Elena's registry and no matching line in any of the 3 real reference
+smetas (TRC/ARK/USV). Elena's own 2026-07-30 note on this field already called it a rare
+special-case ("not a standard work item except exceptional projects"), so instead of sourcing
+or faking a price for a feature with zero real-world usage, the user asked to remove it
+outright.
+
+Removed 3 entries from `sections/flat_roof/section_contract.yaml`: the
+`gas_block_wall_holes_count` supplier_input, the `gas_block_wall_hole_drilling_rate` price_key,
+and the `gas_block_wall_hole_drilling` estimate_line (`enabled_by_default: false`, so this
+never appeared in standard production output anyway - the removal only closes the special
+case, it changes nothing for normal projects). `flat_roof_calculator.py` was deliberately left
+untouched - its `if gas_block_wall_holes_count > 0: ...` branch is now dead code, but rewriting
+tested calculator logic just to delete an unreachable branch was judged riskier than leaving
+it. The adapter (`review_to_calculator/sections/flat_roof/build_input.py`) needed no code
+change - the field already flowed through the generic "skip optional supplier_inputs" path -
+only its explanatory comment was updated. Full writeup in `ADAPTER_BUILD_PLAN.md` right before
+the `flat_roof` (2026-08-05) section.
+
+If a future project genuinely has gas-block walls needing hole-drilling, all 3 contract
+entries will need to be re-added, and a real price sourced from whatever price list is current
+at that time.

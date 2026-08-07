@@ -32,11 +32,13 @@ calculator reads unconditionally anyway, purely for a diagnostic report block:
    price and duplicates it into all 4 fields.
 
 pvc_membrane_vgr_roll_width_m / pvc_membrane_vgr_roll_length_m /
-pvc_membrane_vgr_unit_price_per_roll_display are deliberately NOT supplied here: the
-calculator only touches them when a roof_zones row has operability="exploitable" (see
-roof_membrane_vgr_vrp_open_question memory - Elena confirmed non_exploitable-by-default is
-correct and this doesn't matter practically). A real project with an exploitable zone would
-need these 3 fields added; out of scope until one actually appears.
+pvc_membrane_vgr_unit_price_per_roll_display are only supplied when at least one roof_zones
+row has operability="exploitable" with real area - the calculator only touches them in that
+case (see calculate_flat_roof's `vgr_membrane_required_area > 0` gate). Added 2026-08-06 for
+the first real project with an exploitable zone (TRC); the contract's own
+pvc_membrane_vgr_unit_price_per_roll_display price_key is required:false for the same reason
+- most flat_roof projects never need it. Roll dimensions default to the same 2.1x20m as the
+non-exploitable V-RP membrane (not yet confirmed against a real V-GR supplier quote).
 """
 
 from __future__ import annotations
@@ -75,6 +77,7 @@ FALLBACK_SCALARS = (
 ROOF_ZONES_GROUP_KEY = "roof_zones"
 SLOPE_PLATE_TEMPLATE_PRICE_KEY = "slope_plate_unit_price_per_m3"
 SLOPE_PLATE_PREFIXES = ("slope_plate_a", "slope_plate_b", "slope_plate_j", "slope_plate_k")
+VGR_MEMBRANE_PRICE_KEY = "pvc_membrane_vgr_unit_price_per_roll_display"
 
 
 def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
@@ -109,12 +112,25 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         )
     result[ROOF_ZONES_GROUP_KEY] = zone_rows
 
+    has_exploitable_zone = any(
+        zone.get("operability") == "exploitable" and (zone.get("area_m2") or 0) > 0
+        for zone in zone_rows
+    )
+    if has_exploitable_zone and VGR_MEMBRANE_PRICE_KEY not in resolved_prices:
+        raise ValueError(
+            f"flat_roof: at least one roof_zones row is exploitable, so the calculator needs "
+            f"the V-GR membrane price - required price '{VGR_MEMBRANE_PRICE_KEY}' has no "
+            "resolved value on sheet 02 (add a row: calc_price_key="
+            f"{VGR_MEMBRANE_PRICE_KEY}, price_registry_code="
+            "roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll)"
+        )
+
     for entry in all_supplier_inputs(contract):
         key = entry["key"]
         if not entry.get("required", True):
             continue  # legacy/hidden optional fields (vent_shaft_abutment_count,
-            # gas_block_wall_holes_count, roof_work_coeff, legacy money totals) - calculator
-            # reads all of them via .get(..., default) internally, never required.
+            # roof_work_coeff, legacy money totals) - calculator reads all of them via
+            # .get(..., default) internally, never required.
         row = scalars.get(key)
         value = row["value_number"] if row else None
         if value is None:
