@@ -83,7 +83,32 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
         "Закладка технологических входов коммуникаций до границы дома. Канализация, водоснабжение (ориентировочно)",
         "мп",
     ): "communications_installation_m",
-    row_key("Устройство и монтаж термовкладыша", "мп"): "thermal_insert_installation_work_m",
+    # Fixed 2026-08-06: was pointed at thermal_insert_installation_work_m, the LEGACY
+    # registry_code for a disabled estimate line (thermal_insert_mode=standard_50_100 is
+    # production and never uses it) - so this real 100 руб./мп price was never actually
+    # reaching any live calculation. Retargeted to the combined-mode code TRC's real data
+    # needs (thermal_insert_combined_length_m given, not split 50mm/100mm lengths).
+    row_key("Устройство и монтаж термовкладыша", "мп"): "thermal_insert_combined_installation_work_m",
+    # Added 2026-08-06: these are materials, normally on a separate sheet this script doesn't
+    # read (extract_work_price_rows() only processes wb.sheetnames[0]) - moved onto the first
+    # sheet ("Прайс по видам работ") in the live source file (output/Цены на материалы.xlsx,
+    # rows 43-44) specifically so the existing single-sheet extraction picks them up
+    # automatically instead of needing a DERIVED_PRICE_ROWS patch. Same physical product
+    # already used for foundation_slab wall insulation, same price.
+    row_key("Пеноплэкс ГЕО 50 мм (для термовставок)", "м3"): "thermal_insert_50_material_m3",
+    row_key("Пеноплэкс ГЕО 100 мм (для термовставок)", "м3"): "thermal_insert_100_material_m3",
+    # Added 2026-08-06: schiedel_masonry_gas_block_items[] (D400/D500 masonry AROUND the
+    # Schiedel vent-shaft modules). Elena's raw price for this exact block was only on
+    # "Блокпаротермшидель" sheet (rows 4-5: "Блок D 400"=6100, "Блок D 500"=5400 руб/м3, this
+    # script only reads sheet 0) - moved onto sheet 0 (rows 45-46) same as the termovstavka
+    # materials above. Note these are generic block prices, NOT the same block/price as
+    # wall_block_items' main-wall D400/D500 (9500/9800) - that's a per-project supplier quote
+    # entered directly on each row, not a shared registry price at all, so there is no
+    # conflict. User confirmed 2026-08-06: use this value as-is even though it may be a
+    # different block size than the vent-shaft's actual 150x250x650mm spec - it's what
+    # Elena's price list gives for this line, don't block on the possible size mismatch.
+    row_key("Блок D400 (для кладки шахты вентканалов)", "м3"): "schiedel_masonry_gas_block_d400_m3",
+    row_key("Блок D500 (для кладки шахты вентканалов)", "м3"): "schiedel_masonry_gas_block_d500_m3",
     row_key(
         "Бетонирование фундаментной плиты в опалубке бетоном марки В22,5 (М300)",
         "м3",
@@ -123,10 +148,27 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
     row_key("Укладка ПВХ Мембраны", "м2"): "roof_pvc_membrane_installation_work_m2",
     row_key("Монтаж примыкания кровли из ПВХ мембраны", "мп"): "roof_pvc_membrane_abutment_work_m",
     row_key("Монтаж примыкания к вентшахтам", "шт"): "roof_vent_shaft_abutment_installation_item",
-    row_key("Установка воронки парапетной", "шт"): "roof_parapet_drain_item",
+    # Fixed 2026-08-06: this used to map to roof_parapet_drain_item (the drain's MATERIAL
+    # code) - wrong, "Установка..." (installation) is clearly work, not material. That bug
+    # meant the material price silently got the installation rate (5000) instead of the real
+    # material price (6001.23, see DERIVED_PRICE_ROWS below) for years. Corrected target.
+    row_key("Установка воронки парапетной", "шт"): "roof_parapet_drain_installation_item",
+    # New 2026-08-06: same class of installation-work row, previously never mapped at all -
+    # roof_internal_drain_with_heating_item (material) happened to carry the same 5000 value
+    # from an unrelated v3-carryforward match, masking the fact that this work price was
+    # never actually sourced from anywhere.
+    row_key(
+        "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)",
+        "шт",
+    ): "roof_internal_drain_with_heating_installation_item",
     row_key("Подъем материалов автокраном / разгрузка материала в ручную", "смена"): "roof_crane_lifting_shift",
     row_key("Кладка вентканалов Schiedel", "мп"): "schiedel_masonry_work_m",
-    row_key("Доставка вентканалов/ разгрузка в ручную на объекте", "маш"): "schiedel_delivery_truck",
+    # Removed 2026-08-06: this row ('Доставка вентканалов/ разгрузка в ручную на объекте' = 2500)
+    # used to map here, but it's the combined delivery+unloading number, not delivery/material
+    # alone - mapping it to schiedel_delivery_truck silently overwrote the real material price
+    # (15000, carried forward from v3) with the work-only rate, double-counting against the new
+    # separate schiedel_delivery_unloading_work code below. schiedel_delivery_truck is now a
+    # DERIVED_PRICE_ROWS entry instead (real material figure, confirmed from real ЮСВ smeta).
 }
 
 IGNORED_WORK_PRICE_ROWS: set[tuple[str, str]] = {
@@ -146,6 +188,51 @@ PRICE_CODE_NAME_OVERRIDES = {
 }
 
 DERIVED_PRICE_ROWS = [
+    {
+        "section": "Работы",
+        "name": "Устройство и монтаж термовставок 50 мм",
+        "unit": "мп",
+        "min_quantity": 1,
+        "price": 100,
+        "price_code": "thermal_insert_50_installation_work_m",
+        "comment": "Добавлено 2026-08-07: новый прайс Елены содержит одну универсальную строку 'Устройство и монтаж термовкладыша' = 100 руб./мп. В реальных эталонных сметах АРК/ТРЦ/ЮСВ работа термовставок также считается по длине с этой ставкой; для production-раздельного режима 50/100 нужен отдельный price_code, поэтому цена размножена из той же универсальной строки прайса.",
+    },
+    {
+        "section": "Работы",
+        "name": "Устройство и монтаж термовставок 100 мм",
+        "unit": "мп",
+        "min_quantity": 1,
+        "price": 100,
+        "price_code": "thermal_insert_100_installation_work_m",
+        "comment": "Добавлено 2026-08-07: та же универсальная работа 'Устройство и монтаж термовкладыша' = 100 руб./мп из нового прайса Елены. Толщина слоя меняет материал, но не ставку монтажной работы по м.п.",
+    },
+    {
+        "section": "Работы",
+        "name": "Устройство и монтаж термовставок (произвольный типоразмер)",
+        "unit": "мп",
+        "min_quantity": 1,
+        "price": 100,
+        "price_code": "thermal_insert_items_installation_work_m",
+        "comment": "Добавлено 2026-08-07: для режима thermal_insert_mode='items' калькулятор считает одну работу по суммарной длине всех термовставок произвольных типоразмеров. Ставка берется из той же универсальной строки нового прайса Елены 'Устройство и монтаж термовкладыша' = 100 руб./мп.",
+    },
+    {
+        "section": "Работы",
+        "name": "Материал термовставок (произвольный типоразмер)",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 8900,
+        "price_code": "thermal_insert_item_material_m3",
+        "comment": "Добавлено 2026-08-07: общий fallback для thermal_insert_items произвольного типоразмера. Новый прайс Елены дает Пеноплэкс ГЕО 100 мм (для термовставок) = 8900 руб./м3 и Пеноплэкс ГЕО 50 мм = 8800 руб./м3; для произвольных типоразмеров без отдельного толщинного price_code используем базовую цену 100 мм как более частый материал термовставок. Если в будущем появятся разные цены по eps_size, заменить на построчный price_code.",
+    },
+    {
+        "section": "Работы",
+        "name": "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм",
+        "unit": "мп",
+        "min_quantity": 1,
+        "price": 250,
+        "price_code": "block_chasing_reinforcement_work_m",
+        "comment": "Добавлено 2026-08-07 по сверке АРК/ТРЦ/ЮСВ: в эталонных сметах это платная работа в правой части себестоимости. Временная production-ставка 250 руб./мп до отдельного подтверждения Елены.",
+    },
     {
         "section": "Работы",
         "name": "Устройство утепления по наружной стороне торцов плиты, балок, перемычек",
@@ -181,6 +268,132 @@ DERIVED_PRICE_ROWS = [
         "price": 10000,
         "price_code": "waste_removal_container_truck",
         "comment": "Перенесено из v3 и уточнено 2026-07-30: контейнер/машина идет в материальной колонке сметы.",
+    },
+    {
+        "section": "Работы",
+        "name": "Монтаж опалубки из доски для отбортовки плиты",
+        "unit": "м2",
+        "min_quantity": 1,
+        "price": 0,
+        "price_code": "timber_formwork_installation_work_m2",
+        "comment": "ИСПРАВЛЕНО 2026-08-06: изначально взяла 580 руб./м2 из ТРЦ (лист 'НС 29.06.26', строка 42), но это была ЛЕВАЯ/белая (клиентская) колонка сметы. У каждой строки в реальных сметах два параллельных блока колонок - левый (белый, с накруткой для клиента) и правый (серый, настоящая внутренняя себестоимость Елены; в ТРЦ правый блок физически закрашен заливкой, в АРК/ЮСВ заливки нет, но структура та же и подтверждается арифметикой - левое/правое = Коэф-т Рентабельности листа, обычно 1.32). Правая/серая колонка для этой строки = 0 в ТРЦ. Пользователь подтвердила 2026-08-06: 0 - это реальный ответ, эта работа у Елены отдельно не тарифицируется внутри (входит в другую работу/бригадо-день), клиенту просто показывается отдельной строкой для формы.",
+    },
+    {
+        "section": "Земляные работы",
+        "name": "Перемещение песка вручную",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 0,
+        "price_code": "sand_manual_moving_m3",
+        "comment": "ИСПРАВЛЕНО 2026-08-06: изначально взяла 200 руб./м3 из ТРЦ (лист 'НС 29.06.26', строка 32), но это была ЛЕВАЯ/белая (клиентская) колонка. Правая/серая (реальная внутренняя себестоимость) колонка для этой же строки = 0. См. подробное объяснение серая/белая структура в комментарии к timber_formwork_installation_work_m2 выше - тот же класс ошибки. Пользователь подтвердила 2026-08-06: 0 верно, работа не тарифицируется отдельно внутри.",
+    },
+    {
+        "section": "Устройство фундаментной плиты",
+        "name": "Демонтаж опалубки после завершения бетонирования",
+        "unit": "м2",
+        "min_quantity": 1,
+        "price": 0,
+        "price_code": "formwork_dismantling_work_m2",
+        "comment": "ИСПРАВЛЕНО 2026-08-06: изначально взяла 120 руб./м2 из АРК/ЮСВ (левая/белая колонка на нескольких строках 'Демонтаж опалубки после завершения бетонирования'). Проверила правую/серую колонку в АРК на тех же строках - везде 0. Тот же класс ошибки, что и timber_formwork_installation_work_m2/sand_manual_moving_m3 (см. их комментарии). Пользователь подтвердила 2026-08-06: 0 верно.",
+    },
+    {
+        "section": "Schiedel",
+        "name": "Доставка вентканалов, разгрузка вручную",
+        "unit": "маш",
+        "min_quantity": 1,
+        "price": 2500,
+        "price_code": "schiedel_delivery_unloading_work",
+        "comment": "Добавлено 2026-08-06: этой строки нет в прайсе Елены отдельно (там доставка+разгрузка одной строкой = 2500) - ставка взята из реальной сметы ЮСВ, где разгрузка вручную идет отдельной строкой от доставки и стабильно равна 2500 руб./маш независимо от цены самой доставки (проверено в 2 разных листах ЮСВ: 2500/2500 и 15000/2500). По решению пользователя 2026-08-06 материал и работа считаются раздельно как более универсальный подход, а не совмещенной строкой как в АРК.",
+    },
+    {
+        "section": "Schiedel",
+        "name": "Доставка вентканалов (машина/транспорт, без разгрузки)",
+        "unit": "маш",
+        "min_quantity": 1,
+        "price": 15000,
+        "price_code": "schiedel_delivery_truck",
+        "comment": "ИСПРАВЛЕНО 2026-08-06: было ошибочно затёрто на 2500 через устаревшее правило MANUAL_WORK_PRICE_CODES, которое мапило комбинированную строку 'Доставка+разгрузка' (2500) на этот материальный код - двойной счёт с schiedel_delivery_unloading_work. Реальное значение 15000 подтверждено на листе ЮСВ 'АЛ 06.04 КР1,КР2 (ЕЧ) (ЮВ)', строка 235 'Доставка вентканалов': материал=15000, работа=2500 - оба параллельных блока колонок (левый/белый и правый/серый) сходятся на этой цифре, без разночтений.",
+    },
+    {
+        "section": "Гидроизоляция",
+        "name": "Утепление стен ЭППС 50мм, работа (ВРЕМЕННО 0 - ждет ответа Елены)",
+        "unit": "м2",
+        "min_quantity": 1,
+        "price": 0,
+        "price_code": "eps_wall_insulation_work_50_m2",
+        "comment": "ВРЕМЕННОЕ РЕШЕНИЕ 2026-08-06, требует уточнения у Елены: в смете ТРЦ утепление стен 50мм+100мм считается ОДНОЙ работой (680 руб./м2 на оба слоя сразу, лист 'НС 29.06.26' строка 73), а не двумя отдельными монтажными работами как в наших калькуляторах. АРК и ЮСВ вообще не имеют слоя 50мм на стенах (только 100мм), сверить не с чем. Поставлено 0, чтобы не задвоить деньги поверх уже существующей (возможно тоже неточной - см. eps_wall_insulation_work_m2) цены на монтаж 100мм-слоя. НЕ ИСПОЛЬЗОВАТЬ КАК ОКОНЧАТЕЛЬНОЕ ЗНАЧЕНИЕ - заменить, когда Елена ответит на вопрос от 2026-08-06 (один проход маляра на оба слоя или два отдельных).",
+    },
+    {
+        "section": "Кровля",
+        "name": "Воронка кровельная внутренняя с обогревом (материал)",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 5000,
+        "price_code": "roof_internal_drain_with_heating_item",
+        "comment": "Добавлено 2026-08-06: материалы не читаются автоматическим скриптом (только первый лист 'Прайс по видам работ', лист с материалами 'Утеплителипленкимастика (Олег)' сюда не входит) - цена 5000 руб./шт взята оттуда напрямую, строка 32 ('Воронка кровельная (с обжимным мет. фланцем с обогревом 110х450мм)'). До этой правки код случайно получал ту же цену через устаревшее (неверное) сопоставление с работой монтажа - см. исправление в MANUAL_WORK_PRICE_CODES выше. Цена совпала случайно (обе 5000), поэтому баг был незаметен.",
+    },
+    {
+        "section": "Кровля",
+        "name": "Воронка парапетная с листвоуловителем (материал)",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 6001.23,
+        "price_code": "roof_parapet_drain_item",
+        "comment": "Добавлено 2026-08-06: та же причина, что и у внутренней воронки - материалы не читаются автоматическим скриптом, цена взята напрямую из листа 'Утеплителипленкимастика (Олег)', строка 31 ('Воронка парапетная с листвоуловителем и отводом VC-PVC, для ПВХ мембран, 100х100х650') = 6001.23 руб./шт. До этой правки код ошибочно получал цену РАБОТЫ монтажа (5000 руб.) через устаревшее сопоставление в MANUAL_WORK_PRICE_CODES - реальная цена материала выше, это была настоящая ошибка в деньгах, не совпадение.",
+    },
+    {
+        "section": "Кровля",
+        "name": "ПВХ мембрана Logicroof V-GR 1,5 мм (эксплуатируемая кровля)",
+        "unit": "рул",
+        "min_quantity": 1,
+        "price": 1146.91,
+        "price_code": "roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll",
+        "comment": "Добавлено 2026-08-06: такая же цена, как у обычной V-RP мембраны (1146.91 руб./рул, прайс Елены лист 'Утеплителипленкимастика (Олег)' строка 29 - в прайсе V-GR и V-RP указаны с одинаковой ценой). Пользователь вписывал эту цену вручную в гугл-таблицу 2026-08-06 после того, как для ТРЦ впервые понадобилась V-GR (эксплуатируемая зона кровли) - перенесено в реестр, чтобы не терялось при пересборке.",
+    },
+    {
+        "section": "Schiedel",
+        "name": "Вентиляционный канал одноходовой VENT 20/25, 0.33 пм",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 268.4,
+        "price_code": "schiedel_vent_channel_1x_item",
+        "comment": "Добавлено 2026-08-06: лист 'Блокпаротермшидель (Алексей)' прайса Елены, строка 27. h=330мм, габариты 200х250мм, вес 13кг, 63 шт на поддоне.",
+    },
+    {
+        "section": "Schiedel",
+        "name": "Вентиляционный канал четырехходовой VENT 36/50, 0.33 пм",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 902.8,
+        "price_code": "schiedel_vent_channel_4x_item",
+        "comment": "Добавлено 2026-08-06: лист 'Блокпаротермшидель (Алексей)' прайса Елены, строка 30. h=330мм, габариты 500х360мм, вес 38кг, 16 шт на поддоне.",
+    },
+    {
+        "section": "Schiedel",
+        "name": "Вентканал CVENT 26х26 (канал + вентблок-спутник)",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 2663.2,
+        "price_code": "schiedel_vent_channel_cvent_item",
+        "comment": "Добавлено 2026-08-06: было два кандидата на листе 'Блокпаротермшидель (Алексей)' прайса Елены - строка 33 'Вентблок CVENT 26*26 со спутником, 0.327' = 961.2 руб./шт и строка 34 'Вентиляционный канал Schiedel CVENT 500Х360Х327 26Х26' = 1702 руб./шт. Пользователь подтвердила 2026-08-06: это не два кандидата на один и тот же продукт, а два РАЗНЫХ компонента одного полного CVENT-узла (канал-модуль + его блок-спутник той же глубины 327мм) - берутся оба, цена = сумма 961.2 + 1702 = 2663.2 руб./шт. Калькулятор (CHANNEL_TYPE_SPECS['cvent'] в schiedel_vent_channels_calculator/calculator.py) хранит только ОДНУ цену на product_type=cvent, как и для 1x/2x/3x/4x - поэтому сумма зашита здесь одним числом, а не как два отдельных price_code; calculator.py не менялся. CVENT остаётся редкой строкой (Elena 2026-07-30: 'бывает достаточно редко'), ни один реальный проект её пока не использовал.",
+    },
+    {
+        "section": "Пиломатериал",
+        "name": "Фанера 1,52х1,52*18 (для опалубки монолитных перемычек)",
+        "unit": "шт",
+        "min_quantity": 1,
+        "price": 1400,
+        "price_code": "lintel_formwork_plywood_sheet",
+        "comment": "Добавлено 2026-08-06: тот же лист фанеры, что и plywood_1520x1520_18mm_sheet (прайс Елены, лист 'Пиломатериалы (Олег)', строка 23) - отдельный price_code нужен калькулятору перемычек load_bearing_walls_lintels_calculator.py.",
+    },
+    {
+        "section": "Ж/Б монолитная плита перекрытия 1-го этажа",
+        "name": "Пиломатериал обрезной для устройства опалубки ГОСТ (для опалубки монолитных перемычек)",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 21499.997319,
+        "price_code": "lintel_formwork_timber_m3",
+        "comment": "Добавлено 2026-08-06: та же цена, что и timber_m3 - отдельный price_code нужен калькулятору перемычек load_bearing_walls_lintels_calculator.py.",
     },
 ]
 
