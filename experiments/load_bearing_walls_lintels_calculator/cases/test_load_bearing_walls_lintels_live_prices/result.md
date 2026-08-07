@@ -35,6 +35,7 @@
 - `rebar_a500_d10_kg_per_m`: `0.617`
 - `rebar_a500_d10_rod_length_m`: `11.7`
 - `rebar_a500_d10_unit_price_per_m`: `32.72`
+- `block_chasing_reinforcement_work_unit_price`: `0.0`
 - `gas_block_delivery_truck_capacity_m3`: `32`
 - `gas_block_delivery_unit_price`: `28000`
 - `gas_block_unloading_manipulator_unit_price`: `15000`
@@ -125,6 +126,8 @@
 - `parapet_gas_block_d500_250_spec_volume_m3`: `None`
 - `vent_chimney_cladding_calc_method`: `legacy_manual_toggle`
 - `vent_chimney_cladding_enabled`: `True`
+- `walls_consumables_calc_method`: `legacy_fixed_amount`
+- `walls_consumables_rate`: `0.0`
 - `vent_chimney_gas_block_spec_volume_m3`: `1.72`
 - `vent_chimney_geometry_calc_method`: `legacy_segments_rows`
 - `vent_chimney_block_thickness_m`: `0.15`
@@ -432,6 +435,8 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `overheads.second_light_rebar.material_total` | `5360` |
 | `overheads.parapet_and_second_light_rebar_order_length_m` | `409.5` |
 | `overheads.walls_consumables_tool_amortization_amount_raw` | `100521.7` |
+| `overheads.walls_consumables_calc_method` | `legacy_fixed_amount` |
+| `overheads.walls_consumables_rate` | `0.0` |
 | `second_light_addon.upper_floor_calc_method` | `legacy_second_light_addon` |
 | `second_light_addon.second_light_masonry_enabled` | `True` |
 | `second_light_addon.second_light_masonry_case_specific` | `True` |
@@ -458,7 +463,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `main_gas_block_d500_600x250x250_material` | Газобетонный блок D500 600x250x250 мм | `32.4` | `` | `м3` | `5500.0` | `178200.0` | `178200` | `0.0` | `0.0` | `0` | `178200.0` | `178200` | `False` |
 | `main_gas_block_adhesive` | Монтажный клей для блоков 25 кг | `138.0` | `` | `мешок` | `360.0` | `49680.0` | `49680` | `0.0` | `0.0` | `0` | `49680.0` | `49680` | `False` |
 | `sand_concrete_m300_first_row` | Пескобетон М300 40 кг | `39.0` | `` | `шт` | `375.0` | `14625.0` | `14625` | `0.0` | `0.0` | `0` | `14625.0` | `14625` | `False` |
-| `main_wall_chasing_for_d10_reinforcement` | Штробление блоков под армирование Ø10 | `1070.0` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
+| `main_wall_chasing_for_d10_reinforcement` | Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм | `1070.0` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 | `main_wall_rebar_a500_d10` | Арматура A500 Ø10 для несущих стен | `1134.9` | `` | `мп` | `27.16` | `30823.884` | `30824` | `0.0` | `0.0` | `0` | `30823.884` | `30824` | `False` |
 | `gas_blocks_and_mix_delivery` | Доставка блоков, смеси | `5.0` | `` | `маш` | `28000.0` | `140000.0` | `140000` | `0.0` | `0.0` | `0` | `140000.0` | `140000` | `False` |
 | `gas_blocks_unloading_manipulator` | Разгрузка блоков, смеси манипулятором | `5.0` | `` | `маш` | `15000.0` | `75000.0` | `75000` | `0.0` | `0.0` | `0` | `75000.0` | `75000` | `False` |
@@ -508,7 +513,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Газобетонный блок D500 600x250x250 мм | `gas_block_d500_m3` | `5500` | `5500` | `price_registry` |  |
 | Монтажный клей для блоков 25 кг | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
 | Пескобетон М300 40 кг | `sand_concrete_bag` | `375` | `375` | `price_registry` |  |
-| Штробление блоков под армирование Ø10 | `` | `None` | `None` | `locked_case_prices` |  |
+| Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм | `block_chasing_reinforcement_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
 | Арматура A500 Ø10 для несущих стен | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Доставка блоков, смеси | `block_delivery_truck` | `28000` | `28000` | `price_registry` |  |
 | Разгрузка блоков, смеси манипулятором | `block_unloading_manipulator_truck` | `15000` | `15000` | `price_registry` |  |
@@ -527,7 +532,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Газобетонный блок D500 600x150x250 мм | `gas_block_d500_150_m3` | `5600` | `5600` | `price_registry` |  |
 | Монтажный клей для парапета и верхнего уровня | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
 | Перемещение блоков, смеси автокраном для парапета | `crane_shift` | `30000` | `30000` | `price_registry` |  |
-| Штробление парапета и второго света | `` | `None` | `None` | `locked_case_prices` |  |
+| Штробление парапета и второго света | `block_chasing_reinforcement_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
 | Арматура A500 Ø10 для парапета и второго света | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `100522` | `100522` | `locked_case_prices` |  |
 | Вывоз мусора с объекта | `waste_removal_truck` | `10000` | `10000` | `price_registry` |  |
@@ -540,11 +545,12 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
 | `prices_from_price_registry` | `28` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `0` |
-| `warnings_count` | `0` |
+| `prices_from_fallback_input` | `2` |
+| `warnings_count` | `2` |
 
 ## Warnings
-Предупреждений нет.
+- block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing
+- block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing
 
 ## Comparison
 Expected values are not provided for this case.

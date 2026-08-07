@@ -35,6 +35,7 @@
     "rebar_a500_d10_kg_per_m": 0.617,
     "rebar_a500_d10_rod_length_m": 11.7,
     "rebar_a500_d10_unit_price_per_m": 32.72,
+    "block_chasing_reinforcement_work_unit_price": 0.0,
     "gas_block_delivery_truck_capacity_m3": 32,
     "gas_block_delivery_unit_price": 28000,
     "gas_block_unloading_manipulator_unit_price": 15000,
@@ -204,6 +205,8 @@
     "parapet_gas_block_d500_250_spec_volume_m3": null,
     "vent_chimney_cladding_calc_method": "legacy_manual_toggle",
     "vent_chimney_cladding_enabled": true,
+    "walls_consumables_calc_method": "legacy_fixed_amount",
+    "walls_consumables_rate": 0.0,
     "vent_chimney_gas_block_spec_volume_m3": 1.72,
     "vent_chimney_geometry_calc_method": "legacy_segments_rows",
     "vent_chimney_block_thickness_m": 0.15,
@@ -517,7 +520,9 @@
         "material_total": 5360
       },
       "parapet_and_second_light_rebar_order_length_m": 409.5,
-      "walls_consumables_tool_amortization_amount_raw": 100521.7
+      "walls_consumables_tool_amortization_amount_raw": 100521.7,
+      "walls_consumables_calc_method": "legacy_fixed_amount",
+      "walls_consumables_rate": 0.0
     },
     "second_light_addon": {
       "upper_floor_calc_method": "legacy_second_light_addon",
@@ -709,7 +714,7 @@
     },
     {
       "code": "main_wall_chasing_for_d10_reinforcement",
-      "name": "Штробление блоков под армирование Ø10",
+      "name": "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм",
       "unit": "мп",
       "quantity": 1070.0,
       "material_unit_price": 0.0,
@@ -721,11 +726,12 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "is_case_specific": false,
-      "notes": "Нулевая строка серой части, база для арматуры Ø10",
-      "unit_price_source": "locked_case_prices",
+      "notes": "База для арматуры Ø10",
+      "price_code": "block_chasing_reinforcement_work_m",
+      "unit_price_source": "fallback_input",
       "unit_price_original": null,
       "unit_price_used": null,
-      "price_warning": null
+      "price_warning": "price_code not found in price_registry and fallback input price is missing"
     },
     {
       "code": "main_wall_rebar_a500_d10",
@@ -1119,11 +1125,12 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "is_case_specific": true,
-      "notes": "Нулевая строка серой части",
-      "unit_price_source": "locked_case_prices",
+      "notes": "База для арматуры Ø10",
+      "price_code": "block_chasing_reinforcement_work_m",
+      "unit_price_source": "fallback_input",
       "unit_price_original": null,
       "unit_price_used": null,
-      "price_warning": null
+      "price_warning": "price_code not found in price_registry and fallback input price is missing"
     },
     {
       "code": "parapet_and_second_light_rebar_a500_d10",
@@ -1160,7 +1167,7 @@
       "line_total_raw": 100521.7,
       "line_total": 100522,
       "is_case_specific": false,
-      "notes": "manual/fixed amount, формула требует подтверждения",
+      "notes": "manual/fixed amount",
       "unit_price_source": "locked_case_prices",
       "unit_price_original": "100522",
       "unit_price_used": "100522",
@@ -1222,13 +1229,16 @@
   },
   "expected": {},
   "comparison": [],
-  "warnings": [],
+  "warnings": [
+    "block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing",
+    "block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing"
+  ],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
     "prices_from_price_registry": 28,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 0,
-    "warnings_count": 0
+    "prices_from_fallback_input": 2,
+    "warnings_count": 2
   }
 }

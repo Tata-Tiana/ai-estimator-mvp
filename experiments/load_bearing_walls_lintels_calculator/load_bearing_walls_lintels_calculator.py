@@ -625,6 +625,20 @@ def wall_block_items_totals(items: list[WallBlockItem]) -> dict[str, Decimal]:
     return totals
 
 
+def wall_block_items_roles_present(items: list["WallBlockItem"] | None) -> set[str]:
+    """Which wall_role values actually have at least one row in wall_block_items[]. Used so a
+    real project can mix sources per role - e.g. main_walls given as the old scalar total
+    (main_wall_gas_block_400/250_spec_volume_m3) while floor_2/parapet/partitions are given as
+    wall_block_items rows - without one role's presence silently discarding another role's real
+    data. Before this helper existed, every "wall_block_totals is not None" check below treated
+    "wall_block_items has ANY row" as "trust wall_block_items for EVERY role", which zeroed out
+    main_walls volume for a real project (TRC, 2026-08-07) whose extraction put main_walls only
+    in the legacy scalar fields and everything else in wall_block_items."""
+    if not items:
+        return set()
+    return {item.wall_role for item in items}
+
+
 def wall_block_other_density_lines(items: list["WallBlockItem"], wall_role: str) -> list[EstimateLineResult]:
     """One priced line per rare non-D400/D500 row for the given role (Elena, 2026-07-28: 'могут
     быть, но очень редко'). Density/size are trusted exactly as given in the project spec, price
@@ -727,7 +741,11 @@ def rebar_from_base_length(base_length: float, rod_length: float, waste_coeff: f
     }
 
 
-def calculate_scaffolding(data: LoadBearingWallsLintelsInput, wall_block_totals: dict[str, Decimal] | None = None) -> dict[str, Any]:
+def calculate_scaffolding(
+    data: LoadBearingWallsLintelsInput,
+    wall_block_totals: dict[str, Decimal] | None = None,
+    floor_2_in_wall_block_items: bool = False,
+) -> dict[str, Any]:
     if data.scaffolding_calc_method == "legacy_direct_quantity":
         if data.scaffolding_setup_quantity is None or data.scaffolding_timber_quantity_m3 is None:
             raise ValueError("legacy scaffolding calculation requires direct setup and timber quantities")
@@ -748,9 +766,11 @@ def calculate_scaffolding(data: LoadBearingWallsLintelsInput, wall_block_totals:
         # inconsistently (misleading, correct, or entirely absent — see
         # fact_of_data_vs_text_signal_principle memory / ARK_TRC_USV_WALL_ROOF_LINTEL_FINDINGS_PLAN.md
         # section 10), while wall_block_items either contains a real floor_2-role row or it doesn't.
-        # Falls back to floors_count untouched when wall_block_items isn't used at all, so every
-        # existing regression case (none of which supply wall_block_items) is byte-identical.
-        if wall_block_totals is not None:
+        # Falls back to floors_count when wall_block_items has no floor_2-role row - either
+        # because wall_block_items isn't used at all (every pre-2026-08-07 regression case is
+        # byte-identical), or because it's used for OTHER roles only (fixed 2026-08-07 - see
+        # wall_block_items_roles_present()).
+        if floor_2_in_wall_block_items:
             # Checks all three density buckets (not just D400) so a floor_2 built entirely from a
             # rare non-D400/D500 block (Elena, 2026-07-28: "могут быть, но очень редко") still
             # correctly triggers 2-tier scaffolding instead of silently under-counting to 1.
@@ -1078,7 +1098,15 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     lintel_length = calculate_lintel_total_length(data)
     lintel_total_length = d(lintel_length["lintel_total_length_m"])
     wall_block_totals = wall_block_items_totals(data.wall_block_items) if data.wall_block_items else None
-    if wall_block_totals is not None:
+    # Per-role, not all-or-nothing (fixed 2026-08-07, real TRC project bug): wall_block_items[]
+    # can legitimately carry only SOME roles (e.g. floor_2/parapet/partitions) while another role
+    # (main_walls) was given via the old scalar fields instead - a normal mixed-source situation,
+    # not an error. Trusting wall_block_totals for a role that has zero rows in wall_block_items
+    # silently produced 0 m3 of main-wall masonry for a real project even though the real 80.48
+    # m3 was sitting right there in main_wall_gas_block_400/250_spec_volume_m3. See
+    # wall_block_items_roles_present() and the same fix applied below to floor_2/parapet/scaffolding.
+    wall_block_roles = wall_block_items_roles_present(data.wall_block_items)
+    if "main_walls" in wall_block_roles:
         main_400_volume = wall_block_totals["main_walls_d400"]
         main_500_250_volume = wall_block_totals["main_walls_d500"]
         main_other_volume = wall_block_totals["main_walls_other"]
@@ -1135,8 +1163,9 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         if floor_2_lintel_concrete_enabled
         else Decimal("0")
     )
-    if wall_block_totals is not None and data.upper_floor_calc_method != "legacy_second_light_addon":
-        # wall_block_items[] present: gate floor_2 by whether a floor_2-role item
+    floor_2_in_wall_block_items = "floor_2" in wall_block_roles
+    if floor_2_in_wall_block_items and data.upper_floor_calc_method != "legacy_second_light_addon":
+        # wall_block_items[] has a floor_2-role row: gate floor_2 by whether a floor_2-role item
         # actually exists, not by floors_count (a real project's floors_count is
         # sometimes physically absent from the PDF, so gating on it is impossible
         # in principle — see floor_2_walls_incomplete_and_floors_count_risk memory).
@@ -1162,18 +1191,18 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         second_light_volume = Decimal("0")
         floor_2_volume = (
             wall_block_totals["floor_2_d400"]
-            if wall_block_totals is not None
+            if floor_2_in_wall_block_items
             else (d(data.floor_2_masonry_volume_m3 or 0) if floor_2_enabled else Decimal("0"))
         )
         # D500 (internal walls) on floor 2, same principle as floor 1 — Elena confirmed 2026-07-24:
         # external walls are D400, internal load-bearing walls are D500, on any floor. Only
         # reachable via wall_block_items; the legacy scalar path has no D500 field for floor_2.
-        floor_2_d500_volume = wall_block_totals["floor_2_d500"] if wall_block_totals is not None else Decimal("0")
+        floor_2_d500_volume = wall_block_totals["floor_2_d500"] if floor_2_in_wall_block_items else Decimal("0")
         # Rare non-D400/D500 block on floor 2 (Elena, 2026-07-28) — priced per-row separately,
         # see wall_block_other_density_lines(); only its volume feeds the combined masonry work.
-        floor_2_other_volume = wall_block_totals["floor_2_other"] if wall_block_totals is not None else Decimal("0")
+        floor_2_other_volume = wall_block_totals["floor_2_other"] if floor_2_in_wall_block_items else Decimal("0")
 
-    parapet_uses_wall_block_items = wall_block_totals is not None and data.parapet_calc_method != "legacy_manual_toggle"
+    parapet_uses_wall_block_items = "parapet" in wall_block_roles and data.parapet_calc_method != "legacy_manual_toggle"
     if data.parapet_calc_method == "legacy_manual_toggle":
         parapet_enabled = bool(data.parapet_enabled)
     elif parapet_uses_wall_block_items:
@@ -1272,7 +1301,7 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
         parapet_delivery_note = "Production parapet order volume calculated separately."
 
     blocks = {
-        "scaffolding": calculate_scaffolding(data, wall_block_totals),
+        "scaffolding": calculate_scaffolding(data, wall_block_totals, floor_2_in_wall_block_items),
         "cutoff_waterproofing": cutoff_waterproofing,
         "main_walls": {"main_masonry_volume_m3": q(main_masonry_volume)},
         "wall_block_items": {
