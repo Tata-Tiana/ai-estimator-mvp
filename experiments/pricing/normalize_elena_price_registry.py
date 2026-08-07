@@ -181,6 +181,22 @@ IGNORED_WORK_PRICE_ROWS: set[tuple[str, str]] = {
 OBSOLETE_PREVIOUS_PRICE_CODES = {
     "beam_concrete_placing_work_m3",
     "waste_removal_truck",
+    # Removed 2026-08-07: this was a stale placeholder carried forward untouched since v2/v3
+    # (its own comment said "Перенесено из rows_to_add... требуется проверка Елены" - never
+    # actually reviewed). Value was 9759.08 руб./м2, ~207x too high - real rate confirmed 47
+    # руб./м2 from 6 rows across 2 real projects (TRC + ARK, see DERIVED_PRICE_ROWS below).
+    # Caused two absurd ~1.2М/730К руб. "Расходные материалы для установки опалубки" lines in
+    # a real TRC estimate (floor_slab_1/floor_slab_2, both use this same registry_code).
+    "formwork_consumables_m2",
+    # Removed 2026-08-08: same class of stale never-reviewed placeholder (1000 руб./м3, no
+    # comment trail beyond "требуется проверка Елены"). Real price lives on a ZONE/SUPPLIER
+    # MATRIX (Елена price list, sheet "Бетон + песок", rows 15-24) - most Moscow-region zones
+    # are 1300 руб./м3 (20м3 truck), zone 1 (supplier Евгений) is 1400. TRC's own real smeta
+    # uses 1400 - see DERIVED_PRICE_ROWS below. This mechanism can only hold one flat price per
+    # code; a real per-project zone lookup is not built. If a future project is confirmed to be
+    # in a different price zone, this DERIVED_PRICE_ROWS value needs a manual one-off override,
+    # not a silent switch.
+    "sand_m3",
 }
 
 PRICE_CODE_NAME_OVERRIDES = {
@@ -313,6 +329,33 @@ DERIVED_PRICE_ROWS = [
         "price": 15000,
         "price_code": "schiedel_delivery_truck",
         "comment": "ИСПРАВЛЕНО 2026-08-06: было ошибочно затёрто на 2500 через устаревшее правило MANUAL_WORK_PRICE_CODES, которое мапило комбинированную строку 'Доставка+разгрузка' (2500) на этот материальный код - двойной счёт с schiedel_delivery_unloading_work. Реальное значение 15000 подтверждено на листе ЮСВ 'АЛ 06.04 КР1,КР2 (ЕЧ) (ЮВ)', строка 235 'Доставка вентканалов': материал=15000, работа=2500 - оба параллельных блока колонок (левый/белый и правый/серый) сходятся на этой цифре, без разночтений.",
+    },
+    {
+        "section": "Устройство фундаментной плиты",
+        "name": "Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки)",
+        "unit": "м2",
+        "min_quantity": 1,
+        "price": 47,
+        "price_code": "formwork_consumables_m2",
+        "comment": "ИСПРАВЛЕНО 2026-08-07: старое значение 9759.08 руб./м2 было непроверенным плейсхолдером (см. formwork_consumables_m2 в OBSOLETE_PREVIOUS_PRICE_CODES) - в 207 раз больше реальной цены, раздувало 'Расходные материалы для установки опалубки' на floor_slab_1/floor_slab_2 до ~1.2М/730К руб. на реальном проекте ТРЦ. Реальная ставка 47 руб./м2 подтверждена на 6 строках в 2 независимых проектах: ТРЦ (5556/118.218=47.0, 1404/29.875=47.0, 4307/91.6292=47.0, 1105/23.5=47.0) и АРК (15098/321.24=47.0, 4573/97.3=47.0) - везде площадь монтажа опалубки берётся из соседней строки того же раздела сметы.",
+    },
+    {
+        "section": "Земляные работы",
+        "name": "Песок строительный",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 1400,
+        "price_code": "sand_m3",
+        "comment": "ИСПРАВЛЕНО 2026-08-08: старое значение 1000 руб./м3 было непроверенным плейсхолдером (то же 'требуется проверка Елены' что и у formwork_consumables_m2). Реальная цена - в прайсе Елены на листе 'Бетон + песок' (строки 15-24), это ЗОНОВАЯ матрица по Москве и поставщикам: большинство зон (Евгений зоны 2-4, Алексей, Олег) = 1300 руб./м3 (20м3 машина), зона 1 (Евгений) = 1400 руб./м3. Взяла 1400 - это ровно та цена, что в реальной смете ТРЦ (строка 'Песок строительный' = 1400 руб./м3). Зонозависимость этот механизм не поддерживает - если у нового проекта другая зона/поставщик, значение нужно поправить здесь вручную, автоматически не подтянется.",
+    },
+    {
+        "section": "Земляные работы",
+        "name": "Экскаватор-погрузчик JCB, аренда/материал (без работы)",
+        "unit": "смена",
+        "min_quantity": 1,
+        "price": 26000,
+        "price_code": "excavator_jcb_shift_material",
+        "comment": "Добавлено 2026-08-07: у 'Экскаватор-погрузчик JCB...' на первом листе прайса Елены только ОДНА цена (3500 руб./смена) - это цена РАБОТЫ (оператор), уже верно замаплена на excavator_jcb_shift. Материальной/арендной части (стоимость самого экскаватора) на первом листе нет вообще. Реальная ставка 26000 руб./смена подтверждена в 8+ независимых снимках реальных смет за несколько месяцев: ТРЦ (2026-06-29), АРК (2026-04-27), и ЮСВ на 8 разных листах/датах с 2026-02-19 по 2026-04-06 - везде одна и та же пара 26000 материал / 3500 работа для строки 'Механизированная разработка грунта, Экскаватор JCB'. До этой правки контракт (excavator_material_unit_price) ошибочно указывал на тот же registry_code, что и работа (excavator_jcb_shift), поэтому материал всегда дублировал цену работы (3500 вместо 26000).",
     },
     {
         "section": "Гидроизоляция",
