@@ -20,7 +20,8 @@ HIGH_CONFIDENCE_THRESHOLD = 0.8
 MIN_MEANINGFUL_RAW_TEXT_LEN = 8
 
 FORBIDDEN_DIRECT_TARGETS = {"communications_length", "earthworks_communications_length_m"}
-PRICE_LIKE_TOKENS = ["цена", "стоимост", "price", "unit_price", "тариф", "ставка"]
+PRICE_LIKE_TOKENS = ["цена", "стоимост", "price", "unit_price", "тариф"]
+PRICE_RATE_RE = re.compile(r"(^|[\s,;:()/\\-])ставк")
 
 STEEL_CLASS_TOKENS = ["а240", "a240", "а500", "a500", "вр-1", "вр1"]
 REBAR_GROUP_CODES = {
@@ -96,7 +97,7 @@ def check_forbidden_target(item: dict, path: str, warnings: list[str]) -> None:
                 "do not trust it if it was calculated from pipe rows in chat"
             )
     name = str(item.get("item_name") or item.get("target_code") or "").lower()
-    if any(tok in name for tok in PRICE_LIKE_TOKENS):
+    if any(tok in name for tok in PRICE_LIKE_TOKENS) or PRICE_RATE_RE.search(name):
         warnings.append(f"{path}: item name/code '{name}' looks price-related, prompt asked not to extract prices")
 
 
