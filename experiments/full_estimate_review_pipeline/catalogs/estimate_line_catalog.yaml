@@ -1448,7 +1448,7 @@ sections:
         row_id: "load_bearing_walls_lintels.main_wall_chasing_for_d10_reinforcement"
         name_ru: "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм"
         unit: "мп"
-        line_kind: control
+        line_kind: work
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator
         quantity:
           formula: "sum(main_wall_rebar_items.spec_length_m)"
@@ -1457,11 +1457,11 @@ sections:
               source_class: AUTO_PROJECT
         prices:
           material_unit_price_key: null
-          work_unit_price_key: null
+          work_unit_price_key: "block_chasing_reinforcement_work_unit_price"
           fixed_amount_key: null
-          price_registry_code: null
-        zero_policy: allowed
-        notes: "Calculator returns this as a zero/technical row; payable rebar rows are generated dynamically by diameter/class."
+          price_registry_code: "block_chasing_reinforcement_work_m"
+        zero_policy: disabled_if_zero
+        notes: "Updated 2026-08-07: real estimate rows price this as paid work per linear meter; temporary registry rate is 250 руб/мп until Elena confirms a permanent price."
 
       main_wall_rebar_items:
         code: "main_wall_rebar_items"
@@ -2196,7 +2196,7 @@ sections:
         row_id: "load_bearing_walls_lintels.parapet_chasing_for_d10_reinforcement"
         name_ru: "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм"
         unit: "мп"
-        line_kind: control
+        line_kind: work
         current_calculator_status: returned_by_load_bearing_walls_lintels_calculator_when_parapet_chasing_base_length_present
         quantity:
           formula: "parapet_chasing_base_length_m"
@@ -2205,11 +2205,11 @@ sections:
               source_class: AUTO_PROJECT
         prices:
           material_unit_price_key: null
-          work_unit_price_key: null
+          work_unit_price_key: "block_chasing_reinforcement_work_unit_price"
           fixed_amount_key: null
-          price_registry_code: null
+          price_registry_code: "block_chasing_reinforcement_work_m"
         zero_policy: disabled_if_zero
-        notes: "Added 2026-07-31. Mirrors the calculator's existing legacy/control treatment of this row: quantity is shown, but no separate price is applied here unless the pricing layer is explicitly expanded later."
+        notes: "Added 2026-07-31. Updated 2026-08-07: uses the same paid work rate as main wall chasing."
 
       parapet_rebar_a500_d10:
         code: "parapet_rebar_a500_d10"

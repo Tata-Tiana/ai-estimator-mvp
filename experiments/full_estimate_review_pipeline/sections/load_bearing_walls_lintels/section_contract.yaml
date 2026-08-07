@@ -620,7 +620,7 @@ review_parameters:
       expected_unit: "мп"
       notes: "Third lintel construction method (2026-07-20): rebar set into a routed groove, no block/concrete/formwork/insulation — distinct from both U-block (lintel_total_length_m) and monolithic (floor_1_lintel_monolithic_concrete_volume_m3)."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Если на 1-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
@@ -643,7 +643,7 @@ review_parameters:
       expected_unit: "мп"
       notes: "Mirrors floor_1_lintel_groove_length_m."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Если на 2-м этаже есть перемычка в штробе, зафиксируйте длину для будущей доработки калькулятора."
@@ -665,7 +665,7 @@ review_parameters:
       aliases_ru: ["арматура перемычки в штробе", "армирование штробы"]
       notes: "component must be lintels_groove, never lintels — lintel_rebar_items below is directly wired into the calculator with strict component==\"lintels\" validation and would hard-crash on a groove row."
     review_behavior:
-      show_to_user: true
+      show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
       action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно арматуру перемычек в штробе, если она есть на объекте."
@@ -932,6 +932,7 @@ price_keys:
   - {key: adhesive_unit_price, estimate_line_code: main_gas_block_adhesive, label_ru: "Монтажный клей для блоков 25 кг", price_kind: material, unit: "мешок", required: true, default_source: price_registry_with_fallback, registry_code: "block_adhesive_bag", fallback_key: "adhesive_unit_price", allow_manual_override: true, notes: ""}
   - {key: sand_concrete_unit_price, estimate_line_code: sand_concrete_m300_first_row, label_ru: "Пескобетон М300 40 кг", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "sand_concrete_bag", fallback_key: "sand_concrete_unit_price", allow_manual_override: true, notes: ""}
   - {key: u_block_cutting_work_unit_price, estimate_line_code: u_block_lintel_cutting, label_ru: "Резка блока под перемычку (U-блок)", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "u_block_lintel_cutting_item", fallback_key: "u_block_cutting_work_unit_price", allow_manual_override: true, notes: ""}
+  - {key: block_chasing_reinforcement_work_unit_price, estimate_line_code: main_wall_chasing_for_d10_reinforcement, label_ru: "Штробление блоков под дополнительное усиление", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "block_chasing_reinforcement_work_m", fallback_key: "block_chasing_reinforcement_work_unit_price", allow_manual_override: true, notes: "Added 2026-08-07. Temporary production rate 250 rub/m from reviewed estimate rows; used for main walls and parapet/second-light chasing."}
   - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура стен и перемычек по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of main_wall_rebar_items and lintel_rebar_items."}
   - {key: gas_block_delivery_unit_price, estimate_line_code: gas_blocks_and_mix_delivery, label_ru: "Доставка блоков, смеси", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "block_delivery_truck", fallback_key: "gas_block_delivery_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_unloading_manipulator_unit_price, estimate_line_code: gas_blocks_unloading_manipulator, label_ru: "Разгрузка блоков, смеси манипулятором", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "block_unloading_manipulator_truck", fallback_key: "gas_block_unloading_manipulator_unit_price", allow_manual_override: true, notes: ""}
@@ -1271,15 +1272,15 @@ estimate_lines:
     name_ru: "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм"
     unit: "мп"
     enabled_by_default: true
-    line_role: control_zero_row
+    line_role: work
     calculator_result_path: "estimate_lines[code=main_wall_chasing_for_d10_reinforcement]"
     quantity:
       formula: "sum(main_wall_rebar_items.spec_length_m)"
       leaf_inputs:
         - {ref: "review_parameters.main_wall_rebar_items", source_class: AUTO_PROJECT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    prices: {material_unit_price_key: null, work_unit_price_key: block_chasing_reinforcement_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Zero-priced control row; payable rebar is the main_wall_rebar_items dynamic rows below."
+    notes: "Updated 2026-08-07: real estimate rows price this as paid work per linear meter; quantity is the same base length as main_wall_rebar_items Ø10/additional reinforcement."
 
   - code: main_wall_rebar_items
     name_ru: "Арматура несущих стен по диаметрам"
@@ -1738,9 +1739,9 @@ estimate_lines:
       leaf_inputs:
         - {ref: "auto_calculated.flat_roof_enabled", source_class: AUTO_CALCULATED}
         - {ref: "review_parameters.parapet_chasing_base_length_m", source_class: AUTO_PROJECT}
-    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    prices: {material_unit_price_key: null, work_unit_price_key: block_chasing_reinforcement_work_unit_price, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Added 2026-07-31. Control/zero-priced row matching the calculator's existing treatment: show the project length, but do not add a separate price unless pricing is explicitly expanded later."
+    notes: "Added 2026-07-31. Updated 2026-08-07: real estimate rows price parapet chasing as paid work per linear meter, same registry code as main wall chasing."
 
   - code: parapet_rebar_a500_d10
     name_ru: "Арматура A500 Ø10 для парапета"

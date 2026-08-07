@@ -138,6 +138,7 @@ class LoadBearingWallsLintelsInput:
     rebar_a500_d10_kg_per_m: float
     rebar_a500_d10_rod_length_m: float
     rebar_a500_d10_unit_price_per_m: float
+    block_chasing_reinforcement_work_unit_price: float
     gas_block_delivery_truck_capacity_m3: float
     gas_block_delivery_unit_price: float
     gas_block_unloading_manipulator_unit_price: float
@@ -273,6 +274,7 @@ class LoadBearingWallsLintelsInput:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "LoadBearingWallsLintelsInput":
+        data.setdefault("block_chasing_reinforcement_work_unit_price", 0.0)
         return cls(**data)
 
     def validate(self) -> None:
@@ -1417,7 +1419,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         *wall_block_other_density_lines(data.wall_block_items or [], "main_walls"),
         line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
         line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
-        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под армирование Ø10", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка серой части, база для арматуры Ø10"),
+        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", reinf["main_wall_chasing_quantity_m"], work_unit_price=data.block_chasing_reinforcement_work_unit_price, notes="База для арматуры Ø10", price_code="block_chasing_reinforcement_work_m"),
         *main_wall_rebar_lines,
         line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов", price_code="block_delivery_truck"),
         line("gas_blocks_unloading_manipulator", "Разгрузка блоков, смеси манипулятором", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_unloading_manipulator_unit_price, price_code="block_unloading_manipulator_truck"),
@@ -1501,7 +1503,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
             lines.extend(wall_block_other_density_lines(data.wall_block_items or [], "parapet"))
             if d(data.parapet_chasing_base_length_m) > 0:
                 lines.append(
-                    line("parapet_chasing_for_d10_reinforcement", "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", data.parapet_chasing_base_length_m, notes="Контрольная строка: базовая длина берется из проектной спецификации парапета.")
+                    line("parapet_chasing_for_d10_reinforcement", "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", data.parapet_chasing_base_length_m, work_unit_price=data.block_chasing_reinforcement_work_unit_price, notes="Базовая длина берется из проектной спецификации парапета.", price_code="block_chasing_reinforcement_work_m")
                 )
             if d(data.parapet_rebar_base_length_m) > 0:
                 lines.append(
@@ -1527,7 +1529,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         lines.extend([
         line("parapet_upper_level_adhesive", "Монтажный клей для парапета и верхнего уровня", "мешок", overheads["parapet_upper_level_adhesive_bags"], material_unit_price=data.adhesive_unit_price, is_case_specific=second_case_specific, notes="Две группы округления: second_light отдельно; parapet + vent/chimney вместе", price_code="block_adhesive_bag"),
         line("parapet_blocks_crane_moving", "Перемещение блоков, смеси автокраном для парапета", "смена", data.parapet_crane_shifts, material_unit_price=data.crane_25t_unit_price, price_code="crane_shift"),
-        line("parapet_and_second_light_chasing_for_d10_reinforcement", "Штробление парапета и второго света", "мп", d(data.parapet_chasing_base_length_m) + d(data.second_light_chasing_base_length_m), is_case_specific=second_case_specific, notes="Нулевая строка серой части"),
+        line("parapet_and_second_light_chasing_for_d10_reinforcement", "Штробление парапета и второго света", "мп", d(data.parapet_chasing_base_length_m) + d(data.second_light_chasing_base_length_m), work_unit_price=data.block_chasing_reinforcement_work_unit_price, is_case_specific=second_case_specific, notes="База для арматуры Ø10", price_code="block_chasing_reinforcement_work_m"),
         line("parapet_and_second_light_rebar_a500_d10", "Арматура A500 Ø10 для парапета и второго света", "мп", overheads["parapet_and_second_light_rebar_order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"] + overheads["second_light_rebar"]["material_total_raw"], is_case_specific=second_case_specific, notes="Две группы округления и закупки прутков", price_code="rebar_a500_d10_m"),
         ])
 
