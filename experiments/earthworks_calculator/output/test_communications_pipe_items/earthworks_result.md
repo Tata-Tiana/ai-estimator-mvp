@@ -25,6 +25,7 @@
 - `axis_marking_shifts`: `0`
 - `excavator_shifts`: `0`
 - `geotextile_laying_area_m2`: `0`
+- `geotextile_laying_overlap_coeff`: `1.0`
 - `consumables_calc_method`: `legacy_fixed_amount`
 - `consumables_rate`: `0.0`
 - `consumables_amount`: `0`

@@ -61,6 +61,7 @@ class EarthworksInput:
     axis_marking_shifts: float = 0.0
     excavator_shifts: float = 0.0
     geotextile_laying_area_m2: float = 0.0
+    geotextile_laying_overlap_coeff: float = 1.0
     manual_excavation_quantity_for_estimate_m3: float | None = None
     consumables_calc_method: str = "legacy_fixed_amount"
     consumables_rate: float = 0.0
@@ -121,6 +122,7 @@ class EarthworksInput:
         _require_non_negative("geotextile_area_m2", self.geotextile_area_m2)
         _require_positive("geotextile_overlap_coeff", self.geotextile_overlap_coeff)
         _require_positive("geotextile_roll_area_m2", self.geotextile_roll_area_m2)
+        _require_positive("geotextile_laying_overlap_coeff", self.geotextile_laying_overlap_coeff)
         _require_non_negative("communications_length_m", self.communications_length_m)
         if self.communications_length_calc_method == "pipe_items":
             if not self.communications_pipe_items:
@@ -538,12 +540,15 @@ def calculate_internal_estimate_lines(
             )
         )
     if _line_enabled(data, "geotextile_laying"):
+        geotextile_laying_quantity = _round_decimal(
+            _to_decimal(data.geotextile_laying_area_m2) * _to_decimal(data.geotextile_laying_overlap_coeff)
+        )
         lines.append(
             calculate_line(
                 code="geotextile_laying",
                 name=_line_name(data, "geotextile_laying", "Укладка геотекстиля"),
                 unit="м2",
-                quantity=data.geotextile_laying_area_m2,
+                quantity=geotextile_laying_quantity,
                 work_unit_price=_price(data, "geotextile_laying_work_unit_price"),
                 price_code="geotextile_laying_m2",
             )

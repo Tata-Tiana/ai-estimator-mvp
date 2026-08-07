@@ -420,10 +420,10 @@ price_keys:
     unit: "смена"
     required: true
     default_source: price_registry_with_fallback
-    registry_code: "excavator_jcb_shift"
+    registry_code: "excavator_jcb_shift_material"
     fallback_key: "excavator_material_unit_price"
     allow_manual_override: true
-    notes: ""
+    notes: "Fixed 2026-08-07: used to share registry_code excavator_jcb_shift with excavator_work_unit_price below, so material silently duplicated the work price (3500) instead of the real rental rate. Real material price 26000 confirmed across 8+ real project smeta snapshots (TRC/ARK/USV, several months) - see normalize_elena_price_registry.py DERIVED_PRICE_ROWS comment for excavator_jcb_shift_material."
   - key: excavator_work_unit_price
     estimate_line_code: excavator_jcb
     label_ru: "Экскаватор JCB, работа"
@@ -560,15 +560,6 @@ defaults:
     source_note: "Formula default from earthworks constants."
     allow_override_later: true
     notes: ""
-  - key: manual_refinement_depth_m
-    label_ru: "Глубина ручной доработки"
-    source_class: DEFAULT
-    value: 0.08
-    unit: "м"
-    calculator_input_path: "manual_refinement_depth_m"
-    source_note: "Formula default from earthworks constants."
-    allow_override_later: true
-    notes: ""
   - key: trench_width_m
     label_ru: "Ширина траншеи по умолчанию"
     source_class: DEFAULT
@@ -597,12 +588,12 @@ defaults:
     allow_override_later: true
     notes: ""
   - key: geotextile_overlap_coeff
-    label_ru: "Коэффициент нахлеста геотекстиля"
+    label_ru: "Коэффициент нахлеста геотекстиля (материал)"
     source_class: DEFAULT
     value: 1.1
     unit: ""
     calculator_input_path: "geotextile_overlap_coeff"
-    source_note: "Formula default from earthworks constants."
+    source_note: "Formula default from earthworks constants. Stable 1.1 across all 3 reference projects (TRC/ARK/USV) - kept as a plain default, not exposed for override."
     allow_override_later: true
     notes: ""
   - key: geotextile_roll_area_m2
@@ -690,7 +681,45 @@ auto_calculated:
     calculator_input_path: ""
     notes: "Production calculated amount; do not place it on sheet 02 as a price or on sheet 01-1 as manual input."
 
-supplier_inputs: []
+supplier_inputs:
+  - key: manual_refinement_depth_m
+    label_ru: "Глубина ручной доработки дна котлована"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_refinement_depth_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_refinement_depth_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Fixed 2026-08-08: was a silent DEFAULT (0.08) with no per-project visibility. Real projects vary - checked real Excel formulas in 3 delivered smetas (TRC/ARK/USV): ARK and USV both use 0.08, TRC uses 0.10. Typical value 0.08 lives in manual_values_registry.xlsx (section_code=earthworks, key=manual_refinement_depth_m); Elena can override per project on sheet 01-1. Falls back to the calculator's own 0.08 default if left blank."
+  - key: geotextile_laying_overlap_coeff
+    label_ru: "Коэффициент нахлеста геотекстиля в работе (укладка)"
+    unit: ""
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "geotextile_laying_overlap_coeff"
+    normalized_json_path: "sections.earthworks.supplier_inputs.geotextile_laying_overlap_coeff.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: ""
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-08. Separate from geotextile_overlap_coeff (material purchase, stable 1.1 across TRC/ARK/USV) - this one is for the LAYING WORK line's area, and checked real Excel formulas: TRC uses 1.1, ARK uses 1.2, USV uses no multiplier at all (1.0/none). NOT a stable system rule - varies by project/estimator judgment (site shape, number of corners/overlaps). Default 1.0 (no markup) matches the calculator's pre-2026-08-08 behavior and USV's real practice; Elena fills in the real project number on sheet 01-1 when the site needs one. Typical value in manual_values_registry.xlsx (section_code=earthworks, key=geotextile_laying_overlap_coeff)."
 
 calculator_input_mapping:
   - input_path: "*"

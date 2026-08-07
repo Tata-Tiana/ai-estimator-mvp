@@ -38,11 +38,13 @@ Production repeated_rows (via normalized_review["production_items"]):
 - communications_pipe_items, trench_routes - never read here; not needed by the fixed
   production calc_methods above (see docstring note on communications_length_calc_method).
 
-Every remaining field not covered above (~13: excavator_productivity_m3_per_shift,
-manual_refinement_depth_m, trench_width_m, sand_compaction_coeff, sand_truck_step_m3,
+Every remaining field not covered above (~11: excavator_productivity_m3_per_shift,
+trench_width_m, sand_compaction_coeff, sand_truck_step_m3,
 geotextile_overlap_coeff, geotextile_roll_area_m2, axis_marking_shifts,
 consumables_rate + the 4 calc_method fields themselves) comes mechanically from the
 contract's `defaults` by exact key-name match to the dataclass field name.
+manual_refinement_depth_m and geotextile_laying_overlap_coeff are SUPPLIER_INPUT
+(sheet 01-1) as of 2026-08-08, not DEFAULT - see OPTIONAL_SCALARS.
 
 `internal_prices` is built directly from `normalized_review["resolved_prices"]` - the
 calculator's own `_price(data, key)` helper reads this flat dict by the exact
@@ -67,7 +69,18 @@ from typing import Any
 from core.contract_loader import default_by_key, load_contract, price_keys as contract_price_keys
 
 REQUIRED_SCALARS = ("pit_area_m2", "geotextile_area_m2", "geotextile_laying_area_m2", "trench_volume_m3")
-OPTIONAL_SCALARS = ("pit_excavation_depth_m", "sand_base_volume_m3", "communications_length_m")
+# manual_refinement_depth_m and geotextile_laying_overlap_coeff moved here 2026-08-08 from the
+# contract's `defaults:` block (was source_class: DEFAULT, silently hardcoded, no per-project
+# visibility) - both are now SUPPLIER_INPUT/sheet 01-1, so they land in scalars (when Elena fills
+# them in) rather than defaults. Left unset when absent, same as every other optional scalar here
+# - the calculator's own dataclass defaults (0.08 / 1.0) apply.
+OPTIONAL_SCALARS = (
+    "pit_excavation_depth_m",
+    "sand_base_volume_m3",
+    "communications_length_m",
+    "manual_refinement_depth_m",
+    "geotextile_laying_overlap_coeff",
+)
 PRODUCTION_ITEM_GROUPS = ("pit_items", "sand_items")
 
 
