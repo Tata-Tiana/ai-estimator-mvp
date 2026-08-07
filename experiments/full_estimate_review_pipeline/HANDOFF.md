@@ -32,6 +32,102 @@ pipeline. The current production direction is:
 - postpone a separate universal anti-cheat layer until the review workbook -> adapters -> final
   estimate flow is stable.
 
+## Production Gate Idea — Human Review Status And Final Estimate Sanity Audit
+
+Added 2026-08-07 after the TRC final-estimate dry run exposed a silent zero in the walls section.
+
+This is not the postponed universal "anti-cheat" layer above. This is a narrower production gate around
+the existing workflow, needed before the Telegram bot can safely return a final estimate.
+
+The intended bot workflow is:
+
+```text
+corrected chat/parser JSON
+-> bot builds Google review workbook
+-> estimator checks/fixes Google workbook
+-> bot downloads filled workbook
+-> normalized review JSON
+-> pre-calculation readiness check
+-> calculators
+-> draft final estimate workbook
+-> post-calculation sanity audit
+-> final estimate is released only if there are no red blockers
+```
+
+Important distinction:
+
+- Calculator input validity means "the Python dataclasses/calculators can run".
+- Estimate readiness means "the reviewed business data is confirmed enough to release a final estimate".
+
+These are not the same. A calculator can accept a yellow `needs_review` value because the value is a
+valid number, but the pipeline may still decide that the final estimate cannot be released until a human
+confirms that value.
+
+### Pre-calculation readiness check
+
+Run after the filled Google workbook is downloaded and normalized, before calculators.
+
+Purpose:
+
+- block required red rows (`missing`, required manual inputs, required prices) before calculators see them;
+- distinguish yellow rows that may be calculated with a warning from yellow rows that must be explicitly
+  accepted/confirmed before final release;
+- treat an estimator-entered corrected value or explicit confirmation as acceptance of a `needs_review`
+  value;
+- produce a human-readable report saying what Elena/estimator can fix in the Google workbook.
+
+Examples Elena/estimator can fix:
+
+- price not found on sheet 02 -> enter/fix price;
+- project value missing -> enter reviewed value on sheet 01;
+- suspicious value found -> confirm, correct, or set zero if the work is absent;
+- optional work absent -> enter 0 or leave empty according to the section contract.
+
+Examples Elena/estimator should not fix manually:
+
+- data exists in the review workbook/JSON, but a calculated estimate line becomes zero;
+- a repeated-row group disables a scalar value for another role;
+- calculator output contradicts its own input source.
+
+Those are code bugs and must be sent to the developer backlog.
+
+### Post-calculation sanity audit
+
+Run after calculators and before sending the final estimate workbook.
+
+Purpose:
+
+- catch silent zeros and source-selection bugs that are invisible to schema validation;
+- compare critical input values with critical estimate lines;
+- stop release when the estimate lost money-bearing quantities.
+
+Required first checks:
+
+- if main wall D400/D500 volumes exist in review data but the 1st-floor masonry estimate lines are zero,
+  block release as a red technical error;
+- if concrete/rebar/formwork/EPS/roof material values exist in review data but the corresponding mandatory
+  estimate line is zero, block release unless the section contract marks that line optional/diagnostic;
+- if a repeated group is present, verify that it only overrides the scalar for the same role/component,
+  not unrelated roles/components;
+- if a calculator used fallback/default/auto-sum logic for a money-bearing line, surface that in the audit
+  as yellow unless the rule is explicitly documented as safe.
+
+Audit outcome levels:
+
+- Green: no blockers; send final estimate.
+- Yellow: send estimate plus warnings, or require explicit confirmation depending on the section rule.
+- Red: do not send a "final" estimate; send a clear report and either ask the estimator to fix the workbook
+  or mark it as a developer bug.
+
+TRC wall-block lesson:
+
+The bug was not in extraction: the main-wall D400/D500 values existed. The calculator treated "any
+`wall_block_items` rows exist" as "all wall roles must come from `wall_block_items`", so main-wall scalar
+volumes were silently ignored when only floor_2/parapet/partitions had repeated rows. Future code must use
+per-role source selection: `main_walls` repeated rows override only main-wall scalars; `floor_2` rows
+override only floor_2 scalars; `parapet` rows override only parapet scalars. Mixed scalar + repeated-row
+input is a normal production state, not an error.
+
 ## Canonical Pipeline
 
 The target pipeline is:
@@ -1254,6 +1350,34 @@ is for vent-channel masonry/items, not PVC roof abutment work.
 
 `build_extraction_notes_report.py` now raises a semantic diagnostic if a JSON has `roof_zones[]` and
 also leaves a linear VK/vent-channel abutment outside the zone rows.
+
+## OPEN 2026-08-07: earthworks manual excavation depth rule — waiting on Elena, do not implement yet
+
+Comparing our built TRC final estimate against her real TRC smeta line-by-line found
+`calculate_manual_excavation_total()` in `earthworks_calculator.py` overstates manual excavation
+(94.782 m3 built vs 34 m3 real) because it has NO machine/manual split for trenches at all - the
+full volume of every `trench_routes[]` item is always treated as 100% hand-dug. Pulled real Excel
+formulas from TRC/ARK/USV smeta files: all three actually split trench volume by network group,
+each group getting its OWN "manual depth" coefficient (shallower than the trench's real total
+depth) - the excavator handles most of the depth, hand-digging only finishes the remainder below
+the already-excavated pit floor. Confirmed against the real TRC project PDF (`КР-1_ТРЦ
+_01,07,2026.pdf`, page 7 "План котлована") that pit depth (0.5m) and per-network design depths
+(К1=0.4m, К2=0.5m, ЭО=0.9m, В1=1.9m) are real project values, matching our own extracted numbers
+exactly - but the machine/manual SPLIT coefficient itself isn't drawn on any project page in any
+of the 3 reference projects, and differs between TRC (0.6/1.0/1.6/0.7m by group) and USV
+(0.2/0.2/1.6/0.6m by group). Question sent to Elena 2026-08-07 (see
+`open_question_manual_excavation_depth_rule` memory) asking how she decides the split. **Do not
+redesign `calculate_manual_excavation_total`/`calculate_excavator_shifts` or add a `manual_depth_m`
+field to `trench_routes[]` until she answers** - her answer determines whether this is a simple
+formula (real depth − pit depth) or a judgment call needing a manual per-project input instead.
+
+Separately found (and this part IS a fixable bug, unblocked): TRC's extraction has two near-duplicate
+routes both labeled "К2, К3" - checked the real project PDF and found К3 is actually a completely
+different network (Дренажная гофротруба ф110 с перфорацией, perimeter drainage), visually matching
+the longer of the two routes (74.56m, follows almost the whole building perimeter on the drawing).
+Elena confirmed this is a designer's labeling slip, not something that belongs in earthworks trench
+calculations at all. User will exclude it (set the correction column for that row's `volume_m3` to 0
+on sheet 01) on the next parser/workbook rebuild.
 
 ## Current Note 2026-08-06: `gas_block_wall_hole_drilling` removed from `flat_roof`
 
