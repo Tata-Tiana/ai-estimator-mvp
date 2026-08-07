@@ -583,14 +583,14 @@ floor_1_lintel_monolithic_total_length:
 floor_1_lintel_insulation_length:
   section_code: load_bearing_walls_lintels
   ru_label: "Утепление торца монолитной перемычки, 1-й этаж — длина"
-  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки", "Утепление торца перемычки", "Утепление монолитной перемычки"]
+  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки", "Утепление торца перемычки", "Утепление монолитной перемычки", "Ведомость материалов утепления перемычек", "ЭППС 100мм утепление перемычки", "ЭППС 100 мм утепление перемычки", "ж/б балка перемычка утепление"]
   expected_unit: linear_m
-  table_hints: ["Спецификация перемычек 1-го этажа"]
+  table_hints: ["Спецификация перемычек 1-го этажа", "Ведомость материалов утепления перемычек 1 этажа", "План перемычек 1 этажа", "Условные обозначения перемычек"]
   required_context: ["утепл", "перемычк"]
-  negative_context: ["плита", "балка", "фундамент", "2 этаж"]
+  negative_context: ["плита", "балка перекрытия", "балка в составе плиты", "фундамент", "2 этаж"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "мп"]
-  notes: "Added 2026-07-15. Direct spec value; do not derive from monolithic concrete volume by formula. Added 2026-07-26 (real project case, confirmed against the real costed smeta): edge insulation does NOT always accompany every monolithic lintel on a floor — a floor can have several monolithic lintels where only some are insulated (real case: two lintels, combined concrete/formwork totals cover both, but only one of them — 2,8 of a 5,4 м.пог combined length — has edge insulation, confirmed by the real smeta's own 'Устройство утепления перемычки' work line quantity = 2,8, not 5,4). This field must be the length of only the insulated lintels, never the combined total length of all monolithic lintels on the floor — do not assume 1:1 with the monolithic concrete volume's lintel count."
+  notes: "Added 2026-07-15. This field is the length of only the actually insulated monolithic lintel / reinforced-concrete lintel-beam parts on floor 1. Marks can be named differently across projects (for example with prefixes for lintel, beam-lintel, or other local mark systems), so follow the drawing legend and material schedule instead of hard-coding mark prefixes. Do not derive this from monolithic concrete volume or from the combined length of all monolithic lintels. If the PDF gives insulation as EPS volume tied to a specific lintel mark/type, the model may derive a reviewed length only when the same drawing gives the matching mark length and insulation height/thickness and the formula volume = length * height * thickness is stated in notes."
 
 floor_1_lintel_formwork_horizontal_area:
   section_code: load_bearing_walls_lintels
@@ -619,9 +619,9 @@ floor_1_lintel_formwork_vertical_area:
 floor_1_lintel_insulation_eps_volume:
   section_code: load_bearing_walls_lintels
   ru_label: "Пеноплэкс Основа для утепления перемычек, 1-й этаж"
-  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки", "ЭППС Основа перемычки"]
+  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки", "ЭППС Основа перемычки", "ЭППС 100мм утепление перемычки", "ЭППС 100 мм утепление перемычки", "Ведомость материалов утепления перемычек"]
   expected_unit: m3
-  table_hints: ["Спецификация перемычек 1-го этажа"]
+  table_hints: ["Спецификация перемычек 1-го этажа", "Ведомость материалов утепления перемычек 1 этажа", "План перемычек 1 этажа"]
   required_context: ["пеноплэкс|эппс", "перемычк"]
   negative_context: ["плита", "фундамент", "стен", "2 этаж"]
   value_column_hint: ["объем", "кол-во", "количество"]
@@ -655,14 +655,14 @@ floor_2_lintel_monolithic_total_length:
 floor_2_lintel_insulation_length:
   section_code: load_bearing_walls_lintels
   ru_label: "Утепление торца монолитной перемычки, 2-й этаж — длина"
-  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки 2 этаж"]
+  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки 2 этаж", "Утепление торца перемычки 2 этаж", "Утепление монолитной перемычки 2 этаж", "Ведомость материалов утепления перемычек 2 этажа", "ЭППС 100мм утепление перемычки 2 этаж", "ЭППС 100 мм утепление перемычки 2 этаж", "ж/б балка перемычка утепление 2 этаж"]
   expected_unit: linear_m
-  table_hints: ["Спецификация перемычек 2-го этажа"]
+  table_hints: ["Спецификация перемычек 2-го этажа", "Ведомость материалов утепления перемычек 2 этажа", "План перемычек 2 этажа", "Условные обозначения перемычек"]
   required_context: ["утепл", "перемычк", "2 этаж|втор"]
-  negative_context: ["плита", "балка", "фундамент", "1 этаж"]
+  negative_context: ["плита", "балка перекрытия", "балка в составе плиты", "фундамент", "1 этаж"]
   value_column_hint: ["длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "мп"]
-  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_length. Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length."
+  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_length for floor 2. This is only the actually insulated monolithic lintel / reinforced-concrete lintel-beam length, not the combined length of all monolithic lintels. Marks can use project-specific prefixes; follow the legend/material schedule. If only EPS volume is given, derive a reviewed length only from same-mark geometry with formula volume = length * height * thickness."
 
 floor_2_lintel_formwork_horizontal_area:
   section_code: load_bearing_walls_lintels
@@ -691,9 +691,9 @@ floor_2_lintel_formwork_vertical_area:
 floor_2_lintel_insulation_eps_volume:
   section_code: load_bearing_walls_lintels
   ru_label: "Пеноплэкс Основа для утепления перемычек, 2-й этаж"
-  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки 2 этаж"]
+  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки 2 этаж", "ЭППС 100мм утепление перемычки 2 этаж", "ЭППС 100 мм утепление перемычки 2 этаж", "Ведомость материалов утепления перемычек 2 этажа"]
   expected_unit: m3
-  table_hints: ["Спецификация перемычек 2-го этажа"]
+  table_hints: ["Спецификация перемычек 2-го этажа", "Ведомость материалов утепления перемычек 2 этажа", "План перемычек 2 этажа"]
   required_context: ["пеноплэкс|эппс", "перемычк", "2 этаж|втор"]
   negative_context: ["плита", "фундамент", "стен", "1 этаж"]
   value_column_hint: ["объем", "кол-во", "количество"]
