@@ -70,6 +70,7 @@ from core.contract_loader import (
     load_contract,
     price_keys as contract_price_keys,
 )
+from core.rebar_item_defaults import fill_rebar_catalog_defaults
 
 REQUIRED_SCALARS = (
     "membrane_area_m2",
@@ -88,6 +89,7 @@ OPTIONAL_PRODUCTION_ITEM_GROUPS = ("slab_zones",)
 REBAR_GROUP_KEY = "foundation_rebar_items"
 REBAR_TEMPLATE_PRICE_KEY = "rebar_unit_price_by_item"
 THERMAL_INSERT_ITEMS_KEY = "thermal_insert_items"
+THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY = "thermal_insert_item_material_unit_price"
 
 
 def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
@@ -137,8 +139,17 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     # thermal_insert_items has no real rows.
     thermal_items = production_items.get(THERMAL_INSERT_ITEMS_KEY)
     if thermal_items:
+        thermal_item_material_price = resolved_prices.get(THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY)
+        if thermal_item_material_price is None:
+            raise ValueError(
+                "foundation_slab: required price "
+                f"'{THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY}' has no resolved value"
+            )
         result["thermal_insert_mode"] = "items"
-        result["thermal_insert_items"] = thermal_items
+        result["thermal_insert_items"] = [
+            {**item, "material_unit_price": thermal_item_material_price}
+            for item in thermal_items
+        ]
     else:
         result["thermal_insert_mode"] = defaults["thermal_insert_mode"]["value"]
         for key in OPTIONAL_STANDARD_5010_SCALARS:
@@ -167,7 +178,11 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 f"(expected sheet 02 row with price_registry_code={registry_code!r}, "
                 "calc_price_key=rebar_unit_price_by_item)"
             )
-        priced_item = {**item, "unit_price_per_m": price}
+        source_item = {k: v for k, v in item.items() if k != "weight_kg"}
+        priced_item = fill_rebar_catalog_defaults(
+            {**source_item, "unit_price_per_m": price},
+            section="foundation_slab",
+        )
         # rod_length_m is not one of foundation_rebar_items' own columns (PDF specs never
         # give it) - it's a per-item "catalog default unless item overrides" value, so it's
         # injected here rather than pulled from `defaults` as a flat top-level field.
@@ -208,7 +223,7 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
 
     for price_key in contract_price_keys(contract):
         key = price_key["key"]
-        if key == REBAR_TEMPLATE_PRICE_KEY:
+        if key in (REBAR_TEMPLATE_PRICE_KEY, THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY):
             continue  # handled above, per-item, not a flat top-level field
         if key in resolved_prices:
             result[key] = resolved_prices[key]

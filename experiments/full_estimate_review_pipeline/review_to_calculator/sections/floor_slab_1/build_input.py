@@ -53,6 +53,7 @@ from core.contract_loader import (
     price_keys as contract_price_keys,
     review_parameter_by_key,
 )
+from core.rebar_item_defaults import fill_rebar_catalog_defaults
 
 REQUIRED_SCALARS = (
     "total_concrete_volume_from_spec_m3",
@@ -79,6 +80,11 @@ SLAB_ZONES_GROUP_KEY = "slab_zones"
 BEAM_ITEMS_GROUP_KEY = "beam_items"
 REBAR_GROUP_KEY = "floor_slab_1_rebar_items"
 REBAR_TEMPLATE_PRICE_KEY = "rebar_unit_price_by_item"
+SLAB_ZONE_FORMWORK_FIELDS = (
+    "edge_perimeter_m",
+    "under_slab_formwork_area_m2",
+    "edge_and_beam_formwork_area_m2",
+)
 
 
 def _set_nested(container: dict[str, Any], path: str, value: Any) -> None:
@@ -111,10 +117,20 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     scalars = normalized_review["scalar_parameters"]
     production_items = normalized_review["production_items"]
     resolved_prices = normalized_review["resolved_prices"]
+    zone_rows = production_items.get(SLAB_ZONES_GROUP_KEY)
+    zones_have_formwork = bool(
+        zone_rows
+        and any(zone.get(field) is not None for zone in zone_rows for field in SLAB_ZONE_FORMWORK_FIELDS)
+    )
 
     result: dict[str, Any] = {"case_meta": {"project_name": normalized_review["project_name"]}}
 
     for key in REQUIRED_SCALARS:
+        if zones_have_formwork and key in {
+            "slab_edge_perimeter_m",
+            "main_formwork_area_m2",
+        }:
+            continue
         row = scalars.get(key)
         value = row["value_number"] if row else None
         if value is None:
@@ -131,7 +147,13 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     # touches any money calculation (confirmed by reading every usage in the calculator).
     # No PDF signal exists for a separate control area, so this mirrors main_formwork_area_m2
     # (the production formwork area itself) per explicit user decision, 2026-08-05.
-    _set_nested(result, "geometry.slab_control_geometry_area_m2", result["main_formwork_area_m2"])
+    control_area = result.get("main_formwork_area_m2")
+    if control_area is None and zones_have_formwork:
+        control_area = sum(
+            float(zone.get("under_slab_formwork_area_m2") or 0)
+            for zone in zone_rows or []
+        )
+    _set_nested(result, "geometry.slab_control_geometry_area_m2", control_area)
 
     for key in OPTIONAL_SCALARS:
         row = scalars.get(key)
@@ -146,7 +168,9 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     combined_value = combined_row["value_number"] if combined_row else None
     edge_row = scalars.get(EDGE_FORMWORK_AREA_KEY)
     edge_value = edge_row["value_number"] if edge_row else None
-    if combined_value is not None:
+    if zones_have_formwork:
+        pass
+    elif combined_value is not None:
         if edge_value is not None:
             raise ValueError(
                 "floor_slab_1: edge_and_beam_formwork_area_combined_m2 and edge_formwork_area_m2 "
@@ -161,9 +185,15 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
             )
         _set_nested(result, params[EDGE_FORMWORK_AREA_KEY]["calculator_input_path"], edge_value)
 
-    zone_rows = production_items.get(SLAB_ZONES_GROUP_KEY)
     if zone_rows:
-        result[SLAB_ZONES_GROUP_KEY] = zone_rows
+        normalized_zones = []
+        for zone in zone_rows:
+            normalized_zone = dict(zone)
+            if zones_have_formwork:
+                for field in SLAB_ZONE_FORMWORK_FIELDS:
+                    normalized_zone[field] = normalized_zone.get(field) or 0
+            normalized_zones.append(normalized_zone)
+        result[SLAB_ZONES_GROUP_KEY] = normalized_zones
 
     beam_rows = production_items.get(BEAM_ITEMS_GROUP_KEY)
     if beam_rows:
@@ -219,13 +249,16 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 f"(expected sheet 02 row with price_registry_code={registry_code!r}, "
                 f"calc_price_key={REBAR_TEMPLATE_PRICE_KEY})"
             )
-        priced_item = {
-            **item,
-            "unit_price_per_m": price,
-            "waste_coeff": rebar_waste_coeff,
-            "component": "floor_slab_1",
-            "floor": 1,
-        }
+        priced_item = fill_rebar_catalog_defaults(
+            {
+                **item,
+                "unit_price_per_m": price,
+                "waste_coeff": rebar_waste_coeff,
+                "component": "floor_slab_1",
+                "floor": 1,
+            },
+            section="floor_slab_1",
+        )
         priced_rebar_items.append(priced_item)
     result["rebar_items"] = priced_rebar_items
 

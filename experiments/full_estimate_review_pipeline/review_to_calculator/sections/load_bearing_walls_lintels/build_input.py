@@ -59,6 +59,7 @@ from core.contract_loader import (
     load_contract,
     price_keys as contract_price_keys,
 )
+from core.rebar_item_defaults import fill_rebar_catalog_defaults
 
 REQUIRED_SCALARS = (
     "cutoff_waterproofing_load_bearing_walls_area_m2",
@@ -131,7 +132,12 @@ def _priced_rebar_items(
                 f"(expected sheet 02 row with price_registry_code={registry_code!r}, "
                 f"calc_price_key={REBAR_TEMPLATE_PRICE_KEY})"
             )
-        priced.append({**item, "unit_price_per_m": price, "component": component})
+        priced.append(
+            fill_rebar_catalog_defaults(
+                {**item, "unit_price_per_m": price, "component": component},
+                section=section,
+            )
+        )
     return priced
 
 
@@ -159,11 +165,21 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         if row and row["value_number"] is not None:
             result[key] = row["value_number"]
 
-    if result.get("floors_count") == 2 and "floor_2_masonry_volume_m3" not in result:
+    wall_block_rows = production_items.get(WALL_BLOCK_ITEMS_GROUP_KEY)
+
+    if (
+        result.get("floors_count") == 2
+        and "floor_2_masonry_volume_m3" not in result
+        and not wall_block_rows
+    ):
         raise ValueError(
             "load_bearing_walls_lintels: floor_2_masonry_volume_m3 is required when "
             "floors_count is 2 (production upper_floor_calc_method=floor_2_spec_volume)"
         )
+    if wall_block_rows and "floor_2_masonry_volume_m3" not in result:
+        # Compatibility for the dataclass validator. The calculator itself uses
+        # wall_block_items totals when this group is present, so the scalar is ignored.
+        result["floor_2_masonry_volume_m3"] = 0
 
     # flat_roof_enabled: system flag, never filled by Elena - see module docstring.
     result["flat_roof_enabled"] = any(
@@ -171,7 +187,6 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         for key in FLAT_ROOF_SIGNAL_SCALARS
     )
 
-    wall_block_rows = production_items.get(WALL_BLOCK_ITEMS_GROUP_KEY)
     if wall_block_rows:
         result[WALL_BLOCK_ITEMS_GROUP_KEY] = wall_block_rows
 

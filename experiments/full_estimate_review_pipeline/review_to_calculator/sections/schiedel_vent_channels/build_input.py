@@ -55,6 +55,16 @@ REQUIRED_SCALARS = ("schiedel_masonry_total_length_m", "schiedel_delivery_trips"
 PRODUCTION_ITEM_GROUPS = ("schiedel_channel_items", "schiedel_masonry_gas_block_items")
 
 
+def _normalize_channel_product_type(value: Any) -> str:
+    text = str(value or "").strip().lower().replace("х", "x")
+    for product_type in ("1x", "2x", "3x", "4x"):
+        if text == product_type or text.startswith(product_type) or f" {product_type}" in text:
+            return product_type
+    if "cvent" in text or "сvent" in text or "сивент" in text:
+        return "cvent"
+    return str(value or "").strip()
+
+
 def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     contract = load_contract("schiedel_vent_channels")
     defaults = default_by_key(contract)
@@ -79,7 +89,13 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     for key in PRODUCTION_ITEM_GROUPS:
         items = production_items.get(key)
         if items:
-            result[key] = items
+            if key == "schiedel_channel_items":
+                result[key] = [
+                    {**item, "product_type": _normalize_channel_product_type(item.get("product_type"))}
+                    for item in items
+                ]
+            else:
+                result[key] = items
 
     for key, entry in defaults.items():
         if key in result:

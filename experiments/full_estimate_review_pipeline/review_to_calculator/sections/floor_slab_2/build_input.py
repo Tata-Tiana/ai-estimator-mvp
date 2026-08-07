@@ -46,6 +46,7 @@ from core.contract_loader import (
     load_contract,
     price_keys as contract_price_keys,
 )
+from core.rebar_item_defaults import fill_rebar_catalog_defaults
 
 REQUIRED_SCALARS = (
     "main_formwork_area_m2",
@@ -136,7 +137,12 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 f"(expected sheet 02 row with price_registry_code={registry_code!r}, "
                 f"calc_price_key={REBAR_TEMPLATE_PRICE_KEY})"
             )
-        priced_rebar_items.append({**item, "unit_price_per_m": price})
+        priced_rebar_items.append(
+            fill_rebar_catalog_defaults(
+                {**item, "unit_price_per_m": price},
+                section="floor_slab_2",
+            )
+        )
     result["rebar_items"] = priced_rebar_items
 
     # supplier_inputs: crane_shifts, rebar_metal_delivery_trucks, concrete_pump_shifts read
