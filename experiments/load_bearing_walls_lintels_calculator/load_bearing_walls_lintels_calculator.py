@@ -18,12 +18,21 @@ def q(value: Decimal | float | int, places: str = "0.0001") -> float:
     return float(d(value).quantize(Decimal(places), rounding=ROUND_HALF_UP))
 
 
-def require_positive(name: str, value: float | int) -> None:
+def require_positive(name: str, value: float | int | None) -> None:
+    # Unlike the sibling calculators (earthworks/foundation_slab/waterproofing), these two
+    # helpers had no None-guard until 2026-08-09 - every call site here could crash with an
+    # unhandled TypeError ("'<' not supported between instances of 'NoneType' and 'int'")
+    # instead of a clean, catchable ValueError whenever extraction left a required field null.
+    # Matches the other 3 dataclass-based calculators' established pattern.
+    if value is None:
+        raise ValueError(f"{name} is required")
     if value <= 0:
         raise ValueError(f"{name} must be greater than 0")
 
 
-def require_non_negative(name: str, value: float | int) -> None:
+def require_non_negative(name: str, value: float | int | None) -> None:
+    if value is None:
+        raise ValueError(f"{name} is required")
     if value < 0:
         raise ValueError(f"{name} must be greater than or equal to 0")
 
@@ -69,6 +78,15 @@ class SpecRebarItem:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SpecRebarItem":
+        # Extraction rule (target_aliases_ru.yaml, main_wall_rebar_items notes): "if the PDF
+        # doesn't say which floor, default floor=1" - an already-approved business default, not
+        # a guess invented here. The AI extraction doesn't always apply it (real 2026-08-09 ТРЦ
+        # case: "подоконное армирование" row left floor=null), and until now nothing downstream
+        # applied it either, so a missing floor crashed the whole section instead of falling
+        # back to this pre-approved default. Applying it here makes the calculator itself
+        # correct regardless of which adapter/path supplies the data.
+        if data.get("floor") is None:
+            data = {**data, "floor": 1}
         return cls(**data)
 
 
@@ -563,8 +581,7 @@ def validate_spec_rebar_item(item: SpecRebarItem, expected_component: str) -> No
         raise ValueError("partitions rebar must be calculated in partitions calculator, not in load_bearing_walls_lintels_calculator")
     if item.component != expected_component:
         raise ValueError(f"rebar component must be {expected_component}")
-    if item.floor < 1:
-        raise ValueError("rebar floor must be greater than or equal to 1")
+    require_positive("floor", item.floor)
     require_positive("diameter_mm", item.diameter_mm)
     require_non_negative("spec_length_m", item.spec_length_m)
     if item.kg_per_meter is None:
