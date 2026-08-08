@@ -456,21 +456,21 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ## Comparison
 
-- status: `mismatch`
-- ok: `325`
-- mismatch: `35`
+- status: `ok`
+- ok: `360`
+- mismatch: `0`
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
-| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 513976.16984 | 502643.78648 | mismatch |
-| totals | `internal_materials_total` | `internal_materials_total` | 513976 | 502644 | mismatch |
-| totals | `internal_works_total_raw` | `internal_works_total_raw` | 221790.0 | 211350.0 | mismatch |
-| totals | `internal_works_total` | `internal_works_total` | 221790 | 211350 | mismatch |
-| totals | `internal_section_total_raw` | `internal_section_total_raw` | 735766.16984 | 713993.78648 | mismatch |
-| totals | `internal_section_total` | `internal_section_total` | 735766 | 713994 | mismatch |
-| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 513977 | 502644 | mismatch |
-| totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 221790 | 211350 | mismatch |
-| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 735767 | 713994 | mismatch |
+| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 502643.78648 | 502643.78648 | ok |
+| totals | `internal_materials_total` | `internal_materials_total` | 502644 | 502644 | ok |
+| totals | `internal_works_total_raw` | `internal_works_total_raw` | 211350.0 | 211350.0 | ok |
+| totals | `internal_works_total` | `internal_works_total` | 211350 | 211350 | ok |
+| totals | `internal_section_total_raw` | `internal_section_total_raw` | 713993.78648 | 713993.78648 | ok |
+| totals | `internal_section_total` | `internal_section_total` | 713994 | 713994 | ok |
+| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 502644 | 502644 | ok |
+| totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 211350 | 211350 | ok |
+| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 713994 | 713994 | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `name` | Монтаж опалубки под монолитное перекрытие 2-го этажа | Монтаж опалубки под монолитное перекрытие 2-го этажа | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `unit` | м2 | м2 | ok |
 | estimate_lines | `floor_slab_2_formwork_installation_control` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |
@@ -708,68 +708,68 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | estimate_lines | `edge_insulation_work` | `name` | Устройство утепления по наружной стороне торцов плиты, балок | Устройство утепления по наружной стороне торцов плиты, балок | ok |
 | estimate_lines | `edge_insulation_work` | `unit` | мп | мп | ok |
 | estimate_lines | `edge_insulation_work` | `line_type` | work | work | ok |
-| estimate_lines | `edge_insulation_work` | `quantity_raw` | 59.4 | 36.2 | mismatch |
-| estimate_lines | `edge_insulation_work` | `quantity_display` | 59.4 | 36.2 | mismatch |
+| estimate_lines | `edge_insulation_work` | `quantity_raw` | 36.2 | 36.2 | ok |
+| estimate_lines | `edge_insulation_work` | `quantity_display` | 36.2 | 36.2 | ok |
 | estimate_lines | `edge_insulation_work` | `material_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `edge_insulation_work` | `material_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `edge_insulation_work` | `material_total` | 0 | 0 | ok |
 | estimate_lines | `edge_insulation_work` | `work_unit_price` | 450.0 | 450.0 | ok |
-| estimate_lines | `edge_insulation_work` | `work_total_raw` | 26730.0 | 16290.0 | mismatch |
-| estimate_lines | `edge_insulation_work` | `work_total` | 26730 | 16290 | mismatch |
-| estimate_lines | `edge_insulation_work` | `line_total_raw` | 26730.0 | 16290.0 | mismatch |
-| estimate_lines | `edge_insulation_work` | `line_total` | 26730 | 16290 | mismatch |
+| estimate_lines | `edge_insulation_work` | `work_total_raw` | 16290.0 | 16290.0 | ok |
+| estimate_lines | `edge_insulation_work` | `work_total` | 16290 | 16290 | ok |
+| estimate_lines | `edge_insulation_work` | `line_total_raw` | 16290.0 | 16290.0 | ok |
+| estimate_lines | `edge_insulation_work` | `line_total` | 16290 | 16290 | ok |
 | estimate_lines | `eps100_penoplex_material` | `name` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | ok |
 | estimate_lines | `eps100_penoplex_material` | `unit` | м3 | м3 | ok |
 | estimate_lines | `eps100_penoplex_material` | `line_type` | materials | materials | ok |
-| estimate_lines | `eps100_penoplex_material` | `quantity_raw` | 1.9411 | 0.8319 | mismatch |
-| estimate_lines | `eps100_penoplex_material` | `quantity_display` | 1.94 | 0.83 | mismatch |
+| estimate_lines | `eps100_penoplex_material` | `quantity_raw` | 0.8319 | 0.8319 | ok |
+| estimate_lines | `eps100_penoplex_material` | `quantity_display` | 0.83 | 0.83 | ok |
 | estimate_lines | `eps100_penoplex_material` | `material_unit_price` | 9020.0 | 9020.0 | ok |
-| estimate_lines | `eps100_penoplex_material` | `material_total_raw` | 17508.722 | 7503.738 | mismatch |
-| estimate_lines | `eps100_penoplex_material` | `material_total` | 17509 | 7504 | mismatch |
+| estimate_lines | `eps100_penoplex_material` | `material_total_raw` | 7503.738 | 7503.738 | ok |
+| estimate_lines | `eps100_penoplex_material` | `material_total` | 7504 | 7504 | ok |
 | estimate_lines | `eps100_penoplex_material` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `eps100_penoplex_material` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `eps100_penoplex_material` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `eps100_penoplex_material` | `line_total_raw` | 17508.722 | 7503.738 | mismatch |
-| estimate_lines | `eps100_penoplex_material` | `line_total` | 17509 | 7504 | mismatch |
+| estimate_lines | `eps100_penoplex_material` | `line_total_raw` | 7503.738 | 7503.738 | ok |
+| estimate_lines | `eps100_penoplex_material` | `line_total` | 7504 | 7504 | ok |
 | estimate_lines | `eps_foam_glue` | `name` | Клей-пена для ЭППС | Клей-пена для ЭППС | ok |
 | estimate_lines | `eps_foam_glue` | `unit` | баллон | баллон | ok |
 | estimate_lines | `eps_foam_glue` | `line_type` | materials_consumables | materials_consumables | ok |
-| estimate_lines | `eps_foam_glue` | `quantity_raw` | 2.0 | 1.0 | mismatch |
-| estimate_lines | `eps_foam_glue` | `quantity_display` | 2.0 | 1.0 | mismatch |
+| estimate_lines | `eps_foam_glue` | `quantity_raw` | 1.0 | 1.0 | ok |
+| estimate_lines | `eps_foam_glue` | `quantity_display` | 1.0 | 1.0 | ok |
 | estimate_lines | `eps_foam_glue` | `material_unit_price` | 490.0 | 490.0 | ok |
-| estimate_lines | `eps_foam_glue` | `material_total_raw` | 980.0 | 490.0 | mismatch |
-| estimate_lines | `eps_foam_glue` | `material_total` | 980 | 490 | mismatch |
+| estimate_lines | `eps_foam_glue` | `material_total_raw` | 490.0 | 490.0 | ok |
+| estimate_lines | `eps_foam_glue` | `material_total` | 490 | 490 | ok |
 | estimate_lines | `eps_foam_glue` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `eps_foam_glue` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `eps_foam_glue` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `eps_foam_glue` | `line_total_raw` | 980.0 | 490.0 | mismatch |
-| estimate_lines | `eps_foam_glue` | `line_total` | 980 | 490 | mismatch |
+| estimate_lines | `eps_foam_glue` | `line_total_raw` | 490.0 | 490.0 | ok |
+| estimate_lines | `eps_foam_glue` | `line_total` | 490 | 490 | ok |
 | estimate_lines | `logistics_and_supply` | `name` | Логистика, и снабжение | Логистика, и снабжение | ok |
 | estimate_lines | `logistics_and_supply` | `unit` | - | - | ok |
 | estimate_lines | `logistics_and_supply` | `line_type` | materials_overhead_percent | materials_overhead_percent | ok |
 | estimate_lines | `logistics_and_supply` | `quantity_raw` | 1.0 | 1.0 | ok |
 | estimate_lines | `logistics_and_supply` | `quantity_display` | 1.0 | 1.0 | ok |
 | estimate_lines | `logistics_and_supply` | `material_unit_price` | 0.0 | 0.0 | ok |
-| estimate_lines | `logistics_and_supply` | `material_total_raw` | 7074.67471 | 6865.32487 | mismatch |
-| estimate_lines | `logistics_and_supply` | `material_total` | 7075 | 6865 | mismatch |
+| estimate_lines | `logistics_and_supply` | `material_total_raw` | 6865.32487 | 6865.32487 | ok |
+| estimate_lines | `logistics_and_supply` | `material_total` | 6865 | 6865 | ok |
 | estimate_lines | `logistics_and_supply` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `logistics_and_supply` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `logistics_and_supply` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `logistics_and_supply` | `line_total_raw` | 7074.67471 | 6865.32487 | mismatch |
-| estimate_lines | `logistics_and_supply` | `line_total` | 7075 | 6865 | mismatch |
+| estimate_lines | `logistics_and_supply` | `line_total_raw` | 6865.32487 | 6865.32487 | ok |
+| estimate_lines | `logistics_and_supply` | `line_total` | 6865 | 6865 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `name` | Расходные материалы, амортизация инструмента | Расходные материалы, амортизация инструмента | ok |
 | estimate_lines | `consumables_tool_depreciation` | `unit` | комплект | комплект | ok |
 | estimate_lines | `consumables_tool_depreciation` | `line_type` | materials_overhead_percent | materials_overhead_percent | ok |
 | estimate_lines | `consumables_tool_depreciation` | `quantity_raw` | 1.0 | 1.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `quantity_display` | 1.0 | 1.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `material_unit_price` | 0.0 | 0.0 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `material_total_raw` | 21224.02413 | 20595.97461 | mismatch |
-| estimate_lines | `consumables_tool_depreciation` | `material_total` | 21224 | 20596 | mismatch |
+| estimate_lines | `consumables_tool_depreciation` | `material_total_raw` | 20595.97461 | 20595.97461 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `material_total` | 20596 | 20596 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_unit_price` | 0.0 | 0.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_total_raw` | 0.0 | 0.0 | ok |
 | estimate_lines | `consumables_tool_depreciation` | `work_total` | 0 | 0 | ok |
-| estimate_lines | `consumables_tool_depreciation` | `line_total_raw` | 21224.02413 | 20595.97461 | mismatch |
-| estimate_lines | `consumables_tool_depreciation` | `line_total` | 21224 | 20596 | mismatch |
+| estimate_lines | `consumables_tool_depreciation` | `line_total_raw` | 20595.97461 | 20595.97461 | ok |
+| estimate_lines | `consumables_tool_depreciation` | `line_total` | 20596 | 20596 | ok |
 | estimate_lines | `technical_supervision` | `name` | Технический надзор | Технический надзор | ok |
 | estimate_lines | `technical_supervision` | `unit` | - | - | ok |
 | estimate_lines | `technical_supervision` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |
