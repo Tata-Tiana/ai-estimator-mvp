@@ -106,8 +106,8 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
-- eps_work_length_source: `calculated_all_beams`
-- eps_material_area_source: `calculated_all_beams`
+- eps_work_length_source: `not_provided`
+- eps_material_area_source: `not_provided`
 - concrete_volume_source: `calculated_from_beam_items`
 - calculated_concrete_volume_m3: `0.0`
 - concrete_volume_delta_m3: `None`
@@ -139,6 +139,8 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - edge_insulation_height_source: `specification`
 - edge_insulation_area_m2: `6.516`
 - edge_and_beam_insulation_area_m2: `6.516`
+- bottom_slab_eps_work_area_m2: `0.0`
+- bottom_slab_eps_volume_m3: `0.0`
 - total_insulation_length_m: `36.2`
 - eps100_required_volume_without_waste_m3: `0.6516`
 - eps100_required_volume_with_waste_m3: `0.68418`
@@ -181,14 +183,15 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 | 18 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
 | 19 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 81.9 | 81.9 | 0 | 0 | 0 |
 | 20 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 36.2 | 36.2 | 0 | 16 290 | 16 290 |
-| 21 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
-| 22 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
-| 23 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
-| 24 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
-| 25 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
-| 26 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 27 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 28 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
+| 21 | `bottom_slab_insulation_work` | Устройство утепления низа плиты | м2 | 0 | 0 | 0 | 0 | 0 |
+| 22 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
+| 23 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
+| 24 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 895 | 0 | 6 895 |
+| 25 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 684 | 0 | 20 684 |
+| 26 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
+| 27 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 28 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 29 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
 
 ## Post-Line Explanations
 
@@ -357,9 +360,18 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `16290.0` / `16290`
 - Итого raw/display: `16290.0` / `16290`
-- Примечание: Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; equals slab_edge_perimeter_m alone when no beams.items are given.
+- Примечание: Quantity is slab_edge_perimeter_m plus beams_eps_work_length_m when the project explicitly gives insulated beam length; beam length is not inferred from beam_items.
 
-### 21. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
+### 21. Устройство утепления низа плиты
+
+- Тип строки: `work`
+- Количество raw/display: `0.0` / `0.0`
+- Материалы raw/display: `0.0` / `0`
+- Работы raw/display: `0.0` / `0`
+- Итого raw/display: `0.0` / `0`
+- Примечание: Optional production quantity from PDF: horizontal/bottom EPS insulation area of the slab itself. Defaults to 0 when the project has no such separate line.
+
+### 22. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `0.8319` / `0.83`
@@ -367,7 +379,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `7503.738` / `7504`
 
-### 22. Клей-пена для ЭППС
+### 23. Клей-пена для ЭППС
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
@@ -375,7 +387,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `490.0` / `490`
 
-### 23. Логистика, и снабжение
+### 24. Логистика, и снабжение
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -383,7 +395,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `6894.72487` / `6895`
 
-### 24. Расходные материалы, амортизация инструмента
+### 25. Расходные материалы, амортизация инструмента
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -391,7 +403,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `20684.17461` / `20684`
 
-### 25. Технический надзор
+### 26. Технический надзор
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -399,7 +411,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 26. Заготовительно-складские расходы
+### 27. Заготовительно-складские расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -407,7 +419,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 27. Накладные и общехозяйственные расходы
+### 28. Накладные и общехозяйственные расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -415,7 +427,7 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 28. Сметная прибыль
+### 29. Сметная прибыль
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`

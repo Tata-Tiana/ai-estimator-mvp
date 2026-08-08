@@ -186,7 +186,7 @@
       "slab_concrete_volume_m3_display": 32.4,
       "slab_formwork_area_m2": 180.0,
       "slab_control_geometry_area_m2": 180,
-      "slab_edge_perimeter_m": 118,
+      "slab_edge_perimeter_m": 118.0,
       "edge_formwork_height_m": 0.2
     },
     "beams": {

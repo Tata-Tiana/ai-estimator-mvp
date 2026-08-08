@@ -8,6 +8,12 @@ D0 = Decimal("0")
 D1 = Decimal("1")
 
 def d(value: Any) -> Decimal:
+    # See floor_slab_1_calculator.py's identical guard for the full rationale: every
+    # legitimate optional-value case here already guards before calling d(), so d(None) was
+    # never meant to succeed - it silently became Decimal("None") and crashed with
+    # decimal.InvalidOperation, with no indication of which field/row was the problem.
+    if value is None:
+        raise ValueError("numeric value is required, got None")
     return value if isinstance(value, Decimal) else Decimal(str(value))
 
 
@@ -46,6 +52,11 @@ def calculate_rebar_item(
     default_waste_coeff: Any,
     calc_method: str,
 ) -> dict[str, Any]:
+    for required_key in ("steel_class", "diameter_mm", "unit_price_per_m", "kg_per_meter", "rod_length_m"):
+        if item.get(required_key) is None:
+            raise ValueError(
+                f"rebar_items[].{required_key} is required (row: {item.get('code') or item.get('name') or item})"
+            )
     steel_class = str(item["steel_class"]).upper()
     diameter_mm = int(item["diameter_mm"])
     waste_coeff = d(item.get("waste_coeff", default_waste_coeff))
@@ -125,6 +136,9 @@ def calculate_beam_items(
     items_in = (beams_in or {}).get("items") or []
     beam_items: list[dict[str, Any]] = []
     for item in items_in:
+        for required_key in ("length_m", "height_m"):
+            if item.get(required_key) is None:
+                raise ValueError(f"beams.items[{item.get('code')!r}].{required_key} is required")
         length = d(item["length_m"])
         height = d(item["height_m"])
         width_raw = item.get("width_m")

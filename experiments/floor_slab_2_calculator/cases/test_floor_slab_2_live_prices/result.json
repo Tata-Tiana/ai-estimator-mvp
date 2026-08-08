@@ -151,8 +151,8 @@
       "items_total_formwork_area_m2": 0.0,
       "items_total_eps_material_area_m2": 0.0,
       "items_total_eps_work_length_m": 0.0,
-      "eps_work_length_source": "calculated_all_beams",
-      "eps_material_area_source": "calculated_all_beams",
+      "eps_work_length_source": "not_provided",
+      "eps_material_area_source": "not_provided",
       "concrete_volume_source": "calculated_from_beam_items",
       "calculated_concrete_volume_m3": 0.0,
       "concrete_volume_delta_m3": null,
@@ -247,6 +247,8 @@
       "edge_insulation_height_source": "specification",
       "edge_insulation_area_m2": 6.516,
       "edge_and_beam_insulation_area_m2": 6.516,
+      "bottom_slab_eps_work_area_m2": 0.0,
+      "bottom_slab_eps_volume_m3": 0.0,
       "total_insulation_length_m": 36.2,
       "eps100_required_volume_without_waste_m3": 0.6516,
       "eps100_required_volume_with_waste_m3": 0.68418,
@@ -709,12 +711,36 @@
       "line_total_raw": 16290.0,
       "line_total": 16290,
       "notes": [
-        "Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; equals slab_edge_perimeter_m alone when no beams.items are given."
+        "Quantity is slab_edge_perimeter_m plus beams_eps_work_length_m when the project explicitly gives insulated beam length; beam length is not inferred from beam_items."
       ],
       "price_code": "edge_insulation_work_m",
       "unit_price_source": "price_registry",
       "unit_price_original": "450",
       "unit_price_used": "450",
+      "price_warning": null
+    },
+    {
+      "code": "bottom_slab_insulation_work",
+      "name": "Устройство утепления низа плиты",
+      "unit": "м2",
+      "line_type": "work",
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
+      "material_unit_price": 0.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": [
+        "Optional production quantity from PDF: horizontal/bottom EPS insulation area of the slab itself. Defaults to 0 when the project has no such separate line."
+      ],
+      "price_code": "eps_bottom_slab_insulation_work_m2",
+      "unit_price_source": "price_registry",
+      "unit_price_original": null,
+      "unit_price_used": "900",
       "price_warning": null
     },
     {
@@ -907,7 +933,7 @@
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 17,
+    "prices_from_price_registry": 18,
     "prices_from_project_overrides": 0,
     "prices_from_fallback_input": 1,
     "warnings_count": 1

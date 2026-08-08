@@ -206,10 +206,10 @@
       "items_total_length_m": 23.2,
       "items_total_concrete_volume_m3": 3.145,
       "items_total_formwork_area_m2": 27.992,
-      "items_total_eps_material_area_m2": 10.516,
-      "items_total_eps_work_length_m": 23.2,
-      "eps_work_length_source": "calculated_all_beams",
-      "eps_material_area_source": "calculated_all_beams",
+      "items_total_eps_material_area_m2": 0.0,
+      "items_total_eps_work_length_m": 0.0,
+      "eps_work_length_source": "not_provided",
+      "eps_material_area_source": "not_provided",
       "concrete_volume_source": "spec_beams_concrete_volume",
       "calculated_concrete_volume_m3": 3.1548,
       "concrete_volume_delta_m3": -0.0098,
@@ -303,23 +303,25 @@
       "edge_insulation_height_m": 0.18,
       "edge_insulation_height_source": "specification",
       "edge_insulation_area_m2": 6.516,
-      "edge_and_beam_insulation_area_m2": 17.032,
-      "total_insulation_length_m": 59.4,
-      "eps100_required_volume_without_waste_m3": 1.7032,
-      "eps100_required_volume_with_waste_m3": 1.78836,
-      "eps100_packs_raw": 6.449189,
-      "eps100_packs_ordered": 7,
-      "eps100_order_volume_m3": 1.9411,
-      "foam_cans_raw": 1.7032,
-      "foam_cans_display_control": 1.7,
-      "foam_cans_ordered": 2
+      "edge_and_beam_insulation_area_m2": 6.516,
+      "bottom_slab_eps_work_area_m2": 0.0,
+      "bottom_slab_eps_volume_m3": 0.0,
+      "total_insulation_length_m": 36.2,
+      "eps100_required_volume_without_waste_m3": 0.6516,
+      "eps100_required_volume_with_waste_m3": 0.68418,
+      "eps100_packs_raw": 2.467292,
+      "eps100_packs_ordered": 3,
+      "eps100_order_volume_m3": 0.8319,
+      "foam_cans_raw": 0.6516,
+      "foam_cans_display_control": 0.65,
+      "foam_cans_ordered": 1
     },
     "addons": {
-      "direct_cost_base_before_addons_raw": 707467.471,
+      "direct_cost_base_before_addons_raw": 686532.487,
       "logistics_rate": 0.01,
-      "logistics_total_raw": 7074.67471,
+      "logistics_total_raw": 6865.32487,
       "consumables_rate": 0.03,
-      "consumables_total_raw": 21224.02413
+      "consumables_total_raw": 20595.97461
     }
   },
   "estimate_lines": [
@@ -679,36 +681,56 @@
       "name": "Устройство утепления по наружной стороне торцов плиты, балок",
       "unit": "мп",
       "line_type": "work",
-      "quantity_raw": 59.4,
-      "quantity_display": 59.4,
+      "quantity_raw": 36.2,
+      "quantity_display": 36.2,
       "material_unit_price": 0.0,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_unit_price": 450.0,
-      "work_total_raw": 26730.0,
-      "work_total": 26730,
-      "line_total_raw": 26730.0,
-      "line_total": 26730,
+      "work_total_raw": 16290.0,
+      "work_total": 16290,
+      "line_total_raw": 16290.0,
+      "line_total": 16290,
       "notes": [
-        "Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; equals slab_edge_perimeter_m alone when no beams.items are given."
+        "Quantity is slab_edge_perimeter_m plus beams_eps_work_length_m when the project explicitly gives insulated beam length; beam length is not inferred from beam_items."
       ],
       "price_code": "edge_insulation_work_m"
+    },
+    {
+      "code": "bottom_slab_insulation_work",
+      "name": "Устройство утепления низа плиты",
+      "unit": "м2",
+      "line_type": "work",
+      "quantity_raw": 0.0,
+      "quantity_display": 0.0,
+      "material_unit_price": 0.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": [
+        "Optional production quantity from PDF: horizontal/bottom EPS insulation area of the slab itself. Defaults to 0 when the project has no such separate line."
+      ],
+      "price_code": "eps_bottom_slab_insulation_work_m2"
     },
     {
       "code": "eps100_penoplex_material",
       "name": "Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 1.9411,
-      "quantity_display": 1.94,
+      "quantity_raw": 0.8319,
+      "quantity_display": 0.83,
       "material_unit_price": 9020.0,
-      "material_total_raw": 17508.722,
-      "material_total": 17509,
+      "material_total_raw": 7503.738,
+      "material_total": 7504,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17508.722,
-      "line_total": 17509,
+      "line_total_raw": 7503.738,
+      "line_total": 7504,
       "notes": [],
       "price_code": "eps_penoplex_osnova_100_m3"
     },
@@ -717,16 +739,16 @@
       "name": "Клей-пена для ЭППС",
       "unit": "баллон",
       "line_type": "materials_consumables",
-      "quantity_raw": 2.0,
-      "quantity_display": 2.0,
+      "quantity_raw": 1.0,
+      "quantity_display": 1.0,
       "material_unit_price": 490.0,
-      "material_total_raw": 980.0,
-      "material_total": 980,
+      "material_total_raw": 490.0,
+      "material_total": 490,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 980.0,
-      "line_total": 980,
+      "line_total_raw": 490.0,
+      "line_total": 490,
       "notes": [],
       "price_code": "eps_foam_glue_can"
     },
@@ -738,13 +760,13 @@
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
       "material_unit_price": 0.0,
-      "material_total_raw": 7074.67471,
-      "material_total": 7075,
+      "material_total_raw": 6865.32487,
+      "material_total": 6865,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 7074.67471,
-      "line_total": 7075,
+      "line_total_raw": 6865.32487,
+      "line_total": 6865,
       "notes": []
     },
     {
@@ -755,13 +777,13 @@
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
       "material_unit_price": 0.0,
-      "material_total_raw": 21224.02413,
-      "material_total": 21224,
+      "material_total_raw": 20595.97461,
+      "material_total": 20596,
       "work_unit_price": 0.0,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 21224.02413,
-      "line_total": 21224,
+      "line_total_raw": 20595.97461,
+      "line_total": 20596,
       "notes": []
     },
     {
@@ -834,21 +856,21 @@
     }
   ],
   "totals": {
-    "internal_materials_total_raw": 513976.16984,
-    "internal_materials_total": 513976,
-    "internal_works_total_raw": 221790.0,
-    "internal_works_total": 221790,
-    "internal_section_total_raw": 735766.16984,
-    "internal_section_total": 735766,
-    "sum_of_displayed_line_material_totals": 513977,
-    "sum_of_displayed_line_work_totals": 221790,
-    "sum_of_displayed_line_totals": 735767
+    "internal_materials_total_raw": 502643.78648,
+    "internal_materials_total": 502644,
+    "internal_works_total_raw": 211350.0,
+    "internal_works_total": 211350,
+    "internal_section_total_raw": 713993.78648,
+    "internal_section_total": 713994,
+    "sum_of_displayed_line_material_totals": 502644,
+    "sum_of_displayed_line_work_totals": 211350,
+    "sum_of_displayed_line_totals": 713994
   },
   "warnings": [
     "concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.",
     "edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.",
-    "beams_eps_work_length_m is not provided; fallback assumes all beams are insulated. Elena confirmed beams may be insulated only partially, so review this length.",
-    "beams_eps_material_area_m2 is not provided; fallback assumes all beam side faces are insulated. Elena confirmed beams may be insulated only partially, so review this area."
+    "beams_eps_work_length_m is not provided; beam EPS work length is treated as 0. Provide the explicit project value when beams are insulated.",
+    "beams_eps_material_area_m2 is not provided; beam EPS material area is treated as 0. Provide the explicit project value when beams are insulated."
   ],
   "expected": {
     "totals": {
@@ -1355,81 +1377,81 @@
     ]
   },
   "comparison": {
-    "status": "ok",
-    "ok_count": 360,
-    "mismatch_count": 0,
+    "status": "mismatch",
+    "ok_count": 325,
+    "mismatch_count": 35,
     "checks": [
       {
         "scope": "totals",
         "code": "internal_materials_total_raw",
         "field": "internal_materials_total_raw",
         "expected": 513976.16984,
-        "actual": 513976.16984,
-        "status": "ok"
+        "actual": 502643.78648,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "internal_materials_total",
         "field": "internal_materials_total",
         "expected": 513976,
-        "actual": 513976,
-        "status": "ok"
+        "actual": 502644,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "internal_works_total_raw",
         "field": "internal_works_total_raw",
         "expected": 221790.0,
-        "actual": 221790.0,
-        "status": "ok"
+        "actual": 211350.0,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "internal_works_total",
         "field": "internal_works_total",
         "expected": 221790,
-        "actual": 221790,
-        "status": "ok"
+        "actual": 211350,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "internal_section_total_raw",
         "field": "internal_section_total_raw",
         "expected": 735766.16984,
-        "actual": 735766.16984,
-        "status": "ok"
+        "actual": 713993.78648,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "internal_section_total",
         "field": "internal_section_total",
         "expected": 735766,
-        "actual": 735766,
-        "status": "ok"
+        "actual": 713994,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "sum_of_displayed_line_material_totals",
         "field": "sum_of_displayed_line_material_totals",
         "expected": 513977,
-        "actual": 513977,
-        "status": "ok"
+        "actual": 502644,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "sum_of_displayed_line_work_totals",
         "field": "sum_of_displayed_line_work_totals",
         "expected": 221790,
-        "actual": 221790,
-        "status": "ok"
+        "actual": 211350,
+        "status": "mismatch"
       },
       {
         "scope": "totals",
         "code": "sum_of_displayed_line_totals",
         "field": "sum_of_displayed_line_totals",
         "expected": 735767,
-        "actual": 735767,
-        "status": "ok"
+        "actual": 713994,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3332,16 +3354,16 @@
         "code": "edge_insulation_work",
         "field": "quantity_raw",
         "expected": 59.4,
-        "actual": 59.4,
-        "status": "ok"
+        "actual": 36.2,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "edge_insulation_work",
         "field": "quantity_display",
         "expected": 59.4,
-        "actual": 59.4,
-        "status": "ok"
+        "actual": 36.2,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3380,32 +3402,32 @@
         "code": "edge_insulation_work",
         "field": "work_total_raw",
         "expected": 26730.0,
-        "actual": 26730.0,
-        "status": "ok"
+        "actual": 16290.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "edge_insulation_work",
         "field": "work_total",
         "expected": 26730,
-        "actual": 26730,
-        "status": "ok"
+        "actual": 16290,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "edge_insulation_work",
         "field": "line_total_raw",
         "expected": 26730.0,
-        "actual": 26730.0,
-        "status": "ok"
+        "actual": 16290.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "edge_insulation_work",
         "field": "line_total",
         "expected": 26730,
-        "actual": 26730,
-        "status": "ok"
+        "actual": 16290,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3436,16 +3458,16 @@
         "code": "eps100_penoplex_material",
         "field": "quantity_raw",
         "expected": 1.9411,
-        "actual": 1.9411,
-        "status": "ok"
+        "actual": 0.8319,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps100_penoplex_material",
         "field": "quantity_display",
         "expected": 1.94,
-        "actual": 1.94,
-        "status": "ok"
+        "actual": 0.83,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3460,16 +3482,16 @@
         "code": "eps100_penoplex_material",
         "field": "material_total_raw",
         "expected": 17508.722,
-        "actual": 17508.722,
-        "status": "ok"
+        "actual": 7503.738,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps100_penoplex_material",
         "field": "material_total",
         "expected": 17509,
-        "actual": 17509,
-        "status": "ok"
+        "actual": 7504,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3500,16 +3522,16 @@
         "code": "eps100_penoplex_material",
         "field": "line_total_raw",
         "expected": 17508.722,
-        "actual": 17508.722,
-        "status": "ok"
+        "actual": 7503.738,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps100_penoplex_material",
         "field": "line_total",
         "expected": 17509,
-        "actual": 17509,
-        "status": "ok"
+        "actual": 7504,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3540,16 +3562,16 @@
         "code": "eps_foam_glue",
         "field": "quantity_raw",
         "expected": 2.0,
-        "actual": 2.0,
-        "status": "ok"
+        "actual": 1.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps_foam_glue",
         "field": "quantity_display",
         "expected": 2.0,
-        "actual": 2.0,
-        "status": "ok"
+        "actual": 1.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3564,16 +3586,16 @@
         "code": "eps_foam_glue",
         "field": "material_total_raw",
         "expected": 980.0,
-        "actual": 980.0,
-        "status": "ok"
+        "actual": 490.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps_foam_glue",
         "field": "material_total",
         "expected": 980,
-        "actual": 980,
-        "status": "ok"
+        "actual": 490,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3604,16 +3626,16 @@
         "code": "eps_foam_glue",
         "field": "line_total_raw",
         "expected": 980.0,
-        "actual": 980.0,
-        "status": "ok"
+        "actual": 490.0,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "eps_foam_glue",
         "field": "line_total",
         "expected": 980,
-        "actual": 980,
-        "status": "ok"
+        "actual": 490,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3668,16 +3690,16 @@
         "code": "logistics_and_supply",
         "field": "material_total_raw",
         "expected": 7074.67471,
-        "actual": 7074.67471,
-        "status": "ok"
+        "actual": 6865.32487,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "logistics_and_supply",
         "field": "material_total",
         "expected": 7075,
-        "actual": 7075,
-        "status": "ok"
+        "actual": 6865,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3708,16 +3730,16 @@
         "code": "logistics_and_supply",
         "field": "line_total_raw",
         "expected": 7074.67471,
-        "actual": 7074.67471,
-        "status": "ok"
+        "actual": 6865.32487,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "logistics_and_supply",
         "field": "line_total",
         "expected": 7075,
-        "actual": 7075,
-        "status": "ok"
+        "actual": 6865,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3772,16 +3794,16 @@
         "code": "consumables_tool_depreciation",
         "field": "material_total_raw",
         "expected": 21224.02413,
-        "actual": 21224.02413,
-        "status": "ok"
+        "actual": 20595.97461,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "consumables_tool_depreciation",
         "field": "material_total",
         "expected": 21224,
-        "actual": 21224,
-        "status": "ok"
+        "actual": 20596,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
@@ -3812,16 +3834,16 @@
         "code": "consumables_tool_depreciation",
         "field": "line_total_raw",
         "expected": 21224.02413,
-        "actual": 21224.02413,
-        "status": "ok"
+        "actual": 20595.97461,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",
         "code": "consumables_tool_depreciation",
         "field": "line_total",
         "expected": 21224,
-        "actual": 21224,
-        "status": "ok"
+        "actual": 20596,
+        "status": "mismatch"
       },
       {
         "scope": "estimate_lines",

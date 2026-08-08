@@ -108,8 +108,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - items_total_formwork_area_m2: `0.0`
 - items_total_eps_material_area_m2: `0.0`
 - items_total_eps_work_length_m: `0.0`
-- eps_work_length_source: `calculated_all_beams`
-- eps_material_area_source: `calculated_all_beams`
+- eps_work_length_source: `not_provided`
+- eps_material_area_source: `not_provided`
 - concrete_volume_source: `calculated_from_beam_items`
 - calculated_concrete_volume_m3: `0.0`
 - concrete_volume_delta_m3: `None`
@@ -141,6 +141,8 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - edge_insulation_height_source: `specification`
 - edge_insulation_area_m2: `7.524`
 - edge_and_beam_insulation_area_m2: `7.524`
+- bottom_slab_eps_work_area_m2: `0.0`
+- bottom_slab_eps_volume_m3: `0.0`
 - total_insulation_length_m: `41.8`
 - eps100_required_volume_without_waste_m3: `0.7524`
 - eps100_required_volume_with_waste_m3: `0.79002`
@@ -182,14 +184,15 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 | 17 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | смена | 1 | 1 | 38 000 | 0 | 38 000 |
 | 18 | `formwork_dismantling_control` | Демонтаж опалубки после завершения бетонирования | м2 | 94 | 94 | 0 | 0 | 0 |
 | 19 | `edge_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | мп | 41.8 | 41.8 | 0 | 18 810 | 18 810 |
-| 20 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
-| 21 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
-| 22 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 924 | 0 | 6 924 |
-| 23 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 772 | 0 | 20 772 |
-| 24 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
-| 25 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 26 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
-| 27 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
+| 20 | `bottom_slab_insulation_work` | Устройство утепления низа плиты | м2 | 0 | 0 | 0 | 0 | 0 |
+| 21 | `eps100_penoplex_material` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | м3 | 0.83 | 0.83 | 7 504 | 0 | 7 504 |
+| 22 | `eps_foam_glue` | Клей-пена для ЭППС | баллон | 1 | 1 | 490 | 0 | 490 |
+| 23 | `logistics_and_supply` | Логистика, и снабжение | - | 1 | 1 | 6 924 | 0 | 6 924 |
+| 24 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | комплект | 1 | 1 | 20 772 | 0 | 20 772 |
+| 25 | `technical_supervision` | Технический надзор | - | 1 | 1 | 0 | 0 | 0 |
+| 26 | `procurement_storage_costs` | Заготовительно-складские расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 27 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | - | 1 | 1 | 0 | 0 | 0 |
+| 28 | `estimated_profit` | Сметная прибыль | - | 1 | 1 | 0 | 0 | 0 |
 
 ## Post-Line Explanations
 
@@ -350,9 +353,18 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Материалы raw/display: `0.0` / `0`
 - Работы raw/display: `18810.0` / `18810`
 - Итого raw/display: `18810.0` / `18810`
-- Примечание: Quantity is slab_edge_perimeter_m plus the sum of beams.items length_m * count; equals slab_edge_perimeter_m alone when no beams.items are given.
+- Примечание: Quantity is slab_edge_perimeter_m plus beams_eps_work_length_m when the project explicitly gives insulated beam length; beam length is not inferred from beam_items.
 
-### 20. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
+### 20. Устройство утепления низа плиты
+
+- Тип строки: `work`
+- Количество raw/display: `0.0` / `0.0`
+- Материалы raw/display: `0.0` / `0`
+- Работы raw/display: `0.0` / `0`
+- Итого raw/display: `0.0` / `0`
+- Примечание: Optional production quantity from PDF: horizontal/bottom EPS insulation area of the slab itself. Defaults to 0 when the project has no such separate line.
+
+### 21. Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм
 
 - Тип строки: `materials`
 - Количество raw/display: `0.8319` / `0.83`
@@ -360,7 +372,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `7503.738` / `7504`
 
-### 21. Клей-пена для ЭППС
+### 22. Клей-пена для ЭППС
 
 - Тип строки: `materials_consumables`
 - Количество raw/display: `1.0` / `1.0`
@@ -368,7 +380,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `490.0` / `490`
 
-### 22. Логистика, и снабжение
+### 23. Логистика, и снабжение
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -376,7 +388,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `6923.98002` / `6924`
 
-### 23. Расходные материалы, амортизация инструмента
+### 24. Расходные материалы, амортизация инструмента
 
 - Тип строки: `materials_overhead_percent`
 - Количество raw/display: `1.0` / `1.0`
@@ -384,7 +396,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `20771.94006` / `20772`
 
-### 24. Технический надзор
+### 25. Технический надзор
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -392,7 +404,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 25. Заготовительно-складские расходы
+### 26. Заготовительно-складские расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -400,7 +412,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 26. Накладные и общехозяйственные расходы
+### 27. Накладные и общехозяйственные расходы
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`
@@ -408,7 +420,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - Работы raw/display: `0.0` / `0`
 - Итого raw/display: `0.0` / `0`
 
-### 27. Сметная прибыль
+### 28. Сметная прибыль
 
 - Тип строки: `zero_excel_structure_line`
 - Количество raw/display: `1.0` / `1.0`

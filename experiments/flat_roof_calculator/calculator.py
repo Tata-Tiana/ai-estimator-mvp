@@ -9,6 +9,12 @@ D1 = Decimal("1")
 
 
 def d(value: Any) -> Decimal:
+    # See floor_slab_1_calculator.py's identical guard for the full rationale: every
+    # legitimate optional-value case here already guards before calling d(), so d(None) was
+    # never meant to succeed - it silently became Decimal("None") and crashed with
+    # decimal.InvalidOperation, with no indication of which field/row was the problem.
+    if value is None:
+        raise ValueError("numeric value is required, got None")
     return value if isinstance(value, Decimal) else Decimal(str(value))
 
 
@@ -132,7 +138,11 @@ def material_roll_line(
 
 
 def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
-    if key not in input_data:
+    # `key not in input_data` alone doesn't catch the far more common real shape of
+    # extraction-derived input: the key IS present, just with value None (parser didn't find
+    # it). That case used to fall through to d(input_data[key]) and crash with a generic
+    # "numeric value is required, got None" instead of naming this specific key.
+    if key not in input_data or input_data[key] is None:
         raise ValueError(f"{key} is required")
     value = d(input_data[key])
     if value < D0:
@@ -179,6 +189,8 @@ def calculate_roof_geometry(input_data: dict[str, Any], warnings: list[str]) -> 
         for zone in roof_zones_in:
             if not zone.get("context"):
                 raise ValueError("roof_zones[].context is required")
+            if zone.get("area_m2") is None:
+                raise ValueError(f"roof_zones.{zone['context']}.area_m2 is required")
             zone_area = d(zone["area_m2"])
             if zone_area < D0:
                 raise ValueError(f"roof_zones.{zone['context']}.area_m2 must be >= 0")

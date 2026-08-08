@@ -9,6 +9,15 @@ D1 = Decimal("1")
 
 
 def d(value: Any) -> Decimal:
+    # Every legitimate optional-value case in this file already guards before calling d()
+    # (e.g. `d(x) if x is not None else None`, `d(row.get(k) or 0)`) - d(None) was never
+    # meant to succeed. Without this guard it silently became Decimal(str(None)) ->
+    # Decimal("None"), which crashes with decimal.InvalidOperation and no indication of
+    # which field or row was the problem. Raising here doesn't fix that on its own (still no
+    # field name), but every call site's failure becomes at least a clean, catchable
+    # ValueError instead of a cryptic low-level Decimal parsing error.
+    if value is None:
+        raise ValueError("numeric value is required, got None")
     return value if isinstance(value, Decimal) else Decimal(str(value))
 
 
@@ -51,6 +60,11 @@ def calculate_rebar_item(item: dict[str, Any], rebar_calc_method: str) -> dict[s
     if rebar_calc_method not in {"legacy_weight_parts", "spec_length_items"}:
         raise ValueError("rebar_calc_method must be legacy_weight_parts or spec_length_items")
 
+    for required_key in ("steel_class", "diameter_mm", "kg_per_meter", "waste_coeff", "rod_length_m", "unit_price_per_m"):
+        if item.get(required_key) is None:
+            raise ValueError(
+                f"rebar_items[].{required_key} is required (row: {item.get('code') or item.get('name') or item})"
+            )
     steel_class = item["steel_class"]
     diameter_mm = int(item["diameter_mm"])
     kg_per_meter = d(item["kg_per_meter"])
@@ -625,6 +639,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
 
     beam_items = []
     for item in (beams_in or {}).get("items") or []:
+        for required_key in ("length_m", "height_m"):
+            if item.get(required_key) is None:
+                raise ValueError(f"beams.items[{item.get('code')!r}].{required_key} is required")
         length = d(item["length_m"])
         height = d(item["height_m"])
         width_raw = item.get("width_m")
@@ -702,6 +719,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     for zone in slab_zones_in:
         if not zone.get("context"):
             raise ValueError("slab_zones[].context is required")
+        if zone.get("concrete_volume_m3") is None:
+            raise ValueError(f"slab_zones.{zone['context']}.concrete_volume_m3 is required")
         if d(zone["concrete_volume_m3"]) < D0:
             raise ValueError(f"slab_zones.{zone['context']}.concrete_volume_m3 must be >= 0")
     if slab_zones_in:

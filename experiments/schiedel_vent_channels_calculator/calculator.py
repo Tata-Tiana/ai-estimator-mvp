@@ -23,6 +23,12 @@ D1 = Decimal("1")
 
 
 def d(value: Any) -> Decimal:
+    # See floor_slab_1_calculator.py's identical guard for the full rationale: every
+    # legitimate optional-value case here already guards before calling d(), so d(None) was
+    # never meant to succeed - it silently became Decimal("None") and crashed with
+    # decimal.InvalidOperation, with no indication of which field/row was the problem.
+    if value is None:
+        raise ValueError("numeric value is required, got None")
     return value if isinstance(value, Decimal) else Decimal(str(value))
 
 
@@ -308,7 +314,9 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
             raise ValueError(
                 f"schiedel_channel_items[].product_type must be one of {sorted(CHANNEL_TYPE_SPECS)}"
             )
-        quantity_pcs = d(item.get("quantity_pcs", 0))
+        # `.get(key, 0)` alone doesn't help when the key is present with value None (the more
+        # common real shape of extraction-derived rows) - `or 0` catches both missing and null.
+        quantity_pcs = d(item.get("quantity_pcs") or 0)
         if quantity_pcs < D0:
             raise ValueError("schiedel_channel_items[].quantity_pcs must be >= 0")
         channel_totals[product_type] += quantity_pcs
@@ -353,7 +361,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 "schiedel_masonry_gas_block_items[].density must be one of "
                 f"{sorted(SCHIEDEL_MASONRY_GAS_BLOCK_SPECS)}"
             )
-        volume_m3 = d(item.get("volume_m3", 0))
+        volume_m3 = d(item.get("volume_m3") or 0)
         if volume_m3 < D0:
             raise ValueError("schiedel_masonry_gas_block_items[].volume_m3 must be >= 0")
         masonry_gas_block_totals[density] += volume_m3
