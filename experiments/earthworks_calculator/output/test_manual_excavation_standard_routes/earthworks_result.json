@@ -46,6 +46,11 @@
         "depth_m": 0.7
       }
     ],
+    "manual_trench_depth_k1_m": 0.4,
+    "manual_trench_depth_k2_m": 0.6,
+    "manual_trench_depth_water_m": 1.6,
+    "manual_trench_depth_eo_m": 0.65,
+    "manual_trench_depth_other_m": 0.5,
     "sand_base_volume_m3": 0,
     "sand_compaction_coeff": 1.3,
     "sand_truck_step_m3": 20.0,
@@ -130,14 +135,46 @@
     ],
     "trench_volume_total_m3": 16.12,
     "trench_volume_m3": 16.12,
-    "manual_excavation_total_m3": 42.52,
+    "trench_manual_portion_m3": 12.5,
+    "trench_manual_depth_breakdown": [
+      {
+        "route_code": "K1",
+        "network_type": "k1",
+        "manual_depth_coeff_m": 0.4,
+        "manual_portion_m3": 1.6
+      },
+      {
+        "route_code": "K2",
+        "network_type": "k2",
+        "manual_depth_coeff_m": 0.6,
+        "manual_portion_m3": 1.92
+      },
+      {
+        "route_code": "VK",
+        "network_type": "water",
+        "manual_depth_coeff_m": 1.6,
+        "manual_portion_m3": 7.68
+      },
+      {
+        "route_code": "EO",
+        "network_type": "eo",
+        "manual_depth_coeff_m": 0.65,
+        "manual_portion_m3": 1.3
+      }
+    ],
+    "manual_trench_depth_k1_m": 0.4,
+    "manual_trench_depth_k2_m": 0.6,
+    "manual_trench_depth_water_m": 1.6,
+    "manual_trench_depth_eo_m": 0.65,
+    "manual_trench_depth_other_m": 0.5,
+    "manual_excavation_total_m3": 38.9,
     "sand_source": "legacy",
     "sand_items": [],
     "sand_items_raw_total_m3": 0.0,
     "compacted_sand_base_m3": 0.0,
-    "compacted_sand_trenches_m3": 20.956,
-    "sand_total_m3": 20.956,
-    "sand_order_volume_m3": 40,
+    "compacted_sand_trenches_m3": 16.25,
+    "sand_total_m3": 16.25,
+    "sand_order_volume_m3": 20,
     "geotextile_with_overlap_m2": 0.0,
     "geotextile_rolls": 0,
     "communications_length_calc_method": "legacy_direct_length",
@@ -150,19 +187,19 @@
       "code": "manual_excavation",
       "name": "Разработка грунта вручную",
       "unit": "м3",
-      "quantity": 42.52,
+      "quantity": 38.9,
       "material_unit_price": 0.0,
       "material_total": 0,
       "work_unit_price": 1000,
-      "work_total": 42520,
-      "line_total": 42520,
+      "work_total": 38900,
+      "line_total": 38900,
       "price_code": "manual_excavation_m3"
     }
   ],
   "internal_totals": {
     "internal_materials_total": 0,
-    "internal_works_total": 42520,
-    "internal_section_total": 42520
+    "internal_works_total": 38900,
+    "internal_section_total": 38900
   },
   "expected": {
     "volumes": {
@@ -172,24 +209,24 @@
       "trench_width_m": 0.4,
       "trench_volume_total_m3": 16.12,
       "trench_volume_m3": 16.12,
-      "manual_excavation_total_m3": 42.52
+      "manual_excavation_total_m3": 38.9
     },
     "estimate_lines": {
       "manual_excavation": {
         "name": "Разработка грунта вручную",
         "unit": "м3",
-        "quantity": 42.52,
+        "quantity": 38.9,
         "material_unit_price": 0,
         "material_total": 0,
         "work_unit_price": 1000,
-        "work_total": 42520,
-        "line_total": 42520
+        "work_total": 38900,
+        "line_total": 38900
       }
     },
     "internal_totals": {
       "internal_materials_total": 0,
-      "internal_works_total": 42520,
-      "internal_section_total": 42520
+      "internal_works_total": 38900,
+      "internal_section_total": 38900
     }
   },
   "comparison": [
@@ -237,8 +274,8 @@
     },
     {
       "key": "volumes.manual_excavation_total_m3",
-      "expected": 42.52,
-      "actual": 42.52,
+      "expected": 38.9,
+      "actual": 38.9,
       "diff": 0.0,
       "status": "ok"
     },
@@ -258,8 +295,8 @@
     },
     {
       "key": "estimate_lines.manual_excavation.quantity",
-      "expected": 42.52,
-      "actual": 42.52,
+      "expected": 38.9,
+      "actual": 38.9,
       "diff": 0.0,
       "status": "ok"
     },
@@ -286,15 +323,15 @@
     },
     {
       "key": "estimate_lines.manual_excavation.work_total",
-      "expected": 42520,
-      "actual": 42520,
+      "expected": 38900,
+      "actual": 38900,
       "diff": 0,
       "status": "ok"
     },
     {
       "key": "estimate_lines.manual_excavation.line_total",
-      "expected": 42520,
-      "actual": 42520,
+      "expected": 38900,
+      "actual": 38900,
       "diff": 0,
       "status": "ok"
     },
@@ -307,15 +344,15 @@
     },
     {
       "key": "internal_totals.internal_works_total",
-      "expected": 42520,
-      "actual": 42520,
+      "expected": 38900,
+      "actual": 38900,
       "diff": 0,
       "status": "ok"
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 42520,
-      "actual": 42520,
+      "expected": 38900,
+      "actual": 38900,
       "diff": 0,
       "status": "ok"
     }

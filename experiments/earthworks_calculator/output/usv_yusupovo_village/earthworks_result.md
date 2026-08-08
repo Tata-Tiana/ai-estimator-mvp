@@ -13,6 +13,11 @@
 - `manual_refinement_depth_m`: `0.08`
 - `trench_volume_m3`: `18.29`
 - `trench_width_m`: `0.4`
+- `manual_trench_depth_k1_m`: `0.4`
+- `manual_trench_depth_k2_m`: `0.6`
+- `manual_trench_depth_water_m`: `1.6`
+- `manual_trench_depth_eo_m`: `0.65`
+- `manual_trench_depth_other_m`: `0.5`
 - `sand_base_volume_m3`: `96.6`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `20`
@@ -69,6 +74,12 @@
 | `trench_volume_source` | `legacy_direct_volume` |
 | `trench_volume_total_m3` | `18.29` |
 | `trench_volume_m3` | `18.29` |
+| `trench_manual_portion_m3` | `18.29` |
+| `manual_trench_depth_k1_m` | `0.4` |
+| `manual_trench_depth_k2_m` | `0.6` |
+| `manual_trench_depth_water_m` | `1.6` |
+| `manual_trench_depth_eo_m` | `0.65` |
+| `manual_trench_depth_other_m` | `0.5` |
 | `manual_excavation_total_m3` | `44.69` |
 | `sand_source` | `legacy` |
 | `sand_items_raw_total_m3` | `0.0` |

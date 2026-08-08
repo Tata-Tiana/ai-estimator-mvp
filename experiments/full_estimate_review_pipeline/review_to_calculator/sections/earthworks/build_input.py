@@ -80,6 +80,14 @@ OPTIONAL_SCALARS = (
     "communications_length_m",
     "manual_refinement_depth_m",
     "geotextile_laying_overlap_coeff",
+    # Added 2026-08-09, same pattern as manual_refinement_depth_m above: SUPPLIER_INPUT/sheet
+    # 01-1, left unset when absent so the calculator's own dataclass defaults (0.4/0.6/1.6/
+    # 0.65/0.5 - see manual_trench_depth_k1/k2/water/eo/other_m docstrings) apply.
+    "manual_trench_depth_k1_m",
+    "manual_trench_depth_k2_m",
+    "manual_trench_depth_water_m",
+    "manual_trench_depth_eo_m",
+    "manual_trench_depth_other_m",
 )
 PRODUCTION_ITEM_GROUPS = ("pit_items", "sand_items")
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
 from math import ceil
@@ -48,6 +49,17 @@ class EarthworksInput:
     trench_depth_m: float | None = None
     trench_width_m: float | None = 0.4
     trench_routes: list[dict[str, Any]] | None = None
+    # Manual hand-dig depth beyond the pit floor, by network type (2026-08-09, real formulas
+    # confirmed in TRC/ЮСВ/АРК - see manual_trench_depth_by_network_type() docstring for the
+    # full derivation). Defaults are the ТРЦ/ЮСВ average per matching network label; АРК had no
+    # per-network breakdown at all (one flat 0.5m for everything), so its value is reused as the
+    # fallback for any route whose network type can't be recognized from its name/route_code.
+    # Elena, 2026-08-09: make these manual/reviewable per project, not hardcoded silently.
+    manual_trench_depth_k1_m: float = 0.4
+    manual_trench_depth_k2_m: float = 0.6
+    manual_trench_depth_water_m: float = 1.6
+    manual_trench_depth_eo_m: float = 0.65
+    manual_trench_depth_other_m: float = 0.5
     sand_base_volume_m3: float = 0.0
     sand_compaction_coeff: float = 1.3
     sand_truck_step_m3: float = 20.0
@@ -116,6 +128,14 @@ class EarthworksInput:
             self.excavator_productivity_m3_per_shift,
         )
         _require_positive("manual_refinement_depth_m", self.manual_refinement_depth_m)
+        for name in (
+            "manual_trench_depth_k1_m",
+            "manual_trench_depth_k2_m",
+            "manual_trench_depth_water_m",
+            "manual_trench_depth_eo_m",
+            "manual_trench_depth_other_m",
+        ):
+            _require_non_negative(name, getattr(self, name))
         _require_non_negative("sand_base_volume_m3", self.sand_base_volume_m3)
         _require_positive("sand_compaction_coeff", self.sand_compaction_coeff)
         _require_positive("sand_truck_step_m3", self.sand_truck_step_m3)
@@ -367,11 +387,82 @@ def calculate_trench_routes(
     return route_results, _round_decimal(total), warnings
 
 
+# Route name/route_code -> network type, for picking the right manual hand-dig depth
+# coefficient below. Matches both Cyrillic and Latin K (real route_codes use Latin, e.g.
+# "K2_K3_P10", while printed PDF/smeta names use Cyrillic, e.g. "К2, К3"). Order matters:
+# checked top to bottom, first match wins.
+_TRENCH_NETWORK_TYPE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("water", re.compile(r"(?:[ВV]1|\bВК\b|водопровод)", re.IGNORECASE)),
+    # \bЭО\b alone misses real labels like "ЭО1"/"ЭО4" - Cyrillic letters and digits are both
+    # \w, so there is no \b between "О" and "1" for \bЭО\b to match on. \bЭО\d* (leading
+    # boundary only, digits optional after) covers "ЭО", "ЭО1", "ЭО1; ЭО2; ЭО3", etc.
+    ("eo", re.compile(r"(?:\bЭО\d*|электр|эл\.?\s*кабел)", re.IGNORECASE)),
+    ("k1", re.compile(r"[КK]1(?!\d)", re.IGNORECASE)),
+    ("k2", re.compile(r"[КK]2(?!\d)", re.IGNORECASE)),
+]
+
+
+def detect_trench_network_type(route_code: str, name: str | None) -> str:
+    """Best-effort network-type guess from a trench route's own label. Approximate by design -
+    real project categorization (see manual_trench_depth coefficients' docstring) is often more
+    granular than our extracted route-level data, so this is a reasonable bucket, not a precise
+    match. Falls back to "other" (and its own, separately reviewable coefficient) for anything
+    unrecognized, rather than guessing wrong."""
+    text = f"{route_code} {name or ''}"
+    for network_type, pattern in _TRENCH_NETWORK_TYPE_PATTERNS:
+        if pattern.search(text):
+            return network_type
+    return "other"
+
+
+def calculate_trench_manual_portion(
+    trench_routes_result: list[dict[str, Any]],
+    trench_width_m: float,
+    manual_trench_depth_k1_m: float,
+    manual_trench_depth_k2_m: float,
+    manual_trench_depth_water_m: float,
+    manual_trench_depth_eo_m: float,
+    manual_trench_depth_other_m: float,
+) -> tuple[float, list[dict[str, Any]]]:
+    """Manual (hand-dig) portion of trench excavation: NOT the full trench volume (that's mostly
+    machine-dug), just each route's length x its network type's hand-dig depth x width -
+    matching the real formula confirmed in ТРЦ/ЮСВ/АРК (2026-08-09): manual excavation =
+    pit refinement layer + SUM(route_length x manual_depth_by_network_type x 0.4m width).
+    Real coefficients found (length x depth x width per network, not the excavator's full cut):
+    ТРЦ К1=0.6 К2=1.0 В1=1.6 ЭО=0.7 | ЮСВ К1=0.2 К2=0.2 ВК=1.6 ЭО=0.6 | АРК one flat 0.5 for
+    everything (no per-network breakdown in that project). Defaults here are the ТРЦ/ЮСВ average
+    per matching network (АРК's flat value reused as the "other/unrecognized" fallback)."""
+    depth_by_type = {
+        "k1": manual_trench_depth_k1_m,
+        "k2": manual_trench_depth_k2_m,
+        "water": manual_trench_depth_water_m,
+        "eo": manual_trench_depth_eo_m,
+        "other": manual_trench_depth_other_m,
+    }
+    width = _to_decimal(trench_width_m)
+    total = Decimal("0")
+    breakdown: list[dict[str, Any]] = []
+    for route in trench_routes_result:
+        network_type = detect_trench_network_type(route["route_code"], route.get("name"))
+        depth_coeff = _to_decimal(depth_by_type[network_type])
+        portion = _to_decimal(route["length_m"]) * depth_coeff * width
+        total += portion
+        breakdown.append(
+            {
+                "route_code": route["route_code"],
+                "network_type": network_type,
+                "manual_depth_coeff_m": float(depth_coeff),
+                "manual_portion_m3": _round_decimal(portion),
+            }
+        )
+    return _round_decimal(total), breakdown
+
+
 def calculate_manual_excavation_total(
     manual_pit_volume_m3: float,
-    trench_volume_m3: float,
+    trench_manual_portion_m3: float,
 ) -> float:
-    result = _to_decimal(manual_pit_volume_m3) + _to_decimal(trench_volume_m3)
+    result = _to_decimal(manual_pit_volume_m3) + _to_decimal(trench_manual_portion_m3)
     return _round_decimal(result)
 
 
@@ -720,9 +811,28 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         data.pit_area_m2,
         data.manual_refinement_depth_m,
     )
+    trench_manual_depth_breakdown: list[dict[str, Any]] = []
+    if trench_routes_result:
+        # Real per-route data available (standard_routes + trench_routes, not a flat
+        # trench_volume_m3 override) - use the real manual-portion formula instead of counting
+        # the whole excavator-dug trench as hand labor.
+        trench_manual_portion_m3, trench_manual_depth_breakdown = calculate_trench_manual_portion(
+            trench_routes_result,
+            data.trench_width_m,
+            data.manual_trench_depth_k1_m,
+            data.manual_trench_depth_k2_m,
+            data.manual_trench_depth_water_m,
+            data.manual_trench_depth_eo_m,
+            data.manual_trench_depth_other_m,
+        )
+    else:
+        # Legacy paths (flat trench_volume_m3/dimensions, no named routes): no way to tell
+        # which network a trench belongs to, so there is nothing to categorize - keep the old
+        # 100%-of-trench-volume behavior rather than guessing at an unknown breakdown.
+        trench_manual_portion_m3 = trench_volume_m3
     manual_excavation_total_m3 = calculate_manual_excavation_total(
         manual_pit_volume_m3,
-        trench_volume_m3,
+        trench_manual_portion_m3,
     )
 
     sand_items_raw_total_m3 = 0.0
@@ -748,8 +858,12 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
             data.sand_base_volume_m3,
             data.sand_compaction_coeff,
         )
+        # Real ТРЦ formula (2026-08-09): trench sand backfill is compacted from the same
+        # manual-portion figure as the manual-excavation line above (Q30=T27*1.3 in her sheet),
+        # not the full machine-dug trench volume - only the hand-finished extra depth needs
+        # backfilling this way.
         compacted_sand_trenches_m3 = calculate_compacted_sand(
-            trench_volume_m3,
+            trench_manual_portion_m3,
             data.sand_compaction_coeff,
         )
         sand_total_m3 = _round_decimal(
@@ -787,6 +901,13 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "trench_routes": trench_routes_result,
         "trench_volume_total_m3": trench_volume_m3,
         "trench_volume_m3": trench_volume_m3,
+        "trench_manual_portion_m3": trench_manual_portion_m3,
+        "trench_manual_depth_breakdown": trench_manual_depth_breakdown,
+        "manual_trench_depth_k1_m": data.manual_trench_depth_k1_m,
+        "manual_trench_depth_k2_m": data.manual_trench_depth_k2_m,
+        "manual_trench_depth_water_m": data.manual_trench_depth_water_m,
+        "manual_trench_depth_eo_m": data.manual_trench_depth_eo_m,
+        "manual_trench_depth_other_m": data.manual_trench_depth_other_m,
         "manual_excavation_total_m3": manual_excavation_total_m3,
         "sand_source": sand_source,
         "sand_items": data.sand_items or [],

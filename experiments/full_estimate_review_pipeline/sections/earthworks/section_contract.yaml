@@ -637,7 +637,7 @@ auto_calculated:
   - key: manual_excavation_quantity_for_estimate_m3
     label_ru: "Ручная разработка"
     source_class: AUTO_CALCULATED
-    formula: "pit_area_m2 * manual_refinement_depth_m + trench_volume_m3"
+    formula: "pit_area_m2 * manual_refinement_depth_m + trench_manual_portion_m3 (NOT the full trench_volume_m3 - see manual_trench_depth_k1/k2/water/eo/other_m)"
     leaf_inputs:
       - ref: review_parameters.pit_area_m2
         source_class: AUTO_PROJECT
@@ -646,7 +646,7 @@ auto_calculated:
       - ref: review_parameters.trench_volume_m3
         source_class: AUTO_PROJECT
     calculator_input_path: "manual_excavation_quantity_for_estimate_m3"
-    notes: ""
+    notes: "Fixed 2026-08-09: this formula text was stale (whole trench_volume_m3, matching the calculator's old 100%-counted-as-manual behavior). The calculator itself now computes manual_excavation_total_m3 from trench_manual_portion_m3 (per-network hand-dig depth x length x width, see manual_trench_depth_k1/k2/water/eo/other_m in supplier_inputs), not the full excavated trench volume. This AUTO_CALCULATED display field's leaf_inputs weren't updated to list the 5 new coefficients - it remains an approximate cross-check text, not itself wired into the calculator."
   - key: communications_length_m_cross_check
     label_ru: "Длина коммуникаций по деталям (сверка)"
     source_class: AUTO_CALCULATED
@@ -720,6 +720,101 @@ supplier_inputs:
       allow_manual_override: true
       status_if_missing: "optional"
     notes: "Added 2026-08-08. Separate from geotextile_overlap_coeff (material purchase, stable 1.1 across TRC/ARK/USV) - this one is for the LAYING WORK line's area, and checked real Excel formulas: TRC uses 1.1, ARK uses 1.2, USV uses no multiplier at all (1.0/none). NOT a stable system rule - varies by project/estimator judgment (site shape, number of corners/overlaps). Default 1.0 (no markup) matches the calculator's pre-2026-08-08 behavior and USV's real practice; Elena fills in the real project number on sheet 01-1 when the site needs one. Typical value in manual_values_registry.xlsx (section_code=earthworks, key=geotextile_laying_overlap_coeff)."
+  - key: manual_trench_depth_k1_m
+    label_ru: "Ручная доработка траншеи сверх котлована, К1 (канализация), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_k1_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_k1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Real formulas confirmed in ТРЦ/ЮСВ/АРК: manual excavation is not 100% of every trench's volume - only a hand-dug depth beyond the pit floor, times trench length x width, per network. Checked real coefficients (depth beyond pit, m): ТРЦ К1=0.6, ЮСВ К1=0.2 -> average 0.4. АРК has no per-network breakdown (one flat 0.5 for all networks - see manual_trench_depth_other_m). Elena, 2026-08-09: keep this as a manual/reviewable field per project, not a hardcoded constant - real depth depends on soil/design, not just network type. Typical value 0.4 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_k1_m)."
+  - key: manual_trench_depth_k2_m
+    label_ru: "Ручная доработка траншеи сверх котлована, К2 (ливнёвка), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_k2_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_k2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. ТРЦ К2=1.0, ЮСВ К2=0.2 -> average 0.6. Typical value 0.6 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_k2_m)."
+  - key: manual_trench_depth_water_m
+    label_ru: "Ручная доработка траншеи сверх котлована, водопровод (В1/ВК), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_water_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_water_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. ТРЦ В1=1.6, ЮСВ ВК=1.6 - exact match between both real projects, not just an average. Typical value 1.6 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_water_m)."
+  - key: manual_trench_depth_eo_m
+    label_ru: "Ручная доработка траншеи сверх котлована, ЭО (электроосвещение), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_eo_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_eo_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. ТРЦ ЭО=0.7, ЮСВ ЭО=0.6 -> average 0.65. Typical value 0.65 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_eo_m)."
+  - key: manual_trench_depth_other_m
+    label_ru: "Ручная доработка траншеи сверх котлована, прочие/нераспознанные сети, м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_other_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_other_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Fallback coefficient for any trench_routes row whose network type can't be recognized from its name/route_code (see earthworks_calculator.py's detect_trench_network_type - matches К1/К2/В1/ВК/ЭО patterns, anything else falls here). АРК had no per-network breakdown at all - one flat 0.5m coefficient for every network in that project - reused here as the general fallback. Typical value 0.5 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_other_m)."
 
 calculator_input_mapping:
   - input_path: "*"

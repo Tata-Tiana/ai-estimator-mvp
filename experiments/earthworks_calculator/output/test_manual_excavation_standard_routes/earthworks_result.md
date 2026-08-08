@@ -13,6 +13,11 @@
 - `manual_refinement_depth_m`: `0.08`
 - `trench_width_m`: `0.4`
 - `trench_routes`: `[{'route_code': 'K1', 'name': 'К1', 'length_m': 10, 'depth_m': 1.2}, {'route_code': 'K2', 'name': 'К2', 'length_m': 8, 'depth_m': 1.0}, {'route_code': 'VK', 'name': 'ВК', 'length_m': 12, 'depth_m': 1.4}, {'route_code': 'EO', 'name': 'ЭО', 'length_m': 5, 'depth_m': 0.7}]`
+- `manual_trench_depth_k1_m`: `0.4`
+- `manual_trench_depth_k2_m`: `0.6`
+- `manual_trench_depth_water_m`: `1.6`
+- `manual_trench_depth_eo_m`: `0.65`
+- `manual_trench_depth_other_m`: `0.5`
 - `sand_base_volume_m3`: `0`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `20.0`
@@ -69,13 +74,19 @@
 | `trench_volume_source` | `routes_calculated` |
 | `trench_volume_total_m3` | `16.12` |
 | `trench_volume_m3` | `16.12` |
-| `manual_excavation_total_m3` | `42.52` |
+| `trench_manual_portion_m3` | `12.5` |
+| `manual_trench_depth_k1_m` | `0.4` |
+| `manual_trench_depth_k2_m` | `0.6` |
+| `manual_trench_depth_water_m` | `1.6` |
+| `manual_trench_depth_eo_m` | `0.65` |
+| `manual_trench_depth_other_m` | `0.5` |
+| `manual_excavation_total_m3` | `38.9` |
 | `sand_source` | `legacy` |
 | `sand_items_raw_total_m3` | `0.0` |
 | `compacted_sand_base_m3` | `0.0` |
-| `compacted_sand_trenches_m3` | `20.956` |
-| `sand_total_m3` | `20.956` |
-| `sand_order_volume_m3` | `40` |
+| `compacted_sand_trenches_m3` | `16.25` |
+| `sand_total_m3` | `16.25` |
+| `sand_order_volume_m3` | `20` |
 | `geotextile_with_overlap_m2` | `0.0` |
 | `geotextile_rolls` | `0` |
 | `communications_length_calc_method` | `legacy_direct_length` |
@@ -98,14 +109,14 @@
 ## Строки серой внутренней сметы
 | code | name | quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `manual_excavation` | Разработка грунта вручную | `42.52` | `м3` | `0.0` | `0` | `1000` | `42520` | `42520` |
+| `manual_excavation` | Разработка грунта вручную | `38.9` | `м3` | `0.0` | `0` | `1000` | `38900` | `38900` |
 
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
 | `internal_materials_total` | `0` |
-| `internal_works_total` | `42520` |
-| `internal_section_total` | `42520` |
+| `internal_works_total` | `38900` |
+| `internal_section_total` | `38900` |
 
 ## Проверка с расчётом Елены
 | Показатель | Ожидание | Получено | Разница | Статус |
@@ -116,15 +127,15 @@
 | `volumes.trench_width_m` | `0.4` | `0.4` | `0.0` | `ok` |
 | `volumes.trench_volume_total_m3` | `16.12` | `16.12` | `0.0` | `ok` |
 | `volumes.trench_volume_m3` | `16.12` | `16.12` | `0.0` | `ok` |
-| `volumes.manual_excavation_total_m3` | `42.52` | `42.52` | `0.0` | `ok` |
+| `volumes.manual_excavation_total_m3` | `38.9` | `38.9` | `0.0` | `ok` |
 | `estimate_lines.manual_excavation.name` | `Разработка грунта вручную` | `Разработка грунта вручную` | `` | `ok` |
 | `estimate_lines.manual_excavation.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.manual_excavation.quantity` | `42.52` | `42.52` | `0.0` | `ok` |
+| `estimate_lines.manual_excavation.quantity` | `38.9` | `38.9` | `0.0` | `ok` |
 | `estimate_lines.manual_excavation.material_unit_price` | `0` | `0.0` | `0.0` | `ok` |
 | `estimate_lines.manual_excavation.material_total` | `0` | `0` | `0` | `ok` |
 | `estimate_lines.manual_excavation.work_unit_price` | `1000` | `1000` | `0` | `ok` |
-| `estimate_lines.manual_excavation.work_total` | `42520` | `42520` | `0` | `ok` |
-| `estimate_lines.manual_excavation.line_total` | `42520` | `42520` | `0` | `ok` |
+| `estimate_lines.manual_excavation.work_total` | `38900` | `38900` | `0` | `ok` |
+| `estimate_lines.manual_excavation.line_total` | `38900` | `38900` | `0` | `ok` |
 | `internal_totals.internal_materials_total` | `0` | `0` | `0` | `ok` |
-| `internal_totals.internal_works_total` | `42520` | `42520` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `42520` | `42520` | `0` | `ok` |
+| `internal_totals.internal_works_total` | `38900` | `38900` | `0` | `ok` |
+| `internal_totals.internal_section_total` | `38900` | `38900` | `0` | `ok` |
