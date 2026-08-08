@@ -144,6 +144,23 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+**`output/manual_values_registry.xlsx` prerequisite (added 2026-08-08):** this file (sheet 01-1's
+typical-value source) is no longer hand-edited locally — Elena edits it directly in a Google Sheet
+(https://docs.google.com/spreadsheets/d/16d4Nm_1EeQ1ssB4t9nsJVVpU4et63wFa/). Before building any
+review workbook, run:
+
+```
+.venv/bin/python3 experiments/full_estimate_review_pipeline/download_manual_values_registry.py
+```
+
+This overwrites `output/manual_values_registry.xlsx` with the current Google Sheet content (downloads
+via `curl`, not urllib — this venv's Python has no working local CA bundle; validates sheet name/header
+before overwriting, so a bad download never corrupts the local copy). **Do not hand-edit
+`output/manual_values_registry.xlsx` locally anymore — edits will be silently lost on the next
+download.** If a new manual-input field needs a typical value, add the row via
+`regenerate_manual_values_registry.py` as before (it adds blank rows for newly-manual contract fields),
+then copy that row into the Google Sheet by hand so it survives the next download.
+
 ## Current Active Step — TRC JSON To Review Workbook Plan (updated 2026-08-02)
 
 The current planning baseline is:

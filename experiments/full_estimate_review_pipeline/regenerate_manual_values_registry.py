@@ -6,6 +6,12 @@ Do not store quantities, fixed amounts, or comments copied from ARK/TRC/USV esti
 
 Matched by (section_code, key); drops rows for fields that are no longer MANUAL_REVIEW/
 SUPPLIER_INPUT (e.g. once a field becomes AUTO_CALCULATED); adds newly-manual fields blank.
+
+NOTE (2026-08-08): Elena now edits typical values in a Google Sheet, not in this local file
+directly (see download_manual_values_registry.py). Running this script still works locally
+(useful to see which new blank rows a contract change adds), but any new row it produces must
+be copied into the Google Sheet by hand, or it will be silently dropped the next time
+download_manual_values_registry.py overwrites this file.
 """
 
 from __future__ import annotations

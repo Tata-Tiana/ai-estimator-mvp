@@ -162,6 +162,15 @@ DIAGNOSTIC_ONLY_MISSING_TARGETS = {
 }
 
 AUTO_SUM_CANDIDATE_TARGETS = {
+    # Kept in sync by hand with populate_review_workbook_from_extraction.py's copy of this
+    # same dict (2026-08-08: the two had drifted - this file was missing floor_slab_1 and
+    # load_bearing_walls_lintels.cutoff_waterproofing_load_bearing_walls_area, the other file
+    # was missing the four lintel_concrete_volume-family entries below). If you add a new
+    # AUTO_SUM_CANDIDATE_TARGETS entry, add it to both files. Note: this file's entries all
+    # apply generically (candidate_sum_info runs for every item regardless of section), but the
+    # workbook builder gates most of these behind a per-section `_alternative_scalar` dispatch
+    # function - an entry existing in that file's dict does not by itself mean it is wired to
+    # actually fire on sheet 01.
     "foundation_slab": {
         "membrane_area_m2": "Можно автосуммировать компоненты мембраны PLANTER, если все candidates относятся к одной мембране и одному разделу фундаментной плиты.",
     },
@@ -170,6 +179,12 @@ AUTO_SUM_CANDIDATE_TARGETS = {
         "floor_2_lintel_concrete_volume": "Можно автосуммировать компоненты бетона перемычек в U-блоках, если все candidates относятся к одному этажу и одному типу перемычек.",
         "floor_1_lintel_monolithic_concrete_volume": "Можно автосуммировать компоненты бетона монолитных перемычек, если все candidates относятся к одному этажу и одному типу перемычек.",
         "floor_2_lintel_monolithic_concrete_volume": "Можно автосуммировать компоненты бетона монолитных перемычек, если все candidates относятся к одному этажу и одному типу перемычек.",
+        "cutoff_waterproofing_load_bearing_walls_area": "Можно автосуммировать наружные и внутренние несущие стены (Elena, 2026-07-25: один непрерывный контур стены, отличается только толщиной блока), если PDF не даёт готового итога.",
+    },
+    "floor_slab_1": {
+        "floor_slab_1_slab_edge_perimeter": "Можно автосуммировать периметр торца плиты по зонам (реальный кейс ТРЦ, 2026-08-05: главная зона + кухня/гостиная, готового итога нет).",
+        "floor_slab_1_under_slab_formwork_area": "Можно автосуммировать площадь опалубки под плитой по зонам, та же логика, что и periметр торца.",
+        "floor_slab_1_eps100_volume": "Можно автосуммировать объём ЭППС-100 по компонентам утепления (реальный кейс ТРЦ, 2026-08-05: торец + низ плиты + кухонная зона — разные неперекрывающиеся компоненты одного итога, не альтернативные прочтения одного измерения).",
     },
     "flat_roof": {
         "roof_internal_drains_count": "Можно автосуммировать внутренние кровельные воронки, если все candidates относятся к внутреннему водостоку и имеют единицу шт.",
@@ -333,7 +348,16 @@ def candidate_sum_info(item: dict[str, Any], section_code: str) -> dict[str, str
     values = []
     raw_parts = []
     for candidate in item.get("candidates") or []:
-        if not isinstance(candidate, dict) or candidate.get("target_code") != code:
+        if not isinstance(candidate, dict):
+            continue
+        # A null/absent candidate target_code implicitly belongs to the parent `item`
+        # (candidates usually don't carry their own); only skip when one explicitly names a
+        # different target_code. Mirrors the same fix in populate_review_workbook_from_
+        # extraction.py's candidate_sum_scalar/eps100_component_area_from_candidates - a bare
+        # `!= code` check here always failed (null != non-null string), so this diagnostic's
+        # own "auto-summed component" note never actually fired on real extraction output.
+        candidate_target = candidate.get("target_code")
+        if candidate_target and candidate_target != code:
             continue
         value = candidate.get("value")
         if value is None:
@@ -722,6 +746,62 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
     return diagnostics
 
 
+REBAR_FLOOR_REQUIRED_GROUP_CODES = {
+    # Only these 3 of the 5 REBAR_ITEM_GROUP_CODES use `floor` as part of their item shape
+    # (foundation_rebar_items/floor_slab_2_rebar_items don't - each of those sections only
+    # covers one implicit floor, so there's nothing to disambiguate). Confirmed 2026-08-09
+    # against real ТРЦ extraction output: main_wall_rebar_items/lintel_rebar_items/
+    # floor_slab_1_rebar_items rows always carry a real floor=1 or floor=2 value except when
+    # the extraction itself leaves it null.
+    "main_wall_rebar_items",
+    "lintel_rebar_items",
+    "floor_slab_1_rebar_items",
+}
+
+
+def rebar_missing_floor_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """A rebar row in one of REBAR_FLOOR_REQUIRED_GROUP_CODES with floor=null passes every
+    existing check (rebar_duplicate_code_diagnostics only compares floor values against each
+    other for duplicates - null is a valid, distinct value there, so a lone null row is never
+    flagged) but crashes the calculator outright: SpecRebarItem.floor is a required int with no
+    default, and validate_spec_rebar_item does `item.floor < 1` with no None-guard, so a null
+    floor raises an unhandled TypeError deep inside __post_init__ instead of a clean, catchable
+    error - and nothing upstream of that ever told anyone this row was suspect. Found 2026-08-09
+    via a real ТРЦ run: main_wall_rebar_items' "подоконное армирование" (under-window
+    reinforcement) row had floor=null even though its own extraction rule says to default to 1
+    when the PDF doesn't specify - the rule was documented but not applied, and no check existed
+    to catch the mismatch between rule and output."""
+    diagnostics: list[dict[str, str]] = []
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        group_code = item.get("group_code")
+        if group_code not in REBAR_FLOOR_REQUIRED_GROUP_CODES:
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        if value.get("floor") is not None:
+            continue
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"{group_code}: row has floor=null (required, no calculator default)",
+                "confidence": confidence_text(item),
+                "value": short(item.get("value"), 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    f"У этой строки {group_code} floor=null. Калькулятор требует floor >= 1 "
+                    "без запасного значения и упадёт с необработанной ошибкой на этой строке, "
+                    "а не даст понятное сообщение. Если PDF не указывает этаж для этой строки "
+                    "явно, по правилу extraction нужно проставить floor=1 по умолчанию (см. "
+                    "заметку к соответствующему target/группе) - проверьте, что это применимо "
+                    "именно здесь, и заполните вручную."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
 def forbidden_source_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
     """Flags a found scalar whose raw evidence text matches a known wrong-source pattern for that
     target_code (e.g. a "slab area" control field actually sourced from a formwork-area row).
@@ -915,6 +995,7 @@ def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dic
     diagnostics.extend(candidate_unit_mismatch_diagnostics(section))
     diagnostics.extend(candidate_target_code_mismatch_diagnostics(section))
     diagnostics.extend(rebar_duplicate_code_diagnostics(section))
+    diagnostics.extend(rebar_missing_floor_diagnostics(section))
     diagnostics.extend(forbidden_source_diagnostics(section))
 
     if section_code == "flat_roof":

@@ -156,7 +156,16 @@ def eps100_component_area_from_candidates(
     fragments: list[str] = []
     confidences: list[float] = []
     for candidate in candidates:
-        if candidate.get("target_code") != "floor_slab_1_eps100_volume":
+        # Candidates usually carry no target_code of their own (only the parent found-item
+        # does) - this fetch already scoped `item` to floor_slab_1_eps100_volume, so a null/
+        # absent candidate target_code implicitly belongs to it. But candidates occasionally
+        # DO carry an explicit (and sometimes wrong) target_code - see the 2026-08-04
+        # heavy-audit finding on floor_slab_1_edge_eps_work_length candidates mismarked as
+        # floor_slab_1_slab_edge_perimeter. Only skip when one is explicitly set to something
+        # else; a bare `!= "floor_slab_1_eps100_volume"` check here always failed (null !=
+        # non-null string), silently zeroing total_volume on every real project.
+        candidate_target = candidate.get("target_code")
+        if candidate_target and candidate_target != "floor_slab_1_eps100_volume":
             continue
         text = " ".join(
             str(candidate.get(key) or "")
@@ -274,7 +283,15 @@ def candidate_sum_scalar(item: dict[str, Any] | None, target_code: str) -> tuple
     fragments: list[str] = []
     confidences: list[float] = []
     for candidate in candidates:
-        if candidate.get("target_code") != target_code:
+        # Same reasoning as eps100_component_area_from_candidates above: `item` is already
+        # the caller's found_by_target[target_code] entry, so a null/absent candidate
+        # target_code implicitly belongs to it. Only skip when a candidate explicitly names a
+        # DIFFERENT target_code (real case: 2026-08-04 heavy-audit, candidates mismarked with
+        # a sibling target). A bare `!=` check here always failed (null != non-null string),
+        # silently returning None for every AUTO_SUM_CANDIDATE_TARGETS entry across all 4
+        # sections that use this function.
+        candidate_target = candidate.get("target_code")
+        if candidate_target and candidate_target != target_code:
             continue
         value = candidate.get("value")
         if value is None:
@@ -335,6 +352,15 @@ def item_fragment(item: dict[str, Any] | None) -> str:
 
 
 AUTO_SUM_CANDIDATE_TARGETS = {
+    # Kept in sync by hand with build_extraction_notes_report.py's copy of this same dict
+    # (2026-08-08: the two had drifted - this file was missing the four
+    # lintel_concrete_volume-family entries below, the other file was missing floor_slab_1 and
+    # cutoff_waterproofing_load_bearing_walls_area). If you add a new AUTO_SUM_CANDIDATE_TARGETS
+    # entry, add it to both files. Note: entries here only actually fire on sheet 01 if the
+    # matching section's `*_alternative_scalar` function below also dispatches to
+    # candidate_sum_scalar for that target_code - the four lintel_concrete_volume-family entries
+    # are listed for parity with the notes-report script but are NOT currently wired to any
+    # dispatch branch here (no known real project needed them yet on the workbook side).
     "foundation_slab": {
         "membrane_area_m2": "компонентов мембраны",
     },
@@ -350,6 +376,10 @@ AUTO_SUM_CANDIDATE_TARGETS = {
         # sit as an unresolved needs_review when it doesn't. See
         # cutoff_waterproofing_external_internal_sum memory.
         "cutoff_waterproofing_load_bearing_walls_area": "наружных и внутренних несущих стен",
+        "lintel_concrete_volume": "компонентов бетона перемычек в U-блоках",
+        "floor_2_lintel_concrete_volume": "компонентов бетона перемычек в U-блоках",
+        "floor_1_lintel_monolithic_concrete_volume": "компонентов бетона монолитных перемычек",
+        "floor_2_lintel_monolithic_concrete_volume": "компонентов бетона монолитных перемычек",
     },
     "floor_slab_1": {
         # Real ТРЦ case, 2026-08-05: PDF gives the slab's edge perimeter and under-slab formwork
