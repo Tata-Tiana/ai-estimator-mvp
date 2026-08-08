@@ -33,7 +33,7 @@
 | `geometry.slab_concrete_volume_m3_display` | `37.38` |
 | `geometry.slab_formwork_area_m2` | `207.64` |
 | `geometry.slab_control_geometry_area_m2` | `210.64` |
-| `geometry.slab_edge_perimeter_m` | `118` |
+| `geometry.slab_edge_perimeter_m` | `118.0` |
 | `geometry.edge_formwork_height_m` | `0.2` |
 | `beams.items` | `[{"code": "beam_b1", "name": "Б-1", "length_m": 7.0, "width_m": 0.3, "height_m": 0.25, "count": 1.0, "concrete_volume_m3": 0.525, "formwork_area_m2": 5.6}, {"code": "beam_b2", "name": "Б-2", "length_m": 7.2, "width_m": 0.3, "height_m": 0.68, "count": 1.0, "concrete_volume_m3": 1.4688, "formwork_area_m2": 11.952}, {"code": "beam_b3", "name": "Б-3", "length_m": 9.0, "width_m": 0.3, "height_m": 0.43, "count": 1.0, "concrete_volume_m3": 1.161, "formwork_area_m2": 10.44}]` |
 | `beams.total_length_m` | `23.2` |

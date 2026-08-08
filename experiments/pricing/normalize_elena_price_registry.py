@@ -197,6 +197,21 @@ OBSOLETE_PREVIOUS_PRICE_CODES = {
     # in a different price zone, this DERIVED_PRICE_ROWS value needs a manual one-off override,
     # not a silent switch.
     "sand_m3",
+    # Removed 2026-08-08: not wrong, just ugly - "Добавлено из калькулятора MVP" (never a real
+    # price-list row at all, born from some very old board-price/volume division in the MVP
+    # calculator, never cleaned up). Value itself was already cross-checked correct (matches
+    # ARK's real smeta almost exactly, 21500 vs 21499.997319) - just rounding off the leftover
+    # decimal tail here for a clean number.
+    "timber_m3",
+    # Removed 2026-08-08: stale "rows_to_add/needs_review" placeholders (6400/7500/38000 руб.),
+    # never sourced from anything. Real prices are zone/project-dependent (concrete price zones
+    # 6150-7690, delivery 5250-7200/рейс, pump size scales with pour height - see
+    # concrete_pump_32m_shift's own comment below). No zone mechanism exists yet, so replaced
+    # with a straight average across the 2-3 real reference projects we have (TRC/ARK/ЮСВ) as a
+    # marked-temporary value, same approach as eps50_wall_insulation_work_unit_price earlier.
+    "concrete_b22_5_m3",
+    "concrete_delivery_trip",
+    "concrete_pump_32m_shift",
 }
 
 PRICE_CODE_NAME_OVERRIDES = {
@@ -430,11 +445,65 @@ DERIVED_PRICE_ROWS = [
         "comment": "Добавлено 2026-08-06: тот же лист фанеры, что и plywood_1520x1520_18mm_sheet (прайс Елены, лист 'Пиломатериалы (Олег)', строка 23) - отдельный price_code нужен калькулятору перемычек load_bearing_walls_lintels_calculator.py.",
     },
     {
+        "section": "Земляные работы",
+        "name": "Пиломатериал обрезной для устройства опалубки ГОСТ",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 21500,
+        "price_code": "timber_m3",
+        "comment": "ИСПРАВЛЕНО 2026-08-08: старое значение 21499.997319 не было ошибкой по сути (подтверждено по смете АРК - там та же позиция 21500 руб./м3), но само число было 'Добавлено из калькулятора MVP' - какой-то старый расчёт цена_доски/объём_доски, никогда не бывшее настоящей строкой прайса, с некрасивым хвостом из 6 знаков после запятой. Округлила до чистых 21500 - число то же самое по сути, просто без мусора.",
+    },
+    {
+        "section": "Устройство фундаментной плиты",
+        "name": "Бетон марки В22,5 (М300) (ВРЕМЕННО - среднее по проектам, до внедрения зон)",
+        "unit": "м3",
+        "min_quantity": 1,
+        "price": 6275,
+        "price_code": "concrete_b22_5_m3",
+        "comment": "ВРЕМЕННО 2026-08-08: цена бетона зонозависима (актуальный прайс Елены даёт зоны 6150-7690 руб./м3), готового зонного механизма пока нет. Взято простое среднее по 2 реальным проектам: ТРЦ=6600, АРК=5950 -> (6600+5950)/2=6275. Заменить, когда появится зонная логика или прямое указание, в какой зоне проект.",
+    },
+    {
+        "section": "Устройство фундаментной плиты",
+        "name": "Доставка бетона до объекта (ВРЕМЕННО - среднее по проектам)",
+        "unit": "рейс",
+        "min_quantity": 1,
+        "price": 6225,
+        "price_code": "concrete_delivery_trip",
+        "comment": "ВРЕМЕННО 2026-08-08: та же зонозависимость, что у concrete_b22_5_m3. Актуальный прайс Елены даёт цену доставки ЗА М3 (не за рейс, единицы не совпадают с этим price_code), поэтому усреднила напрямую реальные рейсовые цены из 2 проектов: ТРЦ=7200, АРК=5250 -> (7200+5250)/2=6225. Заменить, когда появится зонная логика.",
+    },
+    {
+        "section": "Устройство фундаментной плиты",
+        "name": "Работа бетононасоса (нижний уровень: фундамент/1-й этаж) (ВРЕМЕННО - среднее по проектам)",
+        "unit": "смена",
+        "min_quantity": 1,
+        "price": 37500,
+        "price_code": "concrete_pump_32m_shift",
+        "comment": "ВРЕМЕННО 2026-08-08: нашли реальную систему - размер/цена насоса зависит от высоты заливки, не от проекта. В ТРЦ и АРК фундамент+1й этаж используют насос МЕНЬШЕГО размера, чем 2й этаж+ (см. concrete_pump_32m_shift_floor_slab_2). ЮСВ не различает уровни (один насос везде) - закономерность реальная, но не универсальная. Нижний уровень: ТРЦ='28м'=36500, АРК='36м'(фундамент)=38000, ЮСВ='32м+гаситель'=38000 -> среднее (36500+38000+38000)/3=37500. Раньше этот же код делился между foundation_slab/floor_slab_1/floor_slab_2 - теперь у каждого раздела свой code, см. floor_slab_1/floor_slab_2 контракты.",
+    },
+    {
+        "section": "Ж/Б монолитная плита перекрытия 1-го этажа",
+        "name": "Работа бетононасоса (нижний уровень: фундамент/1-й этаж) (ВРЕМЕННО - среднее по проектам)",
+        "unit": "смена",
+        "min_quantity": 1,
+        "price": 37500,
+        "price_code": "concrete_pump_32m_shift_floor_slab_1",
+        "comment": "ВРЕМЕННО 2026-08-08: плита 1-го этажа заливается с той же высоты, что и фундамент - в ТРЦ и АРК используется насос того же (меньшего) размера, что для фундамента (см. concrete_pump_32m_shift). Та же группа проектных значений: ТРЦ='28м'=36500, АРК='36м'=38000, ЮСВ='32м+гаситель'=38000 -> среднее 37500. Новый registry_code, добавлен вместе с fixed 2026-08-08 разделением concrete_pump_32m_shift по разделам (было общее на все 3 раздела: foundation_slab/floor_slab_1/floor_slab_2).",
+    },
+    {
+        "section": "Ж/Б монолитная плита перекрытия 2-го этажа",
+        "name": "Работа бетононасоса (верхний уровень: 2-й этаж+) (ВРЕМЕННО - среднее по проектам)",
+        "unit": "смена",
+        "min_quantity": 1,
+        "price": 39833,
+        "price_code": "concrete_pump_32m_shift_floor_slab_2",
+        "comment": "ВРЕМЕННО 2026-08-08: верхний уровень (2-й этаж и выше) - реально используется насос БОЛЬШЕГО размера, чем на фундаменте/1-м этаже (см. concrete_pump_32m_shift). ТРЦ='36м'=39500, АРК='40м'(плита перекрытия)=42000, ЮСВ='32м+гаситель'=38000 (не различает уровни) -> среднее (39500+42000+38000)/3=39833.33, округлено до 39833. Новый registry_code, добавлен вместе с fixed 2026-08-08 разделением concrete_pump_32m_shift по разделам (было общее на все 3 раздела).",
+    },
+    {
         "section": "Ж/Б монолитная плита перекрытия 1-го этажа",
         "name": "Пиломатериал обрезной для устройства опалубки ГОСТ (для опалубки монолитных перемычек)",
         "unit": "м3",
         "min_quantity": 1,
-        "price": 21499.997319,
+        "price": 21500,
         "price_code": "lintel_formwork_timber_m3",
         "comment": "Добавлено 2026-08-06: та же цена, что и timber_m3 - отдельный price_code нужен калькулятору перемычек load_bearing_walls_lintels_calculator.py.",
     },
