@@ -38,7 +38,7 @@
 - Площадь, которая ушла в работы, праймер и мастику: `24.3` м2.
 - Праймер: `primer_required_liters = waterproofing_area_m2 * primer_consumption_l_per_m2`; `primer_units = ceil(primer_required_liters / primer_canister_volume_l)`.
 - Мастика: `mastic_required_kg = waterproofing_area_m2 * mastic_consumption_kg_per_m2_per_layer * mastic_layers`; `mastic_units = ceil(mastic_required_kg / mastic_bucket_weight_kg)`.
-- Основная площадь работ по ЭППС 100 мм торец: `eps100_wall_insulation_area_m2 = eps100_wall_volume_m3 / eps100_wall_thickness_m`.
+- Основная площадь работ по ЭППС 100 мм торец/борт плиты: если в проекте есть явная площадь `eps100_wall_insulation_area_m2`, используется она; иначе fallback `eps100_wall_volume_m3 / eps100_wall_thickness_m`.
 - Геометрическая проверка по участкам без утепления включается только если заданы `slab_formwork_perimeter_m`, `slab_edge_height_m` и `non_insulated_edge_lengths_m`.
 - Если геометрическая проверка выключена, площадь ЭППС берётся из спецификации через `объём / толщину`.
 - Геометрическая проверка включена: `False`.
@@ -58,6 +58,7 @@
 | `mastic_raw_units` | `2.7` |
 | `mastic_units` | `3` |
 | `eps100_wall_insulation_area_m2` | `17.5` |
+| `eps100_wall_insulation_area_source` | `volume_div_thickness` |
 | `eps100_wall_geometry_check_enabled` | `False` |
 | `non_insulated_edge_lengths_total_m` | `None` |
 | `insulated_edge_length_m` | `None` |
@@ -85,7 +86,7 @@
 | `waterproofing_bitumen_mastic_work` | Гидроизоляция фундаментной плиты битумной мастикой в 2 слоя | `24.3` | `` | `м2` | `0.0` | `0` | `350` | `8505` | `8505` |
 | `bitumen_primer_aquamast_18l` | Праймер битумный AquaMast, 18 л | `1.0` | `` | `шт` | `2770` | `2770` | `0.0` | `0` | `2770` |
 | `bitumen_mastic_aquamast_18kg` | Мастика гидроизоляционная битумная для фундаментов AquaMast, 18 кг | `3.0` | `` | `шт` | `2780` | `8340` | `0.0` | `0` | `8340` |
-| `eps100_wall_insulation_work` | Утепление стен плиты ЭППС 100 мм | `17.5` | `` | `м2` | `0.0` | `0` | `500` | `8750` | `8750` |
+| `eps100_wall_insulation_work` | Утепление торца/борта фундаментной плиты ЭППС 100 мм | `17.5` | `` | `м2` | `0.0` | `0` | `500` | `8750` | `8750` |
 | `eps100_wall_penoplex_geo_material` | Пеноплэкс ГЕО 100 мм | `1.9432` | `1.94` | `м3` | `10000` | `19432` | `0.0` | `0` | `19432` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `2.0` | `` | `баллон` | `490` | `980` | `0.0` | `0` | `980` |
 | `waterproofing_logistics_and_supply` | Логистика и снабжение | `1.0` | `` | `-` | `975.54` | `976` | `0.0` | `0` | `976` |
