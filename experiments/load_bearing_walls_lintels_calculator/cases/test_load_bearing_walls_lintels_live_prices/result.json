@@ -726,12 +726,11 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "is_case_specific": false,
-      "notes": "База для арматуры Ø10",
-      "price_code": "block_chasing_reinforcement_work_m",
-      "unit_price_source": "fallback_input",
+      "notes": "Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md: реальный (серый) столбец ТРЦ/АРК/ЮСВ показывает 0 на всех 10 проверенных строках). База для арматуры Ø10.",
+      "unit_price_source": "locked_case_prices",
       "unit_price_original": null,
       "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_warning": null
     },
     {
       "code": "main_wall_rebar_a500_d10",
@@ -1125,12 +1124,11 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "is_case_specific": true,
-      "notes": "База для арматуры Ø10",
-      "price_code": "block_chasing_reinforcement_work_m",
-      "unit_price_source": "fallback_input",
+      "notes": "Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md). База для арматуры Ø10.",
+      "unit_price_source": "locked_case_prices",
       "unit_price_original": null,
       "unit_price_used": null,
-      "price_warning": "price_code not found in price_registry and fallback input price is missing"
+      "price_warning": null
     },
     {
       "code": "parapet_and_second_light_rebar_a500_d10",
@@ -1229,16 +1227,13 @@
   },
   "expected": {},
   "comparison": [],
-  "warnings": [
-    "block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing",
-    "block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing"
-  ],
+  "warnings": [],
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
     "prices_from_price_registry": 28,
     "prices_from_project_overrides": 0,
-    "prices_from_fallback_input": 2,
-    "warnings_count": 2
+    "prices_from_fallback_input": 0,
+    "warnings_count": 0
   }
 }

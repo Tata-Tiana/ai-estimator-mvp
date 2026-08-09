@@ -414,7 +414,7 @@
       "line_total_raw": 0.0,
       "line_total": 0,
       "is_case_specific": false,
-      "notes": "Нулевая строка серой части, база для арматуры Ø10"
+      "notes": "Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md: реальный (серый) столбец ТРЦ/АРК/ЮСВ показывает 0 на всех 10 проверенных строках). База для арматуры Ø10."
     },
     "main_wall_rebar_a500_d10": {
       "code": "main_wall_rebar_a500_d10",
@@ -1009,7 +1009,7 @@
       "line_total": 10000,
       "is_case_specific": false,
       "notes": "",
-      "price_code": "technical_supervision_fixed"
+      "price_code": "technical_supervision_walls_lintels"
     }
   },
   "internal_totals": {

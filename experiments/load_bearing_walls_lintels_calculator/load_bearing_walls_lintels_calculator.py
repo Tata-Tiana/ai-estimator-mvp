@@ -705,43 +705,93 @@ def rebar_from_weight(item: RebarItem, waste_coeff: float) -> tuple[dict[str, An
     )
 
 
-def rebar_from_spec_length(item: SpecRebarItem, waste_coeff: float) -> tuple[dict[str, Any], EstimateLineResult]:
-    if item.kg_per_meter is None or item.rod_length_m is None or item.unit_price_per_m is None:
-        raise ValueError("spec rebar item requires kg_per_meter, rod_length_m and unit_price_per_m")
-    base_length = d(item.spec_length_m)
-    length_with_waste = base_length * d(waste_coeff)
-    raw_rods = length_with_waste / d(item.rod_length_m)
-    rods = int(ceil(raw_rods))
-    order_length = d(rods) * d(item.rod_length_m)
-    delivery_weight = order_length * d(item.kg_per_meter)
-    line_code = item.code or make_rebar_line_code(item.component, item.floor, item.steel_class, item.diameter_mm)
-    line_name = item.name or make_rebar_name(item.component, item.floor, item.steel_class, item.diameter_mm)
-    price_code = make_rebar_price_code(item.steel_class, item.diameter_mm)
-    control = {
-        "floor": item.floor,
-        "component": item.component,
-        "steel_class": item.steel_class,
-        "diameter_mm": item.diameter_mm,
-        "spec_length_m": q(base_length),
-        "length_with_waste_m": q(length_with_waste),
-        "raw_rods": q(raw_rods),
-        "rods": rods,
-        "order_length_m": q(order_length),
-        "kg_per_meter": item.kg_per_meter,
-        "delivery_weight_kg": q(delivery_weight),
-        "unit_price_per_m": item.unit_price_per_m,
-        "price_code": price_code,
-        "line_code": line_code,
-        "line_name": line_name,
-    }
-    return control, line(
-        code=line_code,
-        name=line_name,
-        unit="мп",
-        quantity=q(order_length),
-        material_unit_price=item.unit_price_per_m,
-        price_code=price_code,
-    )
+def rebar_from_spec_length_items_pooled(
+    items: list[SpecRebarItem], waste_coeff: float
+) -> tuple[dict[str, Any], list[EstimateLineResult]]:
+    """Pools same (floor, component, steel_class, diameter_mm) SpecRebarItem rows into ONE
+    combined rod-purchase rounding, instead of rounding each row to its own rod-multiple
+    independently. Confirmed 2026-08-09 by comparing against real TRC/АРК/ЮСВ smeta data (see
+    reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md): every real rebar order
+    quantity checked across all 3 projects (dozens of rows, every diameter) is an exact
+    rod-length multiple, and where TRC's PDF spec gives multiple rows of the same
+    floor/component/diameter/steel_class (e.g. a wall's 400mm-chase + 250mm-chase + subwindow
+    rebar, all Ø10; or several stirrup cut-lengths, all Ø6), her real total only matches when the
+    raw meters are summed FIRST and rounded to a rod ONCE - rounding each row separately always
+    wastes a partial rod on every row's own remainder, and never matched her real number (main
+    wall Ø10 floor 1: summed-then-rounded 58.49->59 rods = 690.3m, exact; summed-after-separate-
+    rounding gave 702.0 or 631.8, neither matched. Lintel Ø6 hoops: same story on both floors).
+    This also matches her own smeta's own granularity - she never shows a separate row per wall
+    type or per stirrup cut-length either, only one row per floor+diameter+steel_class."""
+    groups: dict[tuple[int, str, str, int], list[SpecRebarItem]] = {}
+    order: list[tuple[int, str, str, int]] = []
+    for item in items:
+        key = (item.floor, item.component, item.steel_class, item.diameter_mm)
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(item)
+
+    controls: dict[str, Any] = {}
+    rebar_lines: list[EstimateLineResult] = []
+    for key in order:
+        group_items = groups[key]
+        floor, component, steel_class, diameter_mm = key
+        kg_per_meter = group_items[0].kg_per_meter
+        rod_length_m = group_items[0].rod_length_m
+        unit_price_per_m = group_items[0].unit_price_per_m
+        for other in group_items[1:]:
+            if (
+                other.kg_per_meter != kg_per_meter
+                or other.rod_length_m != rod_length_m
+                or other.unit_price_per_m != unit_price_per_m
+            ):
+                raise ValueError(
+                    f"rebar pooling: rows sharing floor={floor}, component={component}, "
+                    f"steel_class={steel_class}, diameter_mm={diameter_mm} disagree on "
+                    "kg_per_meter/rod_length_m/unit_price_per_m - can't pool safely."
+                )
+        base_length = sum(d(item.spec_length_m) for item in group_items)
+        length_with_waste = base_length * d(waste_coeff)
+        raw_rods = length_with_waste / d(rod_length_m)
+        rods = int(ceil(raw_rods))
+        order_length = d(rods) * d(rod_length_m)
+        delivery_weight = order_length * d(kg_per_meter)
+        if len(group_items) == 1 and group_items[0].code:
+            line_code = group_items[0].code
+            line_name = group_items[0].name or make_rebar_name(component, floor, steel_class, diameter_mm)
+        else:
+            line_code = make_rebar_line_code(component, floor, steel_class, diameter_mm)
+            line_name = make_rebar_name(component, floor, steel_class, diameter_mm)
+        price_code = make_rebar_price_code(steel_class, diameter_mm)
+        controls[line_code] = {
+            "floor": floor,
+            "component": component,
+            "steel_class": steel_class,
+            "diameter_mm": diameter_mm,
+            "pooled_item_codes": [item.code or item.name for item in group_items],
+            "spec_length_m": q(base_length),
+            "length_with_waste_m": q(length_with_waste),
+            "raw_rods": q(raw_rods),
+            "rods": rods,
+            "order_length_m": q(order_length),
+            "kg_per_meter": kg_per_meter,
+            "delivery_weight_kg": q(delivery_weight),
+            "unit_price_per_m": unit_price_per_m,
+            "price_code": price_code,
+            "line_code": line_code,
+            "line_name": line_name,
+        }
+        rebar_lines.append(
+            line(
+                code=line_code,
+                name=line_name,
+                unit="мп",
+                quantity=q(order_length),
+                material_unit_price=unit_price_per_m,
+                price_code=price_code,
+            )
+        )
+    return controls, rebar_lines
 
 
 def rebar_from_base_length(base_length: float, rod_length: float, waste_coeff: float, unit_price: float) -> dict[str, Any]:
@@ -1030,21 +1080,7 @@ def calculate_main_wall_reinforcement(data: LoadBearingWallsLintelsInput) -> tup
         ]
         return block, lines
 
-    controls: dict[str, Any] = {}
-    rebar_lines: list[EstimateLineResult] = []
-    for item in data.main_wall_rebar_items or []:
-        control, rebar_line = rebar_from_spec_length(item, data.rebar_waste_coeff)
-        line_code = control["line_code"]
-        if line_code in controls:
-            raise ValueError(
-                f"main_wall_rebar_items: duplicate line_code '{line_code}' "
-                f"(floor={item.floor}, component={item.component}, steel_class={item.steel_class}, "
-                f"diameter_mm={item.diameter_mm}) — two rows resolve to the same auto-generated code and "
-                "would silently overwrite each other's control totals. Set an explicit unique `code` on "
-                "at least one of the colliding rows (e.g. a '_subwindow' suffix)."
-            )
-        controls[line_code] = control
-        rebar_lines.append(rebar_line)
+    controls, rebar_lines = rebar_from_spec_length_items_pooled(data.main_wall_rebar_items or [], data.rebar_waste_coeff)
     base_length = sum(d(control["spec_length_m"]) for control in controls.values())
     order_length = sum(d(control["order_length_m"]) for control in controls.values())
     delivery_weight = sum(d(control["delivery_weight_kg"]) for control in controls.values())
@@ -1060,9 +1096,9 @@ def calculate_main_wall_reinforcement(data: LoadBearingWallsLintelsInput) -> tup
 
 
 def calculate_lintel_rebar(data: LoadBearingWallsLintelsInput) -> tuple[dict[str, Any], list[EstimateLineResult]]:
-    controls: dict[str, Any] = {}
-    rebar_lines: list[EstimateLineResult] = []
     if data.lintel_rebar_calc_method == "legacy_weight_items":
+        controls: dict[str, Any] = {}
+        rebar_lines: list[EstimateLineResult] = []
         for item in data.lintel_rebar_items:
             if not isinstance(item, RebarItem):
                 raise ValueError("legacy lintel rebar requires RebarItem")
@@ -1083,18 +1119,7 @@ def calculate_lintel_rebar(data: LoadBearingWallsLintelsInput) -> tuple[dict[str
     for item in data.lintel_rebar_items:
         if not isinstance(item, SpecRebarItem):
             raise ValueError("spec lintel rebar requires SpecRebarItem")
-        control, rebar_line = rebar_from_spec_length(item, data.rebar_waste_coeff)
-        line_code = control["line_code"]
-        if line_code in controls:
-            raise ValueError(
-                f"lintel_rebar_items: duplicate line_code '{line_code}' "
-                f"(floor={item.floor}, component={item.component}, steel_class={item.steel_class}, "
-                f"diameter_mm={item.diameter_mm}) — two rows resolve to the same auto-generated code and "
-                "would silently overwrite each other's control totals. Set an explicit unique `code` on "
-                "at least one of the colliding rows."
-            )
-        controls[line_code] = control
-        rebar_lines.append(rebar_line)
+    controls, rebar_lines = rebar_from_spec_length_items_pooled(data.lintel_rebar_items, data.rebar_waste_coeff)
     base_length = sum(d(control["spec_length_m"]) for control in controls.values())
     order_length = sum(d(control["order_length_m"]) for control in controls.values())
     delivery_weight = sum(d(control["delivery_weight_kg"]) for control in controls.values())
@@ -1465,7 +1490,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         *wall_block_other_density_lines(data.wall_block_items or [], "main_walls"),
         line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
         line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
-        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", reinf["main_wall_chasing_quantity_m"], work_unit_price=data.block_chasing_reinforcement_work_unit_price, notes="База для арматуры Ø10", price_code="block_chasing_reinforcement_work_m"),
+        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md: реальный (серый) столбец ТРЦ/АРК/ЮСВ показывает 0 на всех 10 проверенных строках). База для арматуры Ø10."),
         *main_wall_rebar_lines,
         line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов", price_code="block_delivery_truck"),
         line("gas_blocks_unloading_manipulator", "Разгрузка блоков, смеси манипулятором", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_unloading_manipulator_unit_price, price_code="block_unloading_manipulator_truck"),
@@ -1549,7 +1574,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
             lines.extend(wall_block_other_density_lines(data.wall_block_items or [], "parapet"))
             if d(data.parapet_chasing_base_length_m) > 0:
                 lines.append(
-                    line("parapet_chasing_for_d10_reinforcement", "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", data.parapet_chasing_base_length_m, work_unit_price=data.block_chasing_reinforcement_work_unit_price, notes="Базовая длина берется из проектной спецификации парапета.", price_code="block_chasing_reinforcement_work_m")
+                    line("parapet_chasing_for_d10_reinforcement", "Штробление блоков парапета под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", data.parapet_chasing_base_length_m, notes="Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md). Базовая длина берется из проектной спецификации парапета.")
                 )
             if d(data.parapet_rebar_base_length_m) > 0:
                 lines.append(
@@ -1575,8 +1600,22 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         lines.extend([
         line("parapet_upper_level_adhesive", "Монтажный клей для парапета и верхнего уровня", "мешок", overheads["parapet_upper_level_adhesive_bags"], material_unit_price=data.adhesive_unit_price, is_case_specific=second_case_specific, notes="Две группы округления: second_light отдельно; parapet + vent/chimney вместе", price_code="block_adhesive_bag"),
         line("parapet_blocks_crane_moving", "Перемещение блоков, смеси автокраном для парапета", "смена", data.parapet_crane_shifts, material_unit_price=data.crane_25t_unit_price, price_code="crane_shift"),
-        line("parapet_and_second_light_chasing_for_d10_reinforcement", "Штробление парапета и второго света", "мп", d(data.parapet_chasing_base_length_m) + d(data.second_light_chasing_base_length_m), work_unit_price=data.block_chasing_reinforcement_work_unit_price, is_case_specific=second_case_specific, notes="База для арматуры Ø10", price_code="block_chasing_reinforcement_work_m"),
+        line("parapet_and_second_light_chasing_for_d10_reinforcement", "Штробление парапета и второго света", "мп", d(data.parapet_chasing_base_length_m) + d(data.second_light_chasing_base_length_m), is_case_specific=second_case_specific, notes="Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md). База для арматуры Ø10."),
         line("parapet_and_second_light_rebar_a500_d10", "Арматура A500 Ø10 для парапета и второго света", "мп", overheads["parapet_and_second_light_rebar_order_length_m"], material_unit_price=data.rebar_a500_d10_unit_price_per_m, material_total_raw_override=overheads["parapet_rebar"]["material_total_raw"] + overheads["second_light_rebar"]["material_total_raw"], is_case_specific=second_case_specific, notes="Две группы округления и закупки прутков", price_code="rebar_a500_d10_m"),
+        ])
+    elif data.upper_floor_calc_method == "floor_2_spec_volume" and (
+        parapet["parapet_enabled_calculated"] or vent["vent_chimney_cladding_enabled_calculated"]
+    ):
+        # Добавлено 2026-08-09 (см. отчёт 04_load_bearing_walls_lintels.md, находка 3): эти две
+        # строки раньше существовали только в legacy_second_light_addon-ветке выше - при переходе
+        # на production-ветку парапета (parapet_masonry_work и т.д.) их забыли перенести, из-за
+        # чего реальный клей (~8500₽) и 3-я смена крана (~30000₽) для парапета+дымохода нигде не
+        # считались. Количество мешков клея уже считается одинаково для обеих веток
+        # (parapet_vent_adhesive_bags = (парапет + дымоход) объём × расход клея), просто не было
+        # строки, которая бы его показывала здесь.
+        lines.extend([
+        line("parapet_vent_adhesive", "Монтажный клей для парапета и дымохода", "мешок", overheads["parapet_vent_adhesive_bags"], material_unit_price=data.adhesive_unit_price, notes="Объём парапета + дымохода/вентканалов вместе.", price_code="block_adhesive_bag"),
+        line("parapet_blocks_crane_moving", "Перемещение блоков, смеси автокраном для парапета", "смена", parapet["parapet_crane_shifts"], material_unit_price=data.crane_25t_unit_price, price_code="crane_shift"),
         ])
 
     if data.walls_consumables_calc_method not in {"legacy_fixed_amount", "section_total_rate"}:
@@ -1607,7 +1646,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
             ),
         ),
         line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line", price_code="waste_removal_truck"),
-        line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_fixed"),
+        line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_walls_lintels"),
     ])
     return lines
 

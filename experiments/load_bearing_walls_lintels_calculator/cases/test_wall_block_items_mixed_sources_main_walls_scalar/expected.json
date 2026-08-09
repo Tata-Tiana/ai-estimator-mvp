@@ -63,14 +63,14 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total_raw": 1485193.13,
-    "internal_materials_total": 1485193,
+    "internal_materials_total_raw": 1525393.13,
+    "internal_materials_total": 1525393,
     "internal_works_total_raw": 1087096.43,
     "internal_works_total": 1087096,
-    "internal_section_total_raw": 2572289.56,
-    "internal_section_total": 2572290,
-    "sum_of_displayed_line_material_totals": 1485193,
+    "internal_section_total_raw": 2612489.56,
+    "internal_section_total": 2612490,
+    "sum_of_displayed_line_material_totals": 1525393,
     "sum_of_displayed_line_work_totals": 1087097,
-    "sum_of_displayed_line_totals": 2572290
+    "sum_of_displayed_line_totals": 2612490
   }
 }

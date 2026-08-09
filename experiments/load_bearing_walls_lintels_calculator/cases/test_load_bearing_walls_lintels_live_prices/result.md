@@ -513,7 +513,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Газобетонный блок D500 600x250x250 мм | `gas_block_d500_m3` | `5500` | `5500` | `price_registry` |  |
 | Монтажный клей для блоков 25 кг | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
 | Пескобетон М300 40 кг | `sand_concrete_bag` | `375` | `375` | `price_registry` |  |
-| Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм | `block_chasing_reinforcement_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура A500 Ø10 для несущих стен | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Доставка блоков, смеси | `block_delivery_truck` | `28000` | `28000` | `price_registry` |  |
 | Разгрузка блоков, смеси манипулятором | `block_unloading_manipulator_truck` | `15000` | `15000` | `price_registry` |  |
@@ -532,7 +532,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Газобетонный блок D500 600x150x250 мм | `gas_block_d500_150_m3` | `5600` | `5600` | `price_registry` |  |
 | Монтажный клей для парапета и верхнего уровня | `block_adhesive_bag` | `340` | `360` | `price_registry` |  |
 | Перемещение блоков, смеси автокраном для парапета | `crane_shift` | `30000` | `30000` | `price_registry` |  |
-| Штробление парапета и второго света | `block_chasing_reinforcement_work_m` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
+| Штробление парапета и второго света | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура A500 Ø10 для парапета и второго света | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `100522` | `100522` | `locked_case_prices` |  |
 | Вывоз мусора с объекта | `waste_removal_truck` | `10000` | `10000` | `price_registry` |  |
@@ -545,12 +545,11 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
 | `prices_from_price_registry` | `28` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `2` |
-| `warnings_count` | `2` |
+| `prices_from_fallback_input` | `0` |
+| `warnings_count` | `0` |
 
 ## Warnings
-- block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing
-- block_chasing_reinforcement_work_m: price_code not found in price_registry and fallback input price is missing
+Предупреждений нет.
 
 ## Comparison
 Expected values are not provided for this case.

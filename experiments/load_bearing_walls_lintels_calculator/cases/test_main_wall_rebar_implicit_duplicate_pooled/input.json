@@ -1,5 +1,5 @@
 {
-  "project_name": "test_main_wall_rebar_duplicate_line_code_rejected",
+  "project_name": "test_main_wall_rebar_implicit_duplicate_pooled",
   "scaffolding_calc_method": "legacy_direct_quantity",
   "scaffolding_setup_quantity": 1,
   "scaffolding_setup_work_unit_price": 20000,
