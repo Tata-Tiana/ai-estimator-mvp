@@ -354,7 +354,10 @@ def calculate_formwork_delivery_context(
     if delivery_rate < D0:
         raise ValueError("rates.formwork_delivery_rate_per_trip must be >= 0")
 
-    threshold = d(180)
+    # formwork_delivery_threshold_m2 (rates, optional, default 180) - added 2026-08-09 P1.2 so a
+    # wrapper can configure it instead of relying on a hardcoded constant; no existing case overrides
+    # it, so this is byte-identical everywhere it's not set.
+    threshold = d(rates.get("formwork_delivery_threshold_m2", 180))
     if method == "manual_override":
         if "formwork_delivery_trucks_override" not in manual_lines:
             raise ValueError(
@@ -468,7 +471,14 @@ def calculate_concrete_order_context(
         source = "per_zone_with_additional_items"
     else:
         concrete_volume_with_waste = total_concrete_volume * waste_coeff
-        order_concrete_volume = ceil_decimal(concrete_volume_with_waste)
+        round_step = rates.get("concrete_round_step_m3")
+        # concrete_round_step_m3 (rates, optional) - added 2026-08-09 P1.2 so a wrapper can round
+        # the order up to a fixed step (floor_slab_2's historical ceil-to-step behavior) instead of
+        # always ceiling to a whole m3. Absent (floor_slab_1's own fixtures) -> unchanged behavior.
+        if round_step:
+            order_concrete_volume = ceil_decimal(concrete_volume_with_waste / d(round_step)) * d(round_step)
+        else:
+            order_concrete_volume = ceil_decimal(concrete_volume_with_waste)
         concrete_delivery_trips = ceil_decimal(concrete_volume_with_waste / mixer_capacity)
         source = "combined_total"
     return {
@@ -485,14 +495,26 @@ def calculate_insulation_context(
     slab_thickness: Decimal,
 ) -> tuple[dict[str, Any], list[str]]:
     method = insulation.get("insulation_calc_method")
-    if method not in {"legacy_fixed_edge_length", "spec_work_quantities"}:
-        raise ValueError("insulation.insulation_calc_method must be legacy_fixed_edge_length or spec_work_quantities")
+    if method not in {"legacy_fixed_edge_length", "spec_work_quantities", "perimeter_based"}:
+        raise ValueError(
+            "insulation.insulation_calc_method must be legacy_fixed_edge_length, spec_work_quantities "
+            "or perimeter_based"
+        )
 
     eps_thickness = d(insulation.get("eps_thickness_m", "0.1"))
     eps_waste_coeff = d(insulation.get("eps_waste_coeff", "1.05"))
     eps_pack_volume = d(insulation["eps_pack_volume_m3"])
     foam_coverage = d(insulation["foam_coverage_m2_per_can"])
-    total_eps_volume_from_spec = d(insulation["total_eps_volume_from_spec_m3"])
+    # perimeter_based (floor_slab_2's historical mode) has no independent spec total to cross-check
+    # against - it derives total_eps_volume_from_spec_m3 FROM the perimeter formula itself below,
+    # so there's never a delta to compute (matches floor_slab_2's calculator.py exactly, which never
+    # reads a separate total field at all in this mode).
+    if method == "perimeter_based":
+        total_eps_volume_from_spec = None
+    else:
+        total_eps_volume_from_spec = d(insulation["total_eps_volume_from_spec_m3"])
+        if total_eps_volume_from_spec < D0:
+            raise ValueError("insulation.total_eps_volume_from_spec_m3 must be >= 0")
     if eps_thickness <= D0:
         raise ValueError("insulation.eps_thickness_m must be > 0")
     if eps_waste_coeff < D0:
@@ -501,8 +523,6 @@ def calculate_insulation_context(
         raise ValueError("insulation.eps_pack_volume_m3 must be > 0")
     if foam_coverage <= D0:
         raise ValueError("insulation.foam_coverage_m2_per_can must be > 0")
-    if total_eps_volume_from_spec < D0:
-        raise ValueError("insulation.total_eps_volume_from_spec_m3 must be >= 0")
 
     beam_items = (beams or {}).get("items") or []
     calculated_beams_eps_work_length = D0
@@ -571,7 +591,7 @@ def calculate_insulation_context(
         bottom_slab_eps_work_area = bottom_slab_eps_volume / eps_thickness
         calculated_clean_eps_volume = total_eps_volume_from_spec
         eps_volume_delta = D0
-    else:
+    elif method == "spec_work_quantities":
         required_fields = [
             "slab_outer_edge_eps_work_length_m",
             "slab_edge_eps_material_area_m2",
@@ -599,6 +619,29 @@ def calculate_insulation_context(
         eps_volume_delta = calculated_clean_eps_volume - total_eps_volume_from_spec
         if abs(eps_volume_delta) > d("0.01"):
             warnings.append("EPS clean volume from areas differs from total_eps_volume_from_spec_m3")
+    else:
+        # perimeter_based (floor_slab_2's historical mode, ported 2026-08-09 P1.2): edge length
+        # comes straight from the slab's own edge perimeter, not a spec work-quantity row, and
+        # there's no independent spec total to cross-check against - the "spec total" IS the
+        # calculated volume, so eps_volume_delta is always 0 (matches calculator.py exactly: it
+        # never reads a separate total_eps_volume field in this mode either).
+        if "slab_edge_perimeter_m" not in insulation:
+            raise ValueError("insulation.slab_edge_perimeter_m is required for perimeter_based")
+        slab_edge_perimeter = d(insulation["slab_edge_perimeter_m"])
+        if slab_edge_perimeter < D0:
+            raise ValueError("insulation.slab_edge_perimeter_m must be >= 0")
+        bottom_slab_eps_work_area = d(insulation.get("bottom_slab_eps_work_area_m2") or 0)
+        if bottom_slab_eps_work_area < D0:
+            raise ValueError("insulation.bottom_slab_eps_work_area_m2 must be >= 0")
+
+        slab_outer_edge_eps_work_length = slab_edge_perimeter
+        slab_edge_eps_material_area = slab_edge_perimeter * edge_insulation_height
+        edge_and_beam_eps_material_area = slab_edge_eps_material_area + beams_eps_material_area
+        edge_and_beam_eps_volume = edge_and_beam_eps_material_area * eps_thickness
+        bottom_slab_eps_volume = bottom_slab_eps_work_area * eps_thickness
+        calculated_clean_eps_volume = edge_and_beam_eps_volume + bottom_slab_eps_volume
+        total_eps_volume_from_spec = calculated_clean_eps_volume
+        eps_volume_delta = D0
 
     edge_beam_eps_work_length = slab_outer_edge_eps_work_length + beams_eps_work_length
     foam_base_area = edge_and_beam_eps_material_area + bottom_slab_eps_work_area
@@ -607,7 +650,8 @@ def calculate_insulation_context(
     eps_packs_ordered = ceil_decimal(eps_packs_raw)
     order_eps_volume = d(eps_packs_ordered) * eps_pack_volume
     foam_cans_raw = foam_base_area / foam_coverage
-    foam_cans_ordered = ceil_decimal(foam_cans_raw)
+    foam_min_cans = int(insulation.get("foam_min_cans") or 0)
+    foam_cans_ordered = max(foam_min_cans, ceil_decimal(foam_cans_raw))
 
     context = {
         "insulation_calc_method": method,
@@ -861,7 +905,26 @@ def estimate_line(
     return payload
 
 
-def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
+def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
+    """Generic "one physical slab pour" calculator - FLOOR_SLAB_UNIFICATION_PLAN.md P1.2. This
+    function IS floor_slab_1's own logic (the more mature of the two original calculators, per
+    FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md P1.1) plus new optional calc_method-style knobs
+    that let it also reproduce floor_slab_2's historical behavior when a wrapper asks for it:
+    `beam_concreting_calc_method` (rates, default "height_split", alt "single_rate" - all beams
+    priced by total length, no height-based volume line), `concrete_round_step_m3` (rates, optional
+    - when absent, ceils to a whole m3 exactly as before; when set, ceils to that step instead, e.g.
+    0.5), `formwork_delivery_threshold_m2` (rates, optional, default 180), `insulation.
+    insulation_calc_method` gaining a third value "perimeter_based" (edge length/area derived from
+    slab_edge_perimeter_m, no independent spec-total cross-check - see calculate_insulation_context)
+    and `insulation.foam_min_cans` (optional, default 0, applies to all 3 insulation modes). Every
+    new knob defaults to floor_slab_1's exact prior behavior - calculate_floor_slab_1() below calls
+    this with zero overrides, so its 19 regression cases stay byte-identical. calculate_floor_slab_2()
+    (separate file) is a translation wrapper around this same function, not a copy of its logic.
+    NOT added here: formwork_dismantling priced-vs-zero-control - both calculators are zero_control
+    today (only ARK/USV's real smetas price it; no fixture exists to validate a "priced" branch
+    against), and the two calculators' zero-control lines differ only in code/line_type strings
+    (cosmetic), which the floor_slab_2 wrapper's output-shape translation handles directly - see
+    FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md."""
     case_meta = input_data["case_meta"]
     geometry_in = input_data["geometry"]
     beams_in = input_data.get("beams")
@@ -933,13 +996,25 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     # Beams <=250mm tall are priced by length (мп), beams >250mm tall are priced by concrete volume
     # (м3) - confirmed on real TRC and АРК smetas, and Elena's own current pricelist has both rates
     # (row 28 "до 250мм" мп + row 29 "более 250мм" м3, the second one just never got wired in).
+    #
+    # beam_concreting_calc_method (rates, optional, default "height_split") - added 2026-08-09 P1.2.
+    # "single_rate" reproduces floor_slab_2's historical behavior (all beams, any height, priced by
+    # total length at one rate, no volume-based line) by simply routing every beam's length into the
+    # "short" bucket and leaving the "tall" bucket empty - the downstream estimate_line code for both
+    # lines is untouched, so the two modes never diverge in how a line is built, only in which beams
+    # feed which bucket.
+    beam_concreting_calc_method = rates.get("beam_concreting_calc_method", "height_split")
     beam_tall_height_threshold_m = d("0.25")
-    beams_short_total_length = dec_sum(
-        [d(item["length_m"]) * d(item["count"]) for item in beam_items if d(item["height_m"]) <= beam_tall_height_threshold_m]
-    )
-    beams_tall_total_volume = dec_sum(
-        [item["concrete_volume_m3"] for item in beam_items if d(item["height_m"]) > beam_tall_height_threshold_m]
-    )
+    if beam_concreting_calc_method == "single_rate":
+        beams_short_total_length = beams_total_length
+        beams_tall_total_volume = D0
+    else:
+        beams_short_total_length = dec_sum(
+            [d(item["length_m"]) * d(item["count"]) for item in beam_items if d(item["height_m"]) <= beam_tall_height_threshold_m]
+        )
+        beams_tall_total_volume = dec_sum(
+            [item["concrete_volume_m3"] for item in beam_items if d(item["height_m"]) > beam_tall_height_threshold_m]
+        )
 
     beams_concrete_warnings: list[str] = []
     beams_concrete_volume_override = input_data.get("beams_concrete_volume_m3")
@@ -1155,7 +1230,15 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         rates, total_concrete_volume, slab_zones_in, additional_concrete_items_in
     )
     concrete_volume_with_waste = d(concrete_order_context["concrete_volume_with_waste"])
-    order_concrete_volume = int(concrete_order_context["order_concrete_volume"])
+    # int() would silently truncate a fractional order volume from concrete_round_step_m3 (e.g.
+    # step=0.5 -> 33.5); only fall back to int for the whole-m3 case so the default path (no step
+    # set) stays byte-identical to the old int()-cast behavior instead of becoming a float everywhere.
+    _raw_order_volume = d(concrete_order_context["order_concrete_volume"])
+    order_concrete_volume = (
+        int(_raw_order_volume)
+        if _raw_order_volume == _raw_order_volume.to_integral_value()
+        else _raw_order_volume
+    )
     concrete_delivery_trips = int(concrete_order_context["concrete_delivery_trips"])
 
     insulation_context, insulation_warnings = calculate_insulation_context(insulation_in, beams_in, slab_thickness)
@@ -1546,7 +1629,11 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "total_project_concrete_volume_m3": round_decimal(total_concrete_volume),
             "concrete_volume_with_waste_m3_raw": round_decimal(concrete_volume_with_waste),
             "concrete_volume_with_waste_m3_display": display_decimal(concrete_volume_with_waste),
-            "order_concrete_volume_m3": order_concrete_volume,
+            "order_concrete_volume_m3": (
+                order_concrete_volume
+                if isinstance(order_concrete_volume, int)
+                else round_decimal(order_concrete_volume)
+            ),
             "mixer_capacity_m3": rates["mixer_capacity_m3"],
             "concrete_delivery_trips": concrete_delivery_trips,
             "concrete_order_source": concrete_order_context["concrete_order_source"],
@@ -1599,3 +1686,10 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         },
         "warnings": formwork_area_warnings + insulation_warnings + beams_concrete_warnings,
     }
+
+
+def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
+    """Thin wrapper (FLOOR_SLAB_UNIFICATION_PLAN.md P1.2) - zero overrides, so every new calc_method
+    knob in calculate_floor_slab_pour() falls back to its floor_slab_1-compatible default and this
+    stays byte-identical to the old inline function for all 19 regression cases."""
+    return calculate_floor_slab_pour(input_data)

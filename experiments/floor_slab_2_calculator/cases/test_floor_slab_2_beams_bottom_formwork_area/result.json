@@ -156,42 +156,42 @@
           "name": "Арматура класса А500 диаметром 16 мм",
           "steel_class": "A500",
           "diameter_mm": 16,
+          "source_weight_kg": 100.0,
           "kg_per_meter": 1.58,
-          "raw_length_m": 63.291139,
           "waste_coeff": 1.05,
           "length_with_waste_m": 66.455696,
           "rod_length_m": 11.7,
-          "raw_rods": 5.679974,
           "rods": 6,
           "order_length_m": 70.2,
-          "order_weight_kg": 110.916,
           "unit_price_per_m": 80.58,
-          "price_code": "rebar_a500_d16_m",
           "material_total_raw": 5656.716,
           "material_total": 5657,
-          "source_weight_kg": 100.0,
-          "weight_with_waste_kg": 105.0
+          "raw_length_m": 63.291139,
+          "raw_rods": 5.679974,
+          "order_weight_kg": 110.916,
+          "weight_with_waste_kg": 105.0,
+          "price_code": "rebar_a500_d16_m"
         },
         {
           "code": "rebar_a500_d10",
           "name": "Арматура класса А500 диаметром 10 мм",
           "steel_class": "A500",
           "diameter_mm": 10,
+          "source_weight_kg": 700.0,
           "kg_per_meter": 0.617,
-          "raw_length_m": 1134.52188,
           "waste_coeff": 1.05,
           "length_with_waste_m": 1191.247974,
           "rod_length_m": 11.7,
-          "raw_rods": 101.816066,
           "rods": 102,
           "order_length_m": 1193.4,
-          "order_weight_kg": 736.3278,
           "unit_price_per_m": 32.72,
-          "price_code": "rebar_a500_d10_m",
           "material_total_raw": 39048.048,
           "material_total": 39048,
-          "source_weight_kg": 700.0,
-          "weight_with_waste_kg": 735.0
+          "raw_length_m": 1134.52188,
+          "raw_rods": 101.816066,
+          "order_weight_kg": 736.3278,
+          "weight_with_waste_kg": 735.0,
+          "price_code": "rebar_a500_d10_m"
         }
       ],
       "total_rebar_order_length_m": 1263.6,
@@ -759,7 +759,6 @@
     "sum_of_displayed_line_totals": 720095
   },
   "warnings": [
-    "concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.",
     "edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error."
   ],
   "expected": {

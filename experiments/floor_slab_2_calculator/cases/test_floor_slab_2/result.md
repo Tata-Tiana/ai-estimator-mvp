@@ -449,7 +449,6 @@ Legacy-режим `legacy_dimensions`: площадь плиты, перимет
 
 ## Warnings
 
-- concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
 
 ## Comparison

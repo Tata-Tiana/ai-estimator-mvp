@@ -121,7 +121,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - items: 3 items
 - total_rebar_order_length_m: `2819.7`
 - total_rebar_order_weight_kg: `1850.6709`
-- total_rebar_weight_with_waste_kg: `1850.67`
+- total_rebar_weight_with_waste_kg: `1825.39`
 
 ### concrete
 
@@ -133,7 +133,7 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 - concrete_order_volume_m3: `17.5`
 - delivery_trips_raw: `1.944444`
 - delivery_trips: `2`
-- reinforcement_density_kg_per_m3: `106.82`
+- reinforcement_density_kg_per_m3: `105.36`
 
 ### insulation
 
@@ -451,7 +451,6 @@ Production-режим `spec_formwork_area`: площади опалубки бе
 
 ## Warnings
 
-- concrete_placing_volume_m3 is a manual/project quantity for this case; it is not derived from slab_area_m2 * slab thickness. If beams exist, this total is expected to already include beam concrete, same as floor_slab_1_calculator.
 - edge_insulation_height_m = 0.18 m is confirmed by specification; 200 mm in the section title is considered a naming error.
 
 ## Comparison
