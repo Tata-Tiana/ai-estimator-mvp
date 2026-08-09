@@ -1,7 +1,7 @@
 {
   "project_name": "test_floor_slab_2_live_prices",
   "section": "floor_slab_2",
-  "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа на отм. +4.680 (200мм)",
+  "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа",
   "inputs": {
     "project_name": "test_floor_slab_2_live_prices",
     "formwork_area_calc_method": "legacy_dimensions",

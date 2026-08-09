@@ -5,14 +5,17 @@ from decimal import Decimal, ROUND_CEILING, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any
 
-# calculate_floor_slab_2() below is a translation wrapper (FLOOR_SLAB_UNIFICATION_PLAN.md P1.2)
-# around calculate_floor_slab_pour() - the real money math (rebar rounding/pooling, insulation,
-# beam concreting, concrete order rounding, formwork rate/delivery/metal-delivery modes) lives
-# there now, not duplicated here.
-_FLOOR_SLAB_1_DIR = Path(__file__).resolve().parents[1] / "floor_slab_1_calculator"
-if str(_FLOOR_SLAB_1_DIR) not in sys.path:
-    sys.path.insert(0, str(_FLOOR_SLAB_1_DIR))
-from floor_slab_1_calculator import calculate_floor_slab_pour  # noqa: E402
+# calculate_floor_slab_2() below is a translation wrapper (FLOOR_SLAB_UNIFICATION_PLAN.md P1.2/
+# P1.3) around calculate_floor_slab_pour() - the real money math (rebar rounding/pooling,
+# insulation, beam concreting, concrete order rounding, formwork rate/delivery/metal-delivery
+# modes) lives there now, not duplicated here. The shared engine lives in floor_slab_calculator.py
+# (moved out of floor_slab_1_calculator.py in P1.3) precisely so this import doesn't read as
+# "floor_slab_2 depends on floor_slab_1" - it depends on the shared engine, same as floor_slab_1
+# itself does.
+_FLOOR_SLAB_ENGINE_DIR = Path(__file__).resolve().parents[1] / "floor_slab_1_calculator"
+if str(_FLOOR_SLAB_ENGINE_DIR) not in sys.path:
+    sys.path.insert(0, str(_FLOOR_SLAB_ENGINE_DIR))
+from floor_slab_calculator import calculate_floor_slab_pour  # noqa: E402
 
 D0 = Decimal("0")
 D1 = Decimal("1")
@@ -1115,10 +1118,22 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         },
     }
 
+    # section_title: was hardcoded to one TRC project's own elevation/thickness ("+4.680 (200мм)")
+    # regardless of which project actually ran - same bug class as floor_slab_1's earlier literal-
+    # 51.9 bug (see FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md finding 9). Not compared by run_case.py
+    # and not read by the real production workbook (export_calculator_results_to_estimate_workbook.py's
+    # own SECTION_ORDER has its own generic title) - only used by this file's own diagnostic
+    # markdown report - but still a real "test data leaked into general code" bug. Fixed 2026-08-09
+    # (P1.3) by accepting an optional project-supplied override with a generic, non-project-specific
+    # fallback instead of a fake elevation/thickness.
+    section_title = input_data.get(
+        "section_title", "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа"
+    )
+
     return {
         "project_name": input_data["project_name"],
         "section": "floor_slab_2",
-        "section_title": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-го этажа на отм. +4.680 (200мм)",
+        "section_title": section_title,
         "inputs": input_data,
         "calculation_blocks": calculation_blocks,
         "estimate_lines": lines,
