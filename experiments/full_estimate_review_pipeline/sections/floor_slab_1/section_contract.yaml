@@ -489,6 +489,7 @@ review_parameters:
     columns:
       - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
       - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
+      - {key: zone_context, label_ru: "Зона (slab_zones.context)", unit: "", value_kind: string}
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
       - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
@@ -499,7 +500,7 @@ review_parameters:
       target_codes: ["floor_slab_1_rebar_items"]
       aliases_ru: ["арматура плиты перекрытия 1 этажа", "спецификация арматуры плиты 1 этажа"]
       expected_unit: "мп"
-      notes: "Primary PDF unit is m.п.; do not require PDF total kg. rod_length_m is a real PDF/spec/catalog value the calculator requires per row (found 2026-07-10 — was missing from this column list even though the calculator has always read it directly, no fallback)."
+      notes: "Primary PDF unit is m.п.; do not require PDF total kg. rod_length_m is a real PDF/spec/catalog value the calculator requires per row (found 2026-07-10 — was missing from this column list even though the calculator has always read it directly, no fallback). zone_context (added 2026-08-09): required when the project has more than one slab_zones[] entry, optional when there's only one — the calculator pools rod-purchase rounding by (floor, component, zone_context, steel_class, diameter_mm), and rounding main-zone and kitchen-zone rebar together instead of separately gives a different (wrong) number on real TRC data. Fill with the exact slab_zones[].context string the row's spec table belongs to; do not infer it from a code prefix or the item's name text."
     review_behavior:
       show_to_user: true
       allow_manual_override: true

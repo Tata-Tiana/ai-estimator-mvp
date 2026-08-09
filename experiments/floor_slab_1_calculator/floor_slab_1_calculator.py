@@ -133,6 +133,124 @@ def calculate_rebar_item(item: dict[str, Any], rebar_calc_method: str) -> dict[s
     }
 
 
+def calculate_rebar_items_pooled(
+    items_in: list[dict[str, Any]],
+    valid_zone_contexts: set[str],
+) -> list[dict[str, Any]]:
+    """spec_length_items only (legacy_weight_parts keeps calculate_rebar_item()'s independent
+    per-row rounding unchanged - no real-project evidence covers that path). Pools same (floor,
+    component, zone_context, steel_class, diameter_mm) rows into ONE combined rod-purchase
+    rounding, instead of rounding each spec row to its own rod-multiple independently. Same bug
+    and same fix as load_bearing_walls_lintels_calculator.py's rebar_from_spec_length_items_pooled
+    (2026-08-09) - confirmed exact on real TRC: main zone's 12 separately-named Ø10 rows sum to
+    4286.375m base length, *1.05=4500.69m, /11.7=384.67->385 rods=4504.5m, matching her real number
+    exactly (independent per-row rounding gave 4551.3m instead); kitchen zone's 3 Ø10 rows sum to
+    811.15m, *1.05=851.71m, /11.7=72.79->73 rods=854.1m, also exact. zone_context (optional per
+    item, matching a slab_zones[].context) keeps the two zones' rebar pooled SEPARATELY - pooling
+    main+kitchen together instead gives 458 rods=5359.8m, NOT her real 4504.5+854.1=5358.6m (she
+    rounds per zone independently, same "apply per zone, then sum" mechanism already proven on
+    formwork-delivery trucks and concrete material/trips). The real TRC extraction does not
+    currently populate zone_context on rebar rows (a genuine gap, not wired here) - when absent on
+    every item, all same-diameter rows across the whole section pool into one group (graceful
+    degradation, not a crash), which is closer to her real number than independent rounding but not
+    exact for multi-zone projects until zone_context is added at extraction time. See
+    floor_slab_1_comparison_findings_2026-08-09 memory."""
+    groups: dict[tuple[int, str, str | None, str, int], list[dict[str, Any]]] = {}
+    order: list[tuple[int, str, str | None, str, int]] = []
+    for item in items_in:
+        for required_key in ("steel_class", "diameter_mm", "kg_per_meter", "waste_coeff", "rod_length_m", "unit_price_per_m"):
+            if item.get(required_key) is None:
+                raise ValueError(
+                    f"rebar_items[].{required_key} is required (row: {item.get('code') or item.get('name') or item})"
+                )
+        if item.get("component") != "floor_slab_1":
+            raise ValueError("rebar_items[].component must be floor_slab_1 for floor_slab_1_calculator")
+        if int(item.get("floor", 0)) != 1:
+            raise ValueError("rebar_items[].floor must be 1 for floor_slab_1_calculator")
+        if "spec_length_m" not in item:
+            raise ValueError("rebar_items[].spec_length_m is required for spec_length_items")
+        if d(item["spec_length_m"]) < D0:
+            raise ValueError("rebar_items[].spec_length_m must be >= 0")
+        zone_context = item.get("zone_context")
+        if zone_context is not None and zone_context not in valid_zone_contexts:
+            raise ValueError(
+                f"rebar_items[{item.get('code')!r}].zone_context {zone_context!r} does not match "
+                "any slab_zones[].context"
+            )
+        key = (1, "floor_slab_1", zone_context, item["steel_class"], int(item["diameter_mm"]))
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(item)
+
+    zone_index_by_context = {context: i + 1 for i, context in enumerate(sorted(valid_zone_contexts))}
+    results: list[dict[str, Any]] = []
+    for key in order:
+        group_items = groups[key]
+        floor, component, zone_context, steel_class, diameter_mm = key
+        kg_per_meter = d(group_items[0]["kg_per_meter"])
+        rod_length = d(group_items[0]["rod_length_m"])
+        unit_price = d(group_items[0]["unit_price_per_m"])
+        waste_coeff = d(group_items[0]["waste_coeff"])
+        for other in group_items[1:]:
+            if (
+                d(other["kg_per_meter"]) != kg_per_meter
+                or d(other["rod_length_m"]) != rod_length
+                or d(other["unit_price_per_m"]) != unit_price
+                or d(other["waste_coeff"]) != waste_coeff
+            ):
+                raise ValueError(
+                    f"rebar pooling: rows sharing floor={floor}, component={component}, "
+                    f"zone_context={zone_context!r}, steel_class={steel_class}, "
+                    f"diameter_mm={diameter_mm} disagree on kg_per_meter/rod_length_m/"
+                    "unit_price_per_m/waste_coeff - can't pool safely."
+                )
+
+        base_length = dec_sum([d(item["spec_length_m"]) for item in group_items])
+        length_with_waste = base_length * waste_coeff
+        rods_ordered = ceil_decimal(length_with_waste / rod_length)
+        order_length = d(rods_ordered) * rod_length
+        delivery_weight = order_length * kg_per_meter
+        material_total_raw = order_length * unit_price
+        weight_with_waste = length_with_waste * kg_per_meter
+
+        if len(group_items) == 1 and group_items[0].get("code"):
+            code = group_items[0]["code"]
+            name = group_items[0].get("name") or make_rebar_name(steel_class, diameter_mm)
+        else:
+            zone_suffix = f"_z{zone_index_by_context[zone_context]}" if zone_context is not None else ""
+            code = f"{make_rebar_code(steel_class, diameter_mm)}{zone_suffix}"
+            zone_label = f" ({zone_context})" if zone_context is not None else ""
+            name = f"{make_rebar_name(steel_class, diameter_mm)}{zone_label}"
+
+        results.append(
+            {
+                "code": code,
+                "name": name,
+                "steel_class": steel_class,
+                "diameter_mm": diameter_mm,
+                "floor": floor,
+                "component": component,
+                "zone_context": zone_context,
+                "spec_length_m": round_decimal(base_length),
+                "kg_per_meter": round_decimal(kg_per_meter),
+                "base_length_m": round_decimal(base_length),
+                "waste_coeff": round_decimal(waste_coeff),
+                "length_with_waste_m": round_decimal(length_with_waste),
+                "weight_with_waste_kg_display": display_decimal(weight_with_waste),
+                "rod_length_m": round_decimal(rod_length),
+                "rods": rods_ordered,
+                "rods_ordered": rods_ordered,
+                "order_length_m": round_decimal(order_length),
+                "delivery_weight_kg": round_decimal(delivery_weight),
+                "unit_price_per_m": round_decimal(unit_price),
+                "material_total_raw": round_decimal(material_total_raw),
+                "material_total": round_money_half_up(material_total_raw),
+            }
+        )
+    return results
+
+
 def calculate_formwork_rate_context(
     rates: dict[str, Any],
     slab_formwork_area: Decimal,
@@ -993,7 +1111,14 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     base_timber_volume = edge_beam_formwork_area_for_materials * timber_thickness
     timber_volume = quantized_decimal(base_timber_volume + additional_timber_volume, "0.000000001")
 
-    rebar_items = [calculate_rebar_item(item, rebar_calc_method) for item in rebar_items_in]
+    if rebar_calc_method == "spec_length_items":
+        # Pooled rounding (2026-08-09) - see calculate_rebar_items_pooled() docstring. Only
+        # spec_length_items has real-project evidence for this; legacy_weight_parts keeps the
+        # original independent per-row rounding via calculate_rebar_item() below.
+        valid_zone_contexts = {zone["context"] for zone in slab_zones_in}
+        rebar_items = calculate_rebar_items_pooled(rebar_items_in, valid_zone_contexts)
+    else:
+        rebar_items = [calculate_rebar_item(item, rebar_calc_method) for item in rebar_items_in]
     rebar_order_length_total = dec_sum([item["order_length_m"] for item in rebar_items])
     floor_slab_1_rebar_weight_with_waste_raw = dec_sum(
         [d(item["length_with_waste_m"]) * d(item["kg_per_meter"]) for item in rebar_items]

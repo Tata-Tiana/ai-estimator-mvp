@@ -1,0 +1,18 @@
+{
+  "calculation_blocks": {
+    "rebar": {
+      "item_controls_by_code": {
+        "rebar_a500c_d10_z1": {
+          "base_length_m": 4286.375,
+          "order_length_m": 4504.5,
+          "rods": 385
+        },
+        "rebar_a500c_d10_z2": {
+          "base_length_m": 811.15,
+          "order_length_m": 854.1,
+          "rods": 73
+        }
+      }
+    }
+  }
+}
