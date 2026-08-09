@@ -135,13 +135,16 @@ xlsx на Рабочем столе, как это было сделано зд�
       начисто — становятся тонкими wrapper'ами, которые вызывают новую функцию с нужными
       calc_method-дефолтами. Так `job_runner`/`SECTION_ORDER` вообще не нужно трогать до P2 —
       старые section_code продолжают работать как раньше, само слияние проверяется изолированно.
-- [ ] Добавить 6 calc_method-флагов, найденных анализом (2 из сравнения смет + 4 из сравнения кода
-      P1.1): `formwork_dismantling_calc_method` (`zero_control`/`priced`), `beam_concreting_calc_method`
-      (`height_split`/`single_rate`), `formwork_area_source_calc_method` (`from_concrete_volume`/
-      `from_spec_direct`/`from_dimensions` — **нужно решение пользователя**, не просто параметр по
-      умолчанию, см. P1.1 пункт 3), `formwork_rate_calc_method` (уже есть в floor_slab_1),
-      `concrete_order_rounding` (`ceil_to_whole_m3`/`ceil_to_step`), `metal_delivery_calc_method`
-      (уже есть в floor_slab_1). Дефолт каждого — текущее поведение своего калькулятора
+- [x] **Дефолты решены 2026-08-09.** 6 calc_method-флагов, найденных анализом (2 из сравнения смет
+      + 4 из сравнения кода P1.1): `formwork_dismantling_calc_method` (`zero_control`/`priced`),
+      `beam_concreting_calc_method` (`height_split`/`single_rate`), `formwork_area_source_calc_method`
+      (`from_concrete_volume`/`from_spec_direct`/`from_dimensions` — **проверено на первоисточниках
+      (PDF) всех 3 проектов, `from_concrete_volume` подтверждён и как дефолт для floor_slab_2**, не
+      только для floor_slab_1, см. `FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md` пункт 3),
+      `formwork_rate_calc_method` (уже есть в floor_slab_1), `concrete_order_rounding`
+      (`ceil_to_whole_m3`/`ceil_to_step`), `metal_delivery_calc_method` (уже есть в floor_slab_1).
+      Осталось реализовать (не сделано ещё) — дефолт каждого при реализации: текущее поведение
+      своего калькулятора
       (byte-identical для всех существующих тест-кейсов floor_slab_1 И floor_slab_2).
 - [ ] Регрессия: все существующие кейсы floor_slab_1 (19 на 2026-08-09) и floor_slab_2 должны
       проходить без изменений через wrapper'ы — это главный критерий "не сломали".
