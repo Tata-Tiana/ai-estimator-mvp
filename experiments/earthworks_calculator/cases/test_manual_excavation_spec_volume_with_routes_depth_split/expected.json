@@ -1,0 +1,29 @@
+{
+  "volumes": {
+    "manual_excavation_calc_method": "standard_routes",
+    "manual_pit_volume_m3": 8.0,
+    "trench_width_m": 0.4,
+    "trench_volume_source": "spec_volume",
+    "trench_volume_total_m3": 50,
+    "trench_volume_m3": 50,
+    "trench_manual_portion_m3": 5.6,
+    "manual_excavation_total_m3": 13.6
+  },
+  "estimate_lines": {
+    "manual_excavation": {
+      "name": "Разработка грунта вручную",
+      "unit": "м3",
+      "quantity": 13.6,
+      "material_unit_price": 0,
+      "material_total": 0,
+      "work_unit_price": 1000,
+      "work_total": 13600,
+      "line_total": 13600
+    }
+  },
+  "internal_totals": {
+    "internal_materials_total": 0,
+    "internal_works_total": 13600,
+    "internal_section_total": 13600
+  }
+}

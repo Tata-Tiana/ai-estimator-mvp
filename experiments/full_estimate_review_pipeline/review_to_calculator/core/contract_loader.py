@@ -75,9 +75,11 @@ def required_review_parameters(contract: dict[str, Any]) -> list[dict[str, Any]]
 
 def production_repeated_row_params(contract: dict[str, Any]) -> list[dict[str, Any]]:
     """Repeated-row review_parameters the calculator actually reads item-by-item in its
-    production calc_method - not diagnostic-only breakdowns like trench_routes or
-    communications_pipe_items, where the calculator reads a reviewed scalar instead and
-    the row-by-row data is only a cross-check on sheet 03.
+    production calc_method - not diagnostic-only breakdowns like communications_pipe_items,
+    where the calculator reads a reviewed scalar instead and the row-by-row data is only a
+    cross-check on sheet 03. (trench_routes moved out of this diagnostic-only category on
+    2026-08-09 - it now drives the manual-excavation depth split by network type, see
+    earthworks/build_input.py.)
 
     See ADAPTER_BUILD_PLAN.md, "Критическое правило" section, for how the true/false
     split was verified (direct read of each calculator's source, 2026-07-12) - it is not

@@ -1,0 +1,44 @@
+{
+  "project_name": "test_manual_excavation_spec_volume_with_routes_depth_split",
+  "case_meta": {
+    "validated_with_elena": false,
+    "confidence": "formula_test"
+  },
+  "manual_excavation_calc_method": "standard_routes",
+  "pit_area_m2": 100,
+  "manual_refinement_depth_m": 0.08,
+  "trench_width_m": 0.4,
+  "trench_volume_m3": 50,
+  "trench_routes": [
+    {
+      "route_code": "K1",
+      "name": "К1",
+      "length_m": 10,
+      "depth_m": 1.2
+    },
+    {
+      "route_code": "K2",
+      "name": "К2",
+      "length_m": 8,
+      "depth_m": 1.0
+    }
+  ],
+  "manual_trench_depth_k1_m": 0.6,
+  "manual_trench_depth_k2_m": 1.0,
+  "manual_trench_depth_water_m": 1.6,
+  "manual_trench_depth_eo_m": 0.7,
+  "manual_trench_depth_other_m": 0.5,
+  "sand_base_volume_m3": 0,
+  "geotextile_area_m2": 0,
+  "communications_length_m": 0,
+  "axis_marking_shifts": 0,
+  "excavator_shifts": 0,
+  "geotextile_laying_area_m2": 0,
+  "consumables_amount": 0,
+  "enabled_lines": [
+    "manual_excavation"
+  ],
+  "internal_prices": {
+    "manual_excavation_work_unit_price": 1000
+  }
+}

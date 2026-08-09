@@ -786,15 +786,26 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
     trench_route_warnings: list[str] = []
     trench_volume_source = "legacy"
     if data.manual_excavation_calc_method == "standard_routes":
+        # trench_routes_result is computed whenever real per-route data is given, independent of
+        # which source wins for the TOTAL trench_volume_m3 below - the manual (hand-dig) portion
+        # needs each route's own length to split by network type (see
+        # calculate_trench_manual_portion()), even when the spec-table total is trusted over the
+        # geometry sum for trench_volume_m3 itself. Before 2026-08-09 this branch only ran when
+        # trench_volume_m3 was absent, so a project with both a spec-table total AND named routes
+        # (the normal real-project case) silently got zero per-network depth breakdown.
+        if data.trench_routes:
+            trench_routes_result, routes_volume_m3, trench_route_warnings = calculate_trench_routes(
+                data.trench_routes,
+                data.trench_width_m,
+            )
         if data.trench_volume_m3 is not None:
             trench_volume_m3 = calculate_trench_volume(trench_volume_m3=data.trench_volume_m3)
             trench_volume_source = "spec_volume"
-        else:
-            trench_routes_result, trench_volume_m3, trench_route_warnings = calculate_trench_routes(
-                data.trench_routes or [],
-                data.trench_width_m,
-            )
+        elif trench_routes_result:
+            trench_volume_m3 = routes_volume_m3
             trench_volume_source = "routes_calculated"
+        else:
+            trench_volume_m3 = calculate_trench_volume(trench_volume_m3=data.trench_volume_m3)
     else:
         trench_volume_m3 = calculate_trench_volume(
             trench_volume_m3=data.trench_volume_m3,

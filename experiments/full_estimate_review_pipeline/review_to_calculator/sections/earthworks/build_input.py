@@ -35,8 +35,13 @@ Production repeated_rows (via normalized_review["production_items"]):
   empty so the calculator's own area*depth / sand_base_volume_m3 fallback applies
   (see calculate_excavator_shifts_context()/sand section in the calculator - real
   project rows always win over recomputed geometry when given).
-- communications_pipe_items, trench_routes - never read here; not needed by the fixed
-  production calc_methods above (see docstring note on communications_length_calc_method).
+- trench_routes - passed through as-is when non-empty (contract flipped production_input
+  true 2026-08-09). trench_volume_m3 (required scalar above) still wins for the TOTAL
+  trench volume when given - trench_routes only drives the manual-excavation depth split
+  by network type (manual_trench_depth_k1/k2/water/eo/other_m); the calculator computes
+  both independently now (see earthworks_calculator.py calculate(), 2026-08-09 fix).
+- communications_pipe_items - never read here; not needed by the fixed production
+  calc_methods above (see docstring note on communications_length_calc_method).
 
 Every remaining field not covered above (~11: excavator_productivity_m3_per_shift,
 trench_width_m, sand_compaction_coeff, sand_truck_step_m3,
@@ -89,7 +94,7 @@ OPTIONAL_SCALARS = (
     "manual_trench_depth_eo_m",
     "manual_trench_depth_other_m",
 )
-PRODUCTION_ITEM_GROUPS = ("pit_items", "sand_items")
+PRODUCTION_ITEM_GROUPS = ("pit_items", "sand_items", "trench_routes")
 
 
 def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:

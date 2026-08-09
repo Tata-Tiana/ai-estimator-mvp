@@ -9,9 +9,11 @@ Sheet 01 has two kinds of rows:
 - Scalar rows (true scalar parameters + supplier_inputs only): one row per `technical_key`,
   value in "Найдено в проекте" unless "Исправить / ввести значение" is filled, which then
   wins.
-- Repeated_rows item rows (rebar/beams, AND diagnostic-only groups like trench_routes/
+- Repeated_rows item rows (rebar/beams, AND diagnostic-only groups like
   communications_pipe_items since 2026-07-29 - see `core.contract_loader.
-  production_repeated_row_params` / `diagnostic_repeated_row_params`): one row per real item,
+  production_repeated_row_params` / `diagnostic_repeated_row_params`; trench_routes moved from
+  diagnostic-only to production_input: true on 2026-08-09, see earthworks/build_input.py):
+  one row per real item,
   found in a block below a local header. The row's structured data lives in the hidden
   `row_data_json` column; the visible "Исправить: <поле>" columns (fixed positions N-Q,
   in the same order as the contract's own `correction_columns` list) override individual

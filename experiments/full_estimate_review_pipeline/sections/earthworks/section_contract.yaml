@@ -284,7 +284,7 @@ review_parameters:
     normalized_json_path: "sections.earthworks.parameters.trench_routes.rows"
     value_kind: repeated_rows
     row_key_field: route_code
-    production_input: false
+    production_input: true
     item_label_columns: [route_code]
     correction_columns: [length_m, width_m, depth_m, volume_m3]
     columns:
@@ -333,9 +333,9 @@ review_parameters:
       status_if_missing: "manual_required"
       action_ru: "Проверьте маршруты траншей построчно; сверьте сумму объемов с trench_volume_m3 выше."
     mirror_to_details_sheet: true
-    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator input is trench_volume_m3 (scalar above), not this breakdown."
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. trench_volume_m3 (scalar above) still wins for the TOTAL trench volume when given; these per-route rows are what drive the manual (hand-dig) excavation depth split by network type (see manual_trench_depth_k1/k2/water/eo/other_m)."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Reference/cross-check breakdown only; scalar trench_volume_m3 remains the reviewed calculator quantity. route_code is required so this group can also feed calculator fallback safely if that mode is deliberately enabled. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point. item_label_columns/correction_columns added 2026-07-29: this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day) even though real per-route length/depth/width/volume data was already being extracted — now renders per-route so Elena can actually see and correct it, not just trench_volume_m3's total."
+    notes: "route_code is required so network type (К1/К2/В1-ВК/ЭО/other) can be detected per route. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point. item_label_columns/correction_columns added 2026-07-29: this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day) even though real per-route length/depth/width/volume data was already being extracted — now renders per-route so Elena can actually see and correct it, not just trench_volume_m3's total. production_input flipped true 2026-08-09: this group is now passed to the calculator (not diagnostic-only) so the manual_trench_depth_k1/k2/water/eo/other_m coefficients (added 2026-08-09, filled on sheet 01-1) can actually split trench_manual_portion_m3 by network type instead of silently defaulting to 100% of trench_volume_m3 as hand labor. Before this flip the coefficients were correctly wired end-to-end but structurally unreachable — see earthworks_calculator.py's calculate() branch fix same day (trench_routes_result now computed whenever trench_routes is given, independent of whether trench_volume_m3 also wins for the total)."
 
   - key: communications_pipe_items
     label_ru: "Трубы коммуникаций"
