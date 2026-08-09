@@ -661,6 +661,22 @@ confirmation). Also the beam-subtraction-from-slab-concrete bug from `floor_slab
 (confirmed via real delivered smeta files for all three projects) lives in
 `SECTION_WITHIN_SECTION_AND_CAPTURE_STATUS_PLAN.md`, not here — don't duplicate it.
 
+## Floor Slab Unification — N Pours Per Project, Not 2 Fixed Sections (started 2026-08-09)
+
+Read `FLOOR_SLAB_UNIFICATION_PLAN.md` (this directory) before touching `floor_slab_1`,
+`floor_slab_2`, `SECTION_ORDER` in `export_calculator_results_to_estimate_workbook.py`, or the
+`section_contract.yaml` of either of those two sections. Covers a real architectural gap found via
+the floor_slab_1 vs TRC comparison work (2026-08-09,
+`reports/trc_vs_original_comparison/05_floor_slab_1.md`): a project can have any number of
+physically separate slab pours (TRC has 4: main+kitchen on floor 1, floor 2, staircase slab), each
+its own "раздел" with its own subtotal in the real reference smeta — not just "floor 1" and "floor
+2". Built on a fresh line-by-line comparison of all 8 real floor-slab sections across TRC/ARK/USV,
+which confirmed they're all one template (same ~20 lines every time), differing only by
+data-driven optionality (beams present or not, exposed underside or not) and two per-project
+calc_method choices (formwork-dismantling priced vs control-line, beam-height-split vs single
+rate) — not a reason for separate calculators. **Plan only as of 2026-08-09 — nothing implemented,
+each phase (P0-P4) needs its own separate authorization before starting.**
+
 ## Reference Earthworks Flow
 
 Start with:
