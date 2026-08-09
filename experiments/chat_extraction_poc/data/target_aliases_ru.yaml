@@ -960,7 +960,7 @@ floor_slab_1_beams_concrete_volume:
   negative_context: ["плита", "опалубк", "перемычк", "2 этажа"]
   value_column_hint: ["объем", "кол-во", "количество", "итого"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Confirmed present in both ЮСВ КР2 (лист 22, 'Спецификация Ж/Б балок', строка Итого) and ТРЦ КР2 (лист 31, 'Бетон B-22,5 (балки в теле плиты перекрытия)'). If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
+  notes: "Usually a ready 'Итого' line that is the SUM of the beam specification table's own rows (equal to sum of beam_items.concrete_volume_m3), separate from the slab's own concrete volume line. Confirmed present in ЮСВ КР2 (лист 22, 'Спецификация Ж/Б балок', строка Итого). CORRECTED 2026-08-09: this notes field previously (wrongly) cited ТРЦ КР2 лист 31's 'Бетон B-22,5 (балки в теле плиты перекрытия)' — 1.091 m3 — as an example here. It is NOT a beam_items total (which sums to 3.180 m3 for that same project) and must never be mapped to this target; mapping it here would silently override the real beam-items sum and corrupt the formwork-area calc. That specific kind of row (a small extra concrete line printed separately from both the zone's main slab volume AND the beam table) belongs in the additional_concrete_items group instead — see additional_concrete_items below. If this target is absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
 
 floor_slab_1_edge_eps_work_length:
   section_code: floor_slab_1
@@ -1061,6 +1061,18 @@ beam_items:
   value_column_hint: ["марка", "длина", "ширина", "высота", "кол-во", "бетон", "опалубка", "площадь"]
   unit_column_hint: ["мм", "м", "м3", "м³", "м2", "м²", "шт"]
   notes: "Extract each real beam row. If the specification gives ready concrete/formwork on the same beam row, fill concrete_volume_m3/formwork_area_m2 from the PDF. width_m may be null for a combined row with different cross-sections; do not invent a split. If a row combines marks such as Б4/Б4-1 and only a combined concrete value is given, keep the combined row with needs_review/manual split note until a separated designer spec is available."
+
+additional_concrete_items:
+  section_code: floor_slab_1
+  ru_label: "Дополнительный бетон в теле плиты (не основная плита, не beam_items)"
+  pdf_aliases: ["Бетон (балка в теле плиты перекрытия)", "Бетон (ребро в теле плиты)", "Бетон (ребро 50мм)", "Бетон (балки в теле плиты перекрытия)"]
+  expected_unit: m3
+  table_hints: ["Спецификация расхода материала на Ж/Б плиту перекрытия"]
+  required_context: ["бетон", "тел"]
+  negative_context: ["опалубк", "арматура", "перемычк"]
+  value_column_hint: ["объем", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "куб.м"]
+  notes: "Added 2026-08-09 (real ТРЦ case: КР2 лист 31, 'Бетон B-22,5 (балки в теле плиты перекрытия)' = 1.091 m3, и лист 32, 'Бетон B-22,5 (Ребро 50мм)' = 0.199 m3). Эти строки физически ОТДЕЛЬНЫ и от основной строки бетона плиты (slab_zones.concrete_volume_m3 / floor_slab_1_concrete_volume — 'Плита перекрытия толщиной 200мм'), и от индивидуальных балок в beam_items/floor_slab_1_beams_concrete_volume (сумма таких строк для ТРЦ — 3.180 m3, а не 1.091 — НЕ путать их между собой, см. floor_slab_1_beams_concrete_volume notes). Извлекай каждую такую строку отдельным элементом группы (не суммируй сам — калькулятор суммирует по зоне), с полем zone_context равным точной строке context той зоны slab_zones, к которой она относится (обязательно при более чем одной зоне; при одной зоне можно оставить null). Эта группа влияет ТОЛЬКО на материал бетона/доставку (доп. объём прибавляется к объёму зоны перед коэффициентом отходов и округлением рейсов миксера по зоне) — не влияет на площадь опалубки и объём бетонирования плиты, они уже верны без неё. Если такой отдельной строки в спецификации нет — оставляй группу пустой, не выдумывай."
 
 floor_slab_1_beam_concrete_volume:
   section_code: floor_slab_1
