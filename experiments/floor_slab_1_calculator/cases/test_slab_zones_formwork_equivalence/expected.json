@@ -10,8 +10,8 @@
     },
     "formwork": {
       "formwork_areas_source": "spec_formwork_areas_combined_edge_and_beam",
-      "main_formwork_area_m2": 122.16,
-      "slab_formwork_area_m2": 122.16,
+      "main_formwork_area_m2": 207.64,
+      "slab_formwork_area_m2": 207.64,
       "edge_formwork_area_m2": null,
       "beams_formwork_area_m2": null,
       "edge_and_beam_formwork_area_combined_m2": 42.2,
@@ -19,8 +19,17 @@
     }
   },
   "totals": {
-    "internal_materials_total": 1045886,
-    "internal_works_total": 582654,
-    "internal_section_total": 1628540
+    "internal_materials_total": 1159555,
+    "internal_works_total": 624099,
+    "internal_section_total": 1783654
+  },
+  "estimate_lines": {
+    "beam_concreting_work_tall": {
+      "quantity_raw": 2.6298,
+      "quantity_display": 2.63,
+      "material_total": 0,
+      "work_total": 65745,
+      "line_total": 65745
+    }
   }
 }

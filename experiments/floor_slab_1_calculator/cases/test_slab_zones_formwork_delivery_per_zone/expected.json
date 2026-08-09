@@ -1,0 +1,21 @@
+{
+  "calculation_blocks": {
+    "slab_zones": {
+      "used": true,
+      "zone_count": 2
+    },
+    "formwork": {
+      "formwork_delivery_calc_method": "area_threshold",
+      "formwork_delivery_trucks": 4.0,
+      "formwork_delivery_status": "calculated_per_zone"
+    }
+  },
+  "estimate_lines": {
+    "formwork_delivery_return_manipulator": {
+      "quantity_raw": 4.0,
+      "quantity_display": 4.0,
+      "material_total": 80000,
+      "line_total": 80000
+    }
+  }
+}

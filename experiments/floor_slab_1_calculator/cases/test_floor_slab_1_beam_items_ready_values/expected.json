@@ -1,11 +1,11 @@
 {
   "totals": {
-    "internal_materials_total": 1163333,
-    "internal_works_total": 583748,
-    "internal_section_total": 1747081,
-    "base_subtotal_raw_before_overheads": 1675077.234713,
-    "logistics_and_supply_total": 16751,
-    "consumables_and_tool_depreciation_total": 50252,
+    "internal_materials_total": 1164942,
+    "internal_works_total": 623972,
+    "internal_section_total": 1788914,
+    "base_subtotal_raw_before_overheads": 1715301.634713,
+    "logistics_and_supply_total": 17153,
+    "consumables_and_tool_depreciation_total": 51459,
     "technical_supervision_total": 5000
   },
   "calculation_blocks": {
@@ -384,13 +384,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1675077.234713,
+      "base_subtotal_raw_before_overheads": 1715301.634713,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 16750.772347,
-      "logistics_and_supply_total": 16751,
+      "logistics_and_supply_total_raw": 17153.016347,
+      "logistics_and_supply_total": 17153,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 50252.317041,
-      "consumables_and_tool_depreciation_total": 50252
+      "consumables_and_tool_depreciation_total_raw": 51459.049041,
+      "consumables_and_tool_depreciation_total": 51459
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -593,14 +593,14 @@
     },
     "beam_concreting_work": {
       "line_type": "work",
-      "quantity_raw": 23.2,
-      "quantity_display": 23.2,
+      "quantity_raw": 7.0,
+      "quantity_display": 7.0,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 34800.0,
-      "work_total": 34800,
-      "line_total_raw": 34800.0,
-      "line_total": 34800
+      "work_total_raw": 10500.0,
+      "work_total": 10500,
+      "line_total_raw": 10500.0,
+      "line_total": 10500
     },
     "concrete_b22_5_m300_material": {
       "line_type": "materials",
@@ -638,7 +638,7 @@
     "formwork_dismantling_zero_internal": {
       "line_type": "client_only_zero_internal_line",
       "quantity_raw": 207.694444,
-      "quantity_display": 207.6,
+      "quantity_display": 207.69,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,
@@ -660,7 +660,7 @@
     "bottom_slab_insulation_work": {
       "line_type": "work",
       "quantity_raw": 51.92,
-      "quantity_display": 51.9,
+      "quantity_display": 62.44,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 46728.0,
@@ -694,23 +694,23 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 16750.772347,
-      "material_total": 16751,
+      "material_total_raw": 17153.016347,
+      "material_total": 17153,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 16750.772347,
-      "line_total": 16751
+      "line_total_raw": 17153.016347,
+      "line_total": 17153
     },
     "consumables_tool_depreciation": {
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 50252.317041,
-      "material_total": 50252,
+      "material_total_raw": 51459.049041,
+      "material_total": 51459,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 50252.317041,
-      "line_total": 50252
+      "line_total_raw": 51459.049041,
+      "line_total": 51459
     },
     "technical_supervision": {
       "line_type": "manual_fixed_work",
@@ -722,6 +722,13 @@
       "work_total": 5000,
       "line_total_raw": 5000.0,
       "line_total": 5000
+    },
+    "beam_concreting_work_tall": {
+      "quantity_raw": 2.62,
+      "quantity_display": 2.62,
+      "material_total": 0,
+      "work_total": 65500,
+      "line_total": 65500
     }
   }
 }

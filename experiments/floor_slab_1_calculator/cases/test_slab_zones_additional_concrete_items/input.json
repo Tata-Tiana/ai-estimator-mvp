@@ -1,0 +1,114 @@
+{
+  "case_meta": {
+    "project": "test_slab_zones_additional_concrete_items",
+    "section": "floor_slab_1_with_beams",
+    "validated_with_elena": false,
+    "confidence": "formula_test",
+    "project_name": "test_slab_zones_additional_concrete_items",
+    "notes": "2026-08-09: isolates the additional_concrete_items[] concrete-material/delivery-trip fix (see reports/trc_vs_original_comparison/05_floor_slab_1.md, находка про доставку бетона и материал). Zone volumes and additional-item volumes are the real TRC numbers (main zone 25.337 m3 slab + 1.091 m3 'балка в теле плиты перекрытия', kitchen zone 5.975 m3 slab + 0.199 m3 'ребро 50мм в теле плиты') - real TRC bills 28 m3/4 trips (main) + 7 m3/1 trip (kitchen) = 35 m3/5 trips total. Combined-total formula (pre-fix, still the default without this field) gives 33 m3/4 trips instead - this case would have failed before the fix."
+  },
+  "formwork_areas_calc_method": "legacy_calculated_from_geometry",
+  "geometry": {
+    "total_concrete_volume_from_spec_m3": 0,
+    "slab_thickness_m": 0.2,
+    "edge_formwork_height_m": 0.2,
+    "slab_control_geometry_area_m2": 122.16
+  },
+  "beams": {
+    "items": []
+  },
+  "rates": {
+    "formwork_rate_calc_method": "direct_section_rate",
+    "formwork_delivery_calc_method": "area_threshold",
+    "formwork_rate_per_m2": 600,
+    "formwork_delivery_rate_per_trip": 20000,
+    "crane_shift_rate": 30000,
+    "formwork_consumables_rate_per_m2": 47,
+    "plywood_sheet_working_area_m2": 2.3,
+    "reserve_plywood_sheets": 10,
+    "non_multiple_places_coeff": 0.2,
+    "overhang_sheet_equivalent": 24.19347826,
+    "plywood_unit_price": 1450,
+    "timber_thickness_m": 0.05,
+    "additional_timber_coeff": 0.1,
+    "additional_timber_thickness_m": 0.05,
+    "timber_unit_price": 21500,
+    "metal_delivery_calc_method": "section_output_only",
+    "max_rebar_delivery_weight_per_truck_kg": 10000,
+    "rebar_delivery_rate_per_truck": 22000,
+    "slab_concreting_work_rate_per_m3": 12000,
+    "concrete_waste_coeff": 1.05,
+    "concrete_unit_price_per_m3": 6400,
+    "mixer_capacity_m3": 9,
+    "concrete_delivery_rate_per_trip": 7500,
+    "concrete_pump_rate": 38000,
+    "edge_beam_insulation_work_rate_per_m": 450,
+    "bottom_slab_insulation_work_rate_per_m2": 900,
+    "beam_concreting_work_rate_per_m": 1500,
+    "rebar_metal_delivery_unit_price": 22000,
+    "beam_concreting_work_rate_per_m3": 25000
+  },
+  "rebar_calc_method": "legacy_weight_parts",
+  "rebar_items": [
+    {
+      "code": "rebar_a240_d6",
+      "name": "Арматура класса А240 диаметром 6 мм",
+      "steel_class": "A240",
+      "diameter_mm": 6,
+      "source_weight_kg": 15,
+      "kg_per_meter": 0.222,
+      "waste_coeff": 1.05,
+      "rod_length_m": 6,
+      "unit_price_per_m": 13.32
+    }
+  ],
+  "insulation": {
+    "insulation_calc_method": "legacy_fixed_edge_length",
+    "edge_insulation_height_m": 0.18,
+    "total_eps_volume_from_spec_m3": 3.6,
+    "eps_thickness_m": 0.1,
+    "eps_waste_coeff": 1.05,
+    "eps_pack_volume_m3": 0.2773,
+    "eps_unit_price_per_m3": 9020,
+    "foam_coverage_m2_per_can": 10,
+    "foam_unit_price_per_can": 490
+  },
+  "overheads": {
+    "logistics_and_supply_percent": 0.01,
+    "consumables_and_tool_percent": 0.03
+  },
+  "manual_lines": {
+    "formwork_rebar_crane_shifts": 2,
+    "concrete_pump_shifts": 1,
+    "technical_supervision_amount": 5000,
+    "rebar_metal_delivery_trucks": 0
+  },
+  "slab_zones": [
+    {
+      "context": "Основная плита перекрытия 1 этажа",
+      "concrete_volume_m3": 25.337,
+      "edge_perimeter_m": 67.2,
+      "under_slab_formwork_area_m2": 97.11,
+      "edge_and_beam_formwork_area_m2": 36.6
+    },
+    {
+      "context": "Плита кухни/столовой на отм. +3,750",
+      "concrete_volume_m3": 5.975,
+      "edge_perimeter_m": 10.6,
+      "under_slab_formwork_area_m2": 25.05,
+      "edge_and_beam_formwork_area_m2": 5.6
+    }
+  ],
+  "additional_concrete_items": [
+    {
+      "name": "Бетон В-22,5 (балка в теле плиты перекрытия)",
+      "zone_context": "Основная плита перекрытия 1 этажа",
+      "concrete_volume_m3": 1.091
+    },
+    {
+      "name": "Бетон В-22,5 (ребро 50мм в теле плиты)",
+      "zone_context": "Плита кухни/столовой на отм. +3,750",
+      "concrete_volume_m3": 0.199
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "calculation_blocks": {
+    "concrete": {
+      "order_concrete_volume_m3": 35,
+      "concrete_delivery_trips": 5,
+      "concrete_order_source": "per_zone_with_additional_items"
+    }
+  },
+  "estimate_lines": {
+    "concrete_b22_5_m300_material": {
+      "quantity_raw": 35.0,
+      "quantity_display": 35.0,
+      "material_total": 224000
+    },
+    "concrete_delivery": {
+      "quantity_raw": 5.0,
+      "quantity_display": 5.0,
+      "material_total": 37500
+    }
+  }
+}

@@ -1,45 +1,22 @@
 {
   "case_meta": {
-    "project": "horoshevka_14",
+    "project": "test_slab_zones_formwork_delivery_per_zone",
     "section": "floor_slab_1_with_beams",
-    "validated_with_elena": true,
-    "confidence": "high",
-    "project_name": "test_slab_zones_equivalence"
+    "validated_with_elena": false,
+    "confidence": "formula_test",
+    "project_name": "test_slab_zones_formwork_delivery_per_zone",
+    "notes": "2026-08-09: isolates the per-zone formwork-delivery threshold fix (see reports/trc_vs_original_comparison/05_floor_slab_1.md, находка про доставку опалубки). Two zones, each under_slab_formwork_area_m2 well below the 180m2 threshold (50 and 40), combined 90m2 also below 180 - a flat combined-area check would give 2 trucks (1 delivery + 1 pickup), but the real ТРЦ/АРК practice is to apply the threshold to EACH zone independently and sum: 2 (zone1, <=180) + 2 (zone2, <=180) = 4 trucks. This case would have failed before the 2026-08-09 fix (old code gave 2, not 4)."
   },
-  "formwork_areas_calc_method": "legacy_calculated_from_geometry",
+  "formwork_areas_calc_method": "spec_formwork_areas",
   "geometry": {
     "total_concrete_volume_from_spec_m3": 0,
     "slab_thickness_m": 0.18,
     "slab_concrete_volume_m3_raw": 37.3752,
     "slab_concrete_volume_m3_display": 37.38,
-    "slab_control_geometry_area_m2": 210.64,
-    "slab_edge_perimeter_m": 118,
-    "edge_formwork_height_m": 0.2
+    "slab_control_geometry_area_m2": 210.64
   },
   "beams": {
-    "items": [
-      {
-        "code": "beam_b1",
-        "name": "Б-1",
-        "length_m": 7,
-        "width_m": 0.3,
-        "height_m": 0.25
-      },
-      {
-        "code": "beam_b2",
-        "name": "Б-2",
-        "length_m": 7.2,
-        "width_m": 0.3,
-        "height_m": 0.68
-      },
-      {
-        "code": "beam_b3",
-        "name": "Б-3",
-        "length_m": 9,
-        "width_m": 0.3,
-        "height_m": 0.43
-      }
-    ]
+    "items": []
   },
   "rates": {
     "formwork_rate_calc_method": "legacy_supplier_quote_context",
@@ -169,19 +146,24 @@
     "consumables_and_tool_percent": 0.03
   },
   "manual_lines": {
-    "formwork_delivery_trucks_override": 4,
     "formwork_rebar_crane_shifts": 2,
     "concrete_pump_shifts": 1,
     "technical_supervision_amount": 5000
   },
   "slab_zones": [
     {
-      "context": "Основная плита",
-      "concrete_volume_m3": 30.0
+      "context": "Зона 1 (условная)",
+      "concrete_volume_m3": 12.0,
+      "edge_perimeter_m": 30.0,
+      "under_slab_formwork_area_m2": 50.0,
+      "edge_and_beam_formwork_area_m2": 15.0
     },
     {
-      "context": "Плита кухни/столовой",
-      "concrete_volume_m3": 10.53
+      "context": "Зона 2 (условная)",
+      "concrete_volume_m3": 8.0,
+      "edge_perimeter_m": 20.0,
+      "under_slab_formwork_area_m2": 40.0,
+      "edge_and_beam_formwork_area_m2": 10.0
     }
   ]
 }

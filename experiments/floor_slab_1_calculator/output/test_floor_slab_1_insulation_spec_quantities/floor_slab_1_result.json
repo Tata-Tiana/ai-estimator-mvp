@@ -77,7 +77,8 @@
       "edge_beam_insulation_work_rate_per_m": 450,
       "bottom_slab_insulation_work_rate_per_m2": 900,
       "beam_concreting_work_rate_per_m": 1500,
-      "rebar_metal_delivery_unit_price": 22000
+      "rebar_metal_delivery_unit_price": 22000,
+      "beam_concreting_work_rate_per_m3": 25000
     },
     "rebar_calc_method": "spec_length_items",
     "rebar_items": [
@@ -510,7 +511,9 @@
       "concrete_volume_with_waste_m3_display": 42.56,
       "order_concrete_volume_m3": 43,
       "mixer_capacity_m3": 9,
-      "concrete_delivery_trips": 5
+      "concrete_delivery_trips": 5,
+      "concrete_order_source": "combined_total",
+      "additional_concrete_items": []
     },
     "slab_zones": {
       "used": false,
@@ -556,13 +559,13 @@
       "foam_cans_ordered": 7
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1668300.834518,
+      "base_subtotal_raw_before_overheads": 1709745.834518,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 16683.008345,
-      "logistics_and_supply_total": 16683,
+      "logistics_and_supply_total_raw": 17097.458345,
+      "logistics_and_supply_total": 17097,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 50049.025036,
-      "consumables_and_tool_depreciation_total": 50049
+      "consumables_and_tool_depreciation_total_raw": 51292.375036,
+      "consumables_and_tool_depreciation_total": 51292
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -857,21 +860,39 @@
     },
     {
       "code": "beam_concreting_work",
-      "name": "Бетонирование балки бетоном марки В22,5 (М300)",
+      "name": "Бетонирование балки высотой до 250мм бетоном марки В22,5 (М300)",
       "unit": "мп",
       "line_type": "work",
-      "quantity_raw": 23.2,
-      "quantity_display": 23.2,
+      "quantity_raw": 7.0,
+      "quantity_display": 7.0,
       "material_total_raw": 0.0,
       "material_total": 0,
-      "work_total_raw": 34800.0,
-      "work_total": 34800,
-      "line_total_raw": 34800.0,
-      "line_total": 34800,
+      "work_total_raw": 10500.0,
+      "work_total": 10500,
+      "line_total_raw": 10500.0,
+      "line_total": 10500,
       "notes": [
-        "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона."
+        "2026-08-09: разделено по высоте балки (было единой ставкой по длине с 2026-07-28 по всем балкам). Только балки высотой <=250мм."
       ],
       "price_code": "beam_concrete_placing_work_m"
+    },
+    {
+      "code": "beam_concreting_work_tall",
+      "name": "Бетонирование балки высотой более 250мм бетоном марки В22,5 (М300)",
+      "unit": "м3",
+      "line_type": "work",
+      "quantity_raw": 2.6298,
+      "quantity_display": 2.63,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_total_raw": 65745.0,
+      "work_total": 65745,
+      "line_total_raw": 65745.0,
+      "line_total": 65745,
+      "notes": [
+        "2026-08-09: только балки высотой >250мм, цена за м3 бетона, а не за метр балки."
+      ],
+      "price_code": "beam_concrete_placing_work_m3"
     },
     {
       "code": "concrete_b22_5_m300_material",
@@ -929,7 +950,7 @@
       "unit": "м2",
       "line_type": "client_only_zero_internal_line",
       "quantity_raw": 207.64,
-      "quantity_display": 207.6,
+      "quantity_display": 207.64,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,
@@ -960,16 +981,14 @@
       "unit": "м2",
       "line_type": "work",
       "quantity_raw": 51.92,
-      "quantity_display": 51.9,
+      "quantity_display": 51.92,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 46728.0,
       "work_total": 46728,
       "line_total_raw": 46728.0,
       "line_total": 46728,
-      "notes": [
-        "Стоимость считается от raw 51.92, не от display 51.9."
-      ],
+      "notes": [],
       "price_code": "eps_bottom_slab_insulation_work_m2"
     },
     {
@@ -1013,12 +1032,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 16683.008345,
-      "material_total": 16683,
+      "material_total_raw": 17097.458345,
+      "material_total": 17097,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 16683.008345,
-      "line_total": 16683,
+      "line_total_raw": 17097.458345,
+      "line_total": 17097,
       "notes": []
     },
     {
@@ -1028,12 +1047,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 50049.025036,
-      "material_total": 50049,
+      "material_total_raw": 51292.375036,
+      "material_total": 51292,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 50049.025036,
-      "line_total": 50049,
+      "line_total_raw": 51292.375036,
+      "line_total": 51292,
       "notes": []
     },
     {
@@ -1054,12 +1073,12 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1166840,
-    "internal_works_total": 573190,
-    "internal_section_total": 1740030,
-    "base_subtotal_raw_before_overheads": 1668300.834518,
-    "logistics_and_supply_total": 16683,
-    "consumables_and_tool_depreciation_total": 50049,
+    "internal_materials_total": 1168497,
+    "internal_works_total": 614635,
+    "internal_section_total": 1783132,
+    "base_subtotal_raw_before_overheads": 1709745.834518,
+    "logistics_and_supply_total": 17097,
+    "consumables_and_tool_depreciation_total": 51292,
     "technical_supervision_total": 5000
   },
   "warnings": [
@@ -1072,12 +1091,12 @@
   "expected_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/experiments/floor_slab_1_calculator/cases/test_floor_slab_1_insulation_spec_quantities/expected.json",
   "expected": {
     "totals": {
-      "internal_materials_total": 1167767,
-      "internal_works_total": 583630,
-      "internal_section_total": 1751397,
-      "base_subtotal_raw_before_overheads": 1679230.834518,
-      "logistics_and_supply_total": 16792,
-      "consumables_and_tool_depreciation_total": 50377,
+      "internal_materials_total": 1168497,
+      "internal_works_total": 614635,
+      "internal_section_total": 1783132,
+      "base_subtotal_raw_before_overheads": 1709745.834518,
+      "logistics_and_supply_total": 17097,
+      "consumables_and_tool_depreciation_total": 51292,
       "technical_supervision_total": 5000
     },
     "calculation_blocks": {
@@ -1115,7 +1134,7 @@
       },
       "bottom_slab_insulation_work": {
         "quantity_raw": 51.92,
-        "quantity_display": 51.9,
+        "quantity_display": 51.92,
         "unit": "м2",
         "work_total_raw": 46728,
         "work_total": 46728
@@ -1133,55 +1152,62 @@
         "unit": "баллон",
         "material_total_raw": 3920,
         "material_total": 3920
+      },
+      "beam_concreting_work_tall": {
+        "quantity_raw": 2.6298,
+        "quantity_display": 2.63,
+        "material_total": 0,
+        "work_total": 65745,
+        "line_total": 65745
       }
     }
   },
   "comparison": {
     "status": "mismatch",
-    "ok_count": 25,
-    "mismatch_count": 23,
+    "ok_count": 36,
+    "mismatch_count": 17,
     "items": [
       {
         "key": "totals.internal_materials_total",
-        "expected": 1167767,
-        "actual": 1166840,
-        "diff": -927,
-        "status": "mismatch"
+        "expected": 1168497,
+        "actual": 1168497,
+        "diff": 0,
+        "status": "ok"
       },
       {
         "key": "totals.internal_works_total",
-        "expected": 583630,
-        "actual": 573190,
-        "diff": -10440,
-        "status": "mismatch"
+        "expected": 614635,
+        "actual": 614635,
+        "diff": 0,
+        "status": "ok"
       },
       {
         "key": "totals.internal_section_total",
-        "expected": 1751397,
-        "actual": 1740030,
-        "diff": -11367,
-        "status": "mismatch"
+        "expected": 1783132,
+        "actual": 1783132,
+        "diff": 0,
+        "status": "ok"
       },
       {
         "key": "totals.base_subtotal_raw_before_overheads",
-        "expected": 1679230.834518,
-        "actual": 1668300.834518,
-        "diff": -10930.0,
-        "status": "mismatch"
+        "expected": 1709745.834518,
+        "actual": 1709745.834518,
+        "diff": 0.0,
+        "status": "ok"
       },
       {
         "key": "totals.logistics_and_supply_total",
-        "expected": 16792,
-        "actual": 16683,
-        "diff": -109,
-        "status": "mismatch"
+        "expected": 17097,
+        "actual": 17097,
+        "diff": 0,
+        "status": "ok"
       },
       {
         "key": "totals.consumables_and_tool_depreciation_total",
-        "expected": 50377,
-        "actual": 50049,
-        "diff": -328,
-        "status": "mismatch"
+        "expected": 51292,
+        "actual": 51292,
+        "diff": 0,
+        "status": "ok"
       },
       {
         "key": "totals.technical_supervision_total",
@@ -1381,8 +1407,8 @@
       },
       {
         "key": "estimate_lines.bottom_slab_insulation_work.quantity_display",
-        "expected": 51.9,
-        "actual": 51.9,
+        "expected": 51.92,
+        "actual": 51.92,
         "diff": 0.0,
         "status": "ok"
       },
@@ -1476,6 +1502,41 @@
         "actual": 3430,
         "diff": -490,
         "status": "mismatch"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work_tall.quantity_raw",
+        "expected": 2.6298,
+        "actual": 2.6298,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work_tall.quantity_display",
+        "expected": 2.63,
+        "actual": 2.63,
+        "diff": 0.0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work_tall.material_total",
+        "expected": 0,
+        "actual": 0,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work_tall.work_total",
+        "expected": 65745,
+        "actual": 65745,
+        "diff": 0,
+        "status": "ok"
+      },
+      {
+        "key": "estimate_lines.beam_concreting_work_tall.line_total",
+        "expected": 65745,
+        "actual": 65745,
+        "diff": 0,
+        "status": "ok"
       }
     ]
   }

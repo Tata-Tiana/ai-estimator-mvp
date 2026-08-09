@@ -78,6 +78,7 @@ EDGE_FORMWORK_AREA_KEY = "edge_formwork_area_m2"
 EDGE_AND_BEAM_COMBINED_KEY = "edge_and_beam_formwork_area_combined_m2"
 SLAB_ZONES_GROUP_KEY = "slab_zones"
 BEAM_ITEMS_GROUP_KEY = "beam_items"
+ADDITIONAL_CONCRETE_ITEMS_GROUP_KEY = "additional_concrete_items"
 REBAR_GROUP_KEY = "floor_slab_1_rebar_items"
 REBAR_TEMPLATE_PRICE_KEY = "rebar_unit_price_by_item"
 SLAB_ZONE_FORMWORK_FIELDS = (
@@ -198,6 +199,10 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     beam_rows = production_items.get(BEAM_ITEMS_GROUP_KEY)
     if beam_rows:
         result["beams"] = {"items": beam_rows}
+
+    additional_concrete_rows = production_items.get(ADDITIONAL_CONCRETE_ITEMS_GROUP_KEY)
+    if additional_concrete_rows:
+        result[ADDITIONAL_CONCRETE_ITEMS_GROUP_KEY] = additional_concrete_rows
 
     # technical_supervision_amount: a price-like manual amount that lives in price_keys (not
     # supplier_inputs) but the calculator reads it from manual_lines, not rates - see contract

@@ -12,8 +12,17 @@
     }
   },
   "totals": {
-    "internal_materials_total": 1174469,
-    "internal_works_total": 583630,
-    "internal_section_total": 1758099
+    "internal_materials_total": 1176087,
+    "internal_works_total": 624099,
+    "internal_section_total": 1800186
+  },
+  "estimate_lines": {
+    "beam_concreting_work_tall": {
+      "quantity_raw": 2.6298,
+      "quantity_display": 2.63,
+      "material_total": 0,
+      "work_total": 65745,
+      "line_total": 65745
+    }
   }
 }

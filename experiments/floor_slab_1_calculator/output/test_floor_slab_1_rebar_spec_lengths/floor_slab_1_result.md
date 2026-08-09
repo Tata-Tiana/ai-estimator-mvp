@@ -5,18 +5,18 @@
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1167729` |
-| `internal_works_total` | `582654` |
-| `internal_section_total` | `1750383` |
-| `base_subtotal_raw_before_overheads` | `1678255.234518` |
-| `logistics_and_supply_total` | `16783` |
-| `consumables_and_tool_depreciation_total` | `50348` |
+| `internal_materials_total` | `1169386` |
+| `internal_works_total` | `624099` |
+| `internal_section_total` | `1793485` |
+| `base_subtotal_raw_before_overheads` | `1719700.234518` |
+| `logistics_and_supply_total` | `17197` |
+| `consumables_and_tool_depreciation_total` | `51591` |
 | `technical_supervision_total` | `5000` |
 
 ## Comparison Summary
-- status: `mismatch`
-- ok: `48`
-- mismatch: `6`
+- status: `ok`
+- ok: `59`
+- mismatch: `0`
 
 ## Расчётные блоки
 | Показатель | Значение |
@@ -166,6 +166,8 @@
 | `concrete.order_concrete_volume_m3` | `43` |
 | `concrete.mixer_capacity_m3` | `9` |
 | `concrete.concrete_delivery_trips` | `5` |
+| `concrete.concrete_order_source` | `combined_total` |
+| `concrete.additional_concrete_items` | `[]` |
 | `slab_zones.used` | `False` |
 | `slab_zones.zone_count` | `0` |
 | `insulation.insulation_calc_method` | `legacy_fixed_edge_length` |
@@ -205,13 +207,13 @@
 | `insulation.order_eps_volume_m3_raw` | `8.319` |
 | `insulation.foam_cans_raw` | `7.77` |
 | `insulation.foam_cans_ordered` | `8` |
-| `overheads.base_subtotal_raw_before_overheads` | `1678255.234518` |
+| `overheads.base_subtotal_raw_before_overheads` | `1719700.234518` |
 | `overheads.logistics_and_supply_percent` | `0.01` |
-| `overheads.logistics_and_supply_total_raw` | `16782.552345` |
-| `overheads.logistics_and_supply_total` | `16783` |
+| `overheads.logistics_and_supply_total_raw` | `17197.002345` |
+| `overheads.logistics_and_supply_total` | `17197` |
 | `overheads.consumables_and_tool_percent` | `0.03` |
-| `overheads.consumables_and_tool_depreciation_total_raw` | `50347.657036` |
-| `overheads.consumables_and_tool_depreciation_total` | `50348` |
+| `overheads.consumables_and_tool_depreciation_total_raw` | `51591.007036` |
+| `overheads.consumables_and_tool_depreciation_total` | `51591` |
 | `manual_lines.concrete_pump_shifts` | `1` |
 | `manual_lines.technical_supervision_amount` | `5000` |
 | `control_metrics.control_geometry_area_m2` | `210.64` |
@@ -331,17 +333,18 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `rebar_a240_d6` | Арматура класса A240 диаметром 6 мм | `192.0` | `192.0` | `мп` | `materials` | `2557.44` | `2557` | `0.0` | `0` | `2557.44` | `2557` |
 | `rebar_metal_delivery` | Доставка арматуры, металла | `0.0` | `0.0` | `маш` | `logistics_machinery` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `floor_slab_concreting_work` | Бетонирование монолитной плиты перекрытия бетоном марки В22,5 (М300) | `37.3752` | `37.38` | `м3` | `work` | `0.0` | `0` | `448502.4` | `448502` | `448502.4` | `448502` |
-| `beam_concreting_work` | Бетонирование балки бетоном марки В22,5 (М300) | `23.2` | `23.2` | `мп` | `work` | `0.0` | `0` | `34800.0` | `34800` | `34800.0` | `34800` |
+| `beam_concreting_work` | Бетонирование балки высотой до 250мм бетоном марки В22,5 (М300) | `7.0` | `7.0` | `мп` | `work` | `0.0` | `0` | `10500.0` | `10500` | `10500.0` | `10500` |
+| `beam_concreting_work_tall` | Бетонирование балки высотой более 250мм бетоном марки В22,5 (М300) | `2.6298` | `2.63` | `м3` | `work` | `0.0` | `0` | `65745.0` | `65745` | `65745.0` | `65745` |
 | `concrete_b22_5_m300_material` | Бетон марки В22,5 (М300) | `43.0` | `43.0` | `м3` | `materials` | `275200.0` | `275200` | `0.0` | `0` | `275200.0` | `275200` |
 | `concrete_delivery` | Доставка бетона до объекта | `5.0` | `5.0` | `рейс` | `logistics_machinery` | `37500.0` | `37500` | `0.0` | `0` | `37500.0` | `37500` |
 | `concrete_pump_32m` | Работа бетононасоса 32м + гаситель | `1.0` | `1.0` | `смена` | `machinery_fixed` | `38000.0` | `38000` | `0.0` | `0` | `38000.0` | `38000` |
-| `formwork_dismantling_zero_internal` | Демонтаж опалубки после завершения бетонирования | `207.64` | `207.6` | `м2` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
+| `formwork_dismantling_zero_internal` | Демонтаж опалубки после завершения бетонирования | `207.64` | `207.64` | `м2` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `edge_beam_insulation_work` | Устройство утепления по наружной стороне торцов плиты, балок | `84.8` | `84.8` | `мп` | `work` | `0.0` | `0` | `38160.0` | `38160` | `38160.0` | `38160` |
-| `bottom_slab_insulation_work` | Устройство утепления низа плиты | `62.436` | `51.9` | `м2` | `work` | `0.0` | `0` | `56192.4` | `56192` | `56192.4` | `56192` |
+| `bottom_slab_insulation_work` | Устройство утепления низа плиты | `62.436` | `62.44` | `м2` | `work` | `0.0` | `0` | `56192.4` | `56192` | `56192.4` | `56192` |
 | `eps_penoplex_osnova_100mm` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `8.319` | `8.32` | `м3` | `materials` | `75037.38` | `75037` | `0.0` | `0` | `75037.38` | `75037` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `8.0` | `8.0` | `баллон` | `materials_consumables` | `3920.0` | `3920` | `0.0` | `0` | `3920.0` | `3920` |
-| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `16782.552345` | `16783` | `0.0` | `0` | `16782.552345` | `16783` |
-| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `50347.657036` | `50348` | `0.0` | `0` | `50347.657036` | `50348` |
+| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `17197.002345` | `17197` | `0.0` | `0` | `17197.002345` | `17197` |
+| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `51591.007036` | `51591` | `0.0` | `0` | `51591.007036` | `51591` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
 
 ## Warnings / Notes
@@ -352,20 +355,20 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 - `formwork_timber_gost`: Сумма считается от quantity_raw, не от отображаемого количества.
 - `rebar_metal_delivery`: Количество машин — с уровня коробки (box-калькулятор, накопление 10 т по всем разделам с арматурой).
 - `floor_slab_concreting_work`: Стоимость считается от raw 37.3752, не от display 37.38.
-- `beam_concreting_work`: С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона.
+- `beam_concreting_work`: 2026-08-09: разделено по высоте балки (было единой ставкой по длине с 2026-07-28 по всем балкам). Только балки высотой <=250мм.
+- `beam_concreting_work_tall`: 2026-08-09: только балки высотой >250мм, цена за м3 бетона, а не за метр балки.
 - `concrete_pump_32m`: Fixed/manual line; не вычислять от объёма бетона.
-- `bottom_slab_insulation_work`: Стоимость считается от raw 51.92, не от display 51.9.
 - `eps_penoplex_osnova_100mm`: Стоимость считается от закупочного raw-объёма 8.319, не от display 8.32.
 
 ## Comparison
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
-| `totals.internal_materials_total` | `1167767` | `1167729` | `-38` | `mismatch` |
-| `totals.internal_works_total` | `583630` | `582654` | `-976` | `mismatch` |
-| `totals.internal_section_total` | `1751397` | `1750383` | `-1014` | `mismatch` |
-| `totals.base_subtotal_raw_before_overheads` | `1679230.834518` | `1678255.234518` | `-975.6` | `mismatch` |
-| `totals.logistics_and_supply_total` | `16792` | `16783` | `-9` | `mismatch` |
-| `totals.consumables_and_tool_depreciation_total` | `50377` | `50348` | `-29` | `mismatch` |
+| `totals.internal_materials_total` | `1169386` | `1169386` | `0` | `ok` |
+| `totals.internal_works_total` | `624099` | `624099` | `0` | `ok` |
+| `totals.internal_section_total` | `1793485` | `1793485` | `0` | `ok` |
+| `totals.base_subtotal_raw_before_overheads` | `1719700.234518` | `1719700.234518` | `0.0` | `ok` |
+| `totals.logistics_and_supply_total` | `17197` | `17197` | `0` | `ok` |
+| `totals.consumables_and_tool_depreciation_total` | `51591` | `51591` | `0` | `ok` |
 | `totals.technical_supervision_total` | `5000` | `5000` | `0` | `ok` |
 | `calculation_blocks.rebar.rebar_calc_method` | `spec_length_items` | `spec_length_items` | `` | `ok` |
 | `calculation_blocks.rebar.rebar_frame_assembly_quantity_m` | `7698.9` | `7698.9` | `0.0` | `ok` |
@@ -414,3 +417,8 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `estimate_lines.rebar_a240_d6.price_code` | `rebar_a240_d6_m` | `rebar_a240_d6_m` | `` | `ok` |
 | `estimate_lines.rebar_a240_d6.material_total_raw` | `2557.44` | `2557.44` | `0.0` | `ok` |
 | `estimate_lines.rebar_a240_d6.material_total` | `2557` | `2557` | `0` | `ok` |
+| `estimate_lines.beam_concreting_work_tall.quantity_raw` | `2.6298` | `2.6298` | `0.0` | `ok` |
+| `estimate_lines.beam_concreting_work_tall.quantity_display` | `2.63` | `2.63` | `0.0` | `ok` |
+| `estimate_lines.beam_concreting_work_tall.material_total` | `0` | `0` | `0` | `ok` |
+| `estimate_lines.beam_concreting_work_tall.work_total` | `65745` | `65745` | `0` | `ok` |
+| `estimate_lines.beam_concreting_work_tall.line_total` | `65745` | `65745` | `0` | `ok` |

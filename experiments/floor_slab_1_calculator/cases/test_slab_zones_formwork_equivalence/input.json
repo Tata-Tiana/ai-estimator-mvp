@@ -70,7 +70,8 @@
     "concrete_pump_rate": 38000,
     "edge_beam_insulation_work_rate_per_m": 450,
     "bottom_slab_insulation_work_rate_per_m2": 900,
-    "beam_concreting_work_rate_per_m": 1500
+    "beam_concreting_work_rate_per_m": 1500,
+    "beam_concreting_work_rate_per_m3": 25000
   },
   "rebar_calc_method": "legacy_weight_parts",
   "rebar_items": [
@@ -90,7 +91,10 @@
       "name": "Арматура класса А500 диаметром 16 мм",
       "steel_class": "A500",
       "diameter_mm": 16,
-      "source_weight_parts_kg": [52.04, 60],
+      "source_weight_parts_kg": [
+        52.04,
+        60
+      ],
       "kg_per_meter": 1.58,
       "waste_coeff": 1.05,
       "rod_length_m": 11.7,
@@ -112,7 +116,11 @@
       "name": "Арматура класса А500 диаметром 10 мм",
       "steel_class": "A500",
       "diameter_mm": 10,
-      "source_weight_parts_kg": [3900, 48.6, 90],
+      "source_weight_parts_kg": [
+        3900,
+        48.6,
+        90
+      ],
       "kg_per_meter": 0.617,
       "waste_coeff": 1.05,
       "rod_length_m": 11.7,
@@ -134,7 +142,10 @@
       "name": "Арматура класса А240 диаметром 6 мм",
       "steel_class": "A240",
       "diameter_mm": 6,
-      "source_weight_parts_kg": [15, 23],
+      "source_weight_parts_kg": [
+        15,
+        23
+      ],
       "kg_per_meter": 0.222,
       "waste_coeff": 1.05,
       "rod_length_m": 6,

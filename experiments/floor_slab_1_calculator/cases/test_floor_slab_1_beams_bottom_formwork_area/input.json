@@ -72,7 +72,8 @@
     "edge_beam_insulation_work_rate_per_m": 450,
     "bottom_slab_insulation_work_rate_per_m2": 900,
     "beam_concreting_work_rate_per_m": 1500,
-    "rebar_metal_delivery_unit_price": 22000
+    "rebar_metal_delivery_unit_price": 22000,
+    "beam_concreting_work_rate_per_m3": 25000
   },
   "rebar_calc_method": "legacy_weight_parts",
   "rebar_items": [

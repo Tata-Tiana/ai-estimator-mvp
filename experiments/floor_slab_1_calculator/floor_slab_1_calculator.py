@@ -224,6 +224,7 @@ def calculate_formwork_delivery_context(
     rates: dict[str, Any],
     manual_lines: dict[str, Any],
     slab_formwork_area: Decimal,
+    zone_under_slab_areas_m2: list[Decimal] | None = None,
 ) -> dict[str, Any]:
     method = rates.get("formwork_delivery_calc_method", "area_threshold")
     if method not in {"area_threshold", "manual_override"}:
@@ -254,6 +255,39 @@ def calculate_formwork_delivery_context(
             "formwork_delivery_note": "Количество машин доставки/вывоза опалубки задано ручным override.",
         }
 
+    # Per-zone threshold (2026-08-09): when slab_zones[] gives real per-zone under-slab areas, the
+    # 2-or-4-truck threshold is applied to EACH zone independently and summed, not once to the
+    # combined project area. Confirmed on real TRC (both zones <=180m2 -> 2+2=4 trucks, not the 2
+    # trucks a combined-area check on 148m2 would give) and ARK (zone1 321m2>180 -> 4, zone2
+    # 97m2<=180 -> 2, reported as two separate delivery lines, never summed into one project-wide
+    # figure) - see reports/trc_vs_original_comparison/05_floor_slab_1.md. Uses each zone's raw
+    # spec under_slab_formwork_area_m2 directly (not the fixed-up combined slab_formwork_area,
+    # which can't be split back out per zone since beams.items[] isn't zone-scoped - see that same
+    # report's Finding 3) - safe here because the threshold check only needs each zone's own area,
+    # not a beam-corrected one. Deliberately NOT validated against ЮСВ (single zone, 207.64m2 ->
+    # her real 2 trucks contradicts a flat >180 check) - that project has no zone split at all, so
+    # this per-zone path never applies to it; the underlying threshold value may not be universal,
+    # only the "apply per zone, then sum" mechanism is confirmed.
+    if zone_under_slab_areas_m2:
+        zone_trucks = [d(2) if area <= threshold else d(4) for area in zone_under_slab_areas_m2]
+        trucks = dec_sum(zone_trucks)
+        breakdown = " + ".join(
+            f"{'1 привоз + 1 вывоз' if zt == d(2) else '2 привоза + 2 вывоза'} (зона {i + 1}, {round_decimal(area)} м2)"
+            for i, (zt, area) in enumerate(zip(zone_trucks, zone_under_slab_areas_m2))
+        )
+        return {
+            "formwork_delivery_calc_method": method,
+            "formwork_delivery_area_source_m2": round_decimal(slab_formwork_area),
+            "formwork_delivery_threshold_m2": round_decimal(threshold),
+            "formwork_delivery_trucks": round_decimal(trucks),
+            "formwork_delivery_breakdown": breakdown,
+            "formwork_delivery_status": "calculated_per_zone",
+            "formwork_delivery_note": (
+                "Порог 180 м2 применён к каждой зоне slab_zones[] отдельно и просуммирован "
+                "(не к общей площади проекта) - подтверждено на реальных ТРЦ/АРК."
+            ),
+        }
+
     trucks = d(2) if slab_formwork_area <= threshold else d(4)
     breakdown = "1 привоз + 1 вывоз" if trucks == d(2) else "2 привоза + 2 вывоза"
     return {
@@ -267,6 +301,63 @@ def calculate_formwork_delivery_context(
             "До 180 м2 включительно: 1 привоз + 1 вывоз = 2 машины; "
             "более 180 м2: 2 привоза + 2 вывоза = 4 машины."
         ),
+    }
+
+
+def calculate_concrete_order_context(
+    rates: dict[str, Any],
+    total_concrete_volume: Decimal,
+    slab_zones_in: list[dict[str, Any]],
+    additional_concrete_items_in: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Combined-total waste+ceil by default (unchanged behavior). Switches to per-zone
+    waste+ceil-then-sum (2026-08-09) ONLY when additional_concrete_items[] is non-empty - a
+    top-level, optional list (same convention as beam_items, NOT nested inside slab_zones, since
+    each group is its own set of review-workbook rows) of extra concrete-volume line items some
+    real drawings print separately from a zone's main slab pour (e.g. TRC's "балка/ребро в теле
+    плиты перекрытия" rows). Her real smeta counts these toward ordered concrete/delivery trips
+    only, not toward slab-only concreting volume or formwork area (both already proven correct
+    without this addition) - see floor_slab_1_comparison_findings_2026-08-09 memory. Proven exact
+    on TRC: main (25.337+1.091)*1.05=27.749->28 m3/4 trips, kitchen (5.975+0.199)*1.05=6.483->7
+    m3/1 trip, matching her real rows digit-for-digit (the combined-total formula gives 33 m3/4
+    trips instead). Same "apply per zone, then sum" mechanism already confirmed on
+    formwork-delivery trucks (TRC+ARK, calculate_formwork_delivery_context). Not validated on a
+    second real project yet (ARK's floor slab has no equivalent line to check against) - only the
+    per-zone mechanism itself is multi-project-proven."""
+    waste_coeff = d(rates["concrete_waste_coeff"])
+    mixer_capacity = d(rates["mixer_capacity_m3"])
+    if slab_zones_in and additional_concrete_items_in:
+        # validated upstream (in calculate_floor_slab_1): every item's zone_context either matches
+        # a real zone, or (single-zone projects only) is None and defaults to that one zone.
+        default_zone_context = slab_zones_in[0]["context"] if len(slab_zones_in) == 1 else None
+        items_by_zone: dict[str, list[Decimal]] = {zone["context"]: [] for zone in slab_zones_in}
+        for item in additional_concrete_items_in:
+            zone_context = item.get("zone_context") or default_zone_context
+            items_by_zone[zone_context].append(d(item["concrete_volume_m3"]))
+
+        zone_volumes_with_waste = []
+        zone_order_volumes = []
+        zone_trips = []
+        for zone in slab_zones_in:
+            zone_additional = dec_sum(items_by_zone[zone["context"]])
+            zone_with_waste = (d(zone["concrete_volume_m3"]) + zone_additional) * waste_coeff
+            zone_volumes_with_waste.append(zone_with_waste)
+            zone_order_volumes.append(ceil_decimal(zone_with_waste))
+            zone_trips.append(ceil_decimal(zone_with_waste / mixer_capacity))
+        concrete_volume_with_waste = dec_sum(zone_volumes_with_waste)
+        order_concrete_volume = dec_sum(zone_order_volumes)
+        concrete_delivery_trips = dec_sum(zone_trips)
+        source = "per_zone_with_additional_items"
+    else:
+        concrete_volume_with_waste = total_concrete_volume * waste_coeff
+        order_concrete_volume = ceil_decimal(concrete_volume_with_waste)
+        concrete_delivery_trips = ceil_decimal(concrete_volume_with_waste / mixer_capacity)
+        source = "combined_total"
+    return {
+        "concrete_volume_with_waste": round_decimal(concrete_volume_with_waste),
+        "order_concrete_volume": round_decimal(order_concrete_volume),
+        "concrete_delivery_trips": round_decimal(concrete_delivery_trips),
+        "concrete_order_source": source,
     }
 
 
@@ -479,6 +570,7 @@ def calculate_formwork_areas_context(
         return result
 
     edge_and_beam_formwork_area_combined: Decimal | None = None
+    spec_main_formwork_area: Decimal | None = None
 
     if method == "legacy_calculated_from_geometry":
         if calculated_main_formwork_area is None:
@@ -490,16 +582,36 @@ def calculate_formwork_areas_context(
         main_formwork_area = calculated_main_formwork_area
         edge_formwork_area = calculated_edge_formwork_area
         beams_formwork_area = calculated_beams_formwork_area
+        spec_main_formwork_area = calculated_main_formwork_area
         source = "legacy_calculated_from_geometry"
     else:
-        # slab_zones[]-derived formwork sums (2026-08-05) win over both input_data and geometry_in
-        # when present, same precedence as slab_zones' own concrete_volume_m3 override elsewhere in
-        # this file — see calculate_floor_slab_1's zone-formwork block for why summing across zones
-        # is safe (every downstream line only reads the final combined total).
-        main_formwork_area = zone_main_formwork_area if zone_main_formwork_area is not None else first_optional_decimal(
+        # main_formwork_area (площадь опалубки под перекрытие, drives "Монтаж опалубки"/"Комплект
+        # опалубки"): calculated_main_formwork_area (slab_concrete_volume / slab_thickness) wins
+        # over the PDF-quoted spec area (slab_zones' under_slab_formwork_area_m2 / flat
+        # main_formwork_area_m2), reversed 2026-08-09. Real TRC/АРК/ЮСВ data confirms her real
+        # "Монтаж опалубки"/"Комплект опалубки" quantity always equals slab-only concreting volume
+        # divided by slab thickness EXACTLY (TRC main zone: 23.6436/0.2=118.218, kitchen zone:
+        # 5.975/0.2=29.875, both exact to 3 decimals; АРК zone with known 0.18m thickness:
+        # 17.514/0.18=97.3, exact) - never the "горизонтальная опалубка" PDF area, which apparently
+        # represents a different physical concept and consistently undercounted her real quantity
+        # by ~20% (see reports/trc_vs_original_comparison/05_floor_slab_1.md). This is universal,
+        # not TRC-specific: total_concrete_volume_from_spec_m3/slab_thickness_m are both required
+        # geometry inputs, so calculated_main_formwork_area is always available. The spec-quoted
+        # area (when given) is kept only as a cross-check delta warning below, not the source.
+        spec_main_formwork_area = zone_main_formwork_area if zone_main_formwork_area is not None else first_optional_decimal(
             (input_data, "main_formwork_area_m2"),
             (geometry_in, "main_formwork_area_m2"),
         )
+        # 2026-08-09 update: only override with the calculated value when the spec area came from
+        # slab_zones[] specifically - that's the exact path proven against real TRC data (see
+        # comment above). The flat main_formwork_area_m2 scalar override (input_data/geometry_in)
+        # keeps its original priority - existing regression cases show it can legitimately diverge
+        # from the concrete-volume calculation (e.g. when beam volumes are themselves estimated
+        # rather than given), and there's no real-project evidence yet that it should be overridden.
+        if zone_main_formwork_area is not None and calculated_main_formwork_area is not None:
+            main_formwork_area = calculated_main_formwork_area
+        else:
+            main_formwork_area = spec_main_formwork_area
         # edge_and_beam_formwork_area_combined_m2: additive alternative to edge_formwork_area_m2 +
         # beams_formwork_area_m2 (2026-07-21, UNIVERSALIZATION_PLAN.md P1). Real project case: the PDF
         # prints slab-edge and beam vertical formwork as ONE merged number ("Вертикальные поверхности
@@ -561,7 +673,12 @@ def calculate_formwork_areas_context(
         edge_and_beam_formwork_area = edge_and_beam_formwork_area_combined
     else:
         edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area
-    main_delta = delta(main_formwork_area, calculated_main_formwork_area, "main_formwork_area_m2")
+    # Always compares the two alternative sources directly (spec-quoted vs concrete-volume-derived)
+    # regardless of which one main_formwork_area actually took - unchanged in spirit from before
+    # 2026-08-09, just now meaningful for both the slab_zones path (where calculated wins) and the
+    # flat-scalar path (where spec still wins): comparing against main_formwork_area itself would
+    # always show a trivial zero delta on whichever path already won.
+    main_delta = delta(spec_main_formwork_area, calculated_main_formwork_area, "main_formwork_area_m2")
     edge_delta = delta(edge_formwork_area, calculated_edge_formwork_area, "edge_formwork_area_m2")
     beams_delta = delta(beams_formwork_area, calculated_beams_formwork_area, "beams_formwork_area_m2")
 
@@ -693,6 +810,19 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     calculated_beams_concrete_volume = dec_sum([item["concrete_volume_m3"] for item in beam_items])
     beams_formwork_area = dec_sum([item["formwork_area_m2"] for item in beam_items])
 
+    # Beam concreting height split (2026-08-09, reinstated - was flattened to one rate 2026-07-28,
+    # see beam_concreting_work's contract notes for the real-project evidence that reversed this).
+    # Beams <=250mm tall are priced by length (мп), beams >250mm tall are priced by concrete volume
+    # (м3) - confirmed on real TRC and АРК smetas, and Elena's own current pricelist has both rates
+    # (row 28 "до 250мм" мп + row 29 "более 250мм" м3, the second one just never got wired in).
+    beam_tall_height_threshold_m = d("0.25")
+    beams_short_total_length = dec_sum(
+        [d(item["length_m"]) * d(item["count"]) for item in beam_items if d(item["height_m"]) <= beam_tall_height_threshold_m]
+    )
+    beams_tall_total_volume = dec_sum(
+        [item["concrete_volume_m3"] for item in beam_items if d(item["height_m"]) > beam_tall_height_threshold_m]
+    )
+
     beams_concrete_warnings: list[str] = []
     beams_concrete_volume_override = input_data.get("beams_concrete_volume_m3")
     if beams_concrete_volume_override is not None:
@@ -723,6 +853,38 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"slab_zones.{zone['context']}.concrete_volume_m3 is required")
         if d(zone["concrete_volume_m3"]) < D0:
             raise ValueError(f"slab_zones.{zone['context']}.concrete_volume_m3 must be >= 0")
+
+    # additional_concrete_items[]: optional, purely additive (2026-08-09), top-level group (same
+    # convention as beam_items - NOT nested inside slab_zones, since the review workbook represents
+    # each group as its own set of rows). Some real drawings print a small extra concrete line
+    # separately from a zone's main slab pour (e.g. TRC's "балка/ребро в теле плиты перекрытия"
+    # rows) that her real smeta counts toward ordered concrete/delivery trips only, not toward
+    # slab-only concreting volume or formwork area (both already proven correct without it). A list
+    # (not one pre-summed scalar) so any number of such rows, under any name, are captured without
+    # losing pieces - same "don't lose pieces" principle as rebar_items[]/roof_zones[] - see
+    # floor_slab_1_comparison_findings_2026-08-09 memory. zone_context (optional, required only
+    # when multiple slab_zones exist) attributes each item to a zone the same way rebar_items[]
+    # already carries floor/component tags for pooling.
+    additional_concrete_items_in = input_data.get("additional_concrete_items") or []
+    valid_zone_contexts = {zone["context"] for zone in slab_zones_in}
+    for extra_item in additional_concrete_items_in:
+        if not extra_item.get("name"):
+            raise ValueError("additional_concrete_items[].name is required")
+        if extra_item.get("concrete_volume_m3") is None:
+            raise ValueError(f"additional_concrete_items[{extra_item.get('name')!r}].concrete_volume_m3 is required")
+        if d(extra_item["concrete_volume_m3"]) < D0:
+            raise ValueError(f"additional_concrete_items[{extra_item.get('name')!r}].concrete_volume_m3 must be >= 0")
+        zone_context = extra_item.get("zone_context")
+        if zone_context is not None and zone_context not in valid_zone_contexts:
+            raise ValueError(
+                f"additional_concrete_items[{extra_item['name']!r}].zone_context {zone_context!r} "
+                "does not match any slab_zones[].context"
+            )
+        if zone_context is None and len(slab_zones_in) > 1:
+            raise ValueError(
+                f"additional_concrete_items[{extra_item['name']!r}].zone_context is required when "
+                "more than one slab_zones[] entry exists (ambiguous which zone it belongs to)"
+            )
     if slab_zones_in:
         total_concrete_volume = dec_sum([d(zone["concrete_volume_m3"]) for zone in slab_zones_in])
     else:
@@ -746,6 +908,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
     zone_edge_perimeter_m: Decimal | None = None
     zone_main_formwork_area_m2: Decimal | None = None
     zone_edge_and_beam_formwork_area_m2: Decimal | None = None
+    zone_under_slab_areas_m2: list[Decimal] | None = None
     if zones_have_formwork:
         for zone in slab_zones_in:
             for field in zone_formwork_fields:
@@ -762,6 +925,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         zone_edge_and_beam_formwork_area_m2 = dec_sum(
             [d(zone["edge_and_beam_formwork_area_m2"]) for zone in slab_zones_in]
         )
+        # Per-zone delivery-truck threshold (2026-08-09) needs each zone's own area separately,
+        # not just the sum - see calculate_formwork_delivery_context()'s docstring comment.
+        zone_under_slab_areas_m2 = [d(zone["under_slab_formwork_area_m2"]) for zone in slab_zones_in]
 
     slab_edge_perimeter_m = zone_edge_perimeter_m if zone_edge_perimeter_m is not None else d(geometry_in["slab_edge_perimeter_m"])
     # edge_formwork_height_m: control-calc-only input (never money-critical, see its two usages
@@ -794,7 +960,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
 
     formwork_rate_context = calculate_formwork_rate_context(rates, slab_formwork_area)
     formwork_rate = d(formwork_rate_context["formwork_rate_per_m2"])
-    formwork_delivery_context = calculate_formwork_delivery_context(rates, manual_lines, slab_formwork_area)
+    formwork_delivery_context = calculate_formwork_delivery_context(
+        rates, manual_lines, slab_formwork_area, zone_under_slab_areas_m2=zone_under_slab_areas_m2
+    )
     formwork_delivery_trucks = d(formwork_delivery_context["formwork_delivery_trucks"])
 
     # beams_bottom_formwork_area_m2: additive, real-project case (2026-07-26) — a project can print
@@ -858,9 +1026,12 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
         floor_slab_1_rebar_weight_with_waste,
     )
 
-    concrete_volume_with_waste = total_concrete_volume * d(rates["concrete_waste_coeff"])
-    order_concrete_volume = ceil_decimal(concrete_volume_with_waste)
-    concrete_delivery_trips = ceil_decimal(concrete_volume_with_waste / d(rates["mixer_capacity_m3"]))
+    concrete_order_context = calculate_concrete_order_context(
+        rates, total_concrete_volume, slab_zones_in, additional_concrete_items_in
+    )
+    concrete_volume_with_waste = d(concrete_order_context["concrete_volume_with_waste"])
+    order_concrete_volume = int(concrete_order_context["order_concrete_volume"])
+    concrete_delivery_trips = int(concrete_order_context["concrete_delivery_trips"])
 
     insulation_context, insulation_warnings = calculate_insulation_context(insulation_in, beams_in, slab_thickness)
     total_insulation_length = d(insulation_context["edge_beam_eps_work_length_m"])
@@ -870,8 +1041,10 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
 
     if beam_items:
         beam_concreting_work_rate_per_m = d(rates["beam_concreting_work_rate_per_m"])
+        beam_concreting_work_rate_per_m3 = d(rates["beam_concreting_work_rate_per_m3"])
     else:
         beam_concreting_work_rate_per_m = D0
+        beam_concreting_work_rate_per_m3 = D0
 
     lines = [
         estimate_line(
@@ -1031,17 +1204,30 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             ),
             estimate_line(
                 "beam_concreting_work",
-                "Бетонирование балки бетоном марки В22,5 (М300)",
+                "Бетонирование балки высотой до 250мм бетоном марки В22,5 (М300)",
                 "мп",
                 "work",
-                beams_total_length,
-                display_decimal(beams_total_length),
+                beams_short_total_length,
+                display_decimal(beams_short_total_length),
                 0,
-                beams_total_length * beam_concreting_work_rate_per_m,
+                beams_short_total_length * beam_concreting_work_rate_per_m,
                 notes=[
-                    "С 2026-07-28 работа по бетонированию балок считается по длине балок, а не по объему бетона."
+                    "2026-08-09: разделено по высоте балки (было единой ставкой по длине с "
+                    "2026-07-28 по всем балкам). Только балки высотой <=250мм."
                 ],
                 price_code="beam_concrete_placing_work_m",
+            ),
+            estimate_line(
+                "beam_concreting_work_tall",
+                "Бетонирование балки высотой более 250мм бетоном марки В22,5 (М300)",
+                "м3",
+                "work",
+                beams_tall_total_volume,
+                display_decimal(beams_tall_total_volume),
+                0,
+                beams_tall_total_volume * beam_concreting_work_rate_per_m3,
+                notes=["2026-08-09: только балки высотой >250мм, цена за м3 бетона, а не за метр балки."],
+                price_code="beam_concrete_placing_work_m3",
             ),
             estimate_line(
                 "concrete_b22_5_m300_material",
@@ -1080,7 +1266,7 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 "м2",
                 "client_only_zero_internal_line",
                 slab_formwork_area,
-                d("207.6"),
+                display_decimal(slab_formwork_area),
             ),
             estimate_line(
                 "edge_beam_insulation_work",
@@ -1099,10 +1285,9 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
                 "м2",
                 "work",
                 bottom_slab_insulation_area,
-                d("51.9"),
+                display_decimal(bottom_slab_insulation_area),
                 0,
                 bottom_slab_insulation_area * d(rates["bottom_slab_insulation_work_rate_per_m2"]),
-                notes=["Стоимость считается от raw 51.92, не от display 51.9."],
                 price_code="eps_bottom_slab_insulation_work_m2",
             ),
             estimate_line(
@@ -1239,6 +1424,8 @@ def calculate_floor_slab_1(input_data: dict[str, Any]) -> dict[str, Any]:
             "order_concrete_volume_m3": order_concrete_volume,
             "mixer_capacity_m3": rates["mixer_capacity_m3"],
             "concrete_delivery_trips": concrete_delivery_trips,
+            "concrete_order_source": concrete_order_context["concrete_order_source"],
+            "additional_concrete_items": additional_concrete_items_in,
         },
         "slab_zones": {
             "used": bool(slab_zones_in),

@@ -54,7 +54,7 @@
     },
     "bottom_slab_insulation_work": {
       "quantity_raw": 51.92,
-      "quantity_display": 51.9,
+      "quantity_display": 51.92,
       "unit": "м2",
       "work_total_raw": 46728.0,
       "work_total": 46728
