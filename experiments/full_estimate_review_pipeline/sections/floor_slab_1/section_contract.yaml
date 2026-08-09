@@ -80,13 +80,16 @@ review_parameters:
     row_key_field: context
     production_input: true
     item_label_columns: [context]
-    correction_columns: [concrete_volume_m3, edge_perimeter_m, under_slab_formwork_area_m2, edge_and_beam_formwork_area_m2]
+    correction_columns: [concrete_volume_m3, edge_perimeter_m, under_slab_formwork_area_m2, edge_and_beam_formwork_area_m2, thickness_m, concrete_grade, level]
     columns:
       - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
       - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
       - {key: edge_perimeter_m, label_ru: "Периметр торца зоны", unit: "мп", value_kind: number}
       - {key: under_slab_formwork_area_m2, label_ru: "Опалубка под плитой зоны", unit: "м2", value_kind: number}
       - {key: edge_and_beam_formwork_area_m2, label_ru: "Опалубка торца зоны (+ балок, если PDF даёт вместе)", unit: "м2", value_kind: number}
+      - {key: thickness_m, label_ru: "Толщина плиты этой зоны", unit: "м", value_kind: number}
+      - {key: concrete_grade, label_ru: "Марка бетона", unit: "", value_kind: string}
+      - {key: level, label_ru: "Этаж/отметка", unit: "", value_kind: string}
     parser_mapping:
       target_codes: ["slab_zones"]
       aliases_ru: []
@@ -101,7 +104,7 @@ review_parameters:
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
     formwork_notes: "Added 2026-08-05 (real ТРЦ case, Elena's idea): edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 are OPTIONAL per zone, but if any zone provides any of the three, ALL zones must provide ALL three (calculator raises otherwise — no silently-dropped zone). edge_and_beam_formwork_area_m2 is per-zone whatever the PDF actually gives for THAT zone's vertical formwork — pure slab edge only (no beams in that zone) for one zone, edge+beam merged-and-unsplittable for another zone, doesn't matter which per zone. Safe to just sum across zones because every downstream estimate line (installation, plywood, timber) already only ever reads the final combined total, never an edge/beam split — see calculate_formwork_areas_context's own note. This is exactly the real ТРЦ case: main zone gives one merged 36.6 m2 (torец плиты и ж/б балок, can't split), second zone (kitchen/dining) gives its own pure edge-only 5.6 m2 with no beams at all — the old flat scalar fields could only represent ONE of these two situations project-wide (mutual exclusion), not both at once across zones. When zones provide edge_perimeter_m, it REPLACES the flat slab_edge_perimeter_m requirement too (used for the geometry control-check multiplication, not for money)."
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all 9 pre-existing floor_slab_1_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES total_concrete_volume_from_spec_m3 above for this run (same convention as foundation_slab's slab_zones and load_bearing_walls_lintels' wall_block_items). Unlike foundation_slab, this calculator has no dataclass/validate() layer — the override and per-zone validation happen as plain checks inside calculate_floor_slab_1() itself. See p1_slab_zones_shipped memory. production_input corrected false -> true 2026-07-29, same class of bug as wall_block_items: floor_slab_1_calculator.py has read this group since the 2026-07-20 ship, the flag was just never updated to match, so it rendered as a dead single row on sheet 01 instead of a real per-item table. foundation_slab's own slab_zones already had production_input: true correctly."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all 9 pre-existing floor_slab_1_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES total_concrete_volume_from_spec_m3 above for this run (same convention as foundation_slab's slab_zones and load_bearing_walls_lintels' wall_block_items). Unlike foundation_slab, this calculator has no dataclass/validate() layer — the override and per-zone validation happen as plain checks inside calculate_floor_slab_1() itself. See p1_slab_zones_shipped memory. production_input corrected false -> true 2026-07-29, same class of bug as wall_block_items: floor_slab_1_calculator.py has read this group since the 2026-07-20 ship, the flag was just never updated to match, so it rendered as a dead single row on sheet 01 instead of a real per-item table. foundation_slab's own slab_zones already had production_input: true correctly. thickness_m/concrete_grade/level added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0) — NAMING/DISPLAY fields only, not read by the calculator at all (calc still uses the flat slab_thickness_m below for every zone). Purpose: let each zone/pour carry the identifying info her real smeta uses for section titles (\"Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ (200мм, бетон B-22.5) 1-го этажа\") — needed because context alone can repeat across projects but thickness+grade+level+context together is what a future per-pour section title will be built from. context remains the only field anything currently matches by (rebar_items.zone_context, additional_concrete_items.zone_context) — thickness_m/concrete_grade/level are not matching keys."
 
   - key: slab_thickness_m
     label_ru: "Толщина плиты перекрытия 1-го этажа"
@@ -524,7 +527,7 @@ review_parameters:
     row_key_field: code
     production_input: true
     item_label_columns: [name]
-    correction_columns: [length_m, width_m, height_m, count, concrete_volume_m3, formwork_area_m2]
+    correction_columns: [length_m, width_m, height_m, count, concrete_volume_m3, formwork_area_m2, zone_context]
     columns:
       - {key: code, label_ru: "Код", unit: "", value_kind: string}
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
@@ -534,6 +537,7 @@ review_parameters:
       - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
       - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
       - {key: formwork_area_m2, label_ru: "Опалубка", unit: "м2", value_kind: number}
+      - {key: zone_context, label_ru: "Зона (slab_zones.context)", unit: "", value_kind: string}
     parser_mapping:
       target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
       aliases_ru: ["ведомость балок", "спецификация балок", "балки Б-"]
@@ -547,7 +551,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Extract only real beam rows, not the total row of a beam table. Production uses length_m for beam concreting work. Do not assume beam insulation follows the full beam length: use beams_eps_work_length_m/beams_eps_material_area_m2 when the PDF gives the actually insulated portion. width_m is not required when concrete_volume_m3 is already given. For combined rows such as ARK B4/B4-1, keep one combined row with needs_review/manual split note until a separated designer specification is available."
+    notes: "Extract only real beam rows, not the total row of a beam table. Production uses length_m for beam concreting work. Do not assume beam insulation follows the full beam length: use beams_eps_work_length_m/beams_eps_material_area_m2 when the PDF gives the actually insulated portion. width_m is not required when concrete_volume_m3 is already given. For combined rows such as ARK B4/B4-1, keep one combined row with needs_review/manual split note until a separated designer specification is available. zone_context added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0) — SCHEMA ONLY, not read by the calculator yet (calculate_floor_slab_1() reads beam_items row-by-row into a fresh dict and only pulls the specific keys it knows about, so an extra zone_context column is safely ignored today, not an error). Same convention as rebar_items/additional_concrete_items zone_context: must match a slab_zones[].context string exactly, required when more than one zone exists. Fill it now where known so the data is ready once P1/P2 of the plan wire it in — don't leave it blank purely because nothing reads it yet."
 
   - key: additional_concrete_items
     label_ru: "Дополнительный бетон в теле плиты (балки/рёбра, отдельная строка спецификации)"
