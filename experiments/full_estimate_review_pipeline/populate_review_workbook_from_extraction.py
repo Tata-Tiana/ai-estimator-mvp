@@ -21,6 +21,7 @@ from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "experiments" / "box_calculator"))
@@ -1417,7 +1418,9 @@ def build_project_sheet_from_extraction(
     # correction columns get added above) - merging earlier at a narrower width risks the same
     # overlapping-merge corruption already fixed once for section bands/block titles.
     merge_row_full_width(ws, 1, ws.max_column)
-    ws.freeze_panes = "A5"
+    # Sheet 01 only: pin columns A-C (label/value/unit) so they stay visible while scrolling
+    # through the status/source/fragment columns further right.
+    ws.freeze_panes = f"{get_column_letter(min(4, ws.max_column + 1))}5"
     set_widths = {
         "A": 30, "B": 26, "C": 10, "D": 20, "E": 20, "F": 62, "G": 30, "H": 64,
         "I": 28, "J": 28, "K": 20, "L": 28, "M": 18, "N": 24,

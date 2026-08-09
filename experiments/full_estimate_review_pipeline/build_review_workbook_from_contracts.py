@@ -762,7 +762,10 @@ def build_project_sheet(wb: Workbook, contracts: list[dict[str, Any]]) -> None:
     restyle_section_bands(ws)
     restyle_block_sheet(ws)
     merge_row_full_width(ws, 1, ws.max_column)
-    ws.freeze_panes = "A5"
+    # Sheet 01 only: pin columns A-C (label/value/unit) so they stay visible while scrolling
+    # through the status/source/fragment columns further right - requested explicitly by the
+    # user, not applied to the other sheets built by apply_table_style().
+    ws.freeze_panes = f"{get_column_letter(min(4, ws.max_column + 1))}5"
     set_widths(ws, {
         "A": 30,
         "B": 22,
