@@ -39,7 +39,19 @@ review_parameters:
     row_key_field: zone_id
     production_input: true
     item_label_columns: [display_name, source_level]
-    correction_columns: [display_name, source_level, slab_mark, slab_kind, concrete_slab_volume_m3, concrete_total_with_beams_m3, slab_thickness_m, slab_edge_perimeter_m, formwork_under_slab_area_m2, formwork_edge_area_m2, formwork_edge_and_beam_combined_area_m2, formwork_beams_side_area_m2, formwork_beams_bottom_area_m2, manual_formwork_rebar_crane_shifts, manual_rebar_metal_delivery_trucks, manual_concrete_pump_shifts, manual_technical_supervision_amount, manual_formwork_rental_supplier_quote_total, include_in_estimate]
+    # First 4 entries are the only ones that get a real "Исправить: X" editable cell on sheet 01
+    # (CORRECTION_SLOTS=4, a pipeline-wide constant - see review_to_calculator/core/workbook_reader.
+    # py's CORRECTION_COLUMN_LETTERS, fixed columns O-R). That override mechanism only accepts
+    # numbers (parse_number) - putting a string field (display_name etc.) in the first 4 makes that
+    # slot silently unusable, which is what the first draft of this contract did by mistake. Order
+    # decided with Elena 2026-08-10: concrete + under-slab formwork + pump/crane shifts are what
+    # actually needs quick per-zone correction most often. rebar_metal_delivery_trucks is excluded
+    # on purpose - it's auto-computed now (see populate_review_workbook_from_extraction.py's
+    # metal_section_order()), visible with its own explanatory note in "Найдено в проекте", edit via
+    # row_data_json directly on the rare project where the auto box-calculator number is wrong.
+    # Every other field beyond slot 4 is still fully visible in "Найдено в проекте" and row_data_json
+    # - only direct one-cell correction is limited, not visibility.
+    correction_columns: [concrete_slab_volume_m3, formwork_under_slab_area_m2, manual_concrete_pump_shifts, manual_formwork_rebar_crane_shifts, display_name, source_level, slab_mark, slab_kind, concrete_total_with_beams_m3, slab_thickness_m, slab_edge_perimeter_m, formwork_edge_area_m2, formwork_edge_and_beam_combined_area_m2, formwork_beams_side_area_m2, formwork_beams_bottom_area_m2, manual_rebar_metal_delivery_trucks, manual_technical_supervision_amount, manual_formwork_rental_supplier_quote_total, include_in_estimate]
     columns:
       - {key: zone_id, label_ru: "Идентификатор плиты (внутренний)", unit: "", value_kind: string}
       - {key: display_name, label_ru: "Название плиты (по PDF)", unit: "", value_kind: string}
