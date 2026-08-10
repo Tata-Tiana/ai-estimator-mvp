@@ -323,6 +323,66 @@ slab_zones:
   unit_column_hint: ["м3", "м³", "куб.м", "м2", "м²", "мп", "м.п."]
   notes: "Added 2026-07-24 (Elena), extended 2026-08-02 to floor_slab_1 (concrete_volume_m3), extended 2026-08-05 with formwork columns (real ТРЦ case). Use this group instead of concrete_project_volume/floor_slab_1_concrete_volume or the flat floor_slab_1_slab_edge_perimeter/floor_slab_1_under_slab_formwork_area/floor_slab_1_edge_formwork_area/floor_slab_1_edge_and_beam_formwork_area_combined scalars ONLY when the spec gives slab concrete/formwork as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', ФП1/ФП2, ПМ1 zones, or floor_slab_1's main slab + kitchen/dining zones) with no ready 'Итого' row. Return each row as context (the zone/thickness/slab label exactly as printed) + concrete_volume_m3, and for floor_slab_1 also edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 when the PDF gives that zone's own formwork numbers. edge_and_beam_formwork_area_m2 takes whatever the PDF gives for THAT zone's vertical formwork, merged-with-beams or pure-edge-only — the calculator only needs the per-zone total, not a split. Formwork columns are all-or-nothing: either every zone gets all three, or fill none of them (leave the group formwork-columns-free and use flat scalars instead) — never fill formwork for only some zones. LIVE, not diagnostic — wired into foundation_slab_calculator.py and floor_slab_1_calculator.py through their section_contract.yaml calculator_input_path: slab_zones. If the PDF gives one ready combined figure instead (no zone split), use the scalar target as usual and leave this group/column empty — don't fill both. Do not include beam concrete in slab_zones."
 
+floor_slab_zones:
+  section_code: floor_slabs
+  ru_label: "Плиты перекрытия/покрытия по физическим зонам"
+  pdf_aliases: ["плита перекрытия", "плита покрытия", "ПМ1", "ПМ2", "плита второго света", "плита лестницы", "плита кухни", "плита гостиной", "ж/б плита", "монолитная плита", "спецификация материалов на устройство плиты"]
+  expected_unit: null
+  table_hints: ["Спецификация материалов на устройство плиты", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Ведомость горизонтальных поверхностей", "Ведомость вертикальных поверхностей", "План плиты перекрытия", "Плита покрытия стен", "Схема утепления плиты"]
+  required_context: ["плит|перекрыти|покрыти|ПМ"]
+  negative_context: ["фундаментная плита", "кровля LOGICROOF", "мембрана кровли", "стены", "перемычк"]
+  value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во", "количество"]
+  unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог", "шт"]
+  notes: "P5 production group. Use for every physical slab/pour instead of old floor_slab_1_* and floor_slab_2_* scalar targets. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
+
+floor_slab_eps_items:
+  section_code: floor_slabs
+  ru_label: "ЭППС/утепление плит перекрытия/покрытия"
+  pdf_aliases: ["ЭППС", "Пеноплэкс", "утепление низа плиты", "утепление нижней поверхности плиты", "утепление торца плиты", "утепление борта плиты", "утепление торца балок", "утепление ж/б балок", "площадь горизонтального утепления", "площадь утепления"]
+  expected_unit: null
+  table_hints: ["Схема утепления плиты", "Спецификация материалов на устройство утепления плиты", "Ведомость утепления", "Плита перекрытия", "Плита покрытия"]
+  required_context: ["ЭППС|Пеноплэкс|утеплен"]
+  negative_context: ["фундаментная плита", "стены фундамента", "ростверк", "кровля ТЕХНОНИКОЛЬ CARBON", "термовставк"]
+  value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во"]
+  unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог"]
+  notes: "P5 production group. Keep slab_bottom, slab_edge, beam_edge, lintel_edge, and combined_bottom_and_edge separate. 'Торец плиты' and 'борт плиты' are the same role slab_edge. If PDF gives volume in m3, keep volume_m3; do not force it into m2 target. If PDF gives combined bottom+edge, role=combined_bottom_and_edge."
+
+floor_slab_beam_items:
+  section_code: floor_slabs
+  ru_label: "Ж/Б балки конкретной плиты"
+  pdf_aliases: ["Ж/Б балка", "балки плиты", "силовые ж/б балки", "спецификация Ж/Б балок", "балка Б", "Б1", "Б2", "Б3", "Б4"]
+  expected_unit: null
+  table_hints: ["Спецификация Ж/Б балок", "Схема расположения силовых ж/б балок", "Ведомость балок", "План плиты перекрытия"]
+  required_context: ["балк"]
+  negative_context: ["перемычк", "фундамент", "кровля", "стены"]
+  value_column_hint: ["длина", "ширина", "высота", "бетон", "опалубка", "кол-во"]
+  unit_column_hint: ["м", "мп", "м.п.", "м3", "м³", "м2", "м²", "шт"]
+  notes: "P5 production group. Every beam must reference a floor_slab_zones.zone_id. Do not use total beam length as insulated length unless the PDF explicitly says the whole beam edge is insulated."
+
+floor_slab_rebar_items:
+  section_code: floor_slabs
+  ru_label: "Арматура плит перекрытия/покрытия"
+  pdf_aliases: ["арматура плиты", "армирование плиты", "спецификация арматуры плиты", "ведомость армирования", "А500С", "A500C", "А240", "ф10", "ф12", "ф16", "ф20"]
+  expected_unit: null
+  table_hints: ["Спецификация арматуры", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Ведомость армирования", "Плита перекрытия", "Плита покрытия"]
+  required_context: ["арматур|А500|A500|А240|ф"]
+  negative_context: ["фундаментная плита", "стены", "перемычк", "парапет", "кровля"]
+  value_column_hint: ["длина", "кол-во", "масса ед", "масса", "диаметр"]
+  unit_column_hint: ["м.п.", "м/п", "мп", "м", "кг/м", "кг"]
+  notes: "P5 production group. Every row must reference a floor_slab_zones.zone_id when the PDF separates slabs/zones. Primary PDF quantity is usually spec_length_m in м.п.; do not calculate total weight."
+
+floor_slab_additional_items:
+  section_code: floor_slabs
+  ru_label: "Дополнительные элементы плиты"
+  pdf_aliases: ["закладная деталь", "ЗД", "добор", "лист", "специальный элемент"]
+  expected_unit: null
+  table_hints: ["Спецификация материалов на устройство плиты", "Спецификация закладных деталей", "План плиты"]
+  required_context: ["плит|закладн|добор|лист"]
+  negative_context: ["кровля", "фундамент", "стены"]
+  value_column_hint: ["кол-во", "количество", "объем", "площадь"]
+  unit_column_hint: ["шт", "м2", "м²", "м3", "м³"]
+  notes: "P5 optional group for rare additional slab components. Do not use for normal concrete, formwork, EPS, beams, or rebar."
+
 thermal_insert_items:
   section_code: foundation_slab
   ru_label: "Термовставки произвольного типоразмера"

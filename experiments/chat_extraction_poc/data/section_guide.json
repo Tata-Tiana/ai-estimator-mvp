@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "purpose": "Generic guide to which drawing sheets/pages usually contain data for each of the 8 estimate sections. Titles only, no page numbers — page numbering differs per project.",
+    "purpose": "Generic guide to which drawing sheets/pages usually contain data for each parser section. Titles only, no page numbers — page numbering differs per project. P5 clean-slate: floor slabs are one dynamic parser section (floor_slabs), not separate floor_slab_1/floor_slab_2 extraction sections.",
     "warning": "This is a guide for where to LOOK, not a guarantee. Different projects name sheets differently. If a section's data is on a page not matching these titles, still extract it — just say so in notes."
   },
   "earthworks": {
@@ -45,23 +45,21 @@
     ],
     "look_for": ["газобетонный блок", "перемычка", "армирование кладки", "парапет", "длина наружных стен"]
   },
-  "floor_slab_1": {
-    "section_name_ru": "Плита перекрытия 1-го этажа",
+  "floor_slabs": {
+    "section_name_ru": "Плиты перекрытия/покрытия — динамические зоны",
     "typical_page_titles": [
-      "План плиты перекрытия на отм. +3.480",
-      "Спецификация к плите перекрытия на отм. +3.480",
+      "План плиты перекрытия",
+      "План плиты покрытия",
+      "Плита покрытия стен",
+      "Схема расположения силовых ж/б балок",
+      "Схема утепления плиты",
+      "Спецификация материалов на устройство плиты",
+      "Спецификация расхода материала на Ж/Б плиту перекрытия",
+      "Ведомость горизонтальных поверхностей",
+      "Ведомость вертикальных поверхностей",
       "Дополнительное армирование"
     ],
-    "look_for": ["бетон плиты перекрытия", "балка Б-", "арматура ф10", "арматура ф25", "ЭППС 100 мм"]
-  },
-  "floor_slab_2": {
-    "section_name_ru": "Плита перекрытия 2-го этажа",
-    "typical_page_titles": [
-      "План плиты перекрытия на отм. +3.680",
-      "План плиты перекрытия на отм. +4.680",
-      "Дополнительное армирование"
-    ],
-    "look_for": ["бетон плиты перекрытия", "арматура ф10", "арматура ф12", "арматура ф16", "периметр торца плиты", "опалубка"]
+    "look_for": ["ПМ1", "ПМ2", "плита перекрытия", "плита покрытия", "бетон плиты", "балка Б-", "ж/б балки", "арматура плиты", "ЭППС 100 мм", "утепление низа плиты", "утепление торца плиты", "опалубка плиты", "нижняя опалубка", "вертикальные поверхности"]
   },
   "flat_roof": {
     "section_name_ru": "Плоская кровля",

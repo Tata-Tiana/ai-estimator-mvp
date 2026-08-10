@@ -16,7 +16,8 @@
   `wall_block_items`, `roof_zones`, `slab_zones`, `schiedel_channel_items`, `thermal_insert_items`,
   `pit_items`, `sand_items`, `foundation_wall_items`, `column_footing_items`,
   `lintel_groove_rebar_items`, `main_wall_rebar_items`, `lintel_rebar_items`, `foundation_rebar_items`,
-  `floor_slab_1_rebar_items`, `floor_slab_2_rebar_items`, `floor_slab_2_beam_items`, `beam_items`,
+  `floor_slab_zones`, `floor_slab_eps_items`, `floor_slab_beam_items`, `floor_slab_rebar_items`,
+  `floor_slab_additional_items`,
   `beam_table_controls`, `communications_pipe_items`, `trench_routes`, `vent_chimney_cladding_segments`,
   `roof_raw_material_spec_rows`. У каждой группы в `notes` явно написано, когда её использовать вместо
   старого одиночного поля — не заполняй оба пути одновременно.
@@ -31,6 +32,13 @@
   каждую роль независимо. Не затаскивай роль в `wall_block_items` только потому, что другая роль туда
   уже попала — правило «одна готовая цифра → scalar, без дублирования» действует как раньше, просто
   теперь по ролям отдельно, а не по всему проекту разом.
+- **Добавлено 2026-08-10 / P5 clean-slate**: плиты перекрытия/покрытия больше не извлекаются как два
+  фиксированных раздела `floor_slab_1` и `floor_slab_2`. Новый production-путь — один раздел
+  `floor_slabs`, где каждая физическая плита/зона идет отдельной строкой в `floor_slab_zones`, а ЭППС,
+  балки, арматура и дополнительные строки идут через группы `floor_slab_eps_items`,
+  `floor_slab_beam_items`, `floor_slab_rebar_items`, `floor_slab_additional_items`. Старые
+  `floor_slab_1_*`/`floor_slab_2_*` цели оставлены только как legacy/reference и не должны заполняться
+  в новом production JSON.
 
 Если версия этого README старше, чем сегодняшняя правка промпта/target-файлов — сначала пересобери
 пакет (`python3 build_claude_chat_pack.py`) и сверь список правил/групп выше с содержимым файлов
