@@ -852,8 +852,9 @@ def build_project_sheet_from_extraction(
         "item_rows": 0,
     }
 
-    rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction)
-    rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section)
+    metal_order = metal_section_order(extraction)
+    rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction, metal_order)
+    rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section, metal_order)
     box_total_metal_weight_kg = round(sum(rebar_weights_by_section.values()), 1)
 
     for contract in contracts:
@@ -1030,6 +1031,30 @@ def build_project_sheet_from_extraction(
                 value = item.get("value") or {}
                 needs_review = bool(item.get("needs_review"))
 
+                if sec_code == "floor_slabs" and group_key == "floor_slab_zones" and value.get(
+                    "manual_rebar_metal_delivery_trucks"
+                ) is None:
+                    zone_id = value.get("zone_id")
+                    bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" if zone_id else None
+                    allocated = rebar_metal_delivery_allocation.get(bucket_key) if bucket_key else None
+                    if allocated is not None:
+                        # Copy so the auto-filled value doesn't silently mutate the shared extraction
+                        # dict for other consumers (sheet 03 mirror also reads `extraction`) beyond
+                        # what's intentional - it's fine for it to show there too, but explicitly, not
+                        # as a side effect of this loop running first.
+                        value = {**value, "manual_rebar_metal_delivery_trucks": allocated}
+                        zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
+                        auto_note = (
+                            f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
+                            f"автоматически box-калькулятором по накоплению "
+                            f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
+                            f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
+                        )
+                        item = {
+                            **item,
+                            "notes": f"{item.get('notes')}\n{auto_note}" if item.get("notes") else auto_note,
+                        }
+
                 label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
                 label = " ".join(label_parts) or item.get("item_name") or group_key
 
@@ -1146,13 +1171,38 @@ def build_project_sheet_from_extraction(
     return counts
 
 
+FLOOR_SLABS_METAL_BUCKET_PREFIX = "floor_slabs::"
+
+
+def floor_slabs_zone_ids(extraction: dict[str, Any]) -> list[str]:
+    """Real zone_id list for the floor_slabs section, in the order floor_slab_zones[] rows appear
+    in the extraction (same order the zones were found in the PDF/pour sequence - foundation, then
+    walls, then floor pours in construction order, matching the real reference smeta's own section
+    order). Used to give each physical slab its own bucket in the metal-delivery allocation below,
+    instead of collapsing every zone into one "floor_slabs" lump."""
+    _, found_groups, _ = index_extraction_section(extraction, "floor_slabs")
+    zone_ids = []
+    for item in found_groups.get("floor_slab_zones", []):
+        zone_id = (item.get("value") or {}).get("zone_id")
+        if zone_id:
+            zone_ids.append(zone_id)
+    return zone_ids
+
+
 def build_rebar_lookup(
     contracts: list[dict[str, Any]], extraction: dict[str, Any]
 ) -> dict[str, list[dict[str, Any]]]:
     """section_code -> real rebar rows (steel_class/diameter_mm) found by extraction, pooled
     across every rebar-shaped group in that section (see rebar_group_keys_for_contract). Used to
     expand sheet 02's rebar_<class>_d<diameter>_m templated price row into one row per
-    diameter/class actually present in this project."""
+    diameter/class actually present in this project.
+
+    floor_slabs is bucketed by zone_id instead of by section_code (floor_slabs::<zone_id> keys) -
+    see metal_section_order()/compute_rebar_metal_delivery_allocation() below for why: the real
+    reference smeta (ТРЦ_3_точный_расчет_коробка_для_ИИ.xlsx, checked 2026-08-10) shows metal
+    delivery trucks land in specific pours (one in foundation_slab, one specifically in the 2nd-floor
+    plate, none in the 1st-floor/kitchen/staircase pours), not as one lump total for "floor slabs" -
+    the box-calculator's 10-tonne cumulative model has to run at zone granularity to reproduce that."""
     lookup: dict[str, list[dict[str, Any]]] = {}
     for contract in contracts:
         sec_code = section_code(contract)
@@ -1160,6 +1210,14 @@ def build_rebar_lookup(
         if not group_keys:
             continue
         _, found_groups, _ = index_extraction_section(extraction, sec_code)
+        if sec_code == "floor_slabs":
+            for group_key in group_keys:
+                for item in found_groups.get(group_key, []):
+                    value = item.get("value") or {}
+                    zone_id = value.get("zone_id")
+                    bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" if zone_id else sec_code
+                    lookup.setdefault(bucket_key, []).append(value)
+            continue
         items = [
             item.get("value") or {}
             for group_key in group_keys
@@ -1170,30 +1228,30 @@ def build_rebar_lookup(
     return lookup
 
 
+def metal_section_order(extraction: dict[str, Any]) -> list[str]:
+    """Ordered list of metal-delivery buckets for this specific project: the 2 fixed sections
+    (foundation_slab, load_bearing_walls_lintels) followed by one floor_slabs::<zone_id> bucket per
+    real physical slab, in pour order. Dynamic (not a module constant) because the zone list is
+    project-specific - a different project can have 2 zones or 6."""
+    return ["foundation_slab", "load_bearing_walls_lintels"] + [
+        f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" for zone_id in floor_slabs_zone_ids(extraction)
+    ]
+
+
 # Crane-shift counts are NOT automated (Elena's 2026-07-30 ruling: no real crane-shift-count
 # formula exists anywhere in the codebase - see rebar_crane_manual_and_box_delivery_final memory).
 # Only rebar/metal DELIVERY TRUCKS are automated here, which is what metal_delivery_allocator.py
 # was actually designed and named for.
 #
 # section_code -> the one review_parameters/supplier_inputs key that holds "delivery trucks for
-# rebar/metal" in that section. This only works for a flat scalar field written once per section -
-# load_bearing_walls_lintels was always deliberately absent for that reason (no dedicated billed
-# metal-delivery line of its own). floor_slabs (P5, 2026-08-10) joins it for a related reason: its
-# manual_rebar_metal_delivery_trucks field lives on each floor_slab_zones row now (per-zone, not
-# per-section - Elena's ruling, same as crane shifts), so there is no single section-level cell left
-# to auto-fill here. A real per-zone box-truck allocation would need to guess which pour gets which
-# truck with no project data backing that guess - same invented-assumption risk this pipeline
-# avoids everywhere else - so floor_slabs' rebar weight is still counted in METAL_SECTION_ORDER's
-# box-wide total below (it still needs to physically arrive on site and affects foundation_slab's
-# own warning threshold), but Elena fills manual_rebar_metal_delivery_trucks manually per zone,
-# same as manual_formwork_rebar_crane_shifts already is.
+# rebar/metal" in that section, for sections where it is still a flat scalar written once per
+# section. load_bearing_walls_lintels is deliberately absent (no dedicated billed metal-delivery
+# line of its own, but its rebar weight still counts toward the box-wide total below). floor_slabs
+# is handled separately (see the per-zone injection in the floor_slab_zones row-building loop) since
+# its manual_rebar_metal_delivery_trucks field lives on each zone row, not one section-level cell.
 REBAR_METAL_DELIVERY_FIELD_BY_SECTION = {
     "foundation_slab": "rebar_metal_delivery_trucks",
 }
-# All rebar-bearing sections (experiments/box_calculator/section_registry.py convention) - used
-# for the weight total and the box-wide truck allocation, even though load_bearing_walls_lintels/
-# floor_slabs have no single field of their own to render an allocated count into.
-METAL_SECTION_ORDER = ["foundation_slab", "load_bearing_walls_lintels", "floor_slabs"]
 METAL_TRUCK_CAPACITY_KG = 10000.0
 # foundation_slab's own field: the box-wide total weight, used only for its internal calculator
 # warning (see foundation_slab_calculator.py's suggested_box_metal_delivery_trucks check) - same
@@ -1202,36 +1260,35 @@ BOX_TOTAL_METAL_WEIGHT_KEY = "box_total_metal_weight_kg"
 
 
 def compute_rebar_weights_by_section(
-    contracts: list[dict[str, Any]], extraction: dict[str, Any]
+    contracts: list[dict[str, Any]], extraction: dict[str, Any], order: list[str]
 ) -> dict[str, float]:
-    """section_code -> total rebar weight in kg for that section, length x rate summed across
-    every rebar item found (see rebar_item_weight_kg - rate is the item's own kg_per_meter if
-    given, else the fixed GOST catalog by diameter). Only the 4 rebar-bearing sections can appear;
-    a section with items but zero computable weight (no length/diameter data at all) still gets an
-    entry of 0.0, not omitted, so downstream code doesn't have to guess whether "missing" means
-    "no rebar" or "rebar present but unweighable"."""
+    """bucket -> total rebar weight in kg, length x rate summed across every rebar item found (see
+    rebar_item_weight_kg - rate is the item's own kg_per_meter if given, else the fixed GOST catalog
+    by diameter). Only buckets in `order` can appear; a bucket with items but zero computable weight
+    (no length/diameter data at all) still gets an entry of 0.0, not omitted, so downstream code
+    doesn't have to guess whether "missing" means "no rebar" or "rebar present but unweighable"."""
     lookup = build_rebar_lookup(contracts, extraction)
     weights: dict[str, float] = {}
-    for sec_code in METAL_SECTION_ORDER:
+    for bucket in order:
         total = 0.0
-        for item in lookup.get(sec_code, []):
+        for item in lookup.get(bucket, []):
             weight = rebar_item_weight_kg(item)
             if weight is not None:
                 total += weight
-        weights[sec_code] = total
+        weights[bucket] = total
     return weights
 
 
-def compute_rebar_metal_delivery_allocation(weights_by_section: dict[str, float]) -> dict[str, int]:
-    """section_code -> automatically allocated delivery trucks for rebar/metal, using the
-    existing box_calculator threshold-by-10-tonnes logic (experiments/box_calculator/
-    metal_delivery_allocator.py) - the first truck goes to the first section with any weight,
-    later trucks go to whichever section's cumulative weight crosses the next 10-tonne boundary.
+def compute_rebar_metal_delivery_allocation(weights_by_section: dict[str, float], order: list[str]) -> dict[str, int]:
+    """bucket -> automatically allocated delivery trucks for rebar/metal, using the existing
+    box_calculator threshold-by-10-tonnes logic (experiments/box_calculator/
+    metal_delivery_allocator.py) - the first truck goes to the first bucket with any weight,
+    later trucks go to whichever bucket's cumulative weight crosses the next 10-tonne boundary.
     unit_price is 0 here - this call only needs allocated_trucks, not a cost (pricing for these
     lines already comes from the normal price_keys mechanism on sheet 02)."""
     sections = [
         MetalSection(section_code=code, section_name=code, metal_weight_kg=weights_by_section.get(code, 0.0))
-        for code in METAL_SECTION_ORDER
+        for code in order
     ]
     result = allocate_metal_deliveries(sections=sections, capacity_kg=METAL_TRUCK_CAPACITY_KG, unit_price=0.0)
     return {item["section_code"]: item["allocated_trucks"] for item in result["sections"]}
