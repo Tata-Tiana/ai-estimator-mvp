@@ -106,8 +106,7 @@ CANONICAL_SECTIONS = [
     ("foundation_slab", "Фундаментная плита"),
     ("waterproofing", "Гидроизоляция"),
     ("load_bearing_walls_lintels", "Стены и перемычки"),
-    ("floor_slab_1", "Перекрытие 1 этажа"),
-    ("floor_slab_2", "Перекрытие 2 этажа"),
+    ("floor_slabs", "Плиты перекрытия/покрытия"),
     ("flat_roof", "Кровля"),
     ("schiedel_vent_channels", "Schiedel / вентканалы"),
 ]
