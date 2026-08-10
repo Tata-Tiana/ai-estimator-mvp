@@ -145,11 +145,13 @@ chat extraction / parser output
 The earthworks section already proves this pattern.
 
 **Floor slab unification update (added 2026-08-10):** read
-`experiments/full_estimate_review_pipeline/FLOOR_SLAB_UNIFICATION_PLAN.md` before changing parser,
-contracts, review workbook, adapters, or final estimate export for slabs. P0-P4 merged the calculator
-path, but P5 is now the active design step: parser/contracts/Google workbook must move to a unified
-zone/volume-based slab structure. Do not assume a new extraction run is enough until P5 parser files,
-section contracts, and workbook display rules are updated together.
+`experiments/full_estimate_review_pipeline/FLOOR_SLAB_UNIFICATION_PLAN.md`,
+`experiments/full_estimate_review_pipeline/P5_SLAB_CLEAN_SCHEMA_INVENTORY.md`, and
+`experiments/full_estimate_review_pipeline/P5_SLAB_DATA_CONTRACT.md` before changing parser, contracts,
+review workbook, adapters, or final estimate export for slabs. P0-P4 merged the calculator path, but P5
+is now the active design step: parser/contracts/Google workbook must move to a unified zone/volume-based
+slab structure. Do not assume a new extraction run is enough until P5 parser files, section contracts,
+and workbook display rules are updated together.
 
 **Important P5 decision (2026-08-10): no transitional compatibility for slabs.** The user explicitly
 rejected a fallback mode where new code reads old `floor_slab_1_*`/`floor_slab_2_*` scalar JSON if the
