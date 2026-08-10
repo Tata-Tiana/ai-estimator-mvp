@@ -18,8 +18,7 @@ SECTION_ORDER = [
     "foundation_slab",
     "waterproofing",
     "load_bearing_walls_lintels",
-    "floor_slab_1",
-    "floor_slab_2",
+    "floor_slabs",
     "flat_roof",
     "schiedel_vent_channels",
 ]
@@ -29,8 +28,7 @@ SECTION_NAMES = {
     "foundation_slab": "Фундаментная плита",
     "waterproofing": "Гидроизоляция, утепление бортов плит",
     "load_bearing_walls_lintels": "Несущие стены и перемычки",
-    "floor_slab_1": "Плита перекрытия 1 этажа",
-    "floor_slab_2": "Плита перекрытия 2 этажа",
+    "floor_slabs": "Плиты перекрытия/покрытия",
     "flat_roof": "Плоская кровля",
     "schiedel_vent_channels": "Вентиляционные каналы Schiedel",
 }
@@ -94,53 +92,9 @@ CONDITIONAL_MISSING_ALTERNATIVES = {
             "note": "Фиксированный scalar парапета D500 не требуется: объём парапета может прийти через wall_block_items с ролью parapet.",
         },
     },
-    "floor_slab_1": {
-        "floor_slab_1_beams_concrete_volume": {
-            "group": "beam_items",
-            "note": "Готовый scalar итога бетона балок не требуется, если PDF дал балки строками: калькулятор суммирует beam_items.concrete_volume_m3. Это не относится к утеплению балок — его нельзя выводить из общей длины балок.",
-        },
-    },
-    "floor_slab_2": {
-        "floor_slab_2_beams_concrete_volume": {
-            "group": "floor_slab_2_beam_items",
-            "note": "Готовый scalar итога бетона балок не требуется, если PDF дал балки строками: калькулятор суммирует floor_slab_2_beam_items.concrete_volume_m3. Это не относится к утеплению балок — его нельзя выводить из общей длины балок.",
-        },
-    },
 }
 
 CONDITIONAL_ABSENT_TARGETS = {
-    "floor_slab_1": {
-        "floor_slab_1_edge_and_beam_formwork_area_combined": (
-            "Не блокер, если проект дает опалубку торца плиты и опалубку балок раздельно "
-            "или через slab_zones. Это специальное поле нужно только для редкого случая, "
-            "когда PDF дает одну общую площадь вертикальной опалубки торца плиты + балок "
-            "и разделить ее невозможно."
-        ),
-        "floor_slab_1_beams_eps_work_length": (
-            "Не блокер, если в проекте нет отдельной строки длины утепляемой части балок. "
-            "Балки могут не утепляться или утепляться только частично; без явного проектного значения "
-            "калькулятор считает длину утепления балок как 0."
-        ),
-        "floor_slab_1_beams_eps_material_area": (
-            "Не блокер, если в проекте нет отдельной площади ЭППС по утепляемым граням балок. "
-            "Без явного проектного значения калькулятор считает площадь утепления балок как 0."
-        ),
-    },
-    "floor_slab_2": {
-        "floor_slab_2_beams_bottom_formwork_area": (
-            "Не блокер, если в проекте нет отдельной строки нижней опалубки балок 2-го этажа. "
-            "Если такая строка появится в другом проекте, ее нужно заполнить; иначе оставьте пустым."
-        ),
-        "floor_slab_2_beams_eps_material_area": (
-            "Не блокер, если в проекте нет отдельной площади ЭППС по утепляемым граням балок 2-го этажа. "
-            "Если есть длина утепления и одна понятная балка, таблица может посчитать площадь как длина × высота; "
-            "иначе без явного проектного значения калькулятор считает площадь утепления балок как 0."
-        ),
-        "floor_slab_2_bottom_eps_work_area": (
-            "Не блокер, если в проекте нет отдельной площади нижнего/горизонтального утепления плиты 2-го этажа. "
-            "Если нижнее утепление этой плиты есть, оно должно быть указано отдельной площадью в проекте."
-        ),
-    },
     "load_bearing_walls_lintels": {
         "vent_chimney_gas_block_150_volume": "Не блокер, если в проекте нет обкладки вентканалов/дымохода газобетоном 150 мм. Это не Schiedel.",
         "floor_2_lintel_total_length": "Не блокер, если на 2-м этаже нет перемычек в U-блоках.",
@@ -181,11 +135,6 @@ AUTO_SUM_CANDIDATE_TARGETS = {
         "floor_2_lintel_monolithic_concrete_volume": "Можно автосуммировать компоненты бетона монолитных перемычек, если все candidates относятся к одному этажу и одному типу перемычек.",
         "cutoff_waterproofing_load_bearing_walls_area": "Можно автосуммировать наружные и внутренние несущие стены (Elena, 2026-07-25: один непрерывный контур стены, отличается только толщиной блока), если PDF не даёт готового итога.",
     },
-    "floor_slab_1": {
-        "floor_slab_1_slab_edge_perimeter": "Можно автосуммировать периметр торца плиты по зонам (реальный кейс ТРЦ, 2026-08-05: главная зона + кухня/гостиная, готового итога нет).",
-        "floor_slab_1_under_slab_formwork_area": "Можно автосуммировать площадь опалубки под плитой по зонам, та же логика, что и periметр торца.",
-        "floor_slab_1_eps100_volume": "Можно автосуммировать объём ЭППС-100 по компонентам утепления (реальный кейс ТРЦ, 2026-08-05: торец + низ плиты + кухонная зона — разные неперекрывающиеся компоненты одного итога, не альтернативные прочтения одного измерения).",
-    },
     "flat_roof": {
         "roof_internal_drains_count": "Можно автосуммировать внутренние кровельные воронки, если все candidates относятся к внутреннему водостоку и имеют единицу шт.",
         "roof_parapet_drains_count": "Можно автосуммировать парапетные воронки, если все candidates относятся к парапетному водостоку и имеют единицу шт.",
@@ -211,10 +160,6 @@ ROOF_VENT_ABUTMENT_TEXT_TERMS = (
     "примыкание к вентшах",
     "примыкания к вентшах",
 )
-BEAM_CONCRETE_SCALAR_CODES = {
-    "floor_slab_1_beams_concrete_volume",
-    "floor_slab_2_beams_concrete_volume",
-}
 BEAM_CONCRETE_TOTAL_TERMS = (
     "итого",
     "всего",
@@ -237,8 +182,7 @@ EXPLICIT_TARGET_EXPECTED_UNITS = {
 # group is ambiguous: a calculator keyed by that tuple could silently drop/merge rows.
 REBAR_ITEM_GROUP_CODES = {
     "foundation_rebar_items",
-    "floor_slab_1_rebar_items",
-    "floor_slab_2_rebar_items",
+    "floor_slab_rebar_items",
     "main_wall_rebar_items",
     "lintel_rebar_items",
 }
@@ -626,47 +570,49 @@ def roof_vent_abutment_diagnostics(section: dict[str, Any]) -> list[dict[str, st
     return diagnostics
 
 
-def beam_concrete_scalar_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+def floor_slab_beam_concrete_total_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """floor_slab_zones[].concrete_total_with_beams_m3 is diagnostic/control only (per
+    P5_SLAB_DATA_CONTRACT.md) - it must come from an explicit combined "slab + beams" total row,
+    never from a single beam mark or from adding up beam rows by hand. If it is filled without an
+    explicit total-row signal, per-beam data belongs in floor_slab_beam_items instead and this
+    field should stay empty."""
     diagnostics: list[dict[str, str]] = []
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple[str, str]] = set()
 
-    for status in ("needs_review", "found"):
-        for item in as_list(section.get(status)):
-            if not isinstance(item, dict):
-                continue
-            code = item_code(item)
-            if code not in BEAM_CONCRETE_SCALAR_CODES or item.get("value") in (None, ""):
-                continue
-            evidence_text = normalized_text(
-                item.get("raw_text"),
-                item.get("item_name"),
-                item.get("notes"),
-                item.get("table_context"),
-            )
-            if any(term in evidence_text for term in BEAM_CONCRETE_TOTAL_TERMS):
-                continue
-            key = (code, short(item.get("value"), 120), short(item.get("raw_text"), 220))
-            if key in seen:
-                continue
-            seen.add(key)
-            diagnostics.append(
-                {
-                    "status": "semantic_error",
-                    "title": f"{code}: scalar beam concrete is filled without explicit total row",
-                    "confidence": confidence_text(item),
-                    "value": short(item.get("value"), 220),
-                    "source": source_text(item),
-                    "raw_text": short(item.get("raw_text"), 320),
-                    "notes": (
-                        "Scalar бетона балок можно заполнять только из явной общей строки по всем "
-                        "маркам балок: Итого/Всего/общий объём. Если PDF даёт бетон по маркам, эти "
-                        "строки должны идти в repeated group балок, а scalar должен оставаться пустым "
-                        "или закрываться дальше кодом через сумму repeated rows."
-                    ),
-                    "auto_sum": "",
-                    "candidates": "",
-                }
-            )
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "floor_slab_zones":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        total = value.get("concrete_total_with_beams_m3")
+        if total in (None, ""):
+            continue
+        evidence_text = normalized_text(
+            item.get("raw_text"), item.get("notes"), item.get("table_context")
+        )
+        if any(term in evidence_text for term in BEAM_CONCRETE_TOTAL_TERMS):
+            continue
+        key = (short(value.get("zone_id"), 80), short(total, 60))
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"floor_slab_zones ({value.get('zone_id') or '?'}): concrete_total_with_beams_m3 filled without an explicit total row",
+                "confidence": confidence_text(item),
+                "value": short(total, 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "concrete_total_with_beams_m3 — контрольное поле, заполняется только из явной "
+                    "общей строки 'плита + балки' (Итого/Всего/общий объём). Если PDF даёт бетон "
+                    "балок по маркам, эти строки должны идти в floor_slab_beam_items, а это поле "
+                    "оставаться пустым."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
     return diagnostics
 
 
@@ -747,15 +693,14 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
 
 
 REBAR_FLOOR_REQUIRED_GROUP_CODES = {
-    # Only these 3 of the 5 REBAR_ITEM_GROUP_CODES use `floor` as part of their item shape
-    # (foundation_rebar_items/floor_slab_2_rebar_items don't - each of those sections only
-    # covers one implicit floor, so there's nothing to disambiguate). Confirmed 2026-08-09
-    # against real ТРЦ extraction output: main_wall_rebar_items/lintel_rebar_items/
-    # floor_slab_1_rebar_items rows always carry a real floor=1 or floor=2 value except when
-    # the extraction itself leaves it null.
+    # Only these 2 of the 4 REBAR_ITEM_GROUP_CODES use `floor` as part of their item shape.
+    # foundation_rebar_items covers one implicit level, and floor_slab_rebar_items disambiguates
+    # by `zone_id` (floor_slab_zones) instead of a floor number, so there's nothing to check here
+    # for either. Confirmed 2026-08-09 against real ТРЦ extraction output: main_wall_rebar_items/
+    # lintel_rebar_items rows always carry a real floor=1 or floor=2 value except when the
+    # extraction itself leaves it null.
     "main_wall_rebar_items",
     "lintel_rebar_items",
-    "floor_slab_1_rebar_items",
 }
 
 
@@ -990,35 +935,40 @@ def parapet_rebar_in_main_wall_diagnostics(section: dict[str, Any]) -> list[dict
     return diagnostics
 
 
-ZONE_CONTEXT_GROUP_CODES = ("beam_items", "floor_slab_1_rebar_items")
+FLOOR_SLAB_ZONE_DEPENDENT_GROUP_CODES = (
+    "floor_slab_eps_items",
+    "floor_slab_beam_items",
+    "floor_slab_rebar_items",
+    "floor_slab_additional_items",
+)
 
 
-def zone_context_tagging_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
-    """P4 (FLOOR_SLAB_UNIFICATION_PLAN.md, 2026-08-10): zone_context on beam_items/
-    floor_slab_1_rebar_items only has an effect when EVERY row of a group carries a real
-    slab_zones[].context - the calculator's own safe-split gate treats a partially-tagged group
-    exactly like an untagged one (falls back to one combined pour, per
-    core.job_runner.run_floor_slab_pours()'s design). Leaving every row null when the PDF gives no
-    signal is a normal, correct outcome, not flagged here - only two genuine mistakes are: (1) some
-    rows tagged and others not within the same group when 2+ real zones exist (the tagging effort
-    is being silently wasted), and (2) a zone_context value that doesn't match any real
-    slab_zones[].context string (a typo/mismatch - also silently falls back, not a data-loss risk,
-    but not what the reviewer intended either)."""
+def floor_slab_zone_tagging_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """Every row in floor_slab_eps_items/floor_slab_beam_items/floor_slab_rebar_items/
+    floor_slab_additional_items must carry a `zone_id` that matches a real floor_slab_zones[].
+    zone_id - that is how a future adapter attaches each row to the physical slab it belongs to
+    (P5_SLAB_DATA_CONTRACT.md: no [combined] fallback, a row that cannot be attached to a zone is
+    a readiness blocker, not a soft default). Two mistakes are checkable here: (1) a `zone_id` that
+    matches no real floor_slab_zones[].zone_id (a typo/mismatch - always wrong, regardless of how
+    many zones the project has), and (2) some rows of a group tagged and others left blank when the
+    project has 2+ real zones (the tagging effort on the tagged rows is being silently wasted, since
+    there's no way to tell which zone the blank rows belong to). With only one real zone, leaving
+    zone_id blank is normal and not flagged - the one zone is unambiguous."""
     diagnostics: list[dict[str, str]] = []
     zone_items = [
         item
         for item in iter_unique_items(section, ("needs_review", "found"))
-        if item.get("group_code") == "slab_zones"
+        if item.get("group_code") == "floor_slab_zones"
     ]
-    valid_contexts = {
-        (item.get("value") or {}).get("context")
+    valid_zone_ids = {
+        (item.get("value") or {}).get("zone_id")
         for item in zone_items
-        if isinstance(item.get("value"), dict) and (item.get("value") or {}).get("context")
+        if isinstance(item.get("value"), dict) and (item.get("value") or {}).get("zone_id")
     }
-    if len(valid_contexts) < 2:
+    if not valid_zone_ids:
         return diagnostics
 
-    for group_code in ZONE_CONTEXT_GROUP_CODES:
+    for group_code in FLOOR_SLAB_ZONE_DEPENDENT_GROUP_CODES:
         rows = [
             item
             for item in iter_unique_items(section, ("needs_review", "found"))
@@ -1031,52 +981,51 @@ def zone_context_tagging_diagnostics(section: dict[str, Any]) -> list[dict[str, 
         untagged: list[dict[str, Any]] = []
         for item in rows:
             value = item.get("value") if isinstance(item.get("value"), dict) else {}
-            zone_context = value.get("zone_context")
-            if not zone_context:
+            zone_id = value.get("zone_id")
+            if not zone_id:
                 untagged.append(item)
-            elif zone_context in valid_contexts:
+            elif zone_id in valid_zone_ids:
                 tagged_valid.append(item)
             else:
                 tagged_invalid.append(item)
 
         if tagged_invalid:
             example = tagged_invalid[0]
-            bad_values = sorted({(item.get("value") or {}).get("zone_context") for item in tagged_invalid})
+            bad_values = sorted({(item.get("value") or {}).get("zone_id") for item in tagged_invalid})
             diagnostics.append(
                 {
                     "status": "semantic_error",
-                    "title": f"{group_code}: {len(tagged_invalid)} rows have a zone_context that matches no real zone",
+                    "title": f"{group_code}: {len(tagged_invalid)} rows have a zone_id that matches no real zone",
                     "confidence": confidence_text(example),
                     "value": short(example.get("value"), 220),
                     "source": source_text(example),
                     "raw_text": short(example.get("raw_text"), 320),
                     "notes": (
-                        f"zone_context значения {bad_values!r} не совпадают ни с одним "
-                        f"slab_zones[].context ({sorted(valid_contexts)!r}). Строка с несовпадающим "
-                        "zone_context тихо трактуется калькулятором как непомеченная (плита не "
-                        "разобьётся на зоны), деньги не теряются, но разметка не сработает. "
-                        "Поправьте zone_context на точную строку context нужной зоны."
+                        f"zone_id значения {bad_values!r} не совпадают ни с одним "
+                        f"floor_slab_zones[].zone_id ({sorted(valid_zone_ids)!r}). Такую строку "
+                        "будущий adapter не сможет привязать ни к одной плите. Поправьте zone_id "
+                        "на точное значение нужной зоны."
                     ),
                     "auto_sum": "",
                     "candidates": "",
                 }
             )
-        if tagged_valid and untagged:
+        if tagged_valid and untagged and len(valid_zone_ids) >= 2:
             example = untagged[0]
             diagnostics.append(
                 {
                     "status": "semantic_error",
-                    "title": f"{group_code}: zone_context filled on {len(tagged_valid)} rows, missing on {len(untagged)}",
+                    "title": f"{group_code}: zone_id filled on {len(tagged_valid)} rows, missing on {len(untagged)}",
                     "confidence": confidence_text(example),
                     "value": short(example.get("value"), 220),
                     "source": source_text(example),
                     "raw_text": short(example.get("raw_text"), 320),
                     "notes": (
-                        "Частичная разметка zone_context не даёт эффекта: калькулятор требует, "
-                        "чтобы КАЖДАЯ строка группы имела zone_context, либо ни одна — иначе плита "
-                        "не разбивается на зоны вообще (весь эффект уже проставленных значений "
-                        "теряется). Либо доразметьте оставшиеся строки по PDF, либо уберите "
-                        "zone_context с уже помеченных, если однозначного сигнала для остальных нет."
+                        "В проекте 2+ реальных зоны, часть строк этой группы размечена zone_id, "
+                        "часть — нет. Непомеченные строки нельзя однозначно привязать ни к одной "
+                        "плите. Доразметьте оставшиеся строки по PDF (по какой физической плите "
+                        "относится эта строка), либо уберите zone_id с уже помеченных, если "
+                        "однозначного сигнала для остальных нет."
                     ),
                     "auto_sum": "",
                     "candidates": "",
@@ -1096,10 +1045,9 @@ def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dic
     if section_code == "flat_roof":
         diagnostics.extend(roof_vent_abutment_diagnostics(section))
         diagnostics.extend(roof_zone_operability_diagnostics(section))
-    if section_code in {"floor_slab_1", "floor_slab_2"}:
-        diagnostics.extend(beam_concrete_scalar_diagnostics(section))
-    if section_code == "floor_slab_1":
-        diagnostics.extend(zone_context_tagging_diagnostics(section))
+    if section_code == "floor_slabs":
+        diagnostics.extend(floor_slab_beam_concrete_total_diagnostics(section))
+        diagnostics.extend(floor_slab_zone_tagging_diagnostics(section))
     if section_code == "foundation_slab":
         diagnostics.extend(thermal_insert_conflict_diagnostics(section))
 

@@ -317,6 +317,42 @@ Adapter должен:
 - не создавать `[combined]` fallback;
 - падать readiness blocker, если зона не готова к расчету.
 
+### Известный долг в самом калькуляторе — убрать вместе с adapter (найдено 2026-08-10)
+
+`experiments/floor_slab_1_calculator/floor_slab_calculator.py`, функции `calculate_rebar_item()`
+(строки ~92-105) и `calculate_rebar_items_pooled()` (строки ~166-180) внутри общего движка
+`calculate_floor_slab_pour()` жёстко требуют:
+
+```python
+if item.get("component") != "floor_slab_1":
+    raise ValueError(...)
+if int(item.get("floor", 0)) != 1:
+    raise ValueError(...)
+```
+
+Это буквально требование "арматура обязана называться component='floor_slab_1', floor=1" —
+леftover с тех пор, когда эта функция считала только плиту 1 этажа (см. собственный docstring
+`calculate_floor_slab_pour()`, строки ~926-931: "a real leftover... needs generalizing once P2
+makes this a genuinely pour-agnostic N-pour engine"). P2 (N-pour orchestration) уже построен, но
+эту конкретную проверку не трогал. Сегодня `floor_slab_2_calculator/calculator.py`'s wrapper
+обходит это, подставляя фиктивные `component="floor_slab_1"`/`floor=1` в каждую строку арматуры
+перед вызовом движка — работает, но это заглушка, а не реальная логика, и именно то, что нужно
+убрать в рамках зачистки "как будто написали заново".
+
+Новая схема `floor_slab_rebar_items` не имеет поля `floor` вообще — зону однозначно определяет
+`zone_id`. Когда adapter будет писаться под `floor_slabs`, нужно:
+- убрать обе проверки `component`/`floor` из `calculate_rebar_item()`/`calculate_rebar_items_pooled()`
+  (они ничего не проверяют по сути, только требуют конкретные строковые/числовые литералы);
+- убедиться, что ничего ниже по движку не читает `item["floor"]`/`item["component"]` для реальной
+  логики (проверено 2026-08-10: не читает, значение используется только для этой равенство-проверки
+  и попадает в `source_payload`/output как есть — безопасно удалить);
+- удалить фиктивную подстановку `component="floor_slab_1"`/`floor=1` из
+  `floor_slab_2_calculator/calculator.py`'s translation wrapper, когда она перестанет быть нужна.
+
+Не делать это раньше adapter-этапа — вне контекста N-pour adapter-а это старые 19+ регрессионных
+кейсов `floor_slab_1_calculator`, которые сейчас проходят именно с этими литералами; трогать движок
+нужно вместе с переводом adapter-а на `zone_id`, одним шагом, с перепроверкой регрессии.
+
 ## Старые поля
 
 Старые поля после P5:
