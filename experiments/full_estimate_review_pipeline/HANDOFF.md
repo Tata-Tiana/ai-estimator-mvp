@@ -144,6 +144,25 @@ chat extraction / parser output
 
 The earthworks section already proves this pattern.
 
+**Floor slab unification update (added 2026-08-10):** read
+`experiments/full_estimate_review_pipeline/FLOOR_SLAB_UNIFICATION_PLAN.md` before changing parser,
+contracts, review workbook, adapters, or final estimate export for slabs. P0-P4 merged the calculator
+path, but P5 is now the active design step: parser/contracts/Google workbook must move to a unified
+zone/volume-based slab structure. Do not assume a new extraction run is enough until P5 parser files,
+section contracts, and workbook display rules are updated together.
+
+**Important P5 decision (2026-08-10): no transitional compatibility for slabs.** The user explicitly
+rejected a fallback mode where new code reads old `floor_slab_1_*`/`floor_slab_2_*` scalar JSON if the
+new zone structure is absent. Treat P5 as a clean-sheet production redesign:
+
+- old slab scalar extraction fields are not a supported production input after P5;
+- old extraction JSON files are archive/regression examples only;
+- if the new slab zone/repeated structure is absent, fail readiness with a clear blocker instead of
+  silently calculating from old fields;
+- Google workbook, contracts, adapters, and final-estimate export must all be updated around the new
+  structure together;
+- after P5 parser/prompt changes, TRC/ARK/USV must be extracted again with the new upload pack.
+
 **`output/manual_values_registry.xlsx` prerequisite (added 2026-08-08):** this file (sheet 01-1's
 typical-value source) is no longer hand-edited locally — Elena edits it directly in a Google Sheet
 (https://docs.google.com/spreadsheets/d/16d4Nm_1EeQ1ssB4t9nsJVVpU4et63wFa/). Before building any
