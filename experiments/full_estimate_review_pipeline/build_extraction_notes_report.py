@@ -990,6 +990,101 @@ def parapet_rebar_in_main_wall_diagnostics(section: dict[str, Any]) -> list[dict
     return diagnostics
 
 
+ZONE_CONTEXT_GROUP_CODES = ("beam_items", "floor_slab_1_rebar_items")
+
+
+def zone_context_tagging_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """P4 (FLOOR_SLAB_UNIFICATION_PLAN.md, 2026-08-10): zone_context on beam_items/
+    floor_slab_1_rebar_items only has an effect when EVERY row of a group carries a real
+    slab_zones[].context - the calculator's own safe-split gate treats a partially-tagged group
+    exactly like an untagged one (falls back to one combined pour, per
+    core.job_runner.run_floor_slab_pours()'s design). Leaving every row null when the PDF gives no
+    signal is a normal, correct outcome, not flagged here - only two genuine mistakes are: (1) some
+    rows tagged and others not within the same group when 2+ real zones exist (the tagging effort
+    is being silently wasted), and (2) a zone_context value that doesn't match any real
+    slab_zones[].context string (a typo/mismatch - also silently falls back, not a data-loss risk,
+    but not what the reviewer intended either)."""
+    diagnostics: list[dict[str, str]] = []
+    zone_items = [
+        item
+        for item in iter_unique_items(section, ("needs_review", "found"))
+        if item.get("group_code") == "slab_zones"
+    ]
+    valid_contexts = {
+        (item.get("value") or {}).get("context")
+        for item in zone_items
+        if isinstance(item.get("value"), dict) and (item.get("value") or {}).get("context")
+    }
+    if len(valid_contexts) < 2:
+        return diagnostics
+
+    for group_code in ZONE_CONTEXT_GROUP_CODES:
+        rows = [
+            item
+            for item in iter_unique_items(section, ("needs_review", "found"))
+            if item.get("group_code") == group_code
+        ]
+        if not rows:
+            continue
+        tagged_valid: list[dict[str, Any]] = []
+        tagged_invalid: list[dict[str, Any]] = []
+        untagged: list[dict[str, Any]] = []
+        for item in rows:
+            value = item.get("value") if isinstance(item.get("value"), dict) else {}
+            zone_context = value.get("zone_context")
+            if not zone_context:
+                untagged.append(item)
+            elif zone_context in valid_contexts:
+                tagged_valid.append(item)
+            else:
+                tagged_invalid.append(item)
+
+        if tagged_invalid:
+            example = tagged_invalid[0]
+            bad_values = sorted({(item.get("value") or {}).get("zone_context") for item in tagged_invalid})
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{group_code}: {len(tagged_invalid)} rows have a zone_context that matches no real zone",
+                    "confidence": confidence_text(example),
+                    "value": short(example.get("value"), 220),
+                    "source": source_text(example),
+                    "raw_text": short(example.get("raw_text"), 320),
+                    "notes": (
+                        f"zone_context значения {bad_values!r} не совпадают ни с одним "
+                        f"slab_zones[].context ({sorted(valid_contexts)!r}). Строка с несовпадающим "
+                        "zone_context тихо трактуется калькулятором как непомеченная (плита не "
+                        "разобьётся на зоны), деньги не теряются, но разметка не сработает. "
+                        "Поправьте zone_context на точную строку context нужной зоны."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+        if tagged_valid and untagged:
+            example = untagged[0]
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{group_code}: zone_context filled on {len(tagged_valid)} rows, missing on {len(untagged)}",
+                    "confidence": confidence_text(example),
+                    "value": short(example.get("value"), 220),
+                    "source": source_text(example),
+                    "raw_text": short(example.get("raw_text"), 320),
+                    "notes": (
+                        "Частичная разметка zone_context не даёт эффекта: калькулятор требует, "
+                        "чтобы КАЖДАЯ строка группы имела zone_context, либо ни одна — иначе плита "
+                        "не разбивается на зоны вообще (весь эффект уже проставленных значений "
+                        "теряется). Либо доразметьте оставшиеся строки по PDF, либо уберите "
+                        "zone_context с уже помеченных, если однозначного сигнала для остальных нет."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
 def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     diagnostics.extend(candidate_unit_mismatch_diagnostics(section))
@@ -1003,6 +1098,8 @@ def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dic
         diagnostics.extend(roof_zone_operability_diagnostics(section))
     if section_code in {"floor_slab_1", "floor_slab_2"}:
         diagnostics.extend(beam_concrete_scalar_diagnostics(section))
+    if section_code == "floor_slab_1":
+        diagnostics.extend(zone_context_tagging_diagnostics(section))
     if section_code == "foundation_slab":
         diagnostics.extend(thermal_insert_conflict_diagnostics(section))
 
