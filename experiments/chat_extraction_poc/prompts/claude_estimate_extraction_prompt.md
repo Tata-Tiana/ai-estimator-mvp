@@ -333,7 +333,7 @@ Scalar `target_code` заполняй уверенно только если в 
 
 22. Бетон балок плит — не смешивать бетон плиты, бетон балок и контрольные итоги.
 
-В P5 production extraction для плит используется группа `floor_slab_beam_items`.
+Для плит используется группа `floor_slab_beam_items`.
 
 Если PDF даёт бетон балок по маркам, заноси каждую марку/строку в `floor_slab_beam_items` с нужным
 `zone_id` и полем `concrete_volume_m3`.

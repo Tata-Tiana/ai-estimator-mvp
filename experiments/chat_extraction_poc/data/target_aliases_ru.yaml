@@ -333,7 +333,7 @@ floor_slab_zones:
   negative_context: ["фундаментная плита", "кровля LOGICROOF", "мембрана кровли", "стены", "перемычк"]
   value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог", "шт"]
-  notes: "P5 production group. Use for every above-grade physical slab/pour. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
+  notes: "Use for every above-grade physical slab/pour. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
 
 floor_slab_eps_items:
   section_code: floor_slabs
@@ -345,7 +345,7 @@ floor_slab_eps_items:
   negative_context: ["фундаментная плита", "стены фундамента", "ростверк", "кровля ТЕХНОНИКОЛЬ CARBON", "термовставк", "балк", "перемычк"]
   value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во"]
   unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог"]
-  notes: "P5 production group for slab EPS only. Allowed roles: slab_bottom, slab_edge, combined_bottom_and_edge, unknown. 'Торец плиты' and 'борт плиты' are the same role slab_edge. Beam insulation belongs only to floor_slab_beam_items.insulated_length_m/insulation_area_m2. Lintel insulation belongs only to load_bearing_walls_lintels targets. If PDF gives volume in m3, keep volume_m3; do not force it into m2 target. If PDF gives combined bottom+edge, role=combined_bottom_and_edge."
+  notes: "Slab EPS only. Allowed roles: slab_bottom, slab_edge, combined_bottom_and_edge, unknown. 'Торец плиты' and 'борт плиты' are the same role slab_edge. Beam insulation belongs only to floor_slab_beam_items.insulated_length_m/insulation_area_m2. Lintel insulation belongs only to load_bearing_walls_lintels targets. If PDF gives volume in m3, keep volume_m3; do not force it into m2 target. If PDF gives combined bottom+edge, role=combined_bottom_and_edge."
 
 floor_slab_beam_items:
   section_code: floor_slabs
@@ -357,7 +357,7 @@ floor_slab_beam_items:
   negative_context: ["перемычк", "фундамент", "кровля", "стены"]
   value_column_hint: ["длина", "ширина", "высота", "бетон", "опалубка", "кол-во"]
   unit_column_hint: ["м", "мп", "м.п.", "м3", "м³", "м2", "м²", "шт"]
-  notes: "P5 production group. Every beam must reference a floor_slab_zones.zone_id. Do not use total beam length as insulated length unless the PDF explicitly says the whole beam edge is insulated."
+  notes: "Every beam must reference a floor_slab_zones.zone_id. Do not use total beam length as insulated length unless the PDF explicitly says the whole beam edge is insulated."
 
 floor_slab_rebar_items:
   section_code: floor_slabs
@@ -369,7 +369,7 @@ floor_slab_rebar_items:
   negative_context: ["фундаментная плита", "стены", "перемычк", "парапет", "кровля"]
   value_column_hint: ["длина", "кол-во", "масса ед", "масса", "диаметр"]
   unit_column_hint: ["м.п.", "м/п", "мп", "м", "кг/м", "кг"]
-  notes: "P5 production group. Every row must reference a floor_slab_zones.zone_id when the PDF separates slabs/zones. Primary PDF quantity is usually spec_length_m in м.п.; do not calculate total weight."
+  notes: "Every row must reference a floor_slab_zones.zone_id when the PDF separates slabs/zones. Primary PDF quantity is usually spec_length_m in м.п.; do not calculate total weight."
 
 floor_slab_additional_items:
   section_code: floor_slabs
@@ -381,7 +381,7 @@ floor_slab_additional_items:
   negative_context: ["кровля", "фундамент", "стены"]
   value_column_hint: ["кол-во", "количество", "объем", "площадь"]
   unit_column_hint: ["шт", "м2", "м²", "м3", "м³"]
-  notes: "P5 optional group for rare additional slab components. Do not use for normal concrete, formwork, EPS, beams, or rebar."
+  notes: "Optional group for rare additional slab components. Do not use for normal concrete, formwork, EPS, beams, or rebar."
 
 thermal_insert_items:
   section_code: foundation_slab
