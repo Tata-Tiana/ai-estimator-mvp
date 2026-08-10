@@ -25,11 +25,18 @@ SECTION_ORDER: list[tuple[str, str]] = [
     ("foundation_slab", "УСТРОЙСТВО ФУНДАМЕНТНОЙ ПЛИТЫ"),
     ("waterproofing", "ГИДРОИЗОЛЯЦИЯ, УТЕПЛЕНИЕ БОРТОВ ПЛИТ"),
     ("load_bearing_walls_lintels", "ВНЕШНИЕ И ВНУТРЕННИЕ НЕСУЩИЕ СТЕНЫ, ПЕРЕМЫЧКИ НАД ПРОЕМАМИ"),
-    ("floor_slab_1", "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 1-ГО ЭТАЖА"),
-    ("floor_slab_2", "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-ГО ЭТАЖА"),
+    # floor_slab_1/floor_slab_2 removed here (P3, FLOOR_SLAB_UNIFICATION_PLAN.md) - they used to
+    # be two fixed entries in this exact spot. Now a dynamic number of blocks (as many as there
+    # are real pours - 2 for every project today, since no real extraction has zone_context yet)
+    # gets spliced in right after load_bearing_walls_lintels - see FLOOR_SLABS_INSERT_AFTER and
+    # _all_section_blocks() below. "Honestly reflects reality: however many plates exist, that
+    # many blocks land in the smeta" - the user's own framing when choosing this design.
     ("flat_roof", "ПЛОСКАЯ КРОВЛЯ"),
     ("schiedel_vent_channels", "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ"),
 ]
+
+FLOOR_SLABS_INSERT_AFTER = "load_bearing_walls_lintels"
+FLOOR_SLABS_RESULT_FILENAME = "floor_slabs_result.json"
 
 CALC_COLS = {
     "quantity": "J",
@@ -118,6 +125,28 @@ def _load_lines(results_dir: Path, section_code: str) -> list[dict[str, Any]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     result = data.get("result", data)
     return list(result.get("estimate_lines") or result.get("lines") or [])
+
+
+def _load_floor_slabs_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any]]]]:
+    """P3: reads floor_slabs_result.json (produced by build_floor_slabs_result_json.py, see that
+    script's own docstring) - {"pours": [{"title", "estimate_lines"}, ...]}. Raises on a missing
+    file, same as _load_lines() does for every other section's JSON - a smeta silently missing
+    both floor-slab sections because the file was never generated is worse than a loud crash."""
+    path = results_dir / FLOOR_SLABS_RESULT_FILENAME
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return [(pour["title"], list(pour.get("estimate_lines") or [])) for pour in data.get("pours") or []]
+
+
+def _all_section_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any]]]]:
+    """Full ordered list of (title, lines) blocks to render - SECTION_ORDER's 6 fixed sections
+    plus the dynamic floor-slabs block spliced in right after FLOOR_SLABS_INSERT_AFTER, in the
+    exact spot floor_slab_1/floor_slab_2 used to occupy as two fixed entries."""
+    blocks: list[tuple[str, list[dict[str, Any]]]] = []
+    for section_code, section_title in SECTION_ORDER:
+        blocks.append((section_title, _load_lines(results_dir, section_code)))
+        if section_code == FLOOR_SLABS_INSERT_AFTER:
+            blocks.extend(_load_floor_slabs_blocks(results_dir))
+    return blocks
 
 
 def _extract_project_address(review_workbook: Path | None) -> str:
@@ -341,8 +370,7 @@ def build_workbook(results_dir: Path, review_workbook: Path | None, logo_path: P
 
     row_num = FIRST_SECTION_ROW
     section_total_rows: list[int] = []
-    for section_number, (section_code, section_title) in enumerate(SECTION_ORDER, start=2):
-        lines = _load_lines(results_dir, section_code)
+    for section_number, (section_title, lines) in enumerate(_all_section_blocks(results_dir), start=2):
         _write_section_header(ws, row_num, section_number, section_title)
         row_num += 1
         first_data_row = row_num

@@ -199,3 +199,33 @@ def run_floor_slab_pours(workbook_path: str | Path) -> list[dict[str, Any]]:
                 }
             )
     return pours
+
+
+# P3 (FLOOR_SLAB_UNIFICATION_PLAN.md): fallback title for a pour that's still the section's own
+# single unsplit result (pour_context is None) - today's real behavior for every project, since
+# no real extraction has zone_context yet (P4). Once a section genuinely splits, each pour uses
+# its own zone_context text as the title instead (real per-project data, not a fixed string).
+FLOOR_SLAB_SECTION_TITLES = {
+    "floor_slab_1": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 1-ГО ЭТАЖА",
+    "floor_slab_2": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-ГО ЭТАЖА",
+}
+
+
+def build_floor_slabs_result(workbook_path: str | Path) -> dict[str, Any]:
+    """P3 entry point - consolidates run_floor_slab_pours()'s per-pour results into the single
+    consolidated shape export_calculator_results_to_estimate_workbook.py's dynamic floor-slabs
+    block reads: {"section": "floor_slabs", "pours": [{"title", "estimate_lines"}, ...]}. Honestly
+    reflects reality (per the user's own framing when choosing this design 2026-08-10): however
+    many real pours exist is exactly how many blocks land in the final smeta - 2 today for every
+    real project (no zone_context yet), more once P4 ships and a project's PDF actually splits."""
+    pours = run_floor_slab_pours(workbook_path)
+    return {
+        "section": "floor_slabs",
+        "pours": [
+            {
+                "title": pour["pour_context"] or FLOOR_SLAB_SECTION_TITLES[pour["section_code"]],
+                "estimate_lines": pour["result"].get("estimate_lines") or [],
+            }
+            for pour in pours
+        ],
+    }
