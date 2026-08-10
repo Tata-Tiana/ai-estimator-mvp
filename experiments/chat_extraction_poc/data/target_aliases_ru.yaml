@@ -312,16 +312,16 @@ column_footing_items:
   notes: "Added 2026-07-20. Only the footing below +0,000 belongs here (2026-07-18 decision) — an above-grade column is out of MVP scope, do not extract it into this group. Same field conventions as foundation_wall_items, kept as a separate group_code. Diagnostic-only, not yet in the calculator."
 
 slab_zones:
-  section_code: foundation_slab, floor_slab_1
+  section_code: foundation_slab
   ru_label: "Бетон и опалубка плиты по зонам/толщинам"
-  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "ПМ1", "Зона плиты", "Вертикальные поверхности плиты и ж/б балок", "Вертикальные поверхности плиты кухни/гостиной"]
+  pdf_aliases: ["Плита толщиной 300мм", "Плита толщиной 250мм", "ФП1", "ФП2", "Зона фундаментной плиты"]
   expected_unit: m3
-  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты", "Спецификация материалов на устройство плиты", "Плита покрытия стен 1 этажа", "ПМ1", "Опалубочные работы плита перекрытия"]
+  table_hints: ["Спецификация материала на устройство фундамента", "Спецификация к плану фундаментной плиты", "Опалубочные работы фундаментная плита"]
   required_context: ["бетон", "плита"]
   negative_context: ["перемычк", "балк", "стяжк", "ростверк", "ПМ2"]
   value_column_hint: ["объем", "кол-во", "количество", "площадь", "периметр", "длина"]
   unit_column_hint: ["м3", "м³", "куб.м", "м2", "м²", "мп", "м.п."]
-  notes: "Added 2026-07-24 (Elena), extended 2026-08-02 to floor_slab_1 (concrete_volume_m3), extended 2026-08-05 with formwork columns (real ТРЦ case). Use this group instead of concrete_project_volume/floor_slab_1_concrete_volume or the flat floor_slab_1_slab_edge_perimeter/floor_slab_1_under_slab_formwork_area/floor_slab_1_edge_formwork_area/floor_slab_1_edge_and_beam_formwork_area_combined scalars ONLY when the spec gives slab concrete/formwork as multiple separate zone/thickness rows (e.g. 'плита толщиной 300мм' + 'плита толщиной 250мм', ФП1/ФП2, ПМ1 zones, or floor_slab_1's main slab + kitchen/dining zones) with no ready 'Итого' row. Return each row as context (the zone/thickness/slab label exactly as printed) + concrete_volume_m3, and for floor_slab_1 also edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 when the PDF gives that zone's own formwork numbers. edge_and_beam_formwork_area_m2 takes whatever the PDF gives for THAT zone's vertical formwork, merged-with-beams or pure-edge-only — the calculator only needs the per-zone total, not a split. Formwork columns are all-or-nothing: either every zone gets all three, or fill none of them (leave the group formwork-columns-free and use flat scalars instead) — never fill formwork for only some zones. LIVE, not diagnostic — wired into foundation_slab_calculator.py and floor_slab_1_calculator.py through their section_contract.yaml calculator_input_path: slab_zones. If the PDF gives one ready combined figure instead (no zone split), use the scalar target as usual and leave this group/column empty — don't fill both. Do not include beam concrete in slab_zones."
+  notes: "Foundation slab zone group only. Use when the foundation slab specification gives concrete/formwork as multiple separate zones or thicknesses without one ready total. Floor slabs/panels are extracted only through floor_slabs groups, not through slab_zones. Do not include beam, lintel, roof, or above-grade slab data here."
 
 floor_slab_zones:
   section_code: floor_slabs
@@ -333,19 +333,19 @@ floor_slab_zones:
   negative_context: ["фундаментная плита", "кровля LOGICROOF", "мембрана кровли", "стены", "перемычк"]
   value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог", "шт"]
-  notes: "P5 production group. Use for every physical slab/pour instead of old floor_slab_1_* and floor_slab_2_* scalar targets. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
+  notes: "P5 production group. Use for every above-grade physical slab/pour. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
 
 floor_slab_eps_items:
   section_code: floor_slabs
   ru_label: "ЭППС/утепление плит перекрытия/покрытия"
-  pdf_aliases: ["ЭППС", "Пеноплэкс", "утепление низа плиты", "утепление нижней поверхности плиты", "утепление торца плиты", "утепление борта плиты", "утепление торца балок", "утепление ж/б балок", "площадь горизонтального утепления", "площадь утепления"]
+  pdf_aliases: ["ЭППС", "Пеноплэкс", "утепление низа плиты", "утепление нижней поверхности плиты", "утепление торца плиты", "утепление борта плиты", "площадь горизонтального утепления плиты", "площадь утепления плиты"]
   expected_unit: null
   table_hints: ["Схема утепления плиты", "Спецификация материалов на устройство утепления плиты", "Ведомость утепления", "Плита перекрытия", "Плита покрытия"]
   required_context: ["ЭППС|Пеноплэкс|утеплен"]
-  negative_context: ["фундаментная плита", "стены фундамента", "ростверк", "кровля ТЕХНОНИКОЛЬ CARBON", "термовставк"]
+  negative_context: ["фундаментная плита", "стены фундамента", "ростверк", "кровля ТЕХНОНИКОЛЬ CARBON", "термовставк", "балк", "перемычк"]
   value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во"]
   unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог"]
-  notes: "P5 production group. Keep slab_bottom, slab_edge, beam_edge, lintel_edge, and combined_bottom_and_edge separate. 'Торец плиты' and 'борт плиты' are the same role slab_edge. If PDF gives volume in m3, keep volume_m3; do not force it into m2 target. If PDF gives combined bottom+edge, role=combined_bottom_and_edge."
+  notes: "P5 production group for slab EPS only. Allowed roles: slab_bottom, slab_edge, combined_bottom_and_edge, unknown. 'Торец плиты' and 'борт плиты' are the same role slab_edge. Beam insulation belongs only to floor_slab_beam_items.insulated_length_m/insulation_area_m2. Lintel insulation belongs only to load_bearing_walls_lintels targets. If PDF gives volume in m3, keep volume_m3; do not force it into m2 target. If PDF gives combined bottom+edge, role=combined_bottom_and_edge."
 
 floor_slab_beam_items:
   section_code: floor_slabs
@@ -541,7 +541,7 @@ main_wall_rebar_items:
   negative_context: ["перемычк", "фундамент", "перекрыти", "балк", "перегородк", "парапет"]
   value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use legacy masonry_rebar_a500_d10_weight in production extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback.
+  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use deprecated masonry_rebar_a500_d10_weight in production extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback.
 
 Added 2026-07-26 (real project case): the spec sometimes gives ONE combined row for two block widths at once (e.g. 'Блок 400мм, блок 250мм (несущие стены)' as a single ф10 length) — return it as one item as printed, do not try to split it by block width, component stays load_bearing_walls. A tiny separate 'подоконное армирование' (under-window reinforcement) row, when present, also belongs here as component=load_bearing_walls — if the PDF doesn't say which floor, default floor=1. When this creates a second row with the exact same floor+component+steel_class+diameter_mm as another row (e.g. the combined block-width row above), you MUST set an explicit distinct `code` on at least one of them (e.g. append '_subwindow') — without a distinct code the calculator now raises an error on the collision (updated 2026-07-27; it used to silently keep only one of the two rows before that fix) rather than losing either row's data, but the run will fail until a distinct code is supplied. Never route 'перегородки'/150мм block rebar into this group under component=load_bearing_walls, even disguised inside a combined line — partitions rebar must either be tagged component=partitions (which the calculator hard-rejects by design) or left out of this group entirely; a real past extraction run mistagged partition rebar as load_bearing_walls and it got silently priced as if it were load-bearing — do not repeat that. Same rule for 'парапет'/'парапеты' rows — route these to parapet_chasing_base_length and parapet_rebar_base_length instead (sum across floors, see their own notes), never into main_wall_rebar_items even with component=load_bearing_walls. Added 2026-08-05 (real ТРЦ case): two parapet rebar rows (47,36 m floor 1 + 105,68 m floor 2, both explicitly labelled 'парапеты X этаж' in the PDF) were mistagged this way — the material length still got priced (folded into the main-wall rebar total, wrong rate but not lost), but the separate parapet chasing/groove-cutting work line stayed at zero because parapet_chasing_base_length_m was never filled. Do not repeat."
 
@@ -686,7 +686,7 @@ floor_1_lintel_insulation_eps_volume:
   negative_context: ["плита", "фундамент", "стен", "2 этаж"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Same physical product (Пеноплэкс Основа 100х585х1185 мм) as floor_slab_1's edge/beam insulation, but a distinct project volume for lintels — do not sum with floor_slab_1_edge_eps_material_area or similar."
+  notes: "Added 2026-07-15. Same physical product (Пеноплэкс Основа 100х585х1185 мм) may also appear in slab/beam insulation, but this is a distinct project volume for lintels in load_bearing_walls_lintels. Do not sum with floor_slabs EPS items."
 
 floor_2_lintel_monolithic_concrete_volume:
   section_code: load_bearing_walls_lintels
@@ -878,494 +878,6 @@ vent_chimney_cladding_segments:
   unit_column_hint: ["м", "м.п.", "шт"]
   notes: "Segments for cladding work; not Schiedel block piece counts."
 
-floor_slab_1:
-  section_code: floor_slab_1
-  ru_label: "Плита перекрытия 1-го этажа"
-  pdf_aliases: ["плита перекрытия 1 этажа", "перекрытие 1-го этажа", "плита перекрытия на отм.", "спецификация к плите перекрытия 1 этажа"]
-  expected_unit: null
-  table_hints: ["План плиты перекрытия 1 этажа", "Спецификация к плите перекрытия 1 этажа", "Ведомость деталей плиты перекрытия 1 этажа"]
-  required_context: ["перекрыти|плита"]
-  negative_context: ["фундамент", "кровля", "2 этажа"]
-  value_column_hint: ["кол-во", "количество", "объем", "площадь", "масса"]
-  unit_column_hint: ["м3", "м2", "кг", "м.п."]
-  notes: "Section header only; use child target codes for values."
-
-floor_slab_1_kind:
-  section_code: floor_slab_1
-  ru_label: "Тип плиты — жилое перекрытие или кровельная плита"
-  pdf_aliases: ["Плоская Ж/б, неэксплуатируемая", "Плоская Ж/б, эксплуатируемая", "перекрытие/кровля"]
-  expected_unit: null
-  table_hints: ["Общие данные"]
-  required_context: ["перекрыти|кровл", "неэксплуатируем|эксплуатируем|плоск"]
-  negative_context: []
-  value_column_hint: []
-  unit_column_hint: []
-  notes: "Added 2026-07-26 (real project case). Purely descriptive — never gate pricing or calculation on this value. General data sometimes describes this slab as part of the roof build-up (e.g. '4.5 Конструкция перекрытия/кровли на отметке +3,550: Плоская Ж/б, неэксплуатируемая, согласно КР-2') even though it still occupies the floor_slab_1 pipeline slot and is calculated there as usual — set value=roof_cover_slab in that case, otherwise residential_floor. This slab may separately be labeled ПМ1/ПМ2 etc. on a masonry/slab plan — that label belongs to this slab only, never use it as a roof zone identifier in flat_roof's roof_zones (those must come from the roof's own specification sheet, e.g. 'Тип А' + elevation, which is a completely different labeling system)."
-
-floor_slab_1_concrete_volume:
-  section_code: floor_slab_1
-  ru_label: "Бетон плиты перекрытия 1-го этажа, общий объем по спецификации"
-  pdf_aliases: ["Бетон плиты перекрытия 1 этажа", "Бетон ж/б плиты перекрытия", "Бетон перекрытия", "Бетон В22,5 плита перекрытия", "Итого бетон плиты перекрытия", "Общий объем бетона перекрытия"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плите перекрытия 1 этажа"]
-  required_context: ["бетон", "перекрыти|плита"]
-  negative_context: ["перемычк", "фундамент", "2 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Production calculator subtracts beam_items concrete internally. Use the total concrete for the floor slab 1 section before beam subtraction if the PDF gives a total. Do not map a beam-only concrete row here."
-
-floor_slab_1_slab_thickness:
-  section_code: floor_slab_1
-  ru_label: "Толщина плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Толщина плиты перекрытия 1 этажа", "Плита перекрытия 180 мм", "Плита перекрытия h", "h плиты перекрытия", "толщ. плиты перекрытия"]
-  expected_unit: m
-  table_hints: ["План плиты перекрытия 1 этажа", "Разрез плиты перекрытия", "Спецификация к плите перекрытия 1 этажа"]
-  required_context: ["толщ|h", "плит|перекрыти"]
-  negative_context: ["фундамент", "кровля", "2 этажа"]
-  value_column_hint: ["толщина", "h", "размер", "значение"]
-  unit_column_hint: ["мм", "м"]
-  notes: "Normalize mm to meters. Used for calculator controls/fallbacks, not as project-specific hardcode."
-
-floor_slab_1_slab_edge_perimeter:
-  section_code: floor_slab_1
-  ru_label: "Периметр/длина торца плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Периметр торца плиты", "Длина торца плиты перекрытия", "Периметр вертикальных поверхностей", "Длина вертикальных поверхностей плиты"]
-  expected_unit: linear_m
-  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
-  required_context: ["торц|вертикальн|периметр|длина", "плит|перекрыти"]
-  negative_context: ["опалубка м2", "ЭППС м3", "фундамент", "2 этажа"]
-  value_column_hint: ["длина", "периметр", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
-  notes: "Linear value only. Do not map m2 formwork area here. Updated 2026-08-05: if the PDF gives this per zone (e.g. main slab + kitchen/dining, no combined total), use slab_zones group's edge_perimeter_m per zone instead of guessing a single figure here — see slab_zones above."
-
-floor_slab_1_eps100_volume:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм для торца и низа плиты перекрытия 1-го этажа"
-  pdf_aliases: ["ЭППС 100 мм торец и низ плиты", "ЭППС-100мм утепление плиты перекрытия", "Утепление вертикальных поверхностей плиты", "Утепление под плитой перекрытия 1 этажа"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плите перекрытия 1 этажа", "Спецификация утепления"]
-  required_context: ["ЭППС", "100"]
-  negative_context: ["опалубка", "м2", "фундамент", "кровля", "2 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "EPS material volume in m3. Do not confuse with m2 formwork under slab or vertical formwork."
-
-floor_slab_1_under_slab_formwork_area:
-  section_code: floor_slab_1
-  ru_label: "Площадь опалубки под плитой перекрытия 1-го этажа"
-  pdf_aliases: ["Горизонтальная опалубка под плиту перекрытия", "Опалубка под плитой", "Площадь опалубки под плитой", "Горизонтальная опалубка"]
-  expected_unit: m2
-  table_hints: ["Ведомость опалубки плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
-  required_context: ["опалубк", "плит|перекрыти"]
-  negative_context: ["ЭППС", "утепление", "торец", "вертикальн", "балк", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Production target. Keep separate from EPS bottom work area and EPS volume. Updated 2026-08-05: if the PDF gives this per zone with no combined total, use slab_zones group's under_slab_formwork_area_m2 per zone instead — see slab_zones above."
-
-floor_slab_1_edge_formwork_area:
-  section_code: floor_slab_1
-  ru_label: "Площадь опалубки торца плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Опалубка вертикальных поверхностей плиты", "Опалубка торца плиты", "Вертикальная опалубка плиты перекрытия", "Ведомость вертикальных поверхностей"]
-  expected_unit: m2
-  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Общий вид перекрытия 1 этажа"]
-  required_context: ["опалубк", "вертикальн|торц"]
-  negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Production target. Keep separate from EPS 100 mm edge area/volume. Updated 2026-08-05: do NOT sum candidates here if one of them is actually a merged slab+beam number (e.g. 'Вертикальные поверхности плиты и ж/б балок — 36,60 м2') — that double-counts beam area into a slab-edge-only field. If a zone's vertical formwork is genuinely merged edge+beam, use slab_zones group's edge_and_beam_formwork_area_m2 for that zone (or the flat floor_slab_1_edge_and_beam_formwork_area_combined scalar for a single-zone whole-project case) instead — see slab_zones and floor_slab_1_edge_and_beam_formwork_area_combined."
-
-floor_slab_1_edge_and_beam_formwork_area_combined:
-  section_code: floor_slab_1
-  ru_label: "Опалубка торца плиты + балок перекрытия 1-го этажа (объединено, разделить нельзя)"
-  pdf_aliases: ["Вертикальные поверхности плиты и ж/б балок", "Опалубка торца плиты и балок", "Опалубка торца плиты и балок 1 этажа"]
-  expected_unit: m2
-  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 1 этажа", "Опалубочные работы плита перекрытия 1 этажа"]
-  required_context: ["вертикальн|торц", "балк"]
-  negative_context: ["горизонтальная", "ЭППС", "утепление", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-08-05 (real ТРЦ case: 'Вертикальные поверхности плиты и ж/б балок 1 этажа — 36,60 м2'). Use ONLY when the PDF gives slab-edge and beam vertical formwork as ONE merged number with no way to split it. Do not use as a shortcut when floor_slab_1_edge_formwork_area/floor_slab_1_beams_formwork_area are actually separable — those remain the default path. If the project has multiple slab zones and only some are merged this way (e.g. main zone merged, kitchen/dining zone pure-edge-only), use slab_zones group's edge_and_beam_formwork_area_m2 per zone instead of this flat scalar — this scalar is only for a single whole-project merged figure with no zone split. Mutually exclusive with floor_slab_1_edge_formwork_area/floor_slab_1_beams_formwork_area; the calculator raises if both are supplied."
-
-floor_slab_1_beams_formwork_area:
-  section_code: floor_slab_1
-  ru_label: "Площадь опалубки балок перекрытия 1-го этажа"
-  pdf_aliases: ["Опалубка балок", "Площадь опалубки балок", "Опалубка ж/б балок", "Вертикальная опалубка балок", "Опалубка боковых поверхностей балок"]
-  expected_unit: m2
-  table_hints: ["Ведомость балок", "Спецификация балок", "Ведомость опалубки балок"]
-  required_context: ["опалубк", "балк"]
-  negative_context: ["плита под", "торец плиты", "ЭППС", "перемычк", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Production target for beam formwork area. Do not confuse with beam concrete volume or beam table total."
-
-floor_slab_1_beams_bottom_formwork_area:
-  section_code: floor_slab_1
-  ru_label: "Горизонтальная площадь опалубки под балкой"
-  pdf_aliases: ["Горизонтальная опалубка под ж/б балку", "Опалубка под балку горизонтальная", "Опалубка низа балки"]
-  expected_unit: m2
-  table_hints: ["Ведомость горизонтальных поверхностей плиты перекрытия", "Ведомость опалубки балок"]
-  required_context: ["опалубк", "балк", "горизонтальн"]
-  negative_context: ["плита", "торец", "вертикальн", "перемычк", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-07-26 (Elena, ТРЦ review). Distinct from floor_slab_1_under_slab_formwork_area (horizontal under the slab itself) and from the vertical slab+beam combined area — real projects can print this as its own separate horizontal-under-beam line (real ТРЦ case: 1,26 м2, alongside 97,11 м2 under the slab). Feeds plywood/timber together with the vertical area; do not compute sheets/volume yourself."
-
-floor_slab_1_beams_concrete_volume:
-  section_code: floor_slab_1
-  ru_label: "Объем бетона балок перекрытия 1-го этажа"
-  pdf_aliases: ["Бетон балок", "Бетон (балки в теле плиты перекрытия)", "Бетон В22,5 (балки)", "Итого" ]
-  expected_unit: m3
-  table_hints: ["Спецификация к плите перекрытия", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Спецификация Ж/Б балок"]
-  required_context: ["бетон", "балк"]
-  negative_context: ["плита", "опалубк", "перемычк", "2 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество", "итого"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Usually a ready 'Итого' line that is the SUM of the beam specification table's own rows (equal to sum of beam_items.concrete_volume_m3), separate from the slab's own concrete volume line. Confirmed present in ЮСВ КР2 (лист 22, 'Спецификация Ж/Б балок', строка Итого). CORRECTED 2026-08-09: this notes field previously (wrongly) cited ТРЦ КР2 лист 31's 'Бетон B-22,5 (балки в теле плиты перекрытия)' — 1.091 m3 — as an example here. It is NOT a beam_items total (which sums to 3.180 m3 for that same project) and must never be mapped to this target; mapping it here would silently override the real beam-items sum and corrupt the formwork-area calc. That specific kind of row (a small extra concrete line printed separately from both the zone's main slab volume AND the beam table) belongs in the additional_concrete_items group instead — see additional_concrete_items below. If this target is absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
-
-floor_slab_1_edge_eps_work_length:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм торец плиты перекрытия 1-го этажа — длина работ по торцу плиты"
-  pdf_aliases: ["ЭППС торец плиты длина", "Утепление торца плиты длина", "Длина утепления торца", "Утепление вертикальных поверхностей длина"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
-  required_context: ["ЭППС|утеплен", "торц|вертикальн|длина"]
-  negative_context: ["опалубка", "м2", "м3", "фундамент", "2 этажа"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
-  notes: "Work length for slab edge EPS. Do not confuse with EPS material area m2 or volume m3. Updated 2026-07-29 (Elena): beams are not always insulated, and when insulated may cover only part of an L/T-shaped beam. Prefer slab edge length here and use floor_slab_1_beams_eps_work_length for the actual insulated beam portion. If the PDF gives only one explicit combined line 'торцы плиты, балок' with no split, use that value here but mark needs_review and explain that it is combined."
-
-floor_slab_1_beams_eps_work_length:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм торец балок 1-го этажа — длина утепляемой части"
-  pdf_aliases: ["Утепление балок длина", "Утепление ж/б балок длина", "Утепляемая часть балок", "ЭППС торец балок длина", "Утепление по наружной стороне балок"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа", "Ведомость вертикальных поверхностей плиты и балок"]
-  required_context: ["ЭППС|утеплен", "балк", "длина|м.п"]
-  negative_context: ["бетон", "опалубка", "арматура", "перемычк", "вся длина балок если нет явного утепления", "2 этажа"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
-  notes: "Only the beam length actually insulated from outside. Do not substitute total beam length: Elena confirmed beams may be uninsulated or insulated only partially, especially L/T-shaped beams where only the outside part is insulated."
-
-floor_slab_1_edge_insulation_height:
-  section_code: floor_slab_1
-  ru_label: "Высота утепления торца плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Высота утепления торца", "Торец плиты высота утепления", "ЭППС торца высота", "Высота вертикального утепления"]
-  expected_unit: m
-  table_hints: ["Разрез плиты перекрытия", "Спецификация утепления"]
-  required_context: ["высот|h", "ЭППС|утеплен|торц"]
-  negative_context: ["толщина ЭППС", "опалубка", "фундамент", "2 этажа"]
-  value_column_hint: ["высота", "h", "размер", "значение"]
-  unit_column_hint: ["мм", "м"]
-  notes: "Normalize mm to meters. This is insulation height, not EPS thickness."
-
-floor_slab_1_edge_eps_material_area:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм торец плиты перекрытия 1-го этажа — площадь материала"
-  pdf_aliases: ["ЭППС торец плиты площадь", "Утепление вертикальных поверхностей плиты", "Площадь материала ЭППС торца", "Площадь утепления торца плиты"]
-  expected_unit: m2
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
-  required_context: ["ЭППС|утеплен", "торц|вертикальн|площад"]
-  negative_context: ["опалубка", "м3", "низ плиты", "фундамент", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Material area for EPS slab edge. Do not confuse with edge formwork area or beam EPS area."
-
-floor_slab_1_beams_eps_material_area:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм торец балок 1-го этажа — площадь материала"
-  pdf_aliases: ["Площадь утепления ж/б балок", "ЭППС балки площадь", "Утепление балок площадь", "Площадь ЭППС балок"]
-  expected_unit: m2
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа", "Ведомость вертикальных поверхностей плиты и балок"]
-  required_context: ["ЭППС|утеплен", "балк", "площад"]
-  negative_context: ["опалубка", "бетон", "арматура", "перемычк", "низ плиты", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Only the EPS area actually used on insulated beam faces. Do not derive from total beam length unless the PDF explicitly says all beam faces are insulated."
-
-floor_slab_1_bottom_eps_work_area:
-  section_code: floor_slab_1
-  ru_label: "ЭППС 100 мм низ плиты перекрытия 1-го этажа — площадь работ"
-  pdf_aliases: ["ЭППС низ плиты площадь", "Утепление низа плиты", "Утепление под плитой перекрытия", "Площадь утепления низа плиты"]
-  expected_unit: m2
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 1 этажа"]
-  required_context: ["ЭППС|утеплен", "низ|под плит"]
-  negative_context: ["опалубка", "м3", "торец", "фундамент", "2 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Work area below slab. Do not confuse with under-slab formwork area. Added 2026-07-26 (real project case): this is the SLAB's own bottom area only. If the PDF separately gives a small beam-only insulation area (a beam SIDE-face area, distinct from this and from the combined edge length above) — checked multiple real project smetas, none price it as its own line and it is not summed in here either. Capture it only as a diagnostic/outside-target note, do not invent a new field."
-
-floor_slab_1_rebar_items:
-  section_code: floor_slab_1
-  ru_label: "Арматура плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Арматура плиты перекрытия 1 этажа", "Фоновое армирование", "Дополнительное армирование", "ф10 А500С", "ф12 А500С", "ф16 А500С", "ф25 А500С", "ф6 А240", "ф8 А240"]
-  expected_unit: null
-  accepted_units: ["linear_m", "kg"]
-  primary_pdf_unit: "linear_m"
-  calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter, не считай общий вес."
-  table_hints: ["Спецификация к плите перекрытия 1 этажа", "Ведомость деталей плиты перекрытия 1 этажа"]
-  required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
-  negative_context: ["кладк", "перемычк", "фундамент", "2 этажа"]
-  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract rows by diameter and steel class; set floor=1 and component=floor_slab_1. Preserve raw_table_rows for multi-column rows. Primary PDF quantity is often linear meters, not total kg. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback. zone_context (added 2026-08-10, P4 FLOOR_SLAB_UNIFICATION_PLAN.md; corrected 2026-08-10 after checking the raw PDF directly): the exact context string of the slab_zones row this rebar row physically belongs to — fill ONLY when the PDF gives an explicit, unambiguous signal. The real ТРЦ signal is NOT a per-row text prefix (there is none in the actual PDF table — 'Плита кухни:' was a label the extraction process itself added in an old JSON, not text copied from the source): it's that each zone has its OWN separate specification table on its own page, with its OWN table title — ТРЦ page 31 is titled 'СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА НА Ж/Б ПЛИТУ ПЕРЕКРЫТИЯ 1 ЭТАЖА', page 32 is titled 'СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА НА Ж/Б ПЛИТУ ПЕРЕКРЫТИЯ НА ОТМ +3,750' (matching that zone's own slab_zones[].context); the room name ('Кухни/столовой/гостиной') on that same page comes from a separate drawing caption, not the material table. General rule: if a spec/rebar table is physically duplicated per zone/elevation with its own scoping title, every row in one such table belongs to that one zone - match the table's own title/elevation to the right slab_zones[].context. Never infer from position/drawing layout alone when the table itself isn't split - if there's only one combined table for the whole floor, leave zone_context null on every row, don't partially tag. If you do tag - tag EVERY row in this group with its zone (not just some), since a partially-tagged group is treated as untagged downstream and looks like unfinished work to a reviewer. If the project has only one slab_zones row (or none), don't fill this field at all."
-
-beam_items:
-  section_code: floor_slab_1
-  ru_label: "Ж/Б балки плиты перекрытия"
-  pdf_aliases: ["Балка Б-", "Ж/Б балка", "Б-1", "Б-2", "Б-3", "Ведомость балок", "Железобетонная балка"]
-  expected_unit: null
-  table_hints: ["Ведомость деталей плиты перекрытия", "План плиты перекрытия", "Спецификация балок"]
-  required_context: ["балк|Б-"]
-  negative_context: ["итого", "арматура", "перемычка", "стропильная"]
-  value_column_hint: ["марка", "длина", "ширина", "высота", "кол-во", "бетон", "опалубка", "площадь"]
-  unit_column_hint: ["мм", "м", "м3", "м³", "м2", "м²", "шт"]
-  notes: "Extract each real beam row. If the specification gives ready concrete/formwork on the same beam row, fill concrete_volume_m3/formwork_area_m2 from the PDF. width_m may be null for a combined row with different cross-sections; do not invent a split. If a row combines marks such as Б4/Б4-1 and only a combined concrete value is given, keep the combined row with needs_review/manual split note until a separated designer spec is available. zone_context (added 2026-08-10, P4): same rule as floor_slab_1_rebar_items.zone_context above - fill only on an explicit PDF signal, never a guess; all rows or none; skip entirely when there's only one zone. Only one real precedent exists so far (ТРЦ, all beams in a single zone, no separate per-zone beam table) - this doesn't mean beams never split by zone, just that no real multi-zone-beam PDF example has been checked yet."
-
-additional_concrete_items:
-  section_code: floor_slab_1
-  ru_label: "Дополнительный бетон в теле плиты (не основная плита, не beam_items)"
-  pdf_aliases: ["Бетон (балка в теле плиты перекрытия)", "Бетон (ребро в теле плиты)", "Бетон (ребро 50мм)", "Бетон (балки в теле плиты перекрытия)"]
-  expected_unit: m3
-  table_hints: ["Спецификация расхода материала на Ж/Б плиту перекрытия"]
-  required_context: ["бетон", "тел"]
-  negative_context: ["опалубк", "арматура", "перемычк"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-08-09 (real ТРЦ case: КР2 лист 31, 'Бетон B-22,5 (балки в теле плиты перекрытия)' = 1.091 m3, и лист 32, 'Бетон B-22,5 (Ребро 50мм)' = 0.199 m3). Эти строки физически ОТДЕЛЬНЫ и от основной строки бетона плиты (slab_zones.concrete_volume_m3 / floor_slab_1_concrete_volume — 'Плита перекрытия толщиной 200мм'), и от индивидуальных балок в beam_items/floor_slab_1_beams_concrete_volume (сумма таких строк для ТРЦ — 3.180 m3, а не 1.091 — НЕ путать их между собой, см. floor_slab_1_beams_concrete_volume notes). Извлекай каждую такую строку отдельным элементом группы (не суммируй сам — калькулятор суммирует по зоне), с полем zone_context равным точной строке context той зоны slab_zones, к которой она относится (обязательно при более чем одной зоне; при одной зоне можно оставить null). Эта группа влияет ТОЛЬКО на материал бетона/доставку (доп. объём прибавляется к объёму зоны перед коэффициентом отходов и округлением рейсов миксера по зоне) — не влияет на площадь опалубки и объём бетонирования плиты, они уже верны без неё. Если такой отдельной строки в спецификации нет — оставляй группу пустой, не выдумывай."
-
-floor_slab_1_beam_concrete_volume:
-  section_code: floor_slab_1
-  ru_label: "Бетон Ж/Б балок плиты перекрытия 1-го этажа"
-  pdf_aliases: ["Бетон балок", "Бетон ж/б балок", "Объем бетона балок", "Итого бетон по балкам"]
-  expected_unit: m3
-  table_hints: ["Ведомость балок", "Спецификация балок"]
-  required_context: ["бетон", "балк"]
-  negative_context: ["плита перекрытия", "фундамент", "перемычк", "арматура"]
-  value_column_hint: ["объем", "итого", "кол-во"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Alias-only helper. Keep separate from floor_slab_1_concrete_volume and from total beam table row."
-
-floor_slab_1_beam_table_total:
-  section_code: floor_slab_1
-  ru_label: "Итого по таблице Ж/Б балок"
-  pdf_aliases: ["Итого по балкам", "Итого Ж/Б балки", "Всего балки", "Итого по ведомости балок"]
-  expected_unit: null
-  table_hints: ["Ведомость балок", "Спецификация балок"]
-  required_context: ["итого|всего", "балк"]
-  negative_context: ["бетон плиты", "арматура плиты", "перемычк"]
-  value_column_hint: ["итого", "всего", "объем", "кол-во"]
-  unit_column_hint: ["м3", "м2", "м.п.", "шт"]
-  notes: "Control row only; do not map automatically to slab concrete or beam items."
-
-beam_table_controls:
-  section_code: floor_slab_1
-  ru_label: "Контрольные итоги таблицы Ж/Б балок"
-  pdf_aliases: ["Итого по балкам", "Итого Ж/Б балки", "Всего балки", "Итого по ведомости балок", "Итого"]
-  expected_unit: null
-  table_hints: ["Ведомость балок", "Спецификация балок"]
-  required_context: ["итого|всего", "балк"]
-  negative_context: ["арматура", "перемычк", "фундамент", "2 этажа"]
-  value_column_hint: ["итого", "всего", "объем", "площадь", "кол-во"]
-  unit_column_hint: ["м3", "м2", "м.п.", "шт"]
-  notes: "Diagnostic group only. Keep table totals for review, but do not feed them directly into calculator inputs."
-
-floor_slab_2:
-  section_code: floor_slab_2
-  ru_label: "Плита перекрытия 2-го этажа"
-  pdf_aliases: ["плита перекрытия 2 этажа", "перекрытие 2-го этажа", "спецификация материалов на устройство ж/б плиты", "плита перекрытия на отм."]
-  expected_unit: null
-  table_hints: ["План плиты перекрытия 2 этажа", "Спецификация плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей плиты перекрытия 2 этажа"]
-  required_context: ["перекрыти|плита"]
-  negative_context: ["фундамент", "кровля", "1 этажа"]
-  value_column_hint: ["кол-во", "количество", "объем", "площадь", "масса"]
-  unit_column_hint: ["м3", "м2", "кг", "м.п."]
-  notes: "Section header only; use child target codes for values."
-
-floor_slab_2_kind:
-  section_code: floor_slab_2
-  ru_label: "Тип плиты — жилое перекрытие или кровельная плита"
-  pdf_aliases: ["Плоская Ж/б, неэксплуатируемая", "Плоская Ж/б, эксплуатируемая", "перекрытие/кровля"]
-  expected_unit: null
-  table_hints: ["Общие данные"]
-  required_context: ["перекрыти|кровл", "неэксплуатируем|эксплуатируем|плоск"]
-  negative_context: []
-  value_column_hint: []
-  unit_column_hint: []
-  notes: "Mirrors floor_slab_1_kind — purely descriptive, never gate pricing on it. This slab may separately be labeled ПМ2 etc. on a masonry/slab plan — never use that as a roof zone identifier in flat_roof's roof_zones, which must come from the roof's own specification sheet."
-
-floor_slab_2_concrete_volume:
-  section_code: floor_slab_2
-  ru_label: "Бетон плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Бетон плиты перекрытия 2 этажа", "Бетон ж/б плиты 2 этажа", "Бетон перекрытия 2 этажа", "Бетон плиты на отм."]
-  expected_unit: m3
-  table_hints: ["Спецификация плиты перекрытия 2 этажа"]
-  required_context: ["бетон", "перекрыти|плита"]
-  negative_context: ["балк", "перемычк", "фундамент", "1 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Slab concrete only; do not mix with roof or first-floor slab."
-
-floor_slab_2_slab_edge_perimeter:
-  section_code: floor_slab_2
-  ru_label: "Периметр торца плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Периметр торца плиты", "Длина торца плиты", "Торец плиты периметр", "Периметр вертикальных поверхностей"]
-  expected_unit: linear_m
-  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
-  required_context: ["периметр|длина", "торц|вертикальн"]
-  negative_context: ["опалубка", "ЭППС", "площадь", "м2", "1 этажа", "фундамент"]
-  value_column_hint: ["длина", "периметр", "кол-во"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Linear perimeter, not area and not insulation volume."
-
-floor_slab_2_main_formwork_area:
-  section_code: floor_slab_2
-  ru_label: "Площадь опалубки под плитой перекрытия 2-го этажа"
-  pdf_aliases: ["Горизонтальная опалубка под плиту перекрытия 2 этажа", "Основная площадь опалубки", "Опалубка под плитой перекрытия", "Горизонтальная опалубка", "Нижняя опалубка плиты", "Нижняя опалубка плиты перекрытия"]
-  expected_unit: m2
-  table_hints: ["Ведомость опалубки плиты перекрытия 2 этажа", "Ведомость горизонтальных поверхностей", "Общий вид перекрытия 2 этажа"]
-  required_context: ["опалубк", "плит|перекрыти"]
-  negative_context: ["торц", "вертикальн", "ЭППС", "утепление", "балк", "лестниц", "кровля", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Critical: m2 horizontal/main formwork. A PDF row named 'Нижняя опалубка плиты ...' maps here, not to floor_slab_2_slab_area. Do not mix with roof area or another slab level."
-
-floor_slab_2_edge_formwork_area:
-  section_code: floor_slab_2
-  ru_label: "Площадь опалубки торца плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Опалубка под вертикальные поверхности ж/б плиты перекрытия 2 этажа", "Опалубка торца плиты 2 этажа", "Вертикальная опалубка плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей"]
-  expected_unit: m2
-  table_hints: ["Ведомость вертикальных поверхностей плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
-  required_context: ["опалубк", "вертикальн|торц"]
-  negative_context: ["ЭППС", "утепление", "горизонтальная", "балк", "лестниц", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Alias-only helper. Keep separate from EPS 100 mm edge volume."
-
-floor_slab_2_beams_formwork_area:
-  section_code: floor_slab_2
-  ru_label: "Площадь опалубки балок перекрытия 2-го этажа"
-  pdf_aliases: ["Опалубка балок перекрытия 2 этажа", "Площадь опалубки балок 2 этажа", "Опалубка ж/б балок"]
-  expected_unit: m2
-  table_hints: ["Ведомость балок", "Спецификация балок"]
-  required_context: ["опалубк", "балк"]
-  negative_context: ["плита под", "торец плиты", "ЭППС", "перемычк", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Optional; this floor slab may or may not have beams, independently of floor_slab_1. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.formwork_area_m2."
-
-floor_slab_2_beams_bottom_formwork_area:
-  section_code: floor_slab_2
-  ru_label: "Горизонтальная площадь опалубки под балкой перекрытия 2-го этажа"
-  pdf_aliases: ["Нижняя опалубка ж/б балок", "Нижняя опалубка ж/б балок в составе ПМ2", "Горизонтальная опалубка под ж/б балку", "Опалубка под балку горизонтальная", "Опалубка низа балки"]
-  expected_unit: m2
-  table_hints: ["Ведомость горизонтальных поверхностей", "Ведомость горизонтальных поверхностей плиты перекрытия", "Ведомость опалубки балок"]
-  required_context: ["опалубк", "балк", "нижн|горизонтальн"]
-  negative_context: ["плита без балок", "торец", "вертикальн", "перемычк", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Distinct from floor_slab_2_main_formwork_area (horizontal under the slab itself) and floor_slab_2_beams_formwork_area (vertical/side beam formwork). Extract only when the PDF gives a separate bottom/horizontal beam formwork line."
-
-floor_slab_2_beams_concrete_volume:
-  section_code: floor_slab_2
-  ru_label: "Объем бетона балок перекрытия 2-го этажа"
-  pdf_aliases: ["Бетон балок", "Бетон (балки в теле плиты перекрытия)", "Бетон В22,5 (балки)", "Итого"]
-  expected_unit: m3
-  table_hints: ["Спецификация к плите перекрытия", "Спецификация расхода материала на Ж/Б плиту перекрытия", "Спецификация Ж/Б балок"]
-  required_context: ["бетон", "балк"]
-  negative_context: ["плита", "опалубк", "перемычк", "1 этажа"]
-  value_column_hint: ["объем", "кол-во", "количество", "итого"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Optional; this floor slab may or may not have beams, independently of floor_slab_1. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
-
-floor_slab_2_beam_items:
-  section_code: floor_slab_2
-  ru_label: "Позиции балок плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Балка Б-", "Ж/Б балка", "Ведомость балок плиты перекрытия 2 этажа", "Железобетонная балка"]
-  expected_unit: null
-  table_hints: ["Ведомость деталей плиты перекрытия 2 этажа", "План плиты перекрытия 2 этажа", "Спецификация балок"]
-  required_context: ["балк|Б-"]
-  negative_context: ["итого", "арматура", "перемычка", "стропильная", "1 этажа"]
-  value_column_hint: ["марка", "длина", "ширина", "высота", "кол-во", "бетон", "опалубка", "площадь"]
-  unit_column_hint: ["мм", "м", "м3", "м³", "м2", "м²", "шт"]
-  notes: "Optional; extract each real beam row with the same shape as floor_slab_1's beam_items. If the specification gives ready concrete/formwork on the same beam row, fill concrete_volume_m3/formwork_area_m2 from the PDF. width_m may be null for a combined row with different cross-sections; do not invent a split. Do not use an 'Итого' row as a beam item unless it is explicitly the only combined source and is marked needs_review/manual."
-
-floor_slab_2_slab_area:
-  section_code: floor_slab_2
-  ru_label: "Площадь плиты перекрытия 2-го этажа для контроля"
-  pdf_aliases: ["Площадь плиты перекрытия 2 этажа", "Площадь перекрытия 2 этажа"]
-  expected_unit: m2
-  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Общий вид перекрытия 2 этажа"]
-  required_context: ["площадь", "плит|перекрыти"]
-  negative_context: ["торец", "1 этажа", "фундамент"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Optional control value only; does not feed the calculator directly. Prefer a genuine 'Площадь плиты перекрытия' row. Elena confirmed 2026-08-06: if the PDF has no separate slab-area row, it is acceptable to reuse 'Нижняя опалубка плиты'/'Горизонтальная опалубка' (floor_slab_2_main_formwork_area) or the waterproofing area as a substitute value, since they are the same footprint in practice — but ALWAYS set needs_review=true and explain in notes that the value was borrowed from formwork/waterproofing rather than a direct slab-area row, so Elena can confirm it wasn't actually a separate, different number."
-
-floor_slab_2_edge_insulation_height:
-  section_code: floor_slab_2
-  ru_label: "Высота утепления торца плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Высота утепления торца", "Высота торца плиты", "Толщина/высота вертикального утепления", "Утепление торца высота"]
-  expected_unit: m
-  table_hints: ["Разрез плиты перекрытия", "Ведомость вертикальных поверхностей"]
-  required_context: ["утеплен|торц|вертикальн", "высот|h"]
-  negative_context: ["площадь", "объем", "м2", "м3", "фундамент", "1 этажа"]
-  value_column_hint: ["высота", "значение", "h"]
-  unit_column_hint: ["м", "мм"]
-  notes: "Height/linear dimension only. If source is in mm, normalize but keep raw unit."
-
-floor_slab_2_beams_eps_work_length:
-  section_code: floor_slab_2
-  ru_label: "ЭППС 100 мм торец балок 2-го этажа — длина утепляемой части"
-  pdf_aliases: ["Утепление балок 2 этажа длина", "Утепление ж/б балок длина", "Утепляемая часть балок", "ЭППС торец балок длина", "Утепление по наружной стороне балок"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей плиты и балок"]
-  required_context: ["ЭППС|утеплен", "балк", "длина|м.п"]
-  negative_context: ["бетон", "опалубка", "арматура", "перемычк", "вся длина балок если нет явного утепления", "1 этажа"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "м/п", "мп", "м"]
-  notes: "Only the beam length actually insulated from outside. Do not substitute total beam length: Elena confirmed beams may be uninsulated or insulated only partially, especially L/T-shaped beams where only the outside part is insulated."
-
-floor_slab_2_beams_eps_material_area:
-  section_code: floor_slab_2
-  ru_label: "ЭППС 100 мм торец балок 2-го этажа — площадь материала"
-  pdf_aliases: ["Площадь утепления ж/б балок 2 этажа", "ЭППС балки площадь", "Утепление балок площадь", "Площадь ЭППС балок"]
-  expected_unit: m2
-  table_hints: ["Спецификация утепления", "Ведомость утепления плиты перекрытия 2 этажа", "Ведомость вертикальных поверхностей плиты и балок"]
-  required_context: ["ЭППС|утеплен", "балк", "площад"]
-  negative_context: ["опалубка", "бетон", "арматура", "перемычк", "низ плиты", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Only the EPS area actually used on insulated beam faces. Do not derive from total beam length unless the PDF explicitly says all beam faces are insulated."
-
-floor_slab_2_bottom_eps_work_area:
-  section_code: floor_slab_2
-  ru_label: "ЭППС 100 мм низ плиты перекрытия 2-го этажа — площадь работ"
-  pdf_aliases: ["Площадь горизонтального утепления плиты", "Горизонтальное утепление плиты", "Утепление низа плиты перекрытия", "Утепление нижней поверхности плиты", "ЭППС 100 мм низ плиты"]
-  expected_unit: m2
-  table_hints: ["Схема утепления плиты", "Спецификация утепления", "Ведомость утепления плиты перекрытия 2 этажа"]
-  required_context: ["ЭППС|утеплен", "плит", "горизонтальн|низ|нижн"]
-  negative_context: ["балк", "торец", "вертикальн", "опалубка", "фундамент", "1 этажа"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Bottom/horizontal EPS work area of the slab itself. Do not confuse with slab/beam edge EPS, beam-only EPS, or formwork."
-
-floor_slab_2_rebar_items:
-  section_code: floor_slab_2
-  ru_label: "Арматура плиты перекрытия 2-го этажа"
-  pdf_aliases: ["Арматура плиты перекрытия 2 этажа", "Фоновое армирование", "Дополнительное армирование", "ф10 А500С", "ф12 А500С", "ф16 А500С"]
-  expected_unit: null
-  accepted_units: ["linear_m", "kg"]
-  primary_pdf_unit: "linear_m"
-  calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter, weight_kg оставляй null. Не считай общий вес. Поля переименованы 2026-07-10 (были length_m/mass_per_m_kg) под spec_length_items — калькулятор больше не использует захардкоженный каталог арматуры."
-  table_hints: ["Спецификация плиты перекрытия 2 этажа", "Ведомость деталей плиты перекрытия 2 этажа"]
-  required_context: ["арматур|ф|Ø|А500|A500|А240|A240"]
-  negative_context: ["кладк", "перемычк", "фундамент", "1 этажа"]
-  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "кг"]
-  notes: "Extract rows by diameter and steel class; keep main/additional rows as separate candidates when the same diameter appears several times. Do not calculate kg from linear meters in the chat. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
-
 flat_roof:
   section_code: flat_roof
   ru_label: "Плоская кровля"
@@ -1498,7 +1010,7 @@ roof_zones:
   unit_column_hint: ["м2", "м²", "м.п.", "п.м."]
   notes: "Added 2026-07-26 (Elena, ТРЦ review). LIVE group — wired into flat_roof_calculator/calculator.py (roof_geometry_calc_method: roof_zones). Use this instead of roof_area_level_1/2 (and the matching parapet/wall-abutment level_1/2 targets) whenever the roof spec splits into more than two zones by floor and/or type — e.g. 1 этаж Тип1, 1 этаж Тип2, 2 этаж Тип2, кровля лестницы. Return each zone as its own row: context (zone label exactly as printed, e.g. '1 этаж, Тип1 (эксплуатируемая)'), area_m2, parapet_length_m, wall_abutment_length_m (omit the length fields for a zone if the PDF genuinely gives none for it — e.g. a staircase roof may have no wall-abutment row), operability. Linear abutments to walls, VK, vent channels, and vent shafts in м.п. all belong in wall_abutment_length_m of the matching roof zone; if the PDF gives 'примыкания к стенам' and 'примыкания к вентканалам/ВК' as separate rows under the same zone column, sum those components inside wall_abutment_length_m and explain the components in notes/raw_text. Do not put those linear meters into roof_vent_wall_abutment_level_1/2 while roof_zones is used, and do not put them into the piece-count vent_shaft_abutment_count. The calculator sums area_m2 across all rows into the total roof area, and sums parapet_length_m+wall_abutment_length_m across all rows into the combined parapet-and-abutment length — works for any zone count. operability drives membrane brand: 'exploitable' ONLY when the sheet explicitly labels the zone 'эксплуатируемая' — every other case (explicitly 'неэксплуатируемая', or no operability label given at all) is 'non_exploitable' (V-RP); 'exploitable' zones get V-GR membrane instead. Default to 'non_exploitable' when unsure, don't guess exploitable. If the PDF gives one ready combined figure for the whole roof instead, use the scalar level_1/level_2 (or project_spec_roof_area) targets as before and leave this group empty — don't duplicate.
 
-Added 2026-07-26 (real project case): a roof plan/spec page can carry its own zone labeling system (e.g. 'Тип А' + elevation mark) that is completely separate from any ПМ1/ПМ2-style slab identifiers used on a different page (masonry/slab plan) for the underlying floor_slab_1/floor_slab_2 structure — even though the roof sits at a slightly different elevation than the slab it covers (roof build-up adds thickness). Always take the zone `context` from the ROOF's own specification sheet, never from a slab/masonry plan's ПМ1/ПМ2 labeling, even if both refer to physically the same area of the building — they are different naming systems for different purposes (slab identity vs. roof material zone), do not merge or substitute one for the other."
+Added 2026-07-26 (real project case): a roof plan/spec page can carry its own zone labeling system (e.g. 'Тип А' + elevation mark) that is completely separate from any ПМ1/ПМ2-style slab identifiers used on a different page (masonry/slab plan) — even though the roof sits at a slightly different elevation than the slab it covers (roof build-up adds thickness). Always take the zone `context` from the ROOF's own specification sheet, never from a slab/masonry plan's ПМ1/ПМ2 labeling, even if both refer to physically the same area of the building — they are different naming systems for different purposes (slab identity vs. roof material zone), do not merge or substitute one for the other."
 
 # Reverted 2026-08-05: roof_slope_plate_a/b/j/k_volume, roof_eps50_volume, roof_aerators_count,
 # roof_internal_drain_height_per_drain removed as extraction targets (were defined right below this
