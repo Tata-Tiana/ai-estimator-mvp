@@ -43,6 +43,7 @@ Two real gaps found and fixed while building this adapter:
 
 from __future__ import annotations
 
+import copy
 import re
 from typing import Any
 
@@ -284,3 +285,111 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"floor_slab_1: required price '{key}' has no resolved value")
 
     return result
+
+
+# --- P2 orchestration (FLOOR_SLAB_UNIFICATION_PLAN.md) -------------------------------------
+#
+# build_calculator_inputs() below returns a LIST of pour inputs - one per slab_zones[] entry -
+# instead of build_calculator_input()'s single combined dict, for the N-pours-per-project
+# orchestration in core.job_runner. It is purely additive: build_calculator_input() itself is
+# untouched, still used unmodified by run_section()'s single-call-per-section_code flow.
+#
+# The split only ever activates when EVERY money-relevant per-zone signal is actually present -
+# see FLOOR_SLAB_UNIFICATION_PLAN.md P2.0/P1.0. Splitting data that can't be safely attributed
+# to a zone would silently lose or double money, so the default on any gap is to fall back to
+# exactly [build_calculator_input(normalized_review)] - today's real behavior for every project
+# that hasn't been re-extracted with zone_context yet (P4, not done for any real project as of
+# 2026-08-10).
+#
+# Two categories of per-zone data, gated separately:
+# 1. beam_items/rebar_items/additional_concrete_items: real production rows, must ALL carry a
+#    zone_context matching one of slab_zones[].context (or the group must be empty) - a partially-
+#    tagged group is treated the same as a fully-untagged one (ambiguous = don't split).
+# 2. Standalone whole-section fields with no per-item source to derive from (insulation +
+#    beams_bottom_formwork_area_m2 + the 4 per-pour manual values Elena ruled on 2026-08-10 -
+#    concrete_pump_shifts/formwork_rebar_crane_shifts/rebar_metal_delivery_trucks/
+#    technical_supervision_amount are NOT a shared pool to split, each real pour has its own,
+#    filled in manually per project): every zone must carry all of ZONE_STANDALONE_FIELDS.
+#    beams_formwork_area_m2/beams_concrete_volume_m3 are deliberately NOT in this list - they ARE
+#    safely recomputable from the zone-filtered beam_items (confirmed mathematically identical to
+#    the flat override on real TRC data: 34.339=34.339, 3.18=3.18), so this function just drops
+#    them and lets the shared engine recompute from the (already zone-scoped) beam_items instead.
+#    concrete_delivery_trips needs no field at all - already correctly zone-scoped automatically
+#    once slab_zones has exactly one entry (computed from that one zone's own concrete_volume_m3).
+
+ZONE_INSULATION_FIELDS = (
+    "slab_outer_edge_eps_work_length_m",
+    "slab_edge_eps_material_area_m2",
+    "bottom_slab_eps_work_area_m2",
+    "total_eps_volume_from_spec_m3",
+)
+ZONE_MANUAL_FIELDS = (
+    "concrete_pump_shifts",
+    "formwork_rebar_crane_shifts",
+    "rebar_metal_delivery_trucks",
+    "technical_supervision_amount",
+)
+ZONE_STANDALONE_FIELDS = ZONE_INSULATION_FIELDS + ZONE_MANUAL_FIELDS + ("beams_bottom_formwork_area_m2",)
+
+
+def _rows_fully_zone_tagged(rows: list[dict[str, Any]] | None, valid_contexts: set[str]) -> bool:
+    """Empty/absent group is vacuously fine (nothing to attribute) - only a PARTIALLY or
+    fully-untagged non-empty group blocks the split, same "don't guess" rule either way."""
+    if not rows:
+        return True
+    return all(row.get("zone_context") in valid_contexts for row in rows)
+
+
+def _zone_has_standalone_fields(zone: dict[str, Any]) -> bool:
+    return all(zone.get(key) is not None for key in ZONE_STANDALONE_FIELDS)
+
+
+def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str, Any]]:
+    """P2 entry point. Returns [combined] (today's exact single-pour behavior) unless every zone
+    and every money-bearing row is safely zone-attributable, in which case it returns one input
+    per slab_zones[] entry, each tagged with pour_context for the caller's section-title building."""
+    combined = build_calculator_input(normalized_review)
+    zones = combined.get("slab_zones") or []
+    if len(zones) < 2:
+        return [combined]
+
+    valid_contexts = {zone["context"] for zone in zones}
+    beam_rows = (combined.get("beams") or {}).get("items") or []
+    rebar_rows = combined.get("rebar_items") or []
+    extra_rows = combined.get(ADDITIONAL_CONCRETE_ITEMS_GROUP_KEY) or []
+
+    safe_to_split = (
+        _rows_fully_zone_tagged(beam_rows, valid_contexts)
+        and _rows_fully_zone_tagged(rebar_rows, valid_contexts)
+        and _rows_fully_zone_tagged(extra_rows, valid_contexts)
+        and all(_zone_has_standalone_fields(zone) for zone in zones)
+    )
+    if not safe_to_split:
+        return [combined]
+
+    pours: list[dict[str, Any]] = []
+    for zone in zones:
+        context = zone["context"]
+        pour_input = copy.deepcopy(combined)
+        pour_input["slab_zones"] = [zone]
+        pour_input["beams"] = {"items": [row for row in beam_rows if row.get("zone_context") == context]}
+        pour_input["rebar_items"] = [row for row in rebar_rows if row.get("zone_context") == context]
+        pour_input[ADDITIONAL_CONCRETE_ITEMS_GROUP_KEY] = [
+            row for row in extra_rows if row.get("zone_context") == context
+        ]
+        # Safe to drop - the shared engine recomputes both from the zone-filtered beam_items above
+        # (see this section's own comment block for the on-real-data proof these are identical).
+        pour_input.pop("beams_formwork_area_m2", None)
+        pour_input.pop("beams_concrete_volume_m3", None)
+        pour_input["beams_bottom_formwork_area_m2"] = zone["beams_bottom_formwork_area_m2"]
+        pour_input["insulation"] = {
+            **pour_input["insulation"],
+            **{key: zone[key] for key in ZONE_INSULATION_FIELDS},
+        }
+        pour_input["manual_lines"] = {
+            **pour_input["manual_lines"],
+            **{key: zone[key] for key in ZONE_MANUAL_FIELDS},
+        }
+        pour_input["pour_context"] = context
+        pours.append(pour_input)
+    return pours

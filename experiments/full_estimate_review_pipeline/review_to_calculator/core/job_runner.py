@@ -49,7 +49,7 @@ def _load_module_from_path(module_name: str, path: Path):
     return module
 
 
-def _load_build_input_function(section_code: str) -> Callable[[dict[str, Any]], dict[str, Any]]:
+def _load_build_input_module(section_code: str):
     path = SECTIONS_DIR / section_code / "build_input.py"
     if not path.exists():
         raise JobRunnerError(
@@ -57,11 +57,34 @@ def _load_build_input_function(section_code: str) -> Callable[[dict[str, Any]], 
             "(see ADAPTER_BUILD_PLAN.md, Этап 1/2 - it has not been written for this "
             "section)."
         )
-    module = _load_module_from_path(f"build_input_{section_code}", path)
+    return _load_module_from_path(f"build_input_{section_code}", path)
+
+
+def _load_build_input_function(section_code: str) -> Callable[[dict[str, Any]], dict[str, Any]]:
+    module = _load_build_input_module(section_code)
     build_fn = getattr(module, "build_calculator_input", None)
     if build_fn is None:
-        raise JobRunnerError(f"{path}: no build_calculator_input() function.")
+        raise JobRunnerError(
+            f"sections/{section_code}/build_input.py: no build_calculator_input() function."
+        )
     return build_fn
+
+
+def _load_build_inputs_function(section_code: str) -> Callable[[dict[str, Any]], list[dict[str, Any]]]:
+    """P2 (FLOOR_SLAB_UNIFICATION_PLAN.md): the plural, N-pours-capable sibling of
+    build_calculator_input() - only floor_slab_1/floor_slab_2 have one as of 2026-08-10.
+    Falls back to wrapping the singular function's result in a 1-item list for every other
+    section, so run_floor_slab_pours() below never needs a section-specific branch."""
+    module = _load_build_input_module(section_code)
+    build_fn = getattr(module, "build_calculator_inputs", None)
+    if build_fn is not None:
+        return build_fn
+    single_build_fn = getattr(module, "build_calculator_input", None)
+    if single_build_fn is None:
+        raise JobRunnerError(
+            f"sections/{section_code}/build_input.py: no build_calculator_input() function."
+        )
+    return lambda normalized_review: [single_build_fn(normalized_review)]
 
 
 def _load_calculate_function(contract: dict[str, Any]) -> Callable[..., dict[str, Any]]:
@@ -121,3 +144,58 @@ def run_section(section_code: str, workbook_path: str | Path) -> dict[str, Any]:
         "calculator_input": calculator_input,
         "result": result,
     }
+
+
+# floor_slab_1 today emits its own zone as pour_input["slab_zones"][0] (a full slab_zones[] row -
+# thickness_m/concrete_grade/level included); floor_slab_2's pours don't carry that dict at all
+# (its own slab_zones[] group is diagnostic-only, never fed into calculate_floor_slab_2()) - only
+# pour_context (the zone's context string) is common to both. zone_meta is None for a fallback
+# (unsplit) pour in either section.
+FLOOR_SLAB_SECTION_CODES = ("floor_slab_1", "floor_slab_2")
+
+
+def run_floor_slab_pours(workbook_path: str | Path) -> list[dict[str, Any]]:
+    """P2 (FLOOR_SLAB_UNIFICATION_PLAN.md) entry point - the N-pours sibling of run_section() for
+    floor_slab_1+floor_slab_2 specifically (SECTION_ORDER's other 6 sections stay on run_section()
+    unchanged). Runs both sections' full review-workbook-to-calculator-result flow, but calls
+    build_calculator_inputs() (plural) instead of build_calculator_input() (singular) so each
+    section can return multiple pour results instead of always exactly one.
+
+    Returns pours in floor_slab_1-then-floor_slab_2 order, each shaped like run_section()'s own
+    return dict plus `pour_context` (the zone's slab_zones[].context, or None for a fallback/
+    unsplit pour) and `zone_meta` (the full slab_zones[] row when available, for P3's eventual
+    section-title building - see this module's own comment above). Zero zones anywhere still
+    means at least one pour per section today (both build_calculator_inputs() implementations
+    fall back to [combined] rather than [], matching run_section()'s existing required-field
+    validation - a section with missing required data still raises, same as before P2)."""
+    wb = load_workbook(workbook_path)
+    pours: list[dict[str, Any]] = []
+    for section_code in FLOOR_SLAB_SECTION_CODES:
+        contract = load_contract(section_code)
+        normalized_review = read_review_workbook(wb, contract)
+        normalized_review["resolved_prices"] = resolve_prices(normalized_review["prices"], contract)
+
+        build_calculator_inputs = _load_build_inputs_function(section_code)
+        calculator_inputs = build_calculator_inputs(normalized_review)
+
+        calculate_fn = _load_calculate_function(contract)
+        for calculator_input in calculator_inputs:
+            pour_context = calculator_input.get("pour_context")
+            zone_meta = None
+            if pour_context is not None:
+                zones = calculator_input.get("slab_zones")
+                if zones and zones[0].get("context") == pour_context:
+                    zone_meta = zones[0]
+            calculator_argument = _prepare_calculator_argument(calculate_fn, calculator_input)
+            result = calculate_fn(calculator_argument)
+            pours.append(
+                {
+                    "section_code": section_code,
+                    "pour_context": pour_context,
+                    "zone_meta": zone_meta,
+                    "workbook_path": str(workbook_path),
+                    "calculator_input": calculator_input,
+                    "result": result,
+                }
+            )
+    return pours

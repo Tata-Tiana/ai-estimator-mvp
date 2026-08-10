@@ -37,6 +37,7 @@ anomaly"), exactly as the contract note prescribes - never reads it from scalars
 
 from __future__ import annotations
 
+import copy
 import re
 from typing import Any
 
@@ -194,3 +195,101 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"floor_slab_2: required price '{key}' has no resolved value")
 
     return result
+
+
+# --- P2.2 orchestration (FLOOR_SLAB_UNIFICATION_PLAN.md) ------------------------------------
+#
+# Same "one input per slab_zones[] entry, or [combined] if not safely attributable" mechanism as
+# floor_slab_1's build_calculator_inputs() (see that file's own comment block for the full
+# reasoning) - the schema-only slab_zones[] group added in P0 was never wired into
+# build_calculator_input() above, which stays untouched here too. Each returned dict is still
+# floor_slab_2's own FLAT input shape (fed to calculate_floor_slab_2(), not
+# calculate_floor_slab_pour() directly - that translation happens inside the calculator itself).
+#
+# edge_insulation_height_m and technical_supervision_amount are deliberately NOT per-zone fields
+# here - the former is a shared material constant (not a per-pour quantity), the latter doesn't
+# exist as a real cost line for this section at all (always a zero_excel_structure_line).
+
+ZONE_GEOMETRY_FIELDS = ("main_formwork_area_m2", "edge_formwork_area_m2", "slab_edge_perimeter_m")
+ZONE_MANUAL_FIELDS = ("concrete_pump_shifts", "crane_shifts", "rebar_metal_delivery_trucks")
+ZONE_STANDALONE_FIELDS = ZONE_GEOMETRY_FIELDS + ZONE_MANUAL_FIELDS + (
+    "bottom_slab_eps_work_area_m2",
+    "beams_bottom_formwork_area_m2",
+)
+
+
+def _rows_fully_zone_tagged(rows: list[dict[str, Any]] | None, valid_contexts: set[str]) -> bool:
+    if not rows:
+        return True
+    return all(row.get("zone_context") in valid_contexts for row in rows)
+
+
+def _zone_has_standalone_fields(zone: dict[str, Any]) -> bool:
+    return all(zone.get(key) is not None for key in ZONE_STANDALONE_FIELDS)
+
+
+def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str, Any]]:
+    """P2.2 entry point. Returns [combined] (today's exact single-pour behavior - floor_slab_2
+    always has 0 slab_zones[] rows in every real project as of 2026-08-10, so this is the only
+    path any real project takes right now) unless slab_zones[] has 2+ entries AND every zone/row
+    is safely zone-attributable, in which case one input per zone."""
+    combined = build_calculator_input(normalized_review)
+    zone_rows = normalized_review["production_items"].get("slab_zones") or []
+    if len(zone_rows) < 2:
+        return [combined]
+
+    valid_contexts = {zone["context"] for zone in zone_rows}
+    beam_rows = (combined.get("beams") or {}).get("items") or []
+    rebar_rows = combined.get("rebar_items") or []
+
+    safe_to_split = (
+        _rows_fully_zone_tagged(beam_rows, valid_contexts)
+        and _rows_fully_zone_tagged(rebar_rows, valid_contexts)
+        and all(_zone_has_standalone_fields(zone) for zone in zone_rows)
+    )
+    if not safe_to_split:
+        return [combined]
+
+    # Back-derive rental_rate from the combined input rather than re-resolving the price a
+    # second time - build_calculator_input() already computed formwork_rental_supplier_quote_total
+    # = combined main_formwork_area_m2 * rate (module docstring), so rate = quote / area.
+    rental_rate = combined[FORMWORK_RENTAL_QUOTE_KEY] / combined["main_formwork_area_m2"]
+
+    pours: list[dict[str, Any]] = []
+    for zone in zone_rows:
+        context = zone["context"]
+        pour_input = copy.deepcopy(combined)
+        # zone_context is stripped after filtering, not just left on the row: unlike
+        # floor_slab_1_calculator.py, calculate_floor_slab_2()'s translation wrapper never
+        # builds a slab_zones list at all (this section had no zone concept before P2.2), so its
+        # own rebar validation would reject a zone_context it has nothing to match against -
+        # filtering here is what does the attribution, the tag has no further job after that.
+        pour_input["beams"] = {
+            "items": [
+                {k: v for k, v in row.items() if k != "zone_context"}
+                for row in beam_rows
+                if row.get("zone_context") == context
+            ]
+        }
+        pour_input["rebar_items"] = [
+            {k: v for k, v in row.items() if k != "zone_context"}
+            for row in rebar_rows
+            if row.get("zone_context") == context
+        ]
+        pour_input["concrete_placing_volume_m3"] = zone["concrete_volume_m3"]
+        # Safe to drop - calculate_beam_items() inside calculate_floor_slab_2() recomputes both
+        # from the zone-filtered beam_items above (same proof as floor_slab_1's identical fields).
+        pour_input.pop("beams_formwork_area_m2", None)
+        pour_input.pop("beams_concrete_volume_m3", None)
+        for key in ZONE_GEOMETRY_FIELDS:
+            pour_input[key] = zone[key]
+        pour_input["bottom_slab_eps_work_area_m2"] = zone["bottom_slab_eps_work_area_m2"]
+        pour_input["beams_bottom_formwork_area_m2"] = zone["beams_bottom_formwork_area_m2"]
+        for key in ZONE_MANUAL_FIELDS:
+            pour_input[key] = zone[key]
+        # Diagnostic-only (see module docstring) but keep it internally consistent per zone
+        # rather than leaving the combined-section quote/ratio stale on a smaller zone area.
+        pour_input[FORMWORK_RENTAL_QUOTE_KEY] = zone["main_formwork_area_m2"] * rental_rate
+        pour_input["pour_context"] = context
+        pours.append(pour_input)
+    return pours

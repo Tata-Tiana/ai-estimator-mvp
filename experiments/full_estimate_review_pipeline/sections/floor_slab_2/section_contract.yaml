@@ -188,18 +188,26 @@ review_parameters:
     row_key_field: context
     production_input: true
     item_label_columns: [context]
-    correction_columns: [concrete_volume_m3, thickness_m, concrete_grade, level]
+    correction_columns: [concrete_volume_m3, thickness_m, concrete_grade, level, main_formwork_area_m2, edge_formwork_area_m2, slab_edge_perimeter_m, bottom_slab_eps_work_area_m2, beams_bottom_formwork_area_m2, concrete_pump_shifts, crane_shifts, rebar_metal_delivery_trucks]
     columns:
       - {key: context, label_ru: "Зона/плита (по PDF)", unit: "", value_kind: string}
       - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
       - {key: thickness_m, label_ru: "Толщина плиты этой зоны", unit: "м", value_kind: number}
       - {key: concrete_grade, label_ru: "Марка бетона", unit: "", value_kind: string}
       - {key: level, label_ru: "Этаж/отметка", unit: "", value_kind: string}
+      - {key: main_formwork_area_m2, label_ru: "Опалубка под плитой зоны", unit: "м2", value_kind: number}
+      - {key: edge_formwork_area_m2, label_ru: "Опалубка торца зоны", unit: "м2", value_kind: number}
+      - {key: slab_edge_perimeter_m, label_ru: "Периметр торца зоны", unit: "мп", value_kind: number}
+      - {key: bottom_slab_eps_work_area_m2, label_ru: "Утепление низа зоны ЭППС — площадь работ", unit: "м2", value_kind: number}
+      - {key: beams_bottom_formwork_area_m2, label_ru: "Низ опалубки балок этой зоны", unit: "м2", value_kind: number}
+      - {key: concrete_pump_shifts, label_ru: "Смены бетононасоса на эту плиту", unit: "смена", value_kind: number}
+      - {key: crane_shifts, label_ru: "Смены крана на эту плиту", unit: "смена", value_kind: number}
+      - {key: rebar_metal_delivery_trucks, label_ru: "Доставка арматуры/металла на эту плиту", unit: "маш", value_kind: number}
     parser_mapping:
       target_codes: ["floor_slab_2_slab_zones"]
       aliases_ru: []
       expected_unit: ""
-      notes: "NOT part of the live extraction prompt yet. Added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0), diagnostic/schema-only — calculator_input_path is deliberately empty, calculate_floor_slab_2() does not read this group at all. Mirrors floor_slab_1's slab_zones (same context-based matching key used by beam_items.zone_context), added here even though floor_slab_2 today is always a single implicit pour, so this section can carry the same naming/identity fields (thickness_m/concrete_grade/level) the eventual per-pour section title will need. See the plan for what wires this in."
+      notes: "NOT part of the live extraction prompt yet. Added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0), diagnostic/schema-only — calculator_input_path is deliberately empty, calculate_floor_slab_2() does not read this group at all. Mirrors floor_slab_1's slab_zones (same context-based matching key used by beam_items.zone_context), added here even though floor_slab_2 today is always a single implicit pour, so this section can carry the same naming/identity fields (thickness_m/concrete_grade/level) the eventual per-pour section title will need. See the plan for what wires this in. main_formwork_area_m2/edge_formwork_area_m2/slab_edge_perimeter_m/bottom_slab_eps_work_area_m2/beams_bottom_formwork_area_m2/concrete_pump_shifts/crane_shifts/rebar_metal_delivery_trucks added 2026-08-10 (P2.2, same batch as floor_slab_1's P1.0 fields) - the geometry/insulation/manual fields the P2 orchestrator needs to safely split this section into real per-zone pours. edge_insulation_height_m intentionally NOT duplicated here - genuinely a shared material-thickness constant (same EPS across all zones), not a per-pour quantity, same treatment as floor_slab_1. technical_supervision_amount intentionally NOT added - floor_slab_2 has no real manual technical-supervision cost line at all (always a zero_excel_structure_line, unlike floor_slab_1)."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -208,7 +216,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
-    notes: "Schema-only as of 2026-08-09 — not wired into calculate_floor_slab_2() or build_input.py. See FLOOR_SLAB_UNIFICATION_PLAN.md P0/P1/P2 for the wiring plan."
+    notes: "Schema-only as of 2026-08-09 for calculate_floor_slab_2()'s own single-combined-call path (calculator_input_path stays empty, unchanged) - wired into build_calculator_inputs() (P2.2, 2026-08-10) for the N-pours orchestration path only. See FLOOR_SLAB_UNIFICATION_PLAN.md P0/P1/P2 for the wiring plan."
 
   - key: slab_edge_perimeter_m
     label_ru: "Утепление торца плиты 2-го этажа — длина работ"
