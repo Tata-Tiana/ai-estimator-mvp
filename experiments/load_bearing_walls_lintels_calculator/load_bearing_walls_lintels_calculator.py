@@ -192,6 +192,8 @@ class LoadBearingWallsLintelsInput:
     waste_removal_truck_unit_price: float
     waste_removal_work_unit_price: float
     technical_supervision_amount: float
+    rebar_metal_delivery_trucks: float = 0.0
+    rebar_metal_delivery_unit_price: float = 0.0
     lintel_section_width_m: float = 0.125
     lintel_section_height_m: float = 0.125
     lintel_concrete_calc_method: str = "legacy_length_section"
@@ -1497,6 +1499,15 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         line("main_walls_blocks_crane_moving_25t", "Перемещение блоков, смеси автокраном 25 т", "смена", delivery["main_walls_crane_shifts"], material_unit_price=data.crane_25t_unit_price, notes="legacy manual or delivery-trucks threshold", price_code="crane_shift"),
         line("lintel_rebar_frame_assembly", "Изготовление и монтаж каркаса армирования перемычек", "мп", lintels["lintel_rebar_frame_assembly_quantity_m"], notes="Нулевая агрегирующая строка"),
         *lintel_rebar_lines,
+        line(
+            "rebar_metal_delivery",
+            "Доставка арматуры, металла",
+            "маш",
+            data.rebar_metal_delivery_trucks,
+            material_unit_price=data.rebar_metal_delivery_unit_price,
+            notes="Количество машин приходит с уровня коробки: накопление поставочного веса арматуры по разделам, порог 10 т.",
+            price_code="metal_delivery_truck",
+        ),
     ]
 
     if lintels["ublock_enabled"]:

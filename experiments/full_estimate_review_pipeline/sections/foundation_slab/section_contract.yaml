@@ -114,7 +114,7 @@ review_parameters:
     notes: "Do not merge with floor slab, beam, lintel, or wall concrete."
 
   - key: slab_zones
-    label_ru: "Объём бетона по зонам плиты (альтернатива единому проектному объёму)"
+    label_ru: "Бетон плиты по зонам"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -139,7 +139,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Необязательная альтернатива concrete_project_volume_m3 выше. Используйте, если PDF даёт бетон плиты несколькими зонами без общего итога — иначе оставьте пустым и заполняйте единое поле выше как обычно."
+      action_ru: "Справочно: проверьте объёмы бетона по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
@@ -261,7 +261,7 @@ review_parameters:
     notes: "Optional production input. May be present without a matching 50 mm material row."
 
   - key: thermal_insert_items
-    label_ru: "Термовставки произвольного типоразмера (альтернатива 50/100 мм)"
+    label_ru: "Термовставки по проекту"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -289,7 +289,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Альтернатива полям термовставок 50/100 мм выше. Используйте, если PDF даёт термовставки одним или несколькими произвольными типоразмерами без деления 50/100 мм."
+      action_ru: "Справочно: проверьте типоразмеры и длины термовставок по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
@@ -457,8 +457,8 @@ defaults:
 
 supplier_inputs:
   - {key: rebar_crane_shifts, label_ru: "Подача арматуры автокраном, смены", unit: "смена", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "rebar_crane_shifts", normalized_json_path: "sections.foundation_slab.supplier_inputs.rebar_crane_shifts.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите смены подачи арматуры автокраном."}, notes: "source_class AUTO_CALCULATED -> MANUAL_REVIEW 2026-07-30 (reverted): no real crane-shift-count formula exists anywhere in the codebase (checked all calculators - the only real formula, main_walls_crane_shifts, is for block delivery, unrelated). The 2026-07-30 automation wrongly reused the box_calculator's delivery-truck allocation for crane shifts by assumption; real ARK smeta data disproved this (crane count 2 != delivery count 1 for the same section, floor_slab_1). Elena's final ruling: crane stays purely manual, no invented formula - box_calculator is repurposed for rebar_metal_delivery_trucks below instead, which is what it was actually designed and named for."}
-  - {key: rebar_metal_delivery_trucks, label_ru: "Доставка арматуры и металла, машины", unit: "маш", source_class: AUTO_CALCULATED, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "rebar_metal_delivery_trucks", normalized_json_path: "sections.foundation_slab.supplier_inputs.rebar_metal_delivery_trucks.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."}, notes: "source_class MANUAL_REVIEW -> AUTO_CALCULATED 2026-07-30: value now comes from compute_rebar_metal_delivery_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections) - this is exactly what metal_delivery_allocator.py was designed and named for, unlike the crane-shift use we've now reverted above. Still allow_manual_override: true - Elena can correct per section after seeing the total weight."}
-  - {key: box_total_metal_weight_kg, label_ru: "Общий вес металла коробки для контроля доставки", unit: "кг", source_class: AUTO_CALCULATED, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "box_total_metal_weight_kg", normalized_json_path: "sections.foundation_slab.supplier_inputs.box_total_metal_weight_kg.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Автоматически: сумма веса арматуры по всем 4 разделам с арматурой (box-калькулятор)."}, notes: "source_class MANUAL_REVIEW -> AUTO_CALCULATED 2026-07-30: NOT removable - foundation_slab_calculator.py requires this field unconditionally (validate() and calculate_rebar_block()) to compute suggested_box_metal_delivery_trucks and warn if rebar_metal_delivery_trucks differs from it; this existing warning mechanism predates this session's box_calculator work and is independent of it. Value now comes from the same box-wide rebar weight total as the new sheet-01 summary row (sum across foundation_slab/load_bearing_walls_lintels/floor_slab_1/floor_slab_2), not typed by hand."}
+  - {key: rebar_metal_delivery_trucks, label_ru: "Доставка арматуры и металла, машины", unit: "маш", source_class: AUTO_CALCULATED, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "rebar_metal_delivery_trucks", normalized_json_path: "sections.foundation_slab.supplier_inputs.rebar_metal_delivery_trucks.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Автоматически по общему поставочному весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."}, notes: "source_class MANUAL_REVIEW -> AUTO_CALCULATED 2026-07-30: value now comes from compute_rebar_metal_delivery_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections) - this is exactly what metal_delivery_allocator.py was designed and named for, unlike the crane-shift use we've now reverted above. Still allow_manual_override: true - Elena can correct per section after seeing the total weight."}
+  - {key: box_total_metal_weight_kg, label_ru: "Общий поставочный вес металла коробки для контроля доставки", unit: "кг", source_class: AUTO_CALCULATED, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "box_total_metal_weight_kg", normalized_json_path: "sections.foundation_slab.supplier_inputs.box_total_metal_weight_kg.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Автоматически: сумма поставочного веса арматуры по всем разделам с арматурой (box-калькулятор)."}, notes: "source_class MANUAL_REVIEW -> AUTO_CALCULATED 2026-07-30: NOT removable - foundation_slab_calculator.py requires this field unconditionally (validate() and calculate_rebar_block()) to compute suggested_box_metal_delivery_trucks. It is hidden on sheet 01 by populate_review_workbook_from_extraction.py, because Elena sees the same box-wide total once in the final summary row."}
   - {key: concrete_pump_shifts, label_ru: "Работа бетононасоса, смены", unit: "смена", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "concrete_pump_shifts", normalized_json_path: "sections.foundation_slab.supplier_inputs.concrete_pump_shifts.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите смены бетононасоса."}, notes: ""}
   - {key: logistics_and_supply_amount, label_ru: "Логистика и снабжение, legacy сумма", unit: "руб", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "logistics_and_supply_amount", normalized_json_path: "sections.foundation_slab.supplier_inputs.logistics_and_supply_amount.value", exclude_from_manual_values_registry: true, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy fixed amount only; production uses logistics_and_supply_rate."}, notes: "Legacy compatibility only. Production calculates this row from section subtotal by logistics_and_supply_rate."}
   - {key: consumables_tool_amortization_amount, label_ru: "Расходные материалы, амортизация инструмента, legacy сумма", unit: "руб", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "consumables_tool_amortization_amount", normalized_json_path: "sections.foundation_slab.supplier_inputs.consumables_tool_amortization_amount.value", exclude_from_manual_values_registry: true, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy fixed amount only; production uses consumables_tool_amortization_rate."}, notes: "Legacy compatibility only. Production calculates this row from section subtotal by consumables_tool_amortization_rate."}

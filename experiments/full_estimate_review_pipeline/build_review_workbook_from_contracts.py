@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import subprocess
 from pathlib import Path
@@ -69,17 +70,12 @@ PRICE_HEADERS = [
     "Что это за цена",
     "Ед.",
     "Цена из прайса",
-    "Цена fallback",
-    "Цена для расчета",
     "Исправить цену",
-    "Источник цены",
     "Нужно внимание",
     "Комментарий",
     "section_code",
     "calc_price_key",
     "price_registry_code",
-    "fallback_key",
-    "selected_price_source",
 ]
 
 DETAIL_HEADERS = [
@@ -421,9 +417,14 @@ def resolve_price_entry(
     registry_code: str, price_registry: dict[str, dict[str, Any]] | None
 ) -> tuple[Any, Any, str, str, str]:
     """Returns (price_from_registry, price_for_calc, source, needs_attention, comment) for a
-    single, literal (non-templated) registry_code against the given price registry."""
+    single, literal (non-templated) registry_code against the given price registry.
+
+    Sheet 02's production source is the current price registry only (plus Elena's explicit
+    manual correction column). The second return value is kept only to avoid touching older
+    call sites in this helper; it is no longer rendered as a separate visible column.
+    """
     if price_registry is None:
-        return None, None, "", "да", "Заполнить цену из price registry/fallback/review."
+        return None, None, "", "да", "Заполнить цену из актуального прайса или вручную."
     if not registry_code:
         return None, None, "no_registry_code", "да", "В контракте не указан registry_code — цену нужно ввести вручную."
     entry = price_registry.get(registry_code)
@@ -605,9 +606,19 @@ GOST_REBAR_KG_PER_METER = {
     8: 0.395,
     10: 0.617,
     12: 0.888,
-    16: 1.6,
+    16: 1.58,
     20: 2.47,
     25: 3.85,
+}
+
+GOST_REBAR_ROD_LENGTH_M = {
+    6: 6.0,
+    8: 6.0,
+    10: 11.7,
+    12: 11.7,
+    16: 11.7,
+    20: 11.7,
+    25: 11.7,
 }
 
 
@@ -634,6 +645,49 @@ def rebar_item_weight_kg(item: dict[str, Any]) -> float | None:
     if rate is None:
         return None
     return float(length) * float(rate)
+
+
+def rebar_item_delivery_weight_kg(item: dict[str, Any]) -> float | None:
+    """Delivery/procurement weight for one rebar item.
+
+    This mirrors the calculators' payable rebar logic: project length is multiplied by the
+    waste coefficient, rounded up to whole rods, then multiplied by kg/m. That is the number
+    Elena's sheets use in the right-side "weight for delivery" cells, unlike the pure
+    project control weight from rebar_item_weight_kg().
+    """
+    length = item.get("spec_length_m")
+    if length is None:
+        length = item.get("source_length_m")
+    if length is None:
+        return None
+    rate = item.get("kg_per_meter")
+    if rate is None:
+        diameter = item.get("diameter_mm")
+        try:
+            diameter_int = int(round(float(diameter))) if diameter is not None else None
+        except (TypeError, ValueError):
+            diameter_int = None
+        rate = GOST_REBAR_KG_PER_METER.get(diameter_int) if diameter_int is not None else None
+    if rate is None:
+        return None
+    diameter = item.get("diameter_mm")
+    try:
+        diameter_int = int(round(float(diameter))) if diameter is not None else None
+    except (TypeError, ValueError):
+        diameter_int = None
+    rod_length = item.get("rod_length_m") or GOST_REBAR_ROD_LENGTH_M.get(diameter_int, 11.7)
+    waste_coeff = item.get("waste_coeff") or item.get("rebar_waste_coeff") or 1.05
+    try:
+        length_f = float(length)
+        rate_f = float(rate)
+        rod_length_f = float(rod_length)
+        waste_coeff_f = float(waste_coeff)
+    except (TypeError, ValueError):
+        return None
+    if rod_length_f <= 0 or waste_coeff_f <= 0:
+        return None
+    order_length = math.ceil(length_f * waste_coeff_f / rod_length_f) * rod_length_f
+    return order_length * rate_f
 
 
 # source_class values with no PDF signal at all - Elena types/confirms these regardless of
@@ -862,17 +916,12 @@ def _append_price_row(
         price_role_ru(str(price.get("price_kind", ""))),
         price.get("unit", ""),
         price_from,
-        None,
-        price_for_calc,
         "",
-        source_label,
         needs_attention,
         comment,
         sec_code,
         price.get("key", ""),
         registry_code_actual,
-        price.get("fallback_key", ""),
-        source,
     ])
     for cell in ws[ws.max_row]:
         cell.fill = fill
@@ -924,19 +973,14 @@ def build_prices_sheet(
         "B": 24,
         "C": 10,
         "D": 16,
-        "E": 16,
-        "F": 18,
-        "G": 18,
-        "H": 38,
-        "I": 16,
-        "J": 66,
-        "K": 20,
-        "L": 30,
-        "M": 30,
-        "N": 30,
-        "O": 22,
+        "E": 18,
+        "F": 16,
+        "G": 66,
+        "H": 20,
+        "I": 30,
+        "J": 30,
     })
-    for column in ["K", "L", "M", "N", "O"]:
+    for column in ["H", "I", "J"]:
         ws.column_dimensions[column].hidden = True
 
 
@@ -1092,7 +1136,7 @@ def build_instruction_sheet(wb: Workbook) -> None:
     rows = [
         (0, "Выберите разделы, которые входят в смету."),
         (1, "Проверьте проектные параметры. Пустые значения должны быть заполнены parser/chat JSON или вручную."),
-        (2, "Проверьте себестоимость. Цена для расчета должна прийти из price registry, fallback или ручной правки."),
+        (2, "Проверьте себестоимость. Цена должна прийти из актуального прайса или ручной правки."),
         (3, "Проверьте детальные таблицы. Это проектные строки, а не строки финальной сметы."),
         (5, "Технический лист показывает, из каких контрактов собрана таблица."),
         (6, "Сырые данные parser нужны разработчику для диагностики структуры."),

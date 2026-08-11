@@ -1051,10 +1051,10 @@ def calculate_rebar_block(
         "0.0001",
     )
     warnings = []
-    if data.rebar_metal_delivery_trucks != suggested_box_metal_delivery_trucks:
+    if data.rebar_metal_delivery_trucks > suggested_box_metal_delivery_trucks:
         warnings.append(
-            "rebar_metal_delivery_trucks отличается от suggested_box_metal_delivery_trucks; "
-            "строка доставки арматуры остаётся manual/fixed и не меняется автоматически."
+            "rebar_metal_delivery_trucks больше suggested_box_metal_delivery_trucks; "
+            "проверьте распределение доставки арматуры по разделам коробки."
         )
 
     return (

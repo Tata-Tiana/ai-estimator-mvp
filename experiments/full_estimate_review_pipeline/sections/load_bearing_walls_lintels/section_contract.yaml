@@ -934,6 +934,7 @@ price_keys:
   - {key: u_block_cutting_work_unit_price, estimate_line_code: u_block_lintel_cutting, label_ru: "Резка блока под перемычку (U-блок)", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "u_block_lintel_cutting_item", fallback_key: "u_block_cutting_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: block_chasing_reinforcement_work_unit_price, estimate_line_code: main_wall_chasing_for_d10_reinforcement, label_ru: "Штробление блоков под дополнительное усиление", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "block_chasing_reinforcement_work_m", fallback_key: "block_chasing_reinforcement_work_unit_price", allow_manual_override: true, notes: "Added 2026-08-07. Temporary production rate 250 rub/m from reviewed estimate rows; used for main walls and parapet/second-light chasing."}
   - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура стен и перемычек по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of main_wall_rebar_items and lintel_rebar_items."}
+  - {key: rebar_metal_delivery_unit_price, estimate_line_code: rebar_metal_delivery, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "metal_delivery_truck", fallback_key: "rebar_metal_delivery_unit_price", allow_manual_override: true, notes: "Same box-level metal delivery rate as foundation and slabs. Quantity is allocated by the review workbook across all rebar-bearing sections."}
   - {key: gas_block_delivery_unit_price, estimate_line_code: gas_blocks_and_mix_delivery, label_ru: "Доставка блоков, смеси", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "block_delivery_truck", fallback_key: "gas_block_delivery_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_unloading_manipulator_unit_price, estimate_line_code: gas_blocks_unloading_manipulator, label_ru: "Разгрузка блоков, смеси манипулятором", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "block_unloading_manipulator_truck", fallback_key: "gas_block_unloading_manipulator_unit_price", allow_manual_override: true, notes: ""}
   - {key: crane_25t_unit_price, estimate_line_code: main_walls_blocks_crane_moving_25t, label_ru: "Автокран 25 т", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "crane_shift", fallback_key: "crane_25t_unit_price", allow_manual_override: true, notes: ""}
@@ -1017,6 +1018,23 @@ supplier_inputs:
       status_if_missing: "auto"
       action_ru: "Системный флаг: adapter выставляет true, когда в смету включен раздел плоской кровли или есть проектные объемы парапета/обкладки вентканалов."
     notes: "Compatibility input for load_bearing_walls_lintels_calculator. It is not Elena's manual value. Production adapter should derive it from the estimate constructor/section selection and project data: true for flat-roof projects where parapet or vent/chimney cladding rows are relevant; false otherwise."
+
+  - key: rebar_metal_delivery_trucks
+    label_ru: "Доставка арматуры и металла, машины"
+    unit: "маш"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "rebar_metal_delivery_trucks"
+    normalized_json_path: "sections.load_bearing_walls_lintels.auto_calculated.rebar_metal_delivery_trucks.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "auto"
+      action_ru: "Автоматически по общему поставочному весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-08-11. In ARK/TRC/USV this row is usually 0 because the metal-delivery truck lands in foundation/slab sections, but production must support future projects where the 10t threshold is crossed while processing walls/lintels."
 
   - key: concrete_delivery_trips
     label_ru: "Доставка бетона для перемычек, рейсы"
@@ -1364,6 +1382,20 @@ estimate_lines:
     prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
     notes: "One estimate line per row of lintel_rebar_items, any diameter/class, e.g. lintels_floor_1_rebar_a500_d12 and lintels_floor_1_rebar_a240_d6."
+
+  - code: rebar_metal_delivery
+    name_ru: "Доставка арматуры, металла"
+    unit: "маш"
+    enabled_by_default: true
+    line_role: logistics_machinery
+    calculator_result_path: "estimate_lines[code=rebar_metal_delivery]"
+    quantity:
+      formula: "rebar_metal_delivery_trucks"
+      leaf_inputs:
+        - {ref: "supplier_inputs.rebar_metal_delivery_trucks", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: rebar_metal_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Quantity is allocated by the review workbook's box-level metal delivery logic (10t cumulative threshold). Usually 0 for walls in ARK/TRC/USV, but must exist for future projects where the threshold lands in this section."
 
   - code: lintel_concrete_delivery
     name_ru: "Доставка бетона до объекта"
