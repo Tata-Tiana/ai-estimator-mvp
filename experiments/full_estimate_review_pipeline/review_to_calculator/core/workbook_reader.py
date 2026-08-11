@@ -53,6 +53,38 @@ SHEET_02_NAME = "02_Цены себестоимости"
 CORRECTION_COLUMN_LETTERS = ["O", "P", "Q", "R"]
 JSON_COLUMN_LETTER = "S"
 TECHNICAL_KEY_HEADER = "technical_key"
+FLOOR_SLABS_SECTION = "floor_slabs"
+
+
+def _floor_slabs_item_identity(group_key: str, item: dict[str, Any]) -> tuple[Any, ...]:
+    """Stable identity for sheet-01 scalarized floor_slabs repeated rows.
+
+    The visible workbook deliberately shows one number per row, so one original repeated item is
+    spread across several rows. This key is how we merge those rows back into one item before the
+    adapter sees it.
+    """
+    if group_key == "floor_slab_zones":
+        return (item.get("zone_id"),)
+    if group_key == "floor_slab_eps_items":
+        return (
+            item.get("zone_id"),
+            item.get("role"),
+            item.get("material_name"),
+            item.get("thickness_mm"),
+        )
+    if group_key == "floor_slab_beam_items":
+        return (item.get("zone_id"), item.get("beam_id") or item.get("mark") or item.get("name"))
+    if group_key == "floor_slab_rebar_items":
+        return (
+            item.get("zone_id"),
+            item.get("component"),
+            item.get("code") or item.get("name"),
+            item.get("steel_class"),
+            item.get("diameter_mm"),
+        )
+    if group_key == "floor_slab_additional_items":
+        return (item.get("zone_id"), item.get("item_type"), item.get("name"))
+    return (json.dumps(item, ensure_ascii=False, sort_keys=True),)
 
 
 def find_header_row(ws, required_headers: list[str]) -> int:
@@ -195,6 +227,46 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
     section_code_col = col_map["section_code"]
     json_col = column_index_from_string(JSON_COLUMN_LETTER)
     correction_cols = [column_index_from_string(letter) for letter in CORRECTION_COLUMN_LETTERS]
+
+    if section == FLOOR_SLABS_SECTION:
+        merged: dict[str, dict[tuple[Any, ...], dict[str, Any]]] = {key: {} for key in groups}
+        scalarized_found = False
+        override_col = col_map.get("Исправить / ввести значение")
+        target_col = col_map.get("target_code")
+        for row_idx in range(header_row + 1, ws.max_row + 1):
+            if cell_text(ws.cell(row_idx, section_code_col).value) != section:
+                continue
+            technical_key = cell_text(ws.cell(row_idx, technical_key_col).value)
+            if technical_key not in groups:
+                continue
+            raw_json = ws.cell(row_idx, json_col).value
+            if is_blank(raw_json):
+                continue
+            try:
+                item = json.loads(raw_json)
+            except (TypeError, json.JSONDecodeError) as exc:
+                raise ValueError(
+                    f"{contract['section']['code']}: sheet 01 row {row_idx}, group "
+                    f"{technical_key!r} has an unreadable row_data_json: {raw_json!r}"
+                ) from exc
+            if not item.get("_sheet01_scalarized"):
+                continue
+            scalarized_found = True
+            field_key = item.pop("_review_field_key", None) or (
+                cell_text(ws.cell(row_idx, target_col).value) if target_col else ""
+            )
+            item.pop("_review_group_key", None)
+            item.pop("_sheet01_scalarized", None)
+            identity = _floor_slabs_item_identity(technical_key, item)
+            current = merged[technical_key].setdefault(identity, item)
+            override_value = None
+            if override_col:
+                override_value = parse_number(ws.cell(row_idx, override_col).value)
+            if field_key and override_value is not None:
+                current[field_key] = override_value
+
+        if scalarized_found:
+            return {key: list(items.values()) for key, items in merged.items()}
 
     for row_idx in range(header_row + 1, ws.max_row + 1):
         # technical_key alone is not unique across sections (e.g. beam_items is declared

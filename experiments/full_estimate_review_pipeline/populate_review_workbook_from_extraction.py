@@ -842,6 +842,206 @@ REBAR_GROUP_KEY = "floor_slab_rebar_items"
 ADDITIONAL_ITEMS_GROUP_KEY = "floor_slab_additional_items"
 
 
+FLOOR_SLAB_SCALAR_FIELDS_BY_GROUP: dict[str, list[str]] = {
+    ZONES_GROUP_KEY: [
+        "concrete_slab_volume_m3",
+        "concrete_total_with_beams_m3",
+        "slab_thickness_m",
+        "slab_edge_perimeter_m",
+        "formwork_under_slab_area_m2",
+        "formwork_edge_area_m2",
+        "formwork_edge_and_beam_combined_area_m2",
+        "formwork_beams_side_area_m2",
+        "formwork_beams_bottom_area_m2",
+        "manual_concrete_pump_shifts",
+        "manual_formwork_rebar_crane_shifts",
+        "manual_rebar_metal_delivery_trucks",
+        "manual_technical_supervision_amount",
+    ],
+    EPS_ITEMS_GROUP_KEY: ["thickness_mm", "volume_m3", "area_m2", "length_m", "height_m"],
+    BEAM_ITEMS_GROUP_KEY: [
+        "length_m",
+        "width_m",
+        "height_m",
+        "count",
+        "concrete_volume_m3",
+        "formwork_area_m2",
+        "bottom_formwork_area_m2",
+        "insulated_length_m",
+        "insulation_area_m2",
+    ],
+    REBAR_GROUP_KEY: ["diameter_mm", "spec_length_m", "kg_per_meter"],
+    ADDITIONAL_ITEMS_GROUP_KEY: ["quantity"],
+}
+
+
+FLOOR_SLAB_OPTIONAL_FIELDS = {
+    "concrete_total_with_beams_m3",
+    "formwork_edge_and_beam_combined_area_m2",
+    "formwork_beams_side_area_m2",
+    "formwork_beams_bottom_area_m2",
+    "manual_technical_supervision_amount",
+    "height_m",
+    "area_m2",
+    "length_m",
+    "insulated_length_m",
+    "insulation_area_m2",
+    "bottom_formwork_area_m2",
+}
+
+
+FLOOR_SLAB_ROLE_LABELS = {
+    "slab_edge": "утепление торца плиты",
+    "slab_bottom": "утепление низа плиты",
+    "combined_bottom_and_edge": "утепление торца+низа одной строкой",
+    "unknown": "утепление, роль не распознана",
+}
+
+
+def _columns_by_key(param: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {str(column.get("key")): column for column in (param.get("columns") or []) if column.get("key")}
+
+
+def _floor_slab_item_label(group_key: str, value: dict[str, Any]) -> str:
+    if group_key == ZONES_GROUP_KEY:
+        label = value.get("display_name") or value.get("slab_mark") or value.get("zone_id") or "плита"
+        level = value.get("source_level")
+        return f"{label}{f' ({level})' if level else ''}"
+    if group_key == EPS_ITEMS_GROUP_KEY:
+        role = FLOOR_SLAB_ROLE_LABELS.get(str(value.get("role") or ""), value.get("role") or "утепление")
+        material = value.get("material_name")
+        return f"{role}{f' — {material}' if material else ''}"
+    if group_key == BEAM_ITEMS_GROUP_KEY:
+        return f"балка {value.get('mark') or value.get('beam_id') or value.get('name') or ''}".strip()
+    if group_key == REBAR_GROUP_KEY:
+        bits = [
+            value.get("component"),
+            value.get("name") or value.get("code"),
+            value.get("steel_class"),
+            f"⌀{value.get('diameter_mm')}" if value.get("diameter_mm") not in (None, "") else "",
+        ]
+        return "арматура " + " ".join(str(bit) for bit in bits if bit)
+    if group_key == ADDITIONAL_ITEMS_GROUP_KEY:
+        return value.get("name") or value.get("item_type") or "дополнительная строка"
+    return value.get("name") or group_key
+
+
+def _floor_slab_field_status(item: dict[str, Any], field_key: str, field_value: Any) -> str:
+    if field_value not in (None, ""):
+        return "Проверьте (needs_review)" if item.get("needs_review") else "Найдено"
+    if field_key in FLOOR_SLAB_OPTIONAL_FIELDS:
+        return "Не требуется / условно отсутствует"
+    return "Не найдено"
+
+
+def _floor_slab_field_action(group_key: str, field_label: str, value: dict[str, Any]) -> str:
+    if group_key == EPS_ITEMS_GROUP_KEY:
+        role = value.get("role")
+        if role == "slab_edge":
+            return "Проверьте отдельно материал и длину работ по торцу плиты; работа считается только по готовой длине в м.п."
+        if role == "slab_bottom":
+            return "Проверьте площадь/объём утепления низа плиты; площадь может быть дана готовой или рассчитана из объёма и толщины."
+        if role == "combined_bottom_and_edge":
+            return "Проверьте материал; работу по торцу и низу нельзя автоматически разделить из одной объединённой строки."
+    if group_key == BEAM_ITEMS_GROUP_KEY:
+        return "Проверьте параметр балки этой плиты."
+    if group_key == REBAR_GROUP_KEY:
+        return "Проверьте строку арматуры этой плиты."
+    return f"Проверьте поле: {field_label}."
+
+
+def _append_floor_slab_scalarized_row(
+    ws,
+    *,
+    sec_code: str,
+    group_key: str,
+    param: dict[str, Any],
+    item: dict[str, Any],
+    field_key: str,
+    field_def: dict[str, Any],
+    counts: dict[str, int],
+) -> None:
+    value = item.get("value") or {}
+    field_value = value.get(field_key)
+    field_label = field_def.get("label_ru") or field_key
+    unit = field_def.get("unit") or ""
+    item_label = _floor_slab_item_label(group_key, value)
+    status = _floor_slab_field_status(item, field_key, field_value)
+    row_fill = project_status_fill(status)
+    if status.startswith("Найдено"):
+        counts["found"] += 1
+    elif status.startswith("Проверьте"):
+        counts["needs_review"] += 1
+    elif status.startswith("Не найдено"):
+        counts["missing"] += 1
+    else:
+        counts["conditional_absent"] += 1
+    counts["item_rows"] += 1
+
+    row_data = {
+        **value,
+        "_sheet01_scalarized": True,
+        "_review_group_key": group_key,
+        "_review_field_key": field_key,
+    }
+    ws.append([
+        f"{item_label} — {field_label}",
+        display_value(field_value),
+        unit,
+        status,
+        display_confidence(item),
+        _floor_slab_field_action(group_key, field_label, value),
+        item.get("source_pdf") or "",
+        item_fragment(item),
+        "",
+        "",
+        sec_code,
+        group_key,
+        param.get("source_class", ""),
+        field_key,
+        "",
+        "",
+        "",
+        "",
+        json.dumps(row_data, ensure_ascii=False),
+    ])
+    for cell in ws[ws.max_row]:
+        cell.fill = row_fill
+        cell.alignment = Alignment(wrap_text=True, vertical="top")
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+
+def _render_floor_slab_group_as_scalar_rows(
+    ws,
+    sec_code: str,
+    group_key: str,
+    param: dict[str, Any],
+    items: list[dict[str, Any]],
+    counts: dict[str, int],
+) -> None:
+    columns_by_key = _columns_by_key(param)
+    field_keys = FLOOR_SLAB_SCALAR_FIELDS_BY_GROUP.get(group_key, param.get("correction_columns") or [])
+    for item in items:
+        value = item.get("value") or {}
+        if group_key != ZONES_GROUP_KEY:
+            append_section_band(ws, [_floor_slab_item_label(group_key, value)], len(PROJECT_HEADERS))
+        for field_key in field_keys:
+            field_def = columns_by_key.get(field_key, {"key": field_key})
+            field_value = value.get(field_key)
+            if field_value in (None, "") and field_key in FLOOR_SLAB_OPTIONAL_FIELDS:
+                continue
+            _append_floor_slab_scalarized_row(
+                ws,
+                sec_code=sec_code,
+                group_key=group_key,
+                param=param,
+                item=item,
+                field_key=field_key,
+                field_def=field_def,
+                counts=counts,
+            )
+
+
 def _render_repeated_row_block(
     ws,
     sec_code: str,
@@ -897,14 +1097,21 @@ def _render_repeated_row_block(
         label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
         label = " ".join(label_parts) or item.get("item_name") or group_key
 
+        # One "label: value ед." per line (not a bare comma list) - a repeated-row item with more
+        # than 2-3 fields (floor_slab_zones has ~15) is unreadable otherwise: real user feedback
+        # 2026-08-11, comparing against the old floor_slab_1 layout where each of these was its own
+        # clearly labeled scalar row. Field ORDER still follows correction_columns (money/manual
+        # fields first, per that list's own ordering), it's just no longer comma-joined.
         summary_parts = []
         for key in correction_columns:
             v = value.get(key)
-            if v is None:
+            if v is None or v == "":
                 continue
-            unit = columns_by_key.get(key, {}).get("unit", "")
-            summary_parts.append(f"{v}{' ' + unit if unit else ''}")
-        summary = ", ".join(summary_parts)
+            column_def = columns_by_key.get(key, {})
+            field_label = column_def.get("label_ru") or key
+            unit = column_def.get("unit", "")
+            summary_parts.append(f"{field_label}: {v}{' ' + unit if unit else ''}")
+        summary = "\n".join(summary_parts)
 
         status = "Проверьте (needs_review)" if needs_review else "Найдено"
         row_fill = project_status_fill(status)
@@ -940,6 +1147,11 @@ def _render_repeated_row_block(
             row_fill = project_status_fill(status)
             for cell in ws[row_idx]:
                 cell.fill = row_fill
+            # column B ("Найдено в проекте") now carries multi-line "label: value ед." text for
+            # any item with more than one correction_column (floor_slab_zones has ~15) - needs
+            # wrap_text so autofit_row_heights (called once at the very end, see its own docstring)
+            # actually grows the row instead of clipping every line but the first.
+            ws.cell(row_idx, 2).alignment = Alignment(wrap_text=True, vertical="top")
             ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
         total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
         if total_row:
@@ -1138,39 +1350,52 @@ def build_project_sheet_from_extraction(
 
         if sec_code == "floor_slabs":
             # Real plates must read as their own visually separate group (concrete/formwork/
-            # insulation/beams/rebar/manual fields together) - not one flat block per group-type
-            # spanning every plate mixed together, which is unreviewable once a project has more
-            # than 1-2 rebar rows per zone (2026-08-11: user caught this directly, real regression
-            # against the design already written down in P5_SLAB_DATA_CONTRACT.md's "Google
-            # workbook после P5" section - every other section still uses the flat one-block-per-
-            # group layout below unchanged).
+            # insulation/beams/rebar/manual fields together) and, crucially, one visible number
+            # per row. The first P5 draft still called _render_repeated_row_block() inside this
+            # branch, so sheet 01 showed technical item-block headers ("Исправить: Бетон...",
+            # "Исправить: Смены крана...") and comma/multiline dumps of many fields in one cell.
+            # That is fine for a machine, but unusable for Elena. For floor_slabs only, render
+            # repeated items as scalarized PROJECT_HEADERS rows and keep row_data_json hidden in
+            # column S so workbook_reader can reconstruct the original repeated groups.
             params_by_key = {param.get("key"): param for param in repeated_row_params}
-            zone_param = params_by_key.get(ZONES_GROUP_KEY)
             dependent_group_keys = [ZONES_GROUP_KEY, EPS_ITEMS_GROUP_KEY, BEAM_ITEMS_GROUP_KEY, REBAR_GROUP_KEY, ADDITIONAL_ITEMS_GROUP_KEY]
             for zone_item in found_groups.get(ZONES_GROUP_KEY, []):
                 zone_value = zone_item.get("value") or {}
                 zone_id = zone_value.get("zone_id")
+                if zone_value.get("manual_rebar_metal_delivery_trucks") is None and zone_id:
+                    bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}"
+                    allocated = rebar_metal_delivery_allocation.get(bucket_key)
+                    if allocated is not None:
+                        zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
+                        auto_note = (
+                            f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
+                            f"автоматически box-калькулятором по накоплению "
+                            f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
+                            f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
+                        )
+                        zone_value = {**zone_value, "manual_rebar_metal_delivery_trucks": allocated}
+                        zone_item = {
+                            **zone_item,
+                            "value": zone_value,
+                            "notes": f"{zone_item.get('notes')}\n{auto_note}" if zone_item.get("notes") else auto_note,
+                        }
                 zone_label = zone_value.get("display_name") or zone_id or "?"
-                append_section_band(ws, [f"Плита: {zone_label}"], len(PROJECT_HEADERS))
+                level = zone_value.get("source_level")
+                append_section_band(ws, [f"Плита: {zone_label}{f' ({level})' if level else ''}"], len(PROJECT_HEADERS))
                 for group_key in dependent_group_keys:
                     param = params_by_key.get(group_key)
                     if param is None:
                         continue
                     if group_key == ZONES_GROUP_KEY:
                         zone_items = [zone_item]
-                        block_label = "Бетон, опалубка, ручные поля"
                     else:
                         zone_items = [
                             item for item in found_groups.get(group_key, [])
                             if (item.get("value") or {}).get("zone_id") == zone_id
                         ]
-                        block_label = param.get("label_ru", group_key)
-                    _render_repeated_row_block(
-                        ws, sec_code, group_key, param, zone_items, counts, found_groups,
-                        title=f"{zone_label} — {block_label}",
-                        rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
-                        rebar_weights_by_section=rebar_weights_by_section,
-                    )
+                    if not zone_items and group_key != ZONES_GROUP_KEY:
+                        continue
+                    _render_floor_slab_group_as_scalar_rows(ws, sec_code, group_key, param, zone_items, counts)
         else:
             for param in repeated_row_params:
                 group_key = param.get("key")
@@ -1231,7 +1456,7 @@ def build_project_sheet_from_extraction(
     }
     for col, width in set_widths.items():
         ws.column_dimensions[col].width = width
-    for column in ["K", "L", "M", "N", "S"]:
+    for column in ["K", "L", "M", "N", "O", "P", "Q", "R", "S"]:
         ws.column_dimensions[column].hidden = True
 
     # Column widths are final now - autofit reads them to grow any row whose wrapped text needs
