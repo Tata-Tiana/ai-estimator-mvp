@@ -302,8 +302,27 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
         # code/name are required directly by the engine (no fallback) - floor_slab_beam_items
         # identifies a beam by beam_id/mark instead, map them across here.
         beam_rows = []
+        beam_only_concrete_items: list[dict[str, Any]] = []
         for row in beam_rows_all:
             if row.get("zone_id") != zone_id:
+                continue
+            # A beam row with no length_m can't be priced as a beam at all - the engine's own
+            # concreting-rate bucketing (short/tall, priced by length vs by volume) is keyed on
+            # length_m unconditionally, even when concrete_volume_m3 is given ready. Real TRC data
+            # has this exact shape for small in-slab concrete elements ("ребро 50мм в теле плиты
+            # перекрытия" - a stiffening rib: only height_m + a ready concrete_volume_m3, genuinely
+            # no length printed anywhere in the PDF). The old floor_slab_1 architecture routed
+            # exactly this case through additional_concrete_items (name + concrete_volume_m3 only -
+            # material/delivery-trip accounting, no formwork/concreting line), see cases/
+            # test_slab_zones_additional_concrete_items/input.json - do the same here instead of
+            # crashing or inventing a fake length (2026-08-11, found while verifying the P5 rebuild).
+            if row.get("length_m") in (None, "") and _num(row.get("concrete_volume_m3")) is not None:
+                beam_only_concrete_items.append(
+                    {
+                        "name": row.get("name") or row.get("mark") or row.get("beam_id") or "",
+                        "concrete_volume_m3": _num(row.get("concrete_volume_m3")),
+                    }
+                )
                 continue
             beam = dict(row)
             beam.setdefault("code", beam.get("beam_id") or beam.get("mark"))
@@ -379,7 +398,7 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
             result["beams"] = {"items": beam_rows}
 
         additional_rows = [row for row in additional_rows_all if row.get("zone_id") == zone_id]
-        additional_items = _resolve_additional_concrete_items(additional_rows)
+        additional_items = _resolve_additional_concrete_items(additional_rows) + beam_only_concrete_items
         if additional_items:
             result["additional_concrete_items"] = additional_items
 
