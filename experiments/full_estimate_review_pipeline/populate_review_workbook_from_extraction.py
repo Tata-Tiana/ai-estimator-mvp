@@ -1197,12 +1197,17 @@ def build_rebar_lookup(
     expand sheet 02's rebar_<class>_d<diameter>_m templated price row into one row per
     diameter/class actually present in this project.
 
-    floor_slabs is bucketed by zone_id instead of by section_code (floor_slabs::<zone_id> keys) -
-    see metal_section_order()/compute_rebar_metal_delivery_allocation() below for why: the real
-    reference smeta (ТРЦ_3_точный_расчет_коробка_для_ИИ.xlsx, checked 2026-08-10) shows metal
-    delivery trucks land in specific pours (one in foundation_slab, one specifically in the 2nd-floor
-    plate, none in the 1st-floor/kitchen/staircase pours), not as one lump total for "floor slabs" -
-    the box-calculator's 10-tonne cumulative model has to run at zone granularity to reproduce that."""
+    floor_slabs is ALSO bucketed by zone_id (floor_slabs::<zone_id> keys), in addition to the plain
+    "floor_slabs" key every other caller expects (build_prices_sheet's sheet-02 rebar expansion
+    reads the plain section_code, unaware of zones - it just needs the union of every diameter/class
+    in the section) - see metal_section_order()/compute_rebar_metal_delivery_allocation() below for
+    why the zone_id buckets exist: the real reference smeta (ТРЦ_3_точный_расчет_коробка_для_ИИ.
+    xlsx, checked 2026-08-10) shows metal delivery trucks land in specific pours (one in
+    foundation_slab, one specifically in the 2nd-floor plate, none in the 1st-floor/kitchen/
+    staircase pours), not as one lump total for "floor slabs" - the box-calculator's 10-tonne
+    cumulative model has to run at zone granularity to reproduce that. Losing the plain
+    "floor_slabs" key when this was first added was a real regression (sheet 02 silently stopped
+    expanding floor_slabs rebar price rows) - fixed 2026-08-11, populate both."""
     lookup: dict[str, list[dict[str, Any]]] = {}
     for contract in contracts:
         sec_code = section_code(contract)
@@ -1214,9 +1219,10 @@ def build_rebar_lookup(
             for group_key in group_keys:
                 for item in found_groups.get(group_key, []):
                     value = item.get("value") or {}
+                    lookup.setdefault(sec_code, []).append(value)
                     zone_id = value.get("zone_id")
-                    bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" if zone_id else sec_code
-                    lookup.setdefault(bucket_key, []).append(value)
+                    if zone_id:
+                        lookup.setdefault(f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}", []).append(value)
             continue
         items = [
             item.get("value") or {}
