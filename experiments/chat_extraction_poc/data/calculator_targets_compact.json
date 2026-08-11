@@ -197,6 +197,8 @@
             "source_level",
             "slab_mark",
             "slab_kind",
+            "slab_thickness_m",
+            "slab_edge_perimeter_m",
             "concrete_slab_volume_m3",
             "concrete_total_with_beams_m3",
             "formwork_under_slab_area_m2",
@@ -211,7 +213,7 @@
             "manual_formwork_rental_supplier_quote_total"
           ],
           "grounded": true,
-          "notes": "zone_id is a stable local id, not a project name. display_name/source_level/slab_mark must come from PDF context. slab_kind is descriptive only: residential_floor/roof_slab/stair_slab/other/unknown. concrete_slab_volume_m3 is concrete of the slab itself. Do not include beam concrete here. concrete_total_with_beams_m3 is diagnostic/control only if the PDF gives an explicit combined total. Formwork under slab, slab edge, and beam bottom/side are separate roles. If PDF gives slab edge + beams as one inseparable number, use formwork_edge_and_beam_combined_area_m2 with needs_review. Manual fields are per slab/pour, not shared across all slabs."
+          "notes": "zone_id is a stable local id, not a project name. display_name/source_level/slab_mark must come from PDF context. slab_kind is descriptive only: residential_floor/roof_slab/stair_slab/other/unknown. slab_thickness_m is the slab's own concrete thickness (normalize mm to m) - usually printed right in the concrete spec row, e.g. 'Бетон B-22,5 (Плита перекрытия толщиной 200мм)' means 0.2. This is a real calculator input (concrete_slab_volume_m3 / slab_thickness_m drives the real formwork-installation quantity), not just descriptive - do not leave it null when the PDF states it. slab_edge_perimeter_m is the slab's own outer edge length in m.p., control-geometry only (never a money line); if a separate perimeter row isn't given, the same length as the slab-edge EPS insulation row (floor_slab_eps_items role=slab_edge) is normally an exact match, since both describe the same physical edge. concrete_slab_volume_m3 is concrete of the slab itself. Do not include beam concrete here. concrete_total_with_beams_m3 is diagnostic/control only if the PDF gives an explicit combined total. Formwork under slab, slab edge, and beam bottom/side are separate roles. If PDF gives slab edge + beams as one inseparable number, use formwork_edge_and_beam_combined_area_m2 with needs_review. Manual fields are per slab/pour, not shared across all slabs."
         },
         {
           "group_code": "floor_slab_eps_items",

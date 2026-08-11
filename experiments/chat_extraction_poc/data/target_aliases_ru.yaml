@@ -333,7 +333,7 @@ floor_slab_zones:
   negative_context: ["фундаментная плита", "кровля LOGICROOF", "мембрана кровли", "стены", "перемычк"]
   value_column_hint: ["объем", "объём", "площадь", "длина", "периметр", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "м2", "м²", "мп", "м.п.", "м.пог", "шт"]
-  notes: "Use for every above-grade physical slab/pour. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones."
+  notes: "Use for every above-grade physical slab/pour. Create one floor_slab_zones row per physical slab/zone. Do not include foundation slab here. Do not include roof membrane zones here; flat_roof has roof_zones. slab_thickness_m (added 2026-08-11, real calculator input, not descriptive): the slab's own thickness, usually printed in the concrete spec row itself ('...толщиной 200мм' -> 0.2); do not leave blank when stated. slab_edge_perimeter_m: control-only outer edge length; if no separate row gives it, the matching floor_slab_eps_items role=slab_edge row's length_m is normally the same physical value."
 
 floor_slab_eps_items:
   section_code: floor_slabs
