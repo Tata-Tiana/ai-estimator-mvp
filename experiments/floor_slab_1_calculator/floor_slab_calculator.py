@@ -1701,3 +1701,11 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
         },
         "warnings": formwork_area_warnings + insulation_warnings + beams_concrete_warnings,
     }
+
+
+# P5 (2026-08-11): job_runner.py's _load_calculate_function() derives the calculator entry point
+# generically as calculate_<section_code> for every section - sections/floor_slabs/section_
+# contract.yaml points calculator_module directly at this file (the shared engine itself, not a
+# per-floor translation wrapper - see calculate_floor_slab_pour()'s own docstring), so this alias
+# is what makes that generic convention find it under the name "calculate_floor_slabs".
+calculate_floor_slabs = calculate_floor_slab_pour

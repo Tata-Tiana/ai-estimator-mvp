@@ -146,84 +146,60 @@ def run_section(section_code: str, workbook_path: str | Path) -> dict[str, Any]:
     }
 
 
-# floor_slab_1 today emits its own zone as pour_input["slab_zones"][0] (a full slab_zones[] row -
-# thickness_m/concrete_grade/level included); floor_slab_2's pours don't carry that dict at all
-# (its own slab_zones[] group is diagnostic-only, never fed into calculate_floor_slab_2()) - only
-# pour_context (the zone's context string) is common to both. zone_meta is None for a fallback
-# (unsplit) pour in either section.
-FLOOR_SLAB_SECTION_CODES = ("floor_slab_1", "floor_slab_2")
+FLOOR_SLABS_SECTION_CODE = "floor_slabs"
 
 
 def run_floor_slab_pours(workbook_path: str | Path) -> list[dict[str, Any]]:
-    """P2 (FLOOR_SLAB_UNIFICATION_PLAN.md) entry point - the N-pours sibling of run_section() for
-    floor_slab_1+floor_slab_2 specifically (SECTION_ORDER's other 6 sections stay on run_section()
-    unchanged). Runs both sections' full review-workbook-to-calculator-result flow, but calls
-    build_calculator_inputs() (plural) instead of build_calculator_input() (singular) so each
-    section can return multiple pour results instead of always exactly one.
+    """P5 (2026-08-11): the N-pours sibling of run_section() for the single floor_slabs section
+    (SECTION_ORDER's other 6 sections stay on run_section() unchanged; floor_slabs is dynamic like
+    P2-P3 always intended, just against ONE section with N floor_slab_zones[] rows now instead of
+    two fixed floor_slab_1/floor_slab_2 sections each producing 1+ pours). Calls
+    build_calculator_inputs() (plural) - review_to_calculator/sections/floor_slabs/build_input.py -
+    which returns one calculator input per real physical slab, always (no [combined] fallback: an
+    unattributable row is a readiness blocker raised directly by the adapter, per
+    P5_SLAB_DATA_CONTRACT.md).
 
-    Returns pours in floor_slab_1-then-floor_slab_2 order, each shaped like run_section()'s own
-    return dict plus `pour_context` (the zone's slab_zones[].context, or None for a fallback/
-    unsplit pour) and `zone_meta` (the full slab_zones[] row when available, for P3's eventual
-    section-title building - see this module's own comment above). Zero zones anywhere still
-    means at least one pour per section today (both build_calculator_inputs() implementations
-    fall back to [combined] rather than [], matching run_section()'s existing required-field
-    validation - a section with missing required data still raises, same as before P2)."""
+    Returns pours in floor_slab_zones[] order, each shaped like run_section()'s own return dict
+    plus `pour_context` (that zone's display name, from calculator_input["case_meta"]
+    ["pour_context"] - always set, never None, since every zone has a real display_name/zone_id)."""
     wb = load_workbook(workbook_path)
+    contract = load_contract(FLOOR_SLABS_SECTION_CODE)
+    normalized_review = read_review_workbook(wb, contract)
+    normalized_review["resolved_prices"] = resolve_prices(normalized_review["prices"], contract)
+
+    build_calculator_inputs = _load_build_inputs_function(FLOOR_SLABS_SECTION_CODE)
+    calculator_inputs = build_calculator_inputs(normalized_review)
+
+    calculate_fn = _load_calculate_function(contract)
     pours: list[dict[str, Any]] = []
-    for section_code in FLOOR_SLAB_SECTION_CODES:
-        contract = load_contract(section_code)
-        normalized_review = read_review_workbook(wb, contract)
-        normalized_review["resolved_prices"] = resolve_prices(normalized_review["prices"], contract)
-
-        build_calculator_inputs = _load_build_inputs_function(section_code)
-        calculator_inputs = build_calculator_inputs(normalized_review)
-
-        calculate_fn = _load_calculate_function(contract)
-        for calculator_input in calculator_inputs:
-            pour_context = calculator_input.get("pour_context")
-            zone_meta = None
-            if pour_context is not None:
-                zones = calculator_input.get("slab_zones")
-                if zones and zones[0].get("context") == pour_context:
-                    zone_meta = zones[0]
-            calculator_argument = _prepare_calculator_argument(calculate_fn, calculator_input)
-            result = calculate_fn(calculator_argument)
-            pours.append(
-                {
-                    "section_code": section_code,
-                    "pour_context": pour_context,
-                    "zone_meta": zone_meta,
-                    "workbook_path": str(workbook_path),
-                    "calculator_input": calculator_input,
-                    "result": result,
-                }
-            )
+    for calculator_input in calculator_inputs:
+        pour_context = calculator_input.get("case_meta", {}).get("pour_context")
+        calculator_argument = _prepare_calculator_argument(calculate_fn, calculator_input)
+        result = calculate_fn(calculator_argument)
+        pours.append(
+            {
+                "section_code": FLOOR_SLABS_SECTION_CODE,
+                "pour_context": pour_context,
+                "workbook_path": str(workbook_path),
+                "calculator_input": calculator_input,
+                "result": result,
+            }
+        )
     return pours
 
 
-# P3 (FLOOR_SLAB_UNIFICATION_PLAN.md): fallback title for a pour that's still the section's own
-# single unsplit result (pour_context is None) - today's real behavior for every project, since
-# no real extraction has zone_context yet (P4). Once a section genuinely splits, each pour uses
-# its own zone_context text as the title instead (real per-project data, not a fixed string).
-FLOOR_SLAB_SECTION_TITLES = {
-    "floor_slab_1": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 1-ГО ЭТАЖА",
-    "floor_slab_2": "Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ 2-ГО ЭТАЖА",
-}
-
-
 def build_floor_slabs_result(workbook_path: str | Path) -> dict[str, Any]:
-    """P3 entry point - consolidates run_floor_slab_pours()'s per-pour results into the single
-    consolidated shape export_calculator_results_to_estimate_workbook.py's dynamic floor-slabs
-    block reads: {"section": "floor_slabs", "pours": [{"title", "estimate_lines"}, ...]}. Honestly
-    reflects reality (per the user's own framing when choosing this design 2026-08-10): however
-    many real pours exist is exactly how many blocks land in the final smeta - 2 today for every
-    real project (no zone_context yet), more once P4 ships and a project's PDF actually splits."""
+    """P3 entry point (unchanged signature/return shape since P5 - export_calculator_results_to_
+    estimate_workbook.py/build_all_section_results.py/build_floor_slabs_result_json.py all keep
+    working with zero changes) - consolidates run_floor_slab_pours()'s per-pour results into
+    {"section": "floor_slabs", "pours": [{"title", "estimate_lines"}, ...]}. However many real
+    physical slabs a project has is exactly how many blocks land in the final smeta."""
     pours = run_floor_slab_pours(workbook_path)
     return {
         "section": "floor_slabs",
         "pours": [
             {
-                "title": pour["pour_context"] or FLOOR_SLAB_SECTION_TITLES[pour["section_code"]],
+                "title": pour["pour_context"] or "Плита перекрытия/покрытия",
                 "estimate_lines": pour["result"].get("estimate_lines") or [],
             }
             for pour in pours
