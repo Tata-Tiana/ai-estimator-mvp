@@ -258,7 +258,22 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
             item.pop("_review_group_key", None)
             item.pop("_sheet01_scalarized", None)
             identity = _floor_slabs_item_identity(technical_key, item)
-            current = merged[technical_key].setdefault(identity, item)
+            current = merged[technical_key].get(identity)
+            if current is None:
+                current = dict(item)
+                merged[technical_key][identity] = current
+            else:
+                # Two physically distinct source rows can share one identity tuple - e.g.
+                # floor_slab_eps_items[role=slab_edge] is routinely split across a material
+                # row (volume_m3, length_m=null) and a separate work-length row (volume_m3=
+                # null, length_m) for the same zone/role/material/thickness (real TRC data,
+                # 2026-08-11). The old setdefault(identity, item) kept only the first row's
+                # dict and silently dropped the second row's fields (here: length_m), making
+                # the adapter see a slab_edge with material but no work length. Merge instead:
+                # take each field from whichever row actually has it, first-non-null wins.
+                for key, val in item.items():
+                    if val not in (None, "") and current.get(key) in (None, ""):
+                        current[key] = val
             override_value = None
             if override_col:
                 override_value = parse_number(ws.cell(row_idx, override_col).value)
