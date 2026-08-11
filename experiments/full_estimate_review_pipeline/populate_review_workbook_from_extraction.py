@@ -35,6 +35,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     FILL_INPUT,
     FILL_MISSING,
     FILL_REVIEW,
+    FILL_TECH,
     FILL_WHITE,
     FONT_NAME,
     ITEM_BLOCK_HEADERS,
@@ -59,7 +60,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     merge_row_full_width,
     production_repeated_row_params,
     rebar_group_keys_for_contract,
-    rebar_item_weight_kg,
+    rebar_item_delivery_weight_kg,
     restyle_block_sheet,
     restyle_section_bands,
     scalar_review_rows_for_contract,
@@ -74,6 +75,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_PRICE_REGISTRY = ROOT / "output" / "price_registry_filled_v4.xlsx"
 DEFAULT_MANUAL_VALUES_REGISTRY = ROOT / "output" / "manual_values_registry.xlsx"
+INACTIVE_ROW_HEIGHT = 9
 
 
 def project_status_fill(status: str):
@@ -87,6 +89,27 @@ def project_status_fill(status: str):
     if status.startswith("Не требуется"):
         return FILL_WHITE
     return FILL_REVIEW
+
+
+def hide_inactive_project_rows(ws) -> None:
+    """Hide 'not required for this project' scalar rows on sheet 01.
+
+    White rows with a "Не требуется..." status are traceability/diagnostics for optional
+    scalar fields, not something Elena needs to review. Keep the data in the workbook for
+    audit/read-back safety, but hide the row in Excel. Do not hide grey СПРАВОЧНО repeated
+    tables here: non-empty reference tables still help Elena compare extracted rows with the
+    PDF.
+    """
+    for row_idx in range(1, ws.max_row + 1):
+        status = str(ws.cell(row_idx, 4).value or "")
+        if not status.startswith("Не требуется"):
+            continue
+        ws.row_dimensions[row_idx].hidden = True
+        ws.row_dimensions[row_idx].height = INACTIVE_ROW_HEIGHT
+        for cell in ws[row_idx]:
+            cell.fill = FILL_WHITE
+            cell.font = Font(name=FONT_NAME, size=9, color="666666")
+            cell.alignment = Alignment(wrap_text=False, vertical="center")
 
 
 # Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
@@ -842,204 +865,170 @@ REBAR_GROUP_KEY = "floor_slab_rebar_items"
 ADDITIONAL_ITEMS_GROUP_KEY = "floor_slab_additional_items"
 
 
-FLOOR_SLAB_SCALAR_FIELDS_BY_GROUP: dict[str, list[str]] = {
-    ZONES_GROUP_KEY: [
-        "concrete_slab_volume_m3",
-        "concrete_total_with_beams_m3",
-        "slab_thickness_m",
-        "slab_edge_perimeter_m",
-        "formwork_under_slab_area_m2",
-        "formwork_edge_area_m2",
-        "formwork_edge_and_beam_combined_area_m2",
-        "formwork_beams_side_area_m2",
-        "formwork_beams_bottom_area_m2",
-        "manual_concrete_pump_shifts",
-        "manual_formwork_rebar_crane_shifts",
-        "manual_rebar_metal_delivery_trucks",
-        "manual_technical_supervision_amount",
-    ],
-    EPS_ITEMS_GROUP_KEY: ["thickness_mm", "volume_m3", "area_m2", "length_m", "height_m"],
-    BEAM_ITEMS_GROUP_KEY: [
-        "length_m",
-        "width_m",
-        "height_m",
-        "count",
-        "concrete_volume_m3",
-        "formwork_area_m2",
-        "bottom_formwork_area_m2",
-        "insulated_length_m",
-        "insulation_area_m2",
-    ],
-    REBAR_GROUP_KEY: ["diameter_mm", "spec_length_m", "kg_per_meter"],
-    ADDITIONAL_ITEMS_GROUP_KEY: ["quantity"],
+FLOOR_SLAB_EPS_ROLE_LABELS = {
+    "slab_edge": "торец плиты",
+    "slab_bottom": "низ плиты",
+    "combined_bottom_and_edge": "торец + низ плиты",
+    "unknown": "утепление плиты",
 }
 
 
-FLOOR_SLAB_OPTIONAL_FIELDS = {
-    "concrete_total_with_beams_m3",
-    "formwork_edge_and_beam_combined_area_m2",
-    "formwork_beams_side_area_m2",
-    "formwork_beams_bottom_area_m2",
-    "manual_technical_supervision_amount",
-    "height_m",
-    "area_m2",
-    "length_m",
-    "insulated_length_m",
-    "insulation_area_m2",
-    "bottom_formwork_area_m2",
-}
+def floor_slab_zone_label(value: dict[str, Any]) -> str:
+    return str(value.get("_zone_label") or value.get("display_name") or value.get("zone_id") or "Плита")
 
 
-FLOOR_SLAB_ROLE_LABELS = {
-    "slab_edge": "утепление торца плиты",
-    "slab_bottom": "утепление низа плиты",
-    "combined_bottom_and_edge": "утепление торца+низа одной строкой",
-    "unknown": "утепление, роль не распознана",
-}
-
-
-def _columns_by_key(param: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    return {str(column.get("key")): column for column in (param.get("columns") or []) if column.get("key")}
-
-
-def _floor_slab_item_label(group_key: str, value: dict[str, Any]) -> str:
+def floor_slab_item_label(group_key: str, value: dict[str, Any], fallback: str) -> str:
+    zone_label = floor_slab_zone_label(value)
     if group_key == ZONES_GROUP_KEY:
-        label = value.get("display_name") or value.get("slab_mark") or value.get("zone_id") or "плита"
-        level = value.get("source_level")
-        return f"{label}{f' ({level})' if level else ''}"
+        return zone_label
     if group_key == EPS_ITEMS_GROUP_KEY:
-        role = FLOOR_SLAB_ROLE_LABELS.get(str(value.get("role") or ""), value.get("role") or "утепление")
-        material = value.get("material_name")
-        return f"{role}{f' — {material}' if material else ''}"
+        role_label = FLOOR_SLAB_EPS_ROLE_LABELS.get(str(value.get("role") or ""), "утепление плиты")
+        material = str(value.get("material_name") or "ЭППС").replace("-100мм", " 100 мм").replace("-50мм", " 50 мм")
+        thickness = value.get("thickness_mm")
+        if thickness and "мм" not in material:
+            material = f"{material} {thickness:g} мм" if isinstance(thickness, (int, float)) else f"{material} {thickness} мм"
+        return f"{material} — {role_label}"
     if group_key == BEAM_ITEMS_GROUP_KEY:
-        return f"балка {value.get('mark') or value.get('beam_id') or value.get('name') or ''}".strip()
+        return str(value.get("mark") or value.get("name") or fallback)
     if group_key == REBAR_GROUP_KEY:
-        bits = [
-            value.get("component"),
-            value.get("name") or value.get("code"),
-            value.get("steel_class"),
-            f"⌀{value.get('diameter_mm')}" if value.get("diameter_mm") not in (None, "") else "",
-        ]
-        return "арматура " + " ".join(str(bit) for bit in bits if bit)
+        steel = value.get("steel_class") or ""
+        diameter = value.get("diameter_mm")
+        parts = [str(part) for part in [steel, f"⌀{diameter:g}" if isinstance(diameter, (int, float)) else diameter] if part]
+        return " ".join(parts) or fallback
     if group_key == ADDITIONAL_ITEMS_GROUP_KEY:
-        return value.get("name") or value.get("item_type") or "дополнительная строка"
-    return value.get("name") or group_key
+        return str(value.get("name") or fallback)
+    return f"{zone_label} — {fallback}" if fallback else zone_label
 
 
-def _floor_slab_field_status(item: dict[str, Any], field_key: str, field_value: Any) -> str:
-    if field_value not in (None, ""):
-        return "Проверьте (needs_review)" if item.get("needs_review") else "Найдено"
-    if field_key in FLOOR_SLAB_OPTIONAL_FIELDS:
-        return "Не требуется / условно отсутствует"
-    return "Не найдено"
+FLOOR_SLAB_FIELD_LABELS = {
+    "concrete_slab_volume_m3": "Бетон плиты, объем",
+    "concrete_total_with_beams_m3": "Бетон плиты + балок, контрольный итог",
+    "slab_thickness_m": "Толщина плиты",
+    "slab_edge_perimeter_m": "Периметр торца плиты",
+    "formwork_under_slab_area_m2": "Площадь опалубки под плитой",
+    "formwork_edge_area_m2": "Площадь опалубки торца плиты",
+    "formwork_edge_and_beam_combined_area_m2": "Опалубка торца плиты + балок, площадь",
+    "formwork_beams_side_area_m2": "Опалубка балок, боковая площадь",
+    "formwork_beams_bottom_area_m2": "Опалубка балок, нижняя площадь",
+    "manual_concrete_pump_shifts": "Бетононасос",
+    "manual_formwork_rebar_crane_shifts": "Кран для опалубки/арматуры",
+    "manual_rebar_metal_delivery_trucks": "Доставка арматуры/металла",
+    "manual_technical_supervision_amount": "Технадзор",
+    "manual_formwork_rental_supplier_quote_total": "КП поставщика на аренду опалубки",
+    "volume_m3": "Объем материала",
+    "area_m2": "Площадь",
+    "length_m": "Длина работ",
+    "height_m": "Высота",
+    "spec_length_m": "Длина по спецификации",
+    "kg_per_meter": "Масса 1 м",
+}
 
 
-def _floor_slab_field_action(group_key: str, field_label: str, value: dict[str, Any]) -> str:
+def floor_slab_field_label(group_key: str, key: str, default: str) -> str:
+    return FLOOR_SLAB_FIELD_LABELS.get(key, default)
+
+
+def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str]) -> list[str]:
+    if group_key == ZONES_GROUP_KEY:
+        return [
+            "concrete_slab_volume_m3",
+            "concrete_total_with_beams_m3",
+            "slab_thickness_m",
+            "slab_edge_perimeter_m",
+            "formwork_under_slab_area_m2",
+            "formwork_edge_area_m2",
+            "formwork_edge_and_beam_combined_area_m2",
+            "formwork_beams_side_area_m2",
+            "formwork_beams_bottom_area_m2",
+            "manual_concrete_pump_shifts",
+            "manual_formwork_rebar_crane_shifts",
+            "manual_rebar_metal_delivery_trucks",
+            "manual_technical_supervision_amount",
+            "manual_formwork_rental_supplier_quote_total",
+        ]
     if group_key == EPS_ITEMS_GROUP_KEY:
-        role = value.get("role")
-        if role == "slab_edge":
-            return "Проверьте отдельно материал и длину работ по торцу плиты; работа считается только по готовой длине в м.п."
-        if role == "slab_bottom":
-            return "Проверьте площадь/объём утепления низа плиты; площадь может быть дана готовой или рассчитана из объёма и толщины."
-        if role == "combined_bottom_and_edge":
-            return "Проверьте материал; работу по торцу и низу нельзя автоматически разделить из одной объединённой строки."
-    if group_key == BEAM_ITEMS_GROUP_KEY:
-        return "Проверьте параметр балки этой плиты."
-    if group_key == REBAR_GROUP_KEY:
-        return "Проверьте строку арматуры этой плиты."
-    return f"Проверьте поле: {field_label}."
+        return ["volume_m3", "area_m2", "length_m", "height_m"]
+    return correction_columns
 
 
-def _append_floor_slab_scalarized_row(
-    ws,
+def visible_repeated_field_keys(
+    sec_code: str,
+    group_key: str,
+    correction_columns: list[str],
+    item_label_columns: list[str],
+    columns_by_key: dict[str, dict[str, Any]],
+) -> list[str]:
+    keys = [k for k in floor_slab_visible_field_keys(group_key, correction_columns) if k not in item_label_columns]
+    # Sheet 01 must stay numeric: avoid rows such as "Ед.", "Тип эксплуатации" or "Марка" whose
+    # value is a technical/string classifier, not a number Elena can check in column B. The full
+    # structured row remains in row_data_json on every visible numeric row.
+    keys = [
+        k
+        for k in keys
+        if (columns_by_key.get(k, {}).get("value_kind") or "") in {"number", "money"}
+    ]
+    return keys
+
+
+def reference_summary(
+    value: dict[str, Any],
+    keys: list[str],
+    columns_by_key: dict[str, dict[str, Any]],
     *,
-    sec_code: str,
-    group_key: str,
-    param: dict[str, Any],
-    item: dict[str, Any],
-    field_key: str,
-    field_def: dict[str, Any],
-    counts: dict[str, int],
-) -> None:
-    value = item.get("value") or {}
-    field_value = value.get(field_key)
-    field_label = field_def.get("label_ru") or field_key
-    unit = field_def.get("unit") or ""
-    item_label = _floor_slab_item_label(group_key, value)
-    status = _floor_slab_field_status(item, field_key, field_value)
-    row_fill = project_status_fill(status)
-    if status.startswith("Найдено"):
-        counts["found"] += 1
-    elif status.startswith("Проверьте"):
-        counts["needs_review"] += 1
-    elif status.startswith("Не найдено"):
-        counts["missing"] += 1
-    else:
-        counts["conditional_absent"] += 1
-    counts["item_rows"] += 1
-
-    row_data = {
-        **value,
-        "_sheet01_scalarized": True,
-        "_review_group_key": group_key,
-        "_review_field_key": field_key,
-    }
-    ws.append([
-        f"{item_label} — {field_label}",
-        display_value(field_value),
-        unit,
-        status,
-        display_confidence(item),
-        _floor_slab_field_action(group_key, field_label, value),
-        item.get("source_pdf") or "",
-        item_fragment(item),
-        "",
-        "",
-        sec_code,
-        group_key,
-        param.get("source_class", ""),
-        field_key,
-        "",
-        "",
-        "",
-        "",
-        json.dumps(row_data, ensure_ascii=False),
-    ])
-    for cell in ws[ws.max_row]:
-        cell.fill = row_fill
-        cell.alignment = Alignment(wrap_text=True, vertical="top")
-    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+    sec_code: str = "",
+    group_key: str = "",
+) -> str:
+    parts = []
+    for key in keys:
+        item_value = value.get(key)
+        if item_value is None or item_value == "":
+            continue
+        column_def = columns_by_key.get(key, {})
+        label = column_def.get("label_ru") or key
+        if sec_code == "floor_slabs":
+            label = floor_slab_field_label(group_key, key, label)
+        unit = column_def.get("unit") or ""
+        parts.append(f"{label}: {display_value(item_value)}{(' ' + unit) if unit else ''}")
+    return "; ".join(parts)
 
 
-def _render_floor_slab_group_as_scalar_rows(
-    ws,
-    sec_code: str,
-    group_key: str,
-    param: dict[str, Any],
-    items: list[dict[str, Any]],
-    counts: dict[str, int],
-) -> None:
-    columns_by_key = _columns_by_key(param)
-    field_keys = FLOOR_SLAB_SCALAR_FIELDS_BY_GROUP.get(group_key, param.get("correction_columns") or [])
-    for item in items:
-        value = item.get("value") or {}
-        if group_key != ZONES_GROUP_KEY:
-            append_section_band(ws, [_floor_slab_item_label(group_key, value)], len(PROJECT_HEADERS))
-        for field_key in field_keys:
-            field_def = columns_by_key.get(field_key, {"key": field_key})
-            field_value = value.get(field_key)
-            if field_value in (None, "") and field_key in FLOOR_SLAB_OPTIONAL_FIELDS:
-                continue
-            _append_floor_slab_scalarized_row(
-                ws,
-                sec_code=sec_code,
-                group_key=group_key,
-                param=param,
-                item=item,
-                field_key=field_key,
-                field_def=field_def,
-                counts=counts,
-            )
+def is_rebar_group(group_key: str) -> bool:
+    return "rebar" in (group_key or "").lower()
+
+
+def rebar_reference_summary(value: dict[str, Any]) -> tuple[Any, str]:
+    """Rebar is checked against the PDF, but not edited by the estimator in the workbook."""
+    for key in ("spec_length_m", "source_length_m", "length_m"):
+        if value.get(key) not in (None, ""):
+            return display_value(value.get(key)), "мп"
+    for key in ("weight_kg", "mass_kg"):
+        if value.get(key) not in (None, ""):
+            return display_value(value.get(key)), "кг"
+    return "", ""
+
+
+def repeated_item_sheet_id(sec_code: str, group_key: str, value: dict[str, Any], fallback: str) -> str:
+    identity_parts = [
+        value.get("zone_id"),
+        value.get("beam_id"),
+        value.get("code"),
+        value.get("mark"),
+        value.get("name"),
+        value.get("item_type"),
+        value.get("role"),
+        value.get("steel_class"),
+        value.get("diameter_mm"),
+        value.get("wall_role"),
+        value.get("block_density"),
+        value.get("product_type"),
+        value.get("quantity"),
+        value.get("length_m"),
+        value.get("spec_length_m"),
+        value.get("source_length_m"),
+        fallback,
+    ]
+    identity = "|".join(str(part) for part in identity_parts if part not in (None, ""))
+    return f"{sec_code}:{group_key}:{identity}"
 
 
 def _render_repeated_row_block(
@@ -1054,13 +1043,15 @@ def _render_repeated_row_block(
     title: str,
     rebar_metal_delivery_allocation: dict[str, int],
     rebar_weights_by_section: dict[str, float],
+    rebar_cumulative_weights: dict[str, tuple[float, float]],
+    reference_only: bool = False,
 ) -> None:
     """Renders one repeated-row group as its own titled block on sheet 01. `items` is passed in
     explicitly (not read from found_groups here) so a caller can pre-filter to one physical zone
     (see build_project_sheet_from_extraction()'s floor_slabs branch) without this function needing
     to know anything about zones itself - every other section just passes found_groups[group_key]
     unfiltered, same behavior as before this was extracted into its own function."""
-    headers = ITEM_BLOCK_HEADERS + correction_headers(param) + ["row_data_json"]
+    headers = (ITEM_BLOCK_HEADERS if reference_only else PROJECT_HEADERS) + correction_headers(param) + ["row_data_json"]
     item_label_columns = param.get("item_label_columns") or []
     correction_columns = param.get("correction_columns") or []
     columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
@@ -1083,84 +1074,183 @@ def _render_repeated_row_block(
                 # as a side effect of this loop running first.
                 value = {**value, "manual_rebar_metal_delivery_trucks": allocated}
                 zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
-                auto_note = (
-                    f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
-                    f"автоматически box-калькулятором по накоплению "
-                    f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
-                    f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
+                cumulative_before, cumulative_after = rebar_cumulative_weights.get(
+                    bucket_key, (0.0, zone_weight)
+                )
+                auto_detail = (
+                    metal_delivery_note(
+                        weight_kg=zone_weight,
+                        cumulative_before_kg=cumulative_before,
+                        cumulative_after_kg=cumulative_after,
+                        allocated_trucks=allocated,
+                    )
+                    + " Проверьте и поправьте при необходимости."
                 )
                 item = {
                     **item,
-                    "notes": f"{item.get('notes')}\n{auto_note}" if item.get("notes") else auto_note,
+                    "_metal_delivery_detail": auto_detail,
                 }
 
         label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
-        label = " ".join(label_parts) or item.get("item_name") or group_key
+        item_label = " ".join(label_parts) or item.get("item_name") or group_key
+        if sec_code == "floor_slabs":
+            item_label = floor_slab_item_label(group_key, value, item_label)
 
-        # One "label: value ед." per line (not a bare comma list) - a repeated-row item with more
-        # than 2-3 fields (floor_slab_zones has ~15) is unreadable otherwise: real user feedback
-        # 2026-08-11, comparing against the old floor_slab_1 layout where each of these was its own
-        # clearly labeled scalar row. Field ORDER still follows correction_columns (money/manual
-        # fields first, per that list's own ordering), it's just no longer comma-joined.
-        summary_parts = []
-        for key in correction_columns:
+        if reference_only:
+            summary_keys = [k for k in correction_columns if k not in item_label_columns]
+            if is_rebar_group(group_key):
+                summary, display_unit = rebar_reference_summary(value)
+            elif sec_code == "flat_roof" and group_key == "roof_raw_material_spec_rows":
+                summary = display_value(value.get("quantity"))
+                display_unit = str(value.get("unit") or "")
+            else:
+                summary = reference_summary(
+                    value,
+                    summary_keys,
+                    columns_by_key,
+                    sec_code=sec_code,
+                    group_key=group_key,
+                )
+                display_unit = param.get("unit", "")
+            row = [
+                item_label,
+                summary,
+                display_unit,
+                "СПРАВОЧНО",
+                display_confidence(item),
+                "СПРАВОЧНО: проверьте построчно и сверьте с PDF.",
+                item.get("source_pdf") or "",
+                item_fragment(item),
+                "",
+                "",
+                sec_code,
+                group_key,
+                param.get("source_class", ""),
+                param.get("target_code", ""),
+            ]
+            row += [""] * len(correction_headers(param))
+            row.append(json.dumps(value, ensure_ascii=False))
+            rows.append(row)
+            counts["item_rows"] += 1
+            continue
+
+        # One FIELD = one row (real user feedback 2026-08-11: column A must name what the number
+        # IS and what it's for - e.g. "Плита фундамента толщиной 300мм — Бетон" - column B must
+        # hold ONLY the number, column C only the unit; a cell with several "label: value ед."
+        # lines crammed together doesn't scan). Only correction_columns are shown - that list is
+        # each contract's own curated "worth showing to Elena" set (money/manual fields first);
+        # showing every declared column instead pulled in noise nobody asked for (rebar's raw
+        # "Наименование" text, wall_block_items' "Размер блока") that was never visible before
+        # this change (found 2026-08-11). Fields already used to build item_label (e.g.
+        # wall_block_items' context/wall_role/block_density) are excluded too - they're identity,
+        # already visible in column A, showing them again just repeats column A's own text back
+        # at itself. Only the FIRST populated field's row carries the real row_data_json + the
+        # correction override cells (O-R) - same single JSON blob and override mechanism as
+        # before, unmodified; the rest are blank-JSON display-only rows, which
+        # read_production_item_rows() already skips (is_blank(raw_json)), so the same item is
+        # never read back more than once.
+        ordered_keys = visible_repeated_field_keys(
+            sec_code,
+            group_key,
+            correction_columns,
+            item_label_columns,
+            columns_by_key,
+        )
+        field_rows: list[tuple[str | None, str | None, Any, str]] = []
+        for key in ordered_keys:
             v = value.get(key)
             if v is None or v == "":
                 continue
             column_def = columns_by_key.get(key, {})
             field_label = column_def.get("label_ru") or key
+            if sec_code == "floor_slabs":
+                field_label = floor_slab_field_label(group_key, key, field_label)
             unit = column_def.get("unit", "")
-            summary_parts.append(f"{field_label}: {v}{' ' + unit if unit else ''}")
-        summary = "\n".join(summary_parts)
+            if sec_code == "flat_roof" and group_key == "roof_raw_material_spec_rows" and key == "quantity":
+                unit = str(value.get("unit") or unit)
+            field_rows.append((key, field_label, display_value(v), unit))
+        if not field_rows:
+            if sec_code == "flat_roof":
+                continue
+            field_rows = [(None, None, None, param.get("unit", ""))]
+
+        # Rebar rows (real user feedback 2026-08-11, "арматуру вот так заполняем во всех
+        # разделах"): a rebar item almost always reduces to exactly one real number (its spec
+        # length) - "A500C 10" is already unambiguous under an "Арматура..." block title with
+        # unit "мп", so appending the field's own label_ru ("Длина по спецификации") to column A
+        # is redundant noise Elena explicitly asked to drop for this group type specifically. If
+        # a rebar item ever has more than one populated field (e.g. spec_length_m AND
+        # kg_per_meter both given), the suffix comes back so the two rows stay distinguishable.
+        suppress_field_suffix = "rebar" in group_key and len(field_rows) == 1
 
         status = "Проверьте (needs_review)" if needs_review else "Найдено"
         row_fill = project_status_fill(status)
         counts["needs_review" if needs_review else "found"] += 1
-        counts["item_rows"] += 1
 
-        row = [
-            label,
-            summary,
-            param.get("unit", ""),
-            status,
-            display_confidence(item),
-            "",  # action_ru already stated once in the block title above, not per row -
-            # repeating a ~100-char sentence on every item row was the main cause of
-            # tall wrapped rows (2026-07-29 design fix)
-            item.get("source_pdf") or "",
-            item_fragment(item),
-            "",
-            "",
-            sec_code,
-            group_key,
-            param.get("source_class", ""),
-            param.get("target_code", ""),
-        ]
-        row += ["", "", "", ""]  # correction columns - Elena fills these, not the extraction
-        row.append(json.dumps(value, ensure_ascii=False))
-        rows.append(row)
+        item_id = repeated_item_sheet_id(sec_code, group_key, value, item_label)
+        for field_idx, (field_key, field_label, field_value, unit) in enumerate(field_rows):
+            label = f"{item_label} — {field_label}" if field_label and not suppress_field_suffix else item_label
+            row_json = {
+                **value,
+                "_sheet_item_id": item_id,
+                "_sheet_field_key": field_key,
+            }
+            row_status = status
+            row_confidence = display_confidence(item)
+            action_text = ""
+            row_source = item.get("source_pdf") or ""
+            row_fragment = item_fragment(item)
+            if field_key == "manual_rebar_metal_delivery_trucks":
+                row_status = "Найдено (авто, box-калькулятор)"
+                row_confidence = ""
+                action_text = (
+                    "Автоматически по общему поставочному весу арматуры коробки "
+                    "(box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+                )
+                row_source = ""
+                row_fragment = item.get("_metal_delivery_detail") or item.get("notes") or ""
+            row = [
+                label,
+                field_value,
+                unit,
+                row_status,
+                row_confidence,
+                action_text,
+                row_source,
+                row_fragment,
+                "",
+                "",
+                sec_code,
+                group_key,
+                param.get("source_class", ""),
+                param.get("target_code", ""),
+            ]
+            row += ["", "", "", ""]  # correction columns - Elena fills these, not the extraction
+            row.append(json.dumps(row_json, ensure_ascii=False))
+            rows.append(row)
+            counts["item_rows"] += 1
+
+    # Empty repeated-row blocks used to render as a grey title + header with no data rows.
+    # That looked like a broken table to Elena and carried no actionable information, so skip
+    # the whole block when extraction produced no rows.
+    if not rows:
+        return
 
     append_block(ws, title, headers, rows)
-    if rows:
-        for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
-            status = str(ws.cell(row_idx, 4).value or "")
-            row_fill = project_status_fill(status)
-            for cell in ws[row_idx]:
-                cell.fill = row_fill
-            # column B ("Найдено в проекте") now carries multi-line "label: value ед." text for
-            # any item with more than one correction_column (floor_slab_zones has ~15) - needs
-            # wrap_text so autofit_row_heights (called once at the very end, see its own docstring)
-            # actually grows the row instead of clipping every line but the first.
-            ws.cell(row_idx, 2).alignment = Alignment(wrap_text=True, vertical="top")
-            ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
-        total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
-        if total_row:
-            ws.append(total_row)
-            for cell in ws[ws.max_row]:
-                cell.fill = FILL_HEADER
-                cell.font = Font(name=FONT_NAME, bold=True, size=10)
-                cell.alignment = Alignment(wrap_text=True, vertical="top")
-            ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+    for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
+        status = str(ws.cell(row_idx, 4).value or "")
+        row_fill = FILL_TECH if reference_only else project_status_fill(status)
+        for cell in ws[row_idx]:
+            cell.fill = row_fill
+        ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
+    total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
+    if total_row:
+        ws.append(total_row)
+        for cell in ws[ws.max_row]:
+            cell.fill = FILL_HEADER
+            cell.font = Font(name=FONT_NAME, bold=True, size=10)
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+        ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
 
 def build_project_sheet_from_extraction(
@@ -1186,6 +1276,7 @@ def build_project_sheet_from_extraction(
     metal_order = metal_section_order(extraction)
     rebar_weights_by_section = compute_rebar_weights_by_section(contracts, extraction, metal_order)
     rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section, metal_order)
+    rebar_cumulative_weights = compute_rebar_cumulative_weights(rebar_weights_by_section, metal_order)
     box_total_metal_weight_kg = round(sum(rebar_weights_by_section.values()), 1)
 
     for contract in contracts:
@@ -1214,19 +1305,20 @@ def build_project_sheet_from_extraction(
                 box_row = (
                     rebar_metal_delivery_allocation.get(sec_code, 0),
                     "",
-                    (
-                        f"Вес арматуры раздела: {rebar_weights_by_section.get(sec_code, 0):g} кг. "
-                        f"Автораспределение по накоплению {int(METAL_TRUCK_CAPACITY_KG // 1000)} т — "
-                        "проверьте и поправьте при необходимости."
-                    ),
+                    metal_delivery_note(
+                        weight_kg=rebar_weights_by_section.get(sec_code, 0.0),
+                        cumulative_before_kg=rebar_cumulative_weights.get(sec_code, (0.0, 0.0))[0],
+                        cumulative_after_kg=rebar_cumulative_weights.get(sec_code, (0.0, 0.0))[1],
+                        allocated_trucks=rebar_metal_delivery_allocation.get(sec_code, 0),
+                    )
+                    + " Проверьте и поправьте при необходимости.",
                 )
             elif param_key == BOX_TOTAL_METAL_WEIGHT_KEY:
                 box_row = (
                     box_total_metal_weight_kg,
                     "",
-                    "Сумма веса арматуры по всем 4 разделам с арматурой (включая стены/перемычки, "
-                    "у которых нет отдельной строки доставки) - используется калькулятором фундаментной "
-                    "плиты только для контрольного предупреждения.",
+                    "Техническая скрытая строка: поставочный вес арматуры по всем разделам. "
+                    "Елена видит этот итог один раз в конце листа.",
                 )
 
             if box_row is not None:
@@ -1253,6 +1345,9 @@ def build_project_sheet_from_extraction(
                 for cell in ws[ws.max_row]:
                     cell.fill = row_fill
                 ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+                if param_key == BOX_TOTAL_METAL_WEIGHT_KEY:
+                    ws.row_dimensions[ws.max_row].hidden = True
+                    ws.row_dimensions[ws.max_row].height = INACTIVE_ROW_HEIGHT
                 continue
 
             confidence = display_confidence(found)
@@ -1350,13 +1445,17 @@ def build_project_sheet_from_extraction(
 
         if sec_code == "floor_slabs":
             # Real plates must read as their own visually separate group (concrete/formwork/
-            # insulation/beams/rebar/manual fields together) and, crucially, one visible number
-            # per row. The first P5 draft still called _render_repeated_row_block() inside this
-            # branch, so sheet 01 showed technical item-block headers ("Исправить: Бетон...",
-            # "Исправить: Смены крана...") and comma/multiline dumps of many fields in one cell.
-            # That is fine for a machine, but unusable for Elena. For floor_slabs only, render
-            # repeated items as scalarized PROJECT_HEADERS rows and keep row_data_json hidden in
-            # column S so workbook_reader can reconstruct the original repeated groups.
+            # insulation/beams/rebar/manual fields together) - not one flat block per group-type
+            # spanning every plate mixed together (2026-08-11, real user feedback). Reuses the
+            # exact same _render_repeated_row_block() every other section below uses (same
+            # status colors, same one-row-per-item + labeled multi-line summary, same band
+            # styling) - just called once per zone with a pre-filtered item list. A first attempt
+            # built a completely separate one-field-per-row rendering system just for floor_slabs
+            # (plus its own read-back reconstruction in workbook_reader.py) - reverted 2026-08-11:
+            # it made this section look and behave differently from every other one for no real
+            # benefit, and duplicated logic that already existed here. Consistency with
+            # earthworks/foundation_slab/load_bearing_walls_lintels's existing look (which Elena
+            # confirmed is clear as-is) matters more than a bespoke per-section design.
             params_by_key = {param.get("key"): param for param in repeated_row_params}
             dependent_group_keys = [ZONES_GROUP_KEY, EPS_ITEMS_GROUP_KEY, BEAM_ITEMS_GROUP_KEY, REBAR_GROUP_KEY, ADDITIONAL_ITEMS_GROUP_KEY]
             for zone_item in found_groups.get(ZONES_GROUP_KEY, []):
@@ -1367,17 +1466,23 @@ def build_project_sheet_from_extraction(
                     allocated = rebar_metal_delivery_allocation.get(bucket_key)
                     if allocated is not None:
                         zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
-                        auto_note = (
-                            f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
-                            f"автоматически box-калькулятором по накоплению "
-                            f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
-                            f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
+                        cumulative_before, cumulative_after = rebar_cumulative_weights.get(
+                            bucket_key, (0.0, zone_weight)
+                        )
+                        auto_detail = (
+                            metal_delivery_note(
+                                weight_kg=zone_weight,
+                                cumulative_before_kg=cumulative_before,
+                                cumulative_after_kg=cumulative_after,
+                                allocated_trucks=allocated,
+                            )
+                            + " Проверьте и поправьте при необходимости."
                         )
                         zone_value = {**zone_value, "manual_rebar_metal_delivery_trucks": allocated}
                         zone_item = {
                             **zone_item,
                             "value": zone_value,
-                            "notes": f"{zone_item.get('notes')}\n{auto_note}" if zone_item.get("notes") else auto_note,
+                            "_metal_delivery_detail": auto_detail,
                         }
                 zone_label = zone_value.get("display_name") or zone_id or "?"
                 level = zone_value.get("source_level")
@@ -1388,22 +1493,45 @@ def build_project_sheet_from_extraction(
                         continue
                     if group_key == ZONES_GROUP_KEY:
                         zone_items = [zone_item]
+                        block_label = "Расчетные параметры"
+                        reference_only = False
                     else:
                         zone_items = [
-                            item for item in found_groups.get(group_key, [])
+                            {
+                                **item,
+                                "value": {
+                                    **(item.get("value") or {}),
+                                    "_zone_label": zone_label,
+                                },
+                            }
+                            for item in found_groups.get(group_key, [])
                             if (item.get("value") or {}).get("zone_id") == zone_id
                         ]
+                        block_label = param.get("label_ru", group_key)
+                        reference_only = group_key == REBAR_GROUP_KEY
                     if not zone_items and group_key != ZONES_GROUP_KEY:
                         continue
-                    _render_floor_slab_group_as_scalar_rows(ws, sec_code, group_key, param, zone_items, counts)
+                    title_prefix = "СПРАВОЧНО: " if reference_only else ""
+                    _render_repeated_row_block(
+                        ws, sec_code, group_key, param, zone_items, counts, found_groups,
+                        title=f"{title_prefix}{zone_label} — {block_label}",
+                        rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
+                        rebar_weights_by_section=rebar_weights_by_section,
+                        rebar_cumulative_weights=rebar_cumulative_weights,
+                        reference_only=reference_only,
+                    )
         else:
             for param in repeated_row_params:
                 group_key = param.get("key")
+                reference_only = param.get("production_input") is not True or is_rebar_group(group_key)
+                title_prefix = "СПРАВОЧНО: " if reference_only else ""
                 _render_repeated_row_block(
                     ws, sec_code, group_key, param, found_groups.get(group_key, []), counts, found_groups,
-                    title=f"{section_name(contract)} — {param.get('label_ru', group_key)} ({(param.get('review_behavior') or {}).get('action_ru', 'Проверьте позиции построчно.')})",
+                    title=f"{title_prefix}{section_name(contract)} — {param.get('label_ru', group_key)} ({(param.get('review_behavior') or {}).get('action_ru', 'Проверьте позиции построчно.')})",
                     rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
                     rebar_weights_by_section=rebar_weights_by_section,
+                    rebar_cumulative_weights=rebar_cumulative_weights,
+                    reference_only=reference_only,
                 )
 
     # Итог по коробке (2026-07-30): one cross-section summary row after all 8 sections, so
@@ -1418,18 +1546,44 @@ def build_project_sheet_from_extraction(
     )
     append_section_band(ws, ["Итог по коробке"], len(PROJECT_HEADERS))
     ws.append([
-        "Общий вес арматуры по проекту (все разделы с арматурой), кг",
+        "Общий поставочный вес арматуры по проекту",
         box_total_metal_weight_kg,
         "кг",
         "Найдено (авто, box-калькулятор)",
         "",
-        "Справочно — сумма веса, из которой считается автораспределение машин доставки арматуры/металла по разделам.",
+        "Справочно — сумма поставочного веса, из которой считается автораспределение машин доставки арматуры/металла по разделам.",
         "",
         breakdown,
         "",
         "",
         "",
         "total_rebar_weight_kg",
+        "AUTO_CALCULATED",
+        "",
+    ])
+    for cell in ws[ws.max_row]:
+        cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+    total_trucks = sum(rebar_metal_delivery_allocation.values())
+    allocation_breakdown = "; ".join(
+        f"{section_names_by_code.get(code, code)}: {trucks} маш."
+        for code, trucks in rebar_metal_delivery_allocation.items()
+        if trucks
+    )
+    ws.append([
+        "Всего машин доставки арматуры/металла по проекту",
+        total_trucks,
+        "маш",
+        "Найдено (авто, box-калькулятор)",
+        "",
+        f"Справочно — машины распределяются по накоплению {int(METAL_TRUCK_CAPACITY_KG // 1000)} т.",
+        "",
+        allocation_breakdown or "По разделам машин доставки не распределено.",
+        "",
+        "",
+        "",
+        "total_rebar_delivery_trucks",
         "AUTO_CALCULATED",
         "",
     ])
@@ -1462,6 +1616,7 @@ def build_project_sheet_from_extraction(
     # Column widths are final now - autofit reads them to grow any row whose wrapped text needs
     # more than COMPACT_ROW_HEIGHT's one line (see estimate_row_height docstring).
     autofit_row_heights(ws, 1, ws.max_row)
+    hide_inactive_project_rows(ws)
 
     return counts
 
@@ -1552,6 +1707,7 @@ def metal_section_order(extraction: dict[str, Any]) -> list[str]:
 # its manual_rebar_metal_delivery_trucks field lives on each zone row, not one section-level cell.
 REBAR_METAL_DELIVERY_FIELD_BY_SECTION = {
     "foundation_slab": "rebar_metal_delivery_trucks",
+    "load_bearing_walls_lintels": "rebar_metal_delivery_trucks",
 }
 METAL_TRUCK_CAPACITY_KG = 10000.0
 # foundation_slab's own field: the box-wide total weight, used only for its internal calculator
@@ -1563,21 +1719,61 @@ BOX_TOTAL_METAL_WEIGHT_KEY = "box_total_metal_weight_kg"
 def compute_rebar_weights_by_section(
     contracts: list[dict[str, Any]], extraction: dict[str, Any], order: list[str]
 ) -> dict[str, float]:
-    """bucket -> total rebar weight in kg, length x rate summed across every rebar item found (see
-    rebar_item_weight_kg - rate is the item's own kg_per_meter if given, else the fixed GOST catalog
-    by diameter). Only buckets in `order` can appear; a bucket with items but zero computable weight
-    (no length/diameter data at all) still gets an entry of 0.0, not omitted, so downstream code
-    doesn't have to guess whether "missing" means "no rebar" or "rebar present but unweighable"."""
+    """bucket -> delivery/procurement rebar weight in kg.
+
+    Weight is calculated the same way as payable rebar rows: project length x waste coefficient,
+    rounded up to whole rods, then multiplied by kg/m. This matches Elena's right-side smeta
+    weight cells used to justify metal delivery, instead of the pure project-control length x kg/m.
+    """
     lookup = build_rebar_lookup(contracts, extraction)
     weights: dict[str, float] = {}
     for bucket in order:
         total = 0.0
         for item in lookup.get(bucket, []):
-            weight = rebar_item_weight_kg(item)
+            weight = rebar_item_delivery_weight_kg(item)
             if weight is not None:
                 total += weight
         weights[bucket] = total
     return weights
+
+
+def compute_rebar_cumulative_weights(
+    weights_by_section: dict[str, float], order: list[str]
+) -> dict[str, tuple[float, float]]:
+    """bucket -> (cumulative_before_kg, cumulative_after_kg)."""
+    result: dict[str, tuple[float, float]] = {}
+    cumulative = 0.0
+    for bucket in order:
+        before = cumulative
+        cumulative += weights_by_section.get(bucket, 0.0)
+        result[bucket] = (before, cumulative)
+    return result
+
+
+def metal_delivery_note(
+    *,
+    weight_kg: float,
+    cumulative_before_kg: float,
+    cumulative_after_kg: float,
+    allocated_trucks: int,
+) -> str:
+    if allocated_trucks and cumulative_before_kg <= 0 < cumulative_after_kg:
+        reason = "это первая партия металла по коробке"
+    elif allocated_trucks:
+        reason = (
+            f"на этом участке накопление пересекло порог "
+            f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т"
+        )
+    elif weight_kg > 0:
+        reason = "порог новой машины здесь не пересечен"
+    else:
+        reason = "в разделе нет учитываемой арматуры"
+    return (
+        f"Поставочный вес арматуры раздела: {weight_kg:g} кг; "
+        f"накоплено до раздела: {cumulative_before_kg:g} кг; "
+        f"после раздела: {cumulative_after_kg:g} кг. "
+        f"Машин доставки здесь: {allocated_trucks}; {reason}."
+    )
 
 
 def compute_rebar_metal_delivery_allocation(weights_by_section: dict[str, float], order: list[str]) -> dict[str, int]:

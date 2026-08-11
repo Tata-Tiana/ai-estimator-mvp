@@ -63,7 +63,7 @@ def resolve_prices(
         section = contract["section"]["code"]
         raise PriceResolutionError(
             f"{section}: missing selected_price for required price_keys: {missing}. "
-            "Elena must fill sheet 02's 'Цена для расчета' (or 'Исправить цену') for each."
+            "Elena must fill sheet 02's 'Исправить цену' for each missing price."
         )
 
     return resolved

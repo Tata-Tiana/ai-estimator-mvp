@@ -53,38 +53,6 @@ SHEET_02_NAME = "02_Цены себестоимости"
 CORRECTION_COLUMN_LETTERS = ["O", "P", "Q", "R"]
 JSON_COLUMN_LETTER = "S"
 TECHNICAL_KEY_HEADER = "technical_key"
-FLOOR_SLABS_SECTION = "floor_slabs"
-
-
-def _floor_slabs_item_identity(group_key: str, item: dict[str, Any]) -> tuple[Any, ...]:
-    """Stable identity for sheet-01 scalarized floor_slabs repeated rows.
-
-    The visible workbook deliberately shows one number per row, so one original repeated item is
-    spread across several rows. This key is how we merge those rows back into one item before the
-    adapter sees it.
-    """
-    if group_key == "floor_slab_zones":
-        return (item.get("zone_id"),)
-    if group_key == "floor_slab_eps_items":
-        return (
-            item.get("zone_id"),
-            item.get("role"),
-            item.get("material_name"),
-            item.get("thickness_mm"),
-        )
-    if group_key == "floor_slab_beam_items":
-        return (item.get("zone_id"), item.get("beam_id") or item.get("mark") or item.get("name"))
-    if group_key == "floor_slab_rebar_items":
-        return (
-            item.get("zone_id"),
-            item.get("component"),
-            item.get("code") or item.get("name"),
-            item.get("steel_class"),
-            item.get("diameter_mm"),
-        )
-    if group_key == "floor_slab_additional_items":
-        return (item.get("zone_id"), item.get("item_type"), item.get("name"))
-    return (json.dumps(item, ensure_ascii=False, sort_keys=True),)
 
 
 def find_header_row(ws, required_headers: list[str]) -> int:
@@ -228,61 +196,6 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
     json_col = column_index_from_string(JSON_COLUMN_LETTER)
     correction_cols = [column_index_from_string(letter) for letter in CORRECTION_COLUMN_LETTERS]
 
-    if section == FLOOR_SLABS_SECTION:
-        merged: dict[str, dict[tuple[Any, ...], dict[str, Any]]] = {key: {} for key in groups}
-        scalarized_found = False
-        override_col = col_map.get("Исправить / ввести значение")
-        target_col = col_map.get("target_code")
-        for row_idx in range(header_row + 1, ws.max_row + 1):
-            if cell_text(ws.cell(row_idx, section_code_col).value) != section:
-                continue
-            technical_key = cell_text(ws.cell(row_idx, technical_key_col).value)
-            if technical_key not in groups:
-                continue
-            raw_json = ws.cell(row_idx, json_col).value
-            if is_blank(raw_json):
-                continue
-            try:
-                item = json.loads(raw_json)
-            except (TypeError, json.JSONDecodeError) as exc:
-                raise ValueError(
-                    f"{contract['section']['code']}: sheet 01 row {row_idx}, group "
-                    f"{technical_key!r} has an unreadable row_data_json: {raw_json!r}"
-                ) from exc
-            if not item.get("_sheet01_scalarized"):
-                continue
-            scalarized_found = True
-            field_key = item.pop("_review_field_key", None) or (
-                cell_text(ws.cell(row_idx, target_col).value) if target_col else ""
-            )
-            item.pop("_review_group_key", None)
-            item.pop("_sheet01_scalarized", None)
-            identity = _floor_slabs_item_identity(technical_key, item)
-            current = merged[technical_key].get(identity)
-            if current is None:
-                current = dict(item)
-                merged[technical_key][identity] = current
-            else:
-                # Two physically distinct source rows can share one identity tuple - e.g.
-                # floor_slab_eps_items[role=slab_edge] is routinely split across a material
-                # row (volume_m3, length_m=null) and a separate work-length row (volume_m3=
-                # null, length_m) for the same zone/role/material/thickness (real TRC data,
-                # 2026-08-11). The old setdefault(identity, item) kept only the first row's
-                # dict and silently dropped the second row's fields (here: length_m), making
-                # the adapter see a slab_edge with material but no work length. Merge instead:
-                # take each field from whichever row actually has it, first-non-null wins.
-                for key, val in item.items():
-                    if val not in (None, "") and current.get(key) in (None, ""):
-                        current[key] = val
-            override_value = None
-            if override_col:
-                override_value = parse_number(ws.cell(row_idx, override_col).value)
-            if field_key and override_value is not None:
-                current[field_key] = override_value
-
-        if scalarized_found:
-            return {key: list(items.values()) for key, items in merged.items()}
-
     for row_idx in range(header_row + 1, ws.max_row + 1):
         # technical_key alone is not unique across sections (e.g. beam_items is declared
         # by both floor_slab_1 and floor_slab_2) - must also match section_code.
@@ -302,16 +215,43 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
                 f"{technical_key!r} has an unreadable row_data_json: {raw_json!r}"
             ) from exc
 
-        correction_keys = groups[technical_key].get("correction_columns") or []
-        for slot_idx, field_key in enumerate(correction_keys):
-            if slot_idx >= len(correction_cols):
-                break
-            override_text = cell_text(ws.cell(row_idx, correction_cols[slot_idx]).value)
-            override_value = parse_number(override_text)
-            if override_value is not None:
-                item[field_key] = override_value
+        sheet_item_id = item.pop("_sheet_item_id", "")
+        sheet_field_key = item.pop("_sheet_field_key", "")
 
-        result[technical_key].append(item)
+        # 2026-08-11: repeated-row blocks can render as "one visible number = one row".
+        # In that shape the normal visible correction column ("Исправить / ввести значение")
+        # overrides exactly the field named by _sheet_field_key. Older workbooks still use the
+        # hidden O-R correction slots, so keep that fallback below.
+        visible_override = cell_by_header(ws, row_idx, col_map, "Исправить / ввести значение")
+        visible_override_text = cell_text(visible_override)
+        if sheet_field_key and not is_blank(visible_override_text):
+            override_number = parse_number(visible_override)
+            item[sheet_field_key] = override_number if override_number is not None else visible_override
+        else:
+            correction_keys = groups[technical_key].get("correction_columns") or []
+            for slot_idx, field_key in enumerate(correction_keys):
+                if slot_idx >= len(correction_cols):
+                    break
+                override_text = cell_text(ws.cell(row_idx, correction_cols[slot_idx]).value)
+                override_value = parse_number(override_text)
+                if override_value is not None:
+                    item[field_key] = override_value
+
+        if sheet_item_id:
+            existing_items = result[technical_key]
+            for existing in existing_items:
+                if existing.get("_reader_sheet_item_id") == sheet_item_id:
+                    existing.update(item)
+                    break
+            else:
+                item["_reader_sheet_item_id"] = sheet_item_id
+                existing_items.append(item)
+        else:
+            result[technical_key].append(item)
+
+    for rows in result.values():
+        for item in rows:
+            item.pop("_reader_sheet_item_id", None)
 
     return result
 
@@ -361,20 +301,16 @@ def read_prices(wb, contract: dict[str, Any]) -> dict[str, dict[str, Any] | list
         if calc_price_key not in known_keys:
             continue
         registry_value = parse_number(cell_by_header(ws, row_idx, col_map, "Цена из прайса"))
-        fallback_value = parse_number(cell_by_header(ws, row_idx, col_map, "Цена fallback"))
-        price_for_calculation = parse_number(cell_by_header(ws, row_idx, col_map, "Цена для расчета"))
         override_text = cell_by_header(ws, row_idx, col_map, "Исправить цену")
         override_value = parse_number(override_text)
-        selected_price = override_value if override_value is not None else price_for_calculation
+        selected_price = override_value if override_value is not None else registry_value
         row_data = {
             "price_registry_value": registry_value,
-            "fallback_value": fallback_value,
-            "price_for_calculation": price_for_calculation,
+            "price_for_calculation": selected_price,
             "override_value": override_value,
             "selected_price": selected_price,
             "override_used": override_value is not None,
             "price_registry_code": cell_text(cell_by_header(ws, row_idx, col_map, "price_registry_code")),
-            "fallback_key": cell_text(cell_by_header(ws, row_idx, col_map, "fallback_key")),
         }
         if calc_price_key in templates:
             # Multiple rows share this calc_price_key (one per steel_class/diameter_mm) -

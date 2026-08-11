@@ -75,7 +75,7 @@ review_parameters:
     notes: "Conditional input. Required only for area*depth calculation when the project does not provide ready pit_items volumes."
 
   - key: pit_items
-    label_ru: "Готовые объёмы выемки грунта по записям (котлован, приямки)"
+    label_ru: "Готовые объёмы выемки грунта"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -100,7 +100,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Необязательная альтернатива pit_area_m2/pit_excavation_depth_m выше. Используйте, если PDF даёт готовый объём выемки грунта отдельными записями (котлован, приямки) — иначе оставьте пустым и заполняйте площадь/глубину как обычно."
+      action_ru: "Справочно: проверьте объёмы котлована/приямков по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
@@ -135,7 +135,7 @@ review_parameters:
     notes: "Conditional input. Required only for legacy scalar mode when the project does not provide sand_items."
 
   - key: sand_items
-    label_ru: "Готовые объёмы песка по категориям"
+    label_ru: "Готовые объёмы песка"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -160,7 +160,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Необязательная альтернатива sand_base_volume_m3 выше. Используйте, если PDF даёт песок несколькими готовыми категориями — иначе оставьте пустым и заполняйте sand_base_volume_m3 как обычно."
+      action_ru: "Справочно: проверьте объёмы песка по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
@@ -274,7 +274,7 @@ review_parameters:
     notes: "Conditional input. Required only when the project does not provide communications_pipe_items suitable for pipe_items calculation."
 
   - key: trench_routes
-    label_ru: "Маршруты траншей"
+    label_ru: "Траншеи"
     unit: "м3"
     source_class: AUTO_PROJECT
     required: true
@@ -331,14 +331,14 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Проверьте маршруты траншей построчно; сверьте сумму объемов с trench_volume_m3 выше."
+      action_ru: "Справочно: проверьте траншеи по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. trench_volume_m3 (scalar above) still wins for the TOTAL trench volume when given; these per-route rows are what drive the manual (hand-dig) excavation depth split by network type (see manual_trench_depth_k1/k2/water/eo/other_m)."
     validation: {min_rows: 0, sum_checks: []}
     notes: "route_code is required so network type (К1/К2/В1-ВК/ЭО/other) can be detected per route. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point. item_label_columns/correction_columns added 2026-07-29: this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day) even though real per-route length/depth/width/volume data was already being extracted — now renders per-route so Elena can actually see and correct it, not just trench_volume_m3's total. production_input flipped true 2026-08-09: this group is now passed to the calculator (not diagnostic-only) so the manual_trench_depth_k1/k2/water/eo/other_m coefficients (added 2026-08-09, filled on sheet 01-1) can actually split trench_manual_portion_m3 by network type instead of silently defaulting to 100% of trench_volume_m3 as hand labor. Before this flip the coefficients were correctly wired end-to-end but structurally unreachable — see earthworks_calculator.py's calculate() branch fix same day (trench_routes_result now computed whenever trench_routes is given, independent of whether trench_volume_m3 also wins for the total)."
 
   - key: communications_pipe_items
-    label_ru: "Трубы коммуникаций"
+    label_ru: "Коммуникации"
     unit: "м"
     source_class: AUTO_PROJECT
     required: true
@@ -395,7 +395,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Проверьте состав труб построчно; сверьте сумму длин с communications_length_m выше."
+      action_ru: "Справочно: проверьте трубы/коммуникации по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. In production this group can feed calculator pipe_items mode when the scalar communications_length_m is absent."
     validation: {min_rows: 0, sum_checks: []}

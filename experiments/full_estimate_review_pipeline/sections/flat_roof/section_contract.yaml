@@ -40,7 +40,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте площадь уровня 1 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если в проекте нет отдельной таблицы зон кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present; do not confuse with PVC membrane/geotextile material areas."
 
@@ -63,7 +63,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте площадь уровня 2 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если в проекте нет отдельной таблицы зон кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
 
@@ -109,7 +109,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте длину парапета уровня 1 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если длина парапета не указана в зонах кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
 
@@ -132,7 +132,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте длину парапета уровня 2 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если длина парапета не указана в зонах кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
 
@@ -155,7 +155,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте длину примыканий уровня 1 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если длина примыканий не указана в зонах кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
 
@@ -178,7 +178,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Fallback only: заполняйте длину примыканий уровня 2 вручную только если roof_zones[] не используется."
+      action_ru: "Проверьте только если длина примыканий не указана в зонах кровли."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
 
@@ -256,7 +256,7 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Проверьте зоны кровли: площади, длины парапетов/примыканий и тип эксплуатации. Если зон нет, adapter должен использовать fallback-геометрию."
+      action_ru: "Справочно: проверьте площади кровли и примыкания по строкам PDF."
     mirror_to_details_sheet: true
     mirror_notes: "Show as a readable detail table so Elena can compare the roof zones with the PDF without opening the drawing."
     validation:
@@ -266,7 +266,7 @@ review_parameters:
     notes: "Default production path when present. The calculator sums area_m2 into roof_area_total_m2 and sums parapet_length_m + wall_abutment_length_m into parapet_and_abutment_total_length_m. If operability is absent, adapter/calculator treat the zone as non_exploitable. Old level scalar fields are fallback only when this table is absent."
 
   - key: roof_raw_material_spec_rows
-    label_ru: "Сырые строки спецификации кровли"
+    label_ru: "Строки спецификации кровли"
     unit: ""
     source_class: AUTO_PROJECT
     required: false
@@ -276,7 +276,7 @@ review_parameters:
     normalized_json_path: "sections.flat_roof.parameters.roof_raw_material_spec_rows.rows"
     value_kind: repeated_rows
     row_key_field: name
-    production_input: false
+    production_input: true
     item_label_columns: [name]
     correction_columns: [quantity, unit]
     columns:
@@ -291,11 +291,11 @@ review_parameters:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "optional"
-      action_ru: "Необязательные сырые строки спецификации кровли, для справки."
+      action_ru: "Проверьте строки спецификации кровли: количество и единицу измерения."
     mirror_to_details_sheet: true
-    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    mirror_notes: "Same rows shown on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
     validation: {min_rows: 0, sum_checks: []}
-    notes: "Diagnostics only; calculator inputs are the scalar geometry/project/supplier fields above, not this breakdown."
+    notes: "Reviewed material/specification rows for the flat-roof section. These are shown as real project data, not as a grey reference-only block."
 
   - {key: slope_plate_a_supplier_required_volume_m3, label_ru: "SLOPE плиты A, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_a_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_a_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05: confirmed via all 3 real projects' KR2 PDFs (ARK/TRC/USV) and Elena's own delivered estimates (АРК для ИИ.xlsx rows 296-299, Сметный расчет ЮСВ rows 204-207) that this is always a hand-typed number from the installer's tapered-insulation-layout calc, never PDF-derived — removed as an extraction target. Kept on sheet 01 (not sheet 01-1/manual_values_registry) at Elena's explicit request: this is a real per-project supplier number, not a reusable universal default, so it doesn't belong in the project-independent manual values registry."}
   - {key: slope_plate_b_supplier_required_volume_m3, label_ru: "SLOPE плиты B, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_b_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_b_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05, same evidence/reasoning as slope_plate_a_supplier_required_volume_m3 above."}
