@@ -832,6 +832,125 @@ def build_details_sheet_from_extraction(wb: Workbook, extraction: dict[str, Any]
     return {"detail_table_blocks": len(groups), "raw_detail_rows": sum(len(rows) for _, rows in groups)}
 
 
+# floor_slabs group keys - match review_to_calculator/sections/floor_slabs/build_input.py's own
+# constants exactly (kept as separate literals here rather than importing that module, since this
+# file has no dependency on review_to_calculator otherwise).
+ZONES_GROUP_KEY = "floor_slab_zones"
+EPS_ITEMS_GROUP_KEY = "floor_slab_eps_items"
+BEAM_ITEMS_GROUP_KEY = "floor_slab_beam_items"
+REBAR_GROUP_KEY = "floor_slab_rebar_items"
+ADDITIONAL_ITEMS_GROUP_KEY = "floor_slab_additional_items"
+
+
+def _render_repeated_row_block(
+    ws,
+    sec_code: str,
+    group_key: str,
+    param: dict[str, Any],
+    items: list[dict[str, Any]],
+    counts: dict[str, int],
+    found_groups: dict[str, list[Any]],
+    *,
+    title: str,
+    rebar_metal_delivery_allocation: dict[str, int],
+    rebar_weights_by_section: dict[str, float],
+) -> None:
+    """Renders one repeated-row group as its own titled block on sheet 01. `items` is passed in
+    explicitly (not read from found_groups here) so a caller can pre-filter to one physical zone
+    (see build_project_sheet_from_extraction()'s floor_slabs branch) without this function needing
+    to know anything about zones itself - every other section just passes found_groups[group_key]
+    unfiltered, same behavior as before this was extracted into its own function."""
+    headers = ITEM_BLOCK_HEADERS + correction_headers(param) + ["row_data_json"]
+    item_label_columns = param.get("item_label_columns") or []
+    correction_columns = param.get("correction_columns") or []
+    columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
+
+    rows: list[list[Any]] = []
+    for item in items:
+        value = item.get("value") or {}
+        needs_review = bool(item.get("needs_review"))
+
+        if sec_code == "floor_slabs" and group_key == ZONES_GROUP_KEY and value.get(
+            "manual_rebar_metal_delivery_trucks"
+        ) is None:
+            zone_id = value.get("zone_id")
+            bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" if zone_id else None
+            allocated = rebar_metal_delivery_allocation.get(bucket_key) if bucket_key else None
+            if allocated is not None:
+                # Copy so the auto-filled value doesn't silently mutate the shared extraction
+                # dict for other consumers (sheet 03 mirror also reads `extraction`) beyond
+                # what's intentional - it's fine for it to show there too, but explicitly, not
+                # as a side effect of this loop running first.
+                value = {**value, "manual_rebar_metal_delivery_trucks": allocated}
+                zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
+                auto_note = (
+                    f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
+                    f"автоматически box-калькулятором по накоплению "
+                    f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
+                    f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
+                )
+                item = {
+                    **item,
+                    "notes": f"{item.get('notes')}\n{auto_note}" if item.get("notes") else auto_note,
+                }
+
+        label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
+        label = " ".join(label_parts) or item.get("item_name") or group_key
+
+        summary_parts = []
+        for key in correction_columns:
+            v = value.get(key)
+            if v is None:
+                continue
+            unit = columns_by_key.get(key, {}).get("unit", "")
+            summary_parts.append(f"{v}{' ' + unit if unit else ''}")
+        summary = ", ".join(summary_parts)
+
+        status = "Проверьте (needs_review)" if needs_review else "Найдено"
+        row_fill = project_status_fill(status)
+        counts["needs_review" if needs_review else "found"] += 1
+        counts["item_rows"] += 1
+
+        row = [
+            label,
+            summary,
+            param.get("unit", ""),
+            status,
+            display_confidence(item),
+            "",  # action_ru already stated once in the block title above, not per row -
+            # repeating a ~100-char sentence on every item row was the main cause of
+            # tall wrapped rows (2026-07-29 design fix)
+            item.get("source_pdf") or "",
+            item_fragment(item),
+            "",
+            "",
+            sec_code,
+            group_key,
+            param.get("source_class", ""),
+            param.get("target_code", ""),
+        ]
+        row += ["", "", "", ""]  # correction columns - Elena fills these, not the extraction
+        row.append(json.dumps(value, ensure_ascii=False))
+        rows.append(row)
+
+    append_block(ws, title, headers, rows)
+    if rows:
+        for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
+            status = str(ws.cell(row_idx, 4).value or "")
+            row_fill = project_status_fill(status)
+            for cell in ws[row_idx]:
+                cell.fill = row_fill
+            ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
+        total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
+        if total_row:
+            ws.append(total_row)
+            for cell in ws[ws.max_row]:
+                cell.fill = FILL_HEADER
+                cell.font = Font(name=FONT_NAME, bold=True, size=10)
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+            ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+
 def build_project_sheet_from_extraction(
     wb: Workbook, contracts: list[dict[str, Any]], extraction: dict[str, Any]
 ) -> dict[str, int]:
@@ -1015,101 +1134,52 @@ def build_project_sheet_from_extraction(
                 cell.fill = row_fill
             ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
-        for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract):
-            review_behavior = param.get("review_behavior") or {}
-            action_ru = review_behavior.get("action_ru", "Проверьте позиции построчно.")
-            group_key = param.get("key")
-            title = f"{section_name(contract)} — {param.get('label_ru', group_key)} ({action_ru})"
-            headers = ITEM_BLOCK_HEADERS + correction_headers(param) + ["row_data_json"]
+        repeated_row_params = production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract)
 
-            item_label_columns = param.get("item_label_columns") or []
-            correction_columns = param.get("correction_columns") or []
-            columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
-
-            rows: list[list[Any]] = []
-            for item in found_groups.get(group_key, []):
-                value = item.get("value") or {}
-                needs_review = bool(item.get("needs_review"))
-
-                if sec_code == "floor_slabs" and group_key == "floor_slab_zones" and value.get(
-                    "manual_rebar_metal_delivery_trucks"
-                ) is None:
-                    zone_id = value.get("zone_id")
-                    bucket_key = f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" if zone_id else None
-                    allocated = rebar_metal_delivery_allocation.get(bucket_key) if bucket_key else None
-                    if allocated is not None:
-                        # Copy so the auto-filled value doesn't silently mutate the shared extraction
-                        # dict for other consumers (sheet 03 mirror also reads `extraction`) beyond
-                        # what's intentional - it's fine for it to show there too, but explicitly, not
-                        # as a side effect of this loop running first.
-                        value = {**value, "manual_rebar_metal_delivery_trucks": allocated}
-                        zone_weight = rebar_weights_by_section.get(bucket_key, 0.0)
-                        auto_note = (
-                            f"Доставка арматуры/металла для этой плиты ({allocated} маш.) рассчитана "
-                            f"автоматически box-калькулятором по накоплению "
-                            f"{int(METAL_TRUCK_CAPACITY_KG // 1000)} т (вес арматуры этой плиты: "
-                            f"{zone_weight:g} кг). Проверьте и поправьте при необходимости."
-                        )
-                        item = {
-                            **item,
-                            "notes": f"{item.get('notes')}\n{auto_note}" if item.get("notes") else auto_note,
-                        }
-
-                label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
-                label = " ".join(label_parts) or item.get("item_name") or group_key
-
-                summary_parts = []
-                for key in correction_columns:
-                    v = value.get(key)
-                    if v is None:
+        if sec_code == "floor_slabs":
+            # Real plates must read as their own visually separate group (concrete/formwork/
+            # insulation/beams/rebar/manual fields together) - not one flat block per group-type
+            # spanning every plate mixed together, which is unreviewable once a project has more
+            # than 1-2 rebar rows per zone (2026-08-11: user caught this directly, real regression
+            # against the design already written down in P5_SLAB_DATA_CONTRACT.md's "Google
+            # workbook после P5" section - every other section still uses the flat one-block-per-
+            # group layout below unchanged).
+            params_by_key = {param.get("key"): param for param in repeated_row_params}
+            zone_param = params_by_key.get(ZONES_GROUP_KEY)
+            dependent_group_keys = [ZONES_GROUP_KEY, EPS_ITEMS_GROUP_KEY, BEAM_ITEMS_GROUP_KEY, REBAR_GROUP_KEY, ADDITIONAL_ITEMS_GROUP_KEY]
+            for zone_item in found_groups.get(ZONES_GROUP_KEY, []):
+                zone_value = zone_item.get("value") or {}
+                zone_id = zone_value.get("zone_id")
+                zone_label = zone_value.get("display_name") or zone_id or "?"
+                append_section_band(ws, [f"Плита: {zone_label}"], len(PROJECT_HEADERS))
+                for group_key in dependent_group_keys:
+                    param = params_by_key.get(group_key)
+                    if param is None:
                         continue
-                    unit = columns_by_key.get(key, {}).get("unit", "")
-                    summary_parts.append(f"{v}{' ' + unit if unit else ''}")
-                summary = ", ".join(summary_parts)
-
-                status = "Проверьте (needs_review)" if needs_review else "Найдено"
-                row_fill = project_status_fill(status)
-                counts["needs_review" if needs_review else "found"] += 1
-                counts["item_rows"] += 1
-
-                row = [
-                    label,
-                    summary,
-                    param.get("unit", ""),
-                    status,
-                    display_confidence(item),
-                    "",  # action_ru already stated once in the block title above, not per row -
-                    # repeating a ~100-char sentence on every item row was the main cause of
-                    # tall wrapped rows (2026-07-29 design fix)
-                    item.get("source_pdf") or "",
-                    item_fragment(item),
-                    "",
-                    "",
-                    sec_code,
-                    group_key,
-                    param.get("source_class", ""),
-                    param.get("target_code", ""),
-                ]
-                row += ["", "", "", ""]  # correction columns - Elena fills these, not the extraction
-                row.append(json.dumps(value, ensure_ascii=False))
-                rows.append(row)
-
-            append_block(ws, title, headers, rows)
-            if rows:
-                for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
-                    status = str(ws.cell(row_idx, 4).value or "")
-                    row_fill = project_status_fill(status)
-                    for cell in ws[row_idx]:
-                        cell.fill = row_fill
-                    ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
-                total_row = earthworks_group_total_row(sec_code, group_key, found_groups, len(headers))
-                if total_row:
-                    ws.append(total_row)
-                    for cell in ws[ws.max_row]:
-                        cell.fill = FILL_HEADER
-                        cell.font = Font(name=FONT_NAME, bold=True, size=10)
-                        cell.alignment = Alignment(wrap_text=True, vertical="top")
-                    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+                    if group_key == ZONES_GROUP_KEY:
+                        zone_items = [zone_item]
+                        block_label = "Бетон, опалубка, ручные поля"
+                    else:
+                        zone_items = [
+                            item for item in found_groups.get(group_key, [])
+                            if (item.get("value") or {}).get("zone_id") == zone_id
+                        ]
+                        block_label = param.get("label_ru", group_key)
+                    _render_repeated_row_block(
+                        ws, sec_code, group_key, param, zone_items, counts, found_groups,
+                        title=f"{zone_label} — {block_label}",
+                        rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
+                        rebar_weights_by_section=rebar_weights_by_section,
+                    )
+        else:
+            for param in repeated_row_params:
+                group_key = param.get("key")
+                _render_repeated_row_block(
+                    ws, sec_code, group_key, param, found_groups.get(group_key, []), counts, found_groups,
+                    title=f"{section_name(contract)} — {param.get('label_ru', group_key)} ({(param.get('review_behavior') or {}).get('action_ru', 'Проверьте позиции построчно.')})",
+                    rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
+                    rebar_weights_by_section=rebar_weights_by_section,
+                )
 
     # Итог по коробке (2026-07-30): one cross-section summary row after all 8 sections, so
     # Elena can see the real total driving the box-calculator's delivery-truck allocation above
