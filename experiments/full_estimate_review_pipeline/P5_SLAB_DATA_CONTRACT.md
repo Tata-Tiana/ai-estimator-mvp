@@ -349,7 +349,17 @@ Adapter должен:
 - не создавать `[combined]` fallback;
 - падать readiness blocker, если зона не готова к расчету.
 
-### Известный долг в самом калькуляторе — убрать вместе с adapter (найдено 2026-08-10)
+### Известный долг в самом калькуляторе — ЗАКРЫТО 2026-08-11
+
+Убрано вместе с началом adapter-этапа, как и планировалось ниже. Обе проверки (`component ==
+"floor_slab_1"`/`floor == 1`) заменены на эхо входного значения (`item.get("floor")`/
+`item.get("component")`) в обеих функциях (`calculate_rebar_item`/`calculate_rebar_items_pooled`).
+Проверено на всех регрессионных кейсах побайтово: 19/19 `floor_slab_1_calculator` (та же линия
+mismatch'ей, что и до правки — они предсуществовали и не связаны с этим полем) и 12/12
+`floor_slab_2_calculator` (0 mismatches, как и раньше). Новой `floor_slabs` схеме больше не нужно
+подделывать `component`/`floor` — оба поля можно просто не передавать.
+
+Исходная находка (для истории):
 
 `experiments/floor_slab_1_calculator/floor_slab_calculator.py`, функции `calculate_rebar_item()`
 (строки ~92-105) и `calculate_rebar_items_pooled()` (строки ~166-180) внутри общего движка

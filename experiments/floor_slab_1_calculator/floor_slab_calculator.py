@@ -89,18 +89,23 @@ def calculate_rebar_item(item: dict[str, Any], rebar_calc_method: str) -> dict[s
         source_payload = {"source_weight_kg": round_decimal(source_weight)}
         weight_with_waste = source_weight * waste_coeff
     else:
-        if item.get("component") != "floor_slab_1":
-            raise ValueError("rebar_items[].component must be floor_slab_1 for floor_slab_1_calculator")
-        if int(item.get("floor", 0)) != 1:
-            raise ValueError("rebar_items[].floor must be 1 for floor_slab_1_calculator")
         if "spec_length_m" not in item:
             raise ValueError("rebar_items[].spec_length_m is required for spec_length_items")
         base_length = d(item["spec_length_m"])
         if base_length < D0:
             raise ValueError("rebar_items[].spec_length_m must be >= 0")
+        # floor/component are echoed from the input, not required/forced to fixed literals
+        # (P5, 2026-08-10 - see FLOOR_SLAB_UNIFICATION_PLAN.md/P5_SLAB_DATA_CONTRACT.md's adapter
+        # debt note). This function used to hard-require component=="floor_slab_1"/floor==1, a
+        # leftover from when it only ever served floor_slab_1 - real callers today (floor_slab_1's
+        # own build_input.py) already pass exactly those literals through from the old contract's
+        # rebar_items columns, so echoing them is byte-identical for every existing regression
+        # fixture. The new zone-based floor_slabs schema has no `floor` field at all and a
+        # differently-scoped `component` (slab/beam/additional), and simply omits both - neither
+        # is read for real calculation logic anywhere below, only echoed into this row's own output.
         source_payload = {
-            "floor": 1,
-            "component": "floor_slab_1",
+            "floor": item.get("floor"),
+            "component": item.get("component"),
             "spec_length_m": round_decimal(base_length),
         }
         weight_with_waste = base_length * waste_coeff * kg_per_meter
@@ -154,19 +159,16 @@ def calculate_rebar_items_pooled(
     every item, all same-diameter rows across the whole section pool into one group (graceful
     degradation, not a crash), which is closer to her real number than independent rounding but not
     exact for multi-zone projects until zone_context is added at extraction time. See
-    floor_slab_1_comparison_findings_2026-08-09 memory."""
-    groups: dict[tuple[int, str, str | None, str, int], list[dict[str, Any]]] = {}
-    order: list[tuple[int, str, str | None, str, int]] = []
+    floor_slab_1_comparison_findings_2026-08-09 memory. floor/component are no longer required -
+    see the key-building note below."""
+    groups: dict[tuple[Any, Any, str | None, str, int], list[dict[str, Any]]] = {}
+    order: list[tuple[Any, Any, str | None, str, int]] = []
     for item in items_in:
         for required_key in ("steel_class", "diameter_mm", "kg_per_meter", "waste_coeff", "rod_length_m", "unit_price_per_m"):
             if item.get(required_key) is None:
                 raise ValueError(
                     f"rebar_items[].{required_key} is required (row: {item.get('code') or item.get('name') or item})"
                 )
-        if item.get("component") != "floor_slab_1":
-            raise ValueError("rebar_items[].component must be floor_slab_1 for floor_slab_1_calculator")
-        if int(item.get("floor", 0)) != 1:
-            raise ValueError("rebar_items[].floor must be 1 for floor_slab_1_calculator")
         if "spec_length_m" not in item:
             raise ValueError("rebar_items[].spec_length_m is required for spec_length_items")
         if d(item["spec_length_m"]) < D0:
@@ -177,7 +179,11 @@ def calculate_rebar_items_pooled(
                 f"rebar_items[{item.get('code')!r}].zone_context {zone_context!r} does not match "
                 "any slab_zones[].context"
             )
-        key = (1, "floor_slab_1", zone_context, item["steel_class"], int(item["diameter_mm"]))
+        # floor/component echoed from the input rather than required/forced to fixed literals -
+        # see calculate_rebar_item()'s identical note above. Every existing caller already passes
+        # floor=1/component="floor_slab_1" uniformly, so pooling groups are unaffected; the new
+        # zone-based schema omits both, and they still group correctly by zone_context alone.
+        key = (item.get("floor"), item.get("component"), zone_context, item["steel_class"], int(item["diameter_mm"]))
         if key not in groups:
             groups[key] = []
             order.append(key)
@@ -924,11 +930,11 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     floor_slab_1's exact prior behavior - calculate_floor_slab_1() (floor_slab_1_calculator.py)
     calls this with zero overrides, so its 19 regression cases stay byte-identical.
     calculate_floor_slab_2() (floor_slab_2_calculator/calculator.py) is a translation wrapper
-    around this same function, not a copy of its logic. `component`/`floor` on rebar_items are
-    still hardcoded to "floor_slab_1"/1 inside the rebar validation below - a real leftover from
-    when this function was floor_slab_1-only, harmless today (never read beyond the equality check,
-    floor_slab_2's wrapper injects the same literal to pass it) but needs generalizing once P2
-    makes this a genuinely pour-agnostic N-pour engine.
+    around this same function, not a copy of its logic. `component`/`floor` on rebar_items are no
+    longer required (fixed 2026-08-11, P5 adapter debt) - the rebar validation below echoes
+    whatever the caller passes instead of hard-requiring "floor_slab_1"/1; both existing wrappers
+    still pass those exact literals through unchanged (byte-identical on all 19+12 regression
+    cases), and the new zone-based floor_slabs schema can call in without them at all.
     NOT added here: formwork_dismantling priced-vs-zero-control - both calculators are zero_control
     today (only ARK/USV's real smetas price it; no fixture exists to validate a "priced" branch
     against), and the two calculators' zero-control lines differ only in code/line_type strings
