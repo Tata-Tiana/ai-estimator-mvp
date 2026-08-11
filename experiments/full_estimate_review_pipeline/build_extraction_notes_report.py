@@ -616,6 +616,65 @@ def floor_slab_beam_concrete_total_diagnostics(section: dict[str, Any]) -> list[
     return diagnostics
 
 
+# Mirrors review_to_calculator/sections/floor_slabs/build_input.py's own unconditional
+# requirements exactly (concrete_slab_volume_m3/formwork_under_slab_area_m2/slab_thickness_m always
+# required; exactly one of formwork_edge_area_m2/formwork_edge_and_beam_combined_area_m2) - the
+# adapter already raises a clear, zone-named error for these, but only when someone actually runs
+# it. Surfacing the same gap here, right after extraction while the PDF is still loaded in the same
+# chat, is strictly earlier and cheaper to fix than discovering it when the calculator runs later.
+# slab_thickness_m specifically is new (added 2026-08-11) and money-critical (drives the real
+# formwork-installation quantity, not just descriptive) - see that field's own notes in
+# calculator_targets_compact.json.
+FLOOR_SLAB_ZONE_REQUIRED_FIELDS = ("concrete_slab_volume_m3", "formwork_under_slab_area_m2", "slab_thickness_m")
+
+
+def floor_slab_zone_required_fields_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "floor_slab_zones":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        zone_id = value.get("zone_id") or "?"
+
+        missing_fields = [key for key in FLOOR_SLAB_ZONE_REQUIRED_FIELDS if value.get(key) in (None, "")]
+        edge_area = value.get("formwork_edge_area_m2")
+        combined_area = value.get("formwork_edge_and_beam_combined_area_m2")
+        if edge_area in (None, "") and combined_area in (None, ""):
+            missing_fields.append("formwork_edge_area_m2/formwork_edge_and_beam_combined_area_m2")
+        elif edge_area not in (None, "") and combined_area not in (None, ""):
+            missing_fields.append("formwork_edge_area_m2 и formwork_edge_and_beam_combined_area_m2 заполнены оба сразу")
+        if not missing_fields:
+            continue
+
+        key = (short(zone_id, 80), short(missing_fields, 200))
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"floor_slab_zones ({zone_id}): calculator-required field(s) missing: {', '.join(missing_fields)}",
+                "confidence": confidence_text(item),
+                "value": short(value, 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    f"Без этих полей плита '{zone_id}' не сможет посчитаться (adapter упадёт с "
+                    "понятной ошибкой на этой зоне, но раньше поймать дешевле). Проверьте PDF ещё "
+                    "раз для этой плиты: толщина обычно прямо в строке бетона "
+                    "('...толщиной 200мм'), опалубка под плитой и бетон — в спецификации, торец "
+                    "плиты — либо чистая площадь торца, либо объединённая с балками, но не обе "
+                    "сразу и не ни одна."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
 def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
     """A rebar row with no `code` and an identifying (floor, component, steel_class, diameter_mm)
     tuple that repeats another row's tuple in the same group is ambiguous: a calculator keyed by
@@ -1048,6 +1107,7 @@ def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dic
     if section_code == "floor_slabs":
         diagnostics.extend(floor_slab_beam_concrete_total_diagnostics(section))
         diagnostics.extend(floor_slab_zone_tagging_diagnostics(section))
+        diagnostics.extend(floor_slab_zone_required_fields_diagnostics(section))
     if section_code == "foundation_slab":
         diagnostics.extend(thermal_insert_conflict_diagnostics(section))
 
