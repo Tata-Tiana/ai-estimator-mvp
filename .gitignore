@@ -14,6 +14,10 @@ data/output/
 data/reference/unikma/*.json
 data/reference/unikma/*.xlsx
 
+# Local/generated Excel workbooks at repo root and Excel lock files.
+output/*.xlsx
+output/~$*
+
 # Local project PDF inputs and generated experiment outputs
 experiments/**/input_pdfs/
 experiments/**/output/**/*
