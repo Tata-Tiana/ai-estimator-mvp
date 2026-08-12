@@ -996,6 +996,73 @@ def is_rebar_group(group_key: str) -> bool:
     return "rebar" in (group_key or "").lower()
 
 
+def rebar_diameter_breakdown(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Pools rebar items by (steel_class, diameter_mm), summing spec length and delivery weight -
+    the "4 rows, not the position-level zoo" summary Elena asked for 2026-08-12, matching how her
+    own real smetas present rebar (checked TRC: her final foundation_slab section shows only 4
+    diameter rows, never the хомуты/лягушки/выпуски position breakdown). Same length-field
+    fallback (spec_length_m, then source_length_m) and weight formula as
+    rebar_item_delivery_weight_kg() elsewhere in this file - one source of truth for what a rebar
+    item's length/weight is, not a second parallel definition."""
+    groups: dict[tuple[str, float], dict[str, Any]] = {}
+    for value in items:
+        steel_class = value.get("steel_class")
+        diameter = value.get("diameter_mm")
+        if steel_class is None or diameter is None:
+            continue
+        try:
+            diameter = float(diameter)
+        except (TypeError, ValueError):
+            continue
+        key = (str(steel_class), diameter)
+        length = value.get("spec_length_m")
+        if length is None:
+            length = value.get("source_length_m")
+        length = float(length) if length not in (None, "") else 0.0
+        weight = rebar_item_delivery_weight_kg(value) or 0.0
+        bucket = groups.setdefault(
+            key, {"steel_class": steel_class, "diameter_mm": diameter, "length_m": 0.0, "weight_kg": 0.0}
+        )
+        bucket["length_m"] += length
+        bucket["weight_kg"] += weight
+    return sorted(groups.values(), key=lambda b: (b["steel_class"], b["diameter_mm"]))
+
+
+def _append_rebar_diameter_summary(
+    ws, title: str, breakdown: list[dict[str, Any]], *, sec_code: str
+) -> None:
+    if not breakdown:
+        return
+    append_section_band(ws, [title], len(PROJECT_HEADERS))
+    ws.append(PROJECT_HEADERS)
+    style_header_row(ws, ws.max_row, len(PROJECT_HEADERS))
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+    for bucket in breakdown:
+        label = f"{bucket['steel_class']} ф{bucket['diameter_mm']:g}"
+        row = [
+            label,
+            round(bucket["length_m"], 2),
+            "мп",
+            "Найдено (авто, сумма по разделу)",
+            "",
+            "Автоматически: сумма длины по всем позициям этого диаметра в разделе.",
+            "",
+            f"Вес (для справки): {bucket['weight_kg']:g} кг",
+            "",
+            "",
+            sec_code,
+            "rebar_diameter_summary",
+            "AUTO_CALCULATED",
+            "",
+        ]
+        ws.append(row)
+        row_idx = ws.max_row
+        row_fill = project_status_fill("Найдено (авто, сумма по разделу)")
+        for cell in ws[row_idx]:
+            cell.fill = row_fill
+        ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
+
+
 def rebar_reference_summary(value: dict[str, Any]) -> tuple[Any, str]:
     """Rebar is checked against the PDF, but not edited by the estimator in the workbook."""
     for key in ("spec_length_m", "source_length_m", "length_m"):
@@ -1278,6 +1345,7 @@ def build_project_sheet_from_extraction(
     rebar_metal_delivery_allocation = compute_rebar_metal_delivery_allocation(rebar_weights_by_section, metal_order)
     rebar_cumulative_weights = compute_rebar_cumulative_weights(rebar_weights_by_section, metal_order)
     box_total_metal_weight_kg = round(sum(rebar_weights_by_section.values()), 1)
+    all_rebar_items_for_box_summary: list[dict[str, Any]] = []
 
     for contract in contracts:
         sec_code = section_code(contract)
@@ -1534,6 +1602,25 @@ def build_project_sheet_from_extraction(
                     reference_only=reference_only,
                 )
 
+        # Этап 1 (2026-08-12, Elena's request): the position-level rebar "zoo" (хомуты/лягушки/
+        # выпуски/etc, see the blocks above) stays for checking against the PDF - but at the end
+        # of every section that has rebar, also show a short "4 rows, not 40" summary by
+        # class+diameter, matching how Elena's own real smetas present rebar (checked TRC: her
+        # final smeta shows only 4 diameter rows for foundation_slab, never the position-level
+        # breakdown). See rebar_diameter_breakdown()/_append_rebar_diameter_summary() below.
+        section_rebar_items = [
+            item.get("value") or {}
+            for group_key in rebar_group_keys_for_contract(contract)
+            for item in found_groups.get(group_key, [])
+        ]
+        _append_rebar_diameter_summary(
+            ws,
+            f"{section_name(contract)} — Итого арматуры раздела, по диаметрам",
+            rebar_diameter_breakdown(section_rebar_items),
+            sec_code=sec_code,
+        )
+        all_rebar_items_for_box_summary.extend(section_rebar_items)
+
     # Итог по коробке (2026-07-30): one cross-section summary row after all 8 sections, so
     # Elena can see the real total driving the box-calculator's delivery-truck allocation above
     # (crane shifts are manual and not related to this total - see REBAR_METAL_DELIVERY_FIELD_BY_SECTION).
@@ -1564,6 +1651,31 @@ def build_project_sheet_from_extraction(
     for cell in ws[ws.max_row]:
         cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
     ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+    # Same Этап 1 request as the per-section summaries above, just for the whole project at once
+    # (2026-08-12) - one "4-6 rows, not the zoo" breakdown by diameter across every section that
+    # has rebar, right next to the box-wide weight total it's built from.
+    for bucket in rebar_diameter_breakdown(all_rebar_items_for_box_summary):
+        label = f"{bucket['steel_class']} ф{bucket['diameter_mm']:g}"
+        ws.append([
+            f"Итого по проекту: {label}",
+            round(bucket["length_m"], 2),
+            "мп",
+            "Найдено (авто, box-калькулятор)",
+            "",
+            "Автоматически: сумма длины по всем разделам для этого диаметра.",
+            "",
+            f"Вес (для справки): {bucket['weight_kg']:g} кг",
+            "",
+            "",
+            "",
+            "rebar_diameter_summary_total",
+            "AUTO_CALCULATED",
+            "",
+        ])
+        for cell in ws[ws.max_row]:
+            cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
+        ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
     total_trucks = sum(rebar_metal_delivery_allocation.values())
     allocation_breakdown = "; ".join(
