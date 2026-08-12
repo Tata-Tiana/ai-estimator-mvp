@@ -3,8 +3,8 @@
     "eps": {
       "mode": "standard_50_100",
       "eps50_laying_area_m2": 270,
-      "eps50_thermal_insert_volume_m3": 0,
-      "eps50_order_volume_m3": 14.4352,
+      "eps50_thermal_insert_volume_m3": 1.05,
+      "eps50_order_volume_m3": 15.268,
       "eps100_order_volume_m3": 0
     },
     "thermal_insert": {
@@ -32,19 +32,11 @@
     },
     "eps50_penoplex_geo_material": {
       "unit": "м3",
-      "quantity": 14.4352,
-      "display_quantity": 14.44,
+      "quantity": 15.268,
+      "display_quantity": 15.27,
       "material_unit_price": 9800,
-      "material_total": 141465,
-      "line_total": 141465
-    },
-    "thermal_insert_50_material": {
-      "unit": "м3",
-      "quantity": 1.1104,
-      "display_quantity": 1.11,
-      "material_unit_price": 9800,
-      "material_total": 10882,
-      "line_total": 10882
+      "material_total": 149626,
+      "line_total": 149626
     },
     "thermal_insert_100_material": {
       "unit": "м3",
@@ -56,8 +48,8 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total": 1465557,
+    "internal_materials_total": 1462836,
     "internal_works_total": 1084000,
-    "internal_section_total": 2549557
+    "internal_section_total": 2546836
   }
 }

@@ -166,11 +166,11 @@
       "mode": "standard_50_100",
       "eps50_laying_area_m2": 270.0,
       "eps50_under_slab_required_volume_m3": 14.175,
-      "eps50_thermal_insert_volume_m3": 0,
-      "eps50_required_volume_m3": 14.175,
-      "eps50_raw_packs": 51.0627,
-      "eps50_packs": 52,
-      "eps50_order_volume_m3": 14.4352,
+      "eps50_thermal_insert_volume_m3": 1.05,
+      "eps50_required_volume_m3": 15.225,
+      "eps50_raw_packs": 54.8451,
+      "eps50_packs": 55,
+      "eps50_order_volume_m3": 15.268,
       "eps100_required_volume_m3": 0,
       "eps100_raw_packs": 0,
       "eps100_packs": 0,
@@ -466,27 +466,14 @@
       "code": "eps50_penoplex_geo_material",
       "name": "Пеноплэкс ГЕО 50 мм под плитой",
       "unit": "м3",
-      "quantity": 14.4352,
+      "quantity": 15.268,
       "material_unit_price": 9800,
-      "material_total": 141465,
+      "material_total": 149626,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 141465,
-      "display_quantity": 14.44,
+      "line_total": 149626,
+      "display_quantity": 15.27,
       "price_code": "eps_geo_50_m3"
-    },
-    {
-      "code": "thermal_insert_50_material",
-      "name": "Материал термовставок 50 мм",
-      "unit": "м3",
-      "quantity": 1.1104,
-      "material_unit_price": 9800,
-      "material_total": 10882,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 10882,
-      "display_quantity": 1.11,
-      "price_code": "thermal_insert_50_material_m3"
     },
     {
       "code": "thermal_insert_100_material",
@@ -716,9 +703,9 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 1465557,
+    "internal_materials_total": 1462836,
     "internal_works_total": 1084000,
-    "internal_section_total": 2549557
+    "internal_section_total": 2546836
   },
   "expected": {
     "calculation_blocks": {
@@ -801,16 +788,16 @@
     {
       "key": "calculation_blocks.eps.eps50_thermal_insert_volume_m3",
       "expected": 0,
-      "actual": 0,
-      "diff": 0,
-      "status": "ok"
+      "actual": 1.05,
+      "diff": 1.05,
+      "status": "mismatch"
     },
     {
       "key": "calculation_blocks.eps.eps50_order_volume_m3",
       "expected": 14.4352,
-      "actual": 14.4352,
-      "diff": 0.0,
-      "status": "ok"
+      "actual": 15.268,
+      "diff": 0.8328,
+      "status": "mismatch"
     },
     {
       "key": "calculation_blocks.eps.eps100_order_volume_m3",
@@ -934,16 +921,16 @@
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.quantity",
       "expected": 14.4352,
-      "actual": 14.4352,
-      "diff": 0.0,
-      "status": "ok"
+      "actual": 15.268,
+      "diff": 0.8328,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.display_quantity",
       "expected": 14.44,
-      "actual": 14.44,
-      "diff": 0.0,
-      "status": "ok"
+      "actual": 15.27,
+      "diff": 0.83,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.material_unit_price",
@@ -955,58 +942,58 @@
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.material_total",
       "expected": 141465,
-      "actual": 141465,
-      "diff": 0,
-      "status": "ok"
+      "actual": 149626,
+      "diff": 8161,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.line_total",
       "expected": 141465,
-      "actual": 141465,
-      "diff": 0,
-      "status": "ok"
+      "actual": 149626,
+      "diff": 8161,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.unit",
       "expected": "м3",
-      "actual": "м3",
+      "actual": null,
       "diff": null,
-      "status": "ok"
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.quantity",
       "expected": 1.1104,
-      "actual": 1.1104,
-      "diff": 0.0,
-      "status": "ok"
+      "actual": null,
+      "diff": null,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.display_quantity",
       "expected": 1.11,
-      "actual": 1.11,
-      "diff": 0.0,
-      "status": "ok"
+      "actual": null,
+      "diff": null,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.material_unit_price",
       "expected": 9800,
-      "actual": 9800,
-      "diff": 0,
-      "status": "ok"
+      "actual": null,
+      "diff": null,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.material_total",
       "expected": 10882,
-      "actual": 10882,
-      "diff": 0,
-      "status": "ok"
+      "actual": null,
+      "diff": null,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_50_material.line_total",
       "expected": 10882,
-      "actual": 10882,
-      "diff": 0,
-      "status": "ok"
+      "actual": null,
+      "diff": null,
+      "status": "mismatch"
     },
     {
       "key": "estimate_lines.thermal_insert_100_material.unit",
@@ -1053,9 +1040,9 @@
     {
       "key": "internal_totals.internal_materials_total",
       "expected": 1465557,
-      "actual": 1465557,
-      "diff": 0,
-      "status": "ok"
+      "actual": 1462836,
+      "diff": -2721,
+      "status": "mismatch"
     },
     {
       "key": "internal_totals.internal_works_total",
@@ -1067,9 +1054,9 @@
     {
       "key": "internal_totals.internal_section_total",
       "expected": 2549557,
-      "actual": 2549557,
-      "diff": 0,
-      "status": "ok"
+      "actual": 2546836,
+      "diff": -2721,
+      "status": "mismatch"
     }
   ]
 }

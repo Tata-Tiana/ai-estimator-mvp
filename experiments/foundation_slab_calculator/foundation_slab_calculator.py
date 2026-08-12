@@ -843,7 +843,49 @@ def calculate_eps_block(
         * _to_decimal(data.eps50_thickness_m)
         * _to_decimal(data.eps_waste_coeff)
     )
-    if data.thermal_insert_mode in {"standard_50_100", "items", "none"}:
+    if data.thermal_insert_mode == "standard_50_100":
+        # Пеноплэкс = ЭППС (confirmed_rules) - the 50mm thermal-insert material and the 50mm
+        # under-slab blanket are the SAME purchasable product/thickness, confirmed with Elena
+        # 2026-08-12: she buys it as ONE combined line, not two. Before this fix, this branch
+        # (like "items"/"none" below) rounded the under-slab volume up to a whole pack on its
+        # own, and calculate_thermal_insert_block() separately rounded the small 50mm insert
+        # need (often well under one pack) up to ANOTHER whole pack - real money waste, an extra
+        # pack bought for a few centimeters' worth of material that the under-slab order's own
+        # rounding slack would have covered. Pool the RAW (pre-rounding) volumes first, round
+        # once - same principle the geometric thermal_insert_mode branch below already used, just
+        # not wired up for this mode. 100mm needs no equivalent fix: nothing else in this section
+        # uses 100mm-thick material, so eps100_required_volume_m3 stays 0 either way.
+        eps50_thermal_insert_volume_m3 = _to_decimal(
+            thermal_insert_block.get("thermal_insert_50_material_raw_qty") or 0
+        )
+        eps50_required_volume_m3 = _round_decimal(
+            _to_decimal(eps50_under_slab_required_volume_m3) + eps50_thermal_insert_volume_m3
+        )
+        eps50_raw_packs = _round_decimal(
+            _to_decimal(eps50_required_volume_m3) / _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+        eps50_packs = int(ceil(eps50_raw_packs))
+        eps50_order_volume_m3 = _round_decimal(
+            _to_decimal(eps50_packs) * _to_decimal(data.eps50_pack_volume_m3),
+            "0.0001",
+        )
+        return {
+            "mode": data.thermal_insert_mode,
+            "eps50_laying_area_m2": eps50_laying_area_m2,
+            "eps50_under_slab_required_volume_m3": eps50_under_slab_required_volume_m3,
+            "eps50_thermal_insert_volume_m3": float(eps50_thermal_insert_volume_m3),
+            "eps50_required_volume_m3": eps50_required_volume_m3,
+            "eps50_raw_packs": eps50_raw_packs,
+            "eps50_packs": eps50_packs,
+            "eps50_order_volume_m3": eps50_order_volume_m3,
+            "eps100_required_volume_m3": 0,
+            "eps100_raw_packs": 0,
+            "eps100_packs": 0,
+            "eps100_order_volume_m3": 0,
+        }
+
+    if data.thermal_insert_mode in {"items", "none"}:
         eps50_required_volume_m3 = eps50_under_slab_required_volume_m3
         eps50_raw_packs = _round_decimal(
             _to_decimal(eps50_required_volume_m3) / _to_decimal(data.eps50_pack_volume_m3),
@@ -1428,22 +1470,13 @@ def thermal_insert_estimate_lines(
                     )
                 )
 
+        # No separate "Материал термовставок 50 мм" line here (2026-08-12): its raw volume is
+        # now pooled into eps50_under_slab_line's own pack rounding in calculate_eps_block()
+        # (Пеноплэкс = ЭППС - same 50mm product, one combined purchase, confirmed with Elena) -
+        # billing it again here would double-count material that eps50_under_slab_line already
+        # covers. 100mm has no such pooling (nothing else in this section is 100mm-thick), so it
+        # keeps its own line unchanged below.
         lines = installation_lines + [eps50_under_slab_line]
-        if thermal_insert["thermal_insert_50_material_purchase_qty"] > 0:
-            lines.append(
-                calculate_line(
-                    code="thermal_insert_50_material",
-                    name="Материал термовставок 50 мм",
-                    unit="м3",
-                    quantity=thermal_insert["thermal_insert_50_material_purchase_qty"],
-                    display_quantity=_round_decimal(
-                        thermal_insert["thermal_insert_50_material_purchase_qty"],
-                        "0.01",
-                    ),
-                    material_unit_price=data.thermal_insert_50_material_unit_price,
-                    price_code="thermal_insert_50_material_m3",
-                )
-            )
         if thermal_insert["thermal_insert_100_material_purchase_qty"] > 0:
             lines.append(
                 calculate_line(

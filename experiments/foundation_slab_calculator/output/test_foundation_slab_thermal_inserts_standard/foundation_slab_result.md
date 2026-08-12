@@ -120,11 +120,11 @@
 | `eps.mode` | `standard_50_100` |
 | `eps.eps50_laying_area_m2` | `270.0` |
 | `eps.eps50_under_slab_required_volume_m3` | `14.175` |
-| `eps.eps50_thermal_insert_volume_m3` | `0` |
-| `eps.eps50_required_volume_m3` | `14.175` |
-| `eps.eps50_raw_packs` | `51.0627` |
-| `eps.eps50_packs` | `52` |
-| `eps.eps50_order_volume_m3` | `14.4352` |
+| `eps.eps50_thermal_insert_volume_m3` | `1.05` |
+| `eps.eps50_required_volume_m3` | `15.225` |
+| `eps.eps50_raw_packs` | `54.8451` |
+| `eps.eps50_packs` | `55` |
+| `eps.eps50_order_volume_m3` | `15.268` |
 | `eps.eps100_required_volume_m3` | `0` |
 | `eps.eps100_raw_packs` | `0` |
 | `eps.eps100_packs` | `0` |
@@ -291,8 +291,7 @@
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
 | `thermal_insert_50_installation` | Устройство и монтаж термовставок 50 мм | `` | `10.0` | `` | `мп` | `0.0` | `0` | `100` | `1000` | `1000` |
 | `thermal_insert_100_installation` | Устройство и монтаж термовставок 100 мм | `` | `15.0` | `` | `мп` | `0.0` | `0` | `100` | `1500` | `1500` |
-| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм под плитой | `` | `14.4352` | `14.44` | `м3` | `9800` | `141465` | `0.0` | `0` | `141465` |
-| `thermal_insert_50_material` | Материал термовставок 50 мм | `` | `1.1104` | `1.11` | `м3` | `9800` | `10882` | `0.0` | `0` | `10882` |
+| `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм под плитой | `` | `15.268` | `15.27` | `м3` | `9800` | `149626` | `0.0` | `0` | `149626` |
 | `thermal_insert_100_material` | Материал термовставок 100 мм | `` | `0.5552` | `0.56` | `м3` | `10000` | `5552` | `0.0` | `0` | `5552` |
 | `rebar_crane_supply` | Подача арматуры автокраном | `` | `1.0` | `` | `смена` | `30000` | `30000` | `0.0` | `0` | `30000` |
 | `rebar_frame_assembly` | Изготовление и монтаж каркаса армирования фундаментной плиты из арматуры | `` | `8615.4` | `` | `мп` | `0.0` | `0` | `0.0` | `0` | `0` |
@@ -316,17 +315,17 @@
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1465557` |
+| `internal_materials_total` | `1462836` |
 | `internal_works_total` | `1084000` |
-| `internal_section_total` | `2549557` |
+| `internal_section_total` | `2546836` |
 
 ## Проверка с расчётом Елены
 | Показатель | Ожидание | Получено | Разница | Статус |
 | --- | ---: | ---: | ---: | --- |
 | `calculation_blocks.eps.mode` | `standard_50_100` | `standard_50_100` | `` | `ok` |
 | `calculation_blocks.eps.eps50_laying_area_m2` | `270` | `270.0` | `0.0` | `ok` |
-| `calculation_blocks.eps.eps50_thermal_insert_volume_m3` | `0` | `0` | `0` | `ok` |
-| `calculation_blocks.eps.eps50_order_volume_m3` | `14.4352` | `14.4352` | `0.0` | `ok` |
+| `calculation_blocks.eps.eps50_thermal_insert_volume_m3` | `0` | `1.05` | `1.05` | `mismatch` |
+| `calculation_blocks.eps.eps50_order_volume_m3` | `14.4352` | `15.268` | `0.8328` | `mismatch` |
 | `calculation_blocks.eps.eps100_order_volume_m3` | `0` | `0` | `0` | `ok` |
 | `calculation_blocks.thermal_insert.mode` | `standard_50_100` | `standard_50_100` | `` | `ok` |
 | `calculation_blocks.thermal_insert.thermal_insert_50_material_raw_qty` | `1.05` | `1.05` | `0.0` | `ok` |
@@ -344,23 +343,23 @@
 | `estimate_lines.thermal_insert_100_installation.work_total` | `1500` | `1500` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_installation.line_total` | `1500` | `1500` | `0` | `ok` |
 | `estimate_lines.eps50_penoplex_geo_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.quantity` | `14.4352` | `14.4352` | `0.0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.display_quantity` | `14.44` | `14.44` | `0.0` | `ok` |
+| `estimate_lines.eps50_penoplex_geo_material.quantity` | `14.4352` | `15.268` | `0.8328` | `mismatch` |
+| `estimate_lines.eps50_penoplex_geo_material.display_quantity` | `14.44` | `15.27` | `0.83` | `mismatch` |
 | `estimate_lines.eps50_penoplex_geo_material.material_unit_price` | `9800` | `9800` | `0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.material_total` | `141465` | `141465` | `0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.line_total` | `141465` | `141465` | `0` | `ok` |
-| `estimate_lines.thermal_insert_50_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.thermal_insert_50_material.quantity` | `1.1104` | `1.1104` | `0.0` | `ok` |
-| `estimate_lines.thermal_insert_50_material.display_quantity` | `1.11` | `1.11` | `0.0` | `ok` |
-| `estimate_lines.thermal_insert_50_material.material_unit_price` | `9800` | `9800` | `0` | `ok` |
-| `estimate_lines.thermal_insert_50_material.material_total` | `10882` | `10882` | `0` | `ok` |
-| `estimate_lines.thermal_insert_50_material.line_total` | `10882` | `10882` | `0` | `ok` |
+| `estimate_lines.eps50_penoplex_geo_material.material_total` | `141465` | `149626` | `8161` | `mismatch` |
+| `estimate_lines.eps50_penoplex_geo_material.line_total` | `141465` | `149626` | `8161` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.unit` | `м3` | `None` | `` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.quantity` | `1.1104` | `None` | `` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.display_quantity` | `1.11` | `None` | `` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.material_unit_price` | `9800` | `None` | `` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.material_total` | `10882` | `None` | `` | `mismatch` |
+| `estimate_lines.thermal_insert_50_material.line_total` | `10882` | `None` | `` | `mismatch` |
 | `estimate_lines.thermal_insert_100_material.unit` | `м3` | `м3` | `` | `ok` |
 | `estimate_lines.thermal_insert_100_material.quantity` | `0.5552` | `0.5552` | `0.0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.display_quantity` | `0.56` | `0.56` | `0.0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.material_unit_price` | `10000` | `10000` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.material_total` | `5552` | `5552` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.line_total` | `5552` | `5552` | `0` | `ok` |
-| `internal_totals.internal_materials_total` | `1465557` | `1465557` | `0` | `ok` |
+| `internal_totals.internal_materials_total` | `1465557` | `1462836` | `-2721` | `mismatch` |
 | `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2549557` | `2549557` | `0` | `ok` |
+| `internal_totals.internal_section_total` | `2549557` | `2546836` | `-2721` | `mismatch` |
