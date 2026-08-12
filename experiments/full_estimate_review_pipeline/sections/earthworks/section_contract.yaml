@@ -682,6 +682,44 @@ auto_calculated:
     notes: "Production calculated amount; do not place it on sheet 02 as a price or on sheet 01-1 as manual input."
 
 supplier_inputs:
+  - key: excavator_dig_depth_m
+    label_ru: "Глубина выемки грунта для расчета смен экскаватора"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "excavator_dig_depth_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.excavator_dig_depth_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-12. Deliberately separate from pit_excavation_depth_m (the PDF-spec pit depth, sheet 01) - checked TRC's real hidden formula (R26=(P4)*0.6/80 in her Excel) and it uses 0.6m, NOT the 0.5m her own spec table prints for 'Глубина котлована'. Same divisor confirmed on ARK too (Q27=P27/80, though ARK's own depth term is more complex - stepped pit floor, see excavator_shifts notes below). Falls back to pit_excavation_depth_m when left blank (calculate_excavator_shifts), so projects where the two happen to coincide need no extra input. Only 1 clean confirmed value so far (TRC=0.6) - no typical default set in manual_values_registry, Elena fills in per project when she knows the real number differs from spec."
+  - key: sand_reserve_m3
+    label_ru: "Запас песка"
+    unit: "м3"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "sand_reserve_m3"
+    normalized_json_path: "sections.earthworks.supplier_inputs.sand_reserve_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м3"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-12. Confirmed by exact match on all 3 checked real smetas (TRC, ARK, USV): a flat +20 m3 added to the sand order volume before rounding up to the delivery truck step - not derived from project size (compaction/base/trench math already accounts for that separately). Default 20 lives in manual_values_registry.xlsx (section_code=earthworks, key=sand_reserve_m3); Elena can override per project on sheet 01-1. Falls back to the calculator's own 20.0 default if left blank - see sand_order_volume_m3 in earthworks_calculator.py."
   - key: manual_refinement_depth_m
     label_ru: "Глубина ручной доработки дна котлована"
     unit: "м"

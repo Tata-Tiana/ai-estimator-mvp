@@ -22,6 +22,7 @@
 - `sand_base_volume_m3`: `0`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `20.0`
+- `sand_reserve_m3`: `20.0`
 - `geotextile_area_m2`: `0`
 - `geotextile_overlap_coeff`: `1.1`
 - `geotextile_roll_area_m2`: `100.0`
@@ -65,6 +66,7 @@
 | `excavator_shifts_calc_method` | `legacy_manual_shifts` |
 | `excavator_shifts_source` | `legacy_manual_shifts` |
 | `pit_excavation_depth_m` | `None` |
+| `excavator_dig_depth_m` | `None` |
 | `machine_excavation_volume_m3` | `None` |
 | `excavator_productivity_m3_per_shift` | `80.0` |
 | `excavator_shifts` | `0.0` |
@@ -87,7 +89,9 @@
 | `compacted_sand_base_m3` | `0.0` |
 | `compacted_sand_trenches_m3` | `23.777` |
 | `sand_total_m3` | `23.777` |
-| `sand_order_volume_m3` | `40` |
+| `sand_reserve_m3` | `20.0` |
+| `sand_total_with_reserve_m3` | `43.777` |
+| `sand_order_volume_m3` | `60` |
 | `geotextile_with_overlap_m2` | `0.0` |
 | `geotextile_rolls` | `0` |
 | `communications_length_calc_method` | `legacy_direct_length` |
@@ -103,6 +107,10 @@
 | code | name | quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | `manual_excavation` | Разработка грунта вручную | `44.69` | `м3` | `0.0` | `0` | `1000` | `44690` | `44690` |
+| `technical_supervision` | Технический надзор | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
 
 ## Итоги серой внутренней сметы
 | Показатель | Значение |

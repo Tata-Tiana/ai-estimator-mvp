@@ -16,6 +16,7 @@
     },
     "excavator_shifts_calc_method": "legacy_manual_shifts",
     "pit_excavation_depth_m": null,
+    "excavator_dig_depth_m": null,
     "excavator_productivity_m3_per_shift": 80.0,
     "pit_items": null,
     "manual_excavation_calc_method": "legacy_manual_override",
@@ -33,6 +34,7 @@
     "sand_base_volume_m3": 165.7,
     "sand_compaction_coeff": 1.3,
     "sand_truck_step_m3": 10,
+    "sand_reserve_m3": 20.0,
     "sand_items": null,
     "geotextile_area_m2": 257.4,
     "geotextile_overlap_coeff": 1.0,
@@ -85,6 +87,7 @@
     "excavator_shifts_calc_method": "legacy_manual_shifts",
     "excavator_shifts_source": "legacy_manual_shifts",
     "pit_excavation_depth_m": null,
+    "excavator_dig_depth_m": null,
     "machine_excavation_volume_m3": null,
     "excavator_productivity_m3_per_shift": 80.0,
     "excavator_shifts": 3.0,
@@ -111,7 +114,9 @@
     "compacted_sand_base_m3": 215.41,
     "compacted_sand_trenches_m3": 14.859,
     "sand_total_m3": 230.269,
-    "sand_order_volume_m3": 240,
+    "sand_reserve_m3": 20.0,
+    "sand_total_with_reserve_m3": 250.269,
+    "sand_order_volume_m3": 260,
     "geotextile_with_overlap_m2": 257.4,
     "geotextile_rolls": 3,
     "communications_length_calc_method": "legacy_direct_length",
@@ -214,6 +219,50 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 16292
+    },
+    {
+      "code": "technical_supervision",
+      "name": "Технический надзор",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "procurement_warehouse_costs",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "overhead_general_business_costs",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "estimated_profit",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
     }
   ],
   "internal_totals": {
@@ -229,7 +278,7 @@
       "compacted_sand_base_m3": 215.41,
       "compacted_sand_trenches_m3": 14.859,
       "sand_total_m3": 230.269,
-      "sand_order_volume_m3": 240,
+      "sand_order_volume_m3": 260,
       "geotextile_with_overlap_m2": 257.4,
       "geotextile_rolls": 3
     },
@@ -366,8 +415,8 @@
     },
     {
       "key": "volumes.sand_order_volume_m3",
-      "expected": 240,
-      "actual": 240,
+      "expected": 260,
+      "actual": 260,
       "diff": 0,
       "status": "ok"
     },

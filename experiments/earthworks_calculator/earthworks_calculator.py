@@ -40,6 +40,13 @@ class EarthworksInput:
     assumptions: dict[str, bool] = field(default_factory=dict)
     excavator_shifts_calc_method: str = "legacy_manual_shifts"
     pit_excavation_depth_m: float | None = None
+    # Confirmed by matching Elena's own hidden Excel formula on 2 real projects (TRC, ARK,
+    # 2026-08-12): the depth she actually uses to size excavator shifts is its own number,
+    # NOT always the same as pit_excavation_depth_m (her spec table's own printed pit depth) -
+    # TRC's real formula uses 0.6m while her spec table prints 0.5m for "Глубина котлована".
+    # None (the default) falls back to pit_excavation_depth_m in calculate_excavator_shifts, so
+    # projects where the two coincide need no extra input.
+    excavator_dig_depth_m: float | None = None
     excavator_productivity_m3_per_shift: float = 80.0
     pit_items: list[dict[str, Any]] | None = None
     manual_excavation_calc_method: str = "legacy_manual_override"
@@ -63,6 +70,12 @@ class EarthworksInput:
     sand_base_volume_m3: float = 0.0
     sand_compaction_coeff: float = 1.3
     sand_truck_step_m3: float = 20.0
+    # Confirmed by exact-match arithmetic on all 3 checked real smetas (TRC, ARK, USV,
+    # 2026-08-12): a flat reserve added to the sand order volume before rounding up to the
+    # truck step - not derived from project size, the compaction/base/trench math above already
+    # accounts for that separately. Same +20 constant on all three despite very different pit
+    # sizes/methodologies, so it is not a per-project-scaled value - see manual_values_registry.
+    sand_reserve_m3: float = 20.0
     sand_items: list[dict[str, Any]] | None = None
     geotextile_area_m2: float = 0.0
     geotextile_overlap_coeff: float = 1.10
@@ -284,6 +297,7 @@ def calculate_excavator_shifts(
     pit_excavation_depth_m: float | None,
     excavator_productivity_m3_per_shift: float,
     pit_items: list[dict[str, Any]] | None = None,
+    excavator_dig_depth_m: float | None = None,
 ) -> tuple[str, float | None, float]:
     if excavator_shifts_calc_method == "legacy_manual_shifts":
         return "legacy_manual_shifts", None, _round_decimal(_to_decimal(excavator_shifts))
@@ -300,9 +314,17 @@ def calculate_excavator_shifts(
         )
     else:
         pit_area = _to_decimal(pit_area_m2)
-        pit_depth = _to_decimal(pit_excavation_depth_m)
+        # excavator_dig_depth_m wins over pit_excavation_depth_m when given - confirmed 2026-08-12
+        # on real TRC data that Elena's own excavator-shift formula uses a depth of its own
+        # (0.6m), not always the same number as her spec table's printed pit depth (0.5m). Falls
+        # back to pit_excavation_depth_m so projects where the two coincide need no extra input.
+        depth_value = excavator_dig_depth_m if excavator_dig_depth_m is not None else pit_excavation_depth_m
+        pit_depth = _to_decimal(depth_value)
         if pit_depth is None:
-            raise ValueError("pit_excavation_depth_m is required for standard_volume_productivity")
+            raise ValueError(
+                "excavator_dig_depth_m or pit_excavation_depth_m is required for "
+                "standard_volume_productivity"
+            )
         machine_excavation_volume_m3 = _round_decimal(pit_area * pit_depth)
 
     if machine_excavation_volume_m3 == 0:
@@ -754,6 +776,17 @@ def calculate_internal_estimate_lines(
             )
         )
 
+    # Real smetas (TRC/ARK/USV) always print these 4 rows at the end of every section, even when
+    # this calculator has no manual input feeding them (2026-08-12, real user feedback: Elena
+    # expects the row to exist and read zero, not be missing from the section entirely - a
+    # missing row reads as "forgot this section" more than a zero value does). Zero here
+    # deliberately - this pipeline only ever computes Elena's own internal cost, never the
+    # client-facing markup these rows represent in her real smeta.
+    lines.append(calculate_line(code="technical_supervision", name="Технический надзор", unit="-", quantity=1))
+    lines.append(calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1))
+    lines.append(calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1))
+    lines.append(calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1))
+
     return lines
 
 
@@ -780,6 +813,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         data.pit_excavation_depth_m,
         data.excavator_productivity_m3_per_shift,
         data.pit_items,
+        data.excavator_dig_depth_m,
     )
 
     trench_routes_result: list[dict[str, Any]] = []
@@ -880,7 +914,11 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         sand_total_m3 = _round_decimal(
             _to_decimal(compacted_sand_base_m3) + _to_decimal(compacted_sand_trenches_m3)
         )
-    sand_order_volume_m3 = round_up_to_step(sand_total_m3, data.sand_truck_step_m3)
+    # sand_reserve_m3 (2026-08-12): a flat reserve added BEFORE rounding to the truck step -
+    # confirmed by exact-match arithmetic on TRC/ARK/USV real smetas regardless of sand_source
+    # (ready spec value or computed) or project size, see the field's own docstring above.
+    sand_total_with_reserve_m3 = _round_decimal(_to_decimal(sand_total_m3) + _to_decimal(data.sand_reserve_m3))
+    sand_order_volume_m3 = round_up_to_step(sand_total_with_reserve_m3, data.sand_truck_step_m3)
 
     geotextile_with_overlap_m2 = calculate_geotextile_with_overlap(
         data.geotextile_area_m2,
@@ -900,6 +938,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "excavator_shifts_calc_method": data.excavator_shifts_calc_method,
         "excavator_shifts_source": excavator_shifts_source,
         "pit_excavation_depth_m": data.pit_excavation_depth_m,
+        "excavator_dig_depth_m": data.excavator_dig_depth_m,
         "machine_excavation_volume_m3": machine_excavation_volume_m3,
         "excavator_productivity_m3_per_shift": data.excavator_productivity_m3_per_shift,
         "excavator_shifts": excavator_shifts,
@@ -926,6 +965,8 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
         "compacted_sand_base_m3": compacted_sand_base_m3,
         "compacted_sand_trenches_m3": compacted_sand_trenches_m3,
         "sand_total_m3": sand_total_m3,
+        "sand_reserve_m3": data.sand_reserve_m3,
+        "sand_total_with_reserve_m3": sand_total_with_reserve_m3,
         "sand_order_volume_m3": sand_order_volume_m3,
         "geotextile_with_overlap_m2": geotextile_with_overlap_m2,
         "geotextile_rolls": geotextile_rolls,

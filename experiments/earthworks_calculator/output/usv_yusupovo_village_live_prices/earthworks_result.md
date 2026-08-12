@@ -21,6 +21,7 @@
 - `sand_base_volume_m3`: `96.6`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `20`
+- `sand_reserve_m3`: `20.0`
 - `geotextile_area_m2`: `330`
 - `geotextile_overlap_coeff`: `1.1`
 - `geotextile_roll_area_m2`: `100`
@@ -64,6 +65,7 @@
 | `excavator_shifts_calc_method` | `legacy_manual_shifts` |
 | `excavator_shifts_source` | `legacy_manual_shifts` |
 | `pit_excavation_depth_m` | `None` |
+| `excavator_dig_depth_m` | `None` |
 | `machine_excavation_volume_m3` | `None` |
 | `excavator_productivity_m3_per_shift` | `80.0` |
 | `excavator_shifts` | `3.0` |
@@ -86,7 +88,9 @@
 | `compacted_sand_base_m3` | `125.58` |
 | `compacted_sand_trenches_m3` | `23.777` |
 | `sand_total_m3` | `149.357` |
-| `sand_order_volume_m3` | `160` |
+| `sand_reserve_m3` | `20.0` |
+| `sand_total_with_reserve_m3` | `169.357` |
+| `sand_order_volume_m3` | `180` |
 | `geotextile_with_overlap_m2` | `363.0` |
 | `geotextile_rolls` | `4` |
 | `communications_length_calc_method` | `legacy_direct_length` |
@@ -103,22 +107,26 @@
 | `manual_excavation` | Разработка грунта вручную | `44.695` | `м3` | `0.0` | `0` | `1200.0` | `53634` | `53634` |
 | `geotextile_laying` | Укладка геотекстиля | `340.0` | `м2` | `0.0` | `0` | `35.0` | `11900` | `11900` |
 | `geotextile_material` | Геотекстиль Дорнит 300 г.м2 (100м2) | `400.0` | `м2` | `109.0` | `43600` | `0.0` | `0` | `43600` |
-| `sand_filling` | Отсыпка дна котлована, засыпка под плитой песком с трамбованием | `160.0` | `м3` | `0.0` | `0` | `1200.0` | `192000` | `192000` |
-| `sand_material` | Песок строительный | `160.0` | `м3` | `1000.0` | `160000` | `0.0` | `0` | `160000` |
-| `sand_manual_moving` | Перемещение песка вручную | `160.0` | `м3` | `0.0` | `0` | `0` | `0` | `0` |
+| `sand_filling` | Отсыпка дна котлована, засыпка под плитой песком с трамбованием | `180.0` | `м3` | `0.0` | `0` | `1200.0` | `216000` | `216000` |
+| `sand_material` | Песок строительный | `180.0` | `м3` | `1000.0` | `180000` | `0.0` | `0` | `180000` |
+| `sand_manual_moving` | Перемещение песка вручную | `180.0` | `м3` | `0.0` | `0` | `0` | `0` | `0` |
 | `communications_work` | Закладка технологических входов коммуникаций до границы дома | `115.0` | `мп` | `0.0` | `0` | `350.0` | `40250` | `40250` |
 | `communications_material` | Материалы для устройства входов коммуникаций | `115.0` | `мп` | `650.0` | `74750` | `0.0` | `0` | `74750` |
 | `consumables` | Расходные материалы, амортизация инструмента | `1.0` | `комплект` | `23447.18` | `23447` | `0.0` | `0` | `23447` |
+| `technical_supervision` | Технический надзор | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
 
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `367797` |
-| `internal_works_total` | `323284` |
-| `internal_section_total` | `691081` |
-| `internal_materials_total_raw` | `367797` |
-| `internal_works_total_raw` | `323284` |
-| `internal_section_total_raw` | `691081` |
+| `internal_materials_total` | `387797` |
+| `internal_works_total` | `347284` |
+| `internal_section_total` | `735081` |
+| `internal_materials_total_raw` | `387797` |
+| `internal_works_total_raw` | `347284` |
+| `internal_section_total_raw` | `735081` |
 
 ## Источники цен
 
@@ -135,6 +143,10 @@
 | Закладка технологических входов коммуникаций до границы дома | `communications_installation_m` | `350` | `350` | `price_registry` |  |
 | Материалы для устройства входов коммуникаций | `communications_material_m` | `650` | `650` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `23447.18` | `23447.18` | `locked_case_prices` |  |
+| Технический надзор | `` | `None` | `None` | `locked_case_prices` |  |
+| Заготовительно-складские расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Накладные и общехозяйственные расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Сметная прибыль | `` | `None` | `None` | `locked_case_prices` |  |
 
 ## Pricing summary
 | Показатель | Значение |

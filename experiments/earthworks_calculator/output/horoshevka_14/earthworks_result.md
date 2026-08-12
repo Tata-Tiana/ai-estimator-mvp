@@ -21,6 +21,7 @@
 - `sand_base_volume_m3`: `165.7`
 - `sand_compaction_coeff`: `1.3`
 - `sand_truck_step_m3`: `10`
+- `sand_reserve_m3`: `20.0`
 - `geotextile_area_m2`: `257.4`
 - `geotextile_overlap_coeff`: `1.0`
 - `geotextile_roll_area_m2`: `100`
@@ -65,6 +66,7 @@
 | `excavator_shifts_calc_method` | `legacy_manual_shifts` |
 | `excavator_shifts_source` | `legacy_manual_shifts` |
 | `pit_excavation_depth_m` | `None` |
+| `excavator_dig_depth_m` | `None` |
 | `machine_excavation_volume_m3` | `None` |
 | `excavator_productivity_m3_per_shift` | `80.0` |
 | `excavator_shifts` | `3.0` |
@@ -87,7 +89,9 @@
 | `compacted_sand_base_m3` | `215.41` |
 | `compacted_sand_trenches_m3` | `14.859` |
 | `sand_total_m3` | `230.269` |
-| `sand_order_volume_m3` | `240` |
+| `sand_reserve_m3` | `20.0` |
+| `sand_total_with_reserve_m3` | `250.269` |
+| `sand_order_volume_m3` | `260` |
 | `geotextile_with_overlap_m2` | `257.4` |
 | `geotextile_rolls` | `3` |
 | `communications_length_calc_method` | `legacy_direct_length` |
@@ -107,6 +111,10 @@
 | `sand_material` | Песок строительный | `190.0` | `м3` | `1000` | `190000` | `0.0` | `0` | `190000` |
 | `sand_manual_moving` | Перемещение песка вручную | `190.0` | `м3` | `0.0` | `0` | `0` | `0` | `0` |
 | `consumables` | Расходные материалы, амортизация инструмента | `1.0` | `комплект` | `16292.16` | `16292` | `0.0` | `0` | `16292` |
+| `technical_supervision` | Технический надзор | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `-` | `0.0` | `0` | `0.0` | `0` | `0` |
 
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
@@ -124,7 +132,7 @@
 | `volumes.compacted_sand_base_m3` | `215.41` | `215.41` | `0.0` | `ok` |
 | `volumes.compacted_sand_trenches_m3` | `14.859` | `14.859` | `0.0` | `ok` |
 | `volumes.sand_total_m3` | `230.269` | `230.269` | `0.0` | `ok` |
-| `volumes.sand_order_volume_m3` | `240` | `240` | `0` | `ok` |
+| `volumes.sand_order_volume_m3` | `260` | `260` | `0` | `ok` |
 | `volumes.geotextile_with_overlap_m2` | `257.4` | `257.4` | `0.0` | `ok` |
 | `volumes.geotextile_rolls` | `3` | `3` | `0` | `ok` |
 | `estimate_lines.axis_marking.name` | `Вынос осей фундамента, котлована на участок` | `Вынос осей фундамента, котлована на участок` | `` | `ok` |

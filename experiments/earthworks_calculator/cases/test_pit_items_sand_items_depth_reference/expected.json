@@ -5,7 +5,7 @@
     "trench_volume_total_m3": 60.1,
     "sand_items_raw_total_m3": 237.2,
     "sand_total_m3": 308.36,
-    "sand_order_volume_m3": 320,
+    "sand_order_volume_m3": 340,
     "manual_excavation_total_m3": 66.12
   },
   "estimate_lines": {
@@ -16,10 +16,10 @@
       "line_total": 88500
     },
     "sand_material": {
-      "quantity": 320,
-      "material_total": 288000,
+      "quantity": 340.0,
+      "material_total": 306000,
       "work_total": 0,
-      "line_total": 288000
+      "line_total": 306000
     }
   }
 }
