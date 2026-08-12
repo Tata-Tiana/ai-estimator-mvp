@@ -1658,6 +1658,15 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         ),
         line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line", price_code="waste_removal_truck"),
         line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_walls_lintels"),
+        # Real smetas (TRC/ARK/USV) always print these 3 rows at the end of every section, even
+        # when this calculator has no manual input feeding them (2026-08-12, real user feedback:
+        # Elena expects the row to exist and read zero, not be missing from the section entirely
+        # - a missing row reads as "forgot this section" more than a zero value does). Zero here
+        # deliberately - this pipeline only ever computes Elena's own internal cost, never the
+        # client-facing markup these rows represent in her real smeta.
+        line("procurement_warehouse_costs", "Заготовительно-складские расходы", "-", 1),
+        line("overhead_general_business_costs", "Накладные и общехозяйственные расходы", "-", 1),
+        line("estimated_profit", "Сметная прибыль", "-", 1),
     ])
     return lines
 

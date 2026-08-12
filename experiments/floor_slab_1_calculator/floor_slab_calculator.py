@@ -1571,6 +1571,38 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
                 d(manual_lines["technical_supervision_amount"]),
                 price_code="technical_supervision_fixed",
             ),
+            # Real smetas (TRC/ARK/USV) always print these 3 rows at the end of every section,
+            # even when this calculator has no manual input feeding them (2026-08-12, real user
+            # feedback: Elena expects the row to exist and read zero, not be missing from the
+            # section entirely - a missing row reads as "forgot this section" more than a zero
+            # value does). Zero here deliberately - this pipeline only ever computes Elena's own
+            # internal cost, never the client-facing markup these rows represent in her real
+            # smeta - same "client_only_zero_internal_line" marker formwork_dismantling above
+            # already uses for the same reason.
+            estimate_line(
+                "procurement_warehouse_costs",
+                "Заготовительно-складские расходы",
+                "-",
+                "client_only_zero_internal_line",
+                1,
+                1,
+            ),
+            estimate_line(
+                "overhead_general_business_costs",
+                "Накладные и общехозяйственные расходы",
+                "-",
+                "client_only_zero_internal_line",
+                1,
+                1,
+            ),
+            estimate_line(
+                "estimated_profit",
+                "Сметная прибыль",
+                "-",
+                "client_only_zero_internal_line",
+                1,
+                1,
+            ),
         ]
     )
 

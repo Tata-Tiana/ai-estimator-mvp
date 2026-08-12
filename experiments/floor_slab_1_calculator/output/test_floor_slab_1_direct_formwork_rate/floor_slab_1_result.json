@@ -1062,6 +1062,51 @@
       "line_total": 5000,
       "notes": [],
       "price_code": "technical_supervision_fixed"
+    },
+    {
+      "code": "procurement_warehouse_costs",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "line_type": "client_only_zero_internal_line",
+      "quantity_raw": 1.0,
+      "quantity_display": 1.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": []
+    },
+    {
+      "code": "overhead_general_business_costs",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "line_type": "client_only_zero_internal_line",
+      "quantity_raw": 1.0,
+      "quantity_display": 1.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": []
+    },
+    {
+      "code": "estimated_profit",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "line_type": "client_only_zero_internal_line",
+      "quantity_raw": 1.0,
+      "quantity_display": 1.0,
+      "material_total_raw": 0.0,
+      "material_total": 0,
+      "work_total_raw": 0.0,
+      "work_total": 0,
+      "line_total_raw": 0.0,
+      "line_total": 0,
+      "notes": []
     }
   ],
   "totals": {

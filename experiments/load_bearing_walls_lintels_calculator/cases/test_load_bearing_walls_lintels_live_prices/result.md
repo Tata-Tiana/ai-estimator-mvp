@@ -71,6 +71,8 @@
 - `waste_removal_truck_unit_price`: `10000`
 - `waste_removal_work_unit_price`: `3500`
 - `technical_supervision_amount`: `10000`
+- `rebar_metal_delivery_trucks`: `0.0`
+- `rebar_metal_delivery_unit_price`: `0.0`
 - `lintel_section_width_m`: `0.125`
 - `lintel_section_height_m`: `0.125`
 - `lintel_concrete_calc_method`: `legacy_length_section`
@@ -471,6 +473,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `lintel_rebar_frame_assembly` | Изготовление и монтаж каркаса армирования перемычек | `230.7` | `` | `мп` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 | `lintel_rebar_a500_d12` | Арматура класса А500 диаметром 12 мм | `128.7` | `` | `мп` | `36.85` | `4742.595` | `4743` | `0.0` | `0.0` | `0` | `4742.595` | `4743` | `False` |
 | `lintel_rebar_a240_d6` | Арматура класса А240 диаметром 6 мм | `102.0` | `` | `мп` | `10.25` | `1045.5` | `1046` | `0.0` | `0.0` | `0` | `1045.5` | `1046` | `False` |
+| `rebar_metal_delivery` | Доставка арматуры, металла | `0.0` | `` | `маш` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 | `u_block_lintel_cutting` | Резка блока под перемычку (U-блок) | `39.0` | `` | `шт` | `0.0` | `0.0` | `0` | `400.0` | `15600.0` | `15600` | `15600.0` | `15600` | `False` |
 | `lintel_concreting_work` | Бетонирование перемычек | `23.4` | `` | `мп` | `0.0` | `0.0` | `0` | `1000.0` | `23400.0` | `23400` | `23400.0` | `23400` | `False` |
 | `lintel_concrete_b22_5_m300_material` | Бетон В22,5 М300 для перемычек | `1.0` | `` | `м3` | `6400.0` | `6400.0` | `6400` | `0.0` | `0.0` | `0` | `6400.0` | `6400` | `False` |
@@ -486,20 +489,23 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `parapet_and_second_light_rebar_a500_d10` | Арматура A500 Ø10 для парапета и второго света | `409.5` | `` | `мп` | `27.16` | `11122.02` | `11122` | `0.0` | `0.0` | `0` | `11122.02` | `11122` | `True` |
 | `walls_consumables_tool_amortization` | Расходные материалы, амортизация инструмента | `1.0` | `` | `комплект` | `100522` | `100521.7` | `100522` | `0.0` | `0.0` | `0` | `100521.7` | `100522` | `False` |
 | `construction_waste_removal` | Вывоз мусора с объекта | `3.0` | `` | `маш` | `10000.0` | `30000.0` | `30000` | `3500` | `10500.0` | `10500` | `40500.0` | `40500` | `False` |
-| `walls_technical_supervision` | Технический надзор | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `5000.0` | `5000.0` | `5000` | `5000.0` | `5000` | `False` |
+| `walls_technical_supervision` | Технический надзор | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `10000.0` | `10000.0` | `10000` | `10000.0` | `10000` | `False` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `` | `-` | `0.0` | `0.0` | `0` | `0.0` | `0.0` | `0` | `0.0` | `0` | `False` |
 
 ## Итоги raw/rounded
 | Показатель | Значение |
 | --- | ---: |
 | `internal_materials_total_raw` | `1544408.196319` |
 | `internal_materials_total` | `1544408` |
-| `internal_works_total_raw` | `1116449.04` |
-| `internal_works_total` | `1116449` |
-| `internal_section_total_raw` | `2660857.236319` |
-| `internal_section_total` | `2660857` |
+| `internal_works_total_raw` | `1121449.04` |
+| `internal_works_total` | `1121449` |
+| `internal_section_total_raw` | `2665857.236319` |
+| `internal_section_total` | `2665857` |
 | `sum_of_displayed_line_material_totals` | `1544410` |
-| `sum_of_displayed_line_work_totals` | `1116449` |
-| `sum_of_displayed_line_totals` | `2660859` |
+| `sum_of_displayed_line_work_totals` | `1121449` |
+| `sum_of_displayed_line_totals` | `2665859` |
 
 ## Источники цен
 
@@ -521,6 +527,7 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Изготовление и монтаж каркаса армирования перемычек | `` | `None` | `None` | `locked_case_prices` |  |
 | Арматура класса А500 диаметром 12 мм | `rebar_a500_d12_m` | `45.29` | `36.85` | `price_registry` |  |
 | Арматура класса А240 диаметром 6 мм | `rebar_a240_d6_m` | `13.32` | `10.25` | `price_registry` |  |
+| Доставка арматуры, металла | `metal_delivery_truck` | `None` | `22000` | `price_registry` |  |
 | Резка блока под перемычку (U-блок) | `u_block_lintel_cutting_item` | `400` | `400` | `price_registry` |  |
 | Бетонирование перемычек | `lintel_concreting_work_m` | `1000` | `1000` | `price_registry` |  |
 | Бетон В22,5 М300 для перемычек | `concrete_b22_5_m3` | `6400` | `6400` | `price_registry` |  |
@@ -536,7 +543,10 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | Арматура A500 Ø10 для парапета и второго света | `rebar_a500_d10_m` | `32.72` | `27.16` | `price_registry` |  |
 | Расходные материалы, амортизация инструмента | `` | `100522` | `100522` | `locked_case_prices` |  |
 | Вывоз мусора с объекта | `waste_removal_truck` | `10000` | `10000` | `price_registry` |  |
-| Технический надзор | `technical_supervision_fixed` | `10000` | `5000` | `price_registry` |  |
+| Технический надзор | `technical_supervision_walls_lintels` | `10000` | `10000` | `fallback_input` | price_code not found in price_registry, fallback input price used |
+| Заготовительно-складские расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Накладные и общехозяйственные расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Сметная прибыль | `` | `None` | `None` | `locked_case_prices` |  |
 
 ## Pricing summary
 | Показатель | Значение |
@@ -545,11 +555,11 @@ Legacy-режим `legacy_manual_shifts`: используется прямое 
 | `registry_path` | `/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx` |
 | `prices_from_price_registry` | `28` |
 | `prices_from_project_overrides` | `0` |
-| `prices_from_fallback_input` | `0` |
-| `warnings_count` | `0` |
+| `prices_from_fallback_input` | `1` |
+| `warnings_count` | `1` |
 
 ## Warnings
-Предупреждений нет.
+- technical_supervision_walls_lintels: price_code not found in price_registry, fallback input price used
 
 ## Comparison
 Expected values are not provided for this case.

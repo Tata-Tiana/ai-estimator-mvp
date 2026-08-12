@@ -147,6 +147,50 @@
       "price_code": "eps_foam_glue_can"
     },
     {
+      "code": "technical_supervision",
+      "name": "Технический надзор",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "procurement_warehouse_costs",
+      "name": "Заготовительно-складские расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "overhead_general_business_costs",
+      "name": "Накладные и общехозяйственные расходы",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
+      "code": "estimated_profit",
+      "name": "Сметная прибыль",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 0
+    },
+    {
       "code": "waterproofing_logistics_and_supply",
       "name": "Логистика и снабжение",
       "unit": "-",

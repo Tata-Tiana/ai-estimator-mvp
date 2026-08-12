@@ -573,6 +573,17 @@ def calculate_primary_estimate_lines(
             ),
         ])
 
+    # Real smetas (TRC/ARK/USV) always print these 4 rows at the end of every section, even when
+    # this calculator has no manual input feeding them (2026-08-12, real user feedback: Elena
+    # expects the row to exist and read zero, not be missing from the section entirely - a
+    # missing row reads as "forgot this section" more than a zero value does). Zero here
+    # deliberately - this pipeline only ever computes Elena's own internal cost, never the
+    # client-facing markup these rows represent in her real smeta.
+    lines.append(calculate_line(code="technical_supervision", name="Технический надзор", unit="-", quantity=1))
+    lines.append(calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1))
+    lines.append(calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1))
+    lines.append(calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1))
+
     return lines
 
 

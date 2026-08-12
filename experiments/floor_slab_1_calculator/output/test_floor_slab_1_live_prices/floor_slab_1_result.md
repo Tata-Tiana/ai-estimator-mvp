@@ -358,6 +358,9 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `17261.417005` | `17261` | `0.0` | `0` | `17261.417005` | `17261` |
 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `51784.251016` | `51784` | `0.0` | `0` | `51784.251016` | `51784` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 
 ## Источники цен
 
@@ -393,6 +396,9 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | Логистика, и снабжение | `` | `None` | `None` | `locked_case_prices` |  |
 | Расходные материалы, амортизация инструмента | `` | `None` | `None` | `locked_case_prices` |  |
 | Технический надзор | `technical_supervision_fixed` | `None` | `5000` | `price_registry` |  |
+| Заготовительно-складские расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Накладные и общехозяйственные расходы | `` | `None` | `None` | `locked_case_prices` |  |
+| Сметная прибыль | `` | `None` | `None` | `locked_case_prices` |  |
 
 ## Pricing summary
 | Показатель | Значение |

@@ -348,6 +348,9 @@ Production-режим `spec_work_quantities`: рабочие количеств�
 | `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `17097.458345` | `17097` | `0.0` | `0` | `17097.458345` | `17097` |
 | `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `51292.375036` | `51292` | `0.0` | `0` | `51292.375036` | `51292` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
+| `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
+| `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
+| `estimated_profit` | Сметная прибыль | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 
 ## Warnings / Notes
 - insulation.beams_eps_work_length_m is not provided; beam EPS work length is treated as 0. Provide the explicit project value when beams are insulated.
