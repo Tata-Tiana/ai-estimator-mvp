@@ -147,6 +147,28 @@
       "price_code": "eps_foam_glue_can"
     },
     {
+      "code": "waterproofing_logistics_and_supply",
+      "name": "Логистика и снабжение",
+      "unit": "-",
+      "quantity": 1.0,
+      "material_unit_price": 975.54,
+      "material_total": 976,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 976
+    },
+    {
+      "code": "waterproofing_consumables_tool_amortization",
+      "name": "Расходные материалы, амортизация инструмента",
+      "unit": "комплект",
+      "quantity": 1.0,
+      "material_unit_price": 1463.31,
+      "material_total": 1463,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 1463
+    },
+    {
       "code": "technical_supervision",
       "name": "Технический надзор",
       "unit": "-",
@@ -189,28 +211,6 @@
       "work_unit_price": 0.0,
       "work_total": 0,
       "line_total": 0
-    },
-    {
-      "code": "waterproofing_logistics_and_supply",
-      "name": "Логистика и снабжение",
-      "unit": "-",
-      "quantity": 1.0,
-      "material_unit_price": 975.54,
-      "material_total": 976,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 976
-    },
-    {
-      "code": "waterproofing_consumables_tool_amortization",
-      "name": "Расходные материалы, амортизация инструмента",
-      "unit": "комплект",
-      "quantity": 1.0,
-      "material_unit_price": 1463.31,
-      "material_total": 1463,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 1463
     }
   ],
   "internal_totals": {

@@ -1,0 +1,75 @@
+{
+  "calculation_blocks": {
+    "waterproofing": {
+      "waterproofing_area_m2": 17.355,
+      "eps100_wall_insulation_area_m2": 17.355,
+      "eps100_wall_required_volume_m3": 1.4081,
+      "eps100_wall_packs": 6,
+      "eps100_wall_order_volume_m3": 1.6656,
+      "eps50_wall_enabled": true,
+      "eps50_wall_order_volume_m3": 0.2776,
+      "combined_wall_insulation_area_m2": 17.355,
+      "glue_foam_units": 2
+    }
+  },
+  "estimate_lines": {
+    "waterproofing_bitumen_mastic_work": {
+      "quantity": 17.355,
+      "line_total": 6074
+    },
+    "bitumen_primer_aquamast_18l": {
+      "quantity": 1.0,
+      "line_total": 2865
+    },
+    "bitumen_mastic_aquamast_18kg": {
+      "quantity": 2.0,
+      "line_total": 5656
+    },
+    "eps100_wall_insulation_work": {
+      "quantity": 17.355,
+      "line_total": 8678
+    },
+    "eps100_wall_penoplex_geo_material": {
+      "quantity": 1.6656,
+      "line_total": 14824
+    },
+    "eps_glue_foam": {
+      "quantity": 2.0,
+      "line_total": 900
+    },
+    "eps50_wall_penoplex_geo_material": {
+      "quantity": 0.2776,
+      "line_total": 2443
+    },
+    "waterproofing_logistics_and_supply": {
+      "quantity": 1.0,
+      "line_total": 829
+    },
+    "waterproofing_consumables_tool_amortization": {
+      "quantity": 1.0,
+      "line_total": 1243
+    },
+    "technical_supervision": {
+      "quantity": 1.0,
+      "line_total": 0
+    },
+    "procurement_warehouse_costs": {
+      "quantity": 1.0,
+      "line_total": 0
+    },
+    "overhead_general_business_costs": {
+      "quantity": 1.0,
+      "line_total": 0
+    },
+    "estimated_profit": {
+      "quantity": 1.0,
+      "line_total": 0
+    }
+  },
+  "internal_totals": {
+    "waterproofing_base_subtotal": 41440,
+    "internal_materials_total": 28760,
+    "internal_works_total": 14752,
+    "internal_section_total": 43512
+  }
+}

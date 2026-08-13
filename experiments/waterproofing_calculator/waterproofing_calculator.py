@@ -403,12 +403,30 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
             _to_decimal(insulated_edge_length_m) * _to_decimal(data.slab_edge_height_m)
         )
 
-    eps100_wall_required_volume_m3 = _round_decimal(
-        _to_decimal(eps100_wall_insulation_area_m2)
-        * _to_decimal(data.eps100_wall_thickness_m)
-        * _to_decimal(data.eps_waste_coeff),
-        "0.0001",
-    )
+    eps50_wall_enabled = bool(data.eps50_wall_volume_m3) and data.eps50_wall_volume_m3 > 0
+
+    # 2026-08-13: when a second, thinner EPS layer also exists on the same edge, the
+    # explicit spec_area for EPS100 (e.g. TRC's page-22 control area) turns out to already
+    # cover the WHOLE edge, not just the thicker layer's own portion - confirmed against
+    # ARK/USV site sections, which show the same edge genuinely split into different-
+    # thickness segments rather than two independent strips. Deriving 100mm material from
+    # that shared area (area * thickness) overbuys packs for the portion that's actually
+    # thinner elsewhere. When EPS50 coexists, use the project's own EPS100 material volume
+    # directly instead - it does not carry this ambiguity, since it is a dedicated
+    # materials-spec figure, not a shared control total. Single-layer projects (no EPS50)
+    # are unaffected - real ARK data confirms area-driven material is correct there.
+    if eps50_wall_enabled and data.eps100_wall_volume_m3:
+        eps100_wall_required_volume_m3 = _round_decimal(
+            _to_decimal(data.eps100_wall_volume_m3) * _to_decimal(data.eps_waste_coeff),
+            "0.0001",
+        )
+    else:
+        eps100_wall_required_volume_m3 = _round_decimal(
+            _to_decimal(eps100_wall_insulation_area_m2)
+            * _to_decimal(data.eps100_wall_thickness_m)
+            * _to_decimal(data.eps_waste_coeff),
+            "0.0001",
+        )
     eps100_wall_raw_packs = _round_decimal(
         _to_decimal(eps100_wall_required_volume_m3)
         / _to_decimal(data.eps100_pack_volume_m3),
@@ -419,8 +437,6 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
         _to_decimal(eps100_wall_packs) * _to_decimal(data.eps100_pack_volume_m3),
         "0.0001",
     )
-
-    eps50_wall_enabled = bool(data.eps50_wall_volume_m3) and data.eps50_wall_volume_m3 > 0
 
     eps50_wall_insulation_area_m2 = 0.0
     eps50_wall_required_volume_m3 = 0.0
@@ -448,9 +464,11 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
             "0.0001",
         )
 
-    combined_wall_insulation_area_m2 = _round_decimal(
-        _to_decimal(eps100_wall_insulation_area_m2) + _to_decimal(eps50_wall_insulation_area_m2)
-    )
+    # 2026-08-13: no longer eps100_area + eps50_area. When EPS50 coexists, eps100's own
+    # spec_area already represents the whole edge (see note above) - adding eps50's area on
+    # top double-counts the same strip for glue-foam/work coverage. When EPS50 is absent,
+    # eps50_wall_insulation_area_m2 is 0 anyway, so this is a no-op for single-layer projects.
+    combined_wall_insulation_area_m2 = eps100_wall_insulation_area_m2
     glue_foam_raw_units = _round_decimal(
         _to_decimal(combined_wall_insulation_area_m2)
         / _to_decimal(data.glue_foam_coverage_m2_per_can),
@@ -496,6 +514,18 @@ def calculate_primary_estimate_lines(
     data: WaterproofingInput,
     waterproofing: dict[str, Any],
 ) -> list[EstimateLineResult]:
+    eps50_enabled = waterproofing["eps50_wall_enabled"]
+    # 2026-08-13: one combined work line when EPS50 coexists with EPS100 - real smetas
+    # (TRC/ARK/USV, see waterproofing sources report) never split installation work by
+    # thickness even when the physical edge genuinely has multiple thicknesses; the rate
+    # itself does not depend on thickness (Elena, 2026-08-08), so there is nothing for a
+    # split to buy except double-counting risk. eps100_wall_insulation_area_m2 already
+    # covers the whole edge in that case (see calculate_waterproofing_block notes).
+    eps_work_name = (
+        "Утепление торца/борта фундаментной плиты ЭППС 100+50 мм"
+        if eps50_enabled
+        else "Утепление торца/борта фундаментной плиты ЭППС 100 мм"
+    )
     lines = [
         calculate_line(
             code="waterproofing_bitumen_mastic_work",
@@ -523,7 +553,7 @@ def calculate_primary_estimate_lines(
         ),
         calculate_line(
             code="eps100_wall_insulation_work",
-            name="Утепление торца/борта фундаментной плиты ЭППС 100 мм",
+            name=eps_work_name,
             unit="м2",
             quantity=waterproofing["eps100_wall_insulation_area_m2"],
             work_unit_price=data.eps100_wall_insulation_work_unit_price,
@@ -550,16 +580,8 @@ def calculate_primary_estimate_lines(
         ),
     ]
 
-    if waterproofing["eps50_wall_enabled"]:
-        lines.extend([
-            calculate_line(
-                code="eps50_wall_insulation_work",
-                name="Утепление торца/борта фундаментной плиты ЭППС 50 мм",
-                unit="м2",
-                quantity=waterproofing["eps50_wall_insulation_area_m2"],
-                work_unit_price=data.eps50_wall_insulation_work_unit_price,
-                price_code="eps_wall_insulation_work_50_m2",
-            ),
+    if eps50_enabled:
+        lines.append(
             calculate_line(
                 code="eps50_wall_penoplex_geo_material",
                 name="Пеноплэкс ГЕО 50 мм",
@@ -570,19 +592,8 @@ def calculate_primary_estimate_lines(
                 ),
                 material_unit_price=data.eps50_unit_price,
                 price_code="eps_geo_50_m3",
-            ),
-        ])
-
-    # Real smetas (TRC/ARK/USV) always print these 4 rows at the end of every section, even when
-    # this calculator has no manual input feeding them (2026-08-12, real user feedback: Elena
-    # expects the row to exist and read zero, not be missing from the section entirely - a
-    # missing row reads as "forgot this section" more than a zero value does). Zero here
-    # deliberately - this pipeline only ever computes Elena's own internal cost, never the
-    # client-facing markup these rows represent in her real smeta.
-    lines.append(calculate_line(code="technical_supervision", name="Технический надзор", unit="-", quantity=1))
-    lines.append(calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1))
-    lines.append(calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1))
-    lines.append(calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1))
+            )
+        )
 
     return lines
 
@@ -624,6 +635,15 @@ def calculate_internal_estimate_lines(
             quantity=1,
             material_unit_price=consumables_amount_raw,
         ),
+        # Real smetas (TRC/ARK/USV) always print these 4 rows last, after logistics/consumables,
+        # right before "Итого по разделу" - fixed 2026-08-12 (was emitted before logistics/
+        # consumables here, opposite of Elena's real row order). Zero here deliberately - this
+        # pipeline only ever computes Elena's own internal cost, never the client-facing markup
+        # these rows represent in her real smeta.
+        calculate_line(code="technical_supervision", name="Технический надзор", unit="-", quantity=1),
+        calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1),
+        calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1),
+        calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1),
     ]
 
 

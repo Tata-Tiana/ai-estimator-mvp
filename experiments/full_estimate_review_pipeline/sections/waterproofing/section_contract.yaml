@@ -81,7 +81,7 @@ review_parameters:
       numeric: true
       min_value: 0
       max_value: null
-    notes: "Material volume for EPS 100 mm slab edge/board insulation. If the PDF gives an explicit m2 area for the same work, use eps100_wall_insulation_area_m2 for the work quantity; do not force volume/thickness when an explicit area exists."
+    notes: "Material volume for EPS 100 mm slab edge/board insulation. UPDATE 2026-08-13: used as area fallback (area = volume / thickness) when eps100_wall_insulation_area_m2 is absent - same as before. But when BOTH eps100_wall_insulation_area_m2 AND eps50_wall_volume_m3 are present (a second, thinner layer coexists), this volume is now used DIRECTLY for the material/pack calculation instead of the area (eps100_wall_required_volume_m3 = this volume * eps_waste_coeff) - confirmed against real TRC/ARK/USV site-section drawings that a shared control area covering the whole edge (not just the 100mm portion) is the real pattern whenever two thicknesses coexist on one edge, so deriving 100mm material from that shared area overbuys packs for the portion that's actually thinner. Single-layer projects (no eps50) are unaffected - area still drives material there, confirmed correct against real ARK smeta (which has no second layer at all)."
 
   - key: eps100_wall_insulation_area_m2
     label_ru: "ЭППС 100 мм по торцу фундаментной плиты, площадь работ"
@@ -111,7 +111,7 @@ review_parameters:
       numeric: true
       min_value: 0
       max_value: null
-    notes: "Optional explicit work area for EPS 100 mm slab edge/board insulation. When present, calculator uses it for the work row. Material remains eps100_wall_volume_m3."
+    notes: "Optional explicit work area for EPS 100 mm slab edge/board insulation. When present and EPS50 is absent, calculator uses it for BOTH the work row and the material/pack calculation. UPDATE 2026-08-13: when EPS50 also coexists (eps50_wall_volume_m3 > 0), this area is treated as the WHOLE edge's area (covering both thicknesses, not just 100mm) - confirmed against real TRC control-area numbers plus ARK/USV site-section drawings, all of which show one continuous edge genuinely split into different-thickness segments rather than two independent strips. In that case: (1) the WORK line becomes ONE combined line for both thicknesses using this area as-is (see eps100_wall_insulation_work notes below), (2) 100mm MATERIAL switches to using eps100_wall_volume_m3 directly instead of this area (see that field's own notes) to avoid overbuying packs for the portion that's actually thinner."
 
   - key: eps50_wall_volume_m3
     label_ru: "ЭППС 50 мм по торцу фундаментной плиты, объем"
@@ -214,7 +214,7 @@ price_keys:
     registry_code: "eps_wall_insulation_work_50_m2"
     fallback_key: "eps50_wall_insulation_work_unit_price"
     allow_manual_override: true
-    notes: "Separate registry code from eps100_wall_insulation_work_unit_price, but same value (500 руб./м2) — installation rate does not depend on board thickness (Elena confirmed 2026-08-08: it's not '2 layers = 1 combined pass', it's that the per-m2 labor rate is thickness-independent; 50mm and 100mm zones are always separate physical areas, never stacked, so pricing each at the same per-m2 rate does not double-charge anything). FIXED 2026-08-08 (was 0 since 2026-08-06, pending Elena's answer to exactly this question) — see eps_wall_insulation_work_50_m2's own registry comment for the full resolution."
+    notes: "Separate registry code from eps100_wall_insulation_work_unit_price, but same value (500 руб./м2) — installation rate does not depend on board thickness (Elena confirmed 2026-08-08: it's not '2 layers = 1 combined pass', it's that the per-m2 labor rate is thickness-independent; 50mm and 100mm zones are always separate physical areas, never stacked, so pricing each at the same per-m2 rate does not double-charge anything). FIXED 2026-08-08 (was 0 since 2026-08-06, pending Elena's answer to exactly this question) — see eps_wall_insulation_work_50_m2's own registry comment for the full resolution. UNUSED as of 2026-08-13: the eps50_wall_insulation_work estimate line this price fed is no longer produced by the calculator (folded into eps100_wall_insulation_work, see that estimate_line's notes) - kept here because the field is still required by WaterproofingInput and still resolved/validated, just never actually multiplied into an output line anymore."
 
   - key: eps50_unit_price
     estimate_line_code: eps50_wall_penoplex_geo_material
@@ -432,14 +432,12 @@ auto_calculated:
   - key: combined_wall_insulation_area_m2
     label_ru: "Суммарная площадь утепления торца плиты (50+100 мм)"
     source_class: AUTO_CALCULATED
-    formula: "eps100_wall_insulation_area_m2 + eps50_wall_insulation_area_m2"
+    formula: "eps100_wall_insulation_area_m2"
     leaf_inputs:
       - ref: auto_calculated.eps100_wall_insulation_area_m2
         source_class: AUTO_CALCULATED
-      - ref: auto_calculated.eps50_wall_insulation_area_m2
-        source_class: AUTO_CALCULATED
     calculator_input_path: ""
-    notes: "Used only as the basis for glue-foam consumption (eps_glue_foam) — both layers get glued to the slab edge, so glue-foam quantity must cover the combined area, not just the 100mm layer."
+    notes: "Used as the basis for glue-foam consumption (eps_glue_foam) — both layers get glued to the slab edge. Fixed 2026-08-13: no longer eps100_area + eps50_area. eps100_wall_insulation_area_m2 already covers the whole edge when EPS50 coexists (confirmed against real TRC/ARK/USV site sections - see eps100_wall_insulation_area_m2's own notes); adding eps50's area on top double-counted the same strip for glue-foam. When EPS50 is absent this is a pure identity (eps50 area is 0), so single-layer projects are unaffected."
 
   - key: primer_units
     label_ru: "Количество канистр праймера"
@@ -474,16 +472,22 @@ auto_calculated:
   - key: eps100_wall_order_volume_m3
     label_ru: "Закупочный объем ЭППС 100 мм"
     source_class: AUTO_CALCULATED
-    formula: "ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+    formula: "if eps50_wall_volume_m3 > 0: ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3; else: ceil((eps100_wall_insulation_area_m2 * eps100_wall_thickness_m * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
     leaf_inputs:
       - ref: review_parameters.eps100_wall_volume_m3
         source_class: AUTO_PROJECT
+      - ref: auto_calculated.eps100_wall_insulation_area_m2
+        source_class: AUTO_CALCULATED
+      - ref: review_parameters.eps50_wall_volume_m3
+        source_class: AUTO_PROJECT
+      - ref: defaults.eps100_wall_thickness_m
+        source_class: DEFAULT
       - ref: defaults.eps_waste_coeff
         source_class: DEFAULT
       - ref: defaults.eps100_pack_volume_m3
         source_class: DEFAULT
     calculator_input_path: ""
-    notes: "Quantity stays m3."
+    notes: "Quantity stays m3. Fixed 2026-08-12: formula previously read straight from eps100_wall_volume_m3 regardless of eps50, which did not match calculator.py at the time (it always used area). Fixed AGAIN 2026-08-13, this time the other direction: when EPS50 coexists, area-based material overbuys packs because the area covers both thicknesses' portion (see eps100_wall_insulation_area_m2 notes) - now uses eps100_wall_volume_m3 directly in that case, area-based only when EPS50 is absent (matches real ARK single-layer behavior)."
 
   - key: eps50_wall_order_volume_m3
     label_ru: "Закупочный объем ЭППС 50 мм (торец плиты)"
@@ -692,7 +696,7 @@ estimate_lines:
     notes: ""
 
   - code: eps100_wall_insulation_work
-    name_ru: "Утепление торца/борта фундаментной плиты ЭППС 100 мм"
+    name_ru: "Утепление торца/борта фундаментной плиты ЭППС 100 мм (или 'ЭППС 100+50 мм' when eps50 coexists, see notes)"
     unit: "м2"
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=eps100_wall_insulation_work]"
@@ -719,6 +723,7 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
+    notes: "Fixed 2026-08-13: this is now the ONLY installation-work line for wall insulation, even when a second, thinner EPS50 layer coexists on the same edge - the old separate eps50_wall_insulation_work line (below, now removed from calculator output) added its own area on top of this one, double-billing installation labor for whatever portion of the edge the shared area already covered at 50mm. Real TRC/ARK/USV site sections confirm the edge is genuinely one continuous run split by thickness, not two independent strips - and none of the 3 real projects ever bill installation work as two separate thickness-specific lines, always one. When eps50 is present the line name changes to mention both thicknesses ('ЭППС 100+50 мм'); rate stays eps100_wall_insulation_work_unit_price, since Elena confirmed (2026-08-08) the rate does not depend on thickness anyway."
     notes: "This is work area in m2, not EPS volume."
 
   - code: eps100_wall_penoplex_geo_material
@@ -727,15 +732,21 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=eps100_wall_penoplex_geo_material]"
     quantity:
-      formula: "ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+      formula: "if eps50_wall_volume_m3 > 0: ceil((eps100_wall_volume_m3 * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3; else: ceil((eps100_wall_insulation_area_m2 * eps100_wall_thickness_m * eps_waste_coeff) / eps100_pack_volume_m3) * eps100_pack_volume_m3"
       formula_model:
         type: round_up_to_pack
-        required_volume_ref: "review_parameters.eps100_wall_volume_m3"
+        required_volume_ref: "review_parameters.eps100_wall_volume_m3 (if eps50 present) else auto_calculated.eps100_wall_insulation_area_m2 * defaults.eps100_wall_thickness_m"
         waste_coeff_ref: "defaults.eps_waste_coeff"
         pack_volume_ref: "defaults.eps100_pack_volume_m3"
       leaf_inputs:
         - ref: "review_parameters.eps100_wall_volume_m3"
           source_class: AUTO_PROJECT
+        - ref: "auto_calculated.eps100_wall_insulation_area_m2"
+          source_class: AUTO_CALCULATED
+        - ref: "review_parameters.eps50_wall_volume_m3"
+          source_class: AUTO_PROJECT
+        - ref: "defaults.eps100_wall_thickness_m"
+          source_class: DEFAULT
         - ref: "defaults.eps_waste_coeff"
           source_class: DEFAULT
         - ref: "defaults.eps100_pack_volume_m3"
@@ -748,12 +759,12 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "This remains material volume in m3."
+    notes: "Fixed 2026-08-12: this used to say quantity comes from eps100_wall_volume_m3 ('remains material volume') - that did not match calculator.py at the time (it always used area). Fixed AGAIN 2026-08-13: when EPS50 also exists, area-based material overbuys packs because the area covers the whole edge including the thinner portion (see eps100_wall_insulation_area_m2 notes) - switched back to eps100_wall_volume_m3 directly for that case specifically. Single-layer projects (no EPS50, e.g. real ARK) still use area, unchanged."
 
   - code: eps50_wall_insulation_work
     name_ru: "Утепление торца/борта фундаментной плиты ЭППС 50 мм"
     unit: "м2"
-    enabled_by_default: true
+    enabled_by_default: false
     calculator_result_path: "estimate_lines[code=eps50_wall_insulation_work]"
     quantity:
       formula: "eps50_wall_volume_m3 / eps50_wall_thickness_m"
@@ -774,7 +785,7 @@ estimate_lines:
     validation:
       formula_ready_required: true
       excel_formula_exportable: true
-    notes: "Added 2026-07-14. Only returned when eps50_wall_volume_m3 > 0 — most projects don't have this second layer (see review_parameters.eps50_wall_volume_m3 notes)."
+    notes: "Added 2026-07-14, REMOVED from calculator output 2026-08-13 (enabled_by_default flipped to false, row kept only for history/traceability). Adding this line's own area on top of eps100_wall_insulation_work's area double-billed installation labor for the shared portion of the edge - see eps100_wall_insulation_work's notes above. The 50mm layer's material (eps50_wall_penoplex_geo_material, below) is unaffected and still produced normally - only the separate WORK line was removed; both thicknesses' work is now billed once, in the eps100_wall_insulation_work line."
 
   - code: eps50_wall_penoplex_geo_material
     name_ru: "Пеноплэкс ГЕО 50 мм"
