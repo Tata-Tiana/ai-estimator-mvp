@@ -1213,30 +1213,10 @@ def calculate_internal_estimate_lines(
     concrete = calculation_blocks["concrete"]
 
     lines = [
-        calculate_line(
-            code="planter_membrane_installation",
-            name="Монтаж мембраны PLANTER стандарт",
-            unit="м2",
-            quantity=data.membrane_area_m2,
-            work_unit_price=data.membrane_installation_work_unit_price,
-            price_code="planter_membrane_installation_work_m2",
-        ),
-        calculate_line(
-            code="planter_standard_material",
-            name="Planter Standard Технониколь",
-            unit="рул",
-            quantity=membrane["membrane_rolls"],
-            material_unit_price=data.planter_standard_roll_unit_price,
-            price_code="planter_standard_roll",
-        ),
-        calculate_line(
-            code="planterband_material",
-            name="PLANTERBAND 10м х 10см",
-            unit="шт",
-            quantity=membrane["planterband_quantity"],
-            material_unit_price=data.planterband_unit_price,
-            price_code="planterband_item",
-        ),
+        # Formwork trio (installation/plywood/timber) always first (2026-08-12, Elena's
+        # request) - a fixed reading order for the foundation_slab section, not tied to any
+        # money change (formwork_installation's own rate is 0 either way, see its own docstring
+        # note elsewhere in this file about why - labor is bundled into the concreting rate).
         calculate_line(
             code="formwork_installation",
             name="Монтаж опалубки из пиломатериалов для отбортовки плиты",
@@ -1261,6 +1241,30 @@ def calculate_internal_estimate_lines(
             display_quantity=_round_decimal(formwork["timber_raw_volume_m3"], "0.01"),
             material_unit_price=data.timber_unit_price,
             price_code="timber_m3",
+        ),
+        calculate_line(
+            code="planter_membrane_installation",
+            name="Монтаж мембраны PLANTER стандарт",
+            unit="м2",
+            quantity=data.membrane_area_m2,
+            work_unit_price=data.membrane_installation_work_unit_price,
+            price_code="planter_membrane_installation_work_m2",
+        ),
+        calculate_line(
+            code="planter_standard_material",
+            name="Planter Standard Технониколь",
+            unit="рул",
+            quantity=membrane["membrane_rolls"],
+            material_unit_price=data.planter_standard_roll_unit_price,
+            price_code="planter_standard_roll",
+        ),
+        calculate_line(
+            code="planterband_material",
+            name="PLANTERBAND 10м х 10см",
+            unit="шт",
+            quantity=membrane["planterband_quantity"],
+            material_unit_price=data.planterband_unit_price,
+            price_code="planterband_item",
         ),
         calculate_line(
             code="eps50_laying_under_slab",
