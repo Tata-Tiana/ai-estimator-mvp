@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -137,15 +138,71 @@ def _load_floor_slabs_blocks(results_dir: Path) -> list[tuple[str, list[dict[str
     return [(pour["title"], list(pour.get("estimate_lines") or [])) for pour in data.get("pours") or []]
 
 
+_REBAR_PRICE_CODE_RE = re.compile(r"^rebar_(?P<steel_class>[a-z0-9]+)_d(?P<diameter>\d+)_m$")
+
+
+def _rebar_pool_label(price_code: str) -> str:
+    match = _REBAR_PRICE_CODE_RE.match(price_code)
+    if not match:
+        return "Арматура"
+    # Same "<class> ф<diameter>" convention as rebar_diameter_breakdown() in
+    # populate_review_workbook_from_extraction.py (Этап 1, sheet 01's per-section/box summary) -
+    # one shared label style for both places Elena sees a pooled rebar row.
+    return f"{match.group('steel_class').upper()} ф{match.group('diameter')}"
+
+
+def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Этап 2 (2026-08-12, Elena's request): the smeta gets only one row per (steel_class,
+    diameter) - price_code already uniquely identifies that combo (rebar_<class>_d<diameter>_m) -
+    not the position-level "zoo" (хомуты/лягушки/выпуски/etc) the calculators still produce for
+    traceability. Elena doesn't show the position breakdown in her own real smetas either, and
+    isn't the one who can change rebar quantities without the structural engineer's sign-off
+    anyway - only these pooled summary rows are hers to round up or add a reserve to if she wants.
+    Every non-rebar line (price_code not starting with "rebar_") passes through unchanged, in its
+    original position; pooled rebar rows appear where the first line of that diameter/class did."""
+    result: list[dict[str, Any]] = []
+    index_by_price_code: dict[str, int] = {}
+    for line in lines:
+        price_code = line.get("price_code") or ""
+        if not price_code.startswith("rebar_"):
+            result.append(line)
+            continue
+        if price_code in index_by_price_code:
+            pooled = result[index_by_price_code[price_code]]
+        else:
+            pooled = {
+                "code": f"{price_code}_pooled",
+                "name": _rebar_pool_label(price_code),
+                "unit": line.get("unit") or "мп",
+                "quantity": 0.0,
+                "material_unit_price": _num(line.get("material_unit_price")),
+                "material_total": 0.0,
+                "work_unit_price": _num(line.get("work_unit_price")),
+                "work_total": 0.0,
+                "line_total": 0.0,
+                "price_code": price_code,
+            }
+            index_by_price_code[price_code] = len(result)
+            result.append(pooled)
+        pooled["quantity"] += _quantity(line)
+        pooled["material_total"] += _num(_line_value(line, "material_total"))
+        pooled["work_total"] += _num(_line_value(line, "work_total"))
+        pooled["line_total"] += _num(_line_value(line, "line_total"))
+    return result
+
+
 def _all_section_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any]]]]:
     """Full ordered list of (title, lines) blocks to render - SECTION_ORDER's 6 fixed sections
     plus the dynamic floor-slabs block spliced in right after FLOOR_SLABS_INSERT_AFTER, in the
     exact spot floor_slab_1/floor_slab_2 used to occupy as two fixed entries."""
     blocks: list[tuple[str, list[dict[str, Any]]]] = []
     for section_code, section_title in SECTION_ORDER:
-        blocks.append((section_title, _load_lines(results_dir, section_code)))
+        blocks.append((section_title, _pool_rebar_lines(_load_lines(results_dir, section_code))))
         if section_code == FLOOR_SLABS_INSERT_AFTER:
-            blocks.extend(_load_floor_slabs_blocks(results_dir))
+            blocks.extend(
+                (title, _pool_rebar_lines(lines))
+                for title, lines in _load_floor_slabs_blocks(results_dir)
+            )
     return blocks
 
 
@@ -253,7 +310,7 @@ def _setup_dimensions(ws: Any) -> None:
         ws.column_dimensions[get_column_letter(col_num)].width = width
     for col_num in range(16, 23):
         ws.column_dimensions[get_column_letter(col_num)].width = 10
-    ws.freeze_panes = "E12"
+    ws.freeze_panes = "E11"
 
 
 def _write_section_header(ws: Any, row_num: int, section_number: int, section_title: str) -> None:
