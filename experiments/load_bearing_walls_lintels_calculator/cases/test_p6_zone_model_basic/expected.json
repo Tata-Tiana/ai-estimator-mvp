@@ -1,0 +1,32 @@
+{
+  "estimate_lines": {
+    "floor_1_masonry_work": {
+      "quantity": 80.48
+    },
+    "floor_2_masonry_work": {
+      "quantity": 61.66
+    },
+    "parapet_masonry_work": {
+      "quantity": 19.15
+    },
+    "vent_chimney_cladding_gas_block_cladding_work": {
+      "quantity": 4.4
+    },
+    "floor_1_lintel_concrete_delivery": {
+      "quantity": 1.0
+    },
+    "floor_1_blocks_delivery": {
+      "quantity": 3.0
+    },
+    "upper_parapet_vent_blocks_delivery": {
+      "quantity": 3.0
+    }
+  },
+  "calculation_blocks": {
+    "zones.floor_1.block_spec_volume_m3": 80.48,
+    "zones.vent_chimney_cladding.vent_chimney_cladding_area_m2": 4.4,
+    "delivery_batches.floor_1.trucks": 3,
+    "delivery_batches.upper_parapet_vent.trucks": 3,
+    "rebar.delivery_weight_kg": 659.9133
+  }
+}

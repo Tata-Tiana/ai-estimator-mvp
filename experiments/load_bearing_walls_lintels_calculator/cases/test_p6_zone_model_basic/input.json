@@ -1,0 +1,206 @@
+{
+  "project_name": "test_p6_zone_model_basic",
+  "wall_zones": [
+    {
+      "zone_id": "floor_1",
+      "display_name": "Кладка стен 1-го этажа",
+      "zone_kind": "main_walls",
+      "cutoff_waterproofing_area_m2": 28.413,
+      "block_items": [
+        {
+          "item_id": "d400",
+          "block_density": "D400",
+          "block_size": "600x400x250",
+          "volume_m3": 54.11
+        },
+        {
+          "item_id": "d500",
+          "block_density": "D500",
+          "block_size": "600x250x250",
+          "volume_m3": 26.37
+        }
+      ],
+      "chasing_rebar_items": [
+        {
+          "item_id": "wall_400",
+          "purpose": "masonry_chasing",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "spec_length_m": 432.72,
+          "kg_per_meter": 0.617,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 27.16
+        },
+        {
+          "item_id": "wall_250",
+          "purpose": "masonry_chasing",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "spec_length_m": 158.46,
+          "kg_per_meter": 0.617,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 27.16
+        },
+        {
+          "item_id": "subwindow",
+          "purpose": "masonry_chasing",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "spec_length_m": 60.6,
+          "kg_per_meter": 0.617,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 27.16
+        }
+      ],
+      "lintel_items": [
+        {
+          "lintel_id": "u_block",
+          "lintel_kind": "u_block",
+          "total_length_m": 22.62,
+          "concrete_volume_m3": 0.36,
+          "rebar_items": [
+            {
+              "item_id": "lintel_d12",
+              "purpose": "lintels",
+              "steel_class": "A500",
+              "diameter_mm": 12,
+              "spec_length_m": 117.0,
+              "kg_per_meter": 0.888,
+              "rod_length_m": 11.7,
+              "unit_price_per_m": 36.85
+            }
+          ]
+        },
+        {
+          "lintel_id": "monolithic",
+          "lintel_kind": "monolithic",
+          "total_length_m": 2.8,
+          "concrete_volume_m3": 0.21,
+          "formwork_horizontal_area_m2": 0.6,
+          "formwork_vertical_area_m2": 1.3,
+          "insulation_length_m": 1.5,
+          "insulation_eps_spec_volume_m3": 0.2773,
+          "rebar_items": [
+            {
+              "item_id": "lintel_d6",
+              "purpose": "lintels",
+              "steel_class": "A240",
+              "diameter_mm": 6,
+              "spec_length_m": 78.0,
+              "kg_per_meter": 0.222,
+              "rod_length_m": 6.0,
+              "unit_price_per_m": 13.32
+            },
+            {
+              "item_id": "lintel_d6_extra",
+              "purpose": "lintels",
+              "steel_class": "A240",
+              "diameter_mm": 6,
+              "spec_length_m": 1.5,
+              "kg_per_meter": 0.222,
+              "rod_length_m": 6.0,
+              "unit_price_per_m": 13.32
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zone_id": "floor_2",
+      "display_name": "Кладка несущих стен 2-го этажа",
+      "zone_kind": "floor_2",
+      "block_items": [
+        {
+          "item_id": "d400",
+          "block_density": "D400",
+          "block_size": "600x400x250",
+          "volume_m3": 50.71
+        },
+        {
+          "item_id": "d500",
+          "block_density": "D500",
+          "block_size": "600x250x250",
+          "volume_m3": 10.95
+        }
+      ]
+    },
+    {
+      "zone_id": "parapet",
+      "display_name": "Кладка парапета",
+      "zone_kind": "parapet",
+      "block_items": [
+        {
+          "item_id": "d400",
+          "block_density": "D400",
+          "block_size": "600x400x250",
+          "volume_m3": 19.15
+        }
+      ],
+      "chasing_rebar_items": [
+        {
+          "item_id": "parapet_d10",
+          "purpose": "parapet_chasing",
+          "steel_class": "A500",
+          "diameter_mm": 10,
+          "spec_length_m": 153.04,
+          "kg_per_meter": 0.617,
+          "rod_length_m": 11.7,
+          "unit_price_per_m": 27.16
+        }
+      ]
+    },
+    {
+      "zone_id": "vent_chimney_cladding",
+      "display_name": "Обкладка дымохода и вентканалов",
+      "zone_kind": "vent_chimney_cladding",
+      "block_items": [
+        {
+          "item_id": "d500_150",
+          "block_density": "D500",
+          "block_size": "600x150x250",
+          "volume_m3": 0.66
+        }
+      ]
+    }
+  ],
+  "rates": {
+    "scaffolding_setup_work_unit_price": 20000,
+    "scaffolding_timber_unit_price": 21500,
+    "cutoff_waterproofing_material_unit_price": 250,
+    "cutoff_waterproofing_work_unit_price": 100,
+    "masonry_work_unit_price": 7000,
+    "gas_block_d400_unit_price": 6000,
+    "gas_block_d500_250_unit_price": 5600,
+    "gas_block_d500_150_unit_price": 5600,
+    "vent_chimney_cladding_work_unit_price": 1200,
+    "adhesive_unit_price": 360,
+    "sand_concrete_unit_price": 375,
+    "block_delivery_unit_price": 28000,
+    "block_unloading_manipulator_unit_price": 15000,
+    "crane_25t_unit_price": 30000,
+    "u_block_cutting_work_unit_price": 400,
+    "lintel_concreting_work_unit_price": 1200,
+    "lintel_monolithic_concreting_work_unit_price": 1500,
+    "concrete_m300_unit_price": 6275,
+    "concrete_delivery_unit_price": 6225,
+    "manual_concrete_lifting_work_unit_price": 5000,
+    "lintel_formwork_plywood_unit_price": 1400,
+    "lintel_formwork_timber_unit_price": 21500,
+    "lintel_insulation_work_unit_price": 450,
+    "lintel_insulation_eps_unit_price": 9020,
+    "lintel_glue_foam_unit_price": 490,
+    "waste_removal_truck_unit_price": 10000,
+    "waste_removal_work_unit_price": 3500,
+    "technical_supervision_amount": 10000,
+    "rebar_metal_delivery_unit_price": 28000
+  },
+  "defaults": {
+    "scaffolding_setup_quantity": 2,
+    "scaffolding_timber_quantity_m3": 2,
+    "gas_block_d400_pallet_volume_m3": 2.15,
+    "gas_block_d500_250_pallet_volume_m3": 1.8,
+    "gas_block_d500_150_pallet_volume_m3": 1.8,
+    "lintel_insulation_eps_pack_volume_m3": 0.2773,
+    "walls_consumables_rate": 0.03
+  }
+}
