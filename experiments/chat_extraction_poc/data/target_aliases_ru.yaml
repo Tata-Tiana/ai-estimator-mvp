@@ -455,428 +455,77 @@ eps50_wall_volume_m3:
   unit_column_hint: ["м3", "м³", "куб.м"]
   notes: "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Найдено 2026-07-14 в реальном проекте ТРЦ (КР-1 стр.22): строки 'ЭППС-50мм (Утепление вертикальных поверхностей)' и 'ЭППС-100мм (Утепление вертикальных поверхностей)' идут рядом в одной таблице 'Спецификация материала на устройство фундамента' — до этого исправления 50-мм строка не имела совпадающего target_code и терялась (see docs/report_load_bearing_walls_floor_2_refactor.md history for the same class of gap). required_context содержит 'вертикальн', чтобы не путать со строкой 'ЭППС-50мм (Утепление под плитой)' -> foundation_slab.eps50_under_slab_volume_m3, и негативный контекст 'термовставк' отсекает foundation_slab.thermal_insert_50_material_spec_qty."
 
-load_bearing_walls_lintels:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Несущие стены и перемычки"
-  pdf_aliases: ["несущие стены", "кладочный план", "перемычки", "спецификация перемычек", "спецификация стен"]
+load_bearing_walls_lintels_p6:
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "Несущие стены и перемычки — зональная модель"
+  pdf_aliases: ["несущие стены", "кладочный план", "перемычки", "спецификация перемычек", "спецификация стен", "газобетонный блок", "парапет", "второй свет", "надстройка", "обкладка вентканалов"]
   expected_unit: null
-  table_hints: ["Кладочный план", "План перемычек", "Спецификация перемычек", "Спецификация газобетонных блоков"]
-  required_context: ["стен|кладк|перемычк|газобетон|блок"]
-  negative_context: ["кровля", "фундаментная плита", "плита перекрытия"]
-  value_column_hint: ["кол-во", "количество", "объем", "масса", "длина"]
-  unit_column_hint: ["м3", "кг", "м.п.", "шт"]
-  notes: "Section header only; use child target codes for values."
+  table_hints: ["Кладочный план", "План перемычек", "Спецификация перемычек", "Спецификация стенового блока", "Спецификация газобетонных блоков", "Спецификация расхода арматуры", "Схема расположения отсечной гидроизоляции"]
+  required_context: ["стен|кладк|перемычк|газобетон|блок|парапет"]
+  negative_context: ["кровля", "фундаментная плита", "плита перекрытия", "перегородк"]
+  value_column_hint: ["кол-во", "количество", "объем", "объём", "масса", "длина", "площадь"]
+  unit_column_hint: ["м3", "м³", "м2", "м²", "кг", "м.п.", "п.м.", "м/п", "мп", "шт"]
+  notes: "Section header only. Clean P6 model: use wall_zones, wall_block_items, wall_chasing_rebar_items, lintel_items, lintel_rebar_items. Do not use legacy scalar target codes main_wall_*, floor_1_lintel_*, floor_2_lintel_*, parapet_*_volume, floors_count."
 
-floors_count:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Количество этажей"
-  pdf_aliases: ["Количество этажей", "Этажность", "Дом 1 этаж", "Дом 2 этажа", "1-этажный", "2-этажный"]
-  expected_unit: pcs
-  table_hints: ["Пояснительная записка", "Общие данные", "Архитектурные решения", "Кладочный план"]
-  required_context: ["этаж|этажность"]
-  negative_context: ["номер этажа", "отметка", "лист", "страница"]
-  value_column_hint: ["значение", "кол-во", "количество"]
-  unit_column_hint: ["эт.", "этаж", "шт"]
-  notes: "Production scalar for walls calculator. Extract only project-level floor count, not drawing sheet number or floor mark."
-
-cutoff_waterproofing_load_bearing_walls_area:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Отсечная гидроизоляция под несущими стенами"
-  pdf_aliases: ["Отсечная гидроизоляция под стены", "Гидроизоляция под первый ряд блоков", "Гидроизоляция под кладку", "Гидроизоляция под несущие стены", "Рулонная гидроизоляция под стены"]
-  expected_unit: m2
-  table_hints: ["Спецификация гидроизоляции", "Спецификация стен", "Кладочный план", "Ведомость материалов"]
-  required_context: ["гидроизоляц|отсечн", "стен|кладк|блок"]
-  negative_context: ["фундаментная плита", "кровля", "вертикальная гидроизоляция", "перегородк"]
-  value_column_hint: ["площадь", "кол-во", "количество", "объем работ"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Area for load-bearing walls only, 1st floor masonry only (this target has no 2nd-floor equivalent yet). Do not include partition cutoff waterproofing unless target explicitly asks for partitions. Added 2026-07-25 (Elena, ТРЦ review): if the spec gives this material as separate 'наружные несущие стены' + 'внутренние несущие стены' rows with no combined total (real ТРЦ case: 22,308 + 6,105 м2, no 'Итого'), SUM both rows into this one scalar — external and internal load-bearing walls are the same continuous wall body, just different block thickness/density, not two different constructions. Still exclude any 'перегородки' row from the sum even if it uses the same material/spec line (ТРЦ: 0,473 м2 excluded)."
-
-main_wall_gas_block_400_spec_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Газобетонный блок 600x400x250"
-  pdf_aliases: ["Газобетонный блок 600х400х250", "ГБ блок 600х400х250", "Блок 400 мм", "Наружные стены 400 мм", "КС_Блок 400"]
-  expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Спецификация наружных стен"]
-  required_context: ["газобетон|ГБ|блок", "400"]
-  negative_context: ["600х250х250", "600х150х250", "парапет", "вентканал"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Main wall block volume; not vent-channel cladding block. Safe to use even when other roles in the same project (floor_2/parapet/partitions) are captured via wall_block_items instead — the calculator resolves each role from its own best available source independently since 2026-08-07 (real TRC case: main_walls given as this scalar, everything else as wall_block_items rows, no data lost). Do not duplicate into wall_block_items just because other roles use it there — same 'one ready combined figure -> use the scalar, don't duplicate' rule as always (see wall_block_items notes)."
-
-main_wall_gas_block_250_spec_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Газобетонный блок 600x250x250"
-  pdf_aliases: ["Газобетонный блок 600х250х250", "ГБ блок 600х250х250", "Блок 250 мм", "Внутренние стены 250 мм"]
-  expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Спецификация внутренних стен"]
-  required_context: ["газобетон|ГБ|блок", "250"]
-  negative_context: ["600х400х250", "600х150х250", "вентканал", "парапет"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Wall block volume; table row adjacency can be tricky, preserve raw_table_rows. Safe to use even when other roles in the same project (floor_2/parapet/partitions) are captured via wall_block_items instead — see main_wall_gas_block_400_spec_volume notes."
-
-vent_chimney_gas_block_150_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Газобетонный блок 600x150x250"
-  pdf_aliases: ["Газобетонный блок 600х150х250", "ГБ блок 600х150х250", "Блок 150 мм", "Обкладка вентканалов"]
-  expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Разрез по вентканалам"]
-  required_context: ["газобетон|ГБ|блок", "150"]
-  negative_context: ["600х400х250", "600х250х250"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Vent/chimney cladding block volume inside load_bearing_walls_lintels, block size 600x150x250. Clarified 2026-07-15 and finalized 2026-07-20 (Elena, verbatim): a gas-block 75-150mm thick at THIS size is ALWAYS D500 — D400 at 600x150x250 is not a real manufactured product, it does not exist. If the PDF explicitly prints 'D400' or 'Д400' next to a 600x150x250 block, do not trust that label — it is a known copy-paste error pattern (designers and estimators reuse old project files and can carry forward stale density labels from a different block width). Record the value under this code as D500 regardless of what density label the PDF shows; if the label says something else entirely (e.g. D600, which exists as a real product this customer does not use), flag needs_review instead of silently normalizing. Also: in a real smeta this row can appear grouped under a 'Парапет' section heading purely because vent channels are physically near the parapet on the roof — that placement does NOT make it parapet material, keep mapping it to this code regardless. Updated 2026-07-28: do NOT confuse with the vent-channel SHAFT masonry block (schiedel_masonry_gas_block_items, section schiedel_vent_channels) — that is a different block, size 150x250x650, which genuinely can be D400 (confirmed real case) since the 'always D500' rule above is specific to THIS block's 600x150x250 size, not a general rule about all 75-150mm-thick blocks. If a PDF page shows both blocks together, this code is only for the 600x150x250 cladding block; the 150x250x650 shaft block goes to schiedel_masonry_gas_block_items instead, never both."
-
-main_wall_rebar_items:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Арматура несущих стен"
-  pdf_aliases: ["ф10 А500С армирование кладки", "Ø10 А500С кладка", "Арматура кладки ф10", "Блок 400мм армирование", "Блок 250мм армирование", "подоконное армирование"]
+wall_zones:
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "Зоны кладки стен и парапета"
+  pdf_aliases: ["кладка стен 1 этажа", "кладка стен 1-го этажа", "кладка несущих стен", "кладка стен 2 этажа", "стены второго света", "стены надстройки", "кладка парапета", "парапет", "обкладка дымохода", "обкладка вентканалов", "отсечная гидроизоляция под первый ряд"]
   expected_unit: null
-  accepted_units: ["linear_m"]
-  primary_pdf_unit: "linear_m"
-  calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
-  table_hints: ["Спецификация стен", "Узлы армирования кладки", "Пояснительная записка"]
-  required_context: ["ф10|Ø10", "А500|A500", "кладк|стен"]
-  negative_context: ["перемычк", "фундамент", "перекрыти", "балк", "перегородк", "парапет"]
-  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Production target for load-bearing wall masonry reinforcement. Return row-by-row as main_wall_rebar_items with component=load_bearing_walls, spec_length_m and kg_per_meter. Do not confuse with lintel, floor slab or foundation rebar of the same diameter. Do not use deprecated masonry_rebar_a500_d10_weight in production extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback.
-
-Added 2026-07-26 (real project case): the spec sometimes gives ONE combined row for two block widths at once (e.g. 'Блок 400мм, блок 250мм (несущие стены)' as a single ф10 length) — return it as one item as printed, do not try to split it by block width, component stays load_bearing_walls. A tiny separate 'подоконное армирование' (under-window reinforcement) row, when present, also belongs here as component=load_bearing_walls — if the PDF doesn't say which floor, default floor=1. When this creates a second row with the exact same floor+component+steel_class+diameter_mm as another row (e.g. the combined block-width row above), you MUST set an explicit distinct `code` on at least one of them (e.g. append '_subwindow') — without a distinct code the calculator now raises an error on the collision (updated 2026-07-27; it used to silently keep only one of the two rows before that fix) rather than losing either row's data, but the run will fail until a distinct code is supplied. Never route 'перегородки'/150мм block rebar into this group under component=load_bearing_walls, even disguised inside a combined line — partitions rebar must either be tagged component=partitions (which the calculator hard-rejects by design) or left out of this group entirely; a real past extraction run mistagged partition rebar as load_bearing_walls and it got silently priced as if it were load-bearing — do not repeat that. Same rule for 'парапет'/'парапеты' rows — route these to parapet_chasing_base_length and parapet_rebar_base_length instead (sum across floors, see their own notes), never into main_wall_rebar_items even with component=load_bearing_walls. Added 2026-08-05 (real ТРЦ case): two parapet rebar rows (47,36 m floor 1 + 105,68 m floor 2, both explicitly labelled 'парапеты X этаж' in the PDF) were mistagged this way — the material length still got priced (folded into the main-wall rebar total, wrong rate but not lost), but the separate parapet chasing/groove-cutting work line stayed at zero because parapet_chasing_base_length_m was never filled. Do not repeat."
-
-lintel_total_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Общая длина перемычек в U-блоках, 1-й этаж"
-  pdf_aliases: ["Общая длина перемычек", "Итого длина перемычек", "Перемычки длина всего", "Суммарная длина перемычек", "Всего перемычек м.п.", "Длина перемычек в U-блоках"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа", "Ведомость перемычек"]
-  required_context: ["перемычк", "итого|общ|суммар|всего|длина"]
-  negative_context: ["арматур", "бетон", "фундамент", "плита", "балка", "2 этаж", "монолит"]
-  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Production scalar for lintel length, U-block portion of floor 1 only. PDFs give this as an explicit total line (e.g. 'Длина перемычек в U-блоках'), not a mark-by-mark table — mark scalar needs_review if no explicit total is present. Optional 2026-07-15 — a floor may have no U-block lintels."
-
-lintel_concrete_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Бетон перемычек в U-блоках, 1-й этаж"
-  pdf_aliases: ["Бетон перемычек", "Бетон для перемычек", "Перемычка бетон", "Бетон В22,5 перемычки", "U-блок перемычка бетон", "Бетонирование перемычек в U блоке"]
-  expected_unit: m3
-  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
-  required_context: ["бетон", "перемычк"]
-  negative_context: ["фундамент", "перекрыти", "плита", "балка", "2 этаж", "монолит"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Lintel concrete only; not slab concrete or beam concrete. U-block portion of floor 1 only, distinct from floor_1_lintel_monolithic_concrete_volume — required_context 'u' or 'блок' text near the row helps distinguish it from the monolithic row when both are present."
-
-floor_2_lintel_total_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Общая длина перемычек в U-блоках, 2-й этаж"
-  pdf_aliases: ["Длина перемычек в U-блоках 2 этаж", "Перемычки 2-го этажа длина", "Общая длина перемычек 2 этаж"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
-  required_context: ["перемычк", "2 этаж|втор", "итого|общ|суммар|всего|длина"]
-  negative_context: ["арматур", "бетон", "1 этаж", "монолит"]
-  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-
-floor_1_lintel_groove_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Перемычка в штробе (только арматура), 1-й этаж — длина"
-  pdf_aliases: ["Перемычка в штробе", "Армированная штроба", "Перемычка арматурой в штробе", "Штроба с арматурой"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
-  required_context: ["перемычк", "штроб"]
-  negative_context: ["u-блок", "блок", "бетон", "монолит", "2 этаж"]
-  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Third lintel construction method (2026-07-20), separate from both U-block (lintel_total_length) and monolithic (floor_1_lintel_monolithic_concrete_volume) — rebar set into a routed groove, no block/concrete/formwork. Diagnostic-only, not yet wired into the calculator. Added 2026-07-26 (real project case, confirmed via the drawing's own legend): this construction method is specifically the lintel type used over PARTITION walls (thin block, non-load-bearing) — not a generic third option for any wall. Stays diagnostic/captured-not-priced, same status as partitions masonry/rebar elsewhere (wall_block_items role=partitions, main_wall_rebar_items excludes partitions) — do not treat this as ready for pricing just because U-block/monolithic lintels are production."
-
-floor_2_lintel_groove_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Перемычка в штробе (только арматура), 2-й этаж — длина"
-  pdf_aliases: ["Перемычка в штробе 2 этаж", "Армированная штроба 2 этаж", "Перемычка арматурой в штробе 2 этаж"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
-  required_context: ["перемычк", "штроб", "2 этаж|втор"]
-  negative_context: ["u-блок", "блок", "бетон", "монолит", "1 этаж"]
-  value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Mirrors floor_1_lintel_groove_length — same partition-lintel-only status, diagnostic/captured-not-priced (see floor_1_lintel_groove_length notes, added 2026-07-26)."
-
-floor_2_lintel_concrete_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Бетон перемычек в U-блоках, 2-й этаж"
-  pdf_aliases: ["Бетон перемычек 2 этаж", "Бетонирование перемычек в U блоке 2 этаж"]
-  expected_unit: m3
-  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа"]
-  required_context: ["бетон", "перемычк", "2 этаж|втор"]
-  negative_context: ["фундамент", "перекрыти", "плита", "балка", "1 этаж", "монолит"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Mirrors lintel_concrete_volume for floor 2."
-
-floor_1_lintel_monolithic_concrete_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Бетон монолитных перемычек, 1-й этаж"
-  pdf_aliases: ["Бетонирование монолитных перемычек", "Бетон монолитных перемычек", "Монолитные перемычки бетон"]
-  expected_unit: m3
-  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа"]
-  required_context: ["монолит", "перемычк"]
-  negative_context: ["u-блок", "u блок", "2 этаж"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Monolithic (poured-in-place) lintels are a second construction method alongside U-block lintels — present in at least 50% of projects, independent of U-block lintels. Updated 2026-07-29 (Elena): monolithic lintels are not always insulated, and when insulated may cover only part of their length. Do not infer insulation from concrete volume; use floor_X_lintel_insulation_length only when the PDF/smeta gives the actually insulated length."
-
-floor_1_lintel_monolithic_total_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Монолитные перемычки, 1-й этаж — общая длина"
-  pdf_aliases: ["Общая длина монолитных перемычек", "Длина монолитных перемычек", "Монолитные перемычки общая длина"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 1-го этажа", "Спецификация перемычек 1-го этажа", "Ведомость материалов перемычек 1 этажа"]
-  required_context: ["монолит", "перемычк", "длин"]
-  negative_context: ["u-блок", "u блок", "2 этаж", "утепл", "эппс", "пеноплэкс", "опалуб", "бетон"]
-  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
-  unit_column_hint: ["м.п.", "п.м.", "мп", "м/п"]
-  notes: "Added 2026-07-28. This is the work quantity for monolithic lintel concreting. Do not use concrete volume and do not substitute insulation length — insulation may cover only part of the monolithic lintels."
-
-floor_1_lintel_insulation_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Утепление торца монолитной перемычки, 1-й этаж — длина"
-  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки", "Утепление торца перемычки", "Утепление монолитной перемычки", "Ведомость материалов утепления перемычек", "ЭППС 100мм утепление перемычки", "ЭППС 100 мм утепление перемычки", "ж/б балка перемычка утепление"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация перемычек 1-го этажа", "Ведомость материалов утепления перемычек 1 этажа", "План перемычек 1 этажа", "Условные обозначения перемычек"]
-  required_context: ["утепл", "перемычк"]
-  negative_context: ["плита", "балка перекрытия", "балка в составе плиты", "фундамент", "2 этаж"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "мп"]
-  notes: "Added 2026-07-15. This field is the length of only the actually insulated monolithic lintel / reinforced-concrete lintel-beam parts on floor 1. Marks can be named differently across projects (for example with prefixes for lintel, beam-lintel, or other local mark systems), so follow the drawing legend and material schedule instead of hard-coding mark prefixes. Do not derive this from monolithic concrete volume or from the combined length of all monolithic lintels. If the PDF gives insulation as EPS volume tied to a specific lintel mark/type, the model may derive a reviewed length only when the same drawing gives the matching mark length and insulation height/thickness and the formula volume = length * height * thickness is stated in notes."
-
-floor_1_lintel_formwork_horizontal_area:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Опалубка монолитной перемычки, 1-й этаж — горизонтальная площадь"
-  pdf_aliases: ["Горизонтальная опалубка перемычки", "Опалубка перемычки горизонтальная"]
-  expected_unit: m2
-  table_hints: ["Спецификация перемычек 1-го этажа"]
-  required_context: ["опалуб", "перемычк", "горизонтальн"]
-  negative_context: ["плита", "фундамент", "2 этаж", "вертикальн"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-07-25 (Elena, ТРЦ review). Real projects (checked АРК/ТРЦ) never give a ready plywood sheet count or timber m3 for lintel formwork — always this raw area (real ТРЦ case, КР2 p.11-12: 0,5 м2 horizontal + 1,4 м2 vertical, 1-й этаж). Extract the area exactly as given — do NOT compute sheets/m3 yourself, the calculator derives both from the combined horizontal+vertical area (sheets = area/2.3, timber = area*0.05, same method as beam/slab formwork)."
-
-floor_1_lintel_formwork_vertical_area:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Опалубка монолитной перемычки, 1-й этаж — вертикальная площадь"
-  pdf_aliases: ["Вертикальная опалубка перемычки", "Опалубка перемычки вертикальная"]
-  expected_unit: m2
-  table_hints: ["Спецификация перемычек 1-го этажа"]
-  required_context: ["опалуб", "перемычк", "вертикальн"]
-  negative_context: ["плита", "фундамент", "2 этаж", "горизонтальн"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-07-25. Pairs with floor_1_lintel_formwork_horizontal_area — see its notes."
-
-floor_1_lintel_insulation_eps_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Пеноплэкс Основа для утепления перемычек, 1-й этаж"
-  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки", "ЭППС Основа перемычки", "ЭППС 100мм утепление перемычки", "ЭППС 100 мм утепление перемычки", "Ведомость материалов утепления перемычек"]
-  expected_unit: m3
-  table_hints: ["Спецификация перемычек 1-го этажа", "Ведомость материалов утепления перемычек 1 этажа", "План перемычек 1 этажа"]
-  required_context: ["пеноплэкс|эппс", "перемычк"]
-  negative_context: ["плита", "фундамент", "стен", "2 этаж"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Same physical product (Пеноплэкс Основа 100х585х1185 мм) may also appear in slab/beam insulation, but this is a distinct project volume for lintels in load_bearing_walls_lintels. Do not sum with floor_slabs EPS items."
-
-floor_2_lintel_monolithic_concrete_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Бетон монолитных перемычек, 2-й этаж"
-  pdf_aliases: ["Бетонирование монолитных перемычек 2 этаж", "Бетон монолитных перемычек 2 этаж"]
-  expected_unit: m3
-  table_hints: ["Спецификация перемычек 2-го этажа"]
-  required_context: ["монолит", "перемычк", "2 этаж|втор"]
-  negative_context: ["u-блок", "u блок", "1 этаж"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
-
-floor_2_lintel_monolithic_total_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Монолитные перемычки, 2-й этаж — общая длина"
-  pdf_aliases: ["Общая длина монолитных перемычек 2 этаж", "Длина монолитных перемычек 2 этаж", "Монолитные перемычки 2 этаж общая длина"]
-  expected_unit: linear_m
-  table_hints: ["План перемычек 2-го этажа", "Спецификация перемычек 2-го этажа", "Ведомость материалов перемычек 2 этажа"]
-  required_context: ["монолит", "перемычк", "длин", "2 этаж|втор"]
-  negative_context: ["u-блок", "u блок", "1 этаж", "утепл", "эппс", "пеноплэкс", "опалуб", "бетон"]
-  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
-  unit_column_hint: ["м.п.", "п.м.", "мп", "м/п"]
-  notes: "Added 2026-07-28. Mirrors floor 1. This is the work quantity for monolithic lintel concreting; do not use concrete volume and do not substitute insulation length."
-
-floor_2_lintel_insulation_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Утепление торца монолитной перемычки, 2-й этаж — длина"
-  pdf_aliases: ["Устройство утепления по наружной стороне монолитной перемычки 2 этаж", "Утепление торца перемычки 2 этаж", "Утепление монолитной перемычки 2 этаж", "Ведомость материалов утепления перемычек 2 этажа", "ЭППС 100мм утепление перемычки 2 этаж", "ЭППС 100 мм утепление перемычки 2 этаж", "ж/б балка перемычка утепление 2 этаж"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация перемычек 2-го этажа", "Ведомость материалов утепления перемычек 2 этажа", "План перемычек 2 этажа", "Условные обозначения перемычек"]
-  required_context: ["утепл", "перемычк", "2 этаж|втор"]
-  negative_context: ["плита", "балка перекрытия", "балка в составе плиты", "фундамент", "1 этаж"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м.п.", "п.м.", "мп"]
-  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_length for floor 2. This is only the actually insulated monolithic lintel / reinforced-concrete lintel-beam length, not the combined length of all monolithic lintels. Marks can use project-specific prefixes; follow the legend/material schedule. If only EPS volume is given, derive a reviewed length only from same-mark geometry with formula volume = length * height * thickness."
-
-floor_2_lintel_formwork_horizontal_area:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Опалубка монолитной перемычки, 2-й этаж — горизонтальная площадь"
-  pdf_aliases: ["Горизонтальная опалубка перемычки 2 этаж", "Опалубка перемычки горизонтальная 2 этаж"]
-  expected_unit: m2
-  table_hints: ["Спецификация перемычек 2-го этажа"]
-  required_context: ["опалуб", "перемычк", "горизонтальн", "2 этаж|втор"]
-  negative_context: ["плита", "фундамент", "1 этаж", "вертикальн"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-07-25 (Elena, ТРЦ review). Real projects never give a ready plywood sheet count or timber m3 for lintel formwork — always this raw area (real ТРЦ case, КР2 p.11-12: 0,45 м2 horizontal + 3,25 м2 vertical, 2-й этаж). Mirrors floor_1_lintel_formwork_horizontal_area — see its notes."
-
-floor_2_lintel_formwork_vertical_area:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Опалубка монолитной перемычки, 2-й этаж — вертикальная площадь"
-  pdf_aliases: ["Вертикальная опалубка перемычки 2 этаж", "Опалубка перемычки вертикальная 2 этаж"]
-  expected_unit: m2
-  table_hints: ["Спецификация перемычек 2-го этажа"]
-  required_context: ["опалуб", "перемычк", "вертикальн", "2 этаж|втор"]
-  negative_context: ["плита", "фундамент", "1 этаж", "горизонтальн"]
-  value_column_hint: ["площадь", "кол-во", "количество"]
-  unit_column_hint: ["м2", "м²", "кв.м"]
-  notes: "Added 2026-07-25. Pairs with floor_2_lintel_formwork_horizontal_area — see its notes."
-
-floor_2_lintel_insulation_eps_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Пеноплэкс Основа для утепления перемычек, 2-й этаж"
-  pdf_aliases: ["Экструдированный пенополистирол Пеноплэкс Основа перемычки 2 этаж", "ЭППС 100мм утепление перемычки 2 этаж", "ЭППС 100 мм утепление перемычки 2 этаж", "Ведомость материалов утепления перемычек 2 этажа"]
-  expected_unit: m3
-  table_hints: ["Спецификация перемычек 2-го этажа", "Ведомость материалов утепления перемычек 2 этажа", "План перемычек 2 этажа"]
-  required_context: ["пеноплэкс|эппс", "перемычк", "2 этаж|втор"]
-  negative_context: ["плита", "фундамент", "стен", "1 этаж"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Mirrors floor_1_lintel_insulation_eps_volume."
-
-floor_2_masonry_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Кладка несущих стен 2-го этажа"
-  pdf_aliases: ["Кладка несущих стен 2 этажа", "Несущие стены 2 этажа", "Объем кладки 2 этажа", "Газобетон 2 этажа", "Стены второго этажа"]
-  expected_unit: m3
-  table_hints: ["Спецификация стен", "Спецификация газобетонных блоков", "Кладочный план 2 этажа"]
-  required_context: ["2 этаж|втор", "кладк|стен|газобетон|блок"]
-  negative_context: ["1 этаж", "парапет", "перемычк", "вентканал", "перегородк"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Production scalar used only when floors_count is 2. Do not substitute generic 250 mm block volume unless the PDF row explicitly belongs to second-floor load-bearing masonry. Single D400 value only (or one combined figure with no D400/D500 split). If the spec gives floor 2 as separate D400 and D500 rows, use the wall_block_items group instead — see below. Added 2026-07-26: a PDF may label this zone 'Стены надстройки' / 'Стены второго света' / 'Второй свет' instead of literally '2 этаж' (an elevation-bounded zone above the 1st floor's main walls, e.g. between +3,730 and +4,980) — still the same floor_2 role. If it comes as its own separate spec row alongside other floor_2/parapet rows with no combined total, use wall_block_items (wall_role: floor_2) instead of this scalar."
-
-parapet_masonry_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Объем кладки парапетов, D400 600x400x250"
-  pdf_aliases: ["Парапеты", "Кладка парапета", "Блок парапеты", "Парапет кладка", "Газобетон парапеты", "Газобетонный блок D400 600х400х250 парапет"]
-  expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Схема фасада", "План кровли"]
-  required_context: ["парапет"]
-  negative_context: ["металлический отлив", "примыкание", "воронка", "перемычк", "вентканал", "150х250", "150*250"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Masonry volume for parapets, not parapet flashing length or roof abutment length. D400 portion only (usually 80-90% of a real parapet, Elena 2026-07-15) — see parapet_gas_block_d500_250_volume for the rarer D500 portion. negative_context excludes vent-channel-cladding rows (150-width block), which are a completely different item even when grouped under the same 'Парапет' smeta section heading. Single value only — if the spec gives parapet by several levels/zones (1-й/2-й этаж, ПМ1/ПМ2, etc.) without a combined total, use the wall_block_items group instead."
-
-parapet_gas_block_d500_250_volume:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Объем кладки парапетов, D500 600x250x250 (редкий случай)"
-  pdf_aliases: ["Парапет D500", "Газобетонный блок D500 600х250х250 парапет", "Парапет 250х250"]
-  expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Схема фасада", "План кровли"]
-  required_context: ["парапет", "500|250х250|250*250"]
-  negative_context: ["металлический отлив", "примыкание", "воронка", "перемычк", "вентканал", "150х250", "150*250", "400х400", "400*400"]
-  value_column_hint: ["объем", "кол-во", "количество"]
-  unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Elena: parapet can rarely be entirely or partially D500 600x250x250 instead of D400 — same physical block/SKU as main_wall_gas_block_250_spec_volume (main walls' second material), just a different application. Independent of parapet_masonry_volume — no formula relates the two, both are direct spec values. Single value only — same multi-level caveat as parapet_masonry_volume, use wall_block_items instead if the spec splits by level/zone."
-
-parapet_chasing_base_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Штробление/армирование парапета — базовая длина"
-  pdf_aliases: ["Армирование парапета", "Арматура парапета", "Штробление парапета", "Штробление блоков парапета", "Армирование кладки парапета", "Парапет А500С ф-10", "Парапет A500C ф-10"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация парапета", "Кладочный план парапета", "Спецификация расхода арматуры", "Кладочный план стен второго света и парапетов", "План кровли"]
-  required_context: ["парапет", "арматур|армирован|штроб|А500|A500|ф-10|Ø10"]
-  negative_context: ["несущие стены", "кладка несущих", "основные стены", "перемычк", "плита", "балк", "перегородк", "фундамент"]
-  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Production scalar for parapet reinforcement/chasing work base length. Use explicit parapet reinforcement/chasing rows only. If several parapet levels/zones are listed, sum parapet rows and keep candidates/source rows. Do not route these rows to main_wall_rebar_items or lintel_rebar_items. The same source rows may also map to parapet_rebar_base_length because work and material share the same base length. A table/page title may mention both second-light walls and parapets; decide by the row itself, not only by the shared title."
-
-parapet_rebar_base_length:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Арматура A500 Ø10 парапета — базовая длина"
-  pdf_aliases: ["Арматура парапета", "Армирование парапета", "Парапет А500С ф-10", "Парапет A500C ф-10", "Арматура А500С ф10 парапет", "Арматура A500 Ø10 парапет"]
-  expected_unit: linear_m
-  table_hints: ["Спецификация парапета", "Кладочный план парапета", "Спецификация расхода арматуры", "Кладочный план стен второго света и парапетов", "План кровли"]
-  required_context: ["парапет", "А500|A500|ф-10|Ø10|арматур|армирован"]
-  negative_context: ["несущие стены", "кладка несущих", "основные стены", "перемычк", "плита", "балк", "перегородк", "фундамент"]
-  value_column_hint: ["длина", "кол-во", "количество", "общая длина"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
-  notes: "Production scalar for A500 Ø10 parapet rebar. Use explicit parapet rows only; if the PDF gives several parapet levels/zones, sum them and keep candidates/source rows. Do not mix with main-wall, lintel, partition, slab, beam, or foundation rebar. A table/page title may mention both second-light walls and parapets; decide by the row itself, not only by the shared title."
+  table_hints: ["Кладочный план", "Спецификация стенового блока", "Спецификация газобетонных блоков", "Схема расположения отсечной гидроизоляции", "Спецификация расхода отсечной гидроизоляции"]
+  required_context: ["стен|кладк|парапет|вентканал|дымоход|отсечн"]
+  negative_context: ["перегородк", "кровля", "плита перекрытия", "фундаментная плита"]
+  value_column_hint: ["площадь", "кол-во", "количество", "объем", "объём"]
+  unit_column_hint: ["м2", "м²", "м3", "м³"]
+  notes: "Create one row per billing/masonry zone. zone_kind enum: main_walls, second_light, parapet, vent_chimney_cladding. First-floor load-bearing masonry is main_walls. 'Второй свет', 'надстройка', upper masonry above first floor are second_light. Parapets are parapet. Gas-block cladding of chimney/vent shafts is vent_chimney_cladding, not parapet. Exclude partitions. cutoff_waterproofing_area_m2 belongs only to the main load-bearing wall zone when PDF gives cutoff waterproofing under walls; exclude partition cutoff rows."
 
 wall_block_items:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Кладка газобетонных блоков по строкам (роль + плотность)"
-  pdf_aliases: ["Кладка несущих стен", "Спецификация газобетонных блоков", "Парапет", "Кладка 2 этажа", "Стены надстройки", "Стены второго света", "Второй свет"]
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "Газобетонные блоки по зонам"
+  pdf_aliases: ["спецификация стенового блока", "спецификация газобетонных блоков", "газобетонный блок", "ГБ блок", "блок D400", "блок D500", "600х400х250", "600x400x250", "600х250х250", "600x250x250", "600х150х250", "600x150x250"]
   expected_unit: m3
-  table_hints: ["Спецификация газобетонных блоков", "Кладочный план", "Спецификация стенового блока"]
-  required_context: ["кладк|стен|блок|парапет|надстройк|свет", "D400|D500|400|500"]
-  negative_context: ["перемычк", "вентканал", "150х250", "150*250"]
-  value_column_hint: ["объем", "кол-во", "количество"]
+  table_hints: ["Спецификация стенового блока", "Спецификация газобетонных блоков", "Кладочный план", "План парапета", "Разрез по вентканалам"]
+  required_context: ["газобетон|ГБ|блок", "м3|м³|объем|объём|кол-во|количество"]
+  negative_context: ["перегородк", "Schiedel", "VENT", "вентиляционный канал 2x", "вентиляционный канал 3x", "вентиляционный канал 4x", "арматур", "бетон В", "перемычк"]
+  value_column_hint: ["объем", "объём", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-24 (Elena, ТРЦ/АРК review). LIVE group — wired into load_bearing_walls_lintels_calculator.py (calculator_input_path: wall_block_items). Use this instead of floor_2_masonry_volume/parapet_masonry_volume/parapet_gas_block_d500_250_volume whenever the spec gives masonry volume for that role split across several rows (D400+D500 for the same role, e.g. floor 2 внутренние/наружные стены, or several levels/zones like парапет 1-й/2-й этаж or ПМ1/ПМ2) with no ready combined total. wall_role is an enum, not free text: ONLY main_walls, floor_2, parapet, partitions are valid. Canonical mapping: 1st-floor наружные/внутренние несущие walls -> main_walls; 2nd-floor/надстройка/второй свет наружные/внутренние несущие walls -> floor_2; any parapet level/zone -> parapet; перегородки/partition walls -> partitions (plural, never partition). Do not invent load_bearing_outer, load_bearing_inner, external_walls, internal_walls, second_light_walls, parapet_level_1, parapet_level_2, partition, or vent_channel_cladding roles; keep those PDF words only in context/item_name. Vent-channel/chimney cladding volume is not wall_block_items at all — map it to vent_chimney_gas_block_150_volume (or leave raw/needs_review if the row is a Schiedel shaft item). block_density: D400 or D500 for the normal case, required for every role except partitions (partitions volume is captured but not yet priced). Rows with the same wall_role+block_density are summed automatically by the calculator — return each PDF row as its own item, do not pre-sum them yourself. Only main_walls, floor_2, and parapet have a priced material path for both D400 and D500 today. Updated 2026-07-28 (Elena: rare non-D400/D500 blocks do occur, but very rarely): if the spec genuinely gives a different density/size (e.g. 'D350' or a size other than 600x400x250/600x250x250) for main_walls/floor_2/parapet, still record it with that literal block_density (and block_size) AND also fill material_unit_price on that same row from the project's own smeta/price data if available — the calculator will price it directly from that value. If no price is available anywhere in the project's own materials, leave material_unit_price empty and flag needs_review; the calculator will reject the run loudly rather than silently drop the volume, which is expected until a price is supplied manually. If the spec gives one ready combined figure for the whole role, use the matching scalar target as before and leave this group empty for that role — don't duplicate. It is completely normal for different roles in the same project to come from different sources — e.g. main_walls as its scalar (main_wall_gas_block_400/250_spec_volume) while floor_2/parapet/partitions come as wall_block_items rows here, because those roles' PDF data was split across zones/levels with no ready total. The calculator resolves each role independently since 2026-08-07 (real TRC project: exactly this mix) — do not force a role into this group just because another role needed it.
+  notes: "Every item must have zone_id matching wall_zones. Keep every PDF block row separately: do not merge D400+D500 or floor/parapet levels into one row. block_density and block_size are copied literally when visible. Other sizes/densities are allowed and must be preserved. If price/pallet for a non-standard block is unknown, set needs_review; do not remap it to D400/D500. Exclude partition rows from this section. A 600x150x250 gas-block row used as chimney/vent cladding goes to zone_kind vent_chimney_cladding even if visually near parapet."
 
-Added 2026-07-26 (real project case): a PDF can label an extra masonry zone above the 1st-floor main walls as 'Стены надстройки' / 'Стены второго света' / 'Второй свет' (an intermediate volume between two elevation marks, e.g. between +3,730 and +4,980) instead of literally saying '2 этаж' — this is still wall_role: floor_2, not a new role. Do not invent a separate role like 'second_light_walls' for it — the existing floor_2 role plus the same-role summing mechanism already covers any number of these extra zones. Likewise, when parapet appears at multiple separate elevation levels (e.g. ПМ1 and ПМ2, each with its own spec sheet/table), each level is still wall_role: parapet, just another row — do not invent parapet_level_1/parapet_level_2 roles."
+wall_chasing_rebar_items:
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "СПРАВОЧНО: арматура кладки стен и парапета"
+  pdf_aliases: ["спецификация расхода арматуры на армирование стен", "арматура стен", "армирование кладки", "штробление блоков", "дополнительное усиление", "арматура парапета", "А500С", "A500C", "ф10", "ф12"]
+  expected_unit: linear_m
+  table_hints: ["Спецификация расхода арматуры", "Кладочный план", "Армирование стен", "Парапет"]
+  required_context: ["арматур|А500|A500|А240|ф", "стен|кладк|парапет|штроб"]
+  negative_context: ["перемычк", "плита", "фундамент", "перегородк"]
+  value_column_hint: ["длина", "кол-во", "количество", "масса ед", "масса"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м", "кг/м", "кг"]
+  notes: "Reference/grey group, but still production input. Every row must have zone_id. purpose enum: masonry_chasing, parapet_chasing, other. Do not include partition rebar. Do not calculate total weight. Extract kg_per_meter only if PDF gives it; otherwise leave null for catalog/default layer."
+
+lintel_items:
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "Перемычки по зонам"
+  pdf_aliases: ["план перемычек", "ведомость материалов перемычек", "спецификация перемычек", "перемычки в U-блоке", "перемычка в U блоке", "монолитные перемычки", "бетон перемычек", "опалубка перемычек", "утепление перемычек", "Пеноплэкс перемычки", "ЭППС перемычки"]
+  expected_unit: null
+  table_hints: ["План перемычек", "Ведомость материалов перемычек", "Спецификация перемычек", "Условные обозначения перемычек"]
+  required_context: ["перемычк"]
+  negative_context: ["плита перекрытия", "балка плиты", "фундамент", "перегородк"]
+  value_column_hint: ["длина", "объем", "объём", "площадь", "кол-во", "количество"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м3", "м³", "м2", "м²"]
+  notes: "Every item must have zone_id matching wall_zones. lintel_kind enum: u_block or monolithic. Do not use old floor_1_lintel_* / floor_2_lintel_* target codes. If PDF has floor/level-specific tables, create separate lintel_items with the corresponding zone_id. U-block and monolithic lintels are separate rows. Do not infer insulation for all lintels; insulation_length_m is only the actually insulated length. If only EPS volume is given, derive length only when same mark/type geometry provides volume = length * height * thickness; set needs_review and document the formula."
 
 lintel_rebar_items:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Арматура перемычек"
-  pdf_aliases: ["Арматура перемычек", "ф12 А500С перемычки", "ф6 А240 хомуты", "Хомуты перемычек"]
-  expected_unit: null
-  accepted_units: ["linear_m"]
-  primary_pdf_unit: "linear_m"
-  calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
-  table_hints: ["Спецификация перемычек", "План перемычек"]
-  required_context: ["перемычк", "арматур|ф|Ø|А500|А240"]
-  negative_context: ["фундамент", "перекрытие", "кладка"]
-  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Return row-by-row as lintel_rebar_items with component=lintels, spec_length_m and kg_per_meter. Do not mix with masonry reinforcement. Do not calculate total weight in chat extraction. rod_length_m is usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity — only extract it if the PDF gives an explicit rod-length table, otherwise leave null for adapter/catalog fallback."
-
-lintel_groove_rebar_items:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Арматура перемычек в штробе"
-  pdf_aliases: ["Арматура перемычки в штробе", "Армирование штробы", "ф12 А500С в штробе"]
-  expected_unit: null
-  accepted_units: ["linear_m"]
-  primary_pdf_unit: "linear_m"
-  calculated_unit: "kg"
-  unit_policy: "Если PDF даёт м/п + массу ед. шт., извлекай spec_length_m и kg_per_meter. Не считай общий вес."
-  table_hints: ["Спецификация перемычек", "План перемычек"]
-  required_context: ["перемычк", "штроб", "арматур|ф|Ø|А500|А240"]
-  negative_context: ["фундамент", "перекрытие", "кладка", "u-блок", "блок", "монолит"]
-  value_column_hint: ["кол-во", "количество", "длина", "масса ед. шт.", "масса 1 м", "масса", "вес"]
-  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп"]
-  notes: "Added 2026-07-20. Deliberately separate from lintel_rebar_items (which is directly wired into the calculator with strict component=lintels validation) — use component=lintels_groove here, never lintels. Diagnostic-only, not yet fed into any calculator. Return row-by-row, same field conventions as lintel_rebar_items. Added 2026-07-26 (real project case, confirmed via the drawing's own legend): groove-set lintel rebar is specifically the partition-wall lintel method — treat like other partitions data (wall_block_items role=partitions, excluded from main_wall_rebar_items) — captured, not priced."
-
-vent_chimney_cladding_segments:
-  section_code: load_bearing_walls_lintels
-  ru_label: "Сегменты обкладки вентканалов"
-  pdf_aliases: ["Обкладка вентканалов", "Кладка вентканалов", "Газобетонная обкладка", "Вентканал обкладка"]
-  expected_unit: null
-  table_hints: ["Разрез по вентканалам", "Спецификация вентканалов"]
-  required_context: ["вентканал|обкладк"]
-  negative_context: ["Schiedel VENT 2", "Schiedel VENT 3"]
-  value_column_hint: ["длина", "кол-во", "количество"]
-  unit_column_hint: ["м", "м.п.", "шт"]
-  notes: "Segments for cladding work; not Schiedel block piece counts."
+  section_code: load_bearing_walls_lintels_p6
+  ru_label: "СПРАВОЧНО: арматура перемычек"
+  pdf_aliases: ["арматура перемычек", "спецификация армирования перемычек", "ведомость армирования перемычек", "А500С", "A500C", "А240", "хомут", "ф6", "ф10", "ф12", "ф16"]
+  expected_unit: linear_m
+  table_hints: ["План перемычек", "Спецификация армирования перемычек", "Ведомость материалов перемычек", "Спецификация арматуры перемычек"]
+  required_context: ["арматур|А500|A500|А240|ф|хомут", "перемычк"]
+  negative_context: ["стены", "кладк", "парапет", "плита", "фундамент", "перегородк"]
+  value_column_hint: ["длина", "кол-во", "количество", "масса ед", "масса"]
+  unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м", "кг/м", "кг"]
+  notes: "Reference/grey group, but still production input. Every row must have zone_id and, when possible, lintel_id matching lintel_items. lintel_kind enum: u_block or monolithic. Do not calculate total weight. Extract kg_per_meter only if PDF gives it; otherwise leave null for catalog/default layer. Partition/groove-only lintels stay raw_table_rows/notes unless explicitly added to MVP later."
 
 flat_roof:
   section_code: flat_roof
@@ -1082,4 +731,4 @@ schiedel_masonry_gas_block_items:
   negative_context: ["600х150х250", "обкладка дымохода", "несущие стены", "парапет"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "LIVE group — wired into schiedel_vent_channels_calculator/calculator.py (calculator_input_path: schiedel_masonry_gas_block_items). density — take exactly as printed in the PDF (D400, D500, or anything else) — this block's density does NOT follow the 'always D500 at 75-150mm' rule from vent_chimney_gas_block_150_volume, it is a different block family, different size, different rule (Elena, 2026-07-28: this shaft-masonry block genuinely can be D400). volume_m3 — the spec volume. Do NOT confuse or duplicate with vent_chimney_gas_block_150_volume (chimney/vent-channel cladding, 600x150x250 block, section load_bearing_walls_lintels) — these are two different physical blocks of different sizes even when shown on the same sheet next to each other; the shaft masonry (this code) belongs here in schiedel_vent_channels, the cladding belongs in load_bearing_walls_lintels — never record the same PDF row under both."
+  notes: "LIVE group — wired into schiedel_vent_channels_calculator/calculator.py (calculator_input_path: schiedel_masonry_gas_block_items). density — take exactly as printed in the PDF (D400, D500, or anything else) — this shaft block is different from gas-block chimney/vent cladding 600x150x250. volume_m3 — the spec volume. Do NOT confuse or duplicate with chimney/vent-channel cladding: the shaft masonry belongs here in schiedel_vent_channels, the gas-block cladding belongs in the P6 walls zone vent_chimney_cladding — never record the same PDF row under both."

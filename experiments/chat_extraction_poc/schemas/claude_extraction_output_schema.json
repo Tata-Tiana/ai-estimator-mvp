@@ -3,16 +3,28 @@
     "purpose": "Target JSON shape for Claude-chat extraction output (A6.1). Not a strict machine-enforced JSON Schema — a shape description for the model and for validate_claude_extraction.py.",
     "top_level_example": {
       "project_name": "string|null",
-      "source_files": ["string, ...  - PDF filenames used"],
+      "source_files": [
+        "string, ...  - PDF filenames used"
+      ],
       "sections": {
         "<section_code>": {
-          "raw_table_rows": ["raw_table_row, ... - table rows copied before target mapping"],
-          "found": ["found_item, ..."],
-          "missing": ["target_code, ... - codes from calculator_targets_compact.json with no PDF evidence"],
-          "needs_review": ["found_item, ... - subset of found items flagged for human review (also present in found)"]
+          "raw_table_rows": [
+            "raw_table_row, ... - table rows copied before target mapping"
+          ],
+          "found": [
+            "found_item, ..."
+          ],
+          "missing": [
+            "target_code, ... - codes from calculator_targets_compact.json with no PDF evidence"
+          ],
+          "needs_review": [
+            "found_item, ... - subset of found items flagged for human review (also present in found)"
+          ]
         }
       },
-      "extraction_warnings": ["string, ... - free-text notes about the PDF that don't fit elsewhere (e.g. 'page 8 table overlaps a drawing, low confidence')"]
+      "extraction_warnings": [
+        "string, ... - free-text notes about the PDF that don't fit elsewhere (e.g. 'page 8 table overlaps a drawing, low confidence')"
+      ]
     }
   },
   "found_item_shape": {
@@ -39,34 +51,177 @@
     "source_pdf": "string|null",
     "page_number": "number|null",
     "page_title": "string|null",
-    "columns": ["string, ... - column headers as visible in the PDF"],
+    "columns": [
+      "string, ... - column headers as visible in the PDF"
+    ],
     "row_index": "number|null - row order inside the table",
-    "cells": ["string|number|null, ... - raw cell values in the same order as columns"],
+    "cells": [
+      "string|number|null, ... - raw cell values in the same order as columns"
+    ],
     "raw_text": "string|null - full raw row text if cells are hard to separate",
     "unit": "string|null - unit as written in the table row/cell",
     "normalized_unit": "string|null - from unit_normalization_guide.json; 'mixed' is allowed here when one raw table row contains several numeric cells in different units",
-    "mapped_target_codes": ["string, ... - target codes this row was mapped to, or empty if only kept for context"],
+    "mapped_target_codes": [
+      "string, ... - target codes this row was mapped to, or empty if only kept for context"
+    ],
     "confidence": "number - 0..1",
     "needs_review": "boolean",
     "notes": "string|null"
   },
   "group_value_shapes": {
-    "trench_routes": {"route_code": "string", "name": "string|null", "length_m": "number|null", "depth_m": "number|null", "width_m": "number|null", "volume_m3": "number|null"},
-    "communications_pipe_items": {"code": "string", "name": "string", "diameter_mm": "number|null", "pipe_length_m": "number|null", "quantity": "number|null", "total_length_m": "number|null - only if explicitly present in PDF", "include_in_communications": "boolean|null"},
-    "foundation_rebar_items": {"code": "string|null", "name": "string", "steel_class": "string|null", "diameter_mm": "number|null", "source_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present", "weight_kg": "number|null - only if PDF explicitly prints this row's total kg/weight; do not calculate it from length x kg_per_meter"},
-    "floor_slab_zones": {"zone_id": "string - stable local id, not a project name", "display_name": "string - slab name as shown in PDF/context", "source_level": "string|null - elevation/floor/context as printed", "slab_mark": "string|null - ПМ1/ПМ2/etc. if printed", "slab_kind": "residential_floor|roof_slab|stair_slab|other|unknown", "slab_thickness_m": "number|null - the slab's own concrete thickness, usually printed in the concrete spec row itself (e.g. 'толщиной 200мм' -> 0.2); real calculator input, not descriptive", "slab_edge_perimeter_m": "number|null - slab's own outer edge length in m.p., control-geometry only", "concrete_slab_volume_m3": "number|null - slab concrete only, not beams", "concrete_total_with_beams_m3": "number|null - diagnostic/control only when PDF prints an explicit combined total", "formwork_under_slab_area_m2": "number|null", "formwork_edge_area_m2": "number|null", "formwork_edge_and_beam_combined_area_m2": "number|null - only when PDF gives inseparable slab edge + beam formwork", "formwork_beams_side_area_m2": "number|null", "formwork_beams_bottom_area_m2": "number|null", "manual_formwork_rebar_crane_shifts": "number|null", "manual_rebar_metal_delivery_trucks": "number|null", "manual_concrete_pump_shifts": "number|null", "manual_technical_supervision_amount": "number|null", "manual_formwork_rental_supplier_quote_total": "number|null"},
-    "floor_slab_eps_items": {"zone_id": "string - must match floor_slab_zones.zone_id", "role": "slab_bottom|slab_edge|combined_bottom_and_edge|unknown - slab EPS only; never beam/lintel insulation", "material_name": "string|null", "thickness_mm": "number|null", "volume_m3": "number|null", "area_m2": "number|null", "length_m": "number|null", "height_m": "number|null", "source_phrase": "string|null"},
-    "floor_slab_beam_items": {"zone_id": "string - must match floor_slab_zones.zone_id", "beam_id": "string|null", "mark": "string|null", "name": "string|null", "length_m": "number|null", "width_m": "number|null - may be null for combined beam rows", "height_m": "number|null", "count": "number|null", "concrete_volume_m3": "number|null - only if PDF gives this row's ready concrete volume", "formwork_area_m2": "number|null - only if PDF gives this row's ready formwork area", "bottom_formwork_area_m2": "number|null", "insulated_length_m": "number|null", "insulation_area_m2": "number|null"},
-    "floor_slab_rebar_items": {"zone_id": "string - must match floor_slab_zones.zone_id", "component": "slab|beam|additional|unknown", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"},
-    "floor_slab_additional_items": {"zone_id": "string - must match floor_slab_zones.zone_id", "item_type": "string|null", "name": "string", "quantity": "number|null", "unit": "string|null"},
-    "roof_raw_material_spec_rows": {"name": "string", "quantity": "number|null", "unit": "string|null"},
-    "main_wall_rebar_items": {"floor": "number|null", "component": "load_bearing_walls", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
-    "lintel_rebar_items": {"floor": "number|null", "component": "lintels", "code": "string|null", "name": "string|null", "steel_class": "string|null", "diameter_mm": "number|null", "spec_length_m": "number|null - primary PDF quantity when row unit is м/п", "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight", "rod_length_m": "number|null - usually a catalog/standard rod length by diameter (e.g. 11.7 m), not a PDF quantity; only take from PDF if an explicit rod-length table is present, otherwise leave null for adapter/catalog fallback, do not invent"},
-    "vent_chimney_cladding_segments": {"length_m": "number|null", "count": "number|null"},
-    "schiedel_vent_chimney_cladding_segments": {"name": "string|null", "length_m": "number|null", "quantity": "number|null", "total_length_m": "number|null - only if explicitly present in PDF"}
+    "trench_routes": {
+      "route_code": "string",
+      "name": "string|null",
+      "length_m": "number|null",
+      "depth_m": "number|null",
+      "width_m": "number|null",
+      "volume_m3": "number|null"
+    },
+    "communications_pipe_items": {
+      "code": "string",
+      "name": "string",
+      "diameter_mm": "number|null",
+      "pipe_length_m": "number|null",
+      "quantity": "number|null",
+      "total_length_m": "number|null - only if explicitly present in PDF",
+      "include_in_communications": "boolean|null"
+    },
+    "foundation_rebar_items": {
+      "code": "string|null",
+      "name": "string",
+      "steel_class": "string|null",
+      "diameter_mm": "number|null",
+      "source_length_m": "number|null - primary PDF quantity when row unit is м/п",
+      "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present",
+      "weight_kg": "number|null - only if PDF explicitly prints this row's total kg/weight; do not calculate it from length x kg_per_meter"
+    },
+    "floor_slab_zones": {
+      "zone_id": "string - stable local id, not a project name",
+      "display_name": "string - slab name as shown in PDF/context",
+      "source_level": "string|null - elevation/floor/context as printed",
+      "slab_mark": "string|null - ПМ1/ПМ2/etc. if printed",
+      "slab_kind": "residential_floor|roof_slab|stair_slab|other|unknown",
+      "slab_thickness_m": "number|null - the slab's own concrete thickness, usually printed in the concrete spec row itself (e.g. 'толщиной 200мм' -> 0.2); real calculator input, not descriptive",
+      "slab_edge_perimeter_m": "number|null - slab's own outer edge length in m.p., control-geometry only",
+      "concrete_slab_volume_m3": "number|null - slab concrete only, not beams",
+      "concrete_total_with_beams_m3": "number|null - diagnostic/control only when PDF prints an explicit combined total",
+      "formwork_under_slab_area_m2": "number|null",
+      "formwork_edge_area_m2": "number|null",
+      "formwork_edge_and_beam_combined_area_m2": "number|null - only when PDF gives inseparable slab edge + beam formwork",
+      "formwork_beams_side_area_m2": "number|null",
+      "formwork_beams_bottom_area_m2": "number|null",
+      "manual_formwork_rebar_crane_shifts": "number|null",
+      "manual_rebar_metal_delivery_trucks": "number|null",
+      "manual_concrete_pump_shifts": "number|null",
+      "manual_technical_supervision_amount": "number|null",
+      "manual_formwork_rental_supplier_quote_total": "number|null"
+    },
+    "floor_slab_eps_items": {
+      "zone_id": "string - must match floor_slab_zones.zone_id",
+      "role": "slab_bottom|slab_edge|combined_bottom_and_edge|unknown - slab EPS only; never beam/lintel insulation",
+      "material_name": "string|null",
+      "thickness_mm": "number|null",
+      "volume_m3": "number|null",
+      "area_m2": "number|null",
+      "length_m": "number|null",
+      "height_m": "number|null",
+      "source_phrase": "string|null"
+    },
+    "floor_slab_beam_items": {
+      "zone_id": "string - must match floor_slab_zones.zone_id",
+      "beam_id": "string|null",
+      "mark": "string|null",
+      "name": "string|null",
+      "length_m": "number|null",
+      "width_m": "number|null - may be null for combined beam rows",
+      "height_m": "number|null",
+      "count": "number|null",
+      "concrete_volume_m3": "number|null - only if PDF gives this row's ready concrete volume",
+      "formwork_area_m2": "number|null - only if PDF gives this row's ready formwork area",
+      "bottom_formwork_area_m2": "number|null",
+      "insulated_length_m": "number|null",
+      "insulation_area_m2": "number|null"
+    },
+    "floor_slab_rebar_items": {
+      "zone_id": "string - must match floor_slab_zones.zone_id",
+      "component": "slab|beam|additional|unknown",
+      "code": "string|null",
+      "name": "string|null",
+      "steel_class": "string|null",
+      "diameter_mm": "number|null",
+      "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
+      "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight",
+      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+    },
+    "floor_slab_additional_items": {
+      "zone_id": "string - must match floor_slab_zones.zone_id",
+      "item_type": "string|null",
+      "name": "string",
+      "quantity": "number|null",
+      "unit": "string|null"
+    },
+    "roof_raw_material_spec_rows": {
+      "name": "string",
+      "quantity": "number|null",
+      "unit": "string|null"
+    },
+    "wall_zones": {
+      "zone_id": "string - stable local id, e.g. floor_1/floor_2/parapet/vent_chimney_cladding",
+      "display_name": "string - zone name as printed/understood from PDF",
+      "zone_kind": "main_walls|second_light|parapet|vent_chimney_cladding",
+      "cutoff_waterproofing_area_m2": "number|null - only for cutoff waterproofing under load-bearing walls, exclude partitions",
+      "block_delivery_batch_id": "string|null - optional, only if explicitly present"
+    },
+    "wall_block_items": {
+      "zone_id": "string - must match wall_zones.zone_id",
+      "item_id": "string|null",
+      "block_density": "string|null - e.g. D400/D500, copy literal from PDF when visible",
+      "block_size": "string|null - e.g. 600x400x250, copy literal from PDF when visible",
+      "volume_m3": "number|null",
+      "context": "string|null - source row context/subzone",
+      "material_unit_price": "number|null - only if project/price data explicitly gives price for non-standard block",
+      "pallet_volume_m3": "number|null - only if explicitly known"
+    },
+    "wall_chasing_rebar_items": {
+      "zone_id": "string - must match wall_zones.zone_id",
+      "item_id": "string|null",
+      "purpose": "masonry_chasing|parapet_chasing|other",
+      "steel_class": "string|null",
+      "diameter_mm": "number|null",
+      "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
+      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight",
+      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+    },
+    "lintel_items": {
+      "zone_id": "string - must match wall_zones.zone_id",
+      "lintel_id": "string|null - mark/type/stable id",
+      "lintel_kind": "u_block|monolithic",
+      "total_length_m": "number|null",
+      "concrete_volume_m3": "number|null",
+      "formwork_horizontal_area_m2": "number|null",
+      "formwork_vertical_area_m2": "number|null",
+      "insulation_length_m": "number|null - only actually insulated length",
+      "insulation_eps_spec_volume_m3": "number|null"
+    },
+    "lintel_rebar_items": {
+      "zone_id": "string - must match wall_zones.zone_id",
+      "lintel_id": "string|null - should match lintel_items when possible",
+      "lintel_kind": "u_block|monolithic|null",
+      "item_id": "string|null",
+      "steel_class": "string|null",
+      "diameter_mm": "number|null",
+      "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
+      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight",
+      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+    }
   },
   "sections_expected": [
-    "earthworks", "foundation_slab", "waterproofing", "load_bearing_walls_lintels",
-    "floor_slabs", "flat_roof", "schiedel_vent_channels"
+    "earthworks",
+    "foundation_slab",
+    "waterproofing",
+    "load_bearing_walls_lintels_p6",
+    "floor_slabs",
+    "flat_roof",
+    "schiedel_vent_channels"
   ]
 }

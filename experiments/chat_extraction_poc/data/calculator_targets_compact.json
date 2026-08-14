@@ -2,47 +2,115 @@
   "_meta": {
     "purpose": "Compact list of what to look for in the PDF for each of the 8 estimate calculators. Generated from experiments/pdf_parser_pipeline/section_schema.py EXPLICIT_PARAMETERS (input_type in {parsed, manual}) — the curated subset, not the full 629-parameter auto-flattened schema.",
     "grounded_field": "grounded=true means this exact target was checked against real candidate data (A4/A5 series work) and has resolver_hints in the parser. grounded=false means it is schema-derived from the calculator's input.json shape but not independently verified against real PDFs — treat with more skepticism.",
-    "excluded_by_design": ["prices", "calculated totals", "formula outputs", "default/catalog constants (e.g. roll area, rod length)", "deprecated fields", "internal/debug/service fields", "manual override fields"]
+    "excluded_by_design": [
+      "prices",
+      "calculated totals",
+      "formula outputs",
+      "default/catalog constants (e.g. roll area, rod length)",
+      "deprecated fields",
+      "internal/debug/service fields",
+      "manual override fields"
+    ]
   },
   "sections": [
     {
       "section_code": "earthworks",
       "section_name_ru": "Земляные работы",
       "targets": [
-        {"code": "sand_base_volume_m3", "label_ru": "Объём песка (подушка)", "unit": "m3", "grounded": true},
-        {"code": "geotextile_area_m2", "label_ru": "Площадь геотекстиля (материал)", "unit": "m2", "grounded": true},
-        {"code": "geotextile_laying_area_m2", "label_ru": "Площадь укладки геотекстиля", "unit": "m2", "grounded": true, "notes": "В PDF часто одно и то же число, что и geotextile_area_m2 — если видишь только одно значение, укажи его в обоих полях и добавь candidates/needs_review."},
-        {"code": "pit_area_m2", "label_ru": "Площадь котлована", "unit": "m2", "grounded": true},
-        {"code": "pit_excavation_depth_m", "label_ru": "Глубина котлована", "unit": "m", "grounded": true},
-        {"code": "trench_volume_m3", "label_ru": "Объём траншей, готовая строка ИТОГО (если есть такая строка в таблице)", "unit": "m3", "grounded": true, "notes": "Извлекай только если в таблице реально есть готовая итоговая ячейка. Если её нет — не считай сама, оставь null/в missing; маршруты траншей нужны для проверки, но scalar trench_volume_m3 должен быть подтверждён отдельно."},
-        {"code": "communications_length_m", "label_ru": "Итоговая длина коммуникаций", "unit": "linear_m", "grounded": true, "notes": "Извлекай только если в PDF явно есть итоговая длина коммуникаций. Если есть только позиции труб, не суммируй сама: извлеки communications_pipe_items и оставь communications_length_m missing/needs_review."}
+        {
+          "code": "sand_base_volume_m3",
+          "label_ru": "Объём песка (подушка)",
+          "unit": "m3",
+          "grounded": true
+        },
+        {
+          "code": "geotextile_area_m2",
+          "label_ru": "Площадь геотекстиля (материал)",
+          "unit": "m2",
+          "grounded": true
+        },
+        {
+          "code": "geotextile_laying_area_m2",
+          "label_ru": "Площадь укладки геотекстиля",
+          "unit": "m2",
+          "grounded": true,
+          "notes": "В PDF часто одно и то же число, что и geotextile_area_m2 — если видишь только одно значение, укажи его в обоих полях и добавь candidates/needs_review."
+        },
+        {
+          "code": "pit_area_m2",
+          "label_ru": "Площадь котлована",
+          "unit": "m2",
+          "grounded": true
+        },
+        {
+          "code": "pit_excavation_depth_m",
+          "label_ru": "Глубина котлована",
+          "unit": "m",
+          "grounded": true
+        },
+        {
+          "code": "trench_volume_m3",
+          "label_ru": "Объём траншей, готовая строка ИТОГО (если есть такая строка в таблице)",
+          "unit": "m3",
+          "grounded": true,
+          "notes": "Извлекай только если в таблице реально есть готовая итоговая ячейка. Если её нет — не считай сама, оставь null/в missing; маршруты траншей нужны для проверки, но scalar trench_volume_m3 должен быть подтверждён отдельно."
+        },
+        {
+          "code": "communications_length_m",
+          "label_ru": "Итоговая длина коммуникаций",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Извлекай только если в PDF явно есть итоговая длина коммуникаций. Если есть только позиции труб, не суммируй сама: извлеки communications_pipe_items и оставь communications_length_m missing/needs_review."
+        }
       ],
       "extract_groups": [
         {
           "group_code": "trench_routes",
           "description": "Маршруты траншей/коммуникаций: К1, К2, К3, Вода, Эл.кабель, Дренаж и т.п. — двумерная таблица (строки: длина/глубина/ширина/объём, столбцы: маршруты).",
-          "fields": ["route_code", "name", "length_m", "depth_m", "width_m", "volume_m3", "depth_reference"],
+          "fields": [
+            "route_code",
+            "name",
+            "length_m",
+            "depth_m",
+            "width_m",
+            "volume_m3",
+            "depth_reference"
+          ],
           "grounded": true,
           "notes": "Сохрани таблицу как есть, по маршрутам. Не считай сумму сама. Если готовая колонка объёма (volume_m3) в PDF есть — заполни её тоже, даже если она расходится с length*depth*width, это разрешено (сохранённое значение всегда приоритетнее пересчёта). depth_reference — добавлено 2026-07-26: если в PDF есть вторая строка глубины с другой точкой отсчёта (например 'Глубина от дна котлована' рядом с обычной 'Глубина'), запиши её как свободную строку контекста сюда (например '0,4 м от дна котлована') — это не альтернатива основной depth_m, только для служебной записки, никогда не участвует в расчёте."
         },
         {
           "group_code": "communications_pipe_items",
           "description": "Спецификация труб/фитингов коммуникаций (трубы, тройники, углы, заглушки) — обычно отдельная таблица со своими ГОСТ-номерами.",
-          "fields": ["code", "name", "diameter_mm", "pipe_length_m", "quantity", "total_length_m", "include_in_communications"],
+          "fields": [
+            "code",
+            "name",
+            "diameter_mm",
+            "pipe_length_m",
+            "quantity",
+            "total_length_m",
+            "include_in_communications"
+          ],
           "grounded": true,
           "notes": "Извлеки позиции трубы/фитингов построчно. code — стабильный идентификатор строки, можно взять из видимого названия/ГОСТ/назначения. Если строка дана как длина одной штуки и количество, заполни pipe_length_m и quantity; total_length_m заполняй только если готовая итоговая длина явно указана в PDF."
         },
         {
           "group_code": "pit_items",
           "description": "Готовые объёмы выемки грунта по отдельным записям — котлован и приямки (например, приямки подпятников) — когда спецификация даёт их отдельными готовыми цифрами, а не одной общей.",
-          "fields": ["context", "volume_m3"],
+          "fields": [
+            "context",
+            "volume_m3"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-26 (real project case). ЖИВАЯ группа — подключена в earthworks_calculator.py (calculator_input_path: pit_items), сумма volume_m3 по всем строкам заменяет собой pit_area_m2*pit_excavation_depth_m при расчёте смен экскаватора. context — как названа запись в PDF (например 'Котлован', 'Приямки подпятников'). Используй эту группу вместо попытки угадать глубину/выемку через площадь, когда PDF даёт готовый объём выемки грунта отдельными строками."
         },
         {
           "group_code": "sand_items",
           "description": "Готовые объёмы песка по категориям — например, 'засыпка пазух стен и дна траншей' отдельно от 'песок дна котлована подпятников' — когда спецификация не даёт единой суммы под плитой отдельно от траншей.",
-          "fields": ["context", "volume_m3"],
+          "fields": [
+            "context",
+            "volume_m3"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-26 (real project case). ЖИВАЯ группа — подключена в earthworks_calculator.py (calculator_input_path: sand_items), сумма volume_m3 по всем строкам заменяет sand_base_volume_m3 + расчёт песка по объёму траншей; дальше применяется тот же коэффициент уплотнения и та же кратность заказа, что и раньше. context — как названа категория песка в PDF (например 'Песок засыпки пазух стен и дна траншей', 'Песок дна котлована подпятников'). Используй эту группу вместо sand_base_volume_m3, когда PDF даёт песок несколькими готовыми категориями, которые не делятся чисто на 'под плитой' и 'под траншеями'."
         }
@@ -52,49 +120,130 @@
       "section_code": "foundation_slab",
       "section_name_ru": "Фундаментная плита",
       "targets": [
-        {"code": "concrete_project_volume", "label_ru": "Проектный объём бетона фундаментной плиты", "unit": "m3", "grounded": true},
-        {"code": "eps_50_under_slab_volume", "label_ru": "ЭППС 50 мм, низ плиты — объём", "unit": "m3", "grounded": true},
-        {"code": "slab_side_formwork_area", "label_ru": "Площадь опалубки бортов фундаментной плиты (по спецификации)", "unit": "m2", "grounded": true},
-        {"code": "thermal_insert_50_length", "label_ru": "Длина термовставок 50 мм (по спецификации)", "unit": "linear_m", "grounded": true, "notes": "Optional. Use ONLY when the PDF gives a SEPARATE installation length for an actual 50mm thermal-insert layer, distinct from the 100mm layer's own length. If the project has only 100mm thermal inserts, leave this field empty. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length covering both 50mm and 100mm layers together, do not put it here — use thermal_insert_combined_length_m instead, and leave this field null."},
-        {"code": "thermal_insert_100_length", "label_ru": "Длина термовставок 100 мм (по спецификации)", "unit": "linear_m", "grounded": true, "notes": "Optional. Use ONLY when the PDF gives a SEPARATE installation length for an actual 100mm thermal-insert layer, distinct from the 50mm layer's own length. It is valid for this to be the only standard thermal-insert length in the project. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length covering both 50mm and 100mm layers together, do not put it here — use thermal_insert_combined_length_m instead, and leave this field null."},
-        {"code": "thermal_insert_combined_length_m", "label_ru": "Длина термовставок, общая на оба слоя ЭППС (по спецификации)", "unit": "linear_m", "grounded": true, "notes": "Use this field INSTEAD OF thermal_insert_50_length/thermal_insert_100_length ONLY when the PDF gives ONE shared installation length for the whole thermal-insert node, usually covering both 50mm and 100mm layers together, even though material volume can still be given separately by thickness. Do NOT copy that same combined number into both thermal_insert_50_length and thermal_insert_100_length — that double-counts installation work. If the PDF genuinely gives two distinct lengths, one per thickness, use the scalar targets as before and leave this field empty. If the project has only one layer with its own explicit length, use that layer's target instead. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing. LIVE, not diagnostic — wired into foundation_slab_calculator.py (calculator_input_path: thermal_insert_combined_length_m, requires thermal_insert_mode='standard_50_100')."},
-        {"code": "thermal_insert_50_material_spec_qty", "label_ru": "Материал термовставок 50 мм, объём по спецификации", "unit": "m3", "grounded": true, "notes": "Optional. Fill only if the PDF explicitly gives material volume for a 50mm thermal-insert layer. If the project has only 100mm thermal inserts or no thermal inserts, leave empty/missing; do not invent zero found values."},
-        {"code": "thermal_insert_100_material_spec_qty", "label_ru": "Материал термовставок 100 мм, объём по спецификации", "unit": "m3", "grounded": true, "notes": "Optional. Fill only if the PDF explicitly gives material volume for a 100mm thermal-insert layer. It can be present without a 50mm thermal-insert material row. If the project has no thermal inserts, leave empty/missing; do not invent zero found values."},
-        {"code": "membrane_area_m2", "label_ru": "Площадь профилированной мембраны PLANTER", "unit": "m2", "grounded": true, "notes": "Foundation slab calculator input. The PDF row may appear on foundation/earthworks drawings, but the active target belongs to foundation_slab."}
+        {
+          "code": "concrete_project_volume",
+          "label_ru": "Проектный объём бетона фундаментной плиты",
+          "unit": "m3",
+          "grounded": true
+        },
+        {
+          "code": "eps_50_under_slab_volume",
+          "label_ru": "ЭППС 50 мм, низ плиты — объём",
+          "unit": "m3",
+          "grounded": true
+        },
+        {
+          "code": "slab_side_formwork_area",
+          "label_ru": "Площадь опалубки бортов фундаментной плиты (по спецификации)",
+          "unit": "m2",
+          "grounded": true
+        },
+        {
+          "code": "thermal_insert_50_length",
+          "label_ru": "Длина термовставок 50 мм (по спецификации)",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Optional. Use ONLY when the PDF gives a SEPARATE installation length for an actual 50mm thermal-insert layer, distinct from the 100mm layer's own length. If the project has only 100mm thermal inserts, leave this field empty. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length covering both 50mm and 100mm layers together, do not put it here — use thermal_insert_combined_length_m instead, and leave this field null."
+        },
+        {
+          "code": "thermal_insert_100_length",
+          "label_ru": "Длина термовставок 100 мм (по спецификации)",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Optional. Use ONLY when the PDF gives a SEPARATE installation length for an actual 100mm thermal-insert layer, distinct from the 50mm layer's own length. It is valid for this to be the only standard thermal-insert length in the project. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing; do not invent zero found values. If the PDF gives one shared length covering both 50mm and 100mm layers together, do not put it here — use thermal_insert_combined_length_m instead, and leave this field null."
+        },
+        {
+          "code": "thermal_insert_combined_length_m",
+          "label_ru": "Длина термовставок, общая на оба слоя ЭППС (по спецификации)",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Use this field INSTEAD OF thermal_insert_50_length/thermal_insert_100_length ONLY when the PDF gives ONE shared installation length for the whole thermal-insert node, usually covering both 50mm and 100mm layers together, even though material volume can still be given separately by thickness. Do NOT copy that same combined number into both thermal_insert_50_length and thermal_insert_100_length — that double-counts installation work. If the PDF genuinely gives two distinct lengths, one per thickness, use the scalar targets as before and leave this field empty. If the project has only one layer with its own explicit length, use that layer's target instead. If the project has no thermal inserts, leave all thermal_insert_* targets empty/missing. LIVE, not diagnostic — wired into foundation_slab_calculator.py (calculator_input_path: thermal_insert_combined_length_m, requires thermal_insert_mode='standard_50_100')."
+        },
+        {
+          "code": "thermal_insert_50_material_spec_qty",
+          "label_ru": "Материал термовставок 50 мм, объём по спецификации",
+          "unit": "m3",
+          "grounded": true,
+          "notes": "Optional. Fill only if the PDF explicitly gives material volume for a 50mm thermal-insert layer. If the project has only 100mm thermal inserts or no thermal inserts, leave empty/missing; do not invent zero found values."
+        },
+        {
+          "code": "thermal_insert_100_material_spec_qty",
+          "label_ru": "Материал термовставок 100 мм, объём по спецификации",
+          "unit": "m3",
+          "grounded": true,
+          "notes": "Optional. Fill only if the PDF explicitly gives material volume for a 100mm thermal-insert layer. It can be present without a 50mm thermal-insert material row. If the project has no thermal inserts, leave empty/missing; do not invent zero found values."
+        },
+        {
+          "code": "membrane_area_m2",
+          "label_ru": "Площадь профилированной мембраны PLANTER",
+          "unit": "m2",
+          "grounded": true,
+          "notes": "Foundation slab calculator input. The PDF row may appear on foundation/earthworks drawings, but the active target belongs to foundation_slab."
+        }
       ],
       "extract_groups": [
         {
           "group_code": "foundation_rebar_items",
           "description": "Арматура фундаментной плиты (сетка плиты, сетка/армирование термовставок) — обычно несколько строк по диаметру и классу стали.",
-          "fields": ["code", "name", "steel_class", "diameter_mm", "source_length_m", "kg_per_meter", "weight_kg"],
+          "fields": [
+            "code",
+            "name",
+            "steel_class",
+            "diameter_mm",
+            "source_length_m",
+            "kg_per_meter",
+            "weight_kg"
+          ],
           "grounded": true,
           "notes": "В PDF может быть дана не готовая масса в кг, а длина в м/п + масса ед. шт. В таком случае извлекать исходные source_length_m и kg_per_meter; weight_kg оставлять null, вес считает код. Если PDF явно даёт кг, тогда можно заполнить weight_kg. Не путай с ценой за метр/кг."
         },
         {
           "group_code": "foundation_wall_items",
           "description": "Стены фундамента/цоколя ниже +0,000 (не плита) — каждый отдельный участок/контекст своей строкой: бетон, вертикальная опалубка, площадь мембраны PLANTER, площадь обмазочной гидроизоляции.",
-          "fields": ["context", "concrete_volume_m3", "vertical_formwork_area_m2", "planter_membrane_area_m2", "waterproofing_coating_area_m2", "waterproofing_extent"],
+          "fields": [
+            "context",
+            "concrete_volume_m3",
+            "vertical_formwork_area_m2",
+            "planter_membrane_area_m2",
+            "waterproofing_coating_area_m2",
+            "waterproofing_extent"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only for now — captured so real fundament-wall/цоколь geometry isn't lost, not yet wired into foundation_slab_calculator.py (needs separate authorization). context — свободная строка с описанием участка стены прямо из PDF (например 'стена цоколя по оси А', 'стена приямка'), не выдумывать классификацию. waterproofing_extent — свободная строка, что именно покрывает обмазочная гидроизоляция по PDF (например 'только торец' или 'торец и верх') — записывать как написано в PDF, не угадывать по умолчанию."
         },
         {
           "group_code": "column_footing_items",
           "description": "Подколонники (столбчатый фундамент под колонну, ниже +0,000) — та же структура полей, что и foundation_wall_items, отдельная группа по решению 2026-07-18 (подколонник входит в раздел фундамента, надземная колонна — нет).",
-          "fields": ["context", "concrete_volume_m3", "vertical_formwork_area_m2", "planter_membrane_area_m2", "waterproofing_coating_area_m2", "waterproofing_extent"],
+          "fields": [
+            "context",
+            "concrete_volume_m3",
+            "vertical_formwork_area_m2",
+            "planter_membrane_area_m2",
+            "waterproofing_coating_area_m2",
+            "waterproofing_extent"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — not yet wired into foundation_slab_calculator.py. Do not merge rows into foundation_wall_items even if geometry looks similar; keep as a separate group so a future calculator wiring pass can price/gate them independently."
         },
         {
           "group_code": "slab_zones",
           "description": "Бетон фундаментной плиты, когда спецификация даёт его несколькими отдельными зонами/толщинами (например 'плита толщиной 300мм' и 'плита толщиной 250мм', или ФП1/ФП2) без готовой строки 'Итого'.",
-          "fields": ["context", "concrete_volume_m3"],
+          "fields": [
+            "context",
+            "concrete_volume_m3"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-24 (Elena). ЖИВАЯ группа — уже подключена в foundation_slab_calculator.py/section_contract.yaml (calculator_input_path: slab_zones), сумма concrete_volume_m3 по всем строкам автоматически подставляется вместо concrete_project_volume; работает для любого числа зон, включая одну. Используй эту группу вместо попытки угадать/оставить null одиночную цель concrete_project_volume, когда PDF даёт бетон плиты по зонам/толщинам без общего итога — context: как названа зона в PDF (например 'плита толщиной 300мм', 'ФП1'), concrete_volume_m3: значение этой зоны. Если в PDF есть одна готовая общая цифра (или явная строка 'Итого'), используй как раньше только scalar concrete_project_volume и оставь эту группу пустой — не дублируй."
         },
         {
           "group_code": "thermal_insert_items",
           "description": "Термовставки произвольного типоразмера — когда PDF даёт один или несколько типоразмеров ЭППС-термовставки (например '100x400x160'), а не фиксированную пару 50мм+100мм.",
-          "fields": ["eps_size", "length_m", "material_spec_qty_m3", "pack_multiple_qty"],
+          "fields": [
+            "eps_size",
+            "length_m",
+            "material_spec_qty_m3",
+            "pack_multiple_qty"
+          ],
           "grounded": true,
           "notes": "ЖИВАЯ группа — подключена в foundation_slab_calculator.py/section_contract.yaml (calculator_input_path: thermal_insert_items, требует thermal_insert_mode='items'). eps_size — свободная строка размера как написано в PDF (например '100x400x160'), не нормализуй в мм-толщину. length_m — длина установки этого типоразмера; если типоразмер один, вся явно указанная длина идёт в одну строку. material_spec_qty_m3 — объём материала по спецификации для этого типоразмера. Используй эту группу вместо thermal_insert_50_length/thermal_insert_100_length/thermal_insert_50_material_spec_qty/thermal_insert_100_material_spec_qty, когда PDF не даёт классического деления 50/100мм. Если PDF действительно даёт 50мм+100мм — используй scalar-цели выше. Если термовставок в проекте нет — оставь и scalar-цели, и эту группу пустыми; не придумывай нулевые строки."
         }
@@ -104,81 +253,122 @@
       "section_code": "waterproofing",
       "section_name_ru": "Гидроизоляция",
       "targets": [
-        {"code": "waterproofing_area_m2", "label_ru": "Площадь гидроизоляции фундаментной плиты битумной мастикой", "unit": "m2", "grounded": true, "notes": "По production-методике Елены площадь гидроизоляции равна площади опалубки бортов фундаментной плиты. Если отдельной строки гидроизоляции в PDF нет, но найдена строка slab_side_formwork_area в foundation_slab, укажи то же значение здесь с тем же source/raw_text и needs_review=true."},
-        {"code": "eps100_wall_insulation_area_m2", "label_ru": "ЭППС 100 мм, торец/борт фундаментной плиты — площадь работ", "unit": "m2", "grounded": true, "notes": "Торец плиты, борт плиты и вертикальная поверхность плит фундамента — это одна сущность для текущего MVP. Это площадь работы по утеплению ЭППС 100 мм. Не путать с объемом материала eps100_wall_volume_m3 и не брать стены фундамента/ростверк."},
-        {"code": "eps100_wall_volume_m3", "label_ru": "ЭППС 100 мм, торец/борт фундаментной плиты — объём материала", "unit": "m3", "grounded": true, "notes": "Материал для той же работы, что eps100_wall_insulation_area_m2. Имя target_code совпадает с production input калькулятора гидроизоляции. Не путать с foundation_slab.eps_100_edge_volume: это может быть та же физическая PDF-строка, но для гидроизоляции parser должен вернуть eps100_wall_volume_m3. Не брать стены фундамента/ростверк — текущий MVP считает только торец/борт плиты."},
-        {"code": "eps50_wall_volume_m3", "label_ru": "ЭППС 50 мм, торец/вертикальное утепление (второй слой) — объём", "unit": "m3", "grounded": true, "notes": "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Встречается не у всех проектов (у ЮСВ его нет, у ТРЦ есть — оба слоя вместе). Не путать с foundation_slab.thermal_insert_50_material_spec_qty (термовставки) и foundation_slab.eps50_under_slab_volume_m3 (под плитой) — это третья, отдельная позиция: вертикальное утепление торца плиты, 50мм слой."}
+        {
+          "code": "waterproofing_area_m2",
+          "label_ru": "Площадь гидроизоляции фундаментной плиты битумной мастикой",
+          "unit": "m2",
+          "grounded": true,
+          "notes": "По production-методике Елены площадь гидроизоляции равна площади опалубки бортов фундаментной плиты. Если отдельной строки гидроизоляции в PDF нет, но найдена строка slab_side_formwork_area в foundation_slab, укажи то же значение здесь с тем же source/raw_text и needs_review=true."
+        },
+        {
+          "code": "eps100_wall_insulation_area_m2",
+          "label_ru": "ЭППС 100 мм, торец/борт фундаментной плиты — площадь работ",
+          "unit": "m2",
+          "grounded": true,
+          "notes": "Торец плиты, борт плиты и вертикальная поверхность плит фундамента — это одна сущность для текущего MVP. Это площадь работы по утеплению ЭППС 100 мм. Не путать с объемом материала eps100_wall_volume_m3 и не брать стены фундамента/ростверк."
+        },
+        {
+          "code": "eps100_wall_volume_m3",
+          "label_ru": "ЭППС 100 мм, торец/борт фундаментной плиты — объём материала",
+          "unit": "m3",
+          "grounded": true,
+          "notes": "Материал для той же работы, что eps100_wall_insulation_area_m2. Имя target_code совпадает с production input калькулятора гидроизоляции. Не путать с foundation_slab.eps_100_edge_volume: это может быть та же физическая PDF-строка, но для гидроизоляции parser должен вернуть eps100_wall_volume_m3. Не брать стены фундамента/ростверк — текущий MVP считает только торец/борт плиты."
+        },
+        {
+          "code": "eps50_wall_volume_m3",
+          "label_ru": "ЭППС 50 мм, торец/вертикальное утепление (второй слой) — объём",
+          "unit": "m3",
+          "grounded": true,
+          "notes": "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Встречается не у всех проектов (у ЮСВ его нет, у ТРЦ есть — оба слоя вместе). Не путать с foundation_slab.thermal_insert_50_material_spec_qty (термовставки) и foundation_slab.eps50_under_slab_volume_m3 (под плитой) — это третья, отдельная позиция: вертикальное утепление торца плиты, 50мм слой."
+        }
       ],
       "extract_groups": [],
       "notes": "Раздел тонкий — большинство параметров гидроизоляции в текущей схеме либо control_only (тип гидроизоляции, справочно), либо ещё не выделены в явные параметры с resolver_hints. Если увидишь в PDF таблицу гидроизоляционных материалов (площади, слои) — сохрани как materials в общем JSON, даже если это не входит в список выше."
     },
     {
-      "section_code": "load_bearing_walls_lintels",
-      "section_name_ru": "Несущие стены и перемычки",
-      "targets": [
-        {"code": "floors_count", "label_ru": "Количество этажей для расчёта несущих стен", "unit": "pcs", "grounded": true},
-        {"code": "cutoff_waterproofing_load_bearing_walls_area", "label_ru": "Отсечная гидроизоляция под первый ряд несущих стен — площадь", "unit": "m2", "grounded": true, "notes": "1-й этаж кладки только. Если спецификация даёт это отдельными строками 'наружные несущие стены' + 'внутренние несущие стены' без готового итога — суммируй обе (это одна и та же стена, отличается только толщиной блока). Перегородки всегда исключай из суммы, даже если материал/строка спецификации та же самая."},
-        {"code": "main_wall_gas_block_400_spec_volume", "label_ru": "Газобетонный блок 600×400×250 — объём по спецификации", "unit": "m3", "grounded": true, "notes": "Можно использовать этот scalar, даже если другие роли этого же проекта (floor_2/parapet/partitions) идут через wall_block_items — калькулятор с 2026-08-07 берёт каждую роль из своего лучшего источника независимо (реальный кейс ТРЦ: main_walls этой scalar-парой, всё остальное — wall_block_items). Не дублируй в wall_block_items только потому, что там есть другие роли — правило 'одна готовая цифра -> scalar, без дублирования' действует как раньше."},
-        {"code": "main_wall_gas_block_250_spec_volume", "label_ru": "Газобетонный блок 600×250×250 — объём по спецификации", "unit": "m3", "grounded": false, "notes": "См. main_wall_gas_block_400_spec_volume — то же правило про безопасное смешение источников по ролям."},
-        {"code": "lintel_total_length", "label_ru": "Перемычки в U-блоках, 1-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "U-block portion only, 1-й этаж. Optional 2026-07-15 — a floor may have no U-block lintels (only monolithic, or none). See lintel_concrete_volume/floor_1_lintel_monolithic_concrete_volume for the monolithic portion."},
-        {"code": "vent_chimney_gas_block_150_volume", "label_ru": "Газобетонный блок 600×150×250 для вентканалов — объём по спецификации", "unit": "m3", "grounded": false, "notes": "Clarified 2026-07-15 (Elena): this 600x150x250 block is D500, not D400 (Д400 only exists as 600x400x250 per Elena). In a smeta this row is often grouped under a 'Парапет' section heading purely because vent channels sit on the roof near the parapet — do not map it to parapet_masonry_volume or parapet_gas_block_d500_250_volume; it stays this code regardless of which smeta section it visually appears under. Updated 2026-07-28: do not confuse with schiedel_masonry_gas_block_items (section schiedel_vent_channels) — a different block, size 150x250x650, which genuinely can be D400 (real confirmed case); the D500-only rule here is specific to this block's 600x150x250 size, not all 75-150mm blocks in general. Never record the same PDF row under both codes."},
-        {"code": "lintel_concrete_volume", "label_ru": "Бетон перемычек в U-блоках, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "U-block portion only, 1-й этаж. Optional 2026-07-15, same reasoning as lintel_total_length."},
-        {"code": "floor_2_masonry_volume", "label_ru": "Кладка несущих стен 2-го этажа — объём по спецификации", "unit": "m3", "grounded": true, "notes": "Single value only for the D400 (external-wall) portion, or when the spec gives one combined figure with no D400/D500 split. If the spec gives floor 2 masonry as separate D400 and D500 rows, or as separate levels/zones with no combined total, use the wall_block_items group instead — see below. This zone may be labeled 'Стены надстройки' / 'Стены второго света' / 'Второй свет' in the PDF instead of literally '2 этаж' — still the same floor_2 role."},
-        {"code": "parapet_masonry_volume", "label_ru": "Объём кладки парапета D400 600x400x250", "unit": "m3", "grounded": true, "notes": "D400 block, always size 600x400x250 — Elena, 2026-07-15: D400 only exists in this one size. Most common (80-90%) parapet material. If the spec gives parapet as several separate levels/zones (e.g. 1-й этаж/2-й этаж, or ПМ1/ПМ2) without a combined total, use the wall_block_items group instead."},
-        {"code": "parapet_gas_block_d500_250_volume", "label_ru": "Объём кладки парапета D500 600x250x250 (редкий случай)", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Elena: parapet can rarely be entirely or partially D500 600x250x250 instead of D400, depending on building architecture. Do not confuse with vent_chimney_gas_block_150_volume (D500 600x150x250, a different item — vent-channel cladding, sometimes grouped under the same 'Парапет' heading in a smeta but not actually parapet material)."},
-        {"code": "parapet_chasing_base_length", "label_ru": "Штробление/армирование парапета — базовая длина", "unit": "linear_m", "grounded": true, "notes": "Production scalar. Use only explicit parapet reinforcement/chasing linear rows, usually A500 Ø10. If the PDF gives several parapet levels/zones, sum the parapet rows for this target and keep candidates/source rows. Do not include main-wall masonry rebar, lintel rebar, partition rebar, or second-light wall rebar. The same PDF rows may also satisfy parapet_rebar_base_length because the work and material use the same base length."},
-        {"code": "parapet_rebar_base_length", "label_ru": "Арматура A500 Ø10 парапета — базовая длина", "unit": "linear_m", "grounded": true, "notes": "Production scalar for the calculator's A500 Ø10 parapet rebar helper. Use explicit parapet A500 Ø10 linear rows only. If the PDF gives several parapet levels/zones, sum those parapet rows and keep candidates/source rows. Do not route these rows into main_wall_rebar_items or lintel_rebar_items."},
-        {"code": "floor_2_lintel_total_length", "label_ru": "Перемычки в U-блоках, 2-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — confirmed on real ТРЦ project (20,5 м.п., 35 шт резки U-блока)."},
-        {"code": "floor_2_lintel_concrete_volume", "label_ru": "Бетон перемычек в U-блоках, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
-        {"code": "floor_1_lintel_monolithic_concrete_volume", "label_ru": "Бетон монолитных перемычек, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Monolithic (poured-in-place) lintels are a second construction method alongside U-block lintels — Elena, 2026-07-15: present in at least 50% of projects, independent of U-block lintels, on either floor."},
-        {"code": "floor_1_lintel_monolithic_total_length", "label_ru": "Монолитные перемычки, 1-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-28. Needed for the work line: monolithic lintel concreting is priced by total lintel length in м.п., not by concrete volume. Do not substitute floor_1_lintel_insulation_length — insulation may cover only part of the monolithic lintels."},
-        {"code": "floor_1_lintel_insulation_length", "label_ru": "Утепление торца монолитной перемычки, 1-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15. This is the length of only the actually insulated monolithic lintels / reinforced-concrete lintel-beams, not the combined length of all monolithic lintels. Do not derive it from monolithic concrete volume. Project mark prefixes vary; use the drawing legend/material schedule to identify the insulated mark/type. If the PDF gives EPS volume for a marked insulated lintel but no direct length row, a reviewed derived length is allowed only when same-mark geometry provides length + insulation height/thickness and the formula volume = length * height * thickness is documented in notes."},
-        {"code": "floor_1_lintel_formwork_horizontal_area", "label_ru": "Опалубка монолитной перемычки, 1-й этаж — горизонтальная площадь", "unit": "m2", "grounded": true, "notes": "Added 2026-07-25 (Elena, ТРЦ review). Real projects (checked АРК/ТРЦ) never give a ready plywood sheet count or timber m3 for lintel formwork — always this raw area. Calculator derives sheets and timber volume from the combined horizontal+vertical area (sheets = area/2.3, timber = area*0.05) — do not compute sheets/volume yourself, just extract the area as given."},
-        {"code": "floor_1_lintel_formwork_vertical_area", "label_ru": "Опалубка монолитной перемычки, 1-й этаж — вертикальная площадь", "unit": "m2", "grounded": true, "notes": "Added 2026-07-25. Pairs with floor_1_lintel_formwork_horizontal_area — see its notes."},
-        {"code": "floor_1_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 1-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Same physical product may also appear in slab/beam insulation, but this target is only for lintel edge insulation in the load-bearing walls/lintels section. Do not route it to floor_slabs."},
-        {"code": "floor_2_lintel_monolithic_concrete_volume", "label_ru": "Бетон монолитных перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."},
-        {"code": "floor_2_lintel_monolithic_total_length", "label_ru": "Монолитные перемычки, 2-й этаж — общая длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-28. Mirrors floor 1. Needed for the work line: monolithic lintel concreting is priced by total lintel length in м.п., not by concrete volume. Do not substitute floor_2_lintel_insulation_length."},
-        {"code": "floor_2_lintel_insulation_length", "label_ru": "Утепление торца монолитной перемычки, 2-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-15. Mirrors floor 1: only the actually insulated monolithic lintels / reinforced-concrete lintel-beams. Do not use total monolithic lintel length unless the PDF explicitly says all monolithic lintels are insulated. If only EPS volume is given, derive a reviewed length only from same-mark geometry and document volume = length * height * thickness."},
-        {"code": "floor_2_lintel_formwork_horizontal_area", "label_ru": "Опалубка монолитной перемычки, 2-й этаж — горизонтальная площадь", "unit": "m2", "grounded": true, "notes": "Added 2026-07-25 (Elena, ТРЦ review). Real projects never give a ready plywood sheet count or timber m3 for lintel formwork — always this raw area (real ТРЦ case: 0,45 м2 horizontal + 3,25 м2 vertical, 2-й этаж). Calculator derives sheets and timber volume from the combined area."},
-        {"code": "floor_2_lintel_formwork_vertical_area", "label_ru": "Опалубка монолитной перемычки, 2-й этаж — вертикальная площадь", "unit": "m2", "grounded": true, "notes": "Added 2026-07-25. Pairs with floor_2_lintel_formwork_horizontal_area — see its notes."},
-        {"code": "floor_2_lintel_insulation_eps_volume", "label_ru": "Пеноплэкс Основа для утепления перемычек, 2-й этаж — объём", "unit": "m3", "grounded": true, "notes": "Added 2026-07-15."},
-        {"code": "floor_1_lintel_groove_length", "label_ru": "Перемычка в штробе (только арматура), 1-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-20. Third lintel construction method alongside U-block/monolithic: rebar set into a routed groove in the wall, no block/concrete/formwork/insulation. Diagnostic-only for now — captured so this real construction method isn't lost or misfiled under U-block/monolithic fields, not yet wired into load_bearing_walls_lintels_calculator.py (needs separate authorization; see UNIVERSALIZATION_PLAN.md P1). Added 2026-07-26 (real project case, confirmed via the drawing's own legend): this is specifically the partition-wall lintel method, not a generic third option for any wall — stays diagnostic/captured-not-priced, same status as partitions masonry/rebar elsewhere."},
-        {"code": "floor_2_lintel_groove_length", "label_ru": "Перемычка в штробе (только арматура), 2-й этаж — длина", "unit": "linear_m", "grounded": true, "notes": "Added 2026-07-20. Mirrors floor_1_lintel_groove_length, including its 2026-07-26 partition-lintel-only note."}
-      ],
+      "section_code": "load_bearing_walls_lintels_p6",
+      "section_name_ru": "Несущие стены и перемычки — зональная модель P6",
+      "notes": "Clean P6 model. No scalar production targets for main walls, floor 2, parapet or lintels. Every project value for this section must be returned through repeated groups with zone_id. Do not use legacy target codes main_wall_*, floor_1_lintel_*, floor_2_lintel_*, parapet_*_volume, floors_count.",
+      "targets": [],
       "extract_groups": [
         {
-          "group_code": "main_wall_rebar_items",
-          "description": "Арматура несущих стен — каждая строка спецификации отдельно, в м/п.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
-          "grounded": false,
-          "notes": "component должен быть load_bearing_walls. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение. Добавлено 2026-07-26 (реальный кейс): спецификация иногда даёт ОДНУ строку сразу на два типа блока ('Блок 400мм, блок 250мм (несущие стены)') — заноси как есть, одной строкой, не пытайся разделить по ширине блока. Мелкая отдельная строка 'подоконное армирование' тоже сюда, component=load_bearing_walls, этаж по умолчанию 1, если не указан другой. Если из-за этого получаются две строки с одинаковыми floor+component+steel_class+diameter_mm — обязательно задай явный уникальный code хотя бы одной из них (иначе калькулятор молча учтёт только одну для контрольных сумм). Арматуру перегородок (150мм блок) сюда НЕ заносить и не считать в общую сумму никогда, даже внутри комбинированной строки — component=partitions калькулятор жёстко отклонит по правилу; известен реальный случай, когда арматура перегородок была ошибочно помечена как load_bearing_walls и тихо попала в цену несущих стен — не повторять эту ошибку. Арматуру ПАРАПЕТА (строки, где в PDF явно написано 'парапет'/'парапеты') сюда тоже НЕ заносить, даже если component был бы формально load_bearing_walls — эти строки идут в отдельные scalar-цели parapet_chasing_base_length и parapet_rebar_base_length (сумма по этажам, см. их notes). Добавлено 2026-08-05 (реальный кейс ТРЦ): парапетная арматура двух этажей (47,36 и 105,68 п.м, обе явно подписаны 'парапеты X этаж') была ошибочно занесена сюда с component=load_bearing_walls — деньги на материал не терялись (посчитались по цене несущих стен), но отдельная строка сметы на штробление парапета (parapet_chasing_base_length) осталась пустой и не досчиталась. Не повторять."
-        },
-        {
-          "group_code": "lintel_rebar_items",
-          "description": "Арматура перемычек — каждая строка спецификации отдельно, в м/п.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
-          "grounded": false,
-          "notes": "component должен быть lintels. В PDF может быть дана длина в м/п + масса ед. шт.; извлекать spec_length_m и kg_per_meter, не вычислять weight_kg. rod_length_m — обычно каталожная длина прутка по диаметру (напр. 11.7 м), а не значение из PDF; бери из PDF только если там явно есть таблица длин прутков, иначе оставляй null для catalog-фолбэка, не придумывай значение."
-        },
-        {
-          "group_code": "vent_chimney_cladding_segments",
-          "description": "Сегменты обкладки вентканалов газоблоком (длина и количество по сегментам).",
-          "fields": ["length_m", "count"],
-          "grounded": false
-        },
-        {
-          "group_code": "lintel_groove_rebar_items",
-          "description": "Арматура перемычек в штробе (третий тип перемычки, без блока/бетона/опалубки) — каждая строка спецификации отдельно, в м/п.",
-          "fields": ["floor", "component", "code", "name", "steel_class", "diameter_mm", "spec_length_m", "kg_per_meter", "rod_length_m"],
-          "grounded": false,
-          "notes": "Added 2026-07-20. Deliberately a separate group_code from lintel_rebar_items, not an additional component value inside it: lintel_rebar_items is already wired into load_bearing_walls_lintels_calculator.py's calculator_input_path with strict validation (component must equal exactly \"lintels\" or the run raises ValueError) — mixing groove-type rows into it would hard-crash real calculator runs. This group is diagnostic-only, no calculator_input_path yet, same pattern as schiedel_channel_spec_items. component should be lintels_groove. rod_length_m — catalog length by diameter unless the PDF gives an explicit rod-length table, otherwise leave null. Added 2026-07-26 (real project case, confirmed via the drawing's own legend): this is specifically the partition-wall lintel rebar — treat like other partitions data (wall_block_items role=partitions, excluded from main_wall_rebar_items) — captured, not priced."
+          "group_code": "wall_zones",
+          "description": "Зоны кладки/сметные блоки стен: 1-й этаж, 2-й этаж/второй свет/надстройка, парапет, обкладка дымохода и вентканалов. Одна физическая/сметная зона = одна строка.",
+          "fields": [
+            "zone_id",
+            "display_name",
+            "zone_kind",
+            "cutoff_waterproofing_area_m2",
+            "block_delivery_batch_id"
+          ],
+          "grounded": true,
+          "notes": "zone_kind strict enum: main_walls, second_light, parapet, vent_chimney_cladding. zone_id stable local id, e.g. floor_1, floor_2, parapet, vent_chimney_cladding or project-specific stable id if several independent zones. cutoff_waterproofing_area_m2 belongs only to the first masonry row/zone where the PDF explicitly gives cutoff waterproofing under load-bearing walls; exclude partitions. block_delivery_batch_id is optional service grouping only if PDF/smeta explicitly gives delivery batches; normally leave null. Do not create zones for partitions/non-load-bearing walls in this section."
         },
         {
           "group_code": "wall_block_items",
-          "description": "Кладка газобетонных блоков, когда спецификация даёт объём по нескольким строкам без общего итога для одной scalar-цели — например, этаж 2 отдельно D400/D500, или парапет по уровням/зонам (1-й/2-й этаж, ПМ1/ПМ2 и т.п.).",
-          "fields": ["context", "wall_role", "block_density", "block_size", "volume_m3", "material_unit_price"],
+          "description": "Газобетонные блоки по зонам. Каждая строка спецификации блока отдельно: зона, плотность, размер, объем.",
+          "fields": [
+            "zone_id",
+            "item_id",
+            "block_density",
+            "block_size",
+            "volume_m3",
+            "context",
+            "material_unit_price",
+            "pallet_volume_m3"
+          ],
           "grounded": true,
-          "notes": "Added 2026-07-24 (Elena, ТРЦ/АРК review). ЖИВАЯ группа — подключена в load_bearing_walls_lintels_calculator.py (calculator_input_path: wall_block_items). wall_role — строгий enum, не свободный текст: допустимы только main_walls/floor_2/parapet/partitions. Правило маппинга: наружные/внутренние несущие стены 1-го этажа -> main_walls; наружные/внутренние несущие стены 2-го этажа, надстройка, второй свет -> floor_2; любой уровень/зона парапета -> parapet; перегородки -> partitions (во множественном числе, не partition). Не придумывай роли load_bearing_outer, load_bearing_inner, external_walls, internal_walls, second_light_walls, parapet_level_1, parapet_level_2, partition, vent_channel_cladding; эти слова можно сохранить только в context/item_name. Обкладка вентканалов/дымохода не является wall_block_items — для неё используй vent_chimney_gas_block_150_volume или оставь raw/needs_review, если это строка шахты Schiedel. block_density — D400 или D500 для обычного случая (обязательно для всех ролей, кроме partitions — для партиций объём только фиксируется, ещё не идёт в цену). Только эти сочетания role+density сейчас имеют цену: main_walls×D400, main_walls×D500, floor_2×D400, floor_2×D500, parapet×D400, parapet×D500. Несколько строк с одинаковой role+density суммируются автоматически — используй эту группу вместо попытки угадать/оставить null одиночную scalar-цель (floor_2_masonry_volume, parapet_masonry_volume, parapet_gas_block_d500_250_volume), когда PDF даёт объём по нескольким строкам/уровням/зонам без общего итога. context — свободная строка, как написано в PDF (например 'Кладка несущих стен 2 этажа D500 600x250x250'). Если в PDF есть одна готовая общая цифра на всю роль, используй scalar-цель как раньше и оставь эту группу пустой — не дублируй. Совершенно нормально, если разные роли одного проекта берутся из разных источников — например main_walls своим scalar'ом, а floor_2/parapet/partitions строками здесь, потому что именно их данные в PDF были разбиты по зонам/уровням без готового итога. Калькулятор с 2026-08-07 разрешает каждую роль независимо (реальный проект ТРЦ — именно такой смешанный случай) — не затаскивай роль сюда только потому, что другая роль сюда попала. Раздел про перегородки (partitions) — диагностика/захват объёма, отдельно не считается ценой сегодня. Добавлено 2026-07-26 (реальный кейс): зона кладки над стенами 1 этажа может называться в PDF 'Стены надстройки' / 'Стены второго света' / 'Второй свет' (высотная зона между двумя отметками, например +3,730...+4,980), а не буквально '2 этаж' — это всё равно wall_role: floor_2, новую роль не заводить. Парапет на нескольких отдельных уровнях/отметках (например ПМ1 и ПМ2, каждый со своей спецификацией) — тоже одна роль parapet, просто ещё строка, без parapet_level_1/parapet_level_2. Обновлено 2026-07-28 (Елена: редкие другие плотности/размеры бывают, но очень редко): если спецификация реально даёт другую плотность/размер (не D400/D500, не 600x400x250/600x250x250) для main_walls/floor_2/parapet — записывай block_density и block_size как есть (не выдумывай D400/D500), И заполни material_unit_price на этой же строке из собственных ценовых данных проекта (смета/прайс), если они есть — калькулятор посчитает эту строку напрямую по этой цене. Если цены нигде нет — оставь material_unit_price пустым и поставь needs_review; калькулятор осознанно откажется считать эту строку без цены, а не тихо потеряет объём."
+          "notes": "Every row must have zone_id matching wall_zones. block_density and block_size are copied from PDF literally when visible, not guessed. Typical values: D400 600x400x250, D500 600x250x250, D500 600x150x250 for vent/chimney cladding. Other sizes/densities are allowed: keep them literal, set needs_review if no price/pallet mapping is available. Do not aggregate D400+D500 into one row. Do not route partitions here. Vent/chimney cladding is zone_kind vent_chimney_cladding, not parapet, even if located near parapet."
+        },
+        {
+          "group_code": "wall_chasing_rebar_items",
+          "description": "СПРАВОЧНО: арматура кладки стен и парапета по зонам и диаметрам. Каждая строка спецификации отдельно.",
+          "fields": [
+            "zone_id",
+            "item_id",
+            "purpose",
+            "steel_class",
+            "diameter_mm",
+            "spec_length_m",
+            "kg_per_meter",
+            "rod_length_m"
+          ],
+          "grounded": false,
+          "notes": "Grey/reference in review workbook: Elena does not edit rebar manually. purpose strict enum: masonry_chasing, parapet_chasing, other. Every row must have zone_id. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Exclude partition rebar from this section."
+        },
+        {
+          "group_code": "lintel_items",
+          "description": "Перемычки по зонам: U-блоки и монолитные перемычки. Одна строка на тип/марку/зону, с длиной, бетоном, опалубкой и утеплением, если эти данные есть в PDF.",
+          "fields": [
+            "zone_id",
+            "lintel_id",
+            "lintel_kind",
+            "total_length_m",
+            "concrete_volume_m3",
+            "formwork_horizontal_area_m2",
+            "formwork_vertical_area_m2",
+            "insulation_length_m",
+            "insulation_eps_spec_volume_m3"
+          ],
+          "grounded": true,
+          "notes": "Every row must have zone_id matching wall_zones. lintel_kind strict enum: u_block, monolithic. If PDF gives several marks/types, keep rows separate; do not force floor_1/floor_2 scalar codes. U-block concrete and monolithic concrete are separate lintel_items. Insulation is only for actually insulated lintel/beam-lintel parts; never assume all lintels are insulated. If PDF gives EPS volume but no direct insulation length, derive insulation_length_m only when same mark/type geometry gives all values for volume = length * height * thickness; set needs_review and document formula."
+        },
+        {
+          "group_code": "lintel_rebar_items",
+          "description": "СПРАВОЧНО: арматура перемычек по зонам/типам. Каждая строка спецификации отдельно.",
+          "fields": [
+            "zone_id",
+            "lintel_id",
+            "lintel_kind",
+            "item_id",
+            "steel_class",
+            "diameter_mm",
+            "spec_length_m",
+            "kg_per_meter",
+            "rod_length_m"
+          ],
+          "grounded": false,
+          "notes": "Grey/reference in review workbook. Every row must have zone_id; lintel_id should match a lintel_items row when possible. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Partition/groove-only lintels that are not part of priced load-bearing walls stay raw_table_rows/notes unless explicitly added to MVP later."
         }
       ]
     },
@@ -289,28 +479,86 @@
       "section_code": "flat_roof",
       "section_name_ru": "Плоская кровля",
       "targets": [
-        {"code": "project_spec_roof_area", "label_ru": "Площадь кровли по спецификации", "unit": "m2", "grounded": true},
-        {"code": "roof_internal_drains_count", "label_ru": "Воронки внутреннего водостока — количество", "unit": "pcs", "grounded": true},
-        {"code": "roof_parapet_drains_count", "label_ru": "Парапетные воронки — количество", "unit": "pcs", "grounded": true},
-        {"code": "roof_area_level_1", "label_ru": "Площадь кровли, уровень 1", "unit": "m2", "grounded": true},
-        {"code": "roof_area_level_2", "label_ru": "Площадь кровли, уровень 2", "unit": "m2", "grounded": true, "notes": "Если в PDF нет явной пометки 'уровень 1'/'уровень 2', а есть просто разные отметки высоты кровли — сохрани оба числа как candidates с их отметками (raw_text), не выбирай сама, какое к какому уровню относится. Если зон/типов кровли больше двух (например по этажам И по типам, или отдельно кровля лестницы), не пытайся втиснуть их в level_1/level_2 — используй группу roof_zones вместо этого, см. ниже."},
-        {"code": "roof_parapet_length_level_1", "label_ru": "Длина парапета, уровень 1", "unit": "linear_m", "grounded": true},
-        {"code": "roof_parapet_length_level_2", "label_ru": "Длина парапета, уровень 2", "unit": "linear_m", "grounded": true},
-        {"code": "roof_vent_wall_abutment_level_1", "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 1", "unit": "linear_m", "grounded": true, "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."},
-        {"code": "roof_vent_wall_abutment_level_2", "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 2", "unit": "linear_m", "grounded": true, "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."}
+        {
+          "code": "project_spec_roof_area",
+          "label_ru": "Площадь кровли по спецификации",
+          "unit": "m2",
+          "grounded": true
+        },
+        {
+          "code": "roof_internal_drains_count",
+          "label_ru": "Воронки внутреннего водостока — количество",
+          "unit": "pcs",
+          "grounded": true
+        },
+        {
+          "code": "roof_parapet_drains_count",
+          "label_ru": "Парапетные воронки — количество",
+          "unit": "pcs",
+          "grounded": true
+        },
+        {
+          "code": "roof_area_level_1",
+          "label_ru": "Площадь кровли, уровень 1",
+          "unit": "m2",
+          "grounded": true
+        },
+        {
+          "code": "roof_area_level_2",
+          "label_ru": "Площадь кровли, уровень 2",
+          "unit": "m2",
+          "grounded": true,
+          "notes": "Если в PDF нет явной пометки 'уровень 1'/'уровень 2', а есть просто разные отметки высоты кровли — сохрани оба числа как candidates с их отметками (raw_text), не выбирай сама, какое к какому уровню относится. Если зон/типов кровли больше двух (например по этажам И по типам, или отдельно кровля лестницы), не пытайся втиснуть их в level_1/level_2 — используй группу roof_zones вместо этого, см. ниже."
+        },
+        {
+          "code": "roof_parapet_length_level_1",
+          "label_ru": "Длина парапета, уровень 1",
+          "unit": "linear_m",
+          "grounded": true
+        },
+        {
+          "code": "roof_parapet_length_level_2",
+          "label_ru": "Длина парапета, уровень 2",
+          "unit": "linear_m",
+          "grounded": true
+        },
+        {
+          "code": "roof_vent_wall_abutment_level_1",
+          "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 1",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."
+        },
+        {
+          "code": "roof_vent_wall_abutment_level_2",
+          "label_ru": "Длина примыкания кровли к стенам/ВК/вентканалам, уровень 2",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Если примыкания к ВК/вентканалам/вентшахтам даны в м.п., это линейная длина для общей строки примыканий кровли, а не vent_shaft_abutment_count."
+        }
       ],
       "extract_groups": [
         {
           "group_code": "roof_raw_material_spec_rows",
           "description": "Сырые строки спецификации кровли — диагностическая разбивка, не используется калькулятором напрямую.",
-          "fields": ["name", "quantity", "unit"],
+          "fields": [
+            "name",
+            "quantity",
+            "unit"
+          ],
           "grounded": false,
           "notes": "Optional; calculator quantities always come from the reviewed scalar geometry/count inputs above, never from this breakdown."
         },
         {
           "group_code": "roof_zones",
           "description": "Площадь кровли (и примыкания к парапету/стене), когда спецификация даёт её несколькими зонами по этажам и/или типам (например 1 этаж Тип1, 1 этаж Тип2, 2 этаж Тип2, кровля лестницы) — больше, чем укладывается в level_1/level_2. Включает признак эксплуатируемости зоны для выбора бренда мембраны.",
-          "fields": ["context", "area_m2", "parapet_length_m", "wall_abutment_length_m", "operability"],
+          "fields": [
+            "context",
+            "area_m2",
+            "parapet_length_m",
+            "wall_abutment_length_m",
+            "operability"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-26 (Elena, ТРЦ review). ЖИВАЯ группа — подключена в flat_roof_calculator/calculator.py (roof_geometry_calc_method: roof_zones), суммирует area_m2 в roof_area_total_m2 и (parapet_length_m+wall_abutment_length_m) в parapet_and_abutment_total_length_m по всем строкам, для любого числа зон. Кровля лестницы — просто ещё одна зона в этом списке, без особого статуса. context — как зона названа в PDF (этаж + тип, как написано). parapet_length_m/wall_abutment_length_m — необязательны для конкретной зоны, если PDF не даёт для неё такое примыкание (например у кровли лестницы может не быть примыкания к стене). Линейные примыкания к стенам, ВК, вентканалам и вентшахтам в м.п. относятся к wall_abutment_length_m той зоны кровли, в колонке которой они напечатаны; если в одной зоне отдельно даны 'примыкания к стенам' и 'примыкания к вентканалам/ВК', суммируй их внутри wall_abutment_length_m и оставь состав в notes/raw_text. При roof_zones не заполняй параллельно scalar roof_vent_wall_abutment_level_1/2 и не переноси линейные метры в штучное поле vent_shaft_abutment_count. operability — 'exploitable' только если лист прямо называет зону 'эксплуатируемая'; во всех остальных случаях (явно 'неэксплуатируемая' ИЛИ тип вообще не указан) пиши 'non_exploitable' — это определяет бренд мембраны (V-GR для эксплуатируемой, V-RP для всего остального), значение по умолчанию 'non_exploitable', если не уверена — не угадывай эксплуатируемость, ставь non_exploitable и needs_review. Используй эту группу вместо level_1/level_2, если зон/типов больше двух. Если в PDF есть одна готовая цифра на весь дом — используй scalar-цели (roof_area_level_1/2 или project_spec_roof_area) как раньше и оставь эту группу пустой. Добавлено 2026-07-26 (реальный кейс): лист плана/спецификации кровли часто использует СВОЮ систему обозначений зон (например 'Тип А' + отметка), никак не связанную с ПМ1/ПМ2-подобными обозначениями плиты с другого листа (кладочный план) — context для этой группы всегда берётся из спецификации самой кровли, никогда из обозначения плиты, даже если физически это один и тот же участок здания."
         }
@@ -320,22 +568,34 @@
       "section_code": "schiedel_vent_channels",
       "section_name_ru": "Вентиляционные каналы Schiedel",
       "targets": [
-        {"code": "schiedel_masonry_total_length_m", "label_ru": "Общая длина кладки вентканалов Schiedel", "unit": "linear_m", "grounded": true, "notes": "Primary required quantity for schiedel_masonry_work — the section's single most important target and the ONLY payable work quantity, regardless of which/how many channel product types exist (Elena 2026-07-21: работа одна). If the PDF gives a ready total row like 'Общая высота вентканалов'/'Высота вентканалов общая'/'Общая длина кладки вентканалов' in м.п./м.пог, map that value here even if the word Schiedel is not printed on the sheet. If other linear rows by channel type do not sum to this ready total, keep the ready total here with needs_review=true and explain the contradiction; do not leave the target missing. Updated 2026-07-26: no per-shaft height/count fallback exists anymore — if the PDF gives only per-shaft heights instead of one ready total, do not sum them yourself, use candidates + needs_review."}
+        {
+          "code": "schiedel_masonry_total_length_m",
+          "label_ru": "Общая длина кладки вентканалов Schiedel",
+          "unit": "linear_m",
+          "grounded": true,
+          "notes": "Primary required quantity for schiedel_masonry_work — the section's single most important target and the ONLY payable work quantity, regardless of which/how many channel product types exist (Elena 2026-07-21: работа одна). If the PDF gives a ready total row like 'Общая высота вентканалов'/'Высота вентканалов общая'/'Общая длина кладки вентканалов' in м.п./м.пог, map that value here even if the word Schiedel is not printed on the sheet. If other linear rows by channel type do not sum to this ready total, keep the ready total here with needs_review=true and explain the contradiction; do not leave the target missing. Updated 2026-07-26: no per-shaft height/count fallback exists anymore — if the PDF gives only per-shaft heights instead of one ready total, do not sum them yourself, use candidates + needs_review."
+        }
       ],
       "extract_groups": [
         {
           "group_code": "schiedel_channel_items",
           "description": "Вентканалы Schiedel по типам (1х/2х/3х/4х/CVENT) — количество модулей/элементов по спецификации, не количество шахт на плане.",
-          "fields": ["product_type", "quantity_pcs"],
+          "fields": [
+            "product_type",
+            "quantity_pcs"
+          ],
           "grounded": true,
           "notes": "Added 2026-07-26 (Elena). ЖИВАЯ группа — заменяет удалённые schiedel_vent_channel_2x_count/_3x_count и всю группу отслеживания шахт (vent_channel_1_height/vent_channel_2_height/vent_channel_2_count — шахты считать не нужно вообще, Elena: 'не надо считать шахты, это не важно'). Подключена в schiedel_vent_channels_calculator/calculator.py (schiedel_channel_items[]). product_type — строго один из '1x'/'2x'/'3x'/'4x'/'cvent' (сопоставляй 'Schiedel VENT 1'/'1 хода' → '1x' и т.д.; CVENT — отдельный, довольно редкий продукт Schiedel — 'cvent'). quantity_pcs — количество модулей из спецификации, НЕ количество узлов/шахт на плане (план может показывать один узел, а спецификация — десятки модулей на него — важно именно число модулей). Бренд в этом разделе ВСЕГДА Schiedel, даже если слово 'Schiedel' на листе не встречается вообще — не придумывай безбрендовый вариант. Если PDF не даёт готового количества в штуках (например, только линейные размеры вроде '2,0 м.пог' на канал) — не пытайся пересчитать метры в штуки и не отказывайся от раздела вовсе (Elena, 2026-07-28: если не в шт — это ручной ввод сметчицы). Обязательно: (1) оставь саму группу schiedel_channel_items пустой для этих строк, (2) но всё равно добавь ОДНУ явную запись в needs_review этого раздела с target_code/group_code='schiedel_channel_items', перечисли найденные линейные значения дословно в notes и явно укажи 'дано в метрах, не в штуках — нужен ручной ввод количества'. Не ограничивайся пометкой needs_review только внутри raw_table_rows — без явной записи в needs_review раздела это исчезает из виду сметчицы."
         },
         {
           "group_code": "schiedel_masonry_gas_block_items",
-          "description": "Газобетонный блок кладки самой шахты вентканала (не обкладка дымохода — это отдельная, другая позиция в разделе load_bearing_walls_lintels/vent_chimney_gas_block_150_volume, другой размер блока) — плотность и объём по спецификации, каждая строка отдельно.",
-          "fields": ["density", "volume_m3"],
+          "description": "Газобетонный блок кладки самой шахты вентканала (не обкладка дымохода/вентканала газоблоком 600x150x250 — это отдельная зона `vent_chimney_cladding` в разделе стен P6, другой размер блока) — плотность и объём по спецификации, каждая строка отдельно.",
+          "fields": [
+            "density",
+            "volume_m3"
+          ],
           "grounded": true,
-          "notes": "ЖИВАЯ группа — подключена в schiedel_vent_channels_calculator/calculator.py (calculator_input_path: schiedel_masonry_gas_block_items). density — бери ровно как написано в PDF (D400, D500 или что-то ещё) — плотность этого блока НЕ подчиняется правилу 'всегда D500 при 75-150мм' из vent_chimney_gas_block_150_volume, это другой блок, другой размер, другое правило. volume_m3 — объём по спецификации. НЕ путай и не дублируй с vent_chimney_gas_block_150_volume (обкладка дымохода/вентканала, блок 600x150x250, раздел load_bearing_walls_lintels) — это два разных физических блока разного размера, даже если видны на одном листе рядом друг с другом; кладка шахты (этот код) относится сюда, в schiedel_vent_channels, обкладка — в load_bearing_walls_lintels, не заноси одну и ту же строку PDF в оба места."
+          "notes": "ЖИВАЯ группа — подключена в schiedel_vent_channels_calculator/calculator.py (calculator_input_path: schiedel_masonry_gas_block_items). density — бери ровно как написано в PDF (D400, D500 или что-то ещё) — плотность этого блока НЕ подчиняется правилу обкладки дымохода/вентканала газоблоком 600x150x250, это другой блок, другой размер, другое правило. volume_m3 — объём по спецификации. НЕ путай и не дублируй с обкладкой дымохода/вентканала: кладка шахты (этот код) относится сюда, в schiedel_vent_channels, обкладка газоблоком 600x150x250 относится в P6-зону стен `vent_chimney_cladding`; не заноси одну и ту же строку PDF в оба места."
         }
       ]
     }

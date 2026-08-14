@@ -1,43 +1,42 @@
 # Как использовать этот пакет в GPT/Claude-чате
 
-Пакет обновлён: 2026-08-08.
+Пакет обновлён: 2026-08-13.
 
 ## Что сейчас в пакете
 
 - `claude_estimate_extraction_prompt.md` — актуальные правила извлечения и служебной записки; последние
-  уточнения добавлены 2026-08-02: линейные примыкания кровли к стенам/ВК/вентканалам не путать со
-  штучными примыканиями к вентшахтам; по Schiedel готовую строку общей высоты/длины вентканалов
-  маппить в рабочую длину кладки, а строки по типам в метрах не превращать в количество модулей;
-  если PDF даёт компоненты без готового итога, модель сохраняет компоненты, а решение об автосумме
-  принимает код review/calculator слоя.
+  уточнения добавлены 2026-08-13: раздел стен/перемычек `load_bearing_walls_lintels_p6` переведён на чистую зональную модель P6,
+  без старых scalar-полей `main_wall_*`, `floor_1_lintel_*`, `floor_2_lintel_*`.
+- `notes_report_correction_prompt.md` — второй промпт для работы над ошибками: после первого JSON
+  запускается кодовый notes-report, затем этот report вместе с исходным JSON отдаётся в тот же чат,
+  чтобы модель исправила только найденные программой проблемы.
+- `service_note_technical_audit_prompt.md` и `elena_service_note_prompt.md` — дополнительные промпты
+  для технического аудита записки и человеческой записки для Елены.
 - `calculator_targets_compact.json` / `target_aliases_ru.yaml` — помимо одиночных (scalar) целей,
   содержат динамические группы построчных данных (`extract_groups`), которые нужно использовать вместо
   одиночного скаляра, когда PDF даёт данные несколькими строками без готового общего итога:
-  `wall_block_items`, `roof_zones`, `slab_zones`, `schiedel_channel_items`, `thermal_insert_items`,
+  `wall_zones`, `wall_block_items`, `wall_chasing_rebar_items`, `lintel_items`, `lintel_rebar_items`,
+  `roof_zones`, `slab_zones`, `schiedel_channel_items`, `thermal_insert_items`,
   `pit_items`, `sand_items`, `foundation_wall_items`, `column_footing_items`,
-  `lintel_groove_rebar_items`, `main_wall_rebar_items`, `lintel_rebar_items`, `foundation_rebar_items`,
+  `foundation_rebar_items`,
   `floor_slab_zones`, `floor_slab_eps_items`, `floor_slab_beam_items`, `floor_slab_rebar_items`,
   `floor_slab_additional_items`,
-  `beam_table_controls`, `communications_pipe_items`, `trench_routes`, `vent_chimney_cladding_segments`,
-  `roof_raw_material_spec_rows`. У каждой группы в `notes` явно написано, когда её использовать вместо
-  старого одиночного поля — не заполняй оба пути одновременно.
+  `beam_table_controls`, `communications_pipe_items`, `trench_routes`,
+  `roof_raw_material_spec_rows`. У каждой группы в `notes` явно написано, как её использовать.
 - Также добавлен скалярный `thermal_insert_combined_length_m` — используется ВМЕСТО раздельных
   `thermal_insert_50_length`/`thermal_insert_100_length`, только если PDF даёт одну общую длину
   термовставок на оба слоя ЭППС сразу (не копируй одно число в оба старых поля — это задвоение работы).
-- **Добавлено 2026-08-07**: `wall_block_items` (и парные scalar-цели `main_wall_gas_block_400/250_spec_volume`)
-  теперь явно разрешают смешанные источники по ролям в одном проекте — например main_walls может прийти
-  готовой scalar-парой, а floor_2/parapet/partitions того же проекта одновременно через построчную группу
-  `wall_block_items`, если именно их данные в PDF разбиты по зонам/уровням без готового итога. Раньше это
-  было неочевидно и рискованно молча терять объём одной из ролей — калькулятор с 2026-08-07 резолвит
-  каждую роль независимо. Не затаскивай роль в `wall_block_items` только потому, что другая роль туда
-  уже попала — правило «одна готовая цифра → scalar, без дублирования» действует как раньше, просто
-  теперь по ролям отдельно, а не по всему проекту разом.
+- **Стены и перемычки P6** (`load_bearing_walls_lintels_p6`): извлекаются только через repeated groups:
+  `wall_zones`, `wall_block_items`, `wall_chasing_rebar_items`, `lintel_items`, `lintel_rebar_items`.
+  Старые scalar-поля стен и перемычек больше не использовать. Арматура стен/парапета/перемычек
+  извлекается построчно, но в таблице проверки будет справочной серой: Елена сверяет с PDF, не правит
+  арматуру руками.
 - **Плиты перекрытия/покрытия**: извлекаются через один
   production-раздел `floor_slabs`, где каждая физическая плита/зона идет отдельной строкой в
   `floor_slab_zones`, а ЭППС самой плиты, балки, арматура и дополнительные строки идут через группы
   `floor_slab_eps_items`, `floor_slab_beam_items`, `floor_slab_rebar_items`,
   `floor_slab_additional_items`. Утепление балок записывается только в строку балки, утепление
-  монолитных перемычек — только в раздел стен/перемычек.
+  монолитных перемычек — только в раздел стен/перемычек P6.
 
 Если версия этого README старше, чем сегодняшняя правка промпта/target-файлов — сначала пересобери
 пакет (`python3 build_claude_chat_pack.py`) и сверь список правил/групп выше с содержимым файлов
@@ -68,7 +67,19 @@
      --input experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
      --report experiments/chat_extraction_poc/reports/gpt_usv_validation_report.md
    ```
-8. Запусти сравнение с проверенным эталоном (только после того, как результат уже получен и сохранён):
+8. Собери технический отчёт по сомнениям/ошибкам JSON:
+   ```
+   .venv/bin/python3 experiments/full_estimate_review_pipeline/build_extraction_notes_report.py \
+     --input experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
+     --output experiments/chat_extraction_poc/reports/code_notes_report_gpt_usv.md
+   ```
+9. Для работы над ошибками вернись в тот же чат, где PDF уже загружены, и приложи:
+   - исходный extraction JSON;
+   - `code_notes_report_*.md`;
+   - текст из `notes_report_correction_prompt.md`.
+
+   Попроси сохранить исправленный JSON отдельным файлом с суффиксом `_corrected`.
+10. Запусти сравнение с проверенным эталоном (только после того, как результат уже получен и сохранён):
    ```
    .venv/bin/python3 experiments/chat_extraction_poc/compare_with_validated_input.py \
      --claude-json experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
