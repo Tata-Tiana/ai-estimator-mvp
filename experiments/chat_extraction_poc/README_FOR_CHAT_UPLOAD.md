@@ -1,98 +1,130 @@
-# Как использовать этот пакет в GPT/Claude-чате
+# Инструкция для извлечения данных из проекта
 
-Пакет обновлён: 2026-08-13.
+Обновлено: 14 августа 2026.
 
-## Что сейчас в пакете
+Эта инструкция нужна, чтобы получить из PDF проекта два файла:
 
-- `claude_estimate_extraction_prompt.md` — актуальные правила извлечения и служебной записки; последние
-  уточнения добавлены 2026-08-13: раздел стен/перемычек `load_bearing_walls_lintels_p6` переведён на чистую зональную модель P6,
-  без старых scalar-полей `main_wall_*`, `floor_1_lintel_*`, `floor_2_lintel_*`.
-- `notes_report_correction_prompt.md` — второй промпт для работы над ошибками: после первого JSON
-  запускается кодовый notes-report, затем этот report вместе с исходным JSON отдаётся в тот же чат,
-  чтобы модель исправила только найденные программой проблемы.
-- `service_note_technical_audit_prompt.md` и `elena_service_note_prompt.md` — дополнительные промпты
-  для технического аудита записки и человеческой записки для Елены.
-- `calculator_targets_compact.json` / `target_aliases_ru.yaml` — помимо одиночных (scalar) целей,
-  содержат динамические группы построчных данных (`extract_groups`), которые нужно использовать вместо
-  одиночного скаляра, когда PDF даёт данные несколькими строками без готового общего итога:
-  `wall_zones`, `wall_block_items`, `wall_chasing_rebar_items`, `lintel_items`, `lintel_rebar_items`,
-  `roof_zones`, `slab_zones`, `schiedel_channel_items`, `thermal_insert_items`,
-  `pit_items`, `sand_items`, `foundation_wall_items`, `column_footing_items`,
-  `foundation_rebar_items`,
-  `floor_slab_zones`, `floor_slab_eps_items`, `floor_slab_beam_items`, `floor_slab_rebar_items`,
-  `floor_slab_additional_items`,
-  `beam_table_controls`, `communications_pipe_items`, `trench_routes`,
-  `roof_raw_material_spec_rows`. У каждой группы в `notes` явно написано, как её использовать.
-- Также добавлен скалярный `thermal_insert_combined_length_m` — используется ВМЕСТО раздельных
-  `thermal_insert_50_length`/`thermal_insert_100_length`, только если PDF даёт одну общую длину
-  термовставок на оба слоя ЭППС сразу (не копируй одно число в оба старых поля — это задвоение работы).
-- **Стены и перемычки P6** (`load_bearing_walls_lintels_p6`): извлекаются только через repeated groups:
-  `wall_zones`, `wall_block_items`, `wall_chasing_rebar_items`, `lintel_items`, `lintel_rebar_items`.
-  Старые scalar-поля стен и перемычек больше не использовать. Арматура стен/парапета/перемычек
-  извлекается построчно, но в таблице проверки будет справочной серой: Елена сверяет с PDF, не правит
-  арматуру руками.
-- **Плиты перекрытия/покрытия**: извлекаются через один
-  production-раздел `floor_slabs`, где каждая физическая плита/зона идет отдельной строкой в
-  `floor_slab_zones`, а ЭППС самой плиты, балки, арматура и дополнительные строки идут через группы
-  `floor_slab_eps_items`, `floor_slab_beam_items`, `floor_slab_rebar_items`,
-  `floor_slab_additional_items`. Утепление балок записывается только в строку балки, утепление
-  монолитных перемычек — только в раздел стен/перемычек P6.
+- JSON с данными для сметы;
+- служебную записку с замечаниями по проекту.
 
-Если версия этого README старше, чем сегодняшняя правка промпта/target-файлов — сначала пересобери
-пакет (`python3 build_claude_chat_pack.py`) и сверь список правил/групп выше с содержимым файлов
-`data/`, прежде чем грузить пакет в чат.
+## Что нужно подготовить
 
-## Шаги
+1. PDF проекта.
 
-1. Открой новый чат в GPT Plus или Claude (обычный чат по подписке, не API).
-2. Загрузи PDF проекта (все файлы/чертежи, которые у тебя есть по этому проекту).
-3. Загрузи файлы из этого архива:
-   - `claude_estimate_extraction_prompt.md`
-   - `claude_extraction_output_schema.json`
-   - `calculator_targets_compact.json`
-   - `target_aliases_ru.yaml`
-   - `section_guide.json`
-   - `unit_normalization_guide.json`
-4. Вставь текст из `claude_estimate_extraction_prompt.md` как сообщение в чат.
-5. Попроси чат сначала извлечь `raw_table_rows`, затем сопоставить строки
-   с `target_code` по `target_aliases_ru.yaml`, и вернуть только JSON
-   (без пояснений вокруг).
-6. Скопируй ответ чата и сохрани его в файл:
-   `experiments/chat_extraction_poc/outputs/claude_<project>_extraction.json`
-   или `experiments/chat_extraction_poc/outputs/gpt_<project>_extraction.json`
-   (например `gpt_usv_extraction.json`)
-7. Запусти проверку:
-   ```
-   .venv/bin/python3 experiments/chat_extraction_poc/validate_claude_extraction.py \
-     --input experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
-     --report experiments/chat_extraction_poc/reports/gpt_usv_validation_report.md
-   ```
-8. Собери технический отчёт по сомнениям/ошибкам JSON:
-   ```
-   .venv/bin/python3 experiments/full_estimate_review_pipeline/build_extraction_notes_report.py \
-     --input experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
-     --output experiments/chat_extraction_poc/reports/code_notes_report_gpt_usv.md
-   ```
-9. Для работы над ошибками вернись в тот же чат, где PDF уже загружены, и приложи:
-   - исходный extraction JSON;
-   - `code_notes_report_*.md`;
-   - текст из `notes_report_correction_prompt.md`.
+   Обычно это один или два файла: КР1, КР2 или похожие файлы проекта.
 
-   Попроси сохранить исправленный JSON отдельным файлом с суффиксом `_corrected`.
-10. Запусти сравнение с проверенным эталоном (только после того, как результат уже получен и сохранён):
-   ```
-   .venv/bin/python3 experiments/chat_extraction_poc/compare_with_validated_input.py \
-     --claude-json experiments/chat_extraction_poc/outputs/gpt_usv_extraction.json \
-     --validated-input experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json \
-     --report experiments/chat_extraction_poc/reports/gpt_usv_compare_report.md
+2. Архив `claude_chat_extraction_pack.zip`.
+
+   В архиве лежат правила для чата. PDF проекта в архив не входят, их нужно загружать отдельно.
+
+## Что лежит в архиве
+
+В архиве должны быть только эти файлы:
+
+- `prompts/claude_estimate_extraction_prompt.md`;
+- `schemas/claude_extraction_output_schema.json`;
+- `data/calculator_targets_compact.json`;
+- `data/target_aliases_ru.yaml`;
+- `data/unit_normalization_guide.json`;
+- `data/section_guide.json`;
+- `README_FOR_CHAT_UPLOAD.md`.
+
+Если в архиве есть PDF проекта, старые результаты, Excel-файлы или лишние промпты, архив собран неправильно.
+
+## Как сделать извлечение в чате
+
+1. Откройте новый чат GPT.
+
+2. Загрузите в чат PDF проекта.
+
+   Если проект состоит из двух PDF, загрузите оба файла.
+
+3. Загрузите в этот же чат архив `claude_chat_extraction_pack.zip`.
+
+4. Напишите в чат:
+
+   ```text
+   Прочитай архив. Используй файл prompts/claude_estimate_extraction_prompt.md как основную инструкцию.
+   PDF проекта уже загружены в чат. Сделай извлечение данных по инструкции.
+   В ответе нужны два отдельных файла:
+   1. extraction_output.json
+   2. service_note.txt
+   Текст файлов не вставляй в сообщение, выдай именно файлами.
    ```
 
-**Важно:** не показывай чату во время извлечения (шаги 1–5) файл
-`experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json`
-и не давай никаких чисел из него в подсказках/уточнениях — иначе
-сравнение на шаге 8 станет нечестным.
+5. Дождитесь ответа чата.
 
-Если PDF большой и чат не справляется с ним целиком за одно
-сообщение — можно идти по разделам сметы (по одному сообщению на
-раздел из `calculator_targets_compact.json`), а в конце собрать все
-разделы в один JSON-объект по схеме.
+   Нормальный результат: чат отдаёт два файла:
+
+   - `extraction_output.json`;
+   - `service_note.txt`.
+
+6. Скачайте оба файла.
+
+7. Положите скачанные файлы в папку проекта, куда договорились складывать результаты текущего прогона.
+
+## Если чат отвечает неправильно
+
+### Чат вернул PDF обратно
+
+Так делать не нужно. Напишите:
+
+```text
+PDF возвращать не нужно. Прочитай архив и выполни инструкцию из prompts/claude_estimate_extraction_prompt.md.
+Нужны только два файла: extraction_output.json и service_note.txt.
+```
+
+### Чат вставил JSON текстом в сообщение
+
+Попросите выдать файл:
+
+```text
+Сохрани JSON отдельным файлом extraction_output.json и дай его скачать.
+Служебную записку сохрани отдельным файлом service_note.txt.
+```
+
+### Чат пишет, что не видит правила
+
+Напишите:
+
+```text
+Открой загруженный архив claude_chat_extraction_pack.zip.
+Внутри есть файл prompts/claude_estimate_extraction_prompt.md.
+Используй его как инструкцию.
+```
+
+### Чат начал рассуждать вместо выдачи файлов
+
+Напишите:
+
+```text
+Не нужно пояснений в сообщении. Нужны только два файла:
+extraction_output.json и service_note.txt.
+```
+
+## Что важно проверить после скачивания
+
+1. Файл JSON должен называться понятно, например:
+
+   - `trc_extraction_output.json`;
+   - `ark_extraction_output.json`;
+   - `usv_extraction_output.json`.
+
+2. Служебная записка должна называться понятно, например:
+
+   - `trc_service_note.txt`;
+   - `ark_service_note.txt`;
+   - `usv_service_note.txt`.
+
+3. JSON не нужно править вручную.
+
+4. Если в служебной записке есть сомнения модели, это нормально. Эти сомнения дальше проверяются отдельно.
+
+## Коротко
+
+1. Новый чат.
+2. Загрузить PDF проекта.
+3. Загрузить `claude_chat_extraction_pack.zip`.
+4. Попросить прочитать архив и выполнить основной промпт.
+5. Скачать два файла: JSON и служебную записку.
+6. Положить файлы в папку текущего проекта.

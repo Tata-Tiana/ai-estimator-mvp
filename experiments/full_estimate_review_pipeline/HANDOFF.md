@@ -1458,3 +1458,38 @@ the `flat_roof` (2026-08-05) section.
 If a future project genuinely has gas-block walls needing hole-drilling, all 3 contract
 entries will need to be re-added, and a real price sourced from whatever price list is current
 at that time.
+
+## Current Note 2026-08-14: second-pass extraction correction is experimental only
+
+Built a universal helper script for a possible second-pass review of extraction JSON:
+`experiments/full_estimate_review_pipeline/build_extraction_correction_packet.py`.
+It scans an extraction JSON for places where useful facts may be present in `notes`,
+`candidates`, `raw_table_rows`, `missing`, or `needs_review`, but not yet cleanly placed into
+calculator-facing fields. It outputs a correction packet (`.md` + `.json`) that can be sent
+back to the same chat together with the original JSON and already-loaded project PDFs.
+
+Also wrote a separate internal prompt:
+`experiments/chat_extraction_poc/prompts/extraction_second_pass_correction_prompt.md`.
+
+Important decision: this is **not production pipeline yet** and is **not included in
+`claude_chat_extraction_pack.zip`**. The pack for the estimator must contain only the normal
+first-pass extraction prompt, schema, target/alias/unit/section files, and README.
+
+Tested on TRC 2026-08-14:
+
+- before second pass: `extraction_output_corrected(3).json`;
+- after second pass experiment: `extraction_output_corrected_second_pass.json`;
+- validation stayed clean in both files;
+- `needs_review` went from 23 to 21;
+- correction packet size went from 76 to 71 tasks.
+
+Conclusion: the method is useful as an internal audit flashlight, but not yet strong enough
+to be an automatic mandatory step. It slightly improved a few items (for example some direct
+project quantities moved out of `needs_review`), but also rewrote notes/confidence and still
+left many review tasks. For now:
+
+- do **not** use second-pass JSON for review workbook / Google table / estimate assembly;
+- use the main corrected first-pass JSON as the production input;
+- keep second-pass correction only as a test tool;
+- test the same approach on other projects (ARK/USV or future projects) before deciding
+  whether it belongs in the official pipeline.
