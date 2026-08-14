@@ -176,7 +176,7 @@ EXPLICIT_PARAMETERS: dict[str, list[dict[str, Any]]] = {
         p("pit_excavation_depth", "pit_excavation_depth_m", "Глубина котлована", "м", "parsed", True,
           ["Глубина котлована", "глубина"], [r"[Гг]лубина\s*котлован.*?(?P<value>\d+[,.]?\d*)\s*м"],
           resolver_hints={
-              # Depth in USV/TRC is typically given as a negative elevation marker
+              # Depth in real projects is typically given as a negative elevation marker
               # (отм. -0,500). parse_quantities returns kind='elevation' with
               # value_decimal < 0. Resolver must take abs() for the depth value.
               "expected_unit": "m",

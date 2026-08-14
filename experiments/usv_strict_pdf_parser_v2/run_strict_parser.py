@@ -32,7 +32,7 @@ def run() -> dict:
 
 def main() -> int:
     result = run()
-    print("USV strict parser v2 completed")
+    print("Strict parser v2 completed")
     print(f"- candidates: {CANDIDATES_PATH}")
     print(f"- spec_rows: {SPEC_ROWS_PATH}")
     print(f"- targets: {TARGETS_PATH}")

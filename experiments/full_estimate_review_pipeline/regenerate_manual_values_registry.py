@@ -2,7 +2,7 @@
 
 This registry is a universal manual-input template, not a project sample. It may preserve
 already-filled values only when those values are approved as project-independent defaults.
-Do not store quantities, fixed amounts, or comments copied from ARK/TRC/USV estimates here.
+Do not store quantities, fixed amounts, or comments copied from real project estimates here.
 
 Matched by (section_code, key); drops rows for fields that are no longer MANUAL_REVIEW/
 SUPPLIER_INPUT (e.g. once a field becomes AUTO_CALCULATED); adds newly-manual fields blank.

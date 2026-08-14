@@ -1118,7 +1118,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
         },
     }
 
-    # section_title: was hardcoded to one TRC project's own elevation/thickness ("+4.680 (200мм)")
+    # section_title: was hardcoded to one real project's own elevation/thickness ("+4.680 (200мм)")
     # regardless of which project actually ran - same bug class as floor_slab_1's earlier literal-
     # 51.9 bug (see FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md finding 9). Not compared by run_case.py
     # and not read by the real production workbook (export_calculator_results_to_estimate_workbook.py's

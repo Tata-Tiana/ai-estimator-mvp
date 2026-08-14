@@ -5,8 +5,8 @@ clean_test_jobs.py — очистить тестовые job-папки и Googl
 Usage:
   python clean_test_jobs.py --dry-run --all --clean-telegram-data --backup-first
   python clean_test_jobs.py --apply --all --clean-telegram-data --backup-first
-  python clean_test_jobs.py --dry-run --project-prefix ЮСВ
-  python clean_test_jobs.py --apply --project-prefix МКП1
+  python clean_test_jobs.py --dry-run --project-prefix ProjectA
+  python clean_test_jobs.py --apply --project-prefix ProjectB
 """
 
 from __future__ import annotations

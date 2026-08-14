@@ -247,7 +247,7 @@ def read_production_item_rows(wb, contract: dict[str, Any]) -> dict[str, list[di
                     # override. A blind existing.update(item) here overwrote every OTHER field
                     # with that stale, un-overridden extraction copy every time a later row for
                     # the same item was merged in - silently reverting any override applied by
-                    # an earlier row (2026-08-12: found on real TRC data, Elena's К3 trench
+                    # an earlier row (2026-08-12: found on real project data, Elena's К3 trench
                     # length_m override to 0 was being discarded by the next row's merge, "Объем
                     # траншей" stayed wrong even though the override cell clearly showed 0 in
                     # the sheet). Only ever touch the one field this row is actually about.

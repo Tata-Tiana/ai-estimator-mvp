@@ -9,7 +9,7 @@ Two real contract gaps found and fixed while building this adapter (2026-08-05, 
 authorization both times) - see the contract's own notes on each new entry for details:
 1. price_keys only had entries for the 2x/3x channel types and no masonry-gas-block
    prices at all, even though the calculator supports 1x/2x/3x/4x/cvent channels and
-   D400/D500 masonry densities. TRC's own real data uses 1x, ARK's uses 4x - a real
+   D400/D500 masonry densities. One real project's own data uses 1x, another's uses 4x - a real
    production KeyError risk. Added the 5 missing price_keys (1x/4x/cvent channels,
    D400/D500 masonry - 1x/4x required since real projects already use them, cvent/D400/
    D500 optional since they're rare/conditional).

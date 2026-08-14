@@ -595,11 +595,11 @@ def autofit_row_heights(ws, min_row: int, max_row: int | None = None) -> None:
 
 # GOST 34028-2016 standard linear mass (kg per meter) by nominal rebar diameter - a physical
 # constant, identical for every project, not a business judgment call. Confirmed against two real
-# projects independently (2026-07-30): USV's PDF gives kg_per_meter directly and matches this
-# table exactly for every diameter seen; TRC's PDF instead gives a pre-multiplied total weight_kg
-# per spec line, and dividing that by the item's length reproduces this table to the rounding
-# digit for every item checked. Used only as the fallback rate when an item's own kg_per_meter
-# isn't given (e.g. ARK's PDF gives length only, no mass column at all) - see
+# projects independently (2026-07-30): one project's PDF gives kg_per_meter directly and matches
+# this table exactly for every diameter seen; another project's PDF instead gives a pre-multiplied
+# total weight_kg per spec line, and dividing that by the item's length reproduces this table to
+# the rounding digit for every item checked. Used only as the fallback rate when an item's own
+# kg_per_meter isn't given (e.g. a third project's PDF gives length only, no mass column at all) - see
 # rebar_weight_standard_gost_table memory/plan entry.
 GOST_REBAR_KG_PER_METER = {
     6: 0.222,
@@ -625,7 +625,7 @@ GOST_REBAR_ROD_LENGTH_M = {
 def rebar_item_weight_kg(item: dict[str, Any]) -> float | None:
     """One rebar item's total weight in kg = length_m * rate. rate is the item's own
     kg_per_meter if the PDF/extraction gave it, else GOST_REBAR_KG_PER_METER by diameter. A
-    PDF-given total weight_kg (when present, e.g. TRC) is deliberately NOT read here as an
+    PDF-given total weight_kg (when present, e.g. in one real project) is deliberately NOT read here as an
     independent input - per the 2026-07-30 decision, length x rate is the only path to a rebar
     item's weight, so there is exactly one way to get the number, never two that could disagree.
     Returns None (does not guess) if there's no length, or no rate is available anywhere."""

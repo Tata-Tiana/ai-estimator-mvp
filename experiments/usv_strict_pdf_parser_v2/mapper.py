@@ -328,7 +328,7 @@ def build_final_project_parameters_draft(mapped: list[dict[str, Any]], normalize
                 }
             )
     return {
-        "project_name": "ЮСВ 2026 strict parser v2",
+        "project_name": "strict parser v2 (2026)",
         "data_integrity": {
             "strict_parse_mode": True,
             "curated_values_used_as_data": 0,

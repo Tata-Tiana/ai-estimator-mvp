@@ -43,7 +43,7 @@ EXPLANATION_KEYS = [
 EXPLANATION_HEADERS = [
     "Где используется в смете",
     "Формула калькулятора",
-    "Пример формулы ЮСВ",
+    "Пример формулы (эталонный кейс)",
     "Что проверить Елене",
     "Зачем нужен параметр",
 ]
@@ -166,7 +166,7 @@ def fmt(value: Any) -> str:
 
 def value_note(row: dict[str, Any]) -> str:
     value = template_value(row)
-    return f"В эталонном кейсе ЮСВ сейчас: {fmt(value)}." if value is not None else "В текущей таблице значение не найдено; нужно подтвердить источник."
+    return f"В эталонном кейсе сейчас: {fmt(value)}." if value is not None else "В текущей таблице значение не найдено; нужно подтвердить источник."
 
 
 def context_pack(row: dict[str, Any]) -> dict[str, str]:
@@ -187,79 +187,79 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "manual_excavation_override" in key:
             used = "Блок расчета строки `Разработка грунта вручную`."
             formula = "Если override включен, калькулятор может брать ручное количество `manual_excavation_quantity_for_estimate_m3`; иначе считает `pit_area_m2 * manual_refinement_depth_m + trench_volume_m3`."
-            example = "ЮСВ: override включен; для строки сметы используется ручное количество 44.695 м3."
+            example = "Пример: override включен; для строки сметы используется ручное количество 44.695 м3."
             check = "Подтвердить, нужно ли в этом проекте использовать ручное количество разработки грунта."
             why = "Это переключатель между формульным расчетом и ручным сметным количеством."
         elif "sand_override" in key:
             used = "Строки `Отсыпка песком`, `Песок строительный`, `Перемещение песка вручную`."
             formula = "Если override включен, количество песка можно задать вручную; иначе `sand_order_volume_m3 = ceil((sand_base_volume_m3 + trench_volume_m3) * sand_compaction_coeff / sand_truck_step_m3) * sand_truck_step_m3`."
-            example = "ЮСВ: override выключен; расчетный заказ песка 160 м3."
+            example = "Пример: override выключен; расчетный заказ песка 160 м3."
             check = "Подтвердить, нужно ли считать песок формулой или задать вручную."
             why = "От этого зависит количество сразу в трех строках песка."
         elif "geotextile_override" in key:
             used = "Строка материала `Геотекстиль Дорнит 300`."
             formula = "Если override включен, количество геотекстиля можно задать вручную; иначе `ceil(geotextile_area_m2 * overlap_coeff / roll_area_m2) * roll_area_m2`."
-            example = "ЮСВ: override выключен; 330 * 1.10 = 363 м2, заказ 400 м2."
+            example = "Пример: override выключен; 330 * 1.10 = 363 м2, заказ 400 м2."
             check = "Подтвердить, можно ли считать геотекстиль по площади и рулонам."
             why = "Это переключатель между формульным расчетом и ручным количеством материала."
         elif key == "pit_area_m2":
             used = "Строка `Разработка грунта вручную`."
             formula = "`manual_pit_volume_m3 = pit_area_m2 * manual_refinement_depth_m`; затем `manual_excavation_total = manual_pit_volume_m3 + trench_volume_m3`."
-            example = "ЮСВ: 330 * 0.08 = 26.4 м3; 26.4 + 18.29 = 44.69 м3."
+            example = "Пример: 330 * 0.08 = 26.4 м3; 26.4 + 18.29 = 44.69 м3."
             check = "Подтвердить площадь котлована, от которой считается ручная доработка дна."
             why = "Площадь котлована участвует в количестве ручной разработки грунта."
         elif key == "manual_refinement_depth_m":
             used = "Строка `Разработка грунта вручную`."
             formula = "`manual_pit_volume_m3 = pit_area_m2 * manual_refinement_depth_m`."
-            example = "ЮСВ: 330 * 0.08 = 26.4 м3 ручной доработки дна котлована."
+            example = "Пример: 330 * 0.08 = 26.4 м3 ручной доработки дна котлована."
             check = "Подтвердить глубину ручной доработки для текущего проекта."
             why = "Это сметное правило, которое превращает площадь котлована в объем ручных работ."
         elif key == "trench_volume_m3":
             used = "Строки `Разработка грунта вручную`, `Отсыпка песком`, `Песок строительный`."
             formula = "Если объем задан, берется `trench_volume_m3`; иначе `trench_length_m * trench_depth_m * trench_width_m`. Также песок по траншеям: `trench_volume_m3 * sand_compaction_coeff`."
-            example = "ЮСВ: траншеи 18.29 м3; в ручной разработке 26.4 + 18.29 = 44.69 м3; в песке 18.29 * 1.3 = 23.777 м3."
+            example = "Пример: траншеи 18.29 м3; в ручной разработке 26.4 + 18.29 = 44.69 м3; в песке 18.29 * 1.3 = 23.777 м3."
             check = "Подтвердить объем траншей или дать длину/ширину/глубину."
             why = "Объем траншей влияет и на ручную разработку, и на песчаную подготовку."
         elif key == "sand_truck_step_m3":
             used = "Строки песка: работы, материал, перемещение."
             formula = "`sand_order_volume_m3 = ceil(sand_total_m3 / sand_truck_step_m3) * sand_truck_step_m3`."
-            example = "ЮСВ: 149.357 м3 округляется вверх шагом 20 м3 до 160 м3."
+            example = "Пример: 149.357 м3 округляется вверх шагом 20 м3 до 160 м3."
             check = "Подтвердить стандартный шаг заказа песка машиной."
             why = "Это не проектный объем, а правило закупочного округления."
         elif key == "geotextile_roll_area_m2":
             used = "Строка `Геотекстиль Дорнит 300`."
             formula = "`rolls = ceil(geotextile_area_m2 * overlap_coeff / geotextile_roll_area_m2)`; материал = `rolls * geotextile_roll_area_m2`."
-            example = "ЮСВ: 330 * 1.10 = 363 м2; ceil(363 / 100) = 4 рулона; заказ 400 м2."
+            example = "Пример: 330 * 1.10 = 363 м2; ceil(363 / 100) = 4 рулона; заказ 400 м2."
             check = "Подтвердить площадь рулона геотекстиля как каталожное значение."
             why = "Нужно для закупочного количества геотекстиля."
         elif key == "communications_length_m":
             used = "Строки `Закладка технологических входов коммуникаций` и `Материалы для устройства входов коммуникаций`."
             formula = "Работы: `communications_length_m * communications_work_unit_price`; материалы: `communications_length_m * communications_material_unit_price`."
-            example = "ЮСВ: 115 м * ставка работ; 115 м * ставка материалов."
+            example = "Пример: 115 м * ставка работ; 115 м * ставка материалов."
             check = "Подтвердить длину технологических вводов до границы дома."
             why = "Одна длина задает количество и для работ, и для материалов коммуникаций."
         elif key == "axis_marking_shifts":
             used = "Строка `Вынос осей фундамента, котлована на участок`."
             formula = "`line_total = axis_marking_shifts * axis_marking_work_unit_price`."
-            example = "ЮСВ: 1 смена * 20 000 = 20 000."
+            example = "Пример: 1 смена * 20 000 = 20 000."
             check = "Подтвердить количество смен для разбивки осей."
             why = "Это организационная сметная позиция, не извлекается напрямую из проекта."
         elif key == "excavator_shifts":
             used = "Строка `Механизированная разработка грунта, Экскаватор JCB`."
             formula = "Материалы/механизмы: `excavator_shifts * excavator_material_unit_price`; работа: `excavator_shifts * excavator_work_unit_price`."
-            example = "ЮСВ: 3 смены * 26 000 = 78 000; 3 * 3 500 = 10 500."
+            example = "Пример: 3 смены * 26 000 = 78 000; 3 * 3 500 = 10 500."
             check = "Подтвердить количество смен экскаватора."
             why = "Это решение по организации работ и технике."
         elif key == "geotextile_laying_area_m2":
             used = "Строка `Укладка геотекстиля`."
             formula = "`work_total = geotextile_laying_area_m2 * geotextile_laying_work_unit_price`."
-            example = "ЮСВ: 340 м2 * 35 = 11 900."
+            example = "Пример: 340 м2 * 35 = 11 900."
             check = "Подтвердить площадь укладки геотекстиля для работ."
             why = "Площадь работ может отличаться от закупочного количества геотекстиля с нахлестом."
         elif key == "manual_excavation_quantity_for_estimate_m3":
             used = "Строка `Разработка грунта вручную`."
             formula = "Если заполнено, строка берет это количество напрямую; иначе считает `pit_area_m2 * manual_refinement_depth_m + trench_volume_m3`."
-            example = "ЮСВ: напрямую используется 44.695 м3; сумма строки = 44.695 * 1 400 = 62 573."
+            example = "Пример: напрямую используется 44.695 м3; сумма строки = 44.695 * 1 400 = 62 573."
             check = "Подтвердить ручной объем, если он должен переопределять формулу."
             why = "Это финальное количество для строки ручной разработки грунта при override."
 
@@ -267,7 +267,7 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "membrane_roll_area" in key:
             used = "Строки `Planter Standard Технониколь` и `PLANTERBAND`."
             formula = "`membrane_rolls = ceil(membrane_area_m2 / membrane_roll_area_m2)`; `planterband_quantity = membrane_rolls * planterband_per_membrane_roll`."
-            example = f"{current} В ЮСВ рулоны мембраны считаются от площади мембраны и площади рулона."
+            example = f"{current} В этом примере рулоны мембраны считаются от площади мембраны и площади рулона."
             check = "Подтвердить площадь рулона мембраны как каталожное значение."
             why = "Определяет закупочное количество рулонов мембраны и ленты."
         elif "planterband_per_membrane_roll" in key:
@@ -279,19 +279,19 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif key in {"slab_formwork_perimeter_m", "slab_edge_height_m"}:
             used = "Строки опалубки, фанеры и пиломатериала для отбортовки плиты."
             formula = "`formwork_area_m2 = slab_formwork_perimeter_m * slab_edge_height_m`; дальше площадь участвует в фанере и пиломатериале."
-            example = f"{current} Формула ЮСВ: периметр борта * высота борта = площадь отбортовки."
+            example = f"{current} Формула (пример): периметр борта * высота борта = площадь отбортовки."
             check = "Подтвердить периметр и высоту борта фундаментной плиты."
             why = "Эти параметры задают количество опалубки по торцам плиты."
         elif "plywood_sheet" in key:
             used = "Строки `Фанера ФК 1,52*1,52` и `Пиломатериал`."
             formula = "`plywood_sheets = ceil(formwork_area_m2 / plywood_sheet_working_area_m2 + reserve)`; листы и площадь влияют на закупку фанеры."
-            example = f"{current} В ЮСВ рабочая площадь листа используется как делитель при расчете листов."
+            example = f"{current} В этом примере рабочая площадь листа используется как делитель при расчете листов."
             check = "Подтвердить размер/рабочую площадь листа фанеры как каталог/default."
             why = "Это системная настройка материала, ее не нужно спрашивать у проектировщика."
         elif "thermal_insert" in key:
             used = "Строки `Устройство и монтаж термовкладыша` и материалы ЭППС 150 мм."
             formula = "Работы: `thermal_insert_length_m * work_rate`; объем ЭППС термовставок считается из длины и геометрии элемента."
-            example = f"{current} В ЮСВ термовставки считаются по длине и размерам элемента."
+            example = f"{current} В этом примере термовставки считаются по длине и размерам элемента."
             check = "Подтвердить геометрию и длину термовставок по проекту."
             why = "Без этих размеров нельзя посчитать работы и объем ЭППС термовставок."
         elif "rebar_items" in key:
@@ -303,13 +303,13 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "rebar_crane_shifts" in key:
             used = "Строка `Подача арматуры автокраном`."
             formula = "`line_total = rebar_crane_shifts * crane_shift_price`."
-            example = f"{current} В ЮСВ это фиксированное количество смен крана."
+            example = f"{current} В этом примере это фиксированное количество смен крана."
             check = "Подтвердить количество смен крана для подачи арматуры."
             why = "Это организационная строка, не геометрия проекта."
         elif "rebar_metal_delivery_trucks" in key or "box_total_metal_weight" in key:
             used = "Строка `Доставка арматуры, металла`."
             formula = "В будущем: `trucks = ceil(total_metal_weight_kg / max_weight_per_truck_kg)`; сейчас количество машин может быть ручным."
-            example = f"{current} Для ЮСВ доставка металла должна контролироваться общим весом коробки."
+            example = f"{current} В этом примере доставка металла должна контролироваться общим весом коробки."
             check = "Подтвердить правило доставки металла: ручное количество или расчет по общему весу."
             why = "Чтобы не задвоить доставку металла между разделами."
         elif "concrete_mixer_volume" in key:
@@ -321,7 +321,7 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "concrete_pump_shifts" in key:
             used = "Строка `Работа бетононасоса`."
             formula = "`line_total = concrete_pump_shifts * concrete_pump_shift_price`."
-            example = f"{current} В ЮСВ бетононасос считается сменами."
+            example = f"{current} В этом примере бетононасос считается сменами."
             check = "Подтвердить количество смен бетононасоса."
             why = "Это ручная/организационная строка техники."
         elif "plywood_calc_method" in key or "slab_edge_height_strategy" in key:
@@ -335,25 +335,25 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if key in {"slab_formwork_perimeter_m", "slab_edge_height_m"}:
             used = "Строки вертикальной гидроизоляции, праймера, мастики и утепления ЭППС 100 мм."
             formula = "`waterproofing_area = slab_formwork_perimeter_m * slab_edge_height_m` с корректировками по участкам без утепления."
-            example = f"{current} В ЮСВ периметр и высота борта дают площадь вертикальных работ."
+            example = f"{current} В этом примере периметр и высота борта дают площадь вертикальных работ."
             check = "Подтвердить периметр и высоту вертикальной поверхности."
             why = "От этой площади зависят работы и материалы гидроизоляции."
         elif "primer" in key:
             used = "Строка праймера перед битумной мастикой."
             formula = "`primer_liters = waterproofing_area * primer_consumption_l_per_m2`; `canisters = ceil(primer_liters / primer_canister_volume_l)`."
-            example = f"{current} В ЮСВ расход и объем канистры переводят площадь в закупку праймера."
+            example = f"{current} В этом примере расход и объем канистры переводят площадь в закупку праймера."
             check = "Подтвердить расход праймера и объем канистры как каталог/default."
             why = "Это технологическая норма материала."
         elif "mastic" in key:
             used = "Строка битумной мастики."
             formula = "`mastic_required = waterproofing_area * consumption * mastic_layers`; `buckets = ceil(mastic_required / mastic_bucket_weight_kg)`."
-            example = f"{current} В ЮСВ мастика считается по площади, слоям и весу ведра."
+            example = f"{current} В этом примере мастика считается по площади, слоям и весу ведра."
             check = "Подтвердить количество слоев и вес ведра мастики."
             why = "Эти параметры переводят площадь гидроизоляции в закупочные ведра."
         elif "non_insulated_edge_lengths" in key:
             used = "Блок вертикального утепления/гидроизоляции по участкам без утепления."
             formula = "`insulated_length = total_edge_length - sum(non_insulated_edge_lengths_m)`; дальше площадь = `insulated_length * slab_edge_height_m`."
-            example = f"{current} В ЮСВ эти участки исключаются из утепляемой длины."
+            example = f"{current} В этом примере эти участки исключаются из утепляемой длины."
             check = "Подтвердить длину каждого участка, где утепление не выполняется."
             why = "Чтобы не завысить площадь ЭППС и клея."
         elif "glue_foam" in key:
@@ -367,13 +367,13 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "scaffolding" in key:
             used = "Строки устройства подмостей/лесов и пиломатериала для них."
             formula = "Работы/материал считаются напрямую от заданного количества: `quantity * unit_price`."
-            example = f"{current} В ЮСВ это отдельное количество для организации кладки."
+            example = f"{current} В этом примере это отдельное количество для организации кладки."
             check = "Подтвердить объем/количество подмостей для кладочных работ."
             why = "Это вспомогательная сметная позиция для выполнения стен."
         elif "cutoff_waterproofing" in key:
             used = "Строка отсечной гидроизоляции под стены."
             formula = "`cutoff_total_length = sum(lengths_m)`; материал/работы = `cutoff_total_length * unit_price`."
-            example = f"{current} В ЮСВ все участки 250/400 мм суммируются в общую длину отсечки."
+            example = f"{current} В этом примере все участки 250/400 мм суммируются в общую длину отсечки."
             check = "Подтвердить длины участков отсечной гидроизоляции по кладочному плану."
             why = "Каждый участок входит в суммарную длину материала и работ."
         elif "pallet_volume" in key:
@@ -385,7 +385,7 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "adhesive_consumption" in key:
             used = "Строка клея для газобетона."
             formula = "`adhesive_bags = ceil(gas_block_volume_m3 * adhesive_consumption_bag_per_m3)`."
-            example = f"{current} В ЮСВ расход клея применяется к объему кладки."
+            example = f"{current} В этом примере расход клея применяется к объему кладки."
             check = "Подтвердить расход клея на 1 м3 кладки."
             why = "Это технологическая норма, влияющая на закупку мешков клея."
         elif "sand_concrete_bag_weight" in key:
@@ -397,19 +397,19 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "lintel_lengths_m" in key:
             used = "Строки перемычек: изготовление/монтаж, бетон, арматура и опалубка перемычек."
             formula = "`lintel_total_length = sum(length_m * count)`; объем бетона = `lintel_total_length * section_width * section_height`."
-            example = f"{current} В ЮСВ длина и количество каждой перемычки суммируются."
+            example = f"{current} В этом примере длина и количество каждой перемычки суммируются."
             check = "Подтвердить длину и количество перемычек по плану перемычек."
             why = "Это основа для объема бетона, работ и материалов перемычек."
         elif "gas_block_length_m" in key or "block_height_m" in key:
             used = "Блок кладки и армирования газобетонных стен."
             formula = "Размер блока используется для количества рядов/перевода геометрии кладки в расчетные длины и объемы."
-            example = f"{current} В ЮСВ размер блока влияет на рядность и армирование кладки."
+            example = f"{current} В этом примере размер блока влияет на рядность и армирование кладки."
             check = "Подтвердить размер блока как материал/каталог."
             why = "Без размера блока нельзя корректно связать кладочный план с расчетом."
         elif "main_wall" in key and ("length" in key or "reinforcement" in key):
             used = "Строки армирования кладки несущих стен."
             formula = "`rebar_length = wall_length * reinforcement_rows * reinforcement_threads` с учетом выбранных стен 250/400 мм."
-            example = f"{current} В ЮСВ длина стен, ряды и нитки формируют метраж арматуры кладки."
+            example = f"{current} В этом примере длина стен, ряды и нитки формируют метраж арматуры кладки."
             check = "Подтвердить длину стен и схему армирования."
             why = "Эти параметры задают количество арматуры в кладке."
         elif "main_walls_crane_shifts" in key or "concrete_delivery_trips" in key or "parapet_crane_shifts" in key:
@@ -421,13 +421,13 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "lintel_rebar_items" in key:
             used = "Строки арматуры перемычек."
             formula = "Метаданные арматуры формируют название и price_code; закупка считается по весу/длине с округлением до хлыстов."
-            example = f"{current} В ЮСВ код/класс/диаметр лучше брать из каталога, а не спрашивать вручную."
+            example = f"{current} В этом примере код/класс/диаметр лучше брать из каталога, а не спрашивать вручную."
             check = "Подтвердить, что эти поля можно формировать из спецификации/каталога арматуры."
             why = "Это описание позиции, а не отдельное проектное количество."
         elif "lintel_section" in key:
             used = "Блок расчета бетонных перемычек."
             formula = "`lintel_concrete_volume = lintel_total_length * lintel_section_width_m * lintel_section_height_m`."
-            example = f"{current} В ЮСВ сечение перемычки переводит длину перемычек в объем бетона."
+            example = f"{current} В этом примере сечение перемычки переводит длину перемычек в объем бетона."
             check = "Подтвердить ширину и высоту сечения перемычек."
             why = "Сечение напрямую влияет на объем бетона и опалубки."
         elif "lintel_concrete_min_order" in key:
@@ -439,7 +439,7 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif any(token in key for token in ("parapet", "second_light", "vent_chimney")):
             used = "Дополнительные блоки кладки: парапет, второй свет, обкладка вентканалов."
             formula = "При включении блока объем кладки/длины сегментов переводятся в работы, блоки, клей и армирование."
-            example = f"{current} В ЮСВ эти параметры включают или уточняют дополнительные участки кладки."
+            example = f"{current} В этом примере эти параметры включают или уточняют дополнительные участки кладки."
             check = "Подтвердить, входит ли этот блок в расчет и какие объемы/длины брать."
             why = "Это case-specific часть стен, ее нельзя скрывать без подтвержденного правила."
 
@@ -447,31 +447,31 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "total_concrete_volume_from_spec" in key:
             used = "Строки бетонирования плиты, бетона М300, доставки бетона; также контроль разделения плита/балки."
             formula = "`slab_concrete_volume = total_concrete_volume_from_spec_m3 - beams_total_concrete_volume`; `slab_formwork_area = slab_concrete_volume / slab_thickness`."
-            example = f"{current} В ЮСВ из общего объема вычитаются балки, затем считается площадь опалубки плиты."
+            example = f"{current} В этом примере из общего объема вычитаются балки, затем считается площадь опалубки плиты."
             check = "Подтвердить общий объем бетона по спецификации плиты перекрытия."
             why = "Это базовый объем раздела перекрытия 1-го этажа."
         elif "slab_concrete_volume_m3_raw" in key or "slab_concrete_volume_m3_display" in key:
             used = "Контрольные raw/display значения для бетонирования плиты."
             formula = "`slab_concrete_volume_raw = total_concrete_volume_from_spec_m3 - beams_total_concrete_volume`; display = округленное значение для Excel."
-            example = f"{current} В ЮСВ стоимость считается от raw, а не от display."
+            example = f"{current} В этом примере стоимость считается от raw, а не от display."
             check = "Не заполнять вручную; подтвердить исходные объемы, из которых это считается."
             why = "Raw/display нужны для точного совпадения с Excel."
         elif "slab_edge_perimeter" in key or "edge_formwork_height" in key:
             used = "Строка опалубки отбортовки плиты, фанера и пиломатериал."
             formula = "`edge_formwork_area = slab_edge_perimeter_m * edge_formwork_height_m`; потом `edge_and_beam_formwork_area = edge_formwork_area + beams_formwork_area`."
-            example = f"{current} В ЮСВ торец плиты добавляется к площади опалубки балок."
+            example = f"{current} В этом примере торец плиты добавляется к площади опалубки балок."
             check = "Подтвердить периметр торца и высоту отбортовки."
             why = "Это влияет на фанеру, пиломатериал и нулевую строку опалубки."
         elif "beams.items" in key:
             used = "Строки `Бетонирование балки`, опалубка балок, фанера и пиломатериал."
             formula = "Для каждой балки: `concrete_volume = length * width * height`; `formwork_area = length * (width + 2 * height)`."
-            example = f"{current} В ЮСВ балки Б-1/Б-2/Б-3 суммируются в общий объем и площадь опалубки."
+            example = f"{current} В этом примере балки Б-1/Б-2/Б-3 суммируются в общий объем и площадь опалубки."
             check = "Подтвердить длину, ширину и высоту каждой балки по доп. таблице/проекту."
             why = "Геометрия балок отделяет объем балок от плиты и задает опалубку."
         elif "formwork_supplier_quote" in key or "slab_2_formwork_area" in key:
             used = "Строка `Комплект опалубки` и справочный расчет ставки аренды."
             formula = "`raw_average_rate = supplier_quote_total / (floor_slab_1_area + floor_slab_2_area)`; в текущем Excel может использоваться фиксированная ставка."
-            example = f"{current} В ЮСВ это контекст для проверки ставки опалубки."
+            example = f"{current} В этом примере это контекст для проверки ставки опалубки."
             check = "Подтвердить предложение поставщика и площадь второго перекрытия для справочной ставки."
             why = "Нужно для проверки ставки аренды опалубки, но не должно быть слепым default."
         elif "crane_shift_rate" in key or "concrete_pump_rate" in key:
@@ -483,31 +483,31 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "plywood_sheet_working_area" in key or "reserve_plywood_sheets" in key or "overhang_sheet_equivalent" in key:
             used = "Строки фанеры и пиломатериала для опалубки."
             formula = "`plywood_sheets = ceil(edge_and_beam_area / sheet_area + non_multiple_area / sheet_area + reserve)`; доп. объем пиломатериала учитывает некратные места и свесы."
-            example = f"{current} В ЮСВ эти параметры участвуют в закупке фанеры/пиломатериала."
+            example = f"{current} В этом примере эти параметры участвуют в закупке фанеры/пиломатериала."
             check = "Подтвердить резерв/рабочую площадь/свесы как правило расчета."
             why = "Они переводят площадь опалубки в закупочные листы и кубы пиломатериала."
         elif "rebar_items" in key:
             used = "Строки арматуры перекрытия 1-го этажа и нулевая строка каркаса."
             formula = "`base_length = source_weight / kg_per_meter`; `length_with_waste = base_length * waste`; `rods = ceil(length_with_waste / rod_length)`; `order_length = rods * rod_length`; материал = `order_length * price_per_m`."
-            example = f"{current} В ЮСВ веса по спецификации по диаметрам переводятся в закупочные метры."
+            example = f"{current} В этом примере веса по спецификации по диаметрам переводятся в закупочные метры."
             check = "Подтвердить веса арматуры по спецификации; метаданные брать из каталога."
             why = "Арматура закупается хлыстами, поэтому нужен вес по диаметрам."
         elif "rebar_weight_for_delivery" in key or "max_rebar_delivery_weight" in key:
             used = "Строка `Доставка арматуры, металла`."
             formula = "`trucks = ceil((floor_slab_1_rebar_weight + floor_slab_2_rebar_weight) / max_weight_per_truck)`."
-            example = f"{current} В ЮСВ доставка металла должна считаться по общему весу, чтобы не задвоить ее."
+            example = f"{current} В этом примере доставка металла должна считаться по общему весу, чтобы не задвоить ее."
             check = "Подтвердить весовой контекст и грузоподъемность машины."
             why = "Это влияет на количество машин доставки металла."
         elif "total_eps_volume_from_spec" in key:
             used = "Строки утепления торцов/низа плиты и ЭППС."
             formula = "`bottom_slab_eps_volume = total_eps_volume_from_spec - edge_and_beam_eps_volume`; площадь низа = `volume / thickness`."
-            example = f"{current} В ЮСВ общий объем ЭППС делится на торцы/балки и низ плиты."
+            example = f"{current} В этом примере общий объем ЭППС делится на торцы/балки и низ плиты."
             check = "Подтвердить общий объем ЭППС по спецификации."
             why = "Это базовый объем утеплителя для раздела."
         elif "overheads" in key:
             used = "Строки `Логистика, и снабжение` и `Расходные материалы, амортизация инструмента`."
             formula = "`addon_total = raw_base_before_overheads * percent`."
-            example = f"{current} В ЮСВ проценты считаются от raw-базы до overheads."
+            example = f"{current} В этом примере проценты считаются от raw-базы до overheads."
             check = "Подтвердить процент как системное правило."
             why = "Это не проектная геометрия, а сметное правило."
         elif "manual_lines" in key:
@@ -521,61 +521,61 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if key in {"slab_length_m", "slab_width_m", "slab_area_m2", "slab_edge_perimeter_m"}:
             used = "Строки опалубки, утепления торца и контроля геометрии плиты 2-го этажа."
             formula = "`slab_area_m2 = slab_length_m * slab_width_m`; `slab_edge_perimeter_m = 2 * (slab_length_m + slab_width_m)`."
-            example = f"{current} ЮСВ: 9 * 9.1 = 81.9 м2; периметр 36.2 м."
+            example = f"{current} Пример: 9 * 9.1 = 81.9 м2; периметр 36.2 м."
             check = "Подтвердить габариты, площадь и периметр плиты."
             why = "Эти параметры задают площадь опалубки и длину утепления торца."
         elif "main_formwork_area" in key:
             used = "Строка `Комплект опалубки`."
             formula = "`material_total = main_formwork_area_m2 * formwork_rental_used_rate_per_m2`."
-            example = f"{current} ЮСВ: 81.9 * 850 = 69 615."
+            example = f"{current} Пример: 81.9 * 850 = 69 615."
             check = "Подтвердить основную площадь опалубки."
             why = "Это базовое количество аренды опалубки."
         elif "formwork_rental_supplier_quote" in key:
             used = "Справочный контроль ставки аренды опалубки."
             formula = "`raw_supplier_rate = formwork_rental_supplier_quote_total / main_formwork_area_m2`; расчетная строка может использовать confirmed rate."
-            example = f"{current} ЮСВ: 68 860 / 81.9 = 840.78; используется ставка 850."
+            example = f"{current} Пример: 68 860 / 81.9 = 840.78; используется ставка 850."
             check = "Подтвердить сумму предложения поставщика."
             why = "Это проверка ставки, а не универсальный default."
         elif "delivery_trips" in key or "crane_shifts" in key or "concrete_pump_shifts" in key:
             used = "Строки доставки опалубки, автокрана или бетононасоса."
             formula = "`line_total = quantity * unit_price`."
-            example = f"{current} В ЮСВ количество рейсов/смен умножается на ставку."
+            example = f"{current} В этом примере количество рейсов/смен умножается на ставку."
             check = "Подтвердить количество рейсов/смен."
             why = "Это организационный параметр."
         elif "edge_formwork_height" in key:
             used = "Строка торцевой опалубки, фанера и пиломатериал."
             formula = "`edge_formwork_area = slab_edge_perimeter_m * edge_formwork_height_m`."
-            example = f"{current} ЮСВ: 36.2 * 0.2 = 7.24 м2."
+            example = f"{current} Пример: 36.2 * 0.2 = 7.24 м2."
             check = "Подтвердить высоту торцевой опалубки."
             why = "Нужна для фанеры и пиломатериала."
         elif "plywood" in key:
             used = "Строка фанеры и расчет пиломатериала."
             formula = "`plywood_sheets = ceil(edge_area / sheet_area + non_multiple_area / sheet_area + reserve)`."
-            example = f"{current} ЮСВ: 7.24/2.3 + 16.38/2.3 + 5 = 15.27; заказ 16 листов."
+            example = f"{current} Пример: 7.24/2.3 + 16.38/2.3 + 5 = 15.27; заказ 16 листов."
             check = "Подтвердить рабочую площадь листа и резерв."
             why = "Это правило закупки фанеры."
         elif "rebar_items" in key:
             used = "Строки арматуры плиты 2-го этажа и нулевая строка каркаса."
             formula = "`order_length = ceil((source_weight / kg_per_meter * waste_coeff) / rod_length) * rod_length`; материал = `order_length * price_per_m`."
-            example = f"{current} В ЮСВ веса арматуры переводятся в закупочные метры по диаметрам."
+            example = f"{current} В этом примере веса арматуры переводятся в закупочные метры по диаметрам."
             check = "Подтвердить веса арматуры по спецификации; метаданные брать из каталога."
             why = "Арматура закупается хлыстами, поэтому нужен вес и диаметр."
         elif "concrete_mixer_volume" in key:
             used = "Строка `Доставка бетона до объекта`."
             formula = "`trips = ceil(concrete_order_volume_m3 / concrete_mixer_volume_m3)`."
-            example = f"{current} ЮСВ: 17.5 / 9 = 1.94; заказ 2 рейса."
+            example = f"{current} Пример: 17.5 / 9 = 1.94; заказ 2 рейса."
             check = "Подтвердить объем миксера."
             why = "Определяет количество рейсов бетона."
         elif "edge_insulation_height" in key:
             used = "Строки утепления торца и ЭППС 100 мм."
             formula = "`edge_insulation_area = slab_edge_perimeter_m * edge_insulation_height_m`; `eps_volume = area * eps_thickness`."
-            example = f"{current} ЮСВ: 36.2 * 0.18 = 6.516 м2."
+            example = f"{current} Пример: 36.2 * 0.18 = 6.516 м2."
             check = "Подтвердить высоту утепления торца."
             why = "В названии раздела 200 мм, но для Excel сейчас используется 0.18 м; это надо подтвердить."
         elif "foam_min_cans" in key or "logistics_rate" in key or "consumables_rate" in key:
             used = "Строки клей-пены, логистики и расходников."
             formula = "Клей: `max(min_cans, ceil(edge_area / coverage))`; логистика/расходники: `raw_base * percent`."
-            example = f"{current} В ЮСВ эти параметры являются системными правилами расчета."
+            example = f"{current} В этом примере эти параметры являются системными правилами расчета."
             check = "Подтвердить как default/catalog правило."
             why = "Это не проектная геометрия, а правило закупки/накладных."
 
@@ -583,49 +583,49 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "roof_area_level" in key or key == "roof_area_total_m2":
             used = "Строки пароизоляции, утепления ЭППС, геотекстиля, ПВХ мембраны и работ по кровле."
             formula = "`roof_area_total_m2 = roof_area_level_1_m2 + roof_area_level_2_m2`; работы/материалы считаются от общей площади с коэффициентами."
-            example = f"{current} ЮСВ: 177.52 + 71.40 = 248.92 м2."
+            example = f"{current} Пример: 177.52 + 71.40 = 248.92 м2."
             check = "Подтвердить площади кровли по уровням."
             why = "Общая площадь кровли является базой большинства строк раздела."
         elif "parapet_length" in key or "vent_wall_abutment" in key or "parapet_and_abutment_total" in key:
             used = "Строки примыканий ПВХ мембраны, геотекстиля парапетов, алюминиевых реек."
             formula = "`parapet_and_abutment_total_length_m = parapet_length_level_1 + parapet_length_level_2 + vent_wall_abutments`."
-            example = f"{current} ЮСВ: суммарная длина примыканий 138.62 м."
+            example = f"{current} Пример: суммарная длина примыканий 138.62 м."
             check = "Подтвердить длины парапетов и примыканий по плану/узлам кровли."
             why = "Длина примыканий задает работы и материалы по вертикальным участкам кровли."
         elif "roll_area" in key or "roll_width" in key or "roll_length" in key:
             used = "Строки пароизоляции, геотекстиля или ПВХ мембраны."
             formula = "`rolls = ceil(required_area / roll_area)`; для ПВХ `roll_area = roll_width * roll_length`."
-            example = f"{current} В ЮСВ рулонные материалы закупаются целыми рулонами."
+            example = f"{current} В этом примере рулонные материалы закупаются целыми рулонами."
             check = "Подтвердить параметры рулона как каталог материала."
             why = "Это закупочное округление, не проектная площадь."
         elif "supplier_required_volume" in key:
             used = "Строки ЭППС 50 мм и уклонных плит кровли."
             formula = "`packs = ceil(supplier_required_volume_m3 / pack_volume_m3)`; `ordered_volume = packs * pack_volume_m3`; сумма = `ordered_volume * price`."
-            example = f"{current} В ЮСВ объемы уклонных плит берутся из раскладки поставщика/Технониколь."
+            example = f"{current} В этом примере объемы уклонных плит берутся из раскладки поставщика/Технониколь."
             check = "Подтвердить объем по раскладке поставщика для текущей кровли."
             why = "Калькулятор пока не строит раскладку уклонных плит сам."
         elif "vent_shaft_abutment_count" in key:
             used = "Строка `Монтаж примыкания к вентшахтам`."
             formula = "`work_total = vent_shaft_abutment_count * rate_per_item`."
-            example = f"{current} ЮСВ: 3 * 5 000 = 15 000."
+            example = f"{current} Пример: 3 * 5 000 = 15 000."
             check = "Подтвердить количество вентшахт/примыканий."
             why = "Это отдельные штучные работы на кровле."
         elif "rail_piece_length" in key:
             used = "Строки прижимной и краевой алюминиевой рейки."
             formula = "`pieces = ceil(parapet_and_abutment_total_length_m / rail_piece_length_m)`; `ordered_length = pieces * rail_piece_length_m`."
-            example = f"{current} ЮСВ: 138.62 / 3 = 46.2; заказ 47 шт = 141 м."
+            example = f"{current} Пример: 138.62 / 3 = 46.2; заказ 47 шт = 141 м."
             check = "Подтвердить длину одной рейки как каталог."
             why = "Нужно для закупочного округления рейки."
         elif "pvc_membrane_expected_material_total" in key:
             used = "Строка `Полимерная мембрана ПВХ Logicroof V-RP`."
-            formula = "В идеале: `rolls * price_per_roll`; в ЮСВ есть raw/display расхождение, поэтому сумма фиксируется как контрольная."
-            example = f"{current} ЮСВ: 11 рулонов, Excel сумма 565 738."
+            formula = "В идеале: `rolls * price_per_roll`; в реальных данных есть raw/display расхождение, поэтому сумма фиксируется как контрольная."
+            example = f"{current} Пример: 11 рулонов, Excel сумма 565 738."
             check = "Подтвердить источник суммы/цены ПВХ мембраны."
             why = "Нужно разобрать расхождение между отображаемой ценой и суммой Excel."
         elif "aerators_count" in key:
             used = "Строка `Аэратор кровельный PVC`."
             formula = "Материал = `count * unit_price`; работа = `count * installation_rate`."
-            example = f"{current} ЮСВ: 3 аэратора."
+            example = f"{current} Пример: 3 аэратора."
             check = "Подтвердить количество кровельных аэраторов."
             why = "Это штучная позиция кровли."
         elif "installation_rate" in key or "drilling_rate" in key:
@@ -637,19 +637,19 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         elif "drains_count" in key or "holes_count" in key or "internal_drain_height" in key:
             used = "Строки кровельных воронок, отверстий и внутреннего водостока."
             formula = "Воронки/отверстия: `count * unit_price/rate`; внутренний водосток: `internal_roof_drains_count * internal_drain_height_per_drain_m`."
-            example = f"{current} В ЮСВ штучные количества и высота стояка задают работы и материалы."
+            example = f"{current} В этом примере штучные количества и высота стояка задают работы и материалы."
             check = "Подтвердить количество воронок/отверстий и высоту внутреннего водостока."
             why = "Эти параметры задают штучные и погонные метры кровельного водоотвода."
         elif "roof_crane_lifting_shifts" in key:
             used = "Строка `Подъем материалов автокраном`."
             formula = "`line_total = roof_crane_lifting_shifts * crane_shift_price`."
-            example = f"{current} В ЮСВ это количество смен крана для кровельных материалов."
+            example = f"{current} В этом примере это количество смен крана для кровельных материалов."
             check = "Подтвердить количество смен автокрана."
             why = "Это организационная строка техники."
         elif "consumables" in key or "logistics" in key or "technical_supervision" in key or "procurement_storage" in key:
             used = "Строки расходников, логистики, технического надзора или заготовительно-складских расходов."
             formula = "Сумма берется как подтвержденная ставка/процент/ручная строка; после аудита должна уйти в price_registry/defaults или отдельное правило."
-            example = f"{current} В ЮСВ это не геометрия кровли, а сметное правило/ставка."
+            example = f"{current} В этом примере это не геометрия кровли, а сметное правило/ставка."
             check = "Подтвердить источник: прайс, процент от базы или ручная строка."
             why = "Такие суммы нельзя оставлять непонятным ручным вводом."
 
@@ -657,25 +657,25 @@ def context_pack(row: dict[str, Any]) -> dict[str, str]:
         if "vent_channel_1_height" in key or "vent_channel_2_height" in key or "vent_channel_2_count" in key:
             used = "Строка `Кладка вентканалов Schiedel`."
             formula = "`schiedel_masonry_total_length_m = vent_channel_1_height_m + vent_channel_2_height_m * vent_channel_2_count`."
-            example = f"{current} ЮСВ: 6.2 + 4.81 * 2 = 15.82 м."
+            example = f"{current} Пример: 6.2 + 4.81 * 2 = 15.82 м."
             check = "Подтвердить высоты и количество вентканалов по разрезу."
             why = "Из этих параметров получается общая длина кладки."
         elif "schiedel_masonry_total_length" in key:
             used = "Строка `Кладка вентканалов Schiedel`."
             formula = "`work_total = schiedel_masonry_total_length_m * schiedel_masonry_work_rate_per_m`; значение может вычисляться из высот каналов."
-            example = f"{current} ЮСВ: 15.82 * 5 000 = 79 100."
+            example = f"{current} Пример: 15.82 * 5 000 = 79 100."
             check = "Не заполнять вручную, если подтверждены высоты каналов."
             why = "Это производное количество работ."
         elif "schiedel_delivery_trips" in key:
             used = "Строка `Доставка вентканалов`."
             formula = "Материалы/техника = `trips * truck_price`; работа = `trips * delivery_work_price`."
-            example = f"{current} ЮСВ: 1 рейс * 15 000 + 1 * 2 500 = 17 500."
+            example = f"{current} Пример: 1 рейс * 15 000 + 1 * 2 500 = 17 500."
             check = "Подтвердить количество доставок Schiedel."
             why = "Это логистика, обычно задается сметчиком."
         elif "consumables_rate" in key:
             used = "Строка `Расходные материалы, амортизация инструмента`."
             formula = "`consumables_total = direct_cost_base_before_consumables * consumables_rate`."
-            example = f"{current} ЮСВ: 114 456 * 0.03 = 3 433.68 -> 3 434."
+            example = f"{current} Пример: 114 456 * 0.03 = 3 433.68 -> 3 434."
             check = "Подтвердить процент расходников как системное правило."
             why = "Это процент от базы, не проектный параметр."
 
@@ -990,7 +990,7 @@ def build_pack() -> None:
                 row.get("recommended_default_value"),
                 row.get("unit"),
                 row.get("source_of_truth"),
-                "уточнить: все проекты / только текущий тип работ / только ЮСВ",
+                "уточнить: все проекты / только текущий тип работ / только текущий проект",
                 "да",
                 row.get("risk_level"),
                 "",
@@ -1138,7 +1138,7 @@ def build_agenda(audit_rows: list[dict[str, Any]]) -> str:
         "В основных листах добавлены поясняющие колонки:",
         "- `Где используется в смете`: какая строка или блок сметы зависит от параметра.",
         "- `Формула калькулятора`: как параметр входит в расчет.",
-        "- `Пример формулы ЮСВ`: как это выглядит на текущем кейсе ЮСВ.",
+        "- `Пример формулы (эталонный кейс)`: как это выглядит на текущем кейсе.",
         "- `Что проверить Елене`: конкретное действие на созвоне.",
         "- `Зачем нужен параметр`: почему строка вообще есть в таблице.",
         "",

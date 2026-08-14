@@ -366,9 +366,9 @@ def inject_css() -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="AI-сметчик: демо по проекту ЮСВ", layout="wide")
+    st.set_page_config(page_title="AI-сметчик: демо по реальному проекту", layout="wide")
     inject_css()
-    st.title("AI-сметчик: демо по проекту ЮСВ")
+    st.title("AI-сметчик: демо по реальному проекту")
     render_header()
 
     review_card = load_review_card()
@@ -382,7 +382,7 @@ def main() -> None:
         st.subheader("Проект")
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.write("**Проект:** ЮСВ / Юсупово Виладж")
+            st.write("**Проект:** реальный эталонный проект")
             st.write("**Источники:** КР-1, КР-2, АР")
             st.write("**Демо-раздел:** фундаментная плита")
         with col2:

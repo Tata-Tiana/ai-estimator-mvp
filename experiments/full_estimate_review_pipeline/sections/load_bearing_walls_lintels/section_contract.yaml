@@ -48,7 +48,7 @@ review_parameters:
       still required as a fallback for legacy inputs (no wall_block_items supplied) and is still
       shown for review, but real projects have shown the PDF's literal 'этажность' text and the
       calculator's real per-tier pricing need are different things that do not reliably coincide
-      (ЮСВ: text says 1, real second tier exists; АРК: no text at all). See
+      (one reference project: text says 1, real second tier exists; another: no text at all). See
       fact_of_data_vs_text_signal_principle memory and
       ARK_TRC_USV_WALL_ROOF_LINTEL_FINDINGS_PLAN.md section 10."
 
@@ -135,7 +135,7 @@ review_parameters:
       target_codes: ["lintel_total_length"]
       aliases_ru: ["суммарная длина перемычек", "перемычки итого длина", "ведомость перемычек", "длина перемычек в u-блоках"]
       expected_unit: "мп"
-      notes: "PDFs give this as an explicit total line in the lintel materials spec table (e.g. 'Длина перемычек в U-блоках'), verified against real ЮСВ/ТРЦ КР2 drawings 2026-07-12 — not a mark-by-mark table. U-block portion only; see lintel_1_monolithic_concrete_volume_m3 for the monolithic portion."
+      notes: "PDFs give this as an explicit total line in the lintel materials spec table (e.g. 'Длина перемычек в U-блоках'), verified against real КР2 drawings from 2 reference projects 2026-07-12 — not a mark-by-mark table. U-block portion only; see lintel_1_monolithic_concrete_volume_m3 for the monolithic portion."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -188,7 +188,7 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 2-м этаже есть перемычки в U-блоках, проверьте суммарную длину."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж: 20,5 м.п., 35 шт резки U-блока) — floor_2 needs its own length, not shared with floor 1."
+    notes: "Added 2026-07-15. Confirmed on a real reference project (2-й этаж: 20,5 м.п., 35 шт резки U-блока) — floor_2 needs its own length, not shared with floor 1."
 
   - key: floor_2_lintel_concrete_spec_volume_m3
     label_ru: "Бетон перемычек в U-блоках, объем по спецификации, 2-й этаж"
@@ -326,7 +326,7 @@ review_parameters:
       status_if_missing: "manual_required_if_applicable"
       action_ru: "Если на 1-м этаже есть монолитные перемычки, проверьте горизонтальную площадь опалубки."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-08-05. Fixes a real gap found while auditing the ТРЦ run: extraction has produced this target_code since 2026-07-25 (calculator_targets_compact.json/target_aliases_ru.yaml), and the calculator dataclass field floor_1_lintel_formwork_horizontal_area_m2 has existed since the same date (see lintel_monolithic_formwork_from_area_shipped memory) - but no review_parameters entry ever wired extraction to this calculator input. Real project area (e.g. ТРЦ: 0,5 m2) was silently never reaching the calculator, so formwork_plywood_qty/formwork_timber_volume_m3 computed from a missing area defaulted toward zero - plywood/timber cost silently dropped from the estimate with no needs_review/missing flag anywhere."
+    notes: "Added 2026-08-05. Fixes a real gap found while auditing a reference-project run: extraction has produced this target_code since 2026-07-25 (calculator_targets_compact.json/target_aliases_ru.yaml), and the calculator dataclass field floor_1_lintel_formwork_horizontal_area_m2 has existed since the same date (see lintel_monolithic_formwork_from_area_shipped memory) - but no review_parameters entry ever wired extraction to this calculator input. Real project area (e.g. 0,5 m2) was silently never reaching the calculator, so formwork_plywood_qty/formwork_timber_volume_m3 computed from a missing area defaulted toward zero - plywood/timber cost silently dropped from the estimate with no needs_review/missing flag anywhere."
 
   - key: floor_1_lintel_formwork_vertical_area_m2
     label_ru: "Опалубка монолитной перемычки, 1-й этаж — вертикальная площадь"
@@ -464,7 +464,7 @@ review_parameters:
       action_ru: "Если на 2-м этаже есть монолитные перемычки, проверьте их общую длину для строки бетонирования."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Added 2026-07-28. Needed because monolithic lintel concreting work is priced by length in м.п.; concrete volume remains a separate material/purchase input."
-    notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+    notes: "Added 2026-07-15. Confirmed on a real reference project (2-й этаж, 0,41 м3)."
 
   - key: floor_2_lintel_monolithic_insulation_length_m
     label_ru: "Утепление торца монолитной перемычки, длина, 2-й этаж"
@@ -503,7 +503,7 @@ review_parameters:
       target_codes: ["floor_2_lintel_formwork_horizontal_area"]
       aliases_ru: ["опалубка монолитной перемычки горизонтальная площадь 2 этаж", "горизонтальная опалубка перемычки 2 этаж"]
       expected_unit: "m2"
-      notes: "Added 2026-07-25 (real ТРЦ case: 0,45 m2 horizontal). Mirrors floor_1_lintel_formwork_horizontal_area — see its notes."
+      notes: "Added 2026-07-25 (real reference-project case: 0,45 m2 horizontal). Mirrors floor_1_lintel_formwork_horizontal_area — see its notes."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -526,7 +526,7 @@ review_parameters:
       target_codes: ["floor_2_lintel_formwork_vertical_area"]
       aliases_ru: ["опалубка монолитной перемычки вертикальная площадь 2 этаж", "вертикальная опалубка перемычки 2 этаж"]
       expected_unit: "m2"
-      notes: "Added 2026-07-25 (real ТРЦ case: 3,25 m2 vertical). Mirrors floor_1_lintel_formwork_vertical_area — see its notes."
+      notes: "Added 2026-07-25 (real reference-project case: 3,25 m2 vertical). Mirrors floor_1_lintel_formwork_vertical_area — see its notes."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -843,7 +843,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, wall_block_items[]). Purely additive — when empty/absent, the calculator behaves exactly as before (all 17 pre-existing regression cases unaffected, verified). PER-ROLE, not all-or-nothing (fixed 2026-08-07): for each role separately — main_walls, floor_2, parapet — the calculator uses wall_block_items totals for that role ONLY if wall_block_items actually contains a row with that wall_role; otherwise it falls back to that role's own fixed scalar field (main_wall_gas_block_400/250_spec_volume_m3, floor_2_masonry_volume_m3, parapet_masonry_volume_m3/parapet_gas_block_d500_250_spec_volume_m3). This is a normal mixed-source situation, not an error — a real project (TRC) had main_walls only in the scalar fields while floor_2/parapet/partitions were only in wall_block_items rows. Before the fix, the calculator treated 'wall_block_items has ANY row' as 'trust wall_block_items for EVERY role', which silently zeroed ~80m3 of real main-wall masonry. See wall_block_items_roles_present() in load_bearing_walls_lintels_calculator.py and cases/test_wall_block_items_mixed_sources_main_walls_scalar for the regression test. Also changes floor_2 gating from floors_count==2 to 'does a floor_2-role item exist' (when wall_block_items has a floor_2 row), fixing the АРК case where floors_count is physically absent from the PDF — falls back to floors_count==2 when wall_block_items has no floor_2 row. See p1_additive_schema_additions / ark-universalization-workstream memory. production_input corrected false -> true 2026-07-29: load_bearing_walls_lintels_calculator.py has read this group since the 2026-07-20 ship, but the flag said otherwise, so sheet 01 collapsed it to one dead summary row instead of the real per-item table."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, wall_block_items[]). Purely additive — when empty/absent, the calculator behaves exactly as before (all 17 pre-existing regression cases unaffected, verified). PER-ROLE, not all-or-nothing (fixed 2026-08-07): for each role separately — main_walls, floor_2, parapet — the calculator uses wall_block_items totals for that role ONLY if wall_block_items actually contains a row with that wall_role; otherwise it falls back to that role's own fixed scalar field (main_wall_gas_block_400/250_spec_volume_m3, floor_2_masonry_volume_m3, parapet_masonry_volume_m3/parapet_gas_block_d500_250_spec_volume_m3). This is a normal mixed-source situation, not an error — a real project had main_walls only in the scalar fields while floor_2/parapet/partitions were only in wall_block_items rows. Before the fix, the calculator treated 'wall_block_items has ANY row' as 'trust wall_block_items for EVERY role', which silently zeroed ~80m3 of real main-wall masonry. See wall_block_items_roles_present() in load_bearing_walls_lintels_calculator.py and cases/test_wall_block_items_mixed_sources_main_walls_scalar for the regression test. Also changes floor_2 gating from floors_count==2 to 'does a floor_2-role item exist' (when wall_block_items has a floor_2 row), fixing the case (seen on a real reference project) where floors_count is physically absent from the PDF — falls back to floors_count==2 when wall_block_items has no floor_2 row. See p1_additive_schema_additions / ark-universalization-workstream memory. production_input corrected false -> true 2026-07-29: load_bearing_walls_lintels_calculator.py has read this group since the 2026-07-20 ship, but the flag said otherwise, so sheet 01 collapsed it to one dead summary row instead of the real per-item table."
 
   - key: main_wall_rebar_items
     label_ru: "Арматура несущих стен по диаметрам"
@@ -925,7 +925,7 @@ price_keys:
   - {key: scaffolding_setup_work_unit_price, estimate_line_code: scaffolding_setup_dismantling, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", required: true, default_source: price_registry_with_fallback, registry_code: "scaffolding_setup_dismantling_work_set", fallback_key: "scaffolding_setup_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: scaffolding_timber_unit_price, estimate_line_code: scaffolding_timber_material, label_ru: "Пиломатериал для устройства лесов", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "scaffolding_timber_unit_price", allow_manual_override: true, notes: ""}
   - {key: cutoff_waterproofing_work_unit_price, estimate_line_code: cutoff_waterproofing_under_first_row_blocks, label_ru: "Гидроизоляция под первый ряд блоков, работа", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "cutoff_waterproofing_under_blocks_m2", fallback_key: "cutoff_waterproofing_work_unit_price", allow_manual_override: true, notes: ""}
-  - {key: cutoff_waterproofing_material_unit_price, estimate_line_code: cutoff_waterproofing_under_first_row_blocks, label_ru: "Гидроизоляция под первый ряд блоков, материал", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "cutoff_waterproofing_material_m2", fallback_key: "cutoff_waterproofing_material_unit_price", allow_manual_override: true, notes: "2026-08-09: was wrongly sharing registry_code cutoff_waterproofing_under_blocks_m2 with the WORK price above (both resolved to the same 100 rub row) - split into its own code. Real value confirmed 250 rub/m2 on both TRC and ARK's grey (real-cost) columns; see reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md."}
+  - {key: cutoff_waterproofing_material_unit_price, estimate_line_code: cutoff_waterproofing_under_first_row_blocks, label_ru: "Гидроизоляция под первый ряд блоков, материал", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "cutoff_waterproofing_material_m2", fallback_key: "cutoff_waterproofing_material_unit_price", allow_manual_override: true, notes: "2026-08-09: was wrongly sharing registry_code cutoff_waterproofing_under_blocks_m2 with the WORK price above (both resolved to the same 100 rub row) - split into its own code. Real value confirmed 250 rub/m2 on both reference projects' grey (real-cost) columns; see reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md."}
   - {key: main_wall_masonry_work_unit_price, estimate_line_code: main_load_bearing_wall_masonry_work, label_ru: "Кладка внешних, внутренних стен из газобетонных блоков", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_masonry_work_m3", fallback_key: "main_wall_masonry_work_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_d400_unit_price, estimate_line_code: main_gas_block_d400_600x400x250_material, label_ru: "Газобетонный блок D400 600x400x250 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_d400_m3", fallback_key: "gas_block_d400_unit_price", allow_manual_override: true, notes: ""}
   - {key: gas_block_d500_250_unit_price, estimate_line_code: main_gas_block_d500_600x250x250_material, label_ru: "Газобетонный блок D500 600x250x250 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_d500_m3", fallback_key: "gas_block_d500_250_unit_price", allow_manual_override: true, notes: ""}
@@ -953,7 +953,7 @@ price_keys:
   - {key: gas_block_d500_150_unit_price, estimate_line_code: vent_chimney_gas_block_d500_600x150x250_material, label_ru: "Газобетонный блок D500 600x150x250 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "gas_block_d500_150_m3", fallback_key: "gas_block_d500_150_unit_price", allow_manual_override: true, notes: ""}
   - {key: waste_removal_truck_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_container_truck", fallback_key: "waste_removal_truck_unit_price", allow_manual_override: true, notes: "Elena 2026-07-30: container/machine cost is material column."}
   - {key: waste_removal_work_unit_price, estimate_line_code: construction_waste_removal, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_loading_work_truck", fallback_key: "waste_removal_work_unit_price", allow_manual_override: true, notes: "Elena 2026-07-30: work column is loading waste into the same container."}
-  - {key: technical_supervision_amount, estimate_line_code: walls_technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_walls_lintels", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: "2026-08-09: was wrongly sharing registry_code technical_supervision_fixed (=5000) with a foundation_slab-labeled registry row. Real value confirmed 10000 on TRC's grey (real-cost) column for THIS section; see reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md. Part of the already-known ~16-row stale-placeholder queue - this is the first one closed with a real per-section number."}
+  - {key: technical_supervision_amount, estimate_line_code: walls_technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_walls_lintels", fallback_key: "technical_supervision_amount", allow_manual_override: true, notes: "2026-08-09: was wrongly sharing registry_code technical_supervision_fixed (=5000) with a foundation_slab-labeled registry row. Real value confirmed 10000 on a reference project's grey (real-cost) column for THIS section; see reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md. Part of the already-known ~16-row stale-placeholder queue - this is the first one closed with a real per-section number."}
   - {key: rebar_a500_d10_unit_price_per_m, estimate_line_code: parapet_rebar_a500_d10, label_ru: "Арматура A500 Ø10 для парапета", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_a500_d10_m", fallback_key: "rebar_a500_d10_unit_price_per_m", allow_manual_override: true, notes: "Adapter must supply this even in production spec_length_items mode: calculate_blocks() reads it for the parapet/second-light base-length rebar helper. Since 2026-07-31 it is used by the active production line parapet_rebar_a500_d10 when parapet_rebar_base_length_m is present."}
 
 defaults:
@@ -1034,7 +1034,7 @@ supplier_inputs:
       status_if_missing: "auto"
       action_ru: "Автоматически по общему поставочному весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
     validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Added 2026-08-11. In ARK/TRC/USV this row is usually 0 because the metal-delivery truck lands in foundation/slab sections, but production must support future projects where the 10t threshold is crossed while processing walls/lintels."
+    notes: "Added 2026-08-11. In all 3 reference projects this row is usually 0 because the metal-delivery truck lands in foundation/slab sections, but production must support future projects where the 10t threshold is crossed while processing walls/lintels."
 
   - key: concrete_delivery_trips
     label_ru: "Доставка бетона для перемычек, рейсы"
@@ -1395,7 +1395,7 @@ estimate_lines:
         - {ref: "supplier_inputs.rebar_metal_delivery_trucks", source_class: AUTO_CALCULATED}
     prices: {material_unit_price_key: rebar_metal_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Quantity is allocated by the review workbook's box-level metal delivery logic (10t cumulative threshold). Usually 0 for walls in ARK/TRC/USV, but must exist for future projects where the threshold lands in this section."
+    notes: "Quantity is allocated by the review workbook's box-level metal delivery logic (10t cumulative threshold). Usually 0 for walls in all 3 reference projects, but must exist for future projects where the threshold lands in this section."
 
   - code: lintel_concrete_delivery
     name_ru: "Доставка бетона до объекта"

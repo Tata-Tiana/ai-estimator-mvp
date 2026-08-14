@@ -1082,7 +1082,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "eps_wall_insulation_work_50_m2"
         zero_policy: zero_when_eps50_wall_volume_m3_absent
-        notes: "Added 2026-07-14. Optional second (thinner) layer of edge insulation, in addition to eps100_wall_insulation_work. Only returned when eps50_wall_volume_m3 > 0 (most projects, e.g. ЮСВ, don't have this layer)."
+        notes: "Added 2026-07-14. Optional second (thinner) layer of edge insulation, in addition to eps100_wall_insulation_work. Only returned when eps50_wall_volume_m3 > 0 (most projects don't have this layer)."
 
       eps50_wall_penoplex_geo_material:
         code: "eps50_wall_penoplex_geo_material"
@@ -1703,7 +1703,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "u_block_lintel_cutting_item"
         zero_policy: disabled_if_zero
-        notes: "Added 2026-07-15. Reuses floor 1's work rate. Confirmed on real ТРЦ project (35 шт, 20,5 м.п.)."
+        notes: "Added 2026-07-15. Reuses floor 1's work rate. Confirmed on a real reference project (35 шт, 20,5 м.п.)."
 
       floor_2_lintel_concreting_work:
         code: "floor_2_lintel_concreting_work"

@@ -406,15 +406,15 @@ def calculate_waterproofing_block(data: WaterproofingInput) -> dict[str, Any]:
     eps50_wall_enabled = bool(data.eps50_wall_volume_m3) and data.eps50_wall_volume_m3 > 0
 
     # 2026-08-13: when a second, thinner EPS layer also exists on the same edge, the
-    # explicit spec_area for EPS100 (e.g. TRC's page-22 control area) turns out to already
+    # explicit spec_area for EPS100 (e.g. a real project's page-22 control area) turns out to already
     # cover the WHOLE edge, not just the thicker layer's own portion - confirmed against
-    # ARK/USV site sections, which show the same edge genuinely split into different-
+    # other real site sections, which show the same edge genuinely split into different-
     # thickness segments rather than two independent strips. Deriving 100mm material from
     # that shared area (area * thickness) overbuys packs for the portion that's actually
     # thinner elsewhere. When EPS50 coexists, use the project's own EPS100 material volume
     # directly instead - it does not carry this ambiguity, since it is a dedicated
     # materials-spec figure, not a shared control total. Single-layer projects (no EPS50)
-    # are unaffected - real ARK data confirms area-driven material is correct there.
+    # are unaffected - real data from another project confirms area-driven material is correct there.
     if eps50_wall_enabled and data.eps100_wall_volume_m3:
         eps100_wall_required_volume_m3 = _round_decimal(
             _to_decimal(data.eps100_wall_volume_m3) * _to_decimal(data.eps_waste_coeff),
@@ -516,7 +516,7 @@ def calculate_primary_estimate_lines(
 ) -> list[EstimateLineResult]:
     eps50_enabled = waterproofing["eps50_wall_enabled"]
     # 2026-08-13: one combined work line when EPS50 coexists with EPS100 - real smetas
-    # (TRC/ARK/USV, see waterproofing sources report) never split installation work by
+    # (3 real projects checked, see waterproofing sources report) never split installation work by
     # thickness even when the physical edge genuinely has multiple thicknesses; the rate
     # itself does not depend on thickness (Elena, 2026-08-08), so there is nothing for a
     # split to buy except double-counting risk. eps100_wall_insulation_area_m2 already
@@ -635,7 +635,7 @@ def calculate_internal_estimate_lines(
             quantity=1,
             material_unit_price=consumables_amount_raw,
         ),
-        # Real smetas (TRC/ARK/USV) always print these 4 rows last, after logistics/consumables,
+        # Real smetas (3 real projects checked) always print these 4 rows last, after logistics/consumables,
         # right before "Итого по разделу" - fixed 2026-08-12 (was emitted before logistics/
         # consumables here, opposite of Elena's real row order). Zero here deliberately - this
         # pipeline only ever computes Elena's own internal cost, never the client-facing markup

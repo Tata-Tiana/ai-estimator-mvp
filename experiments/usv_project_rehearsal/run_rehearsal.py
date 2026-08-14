@@ -68,7 +68,7 @@ def build_final_project_parameters_draft(mapped: list[dict]) -> dict:
         ]
 
     return {
-        "project_name": "ЮСВ 2026 rehearsal",
+        "project_name": "2026 rehearsal",
         "sources": ["usv_2026_kr1.pdf", "usv_2026_kr2.pdf"],
         "sections": sections,
         "missing": slim(missing),
@@ -100,7 +100,7 @@ def run_rehearsal() -> dict:
 
 def main() -> int:
     result = run_rehearsal()
-    print("USV project rehearsal completed")
+    print("Project rehearsal completed")
     print(f"- review_pack: {result['review_pack']}")
     print(f"- coverage_report: {result['coverage_report']}")
     print(f"- mapped_parameters: {result['mapped_parameters']}")

@@ -40,10 +40,10 @@ class EarthworksInput:
     assumptions: dict[str, bool] = field(default_factory=dict)
     excavator_shifts_calc_method: str = "legacy_manual_shifts"
     pit_excavation_depth_m: float | None = None
-    # Confirmed by matching Elena's own hidden Excel formula on 2 real projects (TRC, ARK,
-    # 2026-08-12): the depth she actually uses to size excavator shifts is its own number,
+    # Confirmed by matching Elena's own hidden Excel formula on 2 real projects
+    # (2026-08-12): the depth she actually uses to size excavator shifts is its own number,
     # NOT always the same as pit_excavation_depth_m (her spec table's own printed pit depth) -
-    # TRC's real formula uses 0.6m while her spec table prints 0.5m for "Глубина котлована".
+    # one real project's formula uses 0.6m while its spec table prints 0.5m for "Глубина котлована".
     # None (the default) falls back to pit_excavation_depth_m in calculate_excavator_shifts, so
     # projects where the two coincide need no extra input.
     excavator_dig_depth_m: float | None = None
@@ -57,10 +57,11 @@ class EarthworksInput:
     trench_width_m: float | None = 0.4
     trench_routes: list[dict[str, Any]] | None = None
     # Manual hand-dig depth beyond the pit floor, by network type (2026-08-09, real formulas
-    # confirmed in TRC/ЮСВ/АРК - see manual_trench_depth_by_network_type() docstring for the
-    # full derivation). Defaults are the ТРЦ/ЮСВ average per matching network label; АРК had no
-    # per-network breakdown at all (one flat 0.5m for everything), so its value is reused as the
-    # fallback for any route whose network type can't be recognized from its name/route_code.
+    # confirmed across 3 real projects - see manual_trench_depth_by_network_type() docstring for
+    # the full derivation). Defaults are the average of the two projects that had per-network
+    # breakdowns, per matching network label; the third project had no per-network breakdown at
+    # all (one flat 0.5m for everything), so its value is reused as the fallback for any route
+    # whose network type can't be recognized from its name/route_code.
     # Elena, 2026-08-09: make these manual/reviewable per project, not hardcoded silently.
     manual_trench_depth_k1_m: float = 0.4
     manual_trench_depth_k2_m: float = 0.6
@@ -70,8 +71,8 @@ class EarthworksInput:
     sand_base_volume_m3: float = 0.0
     sand_compaction_coeff: float = 1.3
     sand_truck_step_m3: float = 20.0
-    # Confirmed by exact-match arithmetic on all 3 checked real smetas (TRC, ARK, USV,
-    # 2026-08-12): a flat reserve added to the sand order volume before rounding up to the
+    # Confirmed by exact-match arithmetic on all 3 checked real smetas
+    # (2026-08-12): a flat reserve added to the sand order volume before rounding up to the
     # truck step - not derived from project size, the compaction/base/trench math above already
     # accounts for that separately. Same +20 constant on all three despite very different pit
     # sizes/methodologies, so it is not a per-project-scaled value - see manual_values_registry.
@@ -315,7 +316,7 @@ def calculate_excavator_shifts(
     else:
         pit_area = _to_decimal(pit_area_m2)
         # excavator_dig_depth_m wins over pit_excavation_depth_m when given - confirmed 2026-08-12
-        # on real TRC data that Elena's own excavator-shift formula uses a depth of its own
+        # on real project data that Elena's own excavator-shift formula uses a depth of its own
         # (0.6m), not always the same number as her spec table's printed pit depth (0.5m). Falls
         # back to pit_excavation_depth_m so projects where the two coincide need no extra input.
         depth_value = excavator_dig_depth_m if excavator_dig_depth_m is not None else pit_excavation_depth_m
@@ -448,12 +449,13 @@ def calculate_trench_manual_portion(
 ) -> tuple[float, list[dict[str, Any]]]:
     """Manual (hand-dig) portion of trench excavation: NOT the full trench volume (that's mostly
     machine-dug), just each route's length x its network type's hand-dig depth x width -
-    matching the real formula confirmed in ТРЦ/ЮСВ/АРК (2026-08-09): manual excavation =
+    matching the real formula confirmed across 3 real projects (2026-08-09): manual excavation =
     pit refinement layer + SUM(route_length x manual_depth_by_network_type x 0.4m width).
     Real coefficients found (length x depth x width per network, not the excavator's full cut):
-    ТРЦ К1=0.6 К2=1.0 В1=1.6 ЭО=0.7 | ЮСВ К1=0.2 К2=0.2 ВК=1.6 ЭО=0.6 | АРК one flat 0.5 for
-    everything (no per-network breakdown in that project). Defaults here are the ТРЦ/ЮСВ average
-    per matching network (АРК's flat value reused as the "other/unrecognized" fallback)."""
+    project A К1=0.6 К2=1.0 В1=1.6 ЭО=0.7 | project B К1=0.2 К2=0.2 ВК=1.6 ЭО=0.6 | project C one
+    flat 0.5 for everything (no per-network breakdown in that project). Defaults here are the
+    average of projects A and B per matching network (project C's flat value reused as the
+    "other/unrecognized" fallback)."""
     depth_by_type = {
         "k1": manual_trench_depth_k1_m,
         "k2": manual_trench_depth_k2_m,
@@ -776,7 +778,7 @@ def calculate_internal_estimate_lines(
             )
         )
 
-    # Real smetas (TRC/ARK/USV) always print these 4 rows at the end of every section, even when
+    # Real smetas (3 real projects checked) always print these 4 rows at the end of every section, even when
     # this calculator has no manual input feeding them (2026-08-12, real user feedback: Elena
     # expects the row to exist and read zero, not be missing from the section entirely - a
     # missing row reads as "forgot this section" more than a zero value does). Zero here
@@ -903,7 +905,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
             data.sand_base_volume_m3,
             data.sand_compaction_coeff,
         )
-        # Real ТРЦ formula (2026-08-09): trench sand backfill is compacted from the same
+        # Real formula from a real project (2026-08-09): trench sand backfill is compacted from the same
         # manual-portion figure as the manual-excavation line above (Q30=T27*1.3 in her sheet),
         # not the full machine-dug trench volume - only the hand-finished extra depth needs
         # backfilling this way.
@@ -915,7 +917,7 @@ def calculate_earthworks(data: EarthworksInput) -> dict[str, Any]:
             _to_decimal(compacted_sand_base_m3) + _to_decimal(compacted_sand_trenches_m3)
         )
     # sand_reserve_m3 (2026-08-12): a flat reserve added BEFORE rounding to the truck step -
-    # confirmed by exact-match arithmetic on TRC/ARK/USV real smetas regardless of sand_source
+    # confirmed by exact-match arithmetic on all 3 real smetas regardless of sand_source
     # (ready spec value or computed) or project size, see the field's own docstring above.
     sand_total_with_reserve_m3 = _round_decimal(_to_decimal(sand_total_m3) + _to_decimal(data.sand_reserve_m3))
     sand_order_volume_m3 = round_up_to_step(sand_total_with_reserve_m3, data.sand_truck_step_m3)

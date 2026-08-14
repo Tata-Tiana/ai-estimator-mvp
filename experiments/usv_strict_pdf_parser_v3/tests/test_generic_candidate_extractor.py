@@ -558,7 +558,7 @@ def test_unambiguous_word_label_also_suppressed_near_opening_schedule() -> None:
 
 # ── A4.2.7.1: concrete grade (ГОСТ 26633) vs В1/В2 route-label collision ───
 #
-# Found via real USV/TRC data: "Бетон В22,5 W6 F150 П4 ... м3" rows satisfy
+# Found via real project data: "Бетон В22,5 W6 F150 П4 ... м3" rows satisfy
 # the engineering-context requirement through the м3 volume alone, so В22/В25
 # concrete class notation was still being read as a route label.
 

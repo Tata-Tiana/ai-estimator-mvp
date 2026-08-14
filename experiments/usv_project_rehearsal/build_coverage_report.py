@@ -46,9 +46,9 @@ def build_coverage_report() -> Path:
     elena = [row for row in relevant if row.get("needs_elena_review")]
 
     lines = [
-        "# Coverage Report: USV Project Rehearsal",
+        "# Coverage Report: Project Rehearsal",
         "",
-        "Это репетиция production-пайплайна по новым PDF ЮСВ. Калькуляторы и locked-кейсы не изменяются.",
+        "Это репетиция production-пайплайна по новым PDF реального проекта. Калькуляторы и locked-кейсы не изменяются.",
         "",
         "## Общая статистика",
         "",

@@ -223,7 +223,7 @@ def project_group_items_for_review(extraction: dict[str, Any], sec_code: str) ->
 
     Scalars keep their old found/missing logic, but repeated groups are different: if the model
     extracted a row and marked it needs_review, Elena still needs to see that row. Otherwise a
-    project can silently lose rows between extraction and the workbook (real TRC case:
+    project can silently lose rows between extraction and the workbook (a real project case:
     K2/K3 trench routes moved from found to needs_review, and the old sheet total dropped from
     79.64 m3 to 25.71 m3).
     """
@@ -703,7 +703,7 @@ def auto_calculated_by_key(contract: dict[str, Any]) -> dict[str, dict[str, Any]
 
 # 2026-07-29: sections/fields that only exist for some projects (U-block lintels, monolithic
 # lintels — per floor, independently) currently show the exact same "Не найдено" status whether
-# the field is safely inapplicable or genuinely missing money-critical data. Real ARK case that
+# the field is safely inapplicable or genuinely missing money-critical data. A real project case that
 # motivated this: floor_1_lintel_monolithic_total_length_m was found (5.4, proving monolithic
 # lintels exist on this floor) but floor_1_lintel_monolithic_concrete_volume_m3 was missing — the
 # calculator used to silently price concrete material as 0 while still billing the concreting
@@ -1219,7 +1219,7 @@ def is_rebar_group(group_key: str) -> bool:
 def rebar_diameter_breakdown(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Pools rebar items by (steel_class, diameter_mm), summing spec length and delivery weight -
     the "4 rows, not the position-level zoo" summary Elena asked for 2026-08-12, matching how her
-    own real smetas present rebar (checked TRC: her final foundation_slab section shows only 4
+    own real smetas present rebar (checked on a real project: her final foundation_slab section shows only 4
     diameter rows, never the хомуты/лягушки/выпуски position breakdown). Same length-field
     fallback (spec_length_m, then source_length_m) and weight formula as
     rebar_item_delivery_weight_kg() elsewhere in this file - one source of truth for what a rebar
@@ -1850,8 +1850,8 @@ def build_project_sheet_from_extraction(
             elif target_code in confirmed_required and (is_unresolved_needs_review or (target_code in missing and found is None)):
                 # A sibling field in the same presence pair was found — this project definitely
                 # has this construction, so a still-blank value here (whether never attempted, in
-                # section.missing, or a needs_review entry that only has candidates — e.g. the real
-                # ARK ПБ1/ПБ2 case where extraction correctly refused to sum 0.21+0.16 itself) is a
+                # section.missing, or a needs_review entry that only has candidates — e.g. a real
+                # project's ПБ1/ПБ2 case where extraction correctly refused to sum 0.21+0.16 itself) is a
                 # real, money-relevant gap, not a safely-skippable optional field. Escalate instead
                 # of following the normal found/missing branches below. See SECTION_PRESENCE_PAIRS.
                 found_value = None
@@ -2028,6 +2028,12 @@ def build_project_sheet_from_extraction(
                 zone_value = zone_item.get("value") or {}
                 zone_id = zone_value.get("zone_id")
                 zone_label = p6_wall_zone_label(zone_value)
+                has_dependent_rows = any(
+                    (item.get("value") or {}).get("zone_id") == zone_id
+                    for dependent_group_key in dependent_group_keys
+                    if dependent_group_key != P6_WALL_ZONES_GROUP_KEY
+                    for item in p6_found_groups.get(dependent_group_key, [])
+                )
                 append_section_band(ws, [zone_label], len(PROJECT_HEADERS))
                 for group_key in dependent_group_keys:
                     param = params_by_key.get(group_key)
@@ -2041,7 +2047,7 @@ def build_project_sheet_from_extraction(
                             (zone_value or {}).get(key) not in (None, "")
                             for key in p6_wall_visible_field_keys(group_key, param.get("correction_columns") or [])
                         )
-                        if not has_visible_zone_value and not zone_item.get("needs_review"):
+                        if not has_visible_zone_value and not zone_item.get("needs_review") and not has_dependent_rows:
                             continue
                     else:
                         zone_items = [
@@ -2102,7 +2108,7 @@ def build_project_sheet_from_extraction(
         # Этап 1 (2026-08-12, Elena's request): the position-level rebar "zoo" (хомуты/лягушки/
         # выпуски/etc, see the blocks above) stays for checking against the PDF - but at the end
         # of every section that has rebar, also show a short "4 rows, not 40" summary by
-        # class+diameter, matching how Elena's own real smetas present rebar (checked TRC: her
+        # class+diameter, matching how Elena's own real smetas present rebar (checked on a real project: her
         # final smeta shows only 4 diameter rows for foundation_slab, never the position-level
         # breakdown). See rebar_diameter_breakdown()/_append_rebar_diameter_summary() below.
         section_rebar_items = [
@@ -2292,8 +2298,8 @@ def build_rebar_lookup(
     "floor_slabs" key every other caller expects (build_prices_sheet's sheet-02 rebar expansion
     reads the plain section_code, unaware of zones - it just needs the union of every diameter/class
     in the section) - see metal_section_order()/compute_rebar_metal_delivery_allocation() below for
-    why the zone_id buckets exist: the real reference smeta (ТРЦ_3_точный_расчет_коробка_для_ИИ.
-    xlsx, checked 2026-08-10) shows metal delivery trucks land in specific pours (one in
+    why the zone_id buckets exist: the real reference smeta workbook (checked 2026-08-10) shows
+    metal delivery trucks land in specific pours (one in
     foundation_slab, one specifically in the 2nd-floor plate, none in the 1st-floor/kitchen/
     staircase pours), not as one lump total for "floor slabs" - the box-calculator's 10-tonne
     cumulative model has to run at zone granularity to reproduce that. Losing the plain

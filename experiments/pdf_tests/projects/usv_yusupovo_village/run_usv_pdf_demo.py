@@ -178,7 +178,7 @@ def extract_parameters(parsed_sources: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def write_full_text_by_sources(parsed_sources: list[dict[str, Any]], merged_dir: Path) -> None:
-    chunks = ["# USV Yusupovo Village: full text by sources", ""]
+    chunks = ["# Full text by sources", ""]
     for source in parsed_sources:
         parsed_dir = PROJECT_DIR / source["parsed_dir"]
         chunks.extend(

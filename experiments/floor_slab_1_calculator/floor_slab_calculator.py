@@ -147,14 +147,14 @@ def calculate_rebar_items_pooled(
     component, zone_context, steel_class, diameter_mm) rows into ONE combined rod-purchase
     rounding, instead of rounding each spec row to its own rod-multiple independently. Same bug
     and same fix as load_bearing_walls_lintels_calculator.py's rebar_from_spec_length_items_pooled
-    (2026-08-09) - confirmed exact on real TRC: main zone's 12 separately-named Ø10 rows sum to
+    (2026-08-09) - confirmed exact on a real project: main zone's 12 separately-named Ø10 rows sum to
     4286.375m base length, *1.05=4500.69m, /11.7=384.67->385 rods=4504.5m, matching her real number
     exactly (independent per-row rounding gave 4551.3m instead); kitchen zone's 3 Ø10 rows sum to
     811.15m, *1.05=851.71m, /11.7=72.79->73 rods=854.1m, also exact. zone_context (optional per
     item, matching a slab_zones[].context) keeps the two zones' rebar pooled SEPARATELY - pooling
     main+kitchen together instead gives 458 rods=5359.8m, NOT her real 4504.5+854.1=5358.6m (she
     rounds per zone independently, same "apply per zone, then sum" mechanism already proven on
-    formwork-delivery trucks and concrete material/trips). The real TRC extraction does not
+    formwork-delivery trucks and concrete material/trips). The real project's extraction does not
     currently populate zone_context on rebar rows (a genuine gap, not wired here) - when absent on
     every item, all same-diameter rows across the whole section pool into one group (graceful
     degradation, not a crash), which is closer to her real number than independent rounding but not
@@ -384,14 +384,14 @@ def calculate_formwork_delivery_context(
 
     # Per-zone threshold (2026-08-09): when slab_zones[] gives real per-zone under-slab areas, the
     # 2-or-4-truck threshold is applied to EACH zone independently and summed, not once to the
-    # combined project area. Confirmed on real TRC (both zones <=180m2 -> 2+2=4 trucks, not the 2
-    # trucks a combined-area check on 148m2 would give) and ARK (zone1 321m2>180 -> 4, zone2
+    # combined project area. Confirmed on one real project (both zones <=180m2 -> 2+2=4 trucks, not the 2
+    # trucks a combined-area check on 148m2 would give) and another (zone1 321m2>180 -> 4, zone2
     # 97m2<=180 -> 2, reported as two separate delivery lines, never summed into one project-wide
     # figure) - see reports/trc_vs_original_comparison/05_floor_slab_1.md. Uses each zone's raw
     # spec under_slab_formwork_area_m2 directly (not the fixed-up combined slab_formwork_area,
     # which can't be split back out per zone since beams.items[] isn't zone-scoped - see that same
     # report's Finding 3) - safe here because the threshold check only needs each zone's own area,
-    # not a beam-corrected one. Deliberately NOT validated against ЮСВ (single zone, 207.64m2 ->
+    # not a beam-corrected one. Deliberately NOT validated against a third real project (single zone, 207.64m2 ->
     # her real 2 trucks contradicts a flat >180 check) - that project has no zone split at all, so
     # this per-zone path never applies to it; the underlying threshold value may not be universal,
     # only the "apply per zone, then sum" mechanism is confirmed.
@@ -411,7 +411,7 @@ def calculate_formwork_delivery_context(
             "formwork_delivery_status": "calculated_per_zone",
             "formwork_delivery_note": (
                 "Порог 180 м2 применён к каждой зоне slab_zones[] отдельно и просуммирован "
-                "(не к общей площади проекта) - подтверждено на реальных ТРЦ/АРК."
+                "(не к общей площади проекта) - подтверждено на реальных проектах."
             ),
         }
 
@@ -441,15 +441,15 @@ def calculate_concrete_order_context(
     waste+ceil-then-sum (2026-08-09) ONLY when additional_concrete_items[] is non-empty - a
     top-level, optional list (same convention as beam_items, NOT nested inside slab_zones, since
     each group is its own set of review-workbook rows) of extra concrete-volume line items some
-    real drawings print separately from a zone's main slab pour (e.g. TRC's "балка/ребро в теле
+    real drawings print separately from a zone's main slab pour (e.g. one real project's "балка/ребро в теле
     плиты перекрытия" rows). Her real smeta counts these toward ordered concrete/delivery trips
     only, not toward slab-only concreting volume or formwork area (both already proven correct
     without this addition) - see floor_slab_1_comparison_findings_2026-08-09 memory. Proven exact
-    on TRC: main (25.337+1.091)*1.05=27.749->28 m3/4 trips, kitchen (5.975+0.199)*1.05=6.483->7
+    on that project: main (25.337+1.091)*1.05=27.749->28 m3/4 trips, kitchen (5.975+0.199)*1.05=6.483->7
     m3/1 trip, matching her real rows digit-for-digit (the combined-total formula gives 33 m3/4
     trips instead). Same "apply per zone, then sum" mechanism already confirmed on
-    formwork-delivery trucks (TRC+ARK, calculate_formwork_delivery_context). Not validated on a
-    second real project yet (ARK's floor slab has no equivalent line to check against) - only the
+    formwork-delivery trucks (2 real projects, calculate_formwork_delivery_context). Not validated on a
+    second real project yet (the other project's floor slab has no equivalent line to check against) - only the
     per-zone mechanism itself is multi-project-proven."""
     waste_coeff = d(rates["concrete_waste_coeff"])
     mixer_capacity = d(rates["mixer_capacity_m3"])
@@ -756,14 +756,14 @@ def calculate_formwork_areas_context(
         # main_formwork_area (площадь опалубки под перекрытие, drives "Монтаж опалубки"/"Комплект
         # опалубки"): calculated_main_formwork_area (slab_concrete_volume / slab_thickness) wins
         # over the PDF-quoted spec area (slab_zones' under_slab_formwork_area_m2 / flat
-        # main_formwork_area_m2), reversed 2026-08-09. Real TRC/АРК/ЮСВ data confirms her real
+        # main_formwork_area_m2), reversed 2026-08-09. Real data from all 3 checked projects confirms her real
         # "Монтаж опалубки"/"Комплект опалубки" quantity always equals slab-only concreting volume
-        # divided by slab thickness EXACTLY (TRC main zone: 23.6436/0.2=118.218, kitchen zone:
-        # 5.975/0.2=29.875, both exact to 3 decimals; АРК zone with known 0.18m thickness:
+        # divided by slab thickness EXACTLY (one project's main zone: 23.6436/0.2=118.218, kitchen zone:
+        # 5.975/0.2=29.875, both exact to 3 decimals; another project's zone with known 0.18m thickness:
         # 17.514/0.18=97.3, exact) - never the "горизонтальная опалубка" PDF area, which apparently
         # represents a different physical concept and consistently undercounted her real quantity
         # by ~20% (see reports/trc_vs_original_comparison/05_floor_slab_1.md). This is universal,
-        # not TRC-specific: total_concrete_volume_from_spec_m3/slab_thickness_m are both required
+        # not project-specific: total_concrete_volume_from_spec_m3/slab_thickness_m are both required
         # geometry inputs, so calculated_main_formwork_area is always available. The spec-quoted
         # area (when given) is kept only as a cross-check delta warning below, not the source.
         spec_main_formwork_area = zone_main_formwork_area if zone_main_formwork_area is not None else first_optional_decimal(
@@ -771,7 +771,7 @@ def calculate_formwork_areas_context(
             (geometry_in, "main_formwork_area_m2"),
         )
         # 2026-08-09 update: only override with the calculated value when the spec area came from
-        # slab_zones[] specifically - that's the exact path proven against real TRC data (see
+        # slab_zones[] specifically - that's the exact path proven against real project data (see
         # comment above). The flat main_formwork_area_m2 scalar override (input_data/geometry_in)
         # keeps its original priority - existing regression cases show it can legitimately diverge
         # from the concrete-volume calculation (e.g. when beam volumes are themselves estimated
@@ -936,7 +936,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     still pass those exact literals through unchanged (byte-identical on all 19+12 regression
     cases), and the new zone-based floor_slabs schema can call in without them at all.
     NOT added here: formwork_dismantling priced-vs-zero-control - both calculators are zero_control
-    today (only ARK/USV's real smetas price it; no fixture exists to validate a "priced" branch
+    today (only 2 of the 3 real projects' smetas price it; no fixture exists to validate a "priced" branch
     against), and the two calculators' zero-control lines differ only in code/line_type strings
     (cosmetic), which the floor_slab_2 wrapper's output-shape translation handles directly - see
     FLOOR_SLAB_1_VS_2_CALCULATOR_COMPARISON.md."""
@@ -965,9 +965,9 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("beams.items[].count must be >= 0")
 
         # width_m is optional (2026-07-28): real spec tables sometimes combine beams of different
-        # cross-sections into one row (e.g. ARK's Б4/Б4-1, 300mm vs 400mm) with no single valid width.
+        # cross-sections into one row (e.g. one real project's Б4/Б4-1, 300mm vs 400mm) with no single valid width.
         # concrete_volume_m3/formwork_area_m2 can then be given ready on the row instead of recomputed
-        # from length*width*height — also lets clean cases (e.g. USV, which prints ready concrete AND
+        # from length*width*height — also lets clean cases (e.g. another real project, which prints ready concrete AND
         # formwork per beam) use the spec's own numbers instead of a recomputation that can drift from
         # rounding. See beam_items_width_optional_ready_value_override memory / plan section 39.
         concrete_volume_override = item.get("concrete_volume_m3")
@@ -1009,7 +1009,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     # Beam concreting height split (2026-08-09, reinstated - was flattened to one rate 2026-07-28,
     # see beam_concreting_work's contract notes for the real-project evidence that reversed this).
     # Beams <=250mm tall are priced by length (мп), beams >250mm tall are priced by concrete volume
-    # (м3) - confirmed on real TRC and АРК smetas, and Elena's own current pricelist has both rates
+    # (м3) - confirmed on 2 real projects' smetas, and Elena's own current pricelist has both rates
     # (row 28 "до 250мм" мп + row 29 "более 250мм" м3, the second one just never got wired in).
     #
     # beam_concreting_calc_method (rates, optional, default "height_split") - added 2026-08-09 P1.2.
@@ -1065,7 +1065,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     # additional_concrete_items[]: optional, purely additive (2026-08-09), top-level group (same
     # convention as beam_items - NOT nested inside slab_zones, since the review workbook represents
     # each group as its own set of rows). Some real drawings print a small extra concrete line
-    # separately from a zone's main slab pour (e.g. TRC's "балка/ребро в теле плиты перекрытия"
+    # separately from a zone's main slab pour (e.g. one real project's "балка/ребро в теле плиты перекрытия"
     # rows) that her real smeta counts toward ordered concrete/delivery trips only, not toward
     # slab-only concreting volume or formwork area (both already proven correct without it). A list
     # (not one pre-summed scalar) so any number of such rows, under any name, are captured without
@@ -1104,7 +1104,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     # slab_zones[]-level formwork (2026-08-05, Elena's idea): purely additive alternative to the
     # flat slab_edge_perimeter_m/main_formwork_area_m2/edge_and_beam_formwork_area_combined_m2
     # scalars below. Optional per zone, but once any zone gives any of the three fields, every zone
-    # must give all three (no silently-dropped zone). Real ТРЦ case this fixes: the flat scalars can
+    # must give all three (no silently-dropped zone). Real project case this fixes: the flat scalars can
     # only represent ONE project-wide situation (either a clean edge/beam split, or one merged
     # edge+beam number) — but this project has BOTH at once across its two zones: the main zone's
     # vertical formwork is one unsplittable merged number (torец плиты + балки), while the second
@@ -1571,7 +1571,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
                 d(manual_lines["technical_supervision_amount"]),
                 price_code="technical_supervision_fixed",
             ),
-            # Real smetas (TRC/ARK/USV) always print these 3 rows at the end of every section,
+            # Real smetas (3 real projects checked) always print these 3 rows at the end of every section,
             # even when this calculator has no manual input feeding them (2026-08-12, real user
             # feedback: Elena expects the row to exist and read zero, not be missing from the
             # section entirely - a missing row reads as "forgot this section" more than a zero

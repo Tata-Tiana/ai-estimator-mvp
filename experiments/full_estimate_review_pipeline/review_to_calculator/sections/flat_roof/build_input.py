@@ -35,7 +35,7 @@ pvc_membrane_vgr_roll_width_m / pvc_membrane_vgr_roll_length_m /
 pvc_membrane_vgr_unit_price_per_roll_display are only supplied when at least one roof_zones
 row has operability="exploitable" with real area - the calculator only touches them in that
 case (see calculate_flat_roof's `vgr_membrane_required_area > 0` gate). Added 2026-08-06 for
-the first real project with an exploitable zone (TRC); the contract's own
+the first real project with an exploitable zone; the contract's own
 pvc_membrane_vgr_unit_price_per_roll_display price_key is required:false for the same reason
 - most flat_roof projects never need it. Roll dimensions default to the same 2.1x20m as the
 non-exploitable V-RP membrane (not yet confirmed against a real V-GR supplier quote).

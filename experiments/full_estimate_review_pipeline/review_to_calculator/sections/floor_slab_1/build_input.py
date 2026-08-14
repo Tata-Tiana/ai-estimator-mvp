@@ -312,7 +312,7 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
 #    filled in manually per project): every zone must carry all of ZONE_STANDALONE_FIELDS.
 #    beams_formwork_area_m2/beams_concrete_volume_m3 are deliberately NOT in this list - they ARE
 #    safely recomputable from the zone-filtered beam_items (confirmed mathematically identical to
-#    the flat override on real TRC data: 34.339=34.339, 3.18=3.18), so this function just drops
+#    the flat override on real project data: 34.339=34.339, 3.18=3.18), so this function just drops
 #    them and lets the shared engine recompute from the (already zone-scoped) beam_items instead.
 #    concrete_delivery_trips needs no field at all - already correctly zone-scoped automatically
 #    once slab_zones has exactly one entry (computed from that one zone's own concrete_volume_m3).

@@ -335,7 +335,7 @@ def main() -> int:
     parser.add_argument(
         '--project', dest='projects', action='append', type=_parse_project_arg,
         required=True, metavar='NAME=DATA_DIR',
-        help='Repeatable. e.g. --project USV=data --project TRC=data_trc',
+        help='Repeatable. e.g. --project ProjectA=data --project ProjectB=data_b',
     )
     parser.add_argument('--out', type=Path, help='Write markdown report to this path')
     args = parser.parse_args()

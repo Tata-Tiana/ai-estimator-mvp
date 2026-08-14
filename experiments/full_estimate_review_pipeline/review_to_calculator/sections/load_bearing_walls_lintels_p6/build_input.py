@@ -37,7 +37,7 @@ def _num(value: Any) -> float | None:
 
 
 def _drop_blank_values(row: dict[str, Any]) -> dict[str, Any]:
-    return {key: value for key, value in row.items() if value not in (None, "")}
+    return {key: value for key, value in row.items() if value not in (None, "") and not key.startswith("_")}
 
 
 def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
@@ -65,7 +65,19 @@ def _priced_rebar_item(item: dict[str, Any], rebar_prices: dict[str, float]) -> 
         )
     cleaned = _drop_blank_values(item)
     cleaned["unit_price_per_m"] = price
-    return fill_rebar_catalog_defaults(cleaned, section=SECTION_CODE)
+    with_catalog = fill_rebar_catalog_defaults(cleaned, section=SECTION_CODE)
+    allowed_fields = {
+        "item_id",
+        "purpose",
+        "steel_class",
+        "diameter_mm",
+        "spec_length_m",
+        "kg_per_meter",
+        "rod_length_m",
+        "unit_price_per_m",
+        "source_label",
+    }
+    return {key: value for key, value in with_catalog.items() if key in allowed_fields}
 
 
 def _require_zone_id(row: dict[str, Any], group_name: str, valid_zone_ids: set[str]) -> str:
@@ -90,13 +102,55 @@ def _default_purpose_for_lintel_rebar() -> str:
     return "lintels"
 
 
+def _zone_kind_from_zone_id(zone_id: str) -> str:
+    zone_id_lower = zone_id.lower()
+    if "parapet" in zone_id_lower:
+        return "parapet"
+    if "vent" in zone_id_lower or "chimney" in zone_id_lower:
+        return "vent_chimney_cladding"
+    if "floor_2" in zone_id_lower:
+        return "floor_2"
+    if "floor_1" in zone_id_lower:
+        return "main_walls"
+    return "other"
+
+
+def _ensure_zones_from_child_rows(zone_rows: list[dict[str, Any]], production_items: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Keep reviewed workbooks resilient when a visible zone marker row is hidden/omitted.
+
+    The repeated child rows are the actual production data and carry both zone_id and the
+    visible zone label. If a child references a zone whose own wall_zones marker row is absent,
+    synthesize the minimal marker instead of silently losing the whole zone.
+    """
+    seen = {str(row.get("zone_id")) for row in zone_rows if row.get("zone_id")}
+    synthesized: list[dict[str, Any]] = []
+    for group_key in (BLOCK_ITEMS_GROUP_KEY, WALL_REBAR_GROUP_KEY, LINTEL_ITEMS_GROUP_KEY, LINTEL_REBAR_GROUP_KEY):
+        for item in production_items.get(group_key) or []:
+            zone_id = item.get("zone_id")
+            if not zone_id:
+                continue
+            zone_id = str(zone_id)
+            if zone_id in seen:
+                continue
+            label = item.get("_zone_label") or zone_id
+            synthesized.append(
+                {
+                    "zone_id": zone_id,
+                    "display_name": label,
+                    "zone_kind": _zone_kind_from_zone_id(zone_id),
+                }
+            )
+            seen.add(zone_id)
+    return zone_rows + synthesized
+
+
 def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     contract = load_contract(SECTION_CODE)
     defaults = default_by_key(contract)
     production_items = normalized_review["production_items"]
     resolved_prices = normalized_review["resolved_prices"]
 
-    zone_rows = production_items.get(ZONES_GROUP_KEY) or []
+    zone_rows = _ensure_zones_from_child_rows(production_items.get(ZONES_GROUP_KEY) or [], production_items)
     if not zone_rows:
         raise ValueError(f"{SECTION_CODE}: no wall_zones rows found on sheet 01")
 
@@ -114,6 +168,7 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         cleaned_zone.setdefault("zone_kind", "other")
         cleaned_zone.setdefault("block_items", [])
         cleaned_zone.setdefault("chasing_rebar_items", [])
+        cleaned_zone.setdefault("unassigned_lintel_rebar_items", [])
         cleaned_zone.setdefault("lintel_items", [])
         zone_by_id[str(zone_id)] = cleaned_zone
 
@@ -168,20 +223,21 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     for row in production_items.get(LINTEL_REBAR_GROUP_KEY) or []:
         zone_id = _require_zone_id(row, LINTEL_REBAR_GROUP_KEY, valid_zone_ids)
         lintel_id = row.get("lintel_id")
+        item = _drop_blank_values(row)
+        item.pop("zone_id", None)
+        item.pop("lintel_id", None)
+        item.setdefault("purpose", _default_purpose_for_lintel_rebar())
+        if not item.get("item_id"):
+            item["item_id"] = f"{zone_id}_{lintel_id or 'unassigned_lintel'}_{item.get('steel_class')}_d{item.get('diameter_mm')}"
         if not lintel_id:
-            raise ValueError(f"{SECTION_CODE}: lintel_rebar_items row has no lintel_id: {row!r}")
+            zone_by_id[zone_id]["unassigned_lintel_rebar_items"].append(_priced_rebar_item(item, rebar_prices))
+            continue
         lintel = lintel_by_zone_and_id.get((zone_id, str(lintel_id)))
         if lintel is None:
             raise ValueError(
                 f"{SECTION_CODE}: lintel_rebar_items row references lintel_id={lintel_id!r} "
                 f"in zone_id={zone_id!r}, but no lintel_items row has that pair."
             )
-        item = _drop_blank_values(row)
-        item.pop("zone_id", None)
-        item.pop("lintel_id", None)
-        item.setdefault("purpose", _default_purpose_for_lintel_rebar())
-        if not item.get("item_id"):
-            item["item_id"] = f"{zone_id}_{lintel_id}_{item.get('steel_class')}_d{item.get('diameter_mm')}"
         lintel["rebar_items"].append(_priced_rebar_item(item, rebar_prices))
 
     empty_block_zones = [

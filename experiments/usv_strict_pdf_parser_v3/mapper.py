@@ -74,7 +74,7 @@ def build_mapping() -> tuple[list[dict[str, Any]], dict[str, Any]]:
         not_ready["parser_failure"].append({"key": "floor_slab_1.beam_items", "reason": beams.get("parser_failure")})
 
     draft = {
-        "project_name": "ЮСВ strict parser v3",
+        "project_name": "strict parser v3",
         "data_integrity": {
             "strict_parse_mode": True,
             "curated_values_used_as_data": 0,

@@ -51,7 +51,7 @@ def build_reports() -> Path:
     manual = [row for row in mapped if row["found_status"] == "manual_required"]
 
     lines = [
-        "# Coverage Report: USV Strict PDF Parser v2",
+        "# Coverage Report: Strict PDF Parser v2",
         "",
         "## Статистика честности данных",
         "",

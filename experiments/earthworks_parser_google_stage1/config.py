@@ -10,7 +10,7 @@ DATA_DIR = EXPERIMENT_DIR / "data"
 SECTION_CODE = "earthworks"
 SECTION_NAME_RU = "Земляные работы"
 
-DEFAULT_PROJECT_NAME = "ЮСВ"
+DEFAULT_PROJECT_NAME = "Проект"
 
 DEFAULTS = {
     "manual_refinement_depth_m": 0.08,

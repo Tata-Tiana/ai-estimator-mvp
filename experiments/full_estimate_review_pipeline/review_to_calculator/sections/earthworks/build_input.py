@@ -86,11 +86,11 @@ OPTIONAL_SCALARS = (
     "manual_refinement_depth_m",
     "geotextile_laying_overlap_coeff",
     # Added 2026-08-12, same pattern: SUPPLIER_INPUT/sheet 01-1, left unset when absent so the
-    # calculator's own dataclass default (20.0 - confirmed by exact-match arithmetic on TRC/
-    # ARK/USV real smetas) applies.
+    # calculator's own dataclass default (20.0 - confirmed by exact-match arithmetic on all 3
+    # real smetas) applies.
     "sand_reserve_m3",
     # Added 2026-08-12: left unset when absent so calculate_excavator_shifts() falls back to
-    # pit_excavation_depth_m (see its own docstring) - confirmed on real TRC/ARK data that
+    # pit_excavation_depth_m (see its own docstring) - confirmed on real project data that
     # Elena's own excavator-shift depth is sometimes a different number from her spec table's
     # printed pit depth.
     "excavator_dig_depth_m",

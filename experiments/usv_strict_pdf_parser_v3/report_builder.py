@@ -23,7 +23,7 @@ def build_reports() -> None:
     sheet_counts = Counter(page["logical_sheet_type"] for page in logical_pages)
 
     coverage = [
-        "# Coverage Report: USV Strict PDF Parser v3",
+        "# Coverage Report: Strict PDF Parser v3",
         "",
         "- strict_parse_mode: true",
         "- curated_values_used_as_data: 0",

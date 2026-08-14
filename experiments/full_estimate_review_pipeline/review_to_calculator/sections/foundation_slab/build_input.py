@@ -108,6 +108,16 @@ def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
     return f"rebar_a{digits}_d{diameter}_m"
 
 
+def _rebar_item_code(item: dict[str, Any], index: int) -> str:
+    code = item.get("code")
+    if code:
+        return str(code)
+    registry_code = _rebar_registry_code(item.get("steel_class"), item.get("diameter_mm"))
+    if registry_code:
+        return f"foundation_slab_{registry_code}_{index}"
+    return f"foundation_slab_rebar_{index}"
+
+
 def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     contract = load_contract("foundation_slab")
     defaults = default_by_key(contract)
@@ -168,7 +178,7 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     rebar_prices = resolved_prices.get(REBAR_TEMPLATE_PRICE_KEY) or {}
     rod_length_default = defaults["rod_length_m"]["value"]
     priced_rebar_items = []
-    for item in rebar_rows:
+    for index, item in enumerate(rebar_rows, start=1):
         registry_code = _rebar_registry_code(item.get("steel_class"), item.get("diameter_mm"))
         price = rebar_prices.get(registry_code) if registry_code else None
         if price is None:
@@ -179,6 +189,7 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 "calc_price_key=rebar_unit_price_by_item)"
             )
         source_item = {k: v for k, v in item.items() if k != "weight_kg"}
+        source_item["code"] = _rebar_item_code(source_item, index)
         priced_item = fill_rebar_catalog_defaults(
             {**source_item, "unit_price_per_m": price},
             section="foundation_slab",

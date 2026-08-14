@@ -30,7 +30,7 @@ def run() -> dict:
     build_drawing_index()
     logical_pages = classify_pages()
     # Build universal evidence layer and generic candidates (additive, does not
-    # affect legacy ЮСВ extractor results below)
+    # affect legacy extractor results below)
     evidence = build_evidence_layer()
     generic_candidates = extract_generic_candidates()
     store = CandidateStore()
@@ -89,7 +89,7 @@ def _write_parser_run(out_dir: Path, input_pdfs: list[Path], result: dict) -> Pa
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="USV strict PDF parser v3")
+    p = argparse.ArgumentParser(description="Strict PDF parser v3")
     source = p.add_mutually_exclusive_group()
     source.add_argument("--input-dir", type=Path, help="Directory with input PDF files")
     source.add_argument(
@@ -142,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
         run_path = _write_parser_run(out_dir, input_pdfs, result)
         print(f"parser_run: {run_path}", file=log)
 
-    print("USV strict parser v3 completed", file=log)
+    print("Strict parser v3 completed", file=log)
     print(f"- mapped_parameters: {parser_paths.mapped_parameters_path()}", file=log)
     print(f"- final_project_parameters_draft: {parser_paths.final_draft_path()}", file=log)
     print(f"- coverage_report: {parser_paths.coverage_report_path()}", file=log)

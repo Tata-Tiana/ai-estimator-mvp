@@ -308,7 +308,7 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
                 continue
             # A beam row with no length_m can't be priced as a beam at all - the engine's own
             # concreting-rate bucketing (short/tall, priced by length vs by volume) is keyed on
-            # length_m unconditionally, even when concrete_volume_m3 is given ready. Real TRC data
+            # length_m unconditionally, even when concrete_volume_m3 is given ready. Real project data
             # has this exact shape for small in-slab concrete elements ("ребро 50мм в теле плиты
             # перекрытия" - a stiffening rib: only height_m + a ready concrete_volume_m3, genuinely
             # no length printed anywhere in the PDF). The old floor_slab_1 architecture routed
@@ -333,7 +333,7 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
         # slab_edge_perimeter_m: control-geometry only (confirmed by reading the engine - it only
         # ever feeds a cross-check warning, never a money line), and not currently an extraction
         # target on floor_slab_zones. Falls back to this zone's own EPS slab-edge work length,
-        # which is the same physical perimeter in every real project checked so far (TRC) - safe
+        # which is the same physical perimeter in every real project checked so far - safe
         # specifically because this field never touches money either way.
         slab_edge_perimeter = _num(zone.get("slab_edge_perimeter_m"))
         if slab_edge_perimeter is None:
@@ -376,7 +376,7 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
 
         # slab_zones[] (single item) - this is what actually makes main_formwork_area use the
         # evidence-checked concrete_volume/thickness formula instead of the raw (and, per real
-        # TRC/АРК/ЮСВ data, ~20% undercounted) PDF-quoted under_slab_formwork_area_m2. See
+        # data from all 3 checked projects, ~20% undercounted) PDF-quoted under_slab_formwork_area_m2. See
         # calculate_formwork_areas_context()'s own "reversed 2026-08-09" comment in
         # floor_slab_calculator.py before changing this.
         result["slab_zones"] = [

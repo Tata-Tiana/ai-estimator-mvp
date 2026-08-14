@@ -794,7 +794,7 @@ REBAR_FLOOR_REQUIRED_GROUP_CODES = {
     # Only these 2 of the 4 REBAR_ITEM_GROUP_CODES use `floor` as part of their item shape.
     # foundation_rebar_items covers one implicit level, and floor_slab_rebar_items disambiguates
     # by `zone_id` (floor_slab_zones) instead of a floor number, so there's nothing to check here
-    # for either. Confirmed 2026-08-09 against real ТРЦ extraction output: main_wall_rebar_items/
+    # for either. Confirmed 2026-08-09 against a real project's extraction output: main_wall_rebar_items/
     # lintel_rebar_items rows always carry a real floor=1 or floor=2 value except when the
     # extraction itself leaves it null.
     "main_wall_rebar_items",
@@ -810,7 +810,7 @@ def rebar_missing_floor_diagnostics(section_code: str, section: dict[str, Any]) 
     default, and validate_spec_rebar_item does `item.floor < 1` with no None-guard, so a null
     floor raises an unhandled TypeError deep inside __post_init__ instead of a clean, catchable
     error - and nothing upstream of that ever told anyone this row was suspect. Found 2026-08-09
-    via a real ТРЦ run: main_wall_rebar_items' "подоконное армирование" (under-window
+    via a real project run: main_wall_rebar_items' "подоконное армирование" (under-window
     reinforcement) row had floor=null even though its own extraction rule says to default to 1
     when the PDF doesn't specify - the rule was documented but not applied, and no check existed
     to catch the mismatch between rule and output."""
@@ -997,7 +997,7 @@ def parapet_rebar_in_main_wall_diagnostics(section: dict[str, Any]) -> list[dict
     component=load_bearing_walls: the calculator folds it into the ordinary main-wall rebar total
     (material cost isn't lost, just mispriced), and the dedicated parapet_chasing_base_length /
     parapet_rebar_base_length scalars stay empty, so the separate parapet chasing/groove-cutting
-    work line never fires. Real case, 2026-08-05 ТРЦ: two rows explicitly labelled 'парапеты 1/2
+    work line never fires. Real case, 2026-08-05: two rows explicitly labelled 'парапеты 1/2
     этаж' (47.36 + 105.68 m) were mistagged this way."""
     diagnostics: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()

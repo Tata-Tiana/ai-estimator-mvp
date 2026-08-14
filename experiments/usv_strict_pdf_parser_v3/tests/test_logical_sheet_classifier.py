@@ -3,7 +3,7 @@
 Architecture rules enforced here:
   - No hardcoded elevation values (+3.480, +4.680, etc.) for floor slab detection.
   - No page numbers as logic.
-  - No project-specific names (USV, TRC, etc.) as logic.
+  - No project-specific names as logic.
   - floor_slab_1 / floor_slab_2 only from explicit "1 этаж" / "2 этаж" text.
   - Ambiguous slab pages get floor_slab_unknown, not a guess.
 """
