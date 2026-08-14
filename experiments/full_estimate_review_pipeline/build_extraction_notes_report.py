@@ -28,7 +28,7 @@ SECTION_NAMES = {
     "earthworks": "Земляные работы",
     "foundation_slab": "Фундаментная плита",
     "waterproofing": "Гидроизоляция, утепление бортов плит",
-    "load_bearing_walls_lintels_p6": "Несущие стены и перемычки P6",
+    "load_bearing_walls_lintels_p6": "Несущие стены и перемычки",
     "load_bearing_walls_lintels": "Несущие стены и перемычки",
     "floor_slabs": "Плиты перекрытия/покрытия",
     "flat_roof": "Плоская кровля",

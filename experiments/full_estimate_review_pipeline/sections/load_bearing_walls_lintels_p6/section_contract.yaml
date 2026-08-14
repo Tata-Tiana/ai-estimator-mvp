@@ -2,7 +2,7 @@ contract_version: 0.1
 
 section:
   code: load_bearing_walls_lintels_p6
-  name_ru: "Стены и перемычки (P6, новая зональная модель)"
+  name_ru: "Стены и перемычки"
   calculator_module: "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
   status: draft
   owner_notes: >

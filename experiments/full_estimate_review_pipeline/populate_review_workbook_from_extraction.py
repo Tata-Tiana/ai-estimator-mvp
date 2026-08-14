@@ -388,8 +388,19 @@ def unresolved_candidate_fragment(item: dict[str, Any]) -> str:
     fragments = candidate_component_fragments(item)
     note = item.get("notes") or "Есть несколько candidates, но для этого target_code нет универсального правила автосуммы."
     if not fragments:
-        return str(note)
-    return f"{note} Автосумма не применена; проверьте компоненты: {fragments}"
+        return humanize_visible_text(str(note))
+    return humanize_visible_text(f"{note} Автосумма не применена; проверьте компоненты: {fragments}")
+
+
+def humanize_visible_text(text: str) -> str:
+    return (
+        text.replace("(P6, новая зональная модель)", "")
+        .replace("P6-зона", "Зона раздела стен и перемычек")
+        .replace("P6-калькулятор", "Калькулятор стен и перемычек")
+        .replace("P6 ", "раздела стен и перемычек ")
+        .replace(" P6", " раздела стен и перемычек")
+        .replace("правилу P6", "правилу раздела стен и перемычек")
+    )
 
 
 def item_fragment(item: dict[str, Any] | None) -> str:
@@ -398,8 +409,8 @@ def item_fragment(item: dict[str, Any] | None) -> str:
     raw_text = str(item.get("raw_text") or "")
     notes = str(item.get("notes") or "")
     if raw_text and notes and notes not in raw_text:
-        return f"{raw_text}\nNotes: {notes}"
-    return raw_text or notes
+        return humanize_visible_text(f"{raw_text}\nNotes: {notes}")
+    return humanize_visible_text(raw_text or notes)
 
 
 AUTO_SUM_CANDIDATE_TARGETS = {
@@ -992,7 +1003,16 @@ def p6_groups_with_review(extraction: dict[str, Any]) -> dict[str, list[Any]]:
 
 
 def p6_wall_zone_label(value: dict[str, Any]) -> str:
-    return str(value.get("display_name") or value.get("zone_id") or "Зона кладки")
+    label = str(value.get("display_name") or value.get("zone_id") or "Зона кладки")
+    zone_kind = str(value.get("zone_kind") or "")
+    normalized_label = label.lower().replace("ё", "е").strip()
+    if zone_kind == "vent_chimney_cladding" and normalized_label in {
+        "вентканалы",
+        "обкладка вентканалов",
+        "vent_chimney_cladding",
+    }:
+        return "Вентканалы — обкладка газобетоном в разделе стен"
+    return label
 
 
 def p6_wall_zone_sort_key(item: dict[str, Any]) -> tuple[int, str]:
@@ -1246,9 +1266,12 @@ def _append_rebar_diameter_summary(
             "мп",
             "Найдено (авто, сумма по разделу)",
             "",
-            "Автоматически: сумма длины по всем позициям этого диаметра в разделе.",
+            (
+                "Автоматически: сумма проектной длины из спецификаций по всем позициям этого диаметра "
+                "в разделе. Вес в примечании ниже — поставочный, с запасом/округлением для доставки."
+            ),
             "",
-            f"Вес (для справки): {bucket['weight_kg']:g} кг",
+            f"Поставочный вес с запасом/округлением (для справки): {bucket['weight_kg']:g} кг",
             "",
             "",
             sec_code,
@@ -1497,8 +1520,8 @@ def _render_repeated_row_block(
                 row_status = "Найдено (авто, box-калькулятор)"
                 row_confidence = ""
                 action_text = (
-                    "Автоматически по общему поставочному весу арматуры коробки "
-                    "(box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+                    "Автоматически по поставочному весу арматуры с запасом/округлением "
+                    f"(накопление {int(METAL_TRUCK_CAPACITY_KG // 1000)} т) — проверьте и поправьте при необходимости."
                 )
                 row_source = ""
                 row_fragment = item.get("_metal_delivery_detail") or item.get("notes") or ""
@@ -1746,6 +1769,10 @@ def build_project_sheet_from_extraction(
 
             box_row: tuple[Any, str, str] | None = None
             if box_delivery_key is not None and param_key == box_delivery_key:
+                if sec_code == P6_WALLS_SECTION_CODE:
+                    # For walls, Elena asked not to show this under a separate blue section band.
+                    # Render it once at the end of the walls section after the wall/lintel blocks.
+                    continue
                 # Box-calculator-allocated delivery trucks (2026-07-30) - computed from this
                 # project's real rebar weight, not looked up in found_by_target/missing at all.
                 # Crane-shift fields are NOT special-cased here anymore (Elena's ruling: no real
@@ -1776,13 +1803,19 @@ def build_project_sheet_from_extraction(
                 status = "Найдено (авто, box-калькулятор)"
                 row_fill = project_status_fill(status)
                 counts["found"] += 1
+                action_text = review_behavior.get("action_ru", "Проверьте значение.")
+                if param_key == box_delivery_key:
+                    action_text = (
+                        "Автоматически по поставочному весу арматуры с запасом/округлением "
+                        f"(накопление {int(METAL_TRUCK_CAPACITY_KG // 1000)} т) — проверьте и поправьте при необходимости."
+                    )
                 ws.append([
                     param.get("label_ru", param.get("key", "")),
                     found_value,
                     param.get("unit", ""),
                     status,
                     "",
-                    review_behavior.get("action_ru", "Проверьте значение."),
+                    action_text,
                     source,
                     fragment,
                     "",
@@ -1976,6 +2009,14 @@ def build_project_sheet_from_extraction(
         elif sec_code == P6_WALLS_SECTION_CODE:
             p6_found_groups = p6_groups_with_review(extraction)
             params_by_key = {param.get("key"): param for param in repeated_row_params}
+            p6_delivery_param = next(
+                (
+                    param
+                    for param in scalar_review_rows_for_contract(contract)
+                    if param.get("key") == REBAR_METAL_DELIVERY_FIELD_BY_SECTION.get(P6_WALLS_SECTION_CODE)
+                ),
+                None,
+            )
             dependent_group_keys = [
                 P6_WALL_ZONES_GROUP_KEY,
                 P6_WALL_BLOCK_ITEMS_GROUP_KEY,
@@ -2028,6 +2069,21 @@ def build_project_sheet_from_extraction(
                         reference_only=reference_only,
                         registry=registry,
                     )
+            if p6_delivery_param is not None:
+                cumulative_before, cumulative_after = rebar_cumulative_weights.get(
+                    sec_code, (0.0, rebar_weights_by_section.get(sec_code, 0.0))
+                )
+                append_rebar_metal_delivery_row(
+                    ws,
+                    sec_code=sec_code,
+                    param=p6_delivery_param,
+                    value=rebar_metal_delivery_allocation.get(sec_code, 0),
+                    weight_kg=rebar_weights_by_section.get(sec_code, 0.0),
+                    cumulative_before_kg=cumulative_before,
+                    cumulative_after_kg=cumulative_after,
+                    counts=counts,
+                    registry=registry,
+                )
         else:
             for param in repeated_row_params:
                 group_key = param.get("key")
@@ -2066,9 +2122,7 @@ def build_project_sheet_from_extraction(
     # Elena can see the real total driving the box-calculator's delivery-truck allocation above
     # (crane shifts are manual and not related to this total - see REBAR_METAL_DELIVERY_FIELD_BY_SECTION).
     # See compute_rebar_weights_by_section/compute_rebar_metal_delivery_allocation.
-    section_names_by_code = {section_code(c): section_name(c) for c in contracts}
-    if P6_WALLS_SECTION_CODE in section_names_by_code:
-        section_names_by_code["load_bearing_walls_lintels"] = section_names_by_code[P6_WALLS_SECTION_CODE]
+    section_names_by_code = metal_bucket_display_names(contracts, extraction)
     breakdown = "; ".join(
         f"{section_names_by_code.get(code, code)}: {weight:g} кг"
         for code, weight in rebar_weights_by_section.items()
@@ -2081,7 +2135,10 @@ def build_project_sheet_from_extraction(
         "кг",
         "Найдено (авто, box-калькулятор)",
         "",
-        "Справочно — сумма поставочного веса, из которой считается автораспределение машин доставки арматуры/металла по разделам.",
+        (
+            "Справочно — сумма поставочного веса арматуры с запасом/округлением; "
+            "из неё считается автораспределение машин доставки арматуры/металла по разделам."
+        ),
         "",
         breakdown,
         "",
@@ -2108,9 +2165,12 @@ def build_project_sheet_from_extraction(
             "мп",
             "Найдено (авто, box-калькулятор)",
             "",
-            "Автоматически: сумма длины по всем разделам для этого диаметра.",
+            (
+                "Автоматически: сумма проектной длины из спецификаций по всем разделам для этого диаметра. "
+                "Вес в примечании ниже — поставочный, с запасом/округлением для доставки."
+            ),
             "",
-            f"Вес (для справки): {bucket['weight_kg']:g} кг",
+            f"Поставочный вес с запасом/округлением (для справки): {bucket['weight_kg']:g} кг",
             "",
             "",
             "",
@@ -2183,6 +2243,26 @@ def build_project_sheet_from_extraction(
 
 
 FLOOR_SLABS_METAL_BUCKET_PREFIX = "floor_slabs::"
+
+
+def floor_slabs_zone_labels(extraction: dict[str, Any]) -> dict[str, str]:
+    _, found_groups, _ = index_extraction_section(extraction, "floor_slabs")
+    labels: dict[str, str] = {}
+    for item in found_groups.get(ZONES_GROUP_KEY, []):
+        value = item.get("value") or {}
+        zone_id = value.get("zone_id")
+        if zone_id:
+            labels[str(zone_id)] = str(value.get("display_name") or zone_id)
+    return labels
+
+
+def metal_bucket_display_names(contracts: list[dict[str, Any]], extraction: dict[str, Any]) -> dict[str, str]:
+    names = {section_code(contract): section_name(contract) for contract in contracts}
+    if P6_WALLS_SECTION_CODE in names:
+        names["load_bearing_walls_lintels"] = names[P6_WALLS_SECTION_CODE]
+    for zone_id, label in floor_slabs_zone_labels(extraction).items():
+        names[f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}"] = label
+    return names
 
 
 def floor_slabs_zone_ids(extraction: dict[str, Any]) -> list[str]:
@@ -2335,11 +2415,59 @@ def metal_delivery_note(
     else:
         reason = "в разделе нет учитываемой арматуры"
     return (
-        f"Поставочный вес арматуры раздела: {weight_kg:g} кг; "
+        f"Поставочный вес арматуры раздела с учетом запаса/округления: {weight_kg:g} кг; "
         f"накоплено до раздела: {cumulative_before_kg:g} кг; "
         f"после раздела: {cumulative_after_kg:g} кг. "
         f"Машин доставки здесь: {allocated_trucks}; {reason}."
     )
+
+
+def append_rebar_metal_delivery_row(
+    ws,
+    *,
+    sec_code: str,
+    param: dict[str, Any],
+    value: int,
+    weight_kg: float,
+    cumulative_before_kg: float,
+    cumulative_after_kg: float,
+    counts: dict[str, int],
+    registry: Sheet01BuildRegistry,
+) -> None:
+    status = "Найдено (авто, box-калькулятор)"
+    fragment = (
+        metal_delivery_note(
+            weight_kg=weight_kg,
+            cumulative_before_kg=cumulative_before_kg,
+            cumulative_after_kg=cumulative_after_kg,
+            allocated_trucks=value,
+        )
+        + " Проверьте и поправьте при необходимости."
+    )
+    ws.append([
+        param.get("label_ru", param.get("key", "")),
+        value,
+        param.get("unit", ""),
+        status,
+        "",
+        (
+            "Автоматически по поставочному весу арматуры с запасом/округлением "
+            f"(накопление {int(METAL_TRUCK_CAPACITY_KG // 1000)} т) — проверьте и поправьте при необходимости."
+        ),
+        "",
+        fragment,
+        "",
+        "",
+        sec_code,
+        param.get("key", ""),
+        param.get("source_class", ""),
+        param.get("target_code", ""),
+    ])
+    for cell in ws[ws.max_row]:
+        cell.fill = project_status_fill(status)
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+    counts["found"] += 1
+    registry.record_scalar(sec_code, param)
 
 
 def compute_rebar_metal_delivery_allocation(weights_by_section: dict[str, float], order: list[str]) -> dict[str, int]:
