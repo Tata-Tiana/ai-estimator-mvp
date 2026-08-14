@@ -272,7 +272,7 @@ price_keys:
   - {key: scaffolding_setup_work_unit_price, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", registry_code: "scaffolding_setup_dismantling_work_set", required: true}
   - {key: scaffolding_timber_unit_price, label_ru: "Пиломатериал для устройства лесов", price_kind: material, unit: "м3", registry_code: "timber_m3", required: true}
   - {key: cutoff_waterproofing_material_unit_price, label_ru: "Отсечная гидроизоляция, материал", price_kind: material, unit: "м2", registry_code: "cutoff_waterproofing_material_m2", required: true}
-  - {key: cutoff_waterproofing_work_unit_price, label_ru: "Отсечная гидроизоляция, работа", price_kind: work, unit: "м2", registry_code: "cutoff_waterproofing_work_m2", required: true}
+  - {key: cutoff_waterproofing_work_unit_price, label_ru: "Отсечная гидроизоляция, работа", price_kind: work, unit: "м2", registry_code: "cutoff_waterproofing_under_blocks_m2", required: true}
   - {key: masonry_work_unit_price, label_ru: "Кладка стен из газобетонных блоков", price_kind: work, unit: "м3", registry_code: "gas_block_masonry_work_m3", required: true}
   - {key: gas_block_d400_unit_price, label_ru: "Газобетонный блок D400 600x400x250", price_kind: material, unit: "м3", registry_code: "gas_block_d400_m3", required: true}
   - {key: gas_block_d500_250_unit_price, label_ru: "Газобетонный блок D500 600x250x250", price_kind: material, unit: "м3", registry_code: "gas_block_d500_m3", required: true}
@@ -294,8 +294,8 @@ price_keys:
   - {key: lintel_insulation_work_unit_price, label_ru: "Утепление наружной стороны монолитной перемычки", price_kind: work, unit: "мп", registry_code: "lintel_edge_insulation_work_m", required: true}
   - {key: lintel_insulation_eps_unit_price, label_ru: "ЭППС для утепления перемычек", price_kind: material, unit: "м3", registry_code: "eps_penoplex_osnova_100_m3", required: true}
   - {key: lintel_glue_foam_unit_price, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", registry_code: "eps_foam_glue_can", required: true}
-  - {key: waste_removal_truck_unit_price, label_ru: "Вывоз мусора с объекта, машина", price_kind: material, unit: "маш", registry_code: "waste_removal_truck", required: true}
-  - {key: waste_removal_work_unit_price, label_ru: "Вывоз мусора с объекта, работа", price_kind: work, unit: "маш", registry_code: "waste_removal_work_truck", required: true}
+  - {key: waste_removal_truck_unit_price, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", registry_code: "waste_removal_container_truck", required: true}
+  - {key: waste_removal_work_unit_price, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", registry_code: "waste_removal_loading_work_truck", required: true}
   - {key: technical_supervision_amount, label_ru: "Технический надзор", price_kind: work, unit: "-", registry_code: "technical_supervision_walls_lintels", required: true}
   - {key: rebar_metal_delivery_unit_price, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", registry_code: "metal_delivery_truck", required: false}
 

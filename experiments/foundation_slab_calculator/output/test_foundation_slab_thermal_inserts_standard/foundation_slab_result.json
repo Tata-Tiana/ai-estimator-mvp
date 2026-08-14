@@ -354,42 +354,6 @@
   "warnings": [],
   "estimate_lines": [
     {
-      "code": "planter_membrane_installation",
-      "name": "Монтаж мембраны PLANTER стандарт",
-      "unit": "м2",
-      "quantity": 320.0,
-      "material_unit_price": 0.0,
-      "material_total": 0,
-      "work_unit_price": 100,
-      "work_total": 32000,
-      "line_total": 32000,
-      "price_code": "planter_membrane_installation_work_m2"
-    },
-    {
-      "code": "planter_standard_material",
-      "name": "Planter Standard Технониколь",
-      "unit": "рул",
-      "quantity": 9.0,
-      "material_unit_price": 5166,
-      "material_total": 46494,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 46494,
-      "price_code": "planter_standard_roll"
-    },
-    {
-      "code": "planterband_material",
-      "name": "PLANTERBAND 10м х 10см",
-      "unit": "шт",
-      "quantity": 36.0,
-      "material_unit_price": 790,
-      "material_total": 28440,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 28440,
-      "price_code": "planterband_item"
-    },
-    {
       "code": "formwork_installation",
       "name": "Монтаж опалубки из пиломатериалов для отбортовки плиты",
       "unit": "м2",
@@ -425,6 +389,42 @@
       "line_total": 26123,
       "display_quantity": 1.22,
       "price_code": "timber_m3"
+    },
+    {
+      "code": "planter_membrane_installation",
+      "name": "Монтаж мембраны PLANTER стандарт",
+      "unit": "м2",
+      "quantity": 320.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 32000,
+      "line_total": 32000,
+      "price_code": "planter_membrane_installation_work_m2"
+    },
+    {
+      "code": "planter_standard_material",
+      "name": "Planter Standard Технониколь",
+      "unit": "рул",
+      "quantity": 9.0,
+      "material_unit_price": 5166,
+      "material_total": 46494,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 46494,
+      "price_code": "planter_standard_roll"
+    },
+    {
+      "code": "planterband_material",
+      "name": "PLANTERBAND 10м х 10см",
+      "unit": "шт",
+      "quantity": 36.0,
+      "material_unit_price": 790,
+      "material_total": 28440,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 28440,
+      "price_code": "planterband_item"
     },
     {
       "code": "eps50_laying_under_slab",
@@ -712,8 +712,8 @@
       "eps": {
         "mode": "standard_50_100",
         "eps50_laying_area_m2": 270,
-        "eps50_thermal_insert_volume_m3": 0,
-        "eps50_order_volume_m3": 14.4352,
+        "eps50_thermal_insert_volume_m3": 1.05,
+        "eps50_order_volume_m3": 15.268,
         "eps100_order_volume_m3": 0
       },
       "thermal_insert": {
@@ -741,19 +741,11 @@
       },
       "eps50_penoplex_geo_material": {
         "unit": "м3",
-        "quantity": 14.4352,
-        "display_quantity": 14.44,
+        "quantity": 15.268,
+        "display_quantity": 15.27,
         "material_unit_price": 9800,
-        "material_total": 141465,
-        "line_total": 141465
-      },
-      "thermal_insert_50_material": {
-        "unit": "м3",
-        "quantity": 1.1104,
-        "display_quantity": 1.11,
-        "material_unit_price": 9800,
-        "material_total": 10882,
-        "line_total": 10882
+        "material_total": 149626,
+        "line_total": 149626
       },
       "thermal_insert_100_material": {
         "unit": "м3",
@@ -765,9 +757,9 @@
       }
     },
     "internal_totals": {
-      "internal_materials_total": 1465557,
+      "internal_materials_total": 1462836,
       "internal_works_total": 1084000,
-      "internal_section_total": 2549557
+      "internal_section_total": 2546836
     }
   },
   "comparison": [
@@ -787,17 +779,17 @@
     },
     {
       "key": "calculation_blocks.eps.eps50_thermal_insert_volume_m3",
-      "expected": 0,
+      "expected": 1.05,
       "actual": 1.05,
-      "diff": 1.05,
-      "status": "mismatch"
+      "diff": 0.0,
+      "status": "ok"
     },
     {
       "key": "calculation_blocks.eps.eps50_order_volume_m3",
-      "expected": 14.4352,
+      "expected": 15.268,
       "actual": 15.268,
-      "diff": 0.8328,
-      "status": "mismatch"
+      "diff": 0.0,
+      "status": "ok"
     },
     {
       "key": "calculation_blocks.eps.eps100_order_volume_m3",
@@ -920,17 +912,17 @@
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.quantity",
-      "expected": 14.4352,
+      "expected": 15.268,
       "actual": 15.268,
-      "diff": 0.8328,
-      "status": "mismatch"
+      "diff": 0.0,
+      "status": "ok"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.display_quantity",
-      "expected": 14.44,
+      "expected": 15.27,
       "actual": 15.27,
-      "diff": 0.83,
-      "status": "mismatch"
+      "diff": 0.0,
+      "status": "ok"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.material_unit_price",
@@ -941,59 +933,17 @@
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.material_total",
-      "expected": 141465,
+      "expected": 149626,
       "actual": 149626,
-      "diff": 8161,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     },
     {
       "key": "estimate_lines.eps50_penoplex_geo_material.line_total",
-      "expected": 141465,
+      "expected": 149626,
       "actual": 149626,
-      "diff": 8161,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.unit",
-      "expected": "м3",
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.quantity",
-      "expected": 1.1104,
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.display_quantity",
-      "expected": 1.11,
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.material_unit_price",
-      "expected": 9800,
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.material_total",
-      "expected": 10882,
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
-    },
-    {
-      "key": "estimate_lines.thermal_insert_50_material.line_total",
-      "expected": 10882,
-      "actual": null,
-      "diff": null,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     },
     {
       "key": "estimate_lines.thermal_insert_100_material.unit",
@@ -1039,10 +989,10 @@
     },
     {
       "key": "internal_totals.internal_materials_total",
-      "expected": 1465557,
+      "expected": 1462836,
       "actual": 1462836,
-      "diff": -2721,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     },
     {
       "key": "internal_totals.internal_works_total",
@@ -1053,10 +1003,10 @@
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 2549557,
+      "expected": 2546836,
       "actual": 2546836,
-      "diff": -2721,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     }
   ]
 }

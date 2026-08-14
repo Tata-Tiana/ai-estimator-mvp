@@ -80,7 +80,7 @@ class SpecRebarItem:
     def from_dict(cls, data: dict[str, Any]) -> "SpecRebarItem":
         # Extraction rule (target_aliases_ru.yaml, main_wall_rebar_items notes): "if the PDF
         # doesn't say which floor, default floor=1" - an already-approved business default, not
-        # a guess invented here. The AI extraction doesn't always apply it (real 2026-08-09 ТРЦ
+        # a guess invented here. The AI extraction doesn't always apply it (real 2026-08-09 project
         # case: "подоконное армирование" row left floor=null), and until now nothing downstream
         # applied it either, so a missing floor crashed the whole section instead of falling
         # back to this pre-approved default. Applying it here makes the calculator itself
@@ -554,8 +554,27 @@ def line(
     )
 
 
+# Steel class labels come straight from PDF/spec text ("А500С", "А240") - Cyrillic by nature, not
+# a typo. Price registry codes are plain ASCII and drop the trailing weld-grade letter
+# ("rebar_a500_d10_m", "rebar_a240_d6_m" - never "..._a500c_..."), see output/price_registry_*.xlsx.
+# Fixed 2026-08-14: this used to lowercase the raw (often Cyrillic) string as-is, producing
+# price_codes like "rebar_а500с_d10_m" (Cyrillic а/с, U+0430/U+0441) that never matched the Latin
+# registry rows and broke the export's diameter-label regex (_REBAR_PRICE_CODE_RE), showing every
+# rebar line as generic "Арматура" with no diameter once Stage 2 pooling shipped (2026-08-12).
+_CYRILLIC_TO_LATIN_STEEL = str.maketrans(
+    {"А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X"}
+)
+
+
+def normalize_steel_class_code(steel_class: str) -> str:
+    latin = steel_class.strip().translate(_CYRILLIC_TO_LATIN_STEEL).upper()
+    if latin.endswith("C"):
+        latin = latin[:-1]
+    return latin.lower()
+
+
 def rebar_price_code(steel_class: str, diameter_mm: int) -> str:
-    return f"rebar_{steel_class.lower()}_d{diameter_mm}_m"
+    return f"rebar_{normalize_steel_class_code(steel_class)}_d{diameter_mm}_m"
 
 
 def make_rebar_price_code(steel_class: str, diameter_mm: int) -> str:
@@ -651,7 +670,7 @@ def wall_block_items_roles_present(items: list["WallBlockItem"] | None) -> set[s
     wall_block_items rows - without one role's presence silently discarding another role's real
     data. Before this helper existed, every "wall_block_totals is not None" check below treated
     "wall_block_items has ANY row" as "trust wall_block_items for EVERY role", which zeroed out
-    main_walls volume for a real project (TRC, 2026-08-07) whose extraction put main_walls only
+    main_walls volume for a real project (2026-08-07) whose extraction put main_walls only
     in the legacy scalar fields and everything else in wall_block_items."""
     if not items:
         return set()
@@ -712,10 +731,10 @@ def rebar_from_spec_length_items_pooled(
 ) -> tuple[dict[str, Any], list[EstimateLineResult]]:
     """Pools same (floor, component, steel_class, diameter_mm) SpecRebarItem rows into ONE
     combined rod-purchase rounding, instead of rounding each row to its own rod-multiple
-    independently. Confirmed 2026-08-09 by comparing against real TRC/АРК/ЮСВ smeta data (see
+    independently. Confirmed 2026-08-09 by comparing against 3 real project smetas (see
     reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md): every real rebar order
     quantity checked across all 3 projects (dozens of rows, every diameter) is an exact
-    rod-length multiple, and where TRC's PDF spec gives multiple rows of the same
+    rod-length multiple, and where one real project's PDF spec gives multiple rows of the same
     floor/component/diameter/steel_class (e.g. a wall's 400mm-chase + 250mm-chase + subwindow
     rebar, all Ø10; or several stirrup cut-lengths, all Ø6), her real total only matches when the
     raw meters are summed FIRST and rounded to a rod ONCE - rounding each row separately always
@@ -1020,7 +1039,7 @@ def calculate_monolithic_lintel_block(
     if concrete_volume > 0 and total_length_m is None:
         raise ValueError("monolithic lintel concreting work requires total_length_m when concrete_volume_m3 is present")
     if total_length > 0 and concrete_volume_m3 is None:
-        # 2026-07-29: symmetric guard for the real ARK case — the spec gives a combined
+        # 2026-07-29: symmetric guard for a real project case — the spec gives a combined
         # total_length_m (e.g. 5.4m for ПБ1+ПБ2) but no combined concrete_volume_m3 (each
         # lintel's concrete is only given separately, 0.21+0.16, and must not be summed by
         # the extraction itself). Without this guard, concreting work still gets billed by
@@ -1142,7 +1161,7 @@ def calculate_blocks(data: LoadBearingWallsLintelsInput) -> dict[str, Any]:
     lintel_length = calculate_lintel_total_length(data)
     lintel_total_length = d(lintel_length["lintel_total_length_m"])
     wall_block_totals = wall_block_items_totals(data.wall_block_items) if data.wall_block_items else None
-    # Per-role, not all-or-nothing (fixed 2026-08-07, real TRC project bug): wall_block_items[]
+    # Per-role, not all-or-nothing (fixed 2026-08-07, real project bug): wall_block_items[]
     # can legitimately carry only SOME roles (e.g. floor_2/parapet/partitions) while another role
     # (main_walls) was given via the old scalar fields instead - a normal mixed-source situation,
     # not an error. Trusting wall_block_totals for a role that has zero rows in wall_block_items
@@ -1492,7 +1511,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         *wall_block_other_density_lines(data.wall_block_items or [], "main_walls"),
         line("main_gas_block_adhesive", "Монтажный клей для блоков 25 кг", "мешок", adh["main_adhesive_bags"], material_unit_price=data.adhesive_unit_price, price_code="block_adhesive_bag"),
         line("sand_concrete_m300_first_row", "Пескобетон М300 40 кг", "шт", adh["sand_concrete_bags"], material_unit_price=data.sand_concrete_unit_price, price_code="sand_concrete_bag"),
-        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md: реальный (серый) столбец ТРЦ/АРК/ЮСВ показывает 0 на всех 10 проверенных строках). База для арматуры Ø10."),
+        line("main_wall_chasing_for_d10_reinforcement", "Штробление блоков под дополнительное усиление, армирование арматурой диаметром 10 мм", "мп", reinf["main_wall_chasing_quantity_m"], notes="Нулевая строка — работа входит в ставку кладки (см. отчёт 04_load_bearing_walls_lintels.md: реальный (серый) столбец во всех 3 проверенных реальных проектах показывает 0 на всех 10 проверенных строках). База для арматуры Ø10."),
         *main_wall_rebar_lines,
         line("gas_blocks_and_mix_delivery", "Доставка блоков, смеси", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_delivery_unit_price, notes="По закупочным объёмам после поддонов", price_code="block_delivery_truck"),
         line("gas_blocks_unloading_manipulator", "Разгрузка блоков, смеси манипулятором", "маш", delivery["gas_block_delivery_trucks"], material_unit_price=data.gas_block_unloading_manipulator_unit_price, price_code="block_unloading_manipulator_truck"),
@@ -1658,7 +1677,7 @@ def calculate_lines(data: LoadBearingWallsLintelsInput, b: dict[str, Any]) -> li
         ),
         line("construction_waste_removal", "Вывоз мусора с объекта", "маш", data.waste_removal_trucks, material_unit_price=data.waste_removal_truck_unit_price, work_unit_price=data.waste_removal_work_unit_price, notes="manual/fixed line", price_code="waste_removal_truck"),
         line("walls_technical_supervision", "Технический надзор", "-", 1, work_unit_price=data.technical_supervision_amount, price_code="technical_supervision_walls_lintels"),
-        # Real smetas (TRC/ARK/USV) always print these 3 rows at the end of every section, even
+        # Real smetas (3 real projects checked) always print these 3 rows at the end of every section, even
         # when this calculator has no manual input feeding them (2026-08-12, real user feedback:
         # Elena expects the row to exist and read zero, not be missing from the section entirely
         # - a missing row reads as "forgot this section" more than a zero value does). Zero here

@@ -356,42 +356,6 @@
   "warnings": [],
   "estimate_lines": [
     {
-      "code": "planter_membrane_installation",
-      "name": "Монтаж мембраны PLANTER стандарт",
-      "unit": "м2",
-      "quantity": 320.0,
-      "material_unit_price": 0.0,
-      "material_total": 0,
-      "work_unit_price": 100,
-      "work_total": 32000,
-      "line_total": 32000,
-      "price_code": "planter_membrane_installation_work_m2"
-    },
-    {
-      "code": "planter_standard_material",
-      "name": "Planter Standard Технониколь",
-      "unit": "рул",
-      "quantity": 9.0,
-      "material_unit_price": 5166,
-      "material_total": 46494,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 46494,
-      "price_code": "planter_standard_roll"
-    },
-    {
-      "code": "planterband_material",
-      "name": "PLANTERBAND 10м х 10см",
-      "unit": "шт",
-      "quantity": 36.0,
-      "material_unit_price": 790,
-      "material_total": 28440,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 28440,
-      "price_code": "planterband_item"
-    },
-    {
       "code": "formwork_installation",
       "name": "Монтаж опалубки из пиломатериалов для отбортовки плиты",
       "unit": "м2",
@@ -427,6 +391,42 @@
       "line_total": 26123,
       "display_quantity": 1.22,
       "price_code": "timber_m3"
+    },
+    {
+      "code": "planter_membrane_installation",
+      "name": "Монтаж мембраны PLANTER стандарт",
+      "unit": "м2",
+      "quantity": 320.0,
+      "material_unit_price": 0.0,
+      "material_total": 0,
+      "work_unit_price": 100,
+      "work_total": 32000,
+      "line_total": 32000,
+      "price_code": "planter_membrane_installation_work_m2"
+    },
+    {
+      "code": "planter_standard_material",
+      "name": "Planter Standard Технониколь",
+      "unit": "рул",
+      "quantity": 9.0,
+      "material_unit_price": 5166,
+      "material_total": 46494,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 46494,
+      "price_code": "planter_standard_roll"
+    },
+    {
+      "code": "planterband_material",
+      "name": "PLANTERBAND 10м х 10см",
+      "unit": "шт",
+      "quantity": 36.0,
+      "material_unit_price": 790,
+      "material_total": 28440,
+      "work_unit_price": 0.0,
+      "work_total": 0,
+      "line_total": 28440,
+      "price_code": "planterband_item"
     },
     {
       "code": "eps50_laying_under_slab",
@@ -734,9 +734,9 @@
       }
     },
     "internal_totals": {
-      "internal_materials_total": 1467007,
+      "internal_materials_total": 1464286,
       "internal_works_total": 1084000,
-      "internal_section_total": 2551007
+      "internal_section_total": 2548286
     }
   },
   "comparison": [
@@ -847,10 +847,10 @@
     },
     {
       "key": "internal_totals.internal_materials_total",
-      "expected": 1467007,
+      "expected": 1464286,
       "actual": 1464286,
-      "diff": -2721,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     },
     {
       "key": "internal_totals.internal_works_total",
@@ -861,10 +861,10 @@
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 2551007,
+      "expected": 2548286,
       "actual": 2548286,
-      "diff": -2721,
-      "status": "mismatch"
+      "diff": 0,
+      "status": "ok"
     }
   ]
 }

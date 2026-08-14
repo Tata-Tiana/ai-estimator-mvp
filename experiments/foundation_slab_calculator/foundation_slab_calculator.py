@@ -602,8 +602,27 @@ def calculate_line(
     )
 
 
+# Steel class labels come straight from PDF/spec text ("А500С", "А240") - Cyrillic by nature, not
+# a typo. Price registry codes are plain ASCII and drop the trailing weld-grade letter
+# ("rebar_a500_d10_m", "rebar_a240_d6_m" - never "..._a500c_..."), see output/price_registry_*.xlsx.
+# Fixed 2026-08-14: this used to lowercase the raw (often Cyrillic) string as-is, producing
+# price_codes like "rebar_а500с_d10_m" (Cyrillic а/с, U+0430/U+0441) that never matched the Latin
+# registry rows and broke the export's diameter-label regex (_REBAR_PRICE_CODE_RE), showing every
+# rebar line as generic "Арматура" with no diameter once Stage 2 pooling shipped (2026-08-12).
+_CYRILLIC_TO_LATIN_STEEL = str.maketrans(
+    {"А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X"}
+)
+
+
+def normalize_steel_class_code(steel_class: str) -> str:
+    latin = steel_class.strip().translate(_CYRILLIC_TO_LATIN_STEEL).upper()
+    if latin.endswith("C"):
+        latin = latin[:-1]
+    return latin.lower()
+
+
 def rebar_price_code(steel_class: str, diameter_mm: int) -> str:
-    return f"rebar_{steel_class.lower()}_d{diameter_mm}_m"
+    return f"rebar_{normalize_steel_class_code(steel_class)}_d{diameter_mm}_m"
 
 
 def calculate_membrane_block(data: FoundationSlabInput) -> dict[str, Any]:

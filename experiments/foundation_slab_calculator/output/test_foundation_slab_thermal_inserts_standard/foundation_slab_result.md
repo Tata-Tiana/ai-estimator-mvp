@@ -282,12 +282,12 @@
 ## Строки серой внутренней сметы
 | code | name | line_type | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
-| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
-| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1450` | `15950` | `0.0` | `0` | `15950` |
 | `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
+| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
+| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
 | `thermal_insert_50_installation` | Устройство и монтаж термовставок 50 мм | `` | `10.0` | `` | `мп` | `0.0` | `0` | `100` | `1000` | `1000` |
 | `thermal_insert_100_installation` | Устройство и монтаж термовставок 100 мм | `` | `15.0` | `` | `мп` | `0.0` | `0` | `100` | `1500` | `1500` |
@@ -324,8 +324,8 @@
 | --- | ---: | ---: | ---: | --- |
 | `calculation_blocks.eps.mode` | `standard_50_100` | `standard_50_100` | `` | `ok` |
 | `calculation_blocks.eps.eps50_laying_area_m2` | `270` | `270.0` | `0.0` | `ok` |
-| `calculation_blocks.eps.eps50_thermal_insert_volume_m3` | `0` | `1.05` | `1.05` | `mismatch` |
-| `calculation_blocks.eps.eps50_order_volume_m3` | `14.4352` | `15.268` | `0.8328` | `mismatch` |
+| `calculation_blocks.eps.eps50_thermal_insert_volume_m3` | `1.05` | `1.05` | `0.0` | `ok` |
+| `calculation_blocks.eps.eps50_order_volume_m3` | `15.268` | `15.268` | `0.0` | `ok` |
 | `calculation_blocks.eps.eps100_order_volume_m3` | `0` | `0` | `0` | `ok` |
 | `calculation_blocks.thermal_insert.mode` | `standard_50_100` | `standard_50_100` | `` | `ok` |
 | `calculation_blocks.thermal_insert.thermal_insert_50_material_raw_qty` | `1.05` | `1.05` | `0.0` | `ok` |
@@ -343,23 +343,17 @@
 | `estimate_lines.thermal_insert_100_installation.work_total` | `1500` | `1500` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_installation.line_total` | `1500` | `1500` | `0` | `ok` |
 | `estimate_lines.eps50_penoplex_geo_material.unit` | `м3` | `м3` | `` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.quantity` | `14.4352` | `15.268` | `0.8328` | `mismatch` |
-| `estimate_lines.eps50_penoplex_geo_material.display_quantity` | `14.44` | `15.27` | `0.83` | `mismatch` |
+| `estimate_lines.eps50_penoplex_geo_material.quantity` | `15.268` | `15.268` | `0.0` | `ok` |
+| `estimate_lines.eps50_penoplex_geo_material.display_quantity` | `15.27` | `15.27` | `0.0` | `ok` |
 | `estimate_lines.eps50_penoplex_geo_material.material_unit_price` | `9800` | `9800` | `0` | `ok` |
-| `estimate_lines.eps50_penoplex_geo_material.material_total` | `141465` | `149626` | `8161` | `mismatch` |
-| `estimate_lines.eps50_penoplex_geo_material.line_total` | `141465` | `149626` | `8161` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.unit` | `м3` | `None` | `` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.quantity` | `1.1104` | `None` | `` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.display_quantity` | `1.11` | `None` | `` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.material_unit_price` | `9800` | `None` | `` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.material_total` | `10882` | `None` | `` | `mismatch` |
-| `estimate_lines.thermal_insert_50_material.line_total` | `10882` | `None` | `` | `mismatch` |
+| `estimate_lines.eps50_penoplex_geo_material.material_total` | `149626` | `149626` | `0` | `ok` |
+| `estimate_lines.eps50_penoplex_geo_material.line_total` | `149626` | `149626` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.unit` | `м3` | `м3` | `` | `ok` |
 | `estimate_lines.thermal_insert_100_material.quantity` | `0.5552` | `0.5552` | `0.0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.display_quantity` | `0.56` | `0.56` | `0.0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.material_unit_price` | `10000` | `10000` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.material_total` | `5552` | `5552` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.line_total` | `5552` | `5552` | `0` | `ok` |
-| `internal_totals.internal_materials_total` | `1465557` | `1462836` | `-2721` | `mismatch` |
+| `internal_totals.internal_materials_total` | `1462836` | `1462836` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2549557` | `2546836` | `-2721` | `mismatch` |
+| `internal_totals.internal_section_total` | `2546836` | `2546836` | `0` | `ok` |

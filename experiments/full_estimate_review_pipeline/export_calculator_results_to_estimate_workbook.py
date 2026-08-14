@@ -25,7 +25,7 @@ SECTION_ORDER: list[tuple[str, str]] = [
     ("earthworks", "ЗЕМЛЯНЫЕ РАБОТЫ"),
     ("foundation_slab", "УСТРОЙСТВО ФУНДАМЕНТНОЙ ПЛИТЫ"),
     ("waterproofing", "ГИДРОИЗОЛЯЦИЯ, УТЕПЛЕНИЕ БОРТОВ ПЛИТ"),
-    ("load_bearing_walls_lintels", "ВНЕШНИЕ И ВНУТРЕННИЕ НЕСУЩИЕ СТЕНЫ, ПЕРЕМЫЧКИ НАД ПРОЕМАМИ"),
+    ("load_bearing_walls_lintels_p6", "ВНЕШНИЕ И ВНУТРЕННИЕ НЕСУЩИЕ СТЕНЫ, ПЕРЕМЫЧКИ НАД ПРОЕМАМИ"),
     # floor_slab_1/floor_slab_2 removed here (P3, FLOOR_SLAB_UNIFICATION_PLAN.md) - they used to
     # be two fixed entries in this exact spot. Now a dynamic number of blocks (as many as there
     # are real pours - 2 for every project today, since no real extraction has zone_context yet)
@@ -36,7 +36,7 @@ SECTION_ORDER: list[tuple[str, str]] = [
     ("schiedel_vent_channels", "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ"),
 ]
 
-FLOOR_SLABS_INSERT_AFTER = "load_bearing_walls_lintels"
+FLOOR_SLABS_INSERT_AFTER = "load_bearing_walls_lintels_p6"
 FLOOR_SLABS_RESULT_FILENAME = "floor_slabs_result.json"
 
 CALC_COLS = {
@@ -151,6 +151,20 @@ def _rebar_pool_label(price_code: str) -> str:
     return f"{match.group('steel_class').upper()} ф{match.group('diameter')}"
 
 
+def _rebar_zone_suffix(name: str) -> str:
+    """Rebar line names carry their zone as a ": <zone>" suffix (P6 walls convention, e.g.
+    "Арматура А500С Ø10 для кладки: Стены 1 этаж"). Sections with only one zone per line (single-
+    pour sections like foundation_slab) never have this suffix, so they get "" - same pooling as
+    before (fully collapsed by diameter, no zone split)."""
+    if ": " in name:
+        return name.rsplit(": ", 1)[-1]
+    return ""
+
+
+def _slugify_zone(zone: str) -> str:
+    return "_".join(zone.lower().split())
+
+
 def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Этап 2 (2026-08-12, Elena's request): the smeta gets only one row per (steel_class,
     diameter) - price_code already uniquely identifies that combo (rebar_<class>_d<diameter>_m) -
@@ -159,20 +173,35 @@ def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     isn't the one who can change rebar quantities without the structural engineer's sign-off
     anyway - only these pooled summary rows are hers to round up or add a reserve to if she wants.
     Every non-rebar line (price_code not starting with "rebar_") passes through unchanged, in its
-    original position; pooled rebar rows appear where the first line of that diameter/class did."""
+    original position; pooled rebar rows appear where the first line of that diameter/class did.
+
+    Fixed 2026-08-14: pooling key is now (price_code, zone) instead of price_code alone. Sections
+    with more than one zone inside them (currently only load_bearing_walls_lintels_p6 - 1-й/2-й
+    этаж/парапет all live in one section, unlike every other section which is single-zone) were
+    getting their rebar collapsed across zones, contradicting Elena's real smetas which always
+    keep rebar-by-diameter separate per floor (confirmed against all 3 real projects, see
+    P6_WALLS_LINTELS_DATA_CONTRACT.md). Single-zone sections are unaffected - their lines have no
+    ": zone" suffix, so zone_key is always "" and pooling stays exactly as before."""
     result: list[dict[str, Any]] = []
-    index_by_price_code: dict[str, int] = {}
+    index_by_key: dict[tuple[str, str], int] = {}
     for line in lines:
         price_code = line.get("price_code") or ""
         if not price_code.startswith("rebar_"):
             result.append(line)
             continue
-        if price_code in index_by_price_code:
-            pooled = result[index_by_price_code[price_code]]
+        zone = _rebar_zone_suffix(line.get("name") or "")
+        key = (price_code, zone)
+        if key in index_by_key:
+            pooled = result[index_by_key[key]]
         else:
+            label = _rebar_pool_label(price_code)
+            code = f"{price_code}_pooled"
+            if zone:
+                label = f"{label}: {zone}"
+                code = f"{code}_{_slugify_zone(zone)}"
             pooled = {
-                "code": f"{price_code}_pooled",
-                "name": _rebar_pool_label(price_code),
+                "code": code,
+                "name": label,
                 "unit": line.get("unit") or "мп",
                 "quantity": 0.0,
                 "material_unit_price": _num(line.get("material_unit_price")),
@@ -182,12 +211,36 @@ def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "line_total": 0.0,
                 "price_code": price_code,
             }
-            index_by_price_code[price_code] = len(result)
+            index_by_key[key] = len(result)
             result.append(pooled)
         pooled["quantity"] += _quantity(line)
         pooled["material_total"] += _num(_line_value(line, "material_total"))
         pooled["work_total"] += _num(_line_value(line, "work_total"))
         pooled["line_total"] += _num(_line_value(line, "line_total"))
+    return result
+
+
+_ZONE_SUBHEADER_MARKER = "__zone_subheader__"
+_MASONRY_WORK_LABEL = "Кладка внешних, внутренних стен из газобетонных блоков"
+
+
+def _insert_zone_subheaders(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Elena's real smetas print each zone (1-й этаж/2-й этаж/парапет/etc) as its own empty,
+    bold-name row before that zone's lines - never a data row. Fixed 2026-08-14: our export never
+    had this (no other section needs it - every other section is single-zone), so the P6 walls
+    calculator's zone name ended up glued onto its first data line instead ("Стены 1 этаж" as the
+    масонry-work line's own name, quantity and all). Detects zone starts via the calculator's own
+    code convention (every zone's first line is "<zone_id>_masonry_work") and inserts a marker dict
+    the row-writer below turns into a real subheader row; the masonry-work line itself is renamed
+    to a proper description (was just repeating the zone name, which would now sit directly under
+    its own subheader and look like a duplicate)."""
+    result: list[dict[str, Any]] = []
+    for entry in lines:
+        code = entry.get("code") or ""
+        if code.endswith("_masonry_work"):
+            result.append({_ZONE_SUBHEADER_MARKER: True, "name": entry.get("name")})
+            entry = {**entry, "name": _MASONRY_WORK_LABEL}
+        result.append(entry)
     return result
 
 
@@ -197,7 +250,10 @@ def _all_section_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any
     exact spot floor_slab_1/floor_slab_2 used to occupy as two fixed entries."""
     blocks: list[tuple[str, list[dict[str, Any]]]] = []
     for section_code, section_title in SECTION_ORDER:
-        blocks.append((section_title, _pool_rebar_lines(_load_lines(results_dir, section_code))))
+        lines = _pool_rebar_lines(_load_lines(results_dir, section_code))
+        if section_code == "load_bearing_walls_lintels_p6":
+            lines = _insert_zone_subheaders(lines)
+        blocks.append((section_title, lines))
         if section_code == FLOOR_SLABS_INSERT_AFTER:
             blocks.extend(
                 (title, _pool_rebar_lines(lines))
@@ -326,6 +382,16 @@ def _write_section_header(ws: Any, row_num: int, section_number: int, section_ti
     ws.row_dimensions[row_num].height = 22
 
 
+def _write_zone_subheader(ws: Any, row_num: int, zone_name: str) -> None:
+    """Empty row with just a bold zone name (e.g. "1-ый этаж") in column B - matches Elena's real
+    smetas exactly (checked all 3 real projects: bold, size 14, no fill, no data in any other column)."""
+    cell = ws.cell(row_num, 2)
+    cell.value = _text(zone_name)
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[row_num].height = 20
+
+
 def _write_data_row(ws: Any, row_num: int, line: dict[str, Any]) -> None:
     quantity, material_unit, _material_total, work_unit, _work_total, _row_total = _cost_parts(line)
 
@@ -432,7 +498,10 @@ def build_workbook(results_dir: Path, review_workbook: Path | None, logo_path: P
         row_num += 1
         first_data_row = row_num
         for line in lines:
-            _write_data_row(ws, row_num, line)
+            if line.get(_ZONE_SUBHEADER_MARKER):
+                _write_zone_subheader(ws, row_num, line.get("name") or "")
+            else:
+                _write_data_row(ws, row_num, line)
             row_num += 1
         last_data_row = row_num - 1
         if first_data_row <= last_data_row:

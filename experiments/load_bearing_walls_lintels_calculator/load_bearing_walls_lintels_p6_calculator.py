@@ -11,6 +11,7 @@ from load_bearing_walls_lintels_calculator import (
     gas_block_order,
     line,
     q,
+    rebar_price_code,
     totals,
 )
 
@@ -78,6 +79,7 @@ class P6WallZone:
     zone_kind: str
     block_items: list[P6BlockItem | dict[str, Any]] = field(default_factory=list)
     chasing_rebar_items: list[P6RebarItem | dict[str, Any]] = field(default_factory=list)
+    unassigned_lintel_rebar_items: list[P6RebarItem | dict[str, Any]] = field(default_factory=list)
     lintel_items: list[P6LintelItem | dict[str, Any]] = field(default_factory=list)
     cutoff_waterproofing_area_m2: float = 0.0
     block_delivery_batch_id: str | None = None
@@ -93,6 +95,10 @@ class P6WallZone:
             "chasing_rebar_items": [
                 item if isinstance(item, P6RebarItem) else P6RebarItem.from_dict(item)
                 for item in data.get("chasing_rebar_items", [])
+            ],
+            "unassigned_lintel_rebar_items": [
+                item if isinstance(item, P6RebarItem) else P6RebarItem.from_dict(item)
+                for item in data.get("unassigned_lintel_rebar_items", [])
             ],
             "lintel_items": [
                 item if isinstance(item, P6LintelItem) else P6LintelItem.from_dict(item)
@@ -199,18 +205,30 @@ class P6LoadBearingWallsLintelsInput:
 
 
 def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
-    return (item.block_density.upper(), item.block_size.replace(" ", "").lower())
+    normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
+    return (item.block_density.upper(), normalized_size)
+
+
+def _block_size_parts(size: str) -> tuple[int, ...]:
+    try:
+        return tuple(sorted(int(float(part)) for part in size.split("x")))
+    except (TypeError, ValueError):
+        return ()
+
+
+def _same_block_size(size: str, expected: tuple[int, int, int]) -> bool:
+    return _block_size_parts(size) == tuple(sorted(expected))
 
 
 def _block_unit_price(item: P6BlockItem, rates: P6Rates) -> float:
     if item.material_unit_price is not None:
         return item.material_unit_price
     density, size = _block_material_key(item)
-    if density == "D400" and "600x400x250" in size:
+    if density == "D400" and _same_block_size(size, (600, 400, 250)):
         return rates.gas_block_d400_unit_price
-    if density == "D500" and "600x250x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 250, 250)):
         return rates.gas_block_d500_250_unit_price
-    if density == "D500" and "600x150x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 150, 250)):
         return rates.gas_block_d500_150_unit_price
     raise ValueError(f"Unsupported block material without explicit material_unit_price: {item.block_density} {item.block_size}")
 
@@ -219,22 +237,22 @@ def _block_pallet_volume(item: P6BlockItem, defaults: P6Defaults) -> float:
     if item.pallet_volume_m3 is not None:
         return item.pallet_volume_m3
     density, size = _block_material_key(item)
-    if density == "D400" and "600x400x250" in size:
+    if density == "D400" and _same_block_size(size, (600, 400, 250)):
         return defaults.gas_block_d400_pallet_volume_m3
-    if density == "D500" and "600x250x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 250, 250)):
         return defaults.gas_block_d500_250_pallet_volume_m3
-    if density == "D500" and "600x150x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 150, 250)):
         return defaults.gas_block_d500_150_pallet_volume_m3
     raise ValueError(f"Unsupported block material without explicit pallet_volume_m3: {item.block_density} {item.block_size}")
 
 
 def _block_price_code(item: P6BlockItem) -> str | None:
     density, size = _block_material_key(item)
-    if density == "D400" and "600x400x250" in size:
+    if density == "D400" and _same_block_size(size, (600, 400, 250)):
         return "gas_block_d400_m3"
-    if density == "D500" and "600x250x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 250, 250)):
         return "gas_block_d500_m3"
-    if density == "D500" and "600x150x250" in size:
+    if density == "D500" and _same_block_size(size, (600, 150, 250)):
         return "gas_block_d500_150_m3"
     return None
 
@@ -268,6 +286,12 @@ def _pool_rebar_by_zone_purpose(
     zone_names = {zone.zone_id: zone.display_name for zone in zones}
     for zone in zones:
         for item in zone.chasing_rebar_items:
+            key = (zone.zone_id, item.purpose, item.steel_class, item.diameter_mm)
+            if key not in groups:
+                groups[key] = []
+                order.append(key)
+            groups[key].append(item)
+        for item in zone.unassigned_lintel_rebar_items:
             key = (zone.zone_id, item.purpose, item.steel_class, item.diameter_mm)
             if key not in groups:
                 groups[key] = []
@@ -331,7 +355,7 @@ def _pool_rebar_by_zone_purpose(
                 "мп",
                 q(order_length),
                 material_unit_price=unit_price_per_m,
-                price_code=f"rebar_{steel_class.lower()}_d{diameter_mm}_m",
+                price_code=rebar_price_code(steel_class, diameter_mm),
             )
         )
     return controls, lines, delivery_weight_total
@@ -491,9 +515,52 @@ def _calculate_lintel_blocks(
     return blocks, lines
 
 
+def _merge_zones_by_kind(
+    zones: list[P6WallZone], kind: str, merged_zone_id: str, merged_display_name: str
+) -> list[P6WallZone]:
+    """Elena's real smetas always bill a given zone_kind as ONE section, no matter how many
+    physical sub-zones the source spec breaks it into - confirmed on all 3 real projects
+    (P6_WALLS_LINTELS_DATA_CONTRACT.md: one real project's КР2 gives парапеты1эт/парапеты2эт as two
+    spec rows, another even has two separate drawing sheets for it, a third doesn't split it at
+    all - all 3 real smetas still show exactly one "Парапет"/"Парапеты" section). Universal by
+    zone_kind, not by a fixed count: merges however many zones of this kind exist (1, 2, or more)
+    into one - a project with 3 parapet sub-zones or with none at all both work the same way,
+    nothing here assumes exactly 2 the way one real project happens to have. If 0 or 1 zone of
+    this kind exist, returns zones unchanged (nothing to merge)."""
+    matching = [zone for zone in zones if zone.zone_kind == kind]
+    if len(matching) <= 1:
+        return zones
+    merged = P6WallZone(
+        zone_id=merged_zone_id,
+        display_name=merged_display_name,
+        zone_kind=kind,
+        block_items=[item for zone in matching for item in zone.block_items],
+        chasing_rebar_items=[item for zone in matching for item in zone.chasing_rebar_items],
+        unassigned_lintel_rebar_items=[
+            item for zone in matching for item in zone.unassigned_lintel_rebar_items
+        ],
+        lintel_items=[item for zone in matching for item in zone.lintel_items],
+        cutoff_waterproofing_area_m2=sum(zone.cutoff_waterproofing_area_m2 for zone in matching),
+        block_delivery_batch_id=next(
+            (zone.block_delivery_batch_id for zone in matching if zone.block_delivery_batch_id),
+            None,
+        ),
+    )
+    result: list[P6WallZone] = []
+    inserted = False
+    for zone in zones:
+        if zone.zone_kind != kind:
+            result.append(zone)
+        elif not inserted:
+            result.append(merged)
+            inserted = True
+    return result
+
+
 def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput) -> dict[str, Any]:
     rates = data.rates
     defaults = data.defaults
+    wall_zones = _merge_zones_by_kind(data.wall_zones, "parapet", "parapet", "Парапет")
     lines: list[EstimateLineResult] = [
         line(
             "scaffolding_setup_dismantling",
@@ -515,7 +582,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
     calculation_blocks: dict[str, Any] = {"zones": {}, "delivery_batches": {}, "rebar": {}}
     delivery_batches: dict[str, Decimal] = {}
 
-    for zone in data.wall_zones:
+    for zone in wall_zones:
         block_spec_total = sum(d(item.volume_m3) for item in zone.block_items)
         regular_masonry = _zone_has_regular_masonry(zone)
         if regular_masonry and block_spec_total > 0:
@@ -558,22 +625,45 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
 
         zone_order_volume = Decimal("0")
         zone_block_controls: dict[str, Any] = {}
+        # Pool raw volume by material (density+size) BEFORE pallet-rounding, same principle
+        # already proven for rebar (rebar_from_spec_length_items_pooled's own docstring, and the
+        # 2026-08-14 parapet-zone merge above): rounding each raw row to its own pallet
+        # independently can waste a partial pallet that pooling-then-rounding-once would not. Real
+        # zones sometimes carry more than one raw block_item of the same material (e.g. a merged
+        # parapet zone combining two spec sub-zones) - group them into one purchase line instead
+        # of one line per raw item, matching Elena's real smetas (one block-material line per
+        # zone, not one per spec row).
+        block_groups: dict[tuple[str, str], list[P6BlockItem]] = {}
+        block_group_order: list[tuple[str, str]] = []
         for block in zone.block_items:
-            order = gas_block_order(block.volume_m3, defaults.gas_block_waste_coeff, _block_pallet_volume(block, defaults))
+            key = _block_material_key(block)
+            if key not in block_groups:
+                block_groups[key] = []
+                block_group_order.append(key)
+            block_groups[key].append(block)
+        for key in block_group_order:
+            group_items = block_groups[key]
+            first = group_items[0]
+            spec_volume_total = sum(d(item.volume_m3) for item in group_items)
+            order = gas_block_order(
+                spec_volume_total, defaults.gas_block_waste_coeff, _block_pallet_volume(first, defaults)
+            )
             zone_order_volume += d(order["order_volume_m3"])
-            code = f"{zone.zone_id}_block_{block.item_id}"
-            zone_block_controls[block.item_id] = {
-                "spec_volume_m3": q(block.volume_m3),
-                **order,
-            }
+            code = f"{zone.zone_id}_block_{first.item_id}"
+            for item in group_items:
+                zone_block_controls[item.item_id] = {
+                    "spec_volume_m3": q(item.volume_m3),
+                    "pooled_with": [i.item_id for i in group_items if i.item_id != item.item_id],
+                    **order,
+                }
             lines.append(
                 line(
                     code,
-                    f"Газобетонный блок {block.block_density} {block.block_size}: {zone.display_name}",
+                    f"Газобетонный блок {first.block_density} {first.block_size}: {zone.display_name}",
                     "м3",
                     order["order_volume_m3"],
-                    material_unit_price=_block_unit_price(block, rates),
-                    price_code=_block_price_code(block),
+                    material_unit_price=_block_unit_price(first, rates),
+                    price_code=_block_price_code(first),
                 )
             )
         if zone_order_volume > 0:
@@ -630,7 +720,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             "lintels": lintel_blocks.get(zone.zone_id, {}),
         }
 
-    rebar_controls, rebar_lines, rebar_delivery_weight = _pool_rebar_by_zone_purpose(data.wall_zones, defaults)
+    rebar_controls, rebar_lines, rebar_delivery_weight = _pool_rebar_by_zone_purpose(wall_zones, defaults)
     lines.extend(rebar_lines)
     calculation_blocks["rebar"] = {
         "items": rebar_controls,

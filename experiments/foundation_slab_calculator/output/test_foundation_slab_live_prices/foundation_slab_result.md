@@ -272,12 +272,12 @@
 ## Строки серой внутренней сметы
 | code | name | line_type | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100.0` | `32000` | `32000` |
-| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `4738.0` | `42642` | `0.0` | `0` | `42642` |
-| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `750.0` | `27000` | `0.0` | `0` | `27000` |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1400.0` | `15400` | `0.0` | `0` | `15400` |
 | `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21499.997319` | `26122` | `0.0` | `0` | `26122` |
+| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100.0` | `32000` | `32000` |
+| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `4738.0` | `42642` | `0.0` | `0` | `42642` |
+| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `750.0` | `27000` | `0.0` | `0` | `27000` |
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250.0` | `67500` | `67500` |
 | `thermal_insert_installation` | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `` | `21.5` | `` | `мп` | `0.0` | `0` | `100.0` | `2150` | `2150` |
 | `eps50_penoplex_geo_material` | Пеноплэкс ГЕО 50 мм | `` | `14.4352` | `14.44` | `м3` | `8800.0` | `127030` | `0.0` | `0` | `127030` |
@@ -315,12 +315,12 @@
 
 | Строка сметы | price_code | старая цена | использованная цена | источник | предупреждение |
 | --- | --- | ---: | ---: | --- | --- |
-| Монтаж мембраны PLANTER стандарт | `planter_membrane_installation_work_m2` | `100` | `100` | `price_registry` |  |
-| Planter Standard Технониколь | `planter_standard_roll` | `5166` | `4738` | `price_registry` |  |
-| PLANTERBAND 10м х 10см | `planterband_item` | `790` | `750` | `price_registry` |  |
 | Монтаж опалубки из пиломатериалов для отбортовки плиты | `timber_formwork_installation_work_m2` | `None` | `None` | `fallback_input` | price_code not found in price_registry and fallback input price is missing |
 | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `plywood_1520x1520_18mm_sheet` | `1450` | `1400` | `price_registry` |  |
 | Пиломатериал обрезной хвойных пород ГОСТ | `timber_m3` | `21500` | `21499.997319` | `price_registry` |  |
+| Монтаж мембраны PLANTER стандарт | `planter_membrane_installation_work_m2` | `100` | `100` | `price_registry` |  |
+| Planter Standard Технониколь | `planter_standard_roll` | `5166` | `4738` | `price_registry` |  |
+| PLANTERBAND 10м х 10см | `planterband_item` | `790` | `750` | `price_registry` |  |
 | Укладка ЭППС 50мм под плитой | `eps_laying_work_m2` | `250` | `250` | `price_registry` |  |
 | Устройство и монтаж термовкладыша 150*400*250мм шаг 200мм | `thermal_insert_installation_work_m` | `100` | `100` | `price_registry` |  |
 | Пеноплэкс ГЕО 50 мм | `eps_geo_50_m3` | `9800` | `8800` | `price_registry` |  |

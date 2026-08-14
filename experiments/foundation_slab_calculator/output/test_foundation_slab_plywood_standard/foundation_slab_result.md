@@ -284,12 +284,12 @@
 ## Строки серой внутренней сметы
 | code | name | line_type | quantity | display_quantity | unit | material_unit_price | material_total | work_unit_price | work_total | line_total |
 | --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
-| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
-| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `12.0` | `` | `шт` | `1450` | `17400` | `0.0` | `0` | `17400` |
 | `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
+| `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
+| `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
 | `eps50_laying_under_slab` | Укладка ЭППС 50мм под плитой | `` | `270.0` | `` | `м2` | `0.0` | `0` | `250` | `67500` | `67500` |
 | `thermal_insert_50_installation` | Устройство и монтаж термовставок 50 мм | `` | `10.0` | `` | `мп` | `0.0` | `0` | `100` | `1000` | `1000` |
 | `thermal_insert_100_installation` | Устройство и монтаж термовставок 100 мм | `` | `15.0` | `` | `мп` | `0.0` | `0` | `100` | `1500` | `1500` |
@@ -339,6 +339,6 @@
 | `estimate_lines.formwork_plywood.quantity` | `12` | `12.0` | `0.0` | `ok` |
 | `estimate_lines.formwork_plywood.material_total` | `17400` | `17400` | `0` | `ok` |
 | `estimate_lines.formwork_plywood.line_total` | `17400` | `17400` | `0` | `ok` |
-| `internal_totals.internal_materials_total` | `1467007` | `1464286` | `-2721` | `mismatch` |
+| `internal_totals.internal_materials_total` | `1464286` | `1464286` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2551007` | `2548286` | `-2721` | `mismatch` |
+| `internal_totals.internal_section_total` | `2548286` | `2548286` | `0` | `ok` |
