@@ -17,6 +17,7 @@ SECTION_ORDER = [
     "earthworks",
     "foundation_slab",
     "waterproofing",
+    "load_bearing_walls_lintels_p6",
     "load_bearing_walls_lintels",
     "floor_slabs",
     "flat_roof",
@@ -27,6 +28,7 @@ SECTION_NAMES = {
     "earthworks": "Земляные работы",
     "foundation_slab": "Фундаментная плита",
     "waterproofing": "Гидроизоляция, утепление бортов плит",
+    "load_bearing_walls_lintels_p6": "Несущие стены и перемычки P6",
     "load_bearing_walls_lintels": "Несущие стены и перемычки",
     "floor_slabs": "Плиты перекрытия/покрытия",
     "flat_roof": "Плоская кровля",
@@ -147,6 +149,25 @@ BENIGN_FOUND_NOTE_PREFIXES = (
 )
 
 WALL_BLOCK_ITEM_ALLOWED_ROLES = {"main_walls", "floor_2", "parapet", "partitions"}
+P6_WALL_ZONE_ALLOWED_KINDS = {"main_walls", "second_light", "parapet", "vent_chimney_cladding"}
+P6_WALL_ZONE_DEPENDENT_GROUP_CODES = {
+    "wall_block_items",
+    "wall_chasing_rebar_items",
+    "lintel_items",
+    "lintel_rebar_items",
+}
+P6_WALL_ZONE_PHYSICAL_GROUP_CODES = {
+    "wall_block_items",
+    "lintel_items",
+}
+P6_SERVICE_ZONE_TEXT_TERMS = (
+    "common",
+    "общ",
+    "rebar",
+    "армир",
+    "подокон",
+    "window",
+)
 ROOF_VENT_ABUTMENT_SCALAR_CODES = {
     "roof_vent_wall_abutment_level_1",
     "roof_vent_wall_abutment_level_2",
@@ -184,6 +205,7 @@ REBAR_ITEM_GROUP_CODES = {
     "foundation_rebar_items",
     "floor_slab_rebar_items",
     "main_wall_rebar_items",
+    "wall_chasing_rebar_items",
     "lintel_rebar_items",
 }
 
@@ -693,16 +715,34 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
         seen_codes: dict[str, int] = {}
         for item in items:
             value = item.get("value") if isinstance(item.get("value"), dict) else {}
-            code = value.get("code")
+            code = value.get("code") or value.get("item_id")
             if code:
                 seen_codes[str(code)] = seen_codes.get(str(code), 0) + 1
                 continue
-            key = (
-                value.get("floor"),
-                value.get("component"),
-                value.get("steel_class"),
-                value.get("diameter_mm"),
-            )
+            if group_code == "wall_chasing_rebar_items":
+                key = (
+                    value.get("zone_id"),
+                    value.get("purpose"),
+                    value.get("steel_class"),
+                    value.get("diameter_mm"),
+                )
+            elif group_code == "lintel_rebar_items" and (
+                "zone_id" in value or "lintel_id" in value or "lintel_kind" in value
+            ):
+                key = (
+                    value.get("zone_id"),
+                    value.get("lintel_id"),
+                    value.get("lintel_kind"),
+                    value.get("steel_class"),
+                    value.get("diameter_mm"),
+                )
+            else:
+                key = (
+                    value.get("floor"),
+                    value.get("component"),
+                    value.get("steel_class"),
+                    value.get("diameter_mm"),
+                )
             tuple_counts.setdefault(key, []).append(item)
 
         for key, dup_items in tuple_counts.items():
@@ -712,17 +752,16 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
             diagnostics.append(
                 {
                     "status": "semantic_error",
-                    "title": f"{group_code}: {len(dup_items)} rows share floor/component/class/diameter with no `code`",
+                    "title": f"{group_code}: {len(dup_items)} rows share identity fields with no unique item_id/code",
                     "confidence": confidence_text(example),
                     "value": short(example.get("value"), 220),
                     "source": source_text(example),
                     "raw_text": short(example.get("raw_text"), 320),
                     "notes": (
-                        f"floor={key[0]!r}, component={key[1]!r}, steel_class={key[2]!r}, "
-                        f"diameter_mm={key[3]!r} повторяется у {len(dup_items)} строк без "
-                        "уникального `code`. Калькулятор, ключующий строки по этому набору полей, "
+                        f"Ключ {key!r} повторяется у {len(dup_items)} строк без "
+                        "уникального `item_id`/`code`. Калькулятор, ключующий строки по этому набору полей, "
                         "может молча учесть только одну из них. Назначьте стабильные уникальные "
-                        "`code` (например, по назначению строки: подоконное армирование, второй "
+                        "`item_id`/`code` (например, по назначению строки: подоконное армирование, второй "
                         "свет и т.п.), не полагаясь на то, что позиция в списке сохранится."
                     ),
                     "auto_sum": "",
@@ -735,14 +774,14 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
             diagnostics.append(
                 {
                     "status": "semantic_error",
-                    "title": f"{group_code}: code `{code}` used by {count} rows",
+                    "title": f"{group_code}: item_id/code `{code}` used by {count} rows",
                     "confidence": "",
                     "value": "",
                     "source": "",
                     "raw_text": "",
                     "notes": (
-                        f"Значение `code`={code!r} повторяется у {count} строк группы {group_code}. "
-                        "`code` должен однозначно определять строку внутри группы."
+                        f"Значение `item_id`/`code`={code!r} повторяется у {count} строк группы {group_code}. "
+                        "`item_id`/`code` должен однозначно определять строку внутри группы."
                     ),
                     "auto_sum": "",
                     "candidates": "",
@@ -763,7 +802,7 @@ REBAR_FLOOR_REQUIRED_GROUP_CODES = {
 }
 
 
-def rebar_missing_floor_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+def rebar_missing_floor_diagnostics(section_code: str, section: dict[str, Any]) -> list[dict[str, str]]:
     """A rebar row in one of REBAR_FLOOR_REQUIRED_GROUP_CODES with floor=null passes every
     existing check (rebar_duplicate_code_diagnostics only compares floor values against each
     other for duplicates - null is a valid, distinct value there, so a lone null row is never
@@ -776,6 +815,8 @@ def rebar_missing_floor_diagnostics(section: dict[str, Any]) -> list[dict[str, s
     when the PDF doesn't specify - the rule was documented but not applied, and no check existed
     to catch the mismatch between rule and output."""
     diagnostics: list[dict[str, str]] = []
+    if section_code != "load_bearing_walls_lintels":
+        return diagnostics
     for item in iter_unique_items(section, ("needs_review", "found")):
         group_code = item.get("group_code")
         if group_code not in REBAR_FLOOR_REQUIRED_GROUP_CODES:
@@ -1093,12 +1134,288 @@ def floor_slab_zone_tagging_diagnostics(section: dict[str, Any]) -> list[dict[st
     return diagnostics
 
 
+def p6_wall_zone_maps(section: dict[str, Any]) -> tuple[set[str], dict[str, str]]:
+    zone_ids: set[str] = set()
+    zone_kinds: dict[str, str] = {}
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "wall_zones":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        zone_id = value.get("zone_id")
+        if not zone_id:
+            continue
+        zone_ids.add(str(zone_id))
+        if value.get("zone_kind") is not None:
+            zone_kinds[str(zone_id)] = str(value.get("zone_kind"))
+    return zone_ids, zone_kinds
+
+
+def p6_wall_zone_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    zone_physical_rows: dict[str, int] = {}
+    zone_dependent_rows: dict[str, int] = {}
+
+    for dependent_item in iter_unique_items(section, ("needs_review", "found")):
+        group_code = dependent_item.get("group_code")
+        if group_code not in P6_WALL_ZONE_DEPENDENT_GROUP_CODES:
+            continue
+        value = dependent_item.get("value") if isinstance(dependent_item.get("value"), dict) else {}
+        zone_id = value.get("zone_id")
+        if not zone_id:
+            continue
+        zone_key = str(zone_id)
+        zone_dependent_rows[zone_key] = zone_dependent_rows.get(zone_key, 0) + 1
+        if group_code in P6_WALL_ZONE_PHYSICAL_GROUP_CODES:
+            zone_physical_rows[zone_key] = zone_physical_rows.get(zone_key, 0) + 1
+
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "wall_zones":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        zone_id = value.get("zone_id")
+        zone_kind = value.get("zone_kind")
+        missing = []
+        if not zone_id:
+            missing.append("zone_id")
+        if not value.get("display_name"):
+            missing.append("display_name")
+        if not zone_kind:
+            missing.append("zone_kind")
+        elif zone_kind not in P6_WALL_ZONE_ALLOWED_KINDS:
+            missing.append(f"zone_kind={zone_kind!r} не из разрешённого списка")
+        if not missing:
+            continue
+        key = (short(zone_id, 80), ", ".join(missing))
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"wall_zones: invalid/incomplete zone ({zone_id or '?'})",
+                "confidence": confidence_text(item),
+                "value": short(value, 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "Зона кладки P6 должна иметь zone_id, display_name и zone_kind. "
+                    f"Проблема: {', '.join(missing)}. Разрешённые zone_kind: "
+                    f"{', '.join(sorted(P6_WALL_ZONE_ALLOWED_KINDS))}."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "wall_zones":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        zone_id = value.get("zone_id")
+        zone_kind = value.get("zone_kind")
+        if not zone_id or zone_kind not in P6_WALL_ZONE_ALLOWED_KINDS:
+            continue
+        zone_key = str(zone_id)
+        if not zone_dependent_rows.get(zone_key) or zone_physical_rows.get(zone_key):
+            continue
+        text = normalized_text(zone_id, value.get("display_name"), value.get("context"), item.get("raw_text"))
+        if not any(term in text for term in P6_SERVICE_ZONE_TEXT_TERMS):
+            continue
+        key = (zone_key, "service-only")
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": f"wall_zones: service-only zone without masonry/lintel rows ({zone_id})",
+                "confidence": confidence_text(item),
+                "value": short(value, 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "P6-зона должна быть физической частью сметного раздела: кладка стен, второй "
+                    "свет, парапет, обкладка вентканалов или зона перемычек. Эта зона выглядит как "
+                    "служебный контейнер для арматуры и не имеет строк кладки/перемычек. Не создавайте "
+                    "отдельную wall_zones только ради общей строки арматуры. Подоконное армирование "
+                    "по утверждённому правилу включается в общую арматуру несущих стен; если PDF не "
+                    "даёт отдельную зону, привяжите такую строку к зоне несущих стен 1 этажа "
+                    "(`zone_kind=main_walls`) с отдельным item_id/source_label, чтобы калькулятор "
+                    "запулил её вместе с остальной Ø10 арматурой этой зоны."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
+def p6_wall_zone_dependent_group_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    valid_zone_ids, zone_kinds = p6_wall_zone_maps(section)
+    seen: set[tuple[str, str, str]] = set()
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        group_code = item.get("group_code")
+        if group_code not in P6_WALL_ZONE_DEPENDENT_GROUP_CODES:
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        zone_id = value.get("zone_id")
+        if not zone_id or str(zone_id) not in valid_zone_ids:
+            key = (str(group_code), str(zone_id), short(item.get("raw_text"), 220))
+            if key not in seen:
+                seen.add(key)
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": f"{group_code}: row is not attached to a valid wall_zones[].zone_id",
+                        "confidence": confidence_text(item),
+                        "value": short(value, 220),
+                        "source": source_text(item),
+                        "raw_text": short(item.get("raw_text"), 320),
+                        "notes": (
+                            f"Строка группы {group_code} имеет zone_id={zone_id!r}, но такой зоны нет "
+                            f"в wall_zones ({sorted(valid_zone_ids)!r}). P6-калькулятор не должен "
+                            "угадывать зону: исправьте zone_id или добавьте соответствующую wall_zones "
+                            "строку из PDF."
+                        ),
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
+            continue
+
+        text = normalized_text(item.get("item_name"), item.get("raw_text"), item.get("notes"), value)
+        if group_code in {"wall_block_items", "wall_chasing_rebar_items"} and any(
+            term in text for term in PARTITION_TEXT_TERMS
+        ):
+            key = (str(group_code), str(zone_id), short(item.get("raw_text"), 220))
+            if key in seen:
+                continue
+            seen.add(key)
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"{group_code}: row text names a partition",
+                    "confidence": confidence_text(item),
+                    "value": short(value, 220),
+                    "source": source_text(item),
+                    "raw_text": short(item.get("raw_text"), 320),
+                    "notes": (
+                        "Собственный текст строки называет перегородку. Перегородки не входят в P6 "
+                        "раздел несущих стен и перемычек: оставьте такую строку только в raw_table_rows/"
+                        "notes, не в production-группе."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+
+        if group_code in {"wall_block_items", "wall_chasing_rebar_items"} and any(
+            term in text for term in PARAPET_TEXT_TERMS
+        ):
+            actual_kind = zone_kinds.get(str(zone_id))
+            if actual_kind != "parapet":
+                key = (str(group_code), str(zone_id), short(item.get("raw_text"), 220))
+                if key in seen:
+                    continue
+                seen.add(key)
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": f"{group_code}: row text names parapet but zone_kind is `{actual_kind}`",
+                        "confidence": confidence_text(item),
+                        "value": short(value, 220),
+                        "source": source_text(item),
+                        "raw_text": short(item.get("raw_text"), 320),
+                        "notes": (
+                            "Строка явно относится к парапету, но привязана к зоне, которая не является "
+                            "zone_kind=parapet. В P6 парапет — отдельная зона, а не component внутри "
+                            "несущих стен. Перенесите строку в parapet-зону или исправьте zone_kind зоны."
+                        ),
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
+
+        if group_code == "lintel_items":
+            lintel_kind = value.get("lintel_kind")
+            if lintel_kind not in {"u_block", "monolithic"}:
+                key = (str(group_code), str(zone_id), short(item.get("raw_text"), 220))
+                if key in seen:
+                    continue
+                seen.add(key)
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": f"lintel_items: invalid lintel_kind `{lintel_kind}`",
+                        "confidence": confidence_text(item),
+                        "value": short(value, 220),
+                        "source": source_text(item),
+                        "raw_text": short(item.get("raw_text"), 320),
+                        "notes": "Разрешены только lintel_kind=`u_block` или `monolithic`.",
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
+    return diagnostics
+
+
+def p6_subwindow_rebar_raw_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    has_subwindow_in_production = False
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        if item.get("group_code") != "wall_chasing_rebar_items":
+            continue
+        value = item.get("value") if isinstance(item.get("value"), dict) else {}
+        text = normalized_text(item.get("item_name"), item.get("raw_text"), item.get("notes"), value)
+        if "подокон" in text or "subwindow" in text or "window" in text:
+            has_subwindow_in_production = True
+            break
+
+    if has_subwindow_in_production:
+        return diagnostics
+
+    seen: set[str] = set()
+    for item in as_list(section.get("raw_table_rows")):
+        if not isinstance(item, dict):
+            continue
+        text = normalized_text(item.get("item_name"), item.get("raw_text"), item.get("notes"), item.get("value"))
+        if "подокон" not in text and "subwindow" not in text and "window" not in text:
+            continue
+        key = short(item.get("raw_text") or item.get("item_name") or item.get("value"), 220)
+        if key in seen:
+            continue
+        seen.add(key)
+        diagnostics.append(
+            {
+                "status": "semantic_error",
+                "title": "wall_chasing_rebar_items: subwindow rebar left in raw_table_rows",
+                "confidence": confidence_text(item),
+                "value": short(item.get("value"), 220),
+                "source": source_text(item),
+                "raw_text": short(item.get("raw_text"), 320),
+                "notes": (
+                    "Подоконное армирование — не outside-target. По утверждённому правилу оно входит "
+                    "в общую арматуру несущих стен и должно быть строкой `wall_chasing_rebar_items`. "
+                    "Если PDF не указывает другую физическую зону, привяжите его к зоне несущих стен "
+                    "1 этажа (`zone_kind=main_walls`) с отдельным `item_id`/`source_label`, чтобы "
+                    "калькулятор запулил его вместе с остальной Ø10 арматурой этой зоны. "
+                    "Перегородочную арматуру по-прежнему оставляйте вне production."
+                ),
+                "auto_sum": "",
+                "candidates": "",
+            }
+        )
+    return diagnostics
+
+
 def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     diagnostics.extend(candidate_unit_mismatch_diagnostics(section))
     diagnostics.extend(candidate_target_code_mismatch_diagnostics(section))
     diagnostics.extend(rebar_duplicate_code_diagnostics(section))
-    diagnostics.extend(rebar_missing_floor_diagnostics(section))
+    diagnostics.extend(rebar_missing_floor_diagnostics(section_code, section))
     diagnostics.extend(forbidden_source_diagnostics(section))
 
     if section_code == "flat_roof":
@@ -1110,6 +1427,10 @@ def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dic
         diagnostics.extend(floor_slab_zone_required_fields_diagnostics(section))
     if section_code == "foundation_slab":
         diagnostics.extend(thermal_insert_conflict_diagnostics(section))
+    if section_code == "load_bearing_walls_lintels_p6":
+        diagnostics.extend(p6_wall_zone_diagnostics(section))
+        diagnostics.extend(p6_wall_zone_dependent_group_diagnostics(section))
+        diagnostics.extend(p6_subwindow_rebar_raw_diagnostics(section))
 
     if section_code != "load_bearing_walls_lintels":
         return diagnostics

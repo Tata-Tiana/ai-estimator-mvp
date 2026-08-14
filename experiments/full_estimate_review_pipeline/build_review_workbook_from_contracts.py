@@ -101,7 +101,7 @@ CANONICAL_SECTIONS = [
     ("earthworks", "Земляные работы"),
     ("foundation_slab", "Фундаментная плита"),
     ("waterproofing", "Гидроизоляция"),
-    ("load_bearing_walls_lintels", "Стены и перемычки"),
+    ("load_bearing_walls_lintels_p6", "Стены и перемычки"),
     ("floor_slabs", "Плиты перекрытия/покрытия"),
     ("flat_roof", "Кровля"),
     ("schiedel_vent_channels", "Schiedel / вентканалы"),

@@ -863,6 +863,119 @@ EPS_ITEMS_GROUP_KEY = "floor_slab_eps_items"
 BEAM_ITEMS_GROUP_KEY = "floor_slab_beam_items"
 REBAR_GROUP_KEY = "floor_slab_rebar_items"
 ADDITIONAL_ITEMS_GROUP_KEY = "floor_slab_additional_items"
+P6_WALLS_SECTION_CODE = "load_bearing_walls_lintels_p6"
+P6_WALL_ZONES_GROUP_KEY = "wall_zones"
+P6_WALL_BLOCK_ITEMS_GROUP_KEY = "wall_block_items"
+P6_WALL_REBAR_GROUP_KEY = "wall_chasing_rebar_items"
+P6_LINTEL_ITEMS_GROUP_KEY = "lintel_items"
+P6_LINTEL_REBAR_GROUP_KEY = "lintel_rebar_items"
+
+
+P6_WALL_FIELD_LABELS = {
+    "cutoff_waterproofing_area_m2": "Отсечная гидроизоляция под первый ряд",
+    "volume_m3": "Объём по спецификации",
+    "material_unit_price": "Цена материала для нестандартного блока",
+    "pallet_volume_m3": "Объём паллеты для нестандартного блока",
+    "total_length_m": "Длина перемычек",
+    "concrete_volume_m3": "Бетон перемычек",
+    "formwork_horizontal_area_m2": "Горизонтальная опалубка перемычек",
+    "formwork_vertical_area_m2": "Вертикальная опалубка перемычек",
+    "insulation_length_m": "Длина утепляемой части перемычек",
+    "insulation_eps_spec_volume_m3": "ЭППС перемычек по спецификации",
+    "spec_length_m": "Длина по спецификации",
+    "kg_per_meter": "Масса 1 м",
+    "rod_length_m": "Длина хлыста",
+}
+
+
+P6_LINTEL_KIND_LABELS = {
+    "u_block": "Перемычки в U-блоке",
+    "monolithic": "Монолитные перемычки",
+}
+
+
+P6_WALL_ZONE_ORDER = {
+    "floor_1": 10,
+    "main_walls": 10,
+    "floor_2": 20,
+    "second_light": 20,
+    "parapet": 30,
+    "vent_chimney_cladding": 40,
+}
+
+
+def p6_groups_with_review(extraction: dict[str, Any]) -> dict[str, list[Any]]:
+    section = (extraction.get("sections") or {}).get(P6_WALLS_SECTION_CODE) or {}
+    groups: dict[str, list[Any]] = {}
+    for item in (section.get("found") or []) + (section.get("needs_review") or []):
+        group_code = item.get("group_code")
+        if group_code:
+            groups.setdefault(group_code, []).append(item)
+    return groups
+
+
+def p6_wall_zone_label(value: dict[str, Any]) -> str:
+    return str(value.get("display_name") or value.get("zone_id") or "Зона кладки")
+
+
+def p6_wall_zone_sort_key(item: dict[str, Any]) -> tuple[int, str]:
+    value = item.get("value") or {}
+    zone_id = str(value.get("zone_id") or "")
+    zone_kind = str(value.get("zone_kind") or "")
+    order = P6_WALL_ZONE_ORDER.get(zone_id, P6_WALL_ZONE_ORDER.get(zone_kind, 100))
+    return order, p6_wall_zone_label(value)
+
+
+def p6_wall_field_label(key: str, default: str) -> str:
+    return P6_WALL_FIELD_LABELS.get(key, default)
+
+
+def p6_wall_item_label(group_key: str, value: dict[str, Any], fallback: str) -> str:
+    if group_key == P6_WALL_ZONES_GROUP_KEY:
+        return p6_wall_zone_label(value)
+    if group_key == P6_WALL_BLOCK_ITEMS_GROUP_KEY:
+        parts = [value.get("block_density"), value.get("block_size"), value.get("context")]
+        return " ".join(str(part) for part in parts if part not in (None, "")) or fallback
+    if group_key == P6_WALL_REBAR_GROUP_KEY:
+        steel = value.get("steel_class") or ""
+        diameter = value.get("diameter_mm")
+        parts = [str(part) for part in [steel, f"ф{diameter:g}" if isinstance(diameter, (int, float)) else diameter] if part]
+        return " ".join(parts) or fallback
+    if group_key == P6_LINTEL_ITEMS_GROUP_KEY:
+        lintel_id = value.get("lintel_id")
+        lintel_kind = P6_LINTEL_KIND_LABELS.get(str(value.get("lintel_kind") or ""), value.get("lintel_kind"))
+        if lintel_id == value.get("lintel_kind") or str(lintel_id or "").startswith(("floor_1_", "floor_2_")):
+            lintel_id = None
+        return " ".join(str(part) for part in [lintel_id, lintel_kind] if part not in (None, "")) or fallback
+    if group_key == P6_LINTEL_REBAR_GROUP_KEY:
+        lintel_id = value.get("lintel_id")
+        lintel_label = P6_LINTEL_KIND_LABELS.get(str(value.get("lintel_kind") or ""), "")
+        if str(lintel_id or "").startswith(("floor_1_u_block", "floor_2_u_block")):
+            lintel_id = "U-блок"
+        elif str(lintel_id or "").startswith(("floor_1_monolithic", "floor_2_monolithic")):
+            lintel_id = "Монолитные"
+        steel = value.get("steel_class") or ""
+        diameter = value.get("diameter_mm")
+        parts = [lintel_label or lintel_id, steel, f"ф{diameter:g}" if isinstance(diameter, (int, float)) else diameter]
+        return " ".join(str(part) for part in parts if part not in (None, "")) or fallback
+    return fallback
+
+
+def p6_wall_visible_field_keys(group_key: str, correction_columns: list[str]) -> list[str]:
+    if group_key == P6_WALL_ZONES_GROUP_KEY:
+        return ["cutoff_waterproofing_area_m2"]
+    if group_key == P6_WALL_BLOCK_ITEMS_GROUP_KEY:
+        return ["volume_m3", "material_unit_price", "pallet_volume_m3"]
+    if group_key == P6_LINTEL_ITEMS_GROUP_KEY:
+        return [
+            "total_length_m",
+            "concrete_volume_m3",
+            "formwork_horizontal_area_m2",
+            "formwork_vertical_area_m2",
+            "insulation_length_m",
+            "insulation_eps_spec_volume_m3",
+        ]
+    return correction_columns
 
 
 FLOOR_SLAB_EPS_ROLE_LABELS = {
@@ -958,7 +1071,11 @@ def visible_repeated_field_keys(
     item_label_columns: list[str],
     columns_by_key: dict[str, dict[str, Any]],
 ) -> list[str]:
-    keys = [k for k in floor_slab_visible_field_keys(group_key, correction_columns) if k not in item_label_columns]
+    if sec_code == P6_WALLS_SECTION_CODE:
+        source_keys = p6_wall_visible_field_keys(group_key, correction_columns)
+    else:
+        source_keys = floor_slab_visible_field_keys(group_key, correction_columns)
+    keys = [k for k in source_keys if k not in item_label_columns]
     # Sheet 01 must stay numeric: avoid rows such as "Ед.", "Тип эксплуатации" or "Марка" whose
     # value is a technical/string classifier, not a number Elena can check in column B. The full
     # structured row remains in row_data_json on every visible numeric row.
@@ -987,6 +1104,8 @@ def reference_summary(
         label = column_def.get("label_ru") or key
         if sec_code == "floor_slabs":
             label = floor_slab_field_label(group_key, key, label)
+        if sec_code == P6_WALLS_SECTION_CODE:
+            label = p6_wall_field_label(key, label)
         unit = column_def.get("unit") or ""
         parts.append(f"{label}: {display_value(item_value)}{(' ' + unit) if unit else ''}")
     return "; ".join(parts)
@@ -1162,6 +1281,8 @@ def _render_repeated_row_block(
         item_label = " ".join(label_parts) or item.get("item_name") or group_key
         if sec_code == "floor_slabs":
             item_label = floor_slab_item_label(group_key, value, item_label)
+        if sec_code == P6_WALLS_SECTION_CODE:
+            item_label = p6_wall_item_label(group_key, value, item_label)
 
         if reference_only:
             summary_keys = [k for k in correction_columns if k not in item_label_columns]
@@ -1232,6 +1353,8 @@ def _render_repeated_row_block(
             field_label = column_def.get("label_ru") or key
             if sec_code == "floor_slabs":
                 field_label = floor_slab_field_label(group_key, key, field_label)
+            if sec_code == P6_WALLS_SECTION_CODE:
+                field_label = p6_wall_field_label(key, field_label)
             unit = column_def.get("unit", "")
             if sec_code == "flat_roof" and group_key == "roof_raw_material_spec_rows" and key == "quantity":
                 unit = str(value.get("unit") or unit)
@@ -1588,6 +1711,59 @@ def build_project_sheet_from_extraction(
                         rebar_cumulative_weights=rebar_cumulative_weights,
                         reference_only=reference_only,
                     )
+        elif sec_code == P6_WALLS_SECTION_CODE:
+            p6_found_groups = p6_groups_with_review(extraction)
+            params_by_key = {param.get("key"): param for param in repeated_row_params}
+            dependent_group_keys = [
+                P6_WALL_ZONES_GROUP_KEY,
+                P6_WALL_BLOCK_ITEMS_GROUP_KEY,
+                P6_LINTEL_ITEMS_GROUP_KEY,
+                P6_WALL_REBAR_GROUP_KEY,
+                P6_LINTEL_REBAR_GROUP_KEY,
+            ]
+            for zone_item in sorted(p6_found_groups.get(P6_WALL_ZONES_GROUP_KEY, []), key=p6_wall_zone_sort_key):
+                zone_value = zone_item.get("value") or {}
+                zone_id = zone_value.get("zone_id")
+                zone_label = p6_wall_zone_label(zone_value)
+                append_section_band(ws, [zone_label], len(PROJECT_HEADERS))
+                for group_key in dependent_group_keys:
+                    param = params_by_key.get(group_key)
+                    if param is None:
+                        continue
+                    if group_key == P6_WALL_ZONES_GROUP_KEY:
+                        zone_items = [zone_item]
+                        block_label = "Параметры зоны"
+                        reference_only = False
+                        if not any(
+                            (zone_value or {}).get(key) not in (None, "")
+                            for key in p6_wall_visible_field_keys(group_key, param.get("correction_columns") or [])
+                        ):
+                            continue
+                    else:
+                        zone_items = [
+                            {
+                                **item,
+                                "value": {
+                                    **(item.get("value") or {}),
+                                    "_zone_label": zone_label,
+                                },
+                            }
+                            for item in p6_found_groups.get(group_key, [])
+                            if (item.get("value") or {}).get("zone_id") == zone_id
+                        ]
+                        block_label = param.get("label_ru", group_key).removeprefix("СПРАВОЧНО: ").strip()
+                        reference_only = is_rebar_group(group_key)
+                    if not zone_items and group_key != P6_WALL_ZONES_GROUP_KEY:
+                        continue
+                    title_prefix = "СПРАВОЧНО: " if reference_only else ""
+                    _render_repeated_row_block(
+                        ws, sec_code, group_key, param, zone_items, counts, p6_found_groups,
+                        title=f"{title_prefix}{zone_label} — {block_label}",
+                        rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
+                        rebar_weights_by_section=rebar_weights_by_section,
+                        rebar_cumulative_weights=rebar_cumulative_weights,
+                        reference_only=reference_only,
+                    )
         else:
             for param in repeated_row_params:
                 group_key = param.get("key")
@@ -1626,6 +1802,8 @@ def build_project_sheet_from_extraction(
     # (crane shifts are manual and not related to this total - see REBAR_METAL_DELIVERY_FIELD_BY_SECTION).
     # See compute_rebar_weights_by_section/compute_rebar_metal_delivery_allocation.
     section_names_by_code = {section_code(c): section_name(c) for c in contracts}
+    if P6_WALLS_SECTION_CODE in section_names_by_code:
+        section_names_by_code["load_bearing_walls_lintels"] = section_names_by_code[P6_WALLS_SECTION_CODE]
     breakdown = "; ".join(
         f"{section_names_by_code.get(code, code)}: {weight:g} кг"
         for code, weight in rebar_weights_by_section.items()
@@ -1777,6 +1955,8 @@ def build_rebar_lookup(
         if not group_keys:
             continue
         _, found_groups, _ = index_extraction_section(extraction, sec_code)
+        if sec_code == P6_WALLS_SECTION_CODE:
+            found_groups = p6_groups_with_review(extraction)
         if sec_code == "floor_slabs":
             for group_key in group_keys:
                 for item in found_groups.get(group_key, []):
@@ -1792,7 +1972,7 @@ def build_rebar_lookup(
             for item in found_groups.get(group_key, [])
         ]
         if items:
-            lookup[sec_code] = items
+            lookup["load_bearing_walls_lintels" if sec_code == P6_WALLS_SECTION_CODE else sec_code] = items
     return lookup
 
 
