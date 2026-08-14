@@ -137,7 +137,7 @@ def build_computed_rows(claude_data: dict, validated_input: dict) -> list[dict]:
 
 
 def render_report(scalar_rows: list[dict], computed_rows: list[dict], routes: list[dict], pipe_items: list[dict]) -> str:
-    lines = ["# A6.1 — Claude-chat extraction vs validated ЮСВ input.json", ""]
+    lines = ["# A6.1 — Claude-chat extraction vs validated reference input.json", ""]
     lines.append(
         "Primary reference: human-validated `input.json` "
         "(`experiments/earthworks_calculator/cases/usv_yusupovo_village/input.json`, "

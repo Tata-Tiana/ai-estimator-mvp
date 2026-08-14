@@ -321,7 +321,7 @@ eps50_wall_volume_m3:
   negative_context: ["100 мм", "низ плиты", "опалубка", "кровля", "м2", "термовставк"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Найдено 2026-07-14 в реальном проекте ТРЦ (КР-1 стр.22): строки 'ЭППС-50мм (Утепление вертикальных поверхностей)' и 'ЭППС-100мм (Утепление вертикальных поверхностей)' идут рядом в одной таблице 'Спецификация материала на устройство фундамента' — до этого исправления 50-мм строка не имела совпадающего target_code и терялась (see docs/report_load_bearing_walls_floor_2_refactor.md history for the same class of gap). required_context содержит 'вертикальн', чтобы не путать со строкой 'ЭППС-50мм (Утепление под плитой)' -> foundation_slab.eps50_under_slab_volume_m3, и негативный контекст 'термовставк' отсекает foundation_slab.thermal_insert_50_material_spec_qty."
+  notes: "Опциональный второй слой утепления торца плиты, тоньше eps100_wall_volume_m3. Найдено 2026-07-14 в реальном проекте (КР-1 стр.22): строки 'ЭППС-50мм (Утепление вертикальных поверхностей)' и 'ЭППС-100мм (Утепление вертикальных поверхностей)' идут рядом в одной таблице 'Спецификация материала на устройство фундамента' — до этого исправления 50-мм строка не имела совпадающего target_code и терялась (see docs/report_load_bearing_walls_floor_2_refactor.md history for the same class of gap). required_context содержит 'вертикальн', чтобы не путать со строкой 'ЭППС-50мм (Утепление под плитой)' -> foundation_slab.eps50_under_slab_volume_m3, и негативный контекст 'термовставк' отсекает foundation_slab.thermal_insert_50_material_spec_qty."
 
 load_bearing_walls_lintels:
   section_code: load_bearing_walls_lintels
@@ -469,7 +469,7 @@ floor_2_lintel_groove_length:
   value_column_hint: ["итого", "общая длина", "длина", "кол-во", "количество"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м"]
   notes: "Mirrors floor_1_lintel_groove_length."
-  notes: "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — Elena, 2026-07-15: lintels may be present on either floor, both, or neither. Confirmed on real ТРЦ project (20,5 м.п.)."
+  notes: "Added 2026-07-15. Own spec table for floor 2, independent of floor 1 — Elena, 2026-07-15: lintels may be present on either floor, both, or neither. Confirmed on a real reference project (20,5 м.п.)."
 
 floor_2_lintel_concrete_volume:
   section_code: load_bearing_walls_lintels
@@ -553,7 +553,7 @@ floor_2_lintel_monolithic_concrete_volume:
   negative_context: ["u-блок", "u блок", "1 этаж"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Added 2026-07-15. Confirmed on real ТРЦ project (2-й этаж, 0,41 м3)."
+  notes: "Added 2026-07-15. Confirmed on a real reference project (2-й этаж, 0,41 м3)."
 
 floor_2_lintel_insulation_length:
   section_code: load_bearing_walls_lintels
@@ -789,7 +789,7 @@ floor_slab_1_beams_concrete_volume:
   negative_context: ["плита", "опалубк", "перемычк", "2 этажа"]
   value_column_hint: ["объем", "кол-во", "количество", "итого"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Confirmed present in both ЮСВ КР2 (лист 22, 'Спецификация Ж/Б балок', строка Итого) and ТРЦ КР2 (лист 31, 'Бетон B-22,5 (балки в теле плиты перекрытия)'). If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
+  notes: "Usually a ready 'Итого' line in the beam materials specification, separate from the slab's own concrete volume line. Confirmed present in both reference projects' КР2 sheets ('Спецификация Ж/Б балок', строка Итого / 'Бетон B-22,5 (балки в теле плиты перекрытия)'). If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3."
 
 floor_slab_1_edge_eps_work_length:
   section_code: floor_slab_1

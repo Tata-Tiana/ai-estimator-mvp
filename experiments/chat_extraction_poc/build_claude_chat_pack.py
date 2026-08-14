@@ -3,7 +3,7 @@
 Deliberately excludes anything project-specific or ground-truth: the
 validated input.json, old parser outputs, comparison reports, and the
 PDF itself (uploaded separately by the user). Everything included here
-is generic infrastructure, safe to reuse for any project, not just USV.
+is generic infrastructure, safe to reuse for any project, not tied to any one reference project.
 """
 from __future__ import annotations
 

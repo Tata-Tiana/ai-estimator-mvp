@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "purpose": "Target JSON shape for Claude-chat extraction output (A6.1). Not a strict machine-enforced JSON Schema — a shape description for the model and for validate_claude_extraction.py.",
+    "purpose": "Target JSON shape for chat extraction output. Not a strict machine-enforced JSON Schema — a shape description for the model to follow.",
     "visible_text_rule": "Technical ids/enums may be English/latin only where the field is explicitly technical: section_code, target_code, group_code, zone_id, zone_kind, role, purpose, slab_kind, lintel_kind, component. Human-visible/source fields must be copied from the PDF as written, without translation or transliteration: raw_text, table_title, table_context, page_title, item_name, display_name, name, mark, slab_mark, source_label, context, source_phrase, lintel_id. If the PDF says Б1.1, ПР-2 or ПМ1, keep Б1.1, ПР-2, ПМ1; never rewrite them as B1.1, PR-2 or PM1.",
     "top_level_example": {
       "project_name": "string|null",
