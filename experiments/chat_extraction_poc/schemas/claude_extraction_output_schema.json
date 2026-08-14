@@ -1,6 +1,7 @@
 {
   "_meta": {
     "purpose": "Target JSON shape for Claude-chat extraction output (A6.1). Not a strict machine-enforced JSON Schema — a shape description for the model and for validate_claude_extraction.py.",
+    "visible_text_rule": "Technical ids/enums may be English/latin only where the field is explicitly technical: section_code, target_code, group_code, zone_id, zone_kind, role, purpose, slab_kind, lintel_kind, component. Human-visible/source fields must be copied from the PDF as written, without translation or transliteration: raw_text, table_title, table_context, page_title, item_name, display_name, name, mark, slab_mark, source_label, context, source_phrase, lintel_id. If the PDF says Б1.1, ПР-2 or ПМ1, keep Б1.1, ПР-2, ПМ1; never rewrite them as B1.1, PR-2 or PM1.",
     "top_level_example": {
       "project_name": "string|null",
       "source_files": [
@@ -30,15 +31,15 @@
   "found_item_shape": {
     "target_code": "string - matches a target/group code from calculator_targets_compact.json, or a free-text label if outside the compact list",
     "group_code": "string|null - set only for items belonging to an extract_groups entry (e.g. trench_routes, foundation_rebar_items)",
-    "item_name": "string|null - for group items, e.g. route name 'К1' or rebar 'ф10 А500С'",
+    "item_name": "string|null - for group items, copied from PDF as written, e.g. route name 'К1' or rebar 'ф10 А500С'; do not translate/transliterate",
     "value": "number|string|object|array|null",
     "unit": "string|null - unit as written in the PDF",
     "normalized_unit": "string|null - from unit_normalization_guide.json; use 'mixed' only when group_code is set and the repeated row value has several fields with different units, never for scalar targets",
     "source_pdf": "string|null",
     "page_number": "number|null",
     "page_title": "string|null",
-    "raw_text": "string|null - verbatim quote or table cell description",
-    "table_context": "string|null - table title/header this value came from, if applicable",
+    "raw_text": "string|null - verbatim quote or table cell description; keep PDF spelling, Cyrillic marks and Russian wording",
+    "table_context": "string|null - table title/header this value came from, if applicable; keep PDF spelling",
     "confidence": "number - 0..1",
     "needs_review": "boolean",
     "candidates": "array|null - present only when there is genuine ambiguity between two or more values; each candidate has the same shape as found_item minus this field",
@@ -46,11 +47,11 @@
   },
   "raw_table_row_shape": {
     "table_id": "string|null - stable local id within this extraction, e.g. 'floor_slab_formwork_table'",
-    "table_title": "string|null - visible table title/header",
+    "table_title": "string|null - visible table title/header, copied from PDF as written",
     "section_code": "string|null",
     "source_pdf": "string|null",
     "page_number": "number|null",
-    "page_title": "string|null",
+    "page_title": "string|null - visible sheet/page title, copied from PDF as written",
     "columns": [
       "string, ... - column headers as visible in the PDF"
     ],
@@ -97,9 +98,9 @@
     },
     "floor_slab_zones": {
       "zone_id": "string - stable local id, not a project name",
-      "display_name": "string - slab name as shown in PDF/context",
+      "display_name": "string - slab name as shown in PDF/context; keep Russian wording and marks, do not translate/transliterate",
       "source_level": "string|null - elevation/floor/context as printed",
-      "slab_mark": "string|null - ПМ1/ПМ2/etc. if printed",
+      "slab_mark": "string|null - ПМ1/ПМ2/etc. if printed; keep Cyrillic/visible spelling",
       "slab_kind": "residential_floor|roof_slab|stair_slab|other|unknown",
       "slab_thickness_m": "number|null - the slab's own concrete thickness, usually printed in the concrete spec row itself (e.g. 'толщиной 200мм' -> 0.2); real calculator input, not descriptive",
       "slab_edge_perimeter_m": "number|null - slab's own outer edge length in m.p., control-geometry only",
@@ -119,7 +120,7 @@
     "floor_slab_eps_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
       "role": "slab_bottom|slab_edge|combined_bottom_and_edge|unknown - slab EPS only; never beam/lintel insulation",
-      "material_name": "string|null",
+      "material_name": "string|null - copied from PDF as written",
       "thickness_mm": "number|null",
       "volume_m3": "number|null",
       "area_m2": "number|null",
@@ -130,8 +131,8 @@
     "floor_slab_beam_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
       "beam_id": "string|null",
-      "mark": "string|null",
-      "name": "string|null",
+      "mark": "string|null - beam mark copied from PDF as written; keep Б/П/ПР Cyrillic marks, do not transliterate",
+      "name": "string|null - beam name copied from PDF/context as written",
       "length_m": "number|null",
       "width_m": "number|null - may be null for combined beam rows",
       "height_m": "number|null",
@@ -146,7 +147,7 @@
       "zone_id": "string - must match floor_slab_zones.zone_id",
       "component": "slab|beam|additional|unknown",
       "code": "string|null",
-      "name": "string|null",
+      "name": "string|null - copied from PDF as written",
       "steel_class": "string|null",
       "diameter_mm": "number|null",
       "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
@@ -156,35 +157,35 @@
     "floor_slab_additional_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
       "item_type": "string|null",
-      "name": "string",
+      "name": "string - copied from PDF as written",
       "quantity": "number|null",
       "unit": "string|null"
     },
     "roof_raw_material_spec_rows": {
-      "name": "string",
+      "name": "string - copied from PDF as written",
       "quantity": "number|null",
       "unit": "string|null"
     },
     "wall_zones": {
       "zone_id": "string - stable local id, e.g. floor_1/floor_2/parapet/vent_chimney_cladding",
-      "display_name": "string - zone name as printed/understood from PDF",
+      "display_name": "string - human-visible zone name copied from PDF/context as written; do not use zone_kind enum as display text",
       "zone_kind": "main_walls|second_light|parapet|vent_chimney_cladding",
       "cutoff_waterproofing_area_m2": "number|null - only for cutoff waterproofing under load-bearing walls, exclude partitions",
       "block_delivery_batch_id": "string|null - optional, only if explicitly present"
     },
     "wall_block_items": {
       "zone_id": "string - must match wall_zones.zone_id",
-      "item_id": "string|null",
+      "item_id": "string|null - technical local id; may be latin, does not replace PDF text",
       "block_density": "string|null - e.g. D400/D500, copy literal from PDF when visible",
       "block_size": "string|null - e.g. 600x400x250, copy literal from PDF when visible",
       "volume_m3": "number|null",
-      "context": "string|null - source row context/subzone",
+      "context": "string|null - source row context/subzone copied from PDF as written",
       "material_unit_price": "number|null - only if project/price data explicitly gives price for non-standard block",
       "pallet_volume_m3": "number|null - only if explicitly known"
     },
     "wall_chasing_rebar_items": {
       "zone_id": "string - must match wall_zones.zone_id",
-      "item_id": "string|null",
+      "item_id": "string|null - technical local id; may be latin, does not replace PDF text",
       "purpose": "masonry_chasing|parapet_chasing|other",
       "steel_class": "string|null",
       "diameter_mm": "number|null",
@@ -194,7 +195,7 @@
     },
     "lintel_items": {
       "zone_id": "string - must match wall_zones.zone_id",
-      "lintel_id": "string|null - mark/type/stable id",
+      "lintel_id": "string|null - lintel mark/type as printed when visible, e.g. ПР-2/ПБ1; do not transliterate",
       "lintel_kind": "u_block|monolithic",
       "total_length_m": "number|null",
       "concrete_volume_m3": "number|null",
@@ -205,9 +206,9 @@
     },
     "lintel_rebar_items": {
       "zone_id": "string - must match wall_zones.zone_id",
-      "lintel_id": "string|null - should match lintel_items when possible",
+      "lintel_id": "string|null - should match lintel_items when possible; keep visible mark spelling from PDF",
       "lintel_kind": "u_block|monolithic|null",
-      "item_id": "string|null",
+      "item_id": "string|null - technical local id; may be latin, does not replace PDF text",
       "steel_class": "string|null",
       "diameter_mm": "number|null",
       "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",

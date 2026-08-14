@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -76,6 +76,7 @@ PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_PRICE_REGISTRY = ROOT / "output" / "price_registry_filled_v4.xlsx"
 DEFAULT_MANUAL_VALUES_REGISTRY = ROOT / "output" / "manual_values_registry.xlsx"
 INACTIVE_ROW_HEIGHT = 9
+FILL_REBAR_SUMMARY_TITLE = PatternFill("solid", fgColor="FFE599")
 
 
 def project_status_fill(status: str):
@@ -110,6 +111,22 @@ def hide_inactive_project_rows(ws) -> None:
             cell.fill = FILL_WHITE
             cell.font = Font(name=FONT_NAME, size=9, color="666666")
             cell.alignment = Alignment(wrap_text=False, vertical="center")
+
+
+def append_blank_project_row(ws) -> None:
+    """A real visual spacer on sheet 01; kept unmerged so table filters/readers ignore it."""
+    ws.append([""] * len(PROJECT_HEADERS))
+    for cell in ws[ws.max_row]:
+        cell.fill = FILL_WHITE
+    ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+
+def style_rebar_summary_title_row(ws, row_idx: int) -> None:
+    for cell in ws[row_idx]:
+        cell.fill = FILL_REBAR_SUMMARY_TITLE
+        cell.font = Font(name=FONT_NAME, bold=True, size=10)
+        cell.alignment = Alignment(wrap_text=True, vertical="center")
+    ws.row_dimensions[row_idx].height = 22
 
 
 # Narrow, purpose-built support for the "sum(included <group>.<field>)" auto_calculated formula
@@ -197,6 +214,70 @@ def min_group_confidence(found_groups: dict[str, list[Any]], group_key: str) -> 
     return f"{min(values):.2f}" if values else ""
 
 
+def group_has_needs_review(found_groups: dict[str, list[Any]], group_key: str) -> bool:
+    return any(bool(item.get("needs_review")) for item in group_items(found_groups, group_key))
+
+
+def project_group_items_for_review(extraction: dict[str, Any], sec_code: str) -> dict[str, list[Any]]:
+    """Group rows that must be visible on sheet 01: confident rows plus review rows.
+
+    Scalars keep their old found/missing logic, but repeated groups are different: if the model
+    extracted a row and marked it needs_review, Elena still needs to see that row. Otherwise a
+    project can silently lose rows between extraction and the workbook (real TRC case:
+    K2/K3 trench routes moved from found to needs_review, and the old sheet total dropped from
+    79.64 m3 to 25.71 m3).
+    """
+    section = (extraction.get("sections") or {}).get(sec_code) or {}
+    groups: dict[str, list[Any]] = {}
+    seen: dict[str, set[str]] = {}
+    for bucket_name in ("found", "needs_review"):
+        for item in section.get(bucket_name) or []:
+            if not isinstance(item, dict):
+                continue
+            group_code = item.get("group_code")
+            if not group_code:
+                continue
+            # Some correction-pass JSONs keep the same repeated item in both found and
+            # needs_review. Sheet 01 should show one project row, not a duplicate physical item.
+            value_key = json.dumps(item.get("value") or {}, ensure_ascii=False, sort_keys=True)
+            if value_key in seen.setdefault(group_code, set()):
+                continue
+            seen[group_code].add(value_key)
+            item_for_sheet = dict(item)
+            if bucket_name == "needs_review":
+                item_for_sheet["needs_review"] = True
+            groups.setdefault(group_code, []).append(item_for_sheet)
+    return groups
+
+
+class Sheet01BuildRegistry:
+    """Small self-check registry for sheet 01.
+
+    The workbook is still rendered exactly as before; this object only records what actually made
+    it to the sheet so the builder can fail before saving when a contract row or extracted
+    repeated item silently disappears.
+    """
+
+    def __init__(self) -> None:
+        self.scalar_rows: set[tuple[str, str]] = set()
+        self.repeated_items: dict[tuple[str, str], set[str]] = {}
+        self.repeated_fields: dict[tuple[str, str], set[tuple[str, str | None]]] = {}
+
+    def record_scalar(self, sec_code: str, param: dict[str, Any]) -> None:
+        key = str(param.get("target_code") or param.get("key") or "")
+        if key:
+            self.scalar_rows.add((sec_code, key))
+
+    def record_repeated_item(self, sec_code: str, group_key: str, item_id: str) -> None:
+        self.repeated_items.setdefault((sec_code, group_key), set()).add(item_id)
+
+    def record_repeated_field(
+        self, sec_code: str, group_key: str, item_id: str, field_key: str | None
+    ) -> None:
+        self.record_repeated_item(sec_code, group_key, item_id)
+        self.repeated_fields.setdefault((sec_code, group_key), set()).add((item_id, field_key))
+
+
 def earthworks_alternative_scalar(
     target_code: str,
     found_groups: dict[str, list[Any]],
@@ -223,9 +304,10 @@ def earthworks_alternative_scalar(
         )
     if target_code == "communications_length_m" and group_items(found_groups, "communications_pipe_items"):
         total = sum_communications_pipe_items(found_groups)
+        has_review = group_has_needs_review(found_groups, "communications_pipe_items")
         return (
             total,
-            "Найдено (автосумма строк труб ниже)",
+            "Проверьте (автосумма строк труб ниже)" if has_review else "Найдено (автосумма строк труб ниже)",
             "",
             "Сумма включённых позиций communications_pipe_items: "
             f"{total:g} м. Позиции без линейной длины (углы, тройники, заглушки) не добавляют метры.",
@@ -233,9 +315,10 @@ def earthworks_alternative_scalar(
         )
     if target_code == "trench_volume_m3" and group_items(found_groups, "trench_routes"):
         total = sum_group_numeric_field(found_groups, "trench_routes", "volume_m3")
+        has_review = group_has_needs_review(found_groups, "trench_routes")
         return (
             total,
-            "Найдено (автосумма маршрутов ниже)",
+            "Проверьте (автосумма маршрутов ниже)" if has_review else "Найдено (автосумма маршрутов ниже)",
             "",
             f"Сумма volume_m3 из trench_routes: {total:g} м3.",
             min_group_confidence(found_groups, "trench_routes"),
@@ -905,13 +988,7 @@ P6_WALL_ZONE_ORDER = {
 
 
 def p6_groups_with_review(extraction: dict[str, Any]) -> dict[str, list[Any]]:
-    section = (extraction.get("sections") or {}).get(P6_WALLS_SECTION_CODE) or {}
-    groups: dict[str, list[Any]] = {}
-    for item in (section.get("found") or []) + (section.get("needs_review") or []):
-        group_code = item.get("group_code")
-        if group_code:
-            groups.setdefault(group_code, []).append(item)
-    return groups
+    return project_group_items_for_review(extraction, P6_WALLS_SECTION_CODE)
 
 
 def p6_wall_zone_label(value: dict[str, Any]) -> str:
@@ -937,6 +1014,8 @@ def p6_wall_item_label(group_key: str, value: dict[str, Any], fallback: str) -> 
         parts = [value.get("block_density"), value.get("block_size"), value.get("context")]
         return " ".join(str(part) for part in parts if part not in (None, "")) or fallback
     if group_key == P6_WALL_REBAR_GROUP_KEY:
+        if fallback and fallback != group_key:
+            return fallback
         steel = value.get("steel_class") or ""
         diameter = value.get("diameter_mm")
         parts = [str(part) for part in [steel, f"ф{diameter:g}" if isinstance(diameter, (int, float)) else diameter] if part]
@@ -948,6 +1027,8 @@ def p6_wall_item_label(group_key: str, value: dict[str, Any], fallback: str) -> 
             lintel_id = None
         return " ".join(str(part) for part in [lintel_id, lintel_kind] if part not in (None, "")) or fallback
     if group_key == P6_LINTEL_REBAR_GROUP_KEY:
+        if fallback and fallback != group_key:
+            return fallback
         lintel_id = value.get("lintel_id")
         lintel_label = P6_LINTEL_KIND_LABELS.get(str(value.get("lintel_kind") or ""), "")
         if str(lintel_id or "").startswith(("floor_1_u_block", "floor_2_u_block")):
@@ -1153,6 +1234,7 @@ def _append_rebar_diameter_summary(
     if not breakdown:
         return
     append_section_band(ws, [title], len(PROJECT_HEADERS))
+    style_rebar_summary_title_row(ws, ws.max_row)
     ws.append(PROJECT_HEADERS)
     style_header_row(ws, ws.max_row, len(PROJECT_HEADERS))
     ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
@@ -1231,6 +1313,7 @@ def _render_repeated_row_block(
     rebar_weights_by_section: dict[str, float],
     rebar_cumulative_weights: dict[str, tuple[float, float]],
     reference_only: bool = False,
+    registry: Sheet01BuildRegistry | None = None,
 ) -> None:
     """Renders one repeated-row group as its own titled block on sheet 01. `items` is passed in
     explicitly (not read from found_groups here) so a caller can pre-filter to one physical zone
@@ -1279,12 +1362,20 @@ def _render_repeated_row_block(
 
         label_parts = [str(value[k]) for k in item_label_columns if value.get(k) not in (None, "")]
         item_label = " ".join(label_parts) or item.get("item_name") or group_key
+        if sec_code == P6_WALLS_SECTION_CODE and is_rebar_group(group_key) and item.get("item_name"):
+            item_label = str(item.get("item_name"))
         if sec_code == "floor_slabs":
             item_label = floor_slab_item_label(group_key, value, item_label)
         if sec_code == P6_WALLS_SECTION_CODE:
             item_label = p6_wall_item_label(group_key, value, item_label)
 
         if reference_only:
+            if registry is not None:
+                registry.record_repeated_item(
+                    sec_code,
+                    group_key,
+                    repeated_item_sheet_id(sec_code, group_key, value, item_label),
+                )
             summary_keys = [k for k in correction_columns if k not in item_label_columns]
             if is_rebar_group(group_key):
                 summary, display_unit = rebar_reference_summary(value)
@@ -1362,7 +1453,15 @@ def _render_repeated_row_block(
         if not field_rows:
             if sec_code == "flat_roof":
                 continue
-            field_rows = [(None, None, None, param.get("unit", ""))]
+            if len(ordered_keys) == 1:
+                key = ordered_keys[0]
+                column_def = columns_by_key.get(key, {})
+                field_label = column_def.get("label_ru") or key
+                if sec_code == P6_WALLS_SECTION_CODE:
+                    field_label = p6_wall_field_label(key, field_label)
+                field_rows = [(key, field_label, None, column_def.get("unit", param.get("unit", "")))]
+            else:
+                field_rows = [(None, None, None, param.get("unit", ""))]
 
         # Rebar rows (real user feedback 2026-08-11, "арматуру вот так заполняем во всех
         # разделах"): a rebar item almost always reduces to exactly one real number (its spec
@@ -1378,8 +1477,12 @@ def _render_repeated_row_block(
         counts["needs_review" if needs_review else "found"] += 1
 
         item_id = repeated_item_sheet_id(sec_code, group_key, value, item_label)
+        if registry is not None:
+            registry.record_repeated_item(sec_code, group_key, item_id)
         for field_idx, (field_key, field_label, field_value, unit) in enumerate(field_rows):
             label = f"{item_label} — {field_label}" if field_label and not suppress_field_suffix else item_label
+            if registry is not None:
+                registry.record_repeated_field(sec_code, group_key, item_id, field_key)
             row_json = {
                 **value,
                 "_sheet_item_id": item_id,
@@ -1443,6 +1546,160 @@ def _render_repeated_row_block(
         ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
 
+def repeated_item_has_visible_sheet01_row(
+    sec_code: str,
+    group_key: str,
+    param: dict[str, Any],
+    item: dict[str, Any],
+    *,
+    reference_only: bool,
+) -> bool:
+    value = item.get("value") or {}
+    if reference_only:
+        return True
+    item_label_columns = param.get("item_label_columns") or []
+    correction_columns = param.get("correction_columns") or []
+    columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
+    ordered_keys = visible_repeated_field_keys(
+        sec_code,
+        group_key,
+        correction_columns,
+        item_label_columns,
+        columns_by_key,
+    )
+    if any(value.get(key) not in (None, "") for key in ordered_keys):
+        return True
+    if sec_code == P6_WALLS_SECTION_CODE and group_key == P6_WALL_ZONES_GROUP_KEY:
+        return bool(item.get("needs_review"))
+    # flat_roof intentionally skips technical rows with no numeric value. Other repeated groups
+    # still render a blank "Проверьте" row so an expected calculator group cannot disappear.
+    return sec_code != "flat_roof"
+
+
+def expected_repeated_field_keys_for_sheet01(
+    sec_code: str,
+    group_key: str,
+    param: dict[str, Any],
+    item: dict[str, Any],
+    *,
+    reference_only: bool,
+) -> list[str | None]:
+    """The field-level counterpart to repeated_item_has_visible_sheet01_row().
+
+    Sheet 01 now renders production repeated groups as "one visible numeric field = one row".
+    A group-level count is therefore not enough: an item can be present while one required
+    checkable field inside it is still hidden inside notes.
+    """
+    if reference_only:
+        return []
+    value = item.get("value") or {}
+    item_label_columns = param.get("item_label_columns") or []
+    correction_columns = param.get("correction_columns") or []
+    columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
+    ordered_keys = visible_repeated_field_keys(
+        sec_code,
+        group_key,
+        correction_columns,
+        item_label_columns,
+        columns_by_key,
+    )
+    populated_keys = [key for key in ordered_keys if value.get(key) not in (None, "")]
+    if populated_keys:
+        return populated_keys
+    if sec_code == "flat_roof":
+        return []
+    if len(ordered_keys) == 1 and repeated_item_has_visible_sheet01_row(
+        sec_code,
+        group_key,
+        param,
+        item,
+        reference_only=reference_only,
+    ):
+        return [ordered_keys[0]]
+    if repeated_item_has_visible_sheet01_row(
+        sec_code,
+        group_key,
+        param,
+        item,
+        reference_only=reference_only,
+    ):
+        return [None]
+    return []
+
+
+def validate_sheet01_registry(
+    contracts: list[dict[str, Any]],
+    extraction: dict[str, Any],
+    registry: Sheet01BuildRegistry,
+) -> None:
+    errors: list[str] = []
+
+    for contract in contracts:
+        sec_code = section_code(contract)
+        for param in scalar_review_rows_for_contract(contract):
+            key = str(param.get("target_code") or param.get("key") or "")
+            if key and (sec_code, key) not in registry.scalar_rows:
+                errors.append(
+                    f"Поле {key} нужно листу 01 раздела {sec_code}, но строка не была создана."
+                )
+
+        if sec_code == P6_WALLS_SECTION_CODE:
+            review_groups = p6_groups_with_review(extraction)
+        else:
+            review_groups = project_group_items_for_review(extraction, sec_code)
+
+        for param in production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract):
+            group_key = param.get("key")
+            if not group_key:
+                continue
+            items = group_items(review_groups, group_key)
+            if not items:
+                continue
+            reference_only = param.get("production_input") is not True or is_rebar_group(group_key)
+            expected_count = sum(
+                1
+                for item in items
+                if repeated_item_has_visible_sheet01_row(
+                    sec_code,
+                    group_key,
+                    param,
+                    item,
+                    reference_only=reference_only,
+                )
+            )
+            if expected_count == 0:
+                continue
+            rendered_count = len(registry.repeated_items.get((sec_code, group_key), set()))
+            if rendered_count < expected_count:
+                errors.append(
+                    f"Группа {group_key} раздела {sec_code}: в JSON есть {expected_count} строк, "
+                    f"на лист 01 попало {rendered_count}."
+                )
+            if not reference_only:
+                expected_field_count = sum(
+                    len(
+                        expected_repeated_field_keys_for_sheet01(
+                            sec_code,
+                            group_key,
+                            param,
+                            item,
+                            reference_only=reference_only,
+                        )
+                    )
+                    for item in items
+                )
+                rendered_field_count = len(registry.repeated_fields.get((sec_code, group_key), set()))
+                if rendered_field_count < expected_field_count:
+                    errors.append(
+                        f"Группа {group_key} раздела {sec_code}: на лист 01 должно быть "
+                        f"{expected_field_count} строк-полей, создано {rendered_field_count}."
+                    )
+
+    if errors:
+        message = "Сборщик остановлен: лист 01 неполный.\n" + "\n".join(f"- {error}" for error in errors)
+        raise RuntimeError(message)
+
+
 def build_project_sheet_from_extraction(
     wb: Workbook, contracts: list[dict[str, Any]], extraction: dict[str, Any]
 ) -> dict[str, int]:
@@ -1469,10 +1726,12 @@ def build_project_sheet_from_extraction(
     rebar_cumulative_weights = compute_rebar_cumulative_weights(rebar_weights_by_section, metal_order)
     box_total_metal_weight_kg = round(sum(rebar_weights_by_section.values()), 1)
     all_rebar_items_for_box_summary: list[dict[str, Any]] = []
+    registry = Sheet01BuildRegistry()
 
     for contract in contracts:
         sec_code = section_code(contract)
         found_by_target, found_groups, missing = index_extraction_section(extraction, sec_code)
+        review_groups = project_group_items_for_review(extraction, sec_code)
         confirmed_required = compute_confirmed_required(found_by_target, sec_code)
         append_section_band(ws, [section_name(contract)], len(PROJECT_HEADERS))
 
@@ -1536,19 +1795,20 @@ def build_project_sheet_from_extraction(
                 for cell in ws[ws.max_row]:
                     cell.fill = row_fill
                 ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+                registry.record_scalar(sec_code, param)
                 if param_key == BOX_TOTAL_METAL_WEIGHT_KEY:
                     ws.row_dimensions[ws.max_row].hidden = True
                     ws.row_dimensions[ws.max_row].height = INACTIVE_ROW_HEIGHT
                 continue
 
             confidence = display_confidence(found)
-            alternative_scalar = earthworks_alternative_scalar(target_code, found_groups) if sec_code == "earthworks" else None
+            alternative_scalar = earthworks_alternative_scalar(target_code, review_groups) if sec_code == "earthworks" else None
             if alternative_scalar is None and sec_code == "foundation_slab":
-                alternative_scalar = foundation_alternative_scalar(target_code, found, found_groups, found_by_target)
+                alternative_scalar = foundation_alternative_scalar(target_code, found, review_groups, found_by_target)
             if alternative_scalar is None and sec_code == "load_bearing_walls_lintels":
-                alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found, found_groups)
+                alternative_scalar = load_bearing_walls_lintels_alternative_scalar(target_code, found, review_groups)
             if alternative_scalar is None and sec_code == "flat_roof":
-                alternative_scalar = flat_roof_alternative_scalar(target_code, found, found_groups)
+                alternative_scalar = flat_roof_alternative_scalar(target_code, found, review_groups)
             is_unresolved_needs_review = found is not None and found.get("value") is None
             if alternative_scalar is not None and (found is None or target_code in missing or is_unresolved_needs_review):
                 found_value, status, source, fragment, confidence = alternative_scalar
@@ -1631,6 +1891,7 @@ def build_project_sheet_from_extraction(
             for cell in ws[ws.max_row]:
                 cell.fill = row_fill
             ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+            registry.record_scalar(sec_code, param)
 
         repeated_row_params = production_repeated_row_params(contract) + diagnostic_repeated_row_params(contract)
 
@@ -1649,7 +1910,7 @@ def build_project_sheet_from_extraction(
             # confirmed is clear as-is) matters more than a bespoke per-section design.
             params_by_key = {param.get("key"): param for param in repeated_row_params}
             dependent_group_keys = [ZONES_GROUP_KEY, EPS_ITEMS_GROUP_KEY, BEAM_ITEMS_GROUP_KEY, REBAR_GROUP_KEY, ADDITIONAL_ITEMS_GROUP_KEY]
-            for zone_item in found_groups.get(ZONES_GROUP_KEY, []):
+            for zone_item in review_groups.get(ZONES_GROUP_KEY, []):
                 zone_value = zone_item.get("value") or {}
                 zone_id = zone_value.get("zone_id")
                 if zone_value.get("manual_rebar_metal_delivery_trucks") is None and zone_id:
@@ -1695,7 +1956,7 @@ def build_project_sheet_from_extraction(
                                     "_zone_label": zone_label,
                                 },
                             }
-                            for item in found_groups.get(group_key, [])
+                            for item in review_groups.get(group_key, [])
                             if (item.get("value") or {}).get("zone_id") == zone_id
                         ]
                         block_label = param.get("label_ru", group_key)
@@ -1704,12 +1965,13 @@ def build_project_sheet_from_extraction(
                         continue
                     title_prefix = "СПРАВОЧНО: " if reference_only else ""
                     _render_repeated_row_block(
-                        ws, sec_code, group_key, param, zone_items, counts, found_groups,
+                        ws, sec_code, group_key, param, zone_items, counts, review_groups,
                         title=f"{title_prefix}{zone_label} — {block_label}",
                         rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
                         rebar_weights_by_section=rebar_weights_by_section,
                         rebar_cumulative_weights=rebar_cumulative_weights,
                         reference_only=reference_only,
+                        registry=registry,
                     )
         elif sec_code == P6_WALLS_SECTION_CODE:
             p6_found_groups = p6_groups_with_review(extraction)
@@ -1734,10 +1996,11 @@ def build_project_sheet_from_extraction(
                         zone_items = [zone_item]
                         block_label = "Параметры зоны"
                         reference_only = False
-                        if not any(
+                        has_visible_zone_value = any(
                             (zone_value or {}).get(key) not in (None, "")
                             for key in p6_wall_visible_field_keys(group_key, param.get("correction_columns") or [])
-                        ):
+                        )
+                        if not has_visible_zone_value and not zone_item.get("needs_review"):
                             continue
                     else:
                         zone_items = [
@@ -1763,6 +2026,7 @@ def build_project_sheet_from_extraction(
                         rebar_weights_by_section=rebar_weights_by_section,
                         rebar_cumulative_weights=rebar_cumulative_weights,
                         reference_only=reference_only,
+                        registry=registry,
                     )
         else:
             for param in repeated_row_params:
@@ -1770,12 +2034,13 @@ def build_project_sheet_from_extraction(
                 reference_only = param.get("production_input") is not True or is_rebar_group(group_key)
                 title_prefix = "СПРАВОЧНО: " if reference_only else ""
                 _render_repeated_row_block(
-                    ws, sec_code, group_key, param, found_groups.get(group_key, []), counts, found_groups,
+                    ws, sec_code, group_key, param, review_groups.get(group_key, []), counts, review_groups,
                     title=f"{title_prefix}{section_name(contract)} — {param.get('label_ru', group_key)} ({(param.get('review_behavior') or {}).get('action_ru', 'Проверьте позиции построчно.')})",
                     rebar_metal_delivery_allocation=rebar_metal_delivery_allocation,
                     rebar_weights_by_section=rebar_weights_by_section,
                     rebar_cumulative_weights=rebar_cumulative_weights,
                     reference_only=reference_only,
+                    registry=registry,
                 )
 
         # Этап 1 (2026-08-12, Elena's request): the position-level rebar "zoo" (хомуты/лягушки/
@@ -1787,7 +2052,7 @@ def build_project_sheet_from_extraction(
         section_rebar_items = [
             item.get("value") or {}
             for group_key in rebar_group_keys_for_contract(contract)
-            for item in found_groups.get(group_key, [])
+            for item in review_groups.get(group_key, [])
         ]
         _append_rebar_diameter_summary(
             ws,
@@ -1830,6 +2095,8 @@ def build_project_sheet_from_extraction(
         cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
     ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
 
+    append_blank_project_row(ws)
+
     # Same Этап 1 request as the per-section summaries above, just for the whole project at once
     # (2026-08-12) - one "4-6 rows, not the zoo" breakdown by diameter across every section that
     # has rebar, right next to the box-wide weight total it's built from.
@@ -1854,6 +2121,8 @@ def build_project_sheet_from_extraction(
         for cell in ws[ws.max_row]:
             cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
         ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+    append_blank_project_row(ws)
 
     total_trucks = sum(rebar_metal_delivery_allocation.values())
     allocation_breakdown = "; ".join(
@@ -1880,6 +2149,8 @@ def build_project_sheet_from_extraction(
     for cell in ws[ws.max_row]:
         cell.fill = project_status_fill("Найдено (авто, box-калькулятор)")
     ws.row_dimensions[ws.max_row].height = COMPACT_ROW_HEIGHT
+
+    validate_sheet01_registry(contracts, extraction, registry)
 
     ws.cell(1, 1).font = Font(name=FONT_NAME, bold=True, size=13)
     ws.cell(1, 1).fill = FILL_HEADER
@@ -1972,16 +2243,19 @@ def build_rebar_lookup(
             for item in found_groups.get(group_key, [])
         ]
         if items:
-            lookup["load_bearing_walls_lintels" if sec_code == P6_WALLS_SECTION_CODE else sec_code] = items
+            lookup[sec_code] = items
     return lookup
 
 
 def metal_section_order(extraction: dict[str, Any]) -> list[str]:
-    """Ordered list of metal-delivery buckets for this specific project: the 2 fixed sections
-    (foundation_slab, load_bearing_walls_lintels) followed by one floor_slabs::<zone_id> bucket per
-    real physical slab, in pour order. Dynamic (not a module constant) because the zone list is
-    project-specific - a different project can have 2 zones or 6."""
-    return ["foundation_slab", "load_bearing_walls_lintels"] + [
+    """Ordered list of metal-delivery buckets for this specific project.
+
+    Walls use the active production section code: the new P6 contract when the JSON has it,
+    otherwise the pre-P6 load_bearing_walls_lintels section for older extractions.
+    """
+    sections = extraction.get("sections") or {}
+    walls_bucket = P6_WALLS_SECTION_CODE if P6_WALLS_SECTION_CODE in sections else "load_bearing_walls_lintels"
+    return ["foundation_slab", walls_bucket] + [
         f"{FLOOR_SLABS_METAL_BUCKET_PREFIX}{zone_id}" for zone_id in floor_slabs_zone_ids(extraction)
     ]
 
@@ -1993,13 +2267,13 @@ def metal_section_order(extraction: dict[str, Any]) -> list[str]:
 #
 # section_code -> the one review_parameters/supplier_inputs key that holds "delivery trucks for
 # rebar/metal" in that section, for sections where it is still a flat scalar written once per
-# section. load_bearing_walls_lintels is deliberately absent (no dedicated billed metal-delivery
-# line of its own, but its rebar weight still counts toward the box-wide total below). floor_slabs
-# is handled separately (see the per-zone injection in the floor_slab_zones row-building loop) since
-# its manual_rebar_metal_delivery_trucks field lives on each zone row, not one section-level cell.
+# section. floor_slabs is handled separately (see the per-zone injection in the floor_slab_zones
+# row-building loop) since its manual_rebar_metal_delivery_trucks field lives on each zone row,
+# not one section-level cell.
 REBAR_METAL_DELIVERY_FIELD_BY_SECTION = {
     "foundation_slab": "rebar_metal_delivery_trucks",
     "load_bearing_walls_lintels": "rebar_metal_delivery_trucks",
+    P6_WALLS_SECTION_CODE: "rebar_metal_delivery_trucks",
 }
 METAL_TRUCK_CAPACITY_KG = 10000.0
 # foundation_slab's own field: the box-wide total weight, used only for its internal calculator

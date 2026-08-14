@@ -247,6 +247,26 @@ review_parameters:
     validation: {numeric: false, min_rows: 0, sum_checks: []}
     notes: "Adapter nests these rows under their lintel_id before calling the P6 calculator."
 
+  - key: rebar_metal_delivery_trucks
+    label_ru: "Доставка арматуры и металла, машины"
+    unit: "маш"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: ""
+    calculator_input_path: "rebar_metal_delivery_trucks"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.auto_calculated.rebar_metal_delivery_trucks.value"
+    value_kind: number
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Автоматически по общему поставочному весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    validation: {numeric: true, min: 0}
+    notes: >
+      Box-calculator allocation across foundation, walls/lintels and slab zones. Quantity may be 0
+      when this section contributes metal weight but does not cross the next 10t delivery threshold.
+
 price_keys:
   - {key: rebar_unit_price_by_item, label_ru: "Арматура по классу и диаметру", price_kind: material, unit: "мп", registry_code: "rebar_<class>_d<diameter>_m", required: true}
   - {key: scaffolding_setup_work_unit_price, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", registry_code: "scaffolding_setup_dismantling_work_set", required: true}
