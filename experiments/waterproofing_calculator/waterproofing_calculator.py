@@ -635,12 +635,15 @@ def calculate_internal_estimate_lines(
             quantity=1,
             material_unit_price=consumables_amount_raw,
         ),
-        # Real smetas (3 real projects checked) always print these 4 rows last, after logistics/consumables,
-        # right before "Итого по разделу" - fixed 2026-08-12 (was emitted before logistics/
-        # consumables here, opposite of Elena's real row order). Zero here deliberately - this
-        # pipeline only ever computes Elena's own internal cost, never the client-facing markup
-        # these rows represent in her real smeta.
-        calculate_line(code="technical_supervision", name="Технический надзор", unit="-", quantity=1),
+        # Real smetas (3 real projects checked) always print these rows last, after logistics/
+        # consumables, right before "Итого по разделу" - fixed 2026-08-12 (was emitted before
+        # logistics/consumables here, opposite of Elena's real row order). Zero here deliberately -
+        # this pipeline only ever computes Elena's own internal cost, never the client-facing
+        # markup these rows represent in her real smeta.
+        #
+        # Технический надзор deliberately has NO line here at all (not even zero) - checked 3 real
+        # projects' delivered smetas 2026-08-15: waterproofing/cutoff-waterproofing never carries
+        # this row in any of them, unlike walls/foundation/floor slabs/roof where it's a real cost.
         calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1),
         calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1),
         calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1),

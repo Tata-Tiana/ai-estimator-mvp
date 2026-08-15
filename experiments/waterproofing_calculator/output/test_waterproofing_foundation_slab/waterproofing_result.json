@@ -173,17 +173,6 @@
       "line_total": 1463
     },
     {
-      "code": "technical_supervision",
-      "name": "Технический надзор",
-      "unit": "-",
-      "quantity": 1.0,
-      "material_unit_price": 0.0,
-      "material_total": 0,
-      "work_unit_price": 0.0,
-      "work_total": 0,
-      "line_total": 0
-    },
-    {
       "code": "procurement_warehouse_costs",
       "name": "Заготовительно-складские расходы",
       "unit": "-",
