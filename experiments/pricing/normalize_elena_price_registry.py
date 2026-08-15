@@ -134,6 +134,13 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
         "Бетонирование балки бетоном марки В22,5 (М300) (высотой до 250мм)",
         "мп",
     ): "beam_concrete_placing_work_m",
+    # Reinstated 2026-08-15 - see IGNORED_WORK_PRICE_ROWS/OBSOLETE_PREVIOUS_PRICE_CODES comments
+    # above: beams over 250mm height are priced by concrete volume (м3), confirmed on 2 real
+    # reference-project smetas (section_contract.yaml, 2026-08-09) and reconfirmed 2026-08-15.
+    row_key(
+        "Бетонирование балки бетоном марки В22,5 (М300) (высотой более 250мм)",
+        "м3",
+    ): "beam_concrete_placing_work_m3",
     row_key("Вывоз мусора с объекта", "маш"): "waste_removal_loading_work_truck",
     row_key("Кладка парапета из газобетонных блоков", "м3"): "gas_block_masonry_work_m3",
     row_key(
@@ -171,15 +178,18 @@ MANUAL_WORK_PRICE_CODES: dict[tuple[str, str], str] = {
     # DERIVED_PRICE_ROWS entry instead (real material figure, confirmed from a real project's smeta).
 }
 
-IGNORED_WORK_PRICE_ROWS: set[tuple[str, str]] = {
-    row_key(
-        "Бетонирование балки бетоном марки В22,5 (М300) (высотой более 250мм)",
-        "м3",
-    ),
-}
+# Was non-empty 2026-07-30 -> 2026-08-15: excluded the "балка ... высотой более 250мм" (м3) row
+# per an Elena ruling that beams should always price by one м.п. rate regardless of height. That
+# ruling was itself reversed 2026-08-09 (section_contract.yaml: two real reference-project smetas
+# both split beam concreting by height) and reconfirmed 2026-08-15 - beams ARE split, the row is
+# back in the manual map below instead. Left empty (not deleted) for any future genuinely-excluded
+# source row.
+IGNORED_WORK_PRICE_ROWS: set[tuple[str, str]] = set()
 
 OBSOLETE_PREVIOUS_PRICE_CODES = {
-    "beam_concrete_placing_work_m3",
+    # NOT obsolete anymore - reinstated 2026-08-15, see IGNORED_WORK_PRICE_ROWS comment above and
+    # the MANUAL_WORK_PRICE_CODES entry below. Left this note (not a set member) so the history is
+    # visible: "beam_concrete_placing_work_m3" was here 2026-07-30 -> 2026-08-15.
     "waste_removal_truck",
     # Removed 2026-08-07: this was a stale placeholder carried forward untouched since v2/v3
     # (its own comment said "Перенесено из rows_to_add... требуется проверка Елены" - never
@@ -848,13 +858,15 @@ def write_report(summary: dict[str, Any], report_path: Path) -> None:
             lines.append(f"| {row['source_row']} | {row['name']} | {row['unit']} | {row['price']} |")
         lines.append("")
     if summary["ignored"]:
-        lines.extend(["## Ignored Source Rows", "| source row | name | unit | price | reason |", "|---:|---|---|---:|---|"])
+        lines.extend(["## Ignored Source Rows", "| source row | name | unit | price |", "|---:|---|---|---:|"])
         for row in summary["ignored"]:
-            lines.append(
-                f"| {row['source_row']} | {row['name']} | {row['unit']} | {row['price']} | "
-                "Елена 2026-07-30: балки перекрытий считаем единой строкой по м.п. "
-                "`beam_concrete_placing_work_m`; строку `м3 > 250мм` не используем. |"
-            )
+            lines.append(f"| {row['source_row']} | {row['name']} | {row['unit']} | {row['price']} |")
+        lines.append(
+            "\nSee IGNORED_WORK_PRICE_ROWS in this script for why each row above is excluded - "
+            "kept per-row in code comments there instead of a single reason repeated for every "
+            "row here, since 2026-08-15 (a stale hardcoded reason here previously misattributed "
+            "every ignored row to one specific, later-reversed beam-pricing decision)."
+        )
         lines.append("")
     report_path.write_text("\n".join(lines), encoding="utf-8")
 
