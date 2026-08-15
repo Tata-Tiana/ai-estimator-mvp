@@ -550,7 +550,7 @@
       "line_type": "manual_fixed_work",
       "quantity_raw": "1",
       "quantity_display": "1",
-      "quantity_source": "provided technical_supervision_work_total",
+      "quantity_source": "provided technical_supervision_amount (default 10000)",
       "internal_cost": {
         "material_unit_price": "0",
         "material_total_raw": "0",

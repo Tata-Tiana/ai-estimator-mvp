@@ -527,7 +527,7 @@ AI не используется для расчёта. Калькулятор �
 - Ед. изм.: `-`
 - Количество raw: `1`
 - Количество display: `1`
-- Источник количества: `provided technical_supervision_work_total`
+- Источник количества: `provided technical_supervision_amount (default 10000)`
 
 Округление и итог:
 - Материалы raw/display: `0` / `0`

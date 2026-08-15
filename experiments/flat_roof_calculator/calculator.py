@@ -681,9 +681,12 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     roof_logistics_and_supply_total_raw = d(input_data.get("roof_logistics_and_supply_total_raw", 0))
     if input_data.get("roof_logistics_and_supply_calc_method", "legacy_fixed_amount") == "section_total_rate":
         roof_logistics_and_supply_total_raw = direct_cost_base_raw * d(input_data.get("roof_logistics_and_supply_rate", 0))
-    technical_supervision_work_total = d(input_data.get("technical_supervision_work_total", 0))
-    if input_data.get("technical_supervision_calc_method", "legacy_fixed_amount") == "section_work_rate":
-        technical_supervision_work_total = direct_work_base_raw * d(input_data.get("technical_supervision_rate", 0))
+    # Fixed 10000, not a % of the work base - checked 3 real projects' delivered smetas
+    # 2026-08-15: roof technical supervision is 10000 in 2 of 3 (ТРЦ/ЮСВ), АРК was 5000 (an
+    # outlier); no reliable % correlation with section size was found (ranged 0.17%-0.78% of
+    # section total across all checked sections), so this is a plain default like every other
+    # section's technical_supervision_amount, not a formula.
+    technical_supervision_work_total = d(input_data.get("technical_supervision_amount", 10000))
     procurement_storage_work_total = d(input_data.get("procurement_storage_work_total", 0))
     if input_data.get("procurement_storage_calc_method", "legacy_fixed_amount") == "section_material_rate":
         procurement_storage_work_total = direct_material_base_raw * d(input_data.get("procurement_storage_rate", 0))
@@ -759,24 +762,13 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             code="technical_supervision",
             name="Технический надзор",
             unit="-",
-            line_type="calculated_percentage_addon"
-            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
-            else "manual_fixed_work",
+            line_type="manual_fixed_work",
             quantity_raw=1,
-            quantity_source="direct_work_base_raw * technical_supervision_rate"
-            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
-            else "provided technical_supervision_work_total",
+            quantity_source="provided technical_supervision_amount (default 10000)",
             work_unit_price=technical_supervision_work_total,
             work_total_raw=technical_supervision_work_total,
-            formula={
-                "direct_work_base_raw": decimal_str(direct_work_base_raw),
-                "technical_supervision_rate": decimal_str(input_data.get("technical_supervision_rate", 0)),
-            }
-            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
-            else {},
-            notes=["Calculated from direct roof work subtotal before overhead rows."]
-            if input_data.get("technical_supervision_calc_method") == "section_work_rate"
-            else ["Строка включена по уточнению: это серая внутренняя работа текущего раздела."],
+            formula={},
+            notes=["Строка включена по уточнению: это серая внутренняя работа текущего раздела."],
         )
     )
     lines.append(

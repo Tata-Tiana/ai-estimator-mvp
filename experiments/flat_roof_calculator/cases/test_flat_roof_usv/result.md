@@ -527,7 +527,7 @@ AI не используется для расчёта. Калькулятор �
 - Ед. изм.: `-`
 - Количество raw: `1`
 - Количество display: `1`
-- Источник количества: `provided technical_supervision_work_total`
+- Источник количества: `provided technical_supervision_amount (default 10000)`
 
 Округление и итог:
 - Материалы raw/display: `0` / `0`
@@ -1014,7 +1014,7 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `technical_supervision` | `line_type` | manual_fixed_work | manual_fixed_work | ok |
 | estimate_lines | `technical_supervision` | `quantity_raw` | 1 | 1 | ok |
 | estimate_lines | `technical_supervision` | `quantity_display` | 1 | 1 | ok |
-| estimate_lines | `technical_supervision` | `quantity_source` | provided technical_supervision_work_total | provided technical_supervision_work_total | ok |
+| estimate_lines | `technical_supervision` | `quantity_source` | provided technical_supervision_amount (default 10000) | provided technical_supervision_amount (default 10000) | ok |
 | estimate_lines | `technical_supervision` | `internal_cost.material_unit_price` | 0 | 0 | ok |
 | estimate_lines | `technical_supervision` | `internal_cost.material_total_raw` | 0 | 0 | ok |
 | estimate_lines | `technical_supervision` | `internal_cost.material_total` | 0 | 0 | ok |
