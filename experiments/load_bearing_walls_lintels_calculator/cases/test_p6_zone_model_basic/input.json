@@ -191,7 +191,6 @@
     "lintel_glue_foam_unit_price": 490,
     "waste_removal_truck_unit_price": 10000,
     "waste_removal_work_unit_price": 3500,
-    "technical_supervision_amount": 10000,
     "rebar_metal_delivery_unit_price": 28000
   },
   "defaults": {

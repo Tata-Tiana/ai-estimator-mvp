@@ -137,7 +137,6 @@ class P6Rates:
     lintel_glue_foam_unit_price: float
     waste_removal_truck_unit_price: float
     waste_removal_work_unit_price: float
-    technical_supervision_amount: float
     rebar_metal_delivery_unit_price: float = 0.0
 
     @classmethod
@@ -173,6 +172,9 @@ class P6Defaults:
     scaffolding_timber_quantity_m3: float = 2.0
     waste_removal_trucks: float = 3.0
     walls_consumables_rate: float = 0.03
+    # 10000, not routed through the price registry - checked 3 real projects' delivered smetas
+    # 2026-08-15: walls technical supervision is 10000 in all 3, no exceptions.
+    technical_supervision_amount: float = 10000.0
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "P6Defaults":
@@ -836,7 +838,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 "Технический надзор",
                 "-",
                 1,
-                work_unit_price=rates.technical_supervision_amount,
+                work_unit_price=defaults.technical_supervision_amount,
                 price_code="technical_supervision_walls_lintels",
             ),
             line("procurement_warehouse_costs", "Заготовительно-складские расходы", "-", 1),

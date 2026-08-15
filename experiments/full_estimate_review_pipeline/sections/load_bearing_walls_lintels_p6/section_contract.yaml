@@ -296,7 +296,6 @@ price_keys:
   - {key: lintel_glue_foam_unit_price, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", registry_code: "eps_foam_glue_can", required: true}
   - {key: waste_removal_truck_unit_price, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", registry_code: "waste_removal_container_truck", required: true}
   - {key: waste_removal_work_unit_price, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", registry_code: "waste_removal_loading_work_truck", required: true}
-  - {key: technical_supervision_amount, label_ru: "Технический надзор", price_kind: work, unit: "-", registry_code: "technical_supervision_walls_lintels", required: true}
   - {key: rebar_metal_delivery_unit_price, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", registry_code: "metal_delivery_truck", required: false}
 
 defaults:
@@ -320,6 +319,7 @@ defaults:
   - {key: scaffolding_timber_quantity_m3, label_ru: "Пиломатериал для лесов", value: 2, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.scaffolding_timber_quantity_m3"}
   - {key: waste_removal_trucks, label_ru: "Вывоз мусора", value: 3, unit: "маш", source_class: DEFAULT, calculator_input_path: "defaults.waste_removal_trucks"}
   - {key: walls_consumables_rate, label_ru: "Расходники/амортизация инструмента", value: 0.03, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.walls_consumables_rate"}
+  - {key: technical_supervision_amount, label_ru: "Технический надзор", value: 10000, unit: "руб.", source_class: DEFAULT, calculator_input_path: "defaults.technical_supervision_amount", source_note: "Confirmed identical (10000) across 3 real projects' delivered smetas (ТРЦ/АРК/ЮСВ), no exceptions - no longer routed through price registry."}
 
 estimate_lines:
   - {code: scaffolding_setup_dismantling, name_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", unit: "компл", source: DEFAULT, prices: {work_unit_price_key: scaffolding_setup_work_unit_price}}
