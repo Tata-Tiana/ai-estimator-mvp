@@ -153,8 +153,8 @@ class P6Defaults:
     gas_block_d500_150_pallet_volume_m3: float = 1.8
     adhesive_consumption_bag_per_m3: float = 1.2
     adhesive_waste_coeff: float = 1.05
-    sand_concrete_consumption_kg_per_m2_per_10mm: float = 18.0
-    sand_concrete_thickness_factor: float = 1.0
+    sand_concrete_consumption_kg_per_m2_per_10mm: float = 19.0
+    sand_concrete_thickness_factor: float = 2.0
     sand_concrete_bag_weight_kg: float = 40.0
     gas_block_length_m: float = 0.6
     gas_block_delivery_truck_capacity_m3: float = 32.0
@@ -263,6 +263,22 @@ def _delivery_batch_id(zone: P6WallZone) -> str:
     if zone.zone_kind in {"floor_2", "second_light", "parapet", "vent_chimney_cladding"}:
         return "upper_parapet_vent"
     return zone.zone_id
+
+
+def _crane_batch_id(zone: P6WallZone) -> str:
+    """Crane mobilization is booked per real pour/lift, never pooled across zones just because
+    their block deliveries share a truck (Elena: crane/pump/metal-delivery/tech-supervision are
+    per-pour, each real pour has its own - see elena_per_pour_manual_costs_ruling). Confirmed on
+    real project data: floor_2 and parapet blocks are delivered together on one truck batch (same
+    delivery_batch_id), but the crane still lifts them in two separate trips - floor_2's masonry
+    lift, then a second dedicated trip for parapet - billed as two separate crane-shift lines even
+    though it's one truck delivery. So parapet always gets its own crane batch, independent of
+    which delivery batch its blocks were pooled into; every other zone_kind still shares the
+    delivery batch's crane batch (vent_chimney_cladding's small volume rides along with floor_2,
+    matching real data - no separate crane line for vent alone)."""
+    if zone.zone_kind == "parapet":
+        return "parapet"
+    return _delivery_batch_id(zone)
 
 
 def _zone_has_regular_masonry(zone: P6WallZone) -> bool:
@@ -579,8 +595,9 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             price_code="timber_m3",
         ),
     ]
-    calculation_blocks: dict[str, Any] = {"zones": {}, "delivery_batches": {}, "rebar": {}}
+    calculation_blocks: dict[str, Any] = {"zones": {}, "delivery_batches": {}, "crane_batches": {}, "rebar": {}}
     delivery_batches: dict[str, Decimal] = {}
+    crane_batches: dict[str, Decimal] = {}
 
     for zone in wall_zones:
         block_spec_total = sum(d(item.volume_m3) for item in zone.block_items)
@@ -669,6 +686,8 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
         if zone_order_volume > 0:
             batch_id = _delivery_batch_id(zone)
             delivery_batches[batch_id] = delivery_batches.get(batch_id, Decimal("0")) + zone_order_volume
+            crane_batch_id = _crane_batch_id(zone)
+            crane_batches[crane_batch_id] = crane_batches.get(crane_batch_id, Decimal("0")) + zone_order_volume
             adhesive_raw = block_spec_total * d(defaults.adhesive_consumption_bag_per_m3) * d(defaults.adhesive_waste_coeff)
             lines.append(
                 line(
@@ -741,12 +760,10 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
 
     for batch_id, order_volume in delivery_batches.items():
         trucks = int(ceil(order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)))
-        crane_shifts = max(1, int(ceil(Decimal(trucks) / d(defaults.crane_trucks_per_shift)))) if trucks > 0 else 0
         calculation_blocks["delivery_batches"][batch_id] = {
             "block_order_volume_m3": q(order_volume),
             "raw_trucks": q(order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)),
             "trucks": trucks,
-            "crane_shifts": crane_shifts,
         }
         lines.extend(
             [
@@ -767,16 +784,29 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     material_unit_price=rates.block_unloading_manipulator_unit_price,
                     price_code="block_unloading_manipulator_truck",
                 ),
-                line(
-                    f"{batch_id}_blocks_crane_moving",
-                    "Перемещение блоков, смеси автокраном 25 т",
-                    "смена",
-                    crane_shifts,
-                    material_unit_price=rates.crane_25t_unit_price,
-                    notes="Калькулятор: минимум 1 смена при положительной партии, далее ceil(машины/3).",
-                    price_code="crane_shift",
-                ),
             ]
+        )
+
+    for crane_batch_id, crane_order_volume in crane_batches.items():
+        crane_trucks = int(ceil(crane_order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)))
+        crane_shifts = (
+            max(1, int(ceil(Decimal(crane_trucks) / d(defaults.crane_trucks_per_shift)))) if crane_trucks > 0 else 0
+        )
+        calculation_blocks["crane_batches"][crane_batch_id] = {
+            "block_order_volume_m3": q(crane_order_volume),
+            "raw_trucks": q(crane_order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)),
+            "crane_shifts": crane_shifts,
+        }
+        lines.append(
+            line(
+                f"{crane_batch_id}_blocks_crane_moving",
+                "Перемещение блоков, смеси автокраном 25 т",
+                "смена",
+                crane_shifts,
+                material_unit_price=rates.crane_25t_unit_price,
+                notes="Кран считается отдельно от партии доставки — минимум 1 смена на каждый реальный подъём, далее ceil(эквивалент машин/3).",
+                price_code="crane_shift",
+            )
         )
 
     direct_cost_base_raw = sum(d(item.line_total_raw) for item in lines)
