@@ -844,6 +844,33 @@
       "price_warning": null
     },
     {
+      "code": "roof_logistics_and_supply",
+      "name": "Логистика, и снабжение",
+      "unit": "-",
+      "line_type": "manual_fixed_material",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided roof_logistics_and_supply_total_raw",
+      "internal_cost": {
+        "material_unit_price": "37648.53",
+        "material_total_raw": "37648.53",
+        "material_total": 37649,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "37648.53",
+        "line_total": 37649
+      },
+      "formula": {},
+      "notes": [
+        "Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": "37648.53",
+      "unit_price_used": "37648.53",
+      "price_warning": null
+    },
+    {
       "code": "roof_consumables_tool_depreciation",
       "name": "Расходные материалы, амортизация инструмента",
       "unit": "комплект",
@@ -893,33 +920,6 @@
       "unit_price_source": "locked_case_prices",
       "unit_price_original": "10000",
       "unit_price_used": "10000",
-      "price_warning": null
-    },
-    {
-      "code": "roof_logistics_and_supply",
-      "name": "Логистика, и снабжение",
-      "unit": "-",
-      "line_type": "manual_fixed_material",
-      "quantity_raw": "1",
-      "quantity_display": "1",
-      "quantity_source": "provided roof_logistics_and_supply_total_raw",
-      "internal_cost": {
-        "material_unit_price": "37648.53",
-        "material_total_raw": "37648.53",
-        "material_total": 37649,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "37648.53",
-        "line_total": 37649
-      },
-      "formula": {},
-      "notes": [
-        "Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."
-      ],
-      "unit_price_source": "locked_case_prices",
-      "unit_price_original": "37648.53",
-      "unit_price_used": "37648.53",
       "price_warning": null
     },
     {

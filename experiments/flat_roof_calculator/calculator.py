@@ -688,6 +688,36 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     if input_data.get("procurement_storage_calc_method", "legacy_fixed_amount") == "section_material_rate":
         procurement_storage_work_total = direct_material_base_raw * d(input_data.get("procurement_storage_rate", 0))
 
+    # Order matches Логистика -> Расходные материалы, same as every other calculator's own
+    # emission order and the row order confirmed across 3 real projects' delivered smetas
+    # (ТРЦ/АРК/ЮСВ all print "Логистика, и снабжение" directly above "Расходные материалы,
+    # амортизация инструмента" in every section that has both) - this section previously had
+    # the two reversed, found 2026-08-15.
+    lines.append(
+        estimate_line(
+            code="roof_logistics_and_supply",
+            name="Логистика, и снабжение",
+            unit="-",
+            line_type="calculated_percentage_addon"
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else "manual_fixed_material",
+            quantity_raw=1,
+            quantity_source="direct_cost_base_raw * roof_logistics_and_supply_rate"
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else "provided roof_logistics_and_supply_total_raw",
+            material_unit_price=roof_logistics_and_supply_total_raw,
+            material_total_raw=roof_logistics_and_supply_total_raw,
+            formula={
+                "direct_cost_base_raw": decimal_str(direct_cost_base_raw),
+                "roof_logistics_and_supply_rate": decimal_str(input_data.get("roof_logistics_and_supply_rate", 0)),
+            }
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else {},
+            notes=["Calculated from direct roof cost base before overhead rows."]
+            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
+            else ["Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."],
+        )
+    )
     lines.append(
         estimate_line(
             code="roof_consumables_tool_depreciation",
@@ -722,31 +752,6 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             None,
             input_data["roof_waste_removal_truck_unit_price"],
             input_data["roof_waste_removal_work_rate_per_truck"],
-        )
-    )
-    lines.append(
-        estimate_line(
-            code="roof_logistics_and_supply",
-            name="Логистика, и снабжение",
-            unit="-",
-            line_type="calculated_percentage_addon"
-            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
-            else "manual_fixed_material",
-            quantity_raw=1,
-            quantity_source="direct_cost_base_raw * roof_logistics_and_supply_rate"
-            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
-            else "provided roof_logistics_and_supply_total_raw",
-            material_unit_price=roof_logistics_and_supply_total_raw,
-            material_total_raw=roof_logistics_and_supply_total_raw,
-            formula={
-                "direct_cost_base_raw": decimal_str(direct_cost_base_raw),
-                "roof_logistics_and_supply_rate": decimal_str(input_data.get("roof_logistics_and_supply_rate", 0)),
-            }
-            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
-            else {},
-            notes=["Calculated from direct roof cost base before overhead rows."]
-            if input_data.get("roof_logistics_and_supply_calc_method") == "section_total_rate"
-            else ["Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."],
         )
     )
     lines.append(

@@ -744,6 +744,29 @@
       "price_code": "roof_crane_lifting_shift"
     },
     {
+      "code": "roof_logistics_and_supply",
+      "name": "Логистика, и снабжение",
+      "unit": "-",
+      "line_type": "manual_fixed_material",
+      "quantity_raw": "1",
+      "quantity_display": "1",
+      "quantity_source": "provided roof_logistics_and_supply_total_raw",
+      "internal_cost": {
+        "material_unit_price": "37648.53",
+        "material_total_raw": "37648.53",
+        "material_total": 37649,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "37648.53",
+        "line_total": 37649
+      },
+      "formula": {},
+      "notes": [
+        "Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."
+      ]
+    },
+    {
       "code": "roof_consumables_tool_depreciation",
       "name": "Расходные материалы, амортизация инструмента",
       "unit": "комплект",
@@ -786,29 +809,6 @@
       },
       "formula": {},
       "notes": []
-    },
-    {
-      "code": "roof_logistics_and_supply",
-      "name": "Логистика, и снабжение",
-      "unit": "-",
-      "line_type": "manual_fixed_material",
-      "quantity_raw": "1",
-      "quantity_display": "1",
-      "quantity_source": "provided roof_logistics_and_supply_total_raw",
-      "internal_cost": {
-        "material_unit_price": "37648.53",
-        "material_total_raw": "37648.53",
-        "material_total": 37649,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "37648.53",
-        "line_total": 37649
-      },
-      "formula": {},
-      "notes": [
-        "Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела."
-      ]
     },
     {
       "code": "technical_supervision",
