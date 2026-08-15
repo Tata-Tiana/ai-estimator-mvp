@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import json
+from decimal import Decimal
+from itertools import combinations
 from pathlib import Path
 from typing import Any
 
@@ -1410,8 +1412,169 @@ def p6_subwindow_rebar_raw_diagnostics(section: dict[str, Any]) -> list[dict[str
     return diagnostics
 
 
+WEIGHT_COLUMN_TERMS = ("масса", "вес", "кг", "weight")
+
+
+def _numeric_leaves(value: Any, out: list[Decimal]) -> None:
+    """Recursively collects every numeric leaf inside a JSON value (dict/list/scalar). Skips
+    bools (isinstance(True, int) is True in Python, would otherwise pollute the pool)."""
+    if isinstance(value, bool):
+        return
+    if isinstance(value, (int, float)):
+        out.append(Decimal(str(value)))
+    elif isinstance(value, dict):
+        for v in value.values():
+            _numeric_leaves(v, out)
+    elif isinstance(value, list):
+        for v in value:
+            _numeric_leaves(v, out)
+
+
+def _numeric_cells_with_columns(row: dict[str, Any]) -> list[tuple[Decimal, str | None]]:
+    """Only real typed numbers (int/float) from `cells`, never regex-scanned out of label
+    strings - a string cell like 'Песок (300мм)' or a unit cell 'м3' would otherwise leak 300
+    or 3 into the numbers to check, which are not independent facts."""
+    cells = row.get("cells") or []
+    columns = row.get("columns") or []
+    out: list[tuple[Decimal, str | None]] = []
+    for idx, c in enumerate(cells):
+        if isinstance(c, bool):
+            continue
+        if isinstance(c, (int, float)):
+            col = columns[idx] if idx < len(columns) else None
+            out.append((Decimal(str(c)), col))
+    return out
+
+
+def _value_matches_any_subset(target: Decimal, pool: list[Decimal], max_subset_size: int = 3) -> bool:
+    """True if `target` equals the sum of some subset of `pool`. Always checks the full pool as
+    one candidate first (cheap, O(1)) - the common "ИТОГО = sum of every sibling row" case, which
+    can have more members than max_subset_size. Smaller subsets (2-3) are also checked, capped to
+    keep this cheap for the rarer "some, not all, siblings combine" case; real cases needing this
+    are a handful of sub-values folded into one combined total, never dozens picked arbitrarily."""
+    if pool and abs(sum(pool) - target) <= Decimal("0.01"):
+        return True
+    for size in range(1, min(max_subset_size, len(pool)) + 1):
+        for combo in combinations(pool, size):
+            if abs(sum(combo) - target) <= Decimal("0.01"):
+                return True
+    return False
+
+
+def raw_row_recognized_value_missing_diagnostics(section: dict[str, Any]) -> list[dict[str, str]]:
+    """A raw_table_rows row can be extracted, correctly attributed to a target/group
+    (`mapped_target_codes` non-empty), marked confident and not needs_review - and its number can
+    still never make it into that group's structured `value` output, because no field existed to
+    hold it. Rule 13 of the extraction prompt only checks that the row's *group* appears somewhere
+    in found/needs_review/missing; it does not check that the row's own *number* actually landed in
+    a structured field rather than just sitting in that item's raw_text transcription. This is a
+    real, previously-found failure mode (see floor_slab_beam_bottom_formwork_gap_fixed_2026-08-14
+    memory) - a number the model itself recognized and confidently attributed, silently never
+    reaching the calculator.
+
+    Two legitimate reasons a recognized number still won't appear standalone in the pool, both
+    excluded here rather than flagged: (1) it's a redundant derived total - a cell that equals the
+    sum of sibling cells in the *same* row (an 'ИТОГО' column) or of some subset of the pool itself
+    (component values that a documented rule folds into one combined structured field); (2) it's a
+    rebar row's printed total weight in a кг/масса column - deliberately never stored standalone,
+    the calculator derives weight itself from length*kg_per_meter, see is_rebar_group usage
+    elsewhere in this codebase for why weight is not tracked as an independent fact."""
+    diagnostics: list[dict[str, str]] = []
+    raw_rows = as_list(section.get("raw_table_rows"))
+    if not raw_rows:
+        return diagnostics
+
+    pools: dict[str, list[Decimal]] = {}
+    for item in iter_unique_items(section, ("needs_review", "found")):
+        leaves: list[Decimal] = []
+        _numeric_leaves(item.get("value"), leaves)
+        pools.setdefault(item_code(item), []).extend(leaves)
+
+    # Sibling raw values across DIFFERENT raw_table_rows, per mapped code - covers a component
+    # combining with a component from a *different* row (e.g. "примыкания к стенам"=9.5 in one row
+    # + "примыкания к вентканалам"=5.42 in another both fold into one combined structured field);
+    # the same-row sibling check above only catches components living in one row together.
+    raw_value_pools: dict[str, list[Decimal]] = {}
+    for row in raw_rows:
+        if not isinstance(row, dict) or row.get("needs_review"):
+            continue
+        for code in row.get("mapped_target_codes") or []:
+            for num, _ in _numeric_cells_with_columns(row):
+                if abs(num) >= Decimal("0.01"):
+                    raw_value_pools.setdefault(code, []).append(num)
+
+    for row in raw_rows:
+        if not isinstance(row, dict):
+            continue
+        mapped = row.get("mapped_target_codes") or []
+        if not mapped or row.get("needs_review"):
+            continue
+        try:
+            confidence = float(row.get("confidence"))
+        except (TypeError, ValueError):
+            confidence = None
+        if confidence is not None and confidence < 0.90:
+            continue
+
+        numbered = _numeric_cells_with_columns(row)
+        if not numbered:
+            continue
+        values_only = [v for v, _ in numbered]
+
+        for num, col in numbered:
+            if abs(num) < Decimal("0.01"):
+                continue
+            siblings = [v for v in values_only if v is not num]
+            if siblings and _value_matches_any_subset(num, siblings):
+                continue  # redundant "ИТОГО"-style total within the same row
+            if any("rebar" in code.lower() for code in mapped) and col and any(
+                term in col.lower() for term in WEIGHT_COLUMN_TERMS
+            ):
+                continue  # printed rebar weight - deliberately not stored standalone
+
+            found_anywhere = False
+            for code in mapped:
+                pool = pools.get(code, [])
+                if any(abs(num - p) <= Decimal("0.005") for p in pool):
+                    found_anywhere = True
+                    break
+                if _value_matches_any_subset(num, pool):
+                    found_anywhere = True  # folded into a combined structured total
+                    break
+                other_raw = [v for v in raw_value_pools.get(code, []) if v is not num]
+                if other_raw and any(
+                    _value_matches_any_subset(p, [num] + other_raw) for p in pool
+                ):
+                    found_anywhere = True  # combines with a sibling from a DIFFERENT raw row
+                    break
+            if found_anywhere:
+                continue
+
+            diagnostics.append(
+                {
+                    "status": "semantic_error",
+                    "title": f"raw_table_rows value {num} (mapped to {mapped}) never reached a structured field",
+                    "confidence": confidence_text(row),
+                    "value": short(num, 220),
+                    "source": source_text(row),
+                    "raw_text": short(row.get("raw_text"), 320),
+                    "notes": (
+                        "Строка была распознана и привязана к цели (mapped_target_codes), но это "
+                        "число не встречается ни в одном структурированном значении этой группы — "
+                        "только в исходном тексте строки. Проверьте, должно ли оно попасть в "
+                        "отдельное поле, которого сейчас нет в схеме, или это ожидаемо (например, "
+                        "величина, которую расчёт не использует)."
+                    ),
+                    "auto_sum": "",
+                    "candidates": "",
+                }
+            )
+    return diagnostics
+
+
 def semantic_diagnostics(section_code: str, section: dict[str, Any]) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
+    diagnostics.extend(raw_row_recognized_value_missing_diagnostics(section))
     diagnostics.extend(candidate_unit_mismatch_diagnostics(section))
     diagnostics.extend(candidate_target_code_mismatch_diagnostics(section))
     diagnostics.extend(rebar_duplicate_code_diagnostics(section))
