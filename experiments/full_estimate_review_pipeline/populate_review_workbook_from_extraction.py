@@ -1322,6 +1322,101 @@ def repeated_item_sheet_id(sec_code: str, group_key: str, value: dict[str, Any],
     return f"{sec_code}:{group_key}:{identity}"
 
 
+# (group_code, field_key) -> why a null value here never needs a reviewer's attention,
+# verified by reading the actual consuming code (build_input.py/calculator.py), not guessed.
+# 2026-08-15: replaces the old needs_review-based hide/show rule, which either hid real gaps
+# (needs_review=false: a field null for a genuine, unnoticed reason) or, when flipped to "always
+# show", flooded the sheet with fields that are STRUCTURALLY never going to have a value for
+# this item type (pipe fittings' length, a U-block lintel's formwork) - neither needs_review nor
+# "always show" can tell those two cases apart; only checking what the calculator actually reads
+# for money can.
+FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
+    # Whole group never read for money in production mode (earthworks/build_input.py's own
+    # docstring: "communications_pipe_items - never read here; not needed by the fixed
+    # production calc_methods" - communications_length_m, a reviewed scalar, is the real source).
+    ("communications_pipe_items", "pipe_length_m"): "group never read for money (earthworks uses the reviewed communications_length_m scalar instead)",
+    ("communications_pipe_items", "quantity"): "group never read for money (same as pipe_length_m)",
+    ("communications_pipe_items", "total_length_m"): "group never read for money (same as pipe_length_m)",
+    # Per-beam fields with a safe fallback or zero downstream consumer (floor_slabs/build_input.py
+    # + floor_slab_calculator.py, verified 2026-08-15).
+    ("floor_slab_beam_items", "count"): "defaults to 1 in _beam_formwork_area_m2 when absent",
+    # NOT "bottom_formwork_area_m2" - reverted 2026-08-15, found unsafe: the zone-level
+    # formwork_beams_bottom_area_m2 override only helps when THAT field is also given; when both
+    # it and every beam's own bottom_formwork_area_m2 are null (real, live case: slab_2f_6450 in
+    # a real TRC extraction - zone field null, beam БГ-1 also null), build_input.py's
+    # beams_bottom_sum silently computes 0 with no error, unlike the edge/combined pair below
+    # which has an explicit required-one-of check. Must stay visible.
+    ("floor_slab_beam_items", "insulated_length_m"): "not read anywhere in build_input.py/calculator.py",
+    ("floor_slab_beam_items", "insulation_area_m2"): "not read anywhere in build_input.py/calculator.py",
+    # Zone-level control/alternate/unused fields (floor_slabs/build_input.py, verified 2026-08-15).
+    ("floor_slab_zones", "concrete_total_with_beams_m3"): "diagnostic/control only, never a money input",
+    ("floor_slab_zones", "formwork_edge_and_beam_combined_area_m2"): "alternate field - safe when formwork_edge_area_m2 is given instead",
+    ("floor_slab_zones", "formwork_beams_side_area_m2"): "not read anywhere in build_input.py/calculator.py",
+    ("floor_slab_zones", "slab_mark"): "descriptive label only, never a money input",
+    # The 5 manual_* fields all now have a code-level default (2026-08-15 session: crane/pump/
+    # metal-delivery default to 0, technical_supervision_amount defaults to 5000) - a blank cell
+    # here no longer means the money is lost, just that nobody typed an override.
+    ("floor_slab_zones", "manual_formwork_rebar_crane_shifts"): "defaults to 0 in build_input.py when absent",
+    ("floor_slab_zones", "manual_concrete_pump_shifts"): "defaults to 0 in build_input.py when absent",
+    ("floor_slab_zones", "manual_rebar_metal_delivery_trucks"): "defaults to 0 in build_input.py when absent (or box-calculator auto-fill)",
+    ("floor_slab_zones", "manual_formwork_rental_supplier_quote_total"): "defaults to 0 in build_input.py when absent",
+    ("floor_slab_zones", "manual_technical_supervision_amount"): "defaults to 5000 in build_input.py when absent (2026-08-15)",
+    # EPS area/height: build_input.py derives area_m2 from volume_m3/thickness_mm automatically
+    # when area is absent; height_m is never read at all.
+    ("floor_slab_eps_items", "area_m2"): "auto-derived from volume_m3/thickness_mm in _resolve_insulation when absent",
+    ("floor_slab_eps_items", "height_m"): "not read anywhere in build_input.py/calculator.py",
+    # Rebar catalog-fallback fields (foundation_slab/floor_slabs/P6 walls - all 3 adapters,
+    # verified 2026-08-15): code auto-generated if absent, kg_per_meter/rod_length_m filled from
+    # a per-diameter catalog table in rebar_item_defaults.py regardless of what's in the JSON.
+    ("foundation_rebar_items", "code"): "adapter auto-generates a code when absent",
+    ("foundation_rebar_items", "kg_per_meter"): "filled from the per-diameter catalog table when absent",
+    ("floor_slab_rebar_items", "code"): "never read for pooling/pricing (pools by floor/component/zone/steel_class/diameter)",
+    ("floor_slab_rebar_items", "kg_per_meter"): "filled from the per-diameter catalog table when absent",
+    ("floor_slab_rebar_items", "rod_length_m"): "filled from the per-diameter catalog table when absent",
+    ("wall_chasing_rebar_items", "kg_per_meter"): "filled from the per-diameter catalog table when absent",
+    ("wall_chasing_rebar_items", "rod_length_m"): "filled from the per-diameter catalog table when absent",
+    ("lintel_rebar_items", "kg_per_meter"): "filled from the per-diameter catalog table when absent",
+    ("lintel_rebar_items", "rod_length_m"): "filled from the per-diameter catalog table when absent",
+    # lintel_id/lintel_kind null here means the row still counts for money - it just goes into
+    # zone.unassigned_lintel_rebar_items instead of a specific lintel (P6 calculator, verified
+    # 2026-08-15: iterated and priced at load_bearing_walls_lintels_p6_calculator.py line ~312).
+    ("lintel_rebar_items", "lintel_id"): "still priced via zone.unassigned_lintel_rebar_items when absent",
+    ("lintel_rebar_items", "lintel_kind"): "still priced via zone.unassigned_lintel_rebar_items when absent",
+    # Price/catalog fields removed from the extraction schema entirely 2026-08-15 (see
+    # UNIVERSALIZATION_PLAN.md) - price always comes from the price registry regardless.
+    ("wall_block_items", "material_unit_price"): "price always comes from price_registry, not this field",
+    ("wall_block_items", "pallet_volume_m3"): "pallet volume always comes from price_registry, not this field",
+    # Calculator-computed, never read from JSON at all (load_bearing_walls_lintels_p6_calculator.py
+    # _delivery_batch_id()/_crane_batch_id() compute their own grouping from zone_kind).
+    ("wall_zones", "block_delivery_batch_id"): "batch grouping is computed by the calculator from zone_kind, never read from JSON",
+}
+
+
+def _field_never_money_relevant_when_empty(
+    group_key: str, key: str, value: dict[str, Any]
+) -> bool:
+    """True only for a (group, field) pair verified by reading the actual consuming code - see
+    FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY's own per-entry comments for the evidence. The default
+    for anything NOT in this table (or not matching a conditional case below) is to show the
+    field when empty - "not sure yet" must show, not hide, per the same reasoning as the
+    needs_review=true fix this mirrors."""
+    if (group_key, key) in FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY:
+        return True
+    # Conditional cases: relevance depends on a SIBLING field of the same item, not just the
+    # group/field pair alone.
+    if group_key == "lintel_items" and key in (
+        "formwork_horizontal_area_m2",
+        "formwork_vertical_area_m2",
+        "insulation_length_m",
+        "insulation_eps_spec_volume_m3",
+    ):
+        # U-block lintels are pre-cast, genuinely never have formwork/insulation (P6Rates:
+        # formwork_horizontal_area_m2/formwork_vertical_area_m2 default to 0.0, correct for
+        # u_block; for monolithic lintels these fields ARE real money, must stay visible).
+        return value.get("lintel_kind") == "u_block"
+    return False
+
+
 def _render_repeated_row_block(
     ws,
     sec_code: str,
@@ -1461,16 +1556,15 @@ def _render_repeated_row_block(
         field_rows: list[tuple[str | None, str | None, Any, str]] = []
         for key in ordered_keys:
             v = value.get(key)
-            if (v is None or v == "") and not needs_review:
-                # A null visible field is silently dropped for an already-resolved item (null
-                # there usually just means "not applicable to this row"). But for a needs_review
-                # item, dropping it hides the exact gap from the reviewer - real case found
-                # 2026-08-14: a P6 monolithic lintel had insulation_eps_spec_volume_m3 given but
-                # insulation_length_m null (PDF gives EPS volume, never a length for this opening);
-                # every OTHER field of the same lintel rendered fine, so the missing-length row
-                # just never existed on sheet 01 at all - not blank/red, simply absent, so Elena
-                # had no way to know there was a number to type in. Keep the row (blank value) so
-                # a needs_review item always shows every visible field, populated or not.
+            # 2026-08-15: replaced the old needs_review-based hide rule (hid real gaps whenever
+            # needs_review was false) and the "always show" experiment that replaced it (flooded
+            # the sheet with fields that structurally never apply to this item type - pipe
+            # fittings' length, a U-block lintel's formwork). Now: hide only when
+            # FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY confirms, by reading the actual consuming
+            # code, that this exact (group, field) - or this item's specific case, e.g. lintel_kind
+            # - never affects money when empty. Anything not on that list still shows, regardless
+            # of needs_review - "not sure yet" must show, not hide.
+            if (v is None or v == "") and _field_never_money_relevant_when_empty(group_key, key, value):
                 continue
             column_def = columns_by_key.get(key, {})
             field_label = column_def.get("label_ru") or key
