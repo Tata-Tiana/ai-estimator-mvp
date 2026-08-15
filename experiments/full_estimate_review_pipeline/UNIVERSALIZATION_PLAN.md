@@ -1,5 +1,55 @@
 # Universalization Plan — making the 8 section contracts project-agnostic
 
+## 2026-08-15: extraction schema asked the model for fields no PDF can ever contain — FIXED
+
+Найдено (через прямой построчный аудит `schemas/claude_extraction_output_schema.json` +
+`data/calculator_targets_compact.json`, файлы, что реально уходят в `dist/claude_chat_extraction_pack.zip`):
+6 категорий полей, которые модель была обязана пытаться заполнить, хотя КР1/КР2 (единственное, что
+она видит) физически не может их содержать — цены, ручной ввод сметчицы, каталожные константы
+поставщика, внутренние id калькулятора. Файл `calculator_targets_compact.json` уже сам документирует
+это как запрещённую категорию (`_meta.excluded_by_design`: "prices", "manual override fields",
+"default/catalog constants (e.g. roll area, rod length)") — эти поля прямо нарушали собственное
+правило файла.
+
+Все 6 категорий проверены построчно в коде калькуляторов/адаптеров перед удалением — везде либо
+есть безопасный автоматический fallback (генерируемый код, каталожная длина прутка/вес по диаметру,
+вычисляемая группировка партии доставки), либо поле нигде не читается напрямую (`item[...]`) без
+`.get()`, только по индексу вниз по пайплайну там, где адаптер САМ гарантированно проставляет
+значение заранее. Проверено на 20 исторических JSON этого проекта: ни одно из 6 полей не было
+заполнено моделью НИ РАЗУ ни в одном прогоне.
+
+1. **`floor_slab_zones`**: 5 ручных полей (`manual_formwork_rebar_crane_shifts`,
+   `manual_rebar_metal_delivery_trucks`, `manual_concrete_pump_shifts`,
+   `manual_technical_supervision_amount`, `manual_formwork_rental_supplier_quote_total`) — кран/
+   насос/технадзор/доставка металла/КП поставщика, физически не бывают в архитектурном PDF, всегда
+   вводятся сметчицей вручную после расчёта.
+2. **`wall_block_items.material_unit_price` / `pallet_volume_m3`** — цена блока и объём паллеты;
+   формулировка «only if project/price data explicitly gives price» была бессмысленной — модели
+   смету не показывают никогда, только КР1/КР2.
+3. **`rod_length_m`** (floor_slab_rebar_items, wall_chasing_rebar_items, lintel_rebar_items) —
+   стандартная длина прутка проката у поставщика (6.0/11.7м по диаметру), зашита как каталожная
+   константа в `review_to_calculator/core/rebar_item_defaults.py` независимо от проекта.
+4. **`code`** (foundation_rebar_items, floor_slab_rebar_items) — внутренний id калькулятора; оба
+   адаптера уже имеют свою генерацию кода, если модель его не дала.
+5. **`floor_slab_beam_items.beam_id`** — дублирует уже существующее и правильно PDF-заполняемое поле
+   `mark`; отдельного смысла не несёт.
+6. **`wall_zones.block_delivery_batch_id`** — группировка партий доставки, считается калькулятором
+   (`_delivery_batch_id`/`_crane_batch_id`) из `zone_kind`, не факт из PDF.
+
+**Починено 2026-08-15**: удалены из обоих файлов пакета (`schemas/claude_extraction_output_schema.json`,
+`data/calculator_targets_compact.json`); `target_aliases_ru.yaml` правок не потребовал (эти поля там
+нигде не упоминались как цель). Пакет пересобран (`build_claude_chat_pack.py`). Проверено: обе схемы
+остаются валидным JSON; реальный extraction JSON с искусственно убранными этими 6 категориями полей
+(176 значений) прогоняется через `populate_review_workbook_from_extraction.py` с идентичным результатом
+(100 found/15 needs_review/0 missing/307 строк — совпадает с прогоном до правки); прогон через
+`run_section()`/`build_floor_slabs_result()` даёт те же самые (не связанные с этой правкой, уже
+существовавшие) ошибки нехватки цен что на оригинальном, что на «очищенном» файле — ноль регрессий.
+
+Эти поля остаются как есть в `section_contract.yaml`/калькуляторах/листе 01 — они по-прежнему нужны
+там, просто заполняются не моделью (автогенерация кодом или сметчицей вручную на листе 01), а не
+через промпт извлечения.
+
+
 Дата создания: 2026-07-18.
 
 **Если контекст сессии прервался — читай этот файл первым**, до того как редактировать любой

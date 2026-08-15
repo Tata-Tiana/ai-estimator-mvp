@@ -88,7 +88,6 @@
       "include_in_communications": "boolean|null"
     },
     "foundation_rebar_items": {
-      "code": "string|null",
       "name": "string",
       "steel_class": "string|null",
       "diameter_mm": "number|null",
@@ -110,12 +109,7 @@
       "formwork_edge_area_m2": "number|null",
       "formwork_edge_and_beam_combined_area_m2": "number|null - only when PDF gives inseparable slab edge + beam formwork",
       "formwork_beams_side_area_m2": "number|null",
-      "formwork_beams_bottom_area_m2": "number|null",
-      "manual_formwork_rebar_crane_shifts": "number|null",
-      "manual_rebar_metal_delivery_trucks": "number|null",
-      "manual_concrete_pump_shifts": "number|null",
-      "manual_technical_supervision_amount": "number|null",
-      "manual_formwork_rental_supplier_quote_total": "number|null"
+      "formwork_beams_bottom_area_m2": "number|null"
     },
     "floor_slab_eps_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
@@ -130,7 +124,6 @@
     },
     "floor_slab_beam_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
-      "beam_id": "string|null",
       "mark": "string|null - beam mark copied from PDF as written; keep Б/П/ПР Cyrillic marks, do not transliterate",
       "name": "string|null - beam name copied from PDF/context as written",
       "length_m": "number|null",
@@ -146,13 +139,11 @@
     "floor_slab_rebar_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
       "component": "slab|beam|additional|unknown",
-      "code": "string|null",
       "name": "string|null - copied from PDF as written",
       "steel_class": "string|null",
       "diameter_mm": "number|null",
       "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
-      "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight",
-      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+      "kg_per_meter": "number|null - from 'Масса ед. шт.' or kg/m column when present; do not calculate total weight"
     },
     "floor_slab_additional_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",
@@ -170,8 +161,7 @@
       "zone_id": "string - stable local id, e.g. floor_1/floor_2/parapet/vent_chimney_cladding",
       "display_name": "string - human-visible zone name copied from PDF/context as written; do not use zone_kind enum as display text",
       "zone_kind": "main_walls|second_light|parapet|vent_chimney_cladding",
-      "cutoff_waterproofing_area_m2": "number|null - only for cutoff waterproofing under load-bearing walls, exclude partitions",
-      "block_delivery_batch_id": "string|null - optional, only if explicitly present"
+      "cutoff_waterproofing_area_m2": "number|null - only for cutoff waterproofing under load-bearing walls, exclude partitions"
     },
     "wall_block_items": {
       "zone_id": "string - must match wall_zones.zone_id",
@@ -179,9 +169,7 @@
       "block_density": "string|null - e.g. D400/D500, copy literal from PDF when visible",
       "block_size": "string|null - e.g. 600x400x250, copy literal from PDF when visible",
       "volume_m3": "number|null",
-      "context": "string|null - source row context/subzone copied from PDF as written",
-      "material_unit_price": "number|null - only if project/price data explicitly gives price for non-standard block",
-      "pallet_volume_m3": "number|null - only if explicitly known"
+      "context": "string|null - source row context/subzone copied from PDF as written"
     },
     "wall_chasing_rebar_items": {
       "zone_id": "string - must match wall_zones.zone_id",
@@ -190,8 +178,7 @@
       "steel_class": "string|null",
       "diameter_mm": "number|null",
       "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
-      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight",
-      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight"
     },
     "lintel_items": {
       "zone_id": "string - must match wall_zones.zone_id",
@@ -212,8 +199,7 @@
       "steel_class": "string|null",
       "diameter_mm": "number|null",
       "spec_length_m": "number|null - primary PDF quantity when row unit is м/п",
-      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight",
-      "rod_length_m": "number|null - only if PDF explicitly gives catalog rod length"
+      "kg_per_meter": "number|null - from PDF kg/m column only; do not calculate total weight"
     }
   },
   "sections_expected": [

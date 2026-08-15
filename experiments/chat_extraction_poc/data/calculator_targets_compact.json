@@ -186,7 +186,6 @@
           "group_code": "foundation_rebar_items",
           "description": "Арматура фундаментной плиты (сетка плиты, сетка/армирование термовставок) — обычно несколько строк по диаметру и классу стали.",
           "fields": [
-            "code",
             "name",
             "steel_class",
             "diameter_mm",
@@ -298,11 +297,10 @@
             "zone_id",
             "display_name",
             "zone_kind",
-            "cutoff_waterproofing_area_m2",
-            "block_delivery_batch_id"
+            "cutoff_waterproofing_area_m2"
           ],
           "grounded": true,
-          "notes": "zone_kind strict enum: main_walls, second_light, parapet, vent_chimney_cladding. zone_id stable local id, e.g. floor_1, floor_2, parapet, vent_chimney_cladding or project-specific stable id if several independent zones. display_name is NOT an enum: write the human zone name in Russian/from the PDF, not main_walls/second_light unless the PDF literally says that. cutoff_waterproofing_area_m2 belongs only to the first masonry row/zone where the PDF explicitly gives cutoff waterproofing under load-bearing walls; exclude partitions. block_delivery_batch_id is optional service grouping only if PDF/smeta explicitly gives delivery batches; normally leave null. Do not create zones for partitions/non-load-bearing walls in this section."
+          "notes": "zone_kind strict enum: main_walls, second_light, parapet, vent_chimney_cladding. zone_id stable local id, e.g. floor_1, floor_2, parapet, vent_chimney_cladding or project-specific stable id if several independent zones. display_name is NOT an enum: write the human zone name in Russian/from the PDF, not main_walls/second_light unless the PDF literally says that. cutoff_waterproofing_area_m2 belongs only to the first masonry row/zone where the PDF explicitly gives cutoff waterproofing under load-bearing walls; exclude partitions. Do not create zones for partitions/non-load-bearing walls in this section."
         },
         {
           "group_code": "wall_block_items",
@@ -313,9 +311,7 @@
             "block_density",
             "block_size",
             "volume_m3",
-            "context",
-            "material_unit_price",
-            "pallet_volume_m3"
+            "context"
           ],
           "grounded": true,
           "notes": "Every row must have zone_id matching wall_zones. block_density and block_size are copied from PDF literally when visible, not guessed. context is human PDF text: keep Russian wording/marks as printed, do not translate or transliterate. Typical values: D400 600x400x250, D500 600x250x250, D500 600x150x250 for vent/chimney cladding. Other sizes/densities are allowed: keep them literal, set needs_review if no price/pallet mapping is available. Do not aggregate D400+D500 into one row. Do not route partitions here. Vent/chimney cladding is zone_kind vent_chimney_cladding, not parapet, even if located near parapet."
@@ -330,8 +326,7 @@
             "steel_class",
             "diameter_mm",
             "spec_length_m",
-            "kg_per_meter",
-            "rod_length_m"
+            "kg_per_meter"
           ],
           "grounded": false,
           "notes": "Grey/reference in review workbook: rebar values are never manually edited after extraction — if an error is found, the design itself changes instead. purpose strict enum: masonry_chasing, parapet_chasing, other. Every row must have zone_id. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Exclude partition rebar from this section."
@@ -364,8 +359,7 @@
             "steel_class",
             "diameter_mm",
             "spec_length_m",
-            "kg_per_meter",
-            "rod_length_m"
+            "kg_per_meter"
           ],
           "grounded": false,
           "notes": "Grey/reference in review workbook. Every row must have zone_id; lintel_id should match a lintel_items row when possible and keep the PDF spelling. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Partition/groove-only lintels that are not part of priced load-bearing walls stay raw_table_rows/notes — out of scope for this group."
@@ -395,15 +389,10 @@
             "formwork_edge_area_m2",
             "formwork_edge_and_beam_combined_area_m2",
             "formwork_beams_side_area_m2",
-            "formwork_beams_bottom_area_m2",
-            "manual_formwork_rebar_crane_shifts",
-            "manual_rebar_metal_delivery_trucks",
-            "manual_concrete_pump_shifts",
-            "manual_technical_supervision_amount",
-            "manual_formwork_rental_supplier_quote_total"
+            "formwork_beams_bottom_area_m2"
           ],
           "grounded": true,
-          "notes": "zone_id is a stable local id, not a project name. display_name/source_level/slab_mark must come from PDF context exactly: keep Russian wording and marks (ПМ1/ПМ2), do not rewrite them as English/latin. slab_kind is descriptive only: residential_floor/roof_slab/stair_slab/other/unknown. slab_thickness_m is the slab's own concrete thickness (normalize mm to m) - usually printed right in the concrete spec row, e.g. 'Бетон B-22,5 (Плита перекрытия толщиной 200мм)' means 0.2. This is a real calculator input (concrete_slab_volume_m3 / slab_thickness_m drives the real formwork-installation quantity), not just descriptive - do not leave it null when the PDF states it. slab_edge_perimeter_m is the slab's own outer edge length in m.p., control-geometry only (never a money line); if a separate perimeter row isn't given, the same length as the slab-edge EPS insulation row (floor_slab_eps_items role=slab_edge) is normally an exact match, since both describe the same physical edge. concrete_slab_volume_m3 is concrete of the slab itself. Do not include beam concrete here. concrete_total_with_beams_m3 is diagnostic/control only if the PDF gives an explicit combined total. Formwork under slab, slab edge, and beam bottom/side are separate roles. If PDF gives slab edge + beams as one inseparable number, use formwork_edge_and_beam_combined_area_m2 with needs_review. Manual fields are per slab/pour, not shared across all slabs."
+          "notes": "zone_id is a stable local id, not a project name. display_name/source_level/slab_mark must come from PDF context exactly: keep Russian wording and marks (ПМ1/ПМ2), do not rewrite them as English/latin. slab_kind is descriptive only: residential_floor/roof_slab/stair_slab/other/unknown. slab_thickness_m is the slab's own concrete thickness (normalize mm to m) - usually printed right in the concrete spec row, e.g. 'Бетон B-22,5 (Плита перекрытия толщиной 200мм)' means 0.2. This is a real calculator input (concrete_slab_volume_m3 / slab_thickness_m drives the real formwork-installation quantity), not just descriptive - do not leave it null when the PDF states it. slab_edge_perimeter_m is the slab's own outer edge length in m.p., control-geometry only (never a money line); if a separate perimeter row isn't given, the same length as the slab-edge EPS insulation row (floor_slab_eps_items role=slab_edge) is normally an exact match, since both describe the same physical edge. concrete_slab_volume_m3 is concrete of the slab itself. Do not include beam concrete here. concrete_total_with_beams_m3 is diagnostic/control only if the PDF gives an explicit combined total. Formwork under slab, slab edge, and beam bottom/side are separate roles. If PDF gives slab edge + beams as one inseparable number, use formwork_edge_and_beam_combined_area_m2 with needs_review."
         },
         {
           "group_code": "floor_slab_eps_items",
@@ -427,7 +416,6 @@
           "description": "Ж/Б балки, принадлежащие конкретной плите.",
           "fields": [
             "zone_id",
-            "beam_id",
             "mark",
             "name",
             "length_m",
@@ -449,13 +437,11 @@
           "fields": [
             "zone_id",
             "component",
-            "code",
             "name",
             "steel_class",
             "diameter_mm",
             "spec_length_m",
-            "kg_per_meter",
-            "rod_length_m"
+            "kg_per_meter"
           ],
           "grounded": true,
           "notes": "component enum: slab, beam, additional, unknown. Primary PDF unit is usually м.п.; extract spec_length_m and kg_per_meter, do not calculate total weight. Use rod_length_m only if PDF explicitly gives catalog rod length; otherwise leave null for catalog/default logic."
