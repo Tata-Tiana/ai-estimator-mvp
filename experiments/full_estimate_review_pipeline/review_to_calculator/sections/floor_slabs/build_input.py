@@ -435,7 +435,11 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
             "formwork_rebar_crane_shifts": _num(zone.get("manual_formwork_rebar_crane_shifts")) or 0,
             "concrete_pump_shifts": _num(zone.get("manual_concrete_pump_shifts")) or 0,
             "rebar_metal_delivery_trucks": _num(zone.get("manual_rebar_metal_delivery_trucks")) or 0,
-            "technical_supervision_amount": _num(zone.get("manual_technical_supervision_amount")) or 0,
+            # Default 5000 (not 0) - checked 3 real projects' delivered smetas 2026-08-15: every
+            # floor-slab zone/pour consistently carries 5000 for technical supervision (4/4
+            # instances checked, no exceptions), unlike crane/pump/metal-delivery above which
+            # genuinely vary per real project logistics and have no such universal default.
+            "technical_supervision_amount": _num(zone.get("manual_technical_supervision_amount")) or 5000,
         }
         _set_nested(result, "manual_lines", manual_lines)
 
