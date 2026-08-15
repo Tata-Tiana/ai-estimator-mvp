@@ -452,7 +452,9 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 "material_total_raw": decimal_str(consumables_total_raw),
             },
         ),
-        zero_structure_line("technical_supervision_zero", "Технический надзор"),
+        # No Технический надзор line at all here (not even zero) - checked 3 real projects'
+        # delivered smetas 2026-08-15: Schiedel vent channels never carries this row in any of
+        # them, unlike walls/foundation/floor slabs/roof where it's a real cost.
         zero_structure_line("procurement_storage_zero", "Заготовительно-складские расходы"),
         zero_structure_line("overhead_zero", "Накладные и общехозяйственные расходы"),
         zero_structure_line("profit_zero", "Сметная прибыль"),

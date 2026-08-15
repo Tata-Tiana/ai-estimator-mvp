@@ -102,24 +102,6 @@
       "line_total": 1471
     },
     {
-      "code": "technical_supervision_zero",
-      "name": "Технический надзор",
-      "unit": "-",
-      "line_type": "zero_excel_structure_line",
-      "quantity_raw": "1",
-      "quantity_display": "1",
-      "quantity_source": "excel_structure_line",
-      "price_code": null,
-      "material_unit_price": "0",
-      "material_total_raw": "0",
-      "material_total": 0,
-      "work_unit_price": "0",
-      "work_total_raw": "0",
-      "work_total": 0,
-      "line_total_raw": "0",
-      "line_total": 0
-    },
-    {
       "code": "procurement_storage_zero",
       "name": "Заготовительно-складские расходы",
       "unit": "-",
