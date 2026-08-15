@@ -1461,7 +1461,16 @@ def _render_repeated_row_block(
         field_rows: list[tuple[str | None, str | None, Any, str]] = []
         for key in ordered_keys:
             v = value.get(key)
-            if v is None or v == "":
+            if (v is None or v == "") and not needs_review:
+                # A null visible field is silently dropped for an already-resolved item (null
+                # there usually just means "not applicable to this row"). But for a needs_review
+                # item, dropping it hides the exact gap from the reviewer - real case found
+                # 2026-08-14: a P6 monolithic lintel had insulation_eps_spec_volume_m3 given but
+                # insulation_length_m null (PDF gives EPS volume, never a length for this opening);
+                # every OTHER field of the same lintel rendered fine, so the missing-length row
+                # just never existed on sheet 01 at all - not blank/red, simply absent, so Elena
+                # had no way to know there was a number to type in. Keep the row (blank value) so
+                # a needs_review item always shows every visible field, populated or not.
                 continue
             column_def = columns_by_key.get(key, {})
             field_label = column_def.get("label_ru") or key
