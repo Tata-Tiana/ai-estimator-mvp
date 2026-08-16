@@ -514,11 +514,12 @@ def _write_section_header(ws: Any, row_num: int, section_number: int, section_ti
 
 
 def _write_zone_subheader(ws: Any, row_num: int, zone_name: str) -> None:
-    """Empty row with just a bold zone name (e.g. "1-ый этаж") in column B - matches Elena's real
-    smetas exactly (checked all 3 real projects: bold, size 14, no fill, no data in any other column)."""
+    """Empty row with just a bold zone name (e.g. "1-ый этаж") in column B - no fill, no data in
+    any other column. Font matches every other row's own font (size 10), just bold - 2026-08-16
+    design change, was size 14 to stand out more."""
     cell = ws.cell(row_num, 2)
     cell.value = _text(zone_name)
-    cell.font = Font(size=14, bold=True)
+    cell.font = Font(size=10, bold=True)
     cell.alignment = Alignment(horizontal="left", vertical="center")
     ws.row_dimensions[row_num].height = 20
 
