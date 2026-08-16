@@ -128,6 +128,13 @@ def _load_lines(results_dir: Path, section_code: str) -> list[dict[str, Any]]:
     return list(result.get("estimate_lines") or result.get("lines") or [])
 
 
+def _load_calculation_blocks(results_dir: Path, section_code: str) -> dict[str, Any]:
+    path = results_dir / f"{section_code}_result.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    result = data.get("result", data)
+    return result.get("calculation_blocks") or {}
+
+
 def _load_floor_slabs_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any]]]]:
     """P3: reads floor_slabs_result.json (produced by build_floor_slabs_result_json.py, see that
     script's own docstring) - {"pours": [{"title", "estimate_lines"}, ...]}. Raises on a missing
@@ -223,6 +230,128 @@ def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
 _ZONE_SUBHEADER_MARKER = "__zone_subheader__"
 _MASONRY_WORK_LABEL = "Кладка внешних, внутренних стен из газобетонных блоков"
 
+# Mirrors load_bearing_walls_lintels_p6_calculator.py's own _delivery_batch_id()/_crane_batch_id()
+# exactly (must stay in sync - these decide which zones' block deliveries/crane lifts get pooled
+# into one shared line). Needed here only to know which zone a shared batch's line should visually
+# sit under once _regroup_p6_lines_by_zone() below re-attaches it - the calculator itself has no
+# concept of "which zone owns the printed row", it just emits pooled batches after all zones.
+_UPPER_GROUP_ZONE_KINDS = {"floor_2", "second_light", "parapet", "vent_chimney_cladding"}
+
+
+def _delivery_batch_id_for_zone(zone_id: str, zone_kind: str | None) -> str:
+    return "upper_parapet_vent" if zone_kind in _UPPER_GROUP_ZONE_KINDS else zone_id
+
+
+def _crane_batch_id_for_zone(zone_id: str, zone_kind: str | None) -> str:
+    return "parapet" if zone_kind == "parapet" else _delivery_batch_id_for_zone(zone_id, zone_kind)
+
+
+_BLOCKS_LOGISTICS_CODE_RE = re.compile(r"^(?P<batch_id>.+)_blocks_(?P<kind>delivery|unloading_manipulator|crane_moving)$")
+
+
+def _regroup_p6_lines_by_zone(
+    lines: list[dict[str, Any]], calculation_blocks: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Elena's real smetas print each zone's rebar and its delivery/unloading/crane rows directly
+    inside that zone's own block, right after its other lines - never collected separately.
+    load_bearing_walls_lintels_p6_calculator.py can't do this itself: rebar is pooled across the
+    whole wall_zones list in one pass (_pool_rebar_by_zone_purpose), and a delivery/crane batch can
+    span several zones (floor_2+parapet+vent_chimney_cladding share one truck) - both only make
+    sense to compute after every zone has been processed, so both naturally land at the end of the
+    line list, correctly labelled per zone in their own `name` but visually glued together in one
+    lump instead of split across zones. This walks the already-emitted line list once and moves
+    each rebar/logistics line back to sit right after the zone it belongs to - a presentation fix
+    only, changes row order, never a quantity or price."""
+    zones_meta = calculation_blocks.get("zones") or {}
+    zone_order = list(zones_meta.keys())
+    if not zone_order:
+        return lines
+    zone_kind_by_id = {zid: (meta or {}).get("zone_kind") for zid, meta in zones_meta.items()}
+    display_name_by_zone = {zid: (meta or {}).get("display_name") or zid for zid, meta in zones_meta.items()}
+    zone_by_display_name = {name: zid for zid, name in display_name_by_zone.items()}
+
+    delivery_batch_target: dict[str, str] = {}
+    crane_batch_target: dict[str, str] = {}
+    for zid in zone_order:
+        kind = zone_kind_by_id.get(zid)
+        delivery_batch_target.setdefault(_delivery_batch_id_for_zone(zid, kind), zid)
+        crane_batch_target.setdefault(_crane_batch_id_for_zone(zid, kind), zid)
+
+    # Longest-prefix-first so no zone_id can shadow a longer sibling that happens to start with
+    # the same characters (not a real risk with today's zone_id vocabulary, but cheap to guard).
+    zone_ids_by_prefix_length = sorted(zone_order, key=len, reverse=True)
+
+    pre_zone: list[dict[str, Any]] = []
+    zone_base: dict[str, list[dict[str, Any]]] = {zid: [] for zid in zone_order}
+    zone_rebar: dict[str, list[dict[str, Any]]] = {zid: [] for zid in zone_order}
+    zone_logistics: dict[str, list[dict[str, Any]]] = {zid: [] for zid in zone_order}
+    tail: list[dict[str, Any]] = []
+
+    current_zone: str | None = None
+    for entry in lines:
+        code = entry.get("code") or ""
+        name = entry.get("name") or ""
+        price_code = entry.get("price_code") or ""
+
+        # Zone-transition detection can't rely on "_masonry_work" alone - a zone without regular
+        # masonry (e.g. vent_chimney_cladding, see _zone_has_regular_masonry() in the calculator)
+        # never emits that code at all, so its own lines would otherwise get glued onto whichever
+        # zone happened to run right before it. Matches any line whose code starts with a real
+        # zone_id, not just the masonry-work one.
+        for zid in zone_ids_by_prefix_length:
+            if code == f"{zid}_masonry_work" or code.startswith(f"{zid}_"):
+                current_zone = zid
+                break
+
+        if code.endswith("_masonry_work"):
+            zone_base[current_zone].append(entry)
+            continue
+
+        if current_zone is None:
+            pre_zone.append(entry)
+            continue
+
+        zone_suffix = _rebar_zone_suffix(name)
+        is_rebar_like = price_code.startswith("rebar_") or code.endswith("_lintel_rebar_frame_assembly")
+        if is_rebar_like and zone_suffix in zone_by_display_name:
+            zone_rebar[zone_by_display_name[zone_suffix]].append(entry)
+            continue
+
+        match = _BLOCKS_LOGISTICS_CODE_RE.match(code)
+        if match:
+            batch_id = match.group("batch_id")
+            target = (
+                crane_batch_target.get(batch_id)
+                if match.group("kind") == "crane_moving"
+                else delivery_batch_target.get(batch_id)
+            )
+            if target is not None:
+                zone_logistics[target].append(entry)
+                continue
+
+        # Known section-tail codes (consumables/waste/tech supervision/markup) - never zone-owned,
+        # regardless of how far current_zone tracking has drifted by this point in the line list.
+        if code in {
+            "walls_consumables_tool_amortization",
+            "construction_waste_removal",
+            "walls_technical_supervision",
+            "procurement_warehouse_costs",
+            "overhead_general_business_costs",
+            "estimated_profit",
+        }:
+            tail.append(entry)
+            continue
+
+        zone_base[current_zone].append(entry)
+
+    result = list(pre_zone)
+    for zid in zone_order:
+        result.extend(zone_base[zid])
+        result.extend(zone_rebar[zid])
+        result.extend(zone_logistics[zid])
+    result.extend(tail)
+    return result
+
 
 def _insert_zone_subheaders(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Elena's real smetas print each zone (1-й этаж/2-й этаж/парапет/etc) as its own empty,
@@ -252,6 +381,8 @@ def _all_section_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any
     for section_code, section_title in SECTION_ORDER:
         lines = _pool_rebar_lines(_load_lines(results_dir, section_code))
         if section_code == "load_bearing_walls_lintels_p6":
+            calculation_blocks = _load_calculation_blocks(results_dir, section_code)
+            lines = _regroup_p6_lines_by_zone(lines, calculation_blocks)
             lines = _insert_zone_subheaders(lines)
         blocks.append((section_title, lines))
         if section_code == FLOOR_SLABS_INSERT_AFTER:
