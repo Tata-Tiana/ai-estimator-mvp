@@ -1637,7 +1637,7 @@ def _render_repeated_row_block(
             elif needs_review and (field_value is None or field_value == ""):
                 critical_row_indices.add(len(rows))
                 action_text = (
-                    "ОБЯЗАТЕЛЬНО заполнить — в проекте нет однозначного числа для этого поля "
+                    "⚠️ОБЯЗАТЕЛЬНО заполнить — в проекте нет однозначного числа для этого поля "
                     "(конфликт/нечитаемое значение в PDF, см. «Фрагмент проекта»)."
                 )
             row = [
@@ -2026,13 +2026,26 @@ def build_project_sheet_from_extraction(
                 source = ""
                 fragment = ""
 
+            action_text = review_behavior.get("action_ru", "Проверьте значение.")
+            # Same distinction as the repeated-group rows above: a scalar this contract marks
+            # required with status_if_missing="manual_required" (never PDF-derived, e.g. a
+            # supplier's tapered-insulation quote) that is still blank right now genuinely blocks
+            # the calculator - not an ordinary "please check" row. Both facts already exist on
+            # the contract/row, no per-project guessing.
+            if (
+                found_value in (None, "")
+                and param.get("required")
+                and review_behavior.get("status_if_missing") == "manual_required"
+            ):
+                row_fill = FILL_CRITICAL_REVIEW
+                action_text = "⚠️ОБЯЗАТЕЛЬНО заполнить — " + action_text
             ws.append([
                 param.get("label_ru", param.get("key", "")),
                 found_value,
                 param.get("unit", ""),
                 status,
                 confidence,
-                review_behavior.get("action_ru", "Проверьте значение."),
+                action_text,
                 source,
                 fragment,
                 "",
