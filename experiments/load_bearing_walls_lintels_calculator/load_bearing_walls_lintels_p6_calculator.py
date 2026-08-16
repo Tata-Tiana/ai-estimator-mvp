@@ -631,6 +631,23 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
     delivery_batches: dict[str, Decimal] = {}
     crane_batches: dict[str, Decimal] = {}
 
+    # A zone with no masonry work of its own (_zone_has_regular_masonry() - today only
+    # vent_chimney_cladding) never buys blocks as its own separate delivery - real project data
+    # (ТРЦ 2026-08-16) confirms Elena buys its adhesive together with whichever real zone precedes
+    # it (парапет), one shared bag count, not two independently-rounded ones: парапет 19.15м3 +
+    # вентканалы 0.66м3 rounds to 25 bags pooled, vs 25+1=26 bags rounded separately - the extra
+    # bag was a real, if small, overcount. Pooled the same way rebar/blocks already are elsewhere
+    # in this calculator (raw quantity summed BEFORE rounding, never after) - generalizes to any
+    # zone_kind sharing this property, not hardcoded to vent_chimney_cladding by name.
+    zone_names = {zone.zone_id: zone.display_name for zone in wall_zones}
+    adhesive_pool_target: dict[str, str] = {}
+    last_real_zone_id: str | None = None
+    for zone in wall_zones:
+        if _zone_has_regular_masonry(zone):
+            last_real_zone_id = zone.zone_id
+        adhesive_pool_target[zone.zone_id] = last_real_zone_id if last_real_zone_id is not None else zone.zone_id
+    adhesive_pools: dict[str, Decimal] = {}
+
     for zone in wall_zones:
         block_spec_total = sum(d(item.volume_m3) for item in zone.block_items)
         regular_masonry = _zone_has_regular_masonry(zone)
@@ -720,17 +737,8 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             delivery_batches[batch_id] = delivery_batches.get(batch_id, Decimal("0")) + zone_order_volume
             crane_batch_id = _crane_batch_id(zone)
             crane_batches[crane_batch_id] = crane_batches.get(crane_batch_id, Decimal("0")) + zone_order_volume
-            adhesive_raw = block_spec_total * d(defaults.adhesive_consumption_bag_per_m3) * d(defaults.adhesive_waste_coeff)
-            lines.append(
-                line(
-                    f"{zone.zone_id}_block_adhesive",
-                    f"Монтажный клей для блоков 25 кг: {zone.display_name}",
-                    "мешок",
-                    int(ceil(adhesive_raw)),
-                    material_unit_price=rates.adhesive_unit_price,
-                    price_code="block_adhesive_bag",
-                )
-            )
+            adhesive_target = adhesive_pool_target[zone.zone_id]
+            adhesive_pools[adhesive_target] = adhesive_pools.get(adhesive_target, Decimal("0")) + block_spec_total
         if zone.cutoff_waterproofing_area_m2 > 0:
             sand_raw = (
                 d(zone.cutoff_waterproofing_area_m2)
@@ -770,6 +778,19 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             "block_items": zone_block_controls,
             "lintels": lintel_blocks.get(zone.zone_id, {}),
         }
+
+    for target_zone_id, pooled_block_spec_total in adhesive_pools.items():
+        adhesive_raw = pooled_block_spec_total * d(defaults.adhesive_consumption_bag_per_m3) * d(defaults.adhesive_waste_coeff)
+        lines.append(
+            line(
+                f"{target_zone_id}_block_adhesive",
+                f"Монтажный клей для блоков 25 кг: {zone_names.get(target_zone_id, target_zone_id)}",
+                "мешок",
+                int(ceil(adhesive_raw)),
+                material_unit_price=rates.adhesive_unit_price,
+                price_code="block_adhesive_bag",
+            )
+        )
 
     rebar_controls, rebar_lines, rebar_delivery_weight = _pool_rebar_by_zone_purpose(wall_zones, defaults)
     lines.extend(rebar_lines)
