@@ -1415,6 +1415,15 @@ def _field_never_money_relevant_when_empty(
         # formwork_horizontal_area_m2/formwork_vertical_area_m2 default to 0.0, correct for
         # u_block; for monolithic lintels these fields ARE real money, must stay visible).
         return value.get("lintel_kind") == "u_block"
+    if group_key == "floor_slab_zones" and key == "formwork_edge_area_m2":
+        # Mirrors the existing formwork_edge_and_beam_combined_area_m2 entry above (that one
+        # hides when THIS field is given instead) - build_input.py's own fallback chain treats
+        # the two as alternatives for the same physical quantity (edge_and_beam_value =
+        # combined_area if combined_area is not None else edge_area + beams_formwork_sum), so
+        # the pair must be safe in both directions, not just one. When the PDF gives the
+        # combined torец+balки number, this pure-edge-only field is genuinely never populated
+        # and never needed - money is already carried by the sibling.
+        return value.get("formwork_edge_and_beam_combined_area_m2") is not None
     return False
 
 
