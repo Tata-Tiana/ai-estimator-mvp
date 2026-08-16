@@ -410,8 +410,35 @@ def _regroup_p6_lines_by_zone(
 
         zone_base[current_zone].append(entry)
 
-    result = list(pre_zone)
+    # A zone with no masonry_work line of its own (e.g. vent_chimney_cladding -
+    # _zone_has_regular_masonry() in the calculator) never gets a subheader (see below) - and
+    # Elena's real smetas never print it as its own separate block either, they fold its lines
+    # into whichever real zone came right before it (checked on the real ТРЦ: обкладка
+    # дымохода/вентканалов sits interleaved inside "Парапет", not as its own section). Redistribute
+    # BEFORE sorting, not after, so the merged-in lines interleave by role instead of just landing
+    # at the end of the target zone's own already-sorted block. Falls back to keeping a no-masonry
+    # zone as its own (subheader-less) block only if it's first in zone_order with nothing real
+    # to merge into yet - an edge case never seen on any real project so far.
+    has_own_masonry_work = {
+        zid: any((e.get("code") or "").endswith("_masonry_work") for e in zone_base[zid])
+        for zid in zone_order
+    }
+    target_zone = {}
+    last_real_zone: str | None = None
     for zid in zone_order:
+        if has_own_masonry_work[zid]:
+            last_real_zone = zid
+        target_zone[zid] = last_real_zone if last_real_zone is not None else zid
+    for zid in zone_order:
+        target = target_zone[zid]
+        if target == zid:
+            continue
+        zone_base[target].extend(zone_base.pop(zid))
+        zone_rebar[target].extend(zone_rebar.pop(zid))
+        zone_logistics[target].extend(zone_logistics.pop(zid))
+
+    result = list(pre_zone)
+    for zid in [z for z in zone_order if target_zone[z] == z]:
         combined = zone_base[zid] + zone_rebar[zid] + zone_logistics[zid]
         # Stable sort - only _p6_line_role_rank() decides relative order now (see its own comment
         # for the exact role sequence, verified against 3 real zones); ties keep whatever order the
