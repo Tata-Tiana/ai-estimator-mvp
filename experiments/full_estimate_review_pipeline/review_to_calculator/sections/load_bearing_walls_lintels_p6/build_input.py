@@ -263,6 +263,19 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
 
     default_values = {key: entry["value"] for key, entry in defaults.items()}
 
+    # scaffolding_setup_quantity/scaffolding_timber_quantity_m3 moved off the pure-DEFAULT path
+    # 2026-08-16 - real smetas disagree per project (ТРЦ 2/2, АРК 1/1.5, ЮСВ 1/1 м3), no formula
+    # found, so they no longer live in `defaults(contract)` at all. Read from sheet 01-1 (manual
+    # review) instead, falling back to 2/2 only if genuinely still unset - matches the typical
+    # value shown to Elena on sheet 01-1, not a silently different number.
+    scalar_parameters = normalized_review.get("scalar_parameters") or {}
+    for manual_key, fallback in (
+        ("scaffolding_setup_quantity", 2),
+        ("scaffolding_timber_quantity_m3", 2),
+    ):
+        manual_value = (scalar_parameters.get(manual_key) or {}).get("value_number")
+        default_values[manual_key] = manual_value if manual_value is not None else fallback
+
     return {
         "project_name": normalized_review["project_name"],
         "wall_zones": list(zone_by_id.values()),
