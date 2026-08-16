@@ -1394,13 +1394,17 @@ FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
 
 
 def _field_never_money_relevant_when_empty(
-    group_key: str, key: str, value: dict[str, Any]
+    group_key: str,
+    key: str,
+    value: dict[str, Any],
+    found_groups: dict[str, list[Any]] | None = None,
 ) -> bool:
     """True only for a (group, field) pair verified by reading the actual consuming code - see
     FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY's own per-entry comments for the evidence. The default
     for anything NOT in this table (or not matching a conditional case below) is to show the
     field when empty - "not sure yet" must show, not hide, per the same reasoning as the
-    needs_review=true fix this mirrors."""
+    needs_review=true fix this mirrors. found_groups is only needed for cases whose sibling
+    lives on a DIFFERENT item (e.g. the item's own zone), not just within the same value dict."""
     if (group_key, key) in FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY:
         return True
     # Conditional cases: relevance depends on a SIBLING field of the same item, not just the
@@ -1424,6 +1428,24 @@ def _field_never_money_relevant_when_empty(
         # combined torец+balки number, this pure-edge-only field is genuinely never populated
         # and never needed - money is already carried by the sibling.
         return value.get("formwork_edge_and_beam_combined_area_m2") is not None
+    if group_key == "floor_slab_beam_items" and key == "bottom_formwork_area_m2":
+        # Real TRC cross-check (2026-08-16): build_input.py's beams_bottom_override always wins
+        # over summing each beam's own bottom_formwork_area_m2 (beams_bottom_override if
+        # beams_bottom_override is not None else beams_bottom_sum) - so when the PDF gives one
+        # zone-total number (e.g. "Плита 1 этажа": ведомость горизонтальных поверхностей на
+        # стр.41 gives "Горизонтальная опалубка под ж/б балку" = 1.26 м2 for all beams together,
+        # already captured as the zone's own formwork_beams_bottom_area_m2), each individual
+        # beam's own value is genuinely never read and never needed. Conditional on the SIBLING
+        # ZONE item (not this beam's own value dict), so this only fires when that zone total is
+        # actually present - a zone with no such total (e.g. "Плита 2 этажа"/БГ-1, confirmed via
+        # PDF page 43 has no per-beam formwork table at all) keeps showing the real gap.
+        zone_id = value.get("zone_id")
+        zones = (found_groups or {}).get(ZONES_GROUP_KEY) or []
+        for zone_item in zones:
+            zone_value = zone_item.get("value") or {}
+            if zone_value.get("zone_id") == zone_id:
+                return zone_value.get("formwork_beams_bottom_area_m2") is not None
+        return False
     return False
 
 
@@ -1579,7 +1601,9 @@ def _render_repeated_row_block(
             # code, that this exact (group, field) - or this item's specific case, e.g. lintel_kind
             # - never affects money when empty. Anything not on that list still shows, regardless
             # of needs_review - "not sure yet" must show, not hide.
-            if (v is None or v == "") and _field_never_money_relevant_when_empty(group_key, key, value):
+            if (v is None or v == "") and _field_never_money_relevant_when_empty(
+                group_key, key, value, found_groups
+            ):
                 continue
             column_def = columns_by_key.get(key, {})
             field_label = column_def.get("label_ru") or key
