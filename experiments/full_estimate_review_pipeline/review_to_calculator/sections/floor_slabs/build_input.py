@@ -165,12 +165,28 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
             "прежде чем эта плита сможет посчитаться автоматически."
         )
     if edge_area_present and not edge_length_present:
-        raise ValueError(
-            f"floor_slabs: zone '{zone_label}' has slab_edge EPS material (area/volume) but no "
-            "edge work length (floor_slab_eps_items[role=slab_edge].length_m) - the м.п. work line "
-            "can't be derived from area/volume alone. Заполните length_m вручную или подтвердите, "
-            "что работа по торцу этой плиты не нужна."
-        )
+        # Real project cross-check (ТРЦ, 2026-08-16): the zone's own PDF-given
+        # slab_edge_perimeter_m (67.2m) matched Elena's real delivered smeta's edge insulation
+        # work length (67.0 мп) far better than deriving length from slab_thickness_m (73.9m,
+        # ~10% over) - edge insulation physically runs along the slab's own perimeter, so that
+        # PDF-given number is the more honest source when no explicit length is given. Tried in
+        # order of reliability; each is still a real project number, never invented.
+        zone_perimeter = _num(zone.get("slab_edge_perimeter_m"))
+        slab_thickness = _num(zone.get("slab_thickness_m"))
+        if zone_perimeter is not None and zone_perimeter > 0:
+            edge_length = zone_perimeter
+            edge_length_present = True
+        elif slab_thickness is not None and slab_thickness > 0:
+            edge_length = edge_area / slab_thickness
+            edge_length_present = True
+        else:
+            raise ValueError(
+                f"floor_slabs: zone '{zone_label}' has slab_edge EPS material (area/volume) but no "
+                "edge work length (floor_slab_eps_items[role=slab_edge].length_m), no zone "
+                "slab_edge_perimeter_m, and no slab_thickness_m to derive it from - the м.п. work "
+                "line can't be derived at all. Заполните length_m вручную или подтвердите, что "
+                "работа по торцу этой плиты не нужна."
+            )
 
     return {
         "insulation_calc_method": "spec_work_quantities",
