@@ -461,6 +461,13 @@ def _calculate_lintel_blocks(
         lines.extend(
             [
                 line(
+                    f"{zone.zone_id}_lintel_formwork_installation",
+                    f"Монтаж опалубки из доски для заливки перемычек: {zone.display_name}",
+                    "м2",
+                    q(total_formwork_area),
+                    notes="Нулевая строка — подтверждено на 3 реальных проектах (себестоимость всегда 0, работа входит в ставку бетонирования). Площадь — база для фанеры/пиломатериала ниже.",
+                ),
+                line(
                     f"{zone.zone_id}_monolithic_lintel_concreting_work",
                     f"Бетонирование монолитных перемычек: {zone.display_name}",
                     "мп",

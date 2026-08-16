@@ -248,6 +248,72 @@ def _crane_batch_id_for_zone(zone_id: str, zone_kind: str | None) -> str:
 
 _BLOCKS_LOGISTICS_CODE_RE = re.compile(r"^(?P<batch_id>.+)_blocks_(?P<kind>delivery|unloading_manipulator|crane_moving)$")
 
+# Elena's real smetas (checked ТРЦ 1-й/2-й этаж/парапет, all 3 reproduce the same order) always
+# print one zone in the same physical-construction order: waterproofing prep, then the masonry
+# stage complete with its own rebar/delivery/crane, THEN the lintel stage (formwork, its rebar,
+# concreting, concrete logistics) as a separate block, THEN insulation last. Ranked purely off each
+# line's own `code` suffix - the calculator names these identically regardless of project, so this
+# generalizes to any project through this same calculator, not just today's real one. Block
+# material lines all share one rank (20) and get a secondary density-based sort below (D400 before
+# D500, matching both real floors checked) since a zone can have more than one.
+#
+# Order in this list matters, not just the rank number: the first pattern that matches wins (see
+# _p6_line_role_rank() below), and the generic block-material pattern ("_block_<anything-without-
+# an-underscore>$") would otherwise also swallow "..._block_adhesive" and "..._u_block_lintel_
+# cutting" (both legitimately contain "_block_" followed by an underscore-free tail too) - so both
+# more specific patterns must be listed, and therefore checked, before the generic one.
+_P6_LINE_ROLE_RANK: list[tuple[re.Pattern[str], int]] = [
+    (re.compile(r"_cutoff_waterproofing_under_first_row_blocks$"), 0),
+    (re.compile(r"_masonry_work$"), 10),
+    (re.compile(r"_gas_block_cladding_work$"), 10),
+    (re.compile(r"_u_block_lintel_cutting$"), 30),
+    (re.compile(r"_block_adhesive$"), 40),
+    (re.compile(r"_block_[^_]+$"), 20),
+    (re.compile(r"_sand_concrete_m300_first_row$"), 50),
+    (re.compile(r"_chasing_for_reinforcement$"), 60),
+    # masonry/parapet-chasing rebar -> 70 (matched via code below, price_code alone can't tell
+    # "для кладки" apart from "для перемычек" - both share the same rebar_<class>_d<n>_m code)
+    (re.compile(r"_blocks_delivery$"), 80),
+    (re.compile(r"_blocks_unloading_manipulator$"), 81),
+    (re.compile(r"_blocks_crane_moving$"), 82),
+    (re.compile(r"_lintel_formwork_installation$"), 100),
+    (re.compile(r"_lintel_formwork_plywood_material$"), 110),
+    (re.compile(r"_lintel_formwork_timber_material$"), 120),
+    (re.compile(r"_lintel_rebar_frame_assembly$"), 130),
+    # lintels-purpose rebar -> 140
+    (re.compile(r"_u_block_lintel_concreting_work$"), 150),
+    (re.compile(r"_monolithic_lintel_concreting_work$"), 151),
+    (re.compile(r"_lintel_concrete_b22_5_m300_material$"), 160),
+    (re.compile(r"_lintel_concrete_delivery$"), 170),
+    (re.compile(r"_manual_concrete_lifting$"), 180),
+    (re.compile(r"_lintel_edge_insulation_work$"), 190),
+    (re.compile(r"_lintel_edge_insulation_eps_material$"), 200),
+    (re.compile(r"_lintel_edge_insulation_glue_foam$"), 210),
+]
+_MASONRY_CHASING_REBAR_RE = re.compile(r"_(masonry_chasing|parapet_chasing)_rebar_")
+_LINTEL_REBAR_RE = re.compile(r"_lintels_rebar_")
+_BLOCK_DENSITY_ORDER = {"D400": 0, "D500": 1}
+
+
+def _p6_line_role_rank(entry: dict[str, Any]) -> tuple[int, int]:
+    code = entry.get("code") or ""
+    price_code = entry.get("price_code") or ""
+    if price_code.startswith("rebar_"):
+        if _MASONRY_CHASING_REBAR_RE.search(code):
+            return (70, 0)
+        if _LINTEL_REBAR_RE.search(code):
+            return (140, 0)
+        return (70, 0)  # unknown purpose - default to the masonry-stage slot, never dropped
+    for pattern, rank in _P6_LINE_ROLE_RANK:
+        if pattern.search(code):
+            if rank == 20:
+                name = entry.get("name") or ""
+                density_match = re.search(r"D-?(\d00)", name)
+                density_rank = _BLOCK_DENSITY_ORDER.get(f"D{density_match.group(1)}", 2) if density_match else 2
+                return (20, density_rank)
+            return (rank, 0)
+    return (999, 0)  # anything unrecognized keeps its place at the end of the zone, never dropped
+
 
 def _regroup_p6_lines_by_zone(
     lines: list[dict[str, Any]], calculation_blocks: dict[str, Any]
@@ -346,30 +412,31 @@ def _regroup_p6_lines_by_zone(
 
     result = list(pre_zone)
     for zid in zone_order:
-        result.extend(zone_base[zid])
-        result.extend(zone_rebar[zid])
-        result.extend(zone_logistics[zid])
+        combined = zone_base[zid] + zone_rebar[zid] + zone_logistics[zid]
+        # Stable sort - only _p6_line_role_rank() decides relative order now (see its own comment
+        # for the exact role sequence, verified against 3 real zones); ties keep whatever order the
+        # calculator itself emitted them in, which is already a sane fallback for any role this
+        # ranking doesn't recognize.
+        combined.sort(key=_p6_line_role_rank)
+        if not combined:
+            continue
+        # Subheader insertion has to happen here, after sorting, not in a separate later pass keyed
+        # on "_masonry_work" position (used to be safe when that line was always first - waterproofing
+        # now legitimately sorts ahead of it within the same zone, which would otherwise land the
+        # subheader in the middle of its own zone's block). Only zones with a real masonry_work line
+        # get a subheader at all - matches _zone_has_regular_masonry() in the calculator itself
+        # (vent_chimney_cladding has none, and correctly stays glued under whichever zone precedes it,
+        # exactly like Elena's real smetas never give it its own subheader either).
+        has_masonry_work = any((e.get("code") or "").endswith("_masonry_work") for e in combined)
+        if has_masonry_work:
+            result.append({_ZONE_SUBHEADER_MARKER: True, "name": display_name_by_zone[zid]})
+            for entry in combined:
+                if (entry.get("code") or "").endswith("_masonry_work"):
+                    entry = {**entry, "name": _MASONRY_WORK_LABEL}
+                result.append(entry)
+        else:
+            result.extend(combined)
     result.extend(tail)
-    return result
-
-
-def _insert_zone_subheaders(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Elena's real smetas print each zone (1-й этаж/2-й этаж/парапет/etc) as its own empty,
-    bold-name row before that zone's lines - never a data row. Fixed 2026-08-14: our export never
-    had this (no other section needs it - every other section is single-zone), so the P6 walls
-    calculator's zone name ended up glued onto its first data line instead ("Стены 1 этаж" as the
-    масонry-work line's own name, quantity and all). Detects zone starts via the calculator's own
-    code convention (every zone's first line is "<zone_id>_masonry_work") and inserts a marker dict
-    the row-writer below turns into a real subheader row; the masonry-work line itself is renamed
-    to a proper description (was just repeating the zone name, which would now sit directly under
-    its own subheader and look like a duplicate)."""
-    result: list[dict[str, Any]] = []
-    for entry in lines:
-        code = entry.get("code") or ""
-        if code.endswith("_masonry_work"):
-            result.append({_ZONE_SUBHEADER_MARKER: True, "name": entry.get("name")})
-            entry = {**entry, "name": _MASONRY_WORK_LABEL}
-        result.append(entry)
     return result
 
 
@@ -379,11 +446,20 @@ def _all_section_blocks(results_dir: Path) -> list[tuple[str, list[dict[str, Any
     exact spot floor_slab_1/floor_slab_2 used to occupy as two fixed entries."""
     blocks: list[tuple[str, list[dict[str, Any]]]] = []
     for section_code, section_title in SECTION_ORDER:
-        lines = _pool_rebar_lines(_load_lines(results_dir, section_code))
         if section_code == "load_bearing_walls_lintels_p6":
+            # Regroup BEFORE pooling, not after: _pool_rebar_lines() replaces each rebar line's
+            # `code` with a synthetic "<price_code>_pooled_<zone>" one, which destroys the
+            # "..._masonry_chasing_rebar_..." / "..._lintels_rebar_..." substring
+            # _p6_line_role_rank() needs to tell masonry rebar (stage 1) apart from lintel rebar
+            # (stage 2) - price_code alone can't (same rebar_<class>_d<n>_m regardless of purpose).
+            # The raw calculator lines still carry that substring; pooling only needs to happen once
+            # they're already in final order, since it accumulates into the first-seen position for
+            # each (price_code, zone) key either way.
             calculation_blocks = _load_calculation_blocks(results_dir, section_code)
-            lines = _regroup_p6_lines_by_zone(lines, calculation_blocks)
-            lines = _insert_zone_subheaders(lines)
+            lines = _regroup_p6_lines_by_zone(_load_lines(results_dir, section_code), calculation_blocks)
+            lines = _pool_rebar_lines(lines)
+        else:
+            lines = _pool_rebar_lines(_load_lines(results_dir, section_code))
         blocks.append((section_title, lines))
         if section_code == FLOOR_SLABS_INSERT_AFTER:
             blocks.extend(
