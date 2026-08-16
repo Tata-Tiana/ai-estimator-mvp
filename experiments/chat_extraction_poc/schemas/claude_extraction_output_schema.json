@@ -193,7 +193,7 @@
     },
     "lintel_rebar_items": {
       "zone_id": "string - must match wall_zones.zone_id",
-      "lintel_id": "string|null - should match lintel_items when possible; keep visible mark spelling from PDF",
+      "lintel_id": "string|null - must match an actual lintel_items.lintel_id when the PDF spec gives rebar per individual lintel/mark. If the PDF gives rebar as one combined total for the whole zone/floor, not split by lintel or by lintel_kind, leave lintel_id null - do not invent a floor-level label (e.g. 'lintels of floor 1') as a substitute id; a null value here is expected and correctly routes to the zone's shared rebar pool.",
       "lintel_kind": "u_block|monolithic|null",
       "item_id": "string|null - technical local id; may be latin, does not replace PDF text",
       "steel_class": "string|null",

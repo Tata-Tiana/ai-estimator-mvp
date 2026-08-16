@@ -362,7 +362,7 @@
             "kg_per_meter"
           ],
           "grounded": false,
-          "notes": "Grey/reference in review workbook. Every row must have zone_id; lintel_id should match a lintel_items row when possible and keep the PDF spelling. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Partition/groove-only lintels that are not part of priced load-bearing walls stay raw_table_rows/notes — out of scope for this group."
+          "notes": "Grey/reference in review workbook. Every row must have zone_id. Set lintel_id to match a lintel_items row (keep the PDF spelling) only when the PDF spec actually gives rebar per individual lintel/mark. If the PDF gives rebar as one combined total for the whole zone/floor, not split by lintel or by lintel_kind, leave lintel_id null — do not invent a floor-level label as a substitute id; a null lintel_id is expected in that case and routes to the zone's shared rebar pool. Use spec_length_m as primary PDF quantity. Extract kg_per_meter only if PDF gives it; do not calculate total weight. Partition/groove-only lintels that are not part of priced load-bearing walls stay raw_table_rows/notes — out of scope for this group."
         }
       ]
     },

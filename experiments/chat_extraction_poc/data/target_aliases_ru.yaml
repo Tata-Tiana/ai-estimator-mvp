@@ -525,7 +525,7 @@ lintel_rebar_items:
   negative_context: ["стены", "кладк", "парапет", "плита", "фундамент", "перегородк"]
   value_column_hint: ["длина", "кол-во", "количество", "масса ед", "масса"]
   unit_column_hint: ["м.п.", "п.м.", "м/п", "мп", "м", "кг/м", "кг"]
-  notes: "Reference/grey group, but still production input. Every row must have zone_id and, when possible, lintel_id matching lintel_items. lintel_kind enum: u_block or monolithic. Do not calculate total weight. Extract kg_per_meter only if PDF gives it; otherwise leave null for catalog/default layer. Partition/groove-only lintels stay raw_table_rows/notes — out of scope for this group."
+  notes: "Reference/grey group, but still production input. Every row must have zone_id. Set lintel_id to match lintel_items only when the PDF spec actually gives rebar per individual lintel/mark. If the PDF gives rebar as one combined total for the whole zone/floor (not split by lintel or by lintel_kind — seen in real projects, e.g. one shared 'перемычки 1 этажа'-style total), leave lintel_id null; do not invent a floor-level label as a substitute id, and do not force-split an unsplit PDF total across lintels. lintel_kind enum: u_block or monolithic, or null if the PDF total is not split by kind either. Do not calculate total weight. Extract kg_per_meter only if PDF gives it; otherwise leave null for catalog/default layer. Partition/groove-only lintels stay raw_table_rows/notes — out of scope for this group."
 
 flat_roof:
   section_code: flat_roof
