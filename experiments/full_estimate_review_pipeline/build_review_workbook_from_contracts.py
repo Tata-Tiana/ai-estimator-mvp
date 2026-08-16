@@ -24,6 +24,10 @@ FILL_SECTION = PatternFill("solid", fgColor="C5CAE9")  # light indigo — 2026-0
 FILL_FOUND = PatternFill("solid", fgColor="D9EAD3")
 FILL_REVIEW = PatternFill("solid", fgColor="FCE4D6")
 FILL_MISSING = PatternFill("solid", fgColor="F4CCCC")
+# Deliberately more saturated than FILL_MISSING (F4CCCC) - reserved for needs_review rows whose
+# value is blank AND the PDF itself gives conflicting/unreadable data (two different numbers for
+# the same quantity, an unparseable cell), never for an ordinary "please double-check" row.
+FILL_CRITICAL_REVIEW = PatternFill("solid", fgColor="EA9999")
 FILL_INPUT = FILL_REVIEW
 FILL_PRICE = PatternFill("solid", fgColor="D9EAD3")
 FILL_DETAIL = PatternFill("solid", fgColor="DAE8FC")

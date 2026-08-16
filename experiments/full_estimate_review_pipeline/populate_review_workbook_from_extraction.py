@@ -30,6 +30,7 @@ from metal_delivery_allocator import MetalSection, allocate_metal_deliveries  # 
 
 from build_review_workbook_from_contracts import (  # noqa: E402
     COMPACT_ROW_HEIGHT,
+    FILL_CRITICAL_REVIEW,
     FILL_FOUND,
     FILL_HEADER,
     FILL_INPUT,
@@ -1444,6 +1445,11 @@ def _render_repeated_row_block(
     columns_by_key = {c["key"]: c for c in (param.get("columns") or [])}
 
     rows: list[list[Any]] = []
+    # Rows where needs_review is true AND the field itself is still blank - not just "please
+    # double-check", but "there is genuinely no usable number yet" (the PDF gave conflicting or
+    # unreadable data and the model could not pick one). Tracked by position in `rows` so the
+    # coloring pass below can give them a visibly stronger fill than ordinary needs_review rows.
+    critical_row_indices: set[int] = set()
     for item in items:
         value = item.get("value") or {}
         needs_review = bool(item.get("needs_review"))
@@ -1628,6 +1634,12 @@ def _render_repeated_row_block(
                 )
                 row_source = ""
                 row_fragment = item.get("_metal_delivery_detail") or item.get("notes") or ""
+            elif needs_review and (field_value is None or field_value == ""):
+                critical_row_indices.add(len(rows))
+                action_text = (
+                    "ОБЯЗАТЕЛЬНО заполнить — в проекте нет однозначного числа для этого поля "
+                    "(конфликт/нечитаемое значение в PDF, см. «Фрагмент проекта»)."
+                )
             row = [
                 label,
                 field_value,
@@ -1656,9 +1668,15 @@ def _render_repeated_row_block(
         return
 
     append_block(ws, title, headers, rows)
-    for row_idx in range(ws.max_row - len(rows) + 1, ws.max_row + 1):
+    first_row_idx = ws.max_row - len(rows) + 1
+    for row_idx in range(first_row_idx, ws.max_row + 1):
         status = str(ws.cell(row_idx, 4).value or "")
-        row_fill = FILL_TECH if reference_only else project_status_fill(status)
+        if reference_only:
+            row_fill = FILL_TECH
+        elif (row_idx - first_row_idx) in critical_row_indices:
+            row_fill = FILL_CRITICAL_REVIEW
+        else:
+            row_fill = project_status_fill(status)
         for cell in ws[row_idx]:
             cell.fill = row_fill
         ws.row_dimensions[row_idx].height = COMPACT_ROW_HEIGHT
