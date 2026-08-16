@@ -208,7 +208,8 @@ class P6LoadBearingWallsLintelsInput:
 
 def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
     normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
-    return (item.block_density.upper(), normalized_size)
+    normalized_density = item.block_density.upper().replace("-", "").replace(" ", "")
+    return (normalized_density, normalized_size)
 
 
 def _block_size_parts(size: str) -> tuple[int, ...]:

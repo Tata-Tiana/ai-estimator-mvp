@@ -188,7 +188,10 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 f"(expected sheet 02 row with price_registry_code={registry_code!r}, "
                 "calc_price_key=rebar_unit_price_by_item)"
             )
-        source_item = {k: v for k, v in item.items() if k != "weight_kg"}
+        # weight_kg is raw PDF cross-check data, item_id is an optional descriptive PDF
+        # label the model may add for named rebar rows (e.g. "лягушка поз.2") - neither is
+        # a RebarItemInput field, and this group's own identity (`code`) is set below.
+        source_item = {k: v for k, v in item.items() if k not in ("weight_kg", "item_id")}
         source_item["code"] = _rebar_item_code(source_item, index)
         priced_item = fill_rebar_catalog_defaults(
             {**source_item, "unit_price_per_m": price},
