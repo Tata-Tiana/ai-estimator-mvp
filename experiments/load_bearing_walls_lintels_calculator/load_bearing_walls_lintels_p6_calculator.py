@@ -327,6 +327,7 @@ def _pool_rebar_by_zone_purpose(
     controls: dict[str, Any] = {}
     lines: list[EstimateLineResult] = []
     delivery_weight_total = Decimal("0")
+    lintel_frame_totals: dict[str, Decimal] = {}
     for zone_id, purpose, steel_class, diameter_mm in order:
         items = groups[(zone_id, purpose, steel_class, diameter_mm)]
         kg_per_meter = items[0].kg_per_meter
@@ -375,6 +376,27 @@ def _pool_rebar_by_zone_purpose(
                 q(order_length),
                 material_unit_price=unit_price_per_m,
                 price_code=rebar_price_code(steel_class, diameter_mm),
+            )
+        )
+        if purpose == "lintels":
+            lintel_frame_totals[zone_id] = lintel_frame_totals.get(zone_id, Decimal("0")) + order_length
+
+    # Изготовление и монтаж каркаса армирования перемычек: zero-rate structural line, confirmed
+    # present on all 3 real projects (ТРЦ, АРК, ЮСВ) for every lintel-bearing zone/section - always
+    # billed to the client (real work rate) but always 0 internally (себестоимость), and always
+    # exactly the sum of that same zone's own lintel rebar order-length lines above (verified
+    # against real numbers: ТРЦ floor_1 117+84=201мп, floor_2 11.7+93.6+72=177.3мп - both match the
+    # real smeta's own quantity exactly). foundation_slab_calculator.py and floor_slab_calculator.py
+    # already have the equivalent line for their own rebar; this was the one rebar-bearing
+    # calculator missing it.
+    for zone_id, total_length in lintel_frame_totals.items():
+        lines.append(
+            line(
+                f"{zone_id}_lintel_rebar_frame_assembly",
+                f"Изготовление и монтаж каркаса армирования перемычек из арматуры: {zone_names.get(zone_id, zone_id)}",
+                "мп",
+                q(total_length),
+                notes="Нулевая строка — подтверждено на 3 реальных проектах (себестоимость всегда 0, работа входит в клиентскую наценку, не в себестоимость).",
             )
         )
     return controls, lines, delivery_weight_total
