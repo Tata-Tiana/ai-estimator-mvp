@@ -172,6 +172,39 @@ def _slugify_zone(zone: str) -> str:
     return "_".join(zone.lower().split())
 
 
+def _rebar_diameter(price_code: str) -> int:
+    match = _REBAR_PRICE_CODE_RE.match(price_code)
+    return int(match.group("diameter")) if match else -1
+
+
+def _sort_rebar_runs_by_diameter_desc(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Elena's real smetas always list rebar (within one construction stage) from the largest
+    diameter down to the smallest - confirmed across foundation_slab/walls/lintels on multiple
+    real projects, regardless of what order the spec-table positions happened to appear in the
+    PDF. Sorts every maximal run of consecutive pooled rebar rows by diameter descending; runs
+    stay separate wherever a non-rebar line already splits them (e.g. P6 walls' masonry-chasing
+    rebar vs lintel rebar are different construction stages, kept apart by the lines between
+    them - this only reorders diameters within a stage, never merges stages)."""
+    result: list[dict[str, Any]] = []
+    run: list[dict[str, Any]] = []
+
+    def flush() -> None:
+        if run:
+            run.sort(key=lambda line: -_rebar_diameter(line.get("price_code") or ""))
+            result.extend(run)
+            run.clear()
+
+    for line in lines:
+        price_code = line.get("price_code") or ""
+        if price_code.startswith("rebar_"):
+            run.append(line)
+        else:
+            flush()
+            result.append(line)
+    flush()
+    return result
+
+
 def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Этап 2 (2026-08-12, Elena's request): the smeta gets only one row per (steel_class,
     diameter) - price_code already uniquely identifies that combo (rebar_<class>_d<diameter>_m) -
@@ -224,7 +257,7 @@ def _pool_rebar_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
         pooled["material_total"] += _num(_line_value(line, "material_total"))
         pooled["work_total"] += _num(_line_value(line, "work_total"))
         pooled["line_total"] += _num(_line_value(line, "line_total"))
-    return result
+    return _sort_rebar_runs_by_diameter_desc(result)
 
 
 _ZONE_SUBHEADER_MARKER = "__zone_subheader__"
@@ -258,17 +291,22 @@ _BLOCKS_LOGISTICS_CODE_RE = re.compile(r"^(?P<batch_id>.+)_blocks_(?P<kind>deliv
 # D500, matching both real floors checked) since a zone can have more than one.
 #
 # Order in this list matters, not just the rank number: the first pattern that matches wins (see
-# _p6_line_role_rank() below), and the generic block-material pattern ("_block_<anything-without-
-# an-underscore>$") would otherwise also swallow "..._block_adhesive" and "..._u_block_lintel_
-# cutting" (both legitimately contain "_block_" followed by an underscore-free tail too) - so both
-# more specific patterns must be listed, and therefore checked, before the generic one.
+# _p6_line_role_rank() below). Block-material lines used to be matched here too via a generic
+# "_block_<anything-without-an-underscore>$" pattern - removed 2026-08-26 after real ЮСВ/ТРЦ smetas
+# showed газоблок D400/D500 rows landing at the very END of every zone instead of right after
+# Кладка. Root cause: real block item_ids always contain their own underscores (f1_400, f1_250,
+# main_250_1, parapet_400, vent_150...), so "..._block_f1_400" never matched "[^_]+$" - the pattern
+# silently never fired for any real project, and every block-material line fell through to the
+# unrecognized-code default (999, last place). Block material is now matched by `price_code`
+# instead (_p6_line_role_rank() below, checked before this list) - price_code is a small fixed set
+# (gas_block_d400_m3/gas_block_d500_m3/gas_block_d500_150_m3), not a free-form code suffix, so it
+# can't break the same way if a project ever uses an item_id shaped differently again.
 _P6_LINE_ROLE_RANK: list[tuple[re.Pattern[str], int]] = [
     (re.compile(r"_cutoff_waterproofing_under_first_row_blocks$"), 0),
     (re.compile(r"_masonry_work$"), 10),
     (re.compile(r"_gas_block_cladding_work$"), 10),
     (re.compile(r"_u_block_lintel_cutting$"), 30),
     (re.compile(r"_block_adhesive$"), 40),
-    (re.compile(r"_block_[^_]+$"), 20),
     (re.compile(r"_sand_concrete_m300_first_row$"), 50),
     (re.compile(r"_chasing_for_reinforcement$"), 60),
     # masonry/parapet-chasing rebar -> 70 (matched via code below, price_code alone can't tell
@@ -293,6 +331,10 @@ _P6_LINE_ROLE_RANK: list[tuple[re.Pattern[str], int]] = [
 _MASONRY_CHASING_REBAR_RE = re.compile(r"_(masonry_chasing|parapet_chasing)_rebar_")
 _LINTEL_REBAR_RE = re.compile(r"_lintels_rebar_")
 _BLOCK_DENSITY_ORDER = {"D400": 0, "D500": 1}
+# The 3 fixed price_codes _block_price_code() in the calculator assigns to gas-block material
+# lines - matched directly instead of parsing `code` (see _P6_LINE_ROLE_RANK's comment above for
+# why the old code-suffix regex silently never matched any real project's block-material lines).
+_BLOCK_MATERIAL_PRICE_CODES = {"gas_block_d400_m3", "gas_block_d500_m3", "gas_block_d500_150_m3"}
 
 
 def _p6_line_role_rank(entry: dict[str, Any]) -> tuple[int, int]:
@@ -304,13 +346,13 @@ def _p6_line_role_rank(entry: dict[str, Any]) -> tuple[int, int]:
         if _LINTEL_REBAR_RE.search(code):
             return (140, 0)
         return (70, 0)  # unknown purpose - default to the masonry-stage slot, never dropped
+    if price_code in _BLOCK_MATERIAL_PRICE_CODES:
+        name = entry.get("name") or ""
+        density_match = re.search(r"D-?(\d00)", name)
+        density_rank = _BLOCK_DENSITY_ORDER.get(f"D{density_match.group(1)}", 2) if density_match else 2
+        return (20, density_rank)
     for pattern, rank in _P6_LINE_ROLE_RANK:
         if pattern.search(code):
-            if rank == 20:
-                name = entry.get("name") or ""
-                density_match = re.search(r"D-?(\d00)", name)
-                density_rank = _BLOCK_DENSITY_ORDER.get(f"D{density_match.group(1)}", 2) if density_match else 2
-                return (20, density_rank)
             return (rank, 0)
     return (999, 0)  # anything unrecognized keeps its place at the end of the zone, never dropped
 
