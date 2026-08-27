@@ -271,7 +271,7 @@
       "overhang_sheet_equivalent": 24.193478,
       "base_timber_volume_m3": 2.5796,
       "additional_timber_volume_m3": 0.199228,
-      "timber_volume_m3_raw": 2.778828
+      "timber_volume_m3_raw": 2.8
     },
     "rebar": {
       "rebar_calc_method": "legacy_weight_parts",
@@ -551,13 +551,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1551397.846612,
+      "base_subtotal_raw_before_overheads": 1551853.039,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 15513.978466,
-      "logistics_and_supply_total": 15514,
+      "logistics_and_supply_total_raw": 15518.53039,
+      "logistics_and_supply_total": 15519,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 46541.935398,
-      "consumables_and_tool_depreciation_total": 46542
+      "consumables_and_tool_depreciation_total_raw": 46555.59117,
+      "consumables_and_tool_depreciation_total": 46556
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -690,14 +690,14 @@
       "name": "Пиломатериал обрезной для устройства опалубки ГОСТ",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 2.778828,
-      "quantity_display": 2.78,
-      "material_total_raw": 59744.807612,
-      "material_total": 59745,
+      "quantity_raw": 2.8,
+      "quantity_display": 2.8,
+      "material_total_raw": 60200.0,
+      "material_total": 60200,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 59744.807612,
-      "line_total": 59745,
+      "line_total_raw": 60200.0,
+      "line_total": 60200,
       "notes": [
         "Сумма считается от quantity_raw, не от отображаемого количества."
       ],
@@ -1024,12 +1024,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 15513.978466,
-      "material_total": 15514,
+      "material_total_raw": 15518.53039,
+      "material_total": 15519,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 15513.978466,
-      "line_total": 15514,
+      "line_total_raw": 15518.53039,
+      "line_total": 15519,
       "notes": []
     },
     {
@@ -1039,12 +1039,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 46541.935398,
-      "material_total": 46542,
+      "material_total_raw": 46555.59117,
+      "material_total": 46556,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 46541.935398,
-      "line_total": 46542,
+      "line_total_raw": 46555.59117,
+      "line_total": 46556,
       "notes": []
     },
     {
@@ -1110,12 +1110,12 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1054057,
+    "internal_materials_total": 1054531,
     "internal_works_total": 564397,
-    "internal_section_total": 1618454,
-    "base_subtotal_raw_before_overheads": 1551397.846612,
-    "logistics_and_supply_total": 15514,
-    "consumables_and_tool_depreciation_total": 46542,
+    "internal_section_total": 1618928,
+    "base_subtotal_raw_before_overheads": 1551853.039,
+    "logistics_and_supply_total": 15519,
+    "consumables_and_tool_depreciation_total": 46556,
     "technical_supervision_total": 5000
   },
   "warnings": [

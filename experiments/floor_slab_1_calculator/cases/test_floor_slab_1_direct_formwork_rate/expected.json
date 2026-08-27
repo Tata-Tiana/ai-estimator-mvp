@@ -31,7 +31,7 @@
     },
     "plywood_and_timber": {
       "order_plywood_sheets": 51,
-      "timber_volume_m3_raw": 2.790846
+      "timber_volume_m3_raw": 2.8
     },
     "rebar": {
       "rebar_frame_assembly_quantity_m": 7294.8,
@@ -115,12 +115,12 @@
       "line_total": 73950
     },
     "formwork_timber_gost": {
-      "quantity_raw": 2.790846,
-      "quantity_display": 2.79,
-      "material_total_raw": 60003.181518,
-      "material_total": 60003,
+      "quantity_raw": 2.8,
+      "quantity_display": 2.8,
+      "material_total_raw": 60200.0,
+      "material_total": 60200,
       "work_total": 0,
-      "line_total": 60003
+      "line_total": 60200
     },
     "floor_slab_rebar_frame_assembly_control": {
       "quantity_raw": 7294.8,

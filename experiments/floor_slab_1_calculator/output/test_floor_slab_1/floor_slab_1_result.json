@@ -279,7 +279,7 @@
       "overhang_sheet_equivalent": 24.193478,
       "base_timber_volume_m3": 2.5796,
       "additional_timber_volume_m3": 0.211246,
-      "timber_volume_m3_raw": 2.790846
+      "timber_volume_m3_raw": 2.8
     },
     "rebar": {
       "rebar_calc_method": "legacy_weight_parts",
@@ -563,13 +563,13 @@
       "foam_cans_ordered": 8
     },
     "overheads": {
-      "base_subtotal_raw_before_overheads": 1726141.700518,
+      "base_subtotal_raw_before_overheads": 1726338.519,
       "logistics_and_supply_percent": 0.01,
-      "logistics_and_supply_total_raw": 17261.417005,
-      "logistics_and_supply_total": 17261,
+      "logistics_and_supply_total_raw": 17263.38519,
+      "logistics_and_supply_total": 17263,
       "consumables_and_tool_percent": 0.03,
-      "consumables_and_tool_depreciation_total_raw": 51784.251016,
-      "consumables_and_tool_depreciation_total": 51784
+      "consumables_and_tool_depreciation_total_raw": 51790.15557,
+      "consumables_and_tool_depreciation_total": 51790
     },
     "manual_lines": {
       "concrete_pump_shifts": 1,
@@ -702,14 +702,14 @@
       "name": "Пиломатериал обрезной для устройства опалубки ГОСТ",
       "unit": "м3",
       "line_type": "materials",
-      "quantity_raw": 2.790846,
-      "quantity_display": 2.79,
-      "material_total_raw": 60003.181518,
-      "material_total": 60003,
+      "quantity_raw": 2.8,
+      "quantity_display": 2.8,
+      "material_total_raw": 60200.0,
+      "material_total": 60200,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 60003.181518,
-      "line_total": 60003,
+      "line_total_raw": 60200.0,
+      "line_total": 60200,
       "notes": [
         "Сумма считается от quantity_raw, не от отображаемого количества."
       ],
@@ -1036,12 +1036,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 17261.417005,
-      "material_total": 17261,
+      "material_total_raw": 17263.38519,
+      "material_total": 17263,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 17261.417005,
-      "line_total": 17261,
+      "line_total_raw": 17263.38519,
+      "line_total": 17263,
       "notes": []
     },
     {
@@ -1051,12 +1051,12 @@
       "line_type": "materials_overhead_percent",
       "quantity_raw": 1.0,
       "quantity_display": 1.0,
-      "material_total_raw": 51784.251016,
-      "material_total": 51784,
+      "material_total_raw": 51790.15557,
+      "material_total": 51790,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 51784.251016,
-      "line_total": 51784,
+      "line_total_raw": 51790.15557,
+      "line_total": 51790,
       "notes": []
     },
     {
@@ -1122,12 +1122,12 @@
     }
   ],
   "totals": {
-    "internal_materials_total": 1176087,
+    "internal_materials_total": 1176292,
     "internal_works_total": 624099,
-    "internal_section_total": 1800186,
-    "base_subtotal_raw_before_overheads": 1726141.700518,
-    "logistics_and_supply_total": 17261,
-    "consumables_and_tool_depreciation_total": 51784,
+    "internal_section_total": 1800391,
+    "base_subtotal_raw_before_overheads": 1726338.519,
+    "logistics_and_supply_total": 17263,
+    "consumables_and_tool_depreciation_total": 51790,
     "technical_supervision_total": 5000
   },
   "warnings": [
@@ -1166,7 +1166,7 @@
       },
       "plywood_and_timber": {
         "order_plywood_sheets": 51,
-        "timber_volume_m3_raw": 2.790846
+        "timber_volume_m3_raw": 2.8
       },
       "rebar": {
         "rebar_frame_assembly_quantity_m": 7294.8,
@@ -1248,12 +1248,12 @@
         "line_total": 73950
       },
       "formwork_timber_gost": {
-        "quantity_raw": 2.790846,
-        "quantity_display": 2.79,
-        "material_total_raw": 60003.181518,
-        "material_total": 60003,
+        "quantity_raw": 2.8,
+        "quantity_display": 2.8,
+        "material_total_raw": 60200.0,
+        "material_total": 60200,
         "work_total": 0,
-        "line_total": 60003
+        "line_total": 60200
       },
       "floor_slab_rebar_frame_assembly_control": {
         "quantity_raw": 7294.8,
@@ -1422,15 +1422,15 @@
   },
   "comparison": {
     "status": "mismatch",
-    "ok_count": 189,
-    "mismatch_count": 10,
+    "ok_count": 175,
+    "mismatch_count": 24,
     "items": [
       {
         "key": "totals.internal_materials_total",
         "expected": 1176087,
-        "actual": 1176087,
-        "diff": 0,
-        "status": "ok"
+        "actual": 1176292,
+        "diff": 205,
+        "status": "mismatch"
       },
       {
         "key": "totals.internal_works_total",
@@ -1442,30 +1442,30 @@
       {
         "key": "totals.internal_section_total",
         "expected": 1800186,
-        "actual": 1800186,
-        "diff": 0,
-        "status": "ok"
+        "actual": 1800391,
+        "diff": 205,
+        "status": "mismatch"
       },
       {
         "key": "totals.base_subtotal_raw_before_overheads",
         "expected": 1726141.700518,
-        "actual": 1726141.700518,
-        "diff": 0.0,
-        "status": "ok"
+        "actual": 1726338.519,
+        "diff": 196.818482,
+        "status": "mismatch"
       },
       {
         "key": "totals.logistics_and_supply_total",
         "expected": 17261,
-        "actual": 17261,
-        "diff": 0,
-        "status": "ok"
+        "actual": 17263,
+        "diff": 2,
+        "status": "mismatch"
       },
       {
         "key": "totals.consumables_and_tool_depreciation_total",
         "expected": 51784,
-        "actual": 51784,
-        "diff": 0,
-        "status": "ok"
+        "actual": 51790,
+        "diff": 6,
+        "status": "mismatch"
       },
       {
         "key": "totals.technical_supervision_total",
@@ -1553,8 +1553,8 @@
       },
       {
         "key": "calculation_blocks.plywood_and_timber.timber_volume_m3_raw",
-        "expected": 2.790846,
-        "actual": 2.790846,
+        "expected": 2.8,
+        "actual": 2.8,
         "diff": 0.0,
         "status": "ok"
       },
@@ -1673,23 +1673,23 @@
       {
         "key": "calculation_blocks.overheads.base_subtotal_raw_before_overheads",
         "expected": 1726141.700518,
-        "actual": 1726141.700518,
-        "diff": 0.0,
-        "status": "ok"
+        "actual": 1726338.519,
+        "diff": 196.818482,
+        "status": "mismatch"
       },
       {
         "key": "calculation_blocks.overheads.logistics_and_supply_total",
         "expected": 17261,
-        "actual": 17261,
-        "diff": 0,
-        "status": "ok"
+        "actual": 17263,
+        "diff": 2,
+        "status": "mismatch"
       },
       {
         "key": "calculation_blocks.overheads.consumables_and_tool_depreciation_total",
         "expected": 51784,
-        "actual": 51784,
-        "diff": 0,
-        "status": "ok"
+        "actual": 51790,
+        "diff": 6,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.slab_formwork_installation_control.quantity_raw",
@@ -1945,29 +1945,29 @@
       },
       {
         "key": "estimate_lines.formwork_timber_gost.quantity_raw",
-        "expected": 2.790846,
-        "actual": 2.790846,
+        "expected": 2.8,
+        "actual": 2.8,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "estimate_lines.formwork_timber_gost.quantity_display",
-        "expected": 2.79,
-        "actual": 2.79,
+        "expected": 2.8,
+        "actual": 2.8,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "estimate_lines.formwork_timber_gost.material_total_raw",
-        "expected": 60003.181518,
-        "actual": 60003.181518,
+        "expected": 60200.0,
+        "actual": 60200.0,
         "diff": 0.0,
         "status": "ok"
       },
       {
         "key": "estimate_lines.formwork_timber_gost.material_total",
-        "expected": 60003,
-        "actual": 60003,
+        "expected": 60200,
+        "actual": 60200,
         "diff": 0,
         "status": "ok"
       },
@@ -1980,8 +1980,8 @@
       },
       {
         "key": "estimate_lines.formwork_timber_gost.line_total",
-        "expected": 60003,
-        "actual": 60003,
+        "expected": 60200,
+        "actual": 60200,
         "diff": 0,
         "status": "ok"
       },
@@ -2681,16 +2681,16 @@
       {
         "key": "estimate_lines.logistics_and_supply.material_total_raw",
         "expected": 17261.417005,
-        "actual": 17261.417005,
-        "diff": 0.0,
-        "status": "ok"
+        "actual": 17263.38519,
+        "diff": 1.968185,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.logistics_and_supply.material_total",
         "expected": 17261,
-        "actual": 17261,
-        "diff": 0,
-        "status": "ok"
+        "actual": 17263,
+        "diff": 2,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.logistics_and_supply.work_total",
@@ -2702,9 +2702,9 @@
       {
         "key": "estimate_lines.logistics_and_supply.line_total",
         "expected": 17261,
-        "actual": 17261,
-        "diff": 0,
-        "status": "ok"
+        "actual": 17263,
+        "diff": 2,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.quantity_raw",
@@ -2723,16 +2723,16 @@
       {
         "key": "estimate_lines.consumables_tool_depreciation.material_total_raw",
         "expected": 51784.251016,
-        "actual": 51784.251016,
-        "diff": 0.0,
-        "status": "ok"
+        "actual": 51790.15557,
+        "diff": 5.904554,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.material_total",
         "expected": 51784,
-        "actual": 51784,
-        "diff": 0,
-        "status": "ok"
+        "actual": 51790,
+        "diff": 6,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.consumables_tool_depreciation.work_total",
@@ -2744,9 +2744,9 @@
       {
         "key": "estimate_lines.consumables_tool_depreciation.line_total",
         "expected": 51784,
-        "actual": 51784,
-        "diff": 0,
-        "status": "ok"
+        "actual": 51790,
+        "diff": 6,
+        "status": "mismatch"
       },
       {
         "key": "estimate_lines.technical_supervision.quantity_raw",

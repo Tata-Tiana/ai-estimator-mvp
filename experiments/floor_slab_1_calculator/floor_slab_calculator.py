@@ -41,6 +41,11 @@ def ceil_decimal(value: Any) -> int:
     return int(d(value).to_integral_value(rounding=ROUND_CEILING))
 
 
+def ceil_to_step_decimal(value: Any, step: str) -> Decimal:
+    step_dec = Decimal(step)
+    return (d(value) / step_dec).to_integral_value(rounding=ROUND_CEILING) * step_dec
+
+
 def dec_sum(values: list[Any]) -> Decimal:
     total = D0
     for value in values:
@@ -48,8 +53,33 @@ def dec_sum(values: list[Any]) -> Decimal:
     return total
 
 
+# Same fix already shipped to foundation_slab_calculator.py and
+# load_bearing_walls_lintels_calculator.py (2026-08-12/14): raw steel_class.lower() on a Cyrillic
+# PDF label (e.g. "А500С") produces a price_code the Latin-only registry/export regex never
+# matches, silently breaking price lookups and any export-side regex keyed on price_code (diameter
+# labels, diameter-descending sort). floor_slab_1/2 never got this fix - still doing it here.
+_CYRILLIC_TO_LATIN_STEEL = str.maketrans(
+    {"А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X"}
+)
+
+
+def normalize_steel_class_code(steel_class: str) -> str:
+    latin = steel_class.strip().translate(_CYRILLIC_TO_LATIN_STEEL).upper()
+    if latin.endswith("C"):
+        latin = latin[:-1]
+    return latin.lower()
+
+
+def _cyrillic_to_latin_lower(steel_class: str) -> str:
+    """Transliterates only - unlike normalize_steel_class_code(), keeps a trailing C. Used for
+    the internal `code` field (make_rebar_code below), which existing fixtures already pin to
+    the untrimmed spelling (e.g. "rebar_a500c_d10_z1") - only price_code needs the C-strip, to
+    treat A500/A500C as the same priced material class, matching foundation_slab/walls."""
+    return steel_class.strip().translate(_CYRILLIC_TO_LATIN_STEEL).lower()
+
+
 def make_rebar_code(steel_class: str, diameter_mm: int) -> str:
-    return f"rebar_{steel_class.lower()}_d{diameter_mm}"
+    return f"rebar_{_cyrillic_to_latin_lower(steel_class)}_d{diameter_mm}"
 
 
 def make_rebar_name(steel_class: str, diameter_mm: int) -> str:
@@ -143,15 +173,15 @@ def calculate_rebar_items_pooled(
     valid_zone_contexts: set[str],
 ) -> list[dict[str, Any]]:
     """spec_length_items only (legacy_weight_parts keeps calculate_rebar_item()'s independent
-    per-row rounding unchanged - no real-project evidence covers that path). Pools same (floor,
-    component, zone_context, steel_class, diameter_mm) rows into ONE combined rod-purchase
-    rounding, instead of rounding each spec row to its own rod-multiple independently. Same bug
-    and same fix as load_bearing_walls_lintels_calculator.py's rebar_from_spec_length_items_pooled
-    (2026-08-09) - confirmed exact on a real project: main zone's 12 separately-named Ø10 rows sum to
-    4286.375m base length, *1.05=4500.69m, /11.7=384.67->385 rods=4504.5m, matching her real number
-    exactly (independent per-row rounding gave 4551.3m instead); kitchen zone's 3 Ø10 rows sum to
-    811.15m, *1.05=851.71m, /11.7=72.79->73 rods=854.1m, also exact. zone_context (optional per
-    item, matching a slab_zones[].context) keeps the two zones' rebar pooled SEPARATELY - pooling
+    per-row rounding unchanged - no real-project evidence covers that path). Pools same
+    (zone_context, steel_class, diameter_mm) rows into ONE combined rod-purchase rounding, instead
+    of rounding each spec row to its own rod-multiple independently. Same bug and same fix as
+    load_bearing_walls_lintels_calculator.py's rebar_from_spec_length_items_pooled (2026-08-09) -
+    confirmed exact on a real project: main zone's 12 separately-named Ø10 rows sum to 4286.375m
+    base length, *1.05=4500.69m, /11.7=384.67->385 rods=4504.5m, matching her real number exactly
+    (independent per-row rounding gave 4551.3m instead); kitchen zone's 3 Ø10 rows sum to 811.15m,
+    *1.05=851.71m, /11.7=72.79->73 rods=854.1m, also exact. zone_context (optional per item,
+    matching a slab_zones[].context) keeps the two zones' rebar pooled SEPARATELY - pooling
     main+kitchen together instead gives 458 rods=5359.8m, NOT her real 4504.5+854.1=5358.6m (she
     rounds per zone independently, same "apply per zone, then sum" mechanism already proven on
     formwork-delivery trucks and concrete material/trips). The real project's extraction does not
@@ -159,10 +189,21 @@ def calculate_rebar_items_pooled(
     every item, all same-diameter rows across the whole section pool into one group (graceful
     degradation, not a crash), which is closer to her real number than independent rounding but not
     exact for multi-zone projects until zone_context is added at extraction time. See
-    floor_slab_1_comparison_findings_2026-08-09 memory. floor/component are no longer required -
-    see the key-building note below."""
-    groups: dict[tuple[Any, Any, str | None, str, int], list[dict[str, Any]]] = {}
-    order: list[tuple[Any, Any, str | None, str, int]] = []
+    floor_slab_1_comparison_findings_2026-08-09 memory.
+
+    component was ALSO in the pooling key until 2026-08-22 - real bug, not a real distinction:
+    floor_slab_rebar_items carries a genuine PDF-sourced "beam"/"slab"/"additional" component tag
+    per row, so same-diameter rebar in one zone split into up to 3 independently-rounded pools,
+    wasting up to 2 extra rods (each pool rounds up on its own instead of once combined). Checked
+    against real ТРЦ data (2026-08-22): 1st floor Ø10 had beam/slab/additional pools summing to
+    327.6+3919.5+269.1=4516.2m (386 rods); pooled as ONE group (4286.375m base) gives exactly
+    385 rods=4504.5m - Elena's real number, matching to the meter. Same on Ø16 (210.6m split ->
+    198.9m pooled, also exact) and on the 2nd floor's Ø10/Ø16 (2831.4->2819.7m, 140.4->128.7m,
+    both exact). component/floor are echoed on the input per row but never distinguish a real
+    rod-purchase decision - Elena's own smeta prints ONE line per diameter per zone regardless of
+    component, confirming the pool must ignore it."""
+    groups: dict[tuple[str | None, str, int], list[dict[str, Any]]] = {}
+    order: list[tuple[str | None, str, int]] = []
     for item in items_in:
         for required_key in ("steel_class", "diameter_mm", "kg_per_meter", "waste_coeff", "rod_length_m", "unit_price_per_m"):
             if item.get(required_key) is None:
@@ -179,11 +220,7 @@ def calculate_rebar_items_pooled(
                 f"rebar_items[{item.get('code')!r}].zone_context {zone_context!r} does not match "
                 "any slab_zones[].context"
             )
-        # floor/component echoed from the input rather than required/forced to fixed literals -
-        # see calculate_rebar_item()'s identical note above. Every existing caller already passes
-        # floor=1/component="floor_slab_1" uniformly, so pooling groups are unaffected; the new
-        # zone-based schema omits both, and they still group correctly by zone_context alone.
-        key = (item.get("floor"), item.get("component"), zone_context, item["steel_class"], int(item["diameter_mm"]))
+        key = (zone_context, item["steel_class"], int(item["diameter_mm"]))
         if key not in groups:
             groups[key] = []
             order.append(key)
@@ -193,7 +230,15 @@ def calculate_rebar_items_pooled(
     results: list[dict[str, Any]] = []
     for key in order:
         group_items = groups[key]
-        floor, component, zone_context, steel_class, diameter_mm = key
+        zone_context, steel_class, diameter_mm = key
+        # floor/component are no longer part of the pooling key (2026-08-22) - a group can now
+        # legitimately mix rows with different component tags (beam/slab/additional). Kept here
+        # purely as an informational echo (rebar_item_controls_by_code diagnostics), never read
+        # for money: single shared value when the group agrees, "combined" when it doesn't.
+        floors = {item.get("floor") for item in group_items}
+        components = {item.get("component") for item in group_items}
+        floor = next(iter(floors)) if len(floors) == 1 else "combined"
+        component = next(iter(components)) if len(components) == 1 else "combined"
         kg_per_meter = d(group_items[0]["kg_per_meter"])
         rod_length = d(group_items[0]["rod_length_m"])
         unit_price = d(group_items[0]["unit_price_per_m"])
@@ -206,10 +251,9 @@ def calculate_rebar_items_pooled(
                 or d(other["waste_coeff"]) != waste_coeff
             ):
                 raise ValueError(
-                    f"rebar pooling: rows sharing floor={floor}, component={component}, "
-                    f"zone_context={zone_context!r}, steel_class={steel_class}, "
-                    f"diameter_mm={diameter_mm} disagree on kg_per_meter/rod_length_m/"
-                    "unit_price_per_m/waste_coeff - can't pool safely."
+                    f"rebar pooling: rows sharing zone_context={zone_context!r}, "
+                    f"steel_class={steel_class}, diameter_mm={diameter_mm} disagree on "
+                    "kg_per_meter/rod_length_m/unit_price_per_m/waste_coeff - can't pool safely."
                 )
 
         base_length = dec_sum([d(item["spec_length_m"]) for item in group_items])
@@ -436,18 +480,38 @@ def calculate_concrete_order_context(
     total_concrete_volume: Decimal,
     slab_zones_in: list[dict[str, Any]],
     additional_concrete_items_in: list[dict[str, Any]],
+    beams_concrete_volume: Decimal = D0,
 ) -> dict[str, Any]:
-    """Combined-total waste+ceil by default (unchanged behavior). Switches to per-zone
-    waste+ceil-then-sum (2026-08-09) ONLY when additional_concrete_items[] is non-empty - a
-    top-level, optional list (same convention as beam_items, NOT nested inside slab_zones, since
-    each group is its own set of review-workbook rows) of extra concrete-volume line items some
-    real drawings print separately from a zone's main slab pour (e.g. one real project's "балка/ребро в теле
-    плиты перекрытия" rows). Her real smeta counts these toward ordered concrete/delivery trips
-    only, not toward slab-only concreting volume or formwork area (both already proven correct
-    without this addition) - see floor_slab_1_comparison_findings_2026-08-09 memory. Proven exact
-    on that project: main (25.337+1.091)*1.05=27.749->28 m3/4 trips, kitchen (5.975+0.199)*1.05=6.483->7
-    m3/1 trip, matching her real rows digit-for-digit (the combined-total formula gives 33 m3/4
-    trips instead). Same "apply per zone, then sum" mechanism already confirmed on
+    """Combined-total waste+ceil by default (unchanged behavior), now with beams_concrete_volume
+    folded in (2026-08-22 fix - see below). Switches to per-zone waste+ceil-then-sum (2026-08-09)
+    ONLY when additional_concrete_items[] is non-empty - a top-level, optional list (same
+    convention as beam_items, NOT nested inside slab_zones, since each group is its own set of
+    review-workbook rows) of extra concrete-volume line items some real drawings print separately
+    from a zone's main slab pour (e.g. one real project's "балка/ребро в теле плиты перекрытия"
+    rows, routed here specifically because that beam has no length_m to be priced as a normal beam
+    row - see floor_slabs/build_input.py's beam_only_concrete_items). Her real smeta counts these
+    toward ordered concrete/delivery trips only, not toward slab-only concreting volume or
+    formwork area (both already proven correct without this addition) - see
+    floor_slab_1_comparison_findings_2026-08-09 memory. Proven exact on the kitchen zone (the only
+    one with a length-less beam): (5.975+0.199)*1.05=6.483->7 m3/1 trip, matching her real row
+    digit-for-digit.
+
+    beams_concrete_volume (2026-08-22 fix): the OTHER, more common shape - a zone whose beams all
+    have a real length_m (routed through beam_rows, priced as normal ≤250/>250mm work lines) but
+    whose spec table also gives a ready beams_concrete_volume_m3 total (Prompt rule 25 override,
+    see section_contract.yaml). That volume is real, ordered concrete - Elena's own real ТРЦ smeta
+    for the 1st floor confirms this directly (her own beam-table cell formula P169:
+    "=(S156+T156+Z161)*1.05" - slab area-volume PLUS her own beam-table total, not just the slab).
+    Before this fix, beams_concrete_volume was only ever SUBTRACTED from total_concrete_volume
+    (below, to isolate slab-only volume for the concreting-work line/formwork area) and never
+    added back for ordering - real project data confirmed exact: (25.337+1.091)*1.05=27.749->28
+    m3/4 trips matches her real row exactly; the code before this fix produced 27 m3/3 trips
+    (missing exactly the 1.091 m3 beams portion). Only applied in the combined_total branch below
+    - the per-zone/additional_concrete_items branch above already carries its own beam concrete via
+    zone_additional and must not double-count a project where a zone has both a length-less beam
+    AND a beams_concrete_volume_m3 override for the same physical volume (real case: this project's
+    kitchen zone has both, referring to the same "ребро 50мм" concrete).
+    Same "apply per zone, then sum" mechanism already confirmed on
     formwork-delivery trucks (2 real projects, calculate_formwork_delivery_context). Not validated on a
     second real project yet (the other project's floor slab has no equivalent line to check against) - only the
     per-zone mechanism itself is multi-project-proven."""
@@ -476,7 +540,19 @@ def calculate_concrete_order_context(
         concrete_delivery_trips = dec_sum(zone_trips)
         source = "per_zone_with_additional_items"
     else:
-        concrete_volume_with_waste = total_concrete_volume * waste_coeff
+        # slab_zones[] vs the legacy flat geometry.total_concrete_volume_from_spec_m3 scalar give
+        # total_concrete_volume opposite meanings: the legacy scalar is a single combined PDF
+        # figure (slab+beams together, which is exactly why slab_concrete_volume below subtracts
+        # beams_concrete_volume out of it - unchanged, pre-2026-08-22 behavior for that path).
+        # slab_zones[].concrete_volume_m3 (see floor_slabs/build_input.py) is always PURE slab,
+        # beams tracked entirely separately (concrete_slab_volume_m3, never combined) - so for
+        # ordering purposes beams_concrete_volume must be ADDED here, not left out, or a project
+        # whose beams all have a real length_m (the common case - only a length-less beam routes
+        # through additional_concrete_items above) silently loses its beam concrete from the order.
+        order_total_concrete_volume = (
+            total_concrete_volume + beams_concrete_volume if slab_zones_in else total_concrete_volume
+        )
+        concrete_volume_with_waste = order_total_concrete_volume * waste_coeff
         round_step = rates.get("concrete_round_step_m3")
         # concrete_round_step_m3 (rates, optional) - added 2026-08-09 P1.2 so a wrapper can round
         # the order up to a fixed step (floor_slab_2's historical ceil-to-step behavior) instead of
@@ -1199,7 +1275,11 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
         * d(rates["additional_timber_thickness_m"])
     )
     base_timber_volume = edge_beam_formwork_area_for_materials * timber_thickness
-    timber_volume = quantized_decimal(base_timber_volume + additional_timber_volume, "0.000000001")
+    # Elena's real formula (ТРЦ/АРК/ЮСВ, checked 2026-08-22): always CEILING to the nearest 0.1 м3 -
+    # a practical purchase increment (you can't order a fractional cubic meter of lumber), not a
+    # raw decimal. The old quantized_decimal(..., "0.000000001") call left the value effectively
+    # unrounded, silently under-ordering by up to 0.099 м3 on every single pour.
+    timber_volume = ceil_to_step_decimal(base_timber_volume + additional_timber_volume, "0.1")
 
     if rebar_calc_method == "spec_length_items":
         # Pooled rounding (2026-08-09) - see calculate_rebar_items_pooled() docstring. Only
@@ -1242,7 +1322,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     )
 
     concrete_order_context = calculate_concrete_order_context(
-        rates, total_concrete_volume, slab_zones_in, additional_concrete_items_in
+        rates, total_concrete_volume, slab_zones_in, additional_concrete_items_in, beams_concrete_volume
     )
     concrete_volume_with_waste = d(concrete_order_context["concrete_volume_with_waste"])
     # int() would silently truncate a fractional order volume from concrete_round_step_m3 (e.g.
@@ -1369,7 +1449,7 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
                 item["order_length_m"],
                 item["order_length_m"],
                 item["material_total_raw"],
-                price_code=f"rebar_{item['steel_class'].lower()}_d{item['diameter_mm']}_m",
+                price_code=f"rebar_{normalize_steel_class_code(item['steel_class'])}_d{item['diameter_mm']}_m",
             )
         )
 

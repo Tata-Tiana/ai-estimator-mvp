@@ -410,6 +410,25 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
             beams_bottom_override if beams_bottom_override is not None else beams_bottom_sum
         )
 
+        # beams_concrete_volume_m3: spec-table override (Prompt rule 25 - spec always wins over
+        # summing floor_slab_beam_items' own L*W*H, which real TRC data proved unreliable when a
+        # beam's height gets misread off a crowded plan drawing). Only set the key when a real
+        # override is given - absent, the engine's own default already falls back to summing
+        # beam_items, no fallback needed here.
+        beams_concrete_volume_override = _num(zone.get("beams_concrete_volume_m3"))
+        if beams_concrete_volume_override is not None:
+            result["beams_concrete_volume_m3"] = beams_concrete_volume_override
+
+        # manual_plywood_reserve_sheets: per-pour override of rates.reserve_plywood_sheets (catalog
+        # default 0, see defaults_catalog.yaml's 2026-08-22 note - real ТРЦ/АРК/ЮСВ data shows this
+        # reserve is a genuine manual per-pour judgment call, not a formula, and varies 0/5/10 with
+        # no discoverable pattern). Only overrides the shared_rates value already seeded above when
+        # Elena actually fills it in; absent means 0, same convention as crane/pump but WITH a safe
+        # default, so this field is never critical/red (see populate_review_workbook_from_extraction.py).
+        plywood_reserve_override = _num(zone.get("manual_plywood_reserve_sheets"))
+        if plywood_reserve_override is not None:
+            _set_nested(result, "rates.reserve_plywood_sheets", plywood_reserve_override)
+
         if beam_rows:
             result["beams"] = {"items": beam_rows}
 

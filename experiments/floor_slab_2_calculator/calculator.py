@@ -15,7 +15,11 @@ from typing import Any
 _FLOOR_SLAB_ENGINE_DIR = Path(__file__).resolve().parents[1] / "floor_slab_1_calculator"
 if str(_FLOOR_SLAB_ENGINE_DIR) not in sys.path:
     sys.path.insert(0, str(_FLOOR_SLAB_ENGINE_DIR))
-from floor_slab_calculator import calculate_floor_slab_pour  # noqa: E402
+from floor_slab_calculator import (  # noqa: E402
+    calculate_floor_slab_pour,
+    normalize_steel_class_code,
+    _cyrillic_to_latin_lower,
+)
 
 D0 = Decimal("0")
 D1 = Decimal("1")
@@ -53,7 +57,7 @@ def ceil_to_step(value: Any, step: Any) -> Decimal:
 
 
 def make_rebar_code(steel_class: str, diameter_mm: int) -> str:
-    return f"rebar_{steel_class.lower()}_d{diameter_mm}"
+    return f"rebar_{_cyrillic_to_latin_lower(steel_class)}_d{diameter_mm}"
 
 
 def make_rebar_name(steel_class: str, diameter_mm: int) -> str:
@@ -382,7 +386,9 @@ def _translate_pour_rebar_item(pour_item: dict[str, Any]) -> dict[str, Any]:
         else:
             out["weight_with_waste_kg"] = round_decimal(d(out["length_with_waste_m"]) * d(out["kg_per_meter"]))
         out.pop("weight_with_waste_kg_display")
-    out["price_code"] = f"rebar_{out['steel_class'].lower()}_d{out['diameter_mm']}_m"
+    # See floor_slab_calculator.py's normalize_steel_class_code() for why raw .lower() on a
+    # Cyrillic PDF steel_class (e.g. "А500С") breaks the export's Latin-only price_code regex.
+    out["price_code"] = f"rebar_{normalize_steel_class_code(out['steel_class'])}_d{out['diameter_mm']}_m"
     for stale_key in ("rods_ordered", "floor", "component", "zone_context"):
         out.pop(stale_key, None)
     return out

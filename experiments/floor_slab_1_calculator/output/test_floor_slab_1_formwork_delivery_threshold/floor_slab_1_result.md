@@ -5,12 +5,12 @@
 ## Итоги
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1054057` |
+| `internal_materials_total` | `1054531` |
 | `internal_works_total` | `564397` |
-| `internal_section_total` | `1618454` |
-| `base_subtotal_raw_before_overheads` | `1551397.846612` |
-| `logistics_and_supply_total` | `15514` |
-| `consumables_and_tool_depreciation_total` | `46542` |
+| `internal_section_total` | `1618928` |
+| `base_subtotal_raw_before_overheads` | `1551853.039` |
+| `logistics_and_supply_total` | `15519` |
+| `consumables_and_tool_depreciation_total` | `46556` |
 | `technical_supervision_total` | `5000` |
 
 ## Comparison Summary
@@ -72,7 +72,7 @@
 | `plywood_and_timber.overhang_sheet_equivalent` | `24.193478` |
 | `plywood_and_timber.base_timber_volume_m3` | `2.5796` |
 | `plywood_and_timber.additional_timber_volume_m3` | `0.199228` |
-| `plywood_and_timber.timber_volume_m3_raw` | `2.778828` |
+| `plywood_and_timber.timber_volume_m3_raw` | `2.8` |
 | `rebar.rebar_calc_method` | `legacy_weight_parts` |
 | `rebar.items` | `[{"code": "rebar_a500_d25", "name": "Арматура класса А500 диаметром 25 мм", "steel_class": "A500", "diameter_mm": 25, "source_weight_kg": 162.0, "kg_per_meter": 3.85, "base_length_m": 42.077922, "waste_coeff": 1.05, "length_with_waste_m": 44.181818, "weight_with_waste_kg_display": 170.1, "rod_length_m": 11.7, "rods": 4, "rods_ordered": 4, "order_length_m": 46.8, "delivery_weight_kg": 180.18, "unit_price_per_m": 196.35, "material_total_raw": 9189.18, "material_total": 9189}, {"code": "rebar_a500_d16", "name": "Арматура класса А500 диаметром 16 мм", "steel_class": "A500", "diameter_mm": 16, "source_weight_kg": 112.04, "kg_per_meter": 1.58, "base_length_m": 70.911392, "waste_coeff": 1.05, "length_with_waste_m": 74.456962, "weight_with_waste_kg_display": 117.64, "rod_length_m": 11.7, "rods": 7, "rods_ordered": 7, "order_length_m": 81.9, "delivery_weight_kg": 129.402, "unit_price_per_m": 80.58, "material_total_raw": 6599.502, "material_total": 6600}, {"code": "rebar_a500_d12", "name": "Арматура класса А500 диаметром 12 мм", "steel_class": "A500", "diameter_mm": 12, "source_weight_kg": 42.0, "kg_per_meter": 0.888, "base_length_m": 47.297297, "waste_coeff": 1.05, "length_with_waste_m": 49.662162, "weight_with_waste_kg_display": 44.1, "rod_length_m": 11.7, "rods": 5, "rods_ordered": 5, "order_length_m": 58.5, "delivery_weight_kg": 51.948, "unit_price_per_m": 45.29, "material_total_raw": 2649.465, "material_total": 2649}, {"code": "rebar_a500_d10", "name": "Арматура класса А500 диаметром 10 мм", "steel_class": "A500", "diameter_mm": 10, "source_weight_kg": 4038.6, "kg_per_meter": 0.617, "base_length_m": 6545.54295, "waste_coeff": 1.05, "length_with_waste_m": 6872.820097, "weight_with_waste_kg_display": 4240.53, "rod_length_m": 11.7, "rods": 588, "rods_ordered": 588, "order_length_m": 6879.6, "delivery_weight_kg": 4244.7132, "unit_price_per_m": 32.72, "material_total_raw": 225100.512, "material_total": 225101}, {"code": "rebar_a240_d8", "name": "Арматура класса А240 диаметром 8 мм", "steel_class": "A240", "diameter_mm": 8, "source_weight_kg": 17.0, "kg_per_meter": 0.395, "base_length_m": 43.037975, "waste_coeff": 1.05, "length_with_waste_m": 45.189873, "weight_with_waste_kg_display": 17.85, "rod_length_m": 6.0, "rods": 8, "rods_ordered": 8, "order_length_m": 48.0, "delivery_weight_kg": 18.96, "unit_price_per_m": 24.0, "material_total_raw": 1152.0, "material_total": 1152}, {"code": "rebar_a240_d6", "name": "Арматура класса А240 диаметром 6 мм", "steel_class": "A240", "diameter_mm": 6, "source_weight_kg": 38.0, "kg_per_meter": 0.222, "base_length_m": 171.171171, "waste_coeff": 1.05, "length_with_waste_m": 179.72973, "weight_with_waste_kg_display": 39.9, "rod_length_m": 6.0, "rods": 30, "rods_ordered": 30, "order_length_m": 180.0, "delivery_weight_kg": 39.96, "unit_price_per_m": 13.32, "material_total_raw": 2397.6, "material_total": 2398}]` |
 | `rebar.item_controls_by_code.rebar_a500_d25.code` | `rebar_a500_d25` |
@@ -207,13 +207,13 @@
 | `insulation.order_eps_volume_m3_raw` | `8.319` |
 | `insulation.foam_cans_raw` | `7.77` |
 | `insulation.foam_cans_ordered` | `8` |
-| `overheads.base_subtotal_raw_before_overheads` | `1551397.846612` |
+| `overheads.base_subtotal_raw_before_overheads` | `1551853.039` |
 | `overheads.logistics_and_supply_percent` | `0.01` |
-| `overheads.logistics_and_supply_total_raw` | `15513.978466` |
-| `overheads.logistics_and_supply_total` | `15514` |
+| `overheads.logistics_and_supply_total_raw` | `15518.53039` |
+| `overheads.logistics_and_supply_total` | `15519` |
 | `overheads.consumables_and_tool_percent` | `0.03` |
-| `overheads.consumables_and_tool_depreciation_total_raw` | `46541.935398` |
-| `overheads.consumables_and_tool_depreciation_total` | `46542` |
+| `overheads.consumables_and_tool_depreciation_total_raw` | `46555.59117` |
+| `overheads.consumables_and_tool_depreciation_total` | `46556` |
 | `manual_lines.concrete_pump_shifts` | `1` |
 | `manual_lines.technical_supervision_amount` | `5000` |
 | `control_metrics.control_geometry_area_m2` | `180` |
@@ -321,7 +321,7 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `formwork_consumables` | Расходные материалы для установки опалубки (смазка; звездочки ПВХ, трубки) | `1.0` | `1.0` | `-` | `materials_consumables` | `8460.0` | `8460` | `0.0` | `0` | `8460.0` | `8460` |
 | `edge_beam_formwork_installation_control` | Монтаж опалубки из доски 50 мм и фанеры для устройства балок, для отбортовки плиты | `51.592` | `51.59` | `м2` | `zero_control_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `plywood_fk_18mm_for_edges_and_non_multiple_places` | Фанера ФК 1,52 * 1,52 толщиной 18 мм для закрытия некратных мест и торцов | `49.0` | `49.0` | `шт` | `materials` | `71050.0` | `71050` | `0.0` | `0` | `71050.0` | `71050` |
-| `formwork_timber_gost` | Пиломатериал обрезной для устройства опалубки ГОСТ | `2.778828` | `2.78` | `м3` | `materials` | `59744.807612` | `59745` | `0.0` | `0` | `59744.807612` | `59745` |
+| `formwork_timber_gost` | Пиломатериал обрезной для устройства опалубки ГОСТ | `2.8` | `2.8` | `м3` | `materials` | `60200.0` | `60200` | `0.0` | `0` | `60200.0` | `60200` |
 | `floor_slab_rebar_frame_assembly_control` | Изготовление и монтаж каркаса армирования монолитного перекрытия из арматуры (в том числе балок) | `7294.8` | `7294.8` | `мп` | `zero_control_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `rebar_a500_d25` | Арматура класса А500 диаметром 25 мм | `46.8` | `46.8` | `мп` | `materials` | `9189.18` | `9189` | `0.0` | `0` | `9189.18` | `9189` |
 | `rebar_a500_d16` | Арматура класса А500 диаметром 16 мм | `81.9` | `81.9` | `мп` | `materials` | `6599.502` | `6600` | `0.0` | `0` | `6599.502` | `6600` |
@@ -341,8 +341,8 @@ Legacy-режим `legacy_fixed_edge_length`: утепление рассчит�
 | `bottom_slab_insulation_work` | Устройство утепления низа плиты | `62.436` | `62.44` | `м2` | `work` | `0.0` | `0` | `56192.4` | `56192` | `56192.4` | `56192` |
 | `eps_penoplex_osnova_100mm` | Экструдированный пенополистирол Пеноплэкс Основа 100х585х1185 мм | `8.319` | `8.32` | `м3` | `materials` | `75037.38` | `75037` | `0.0` | `0` | `75037.38` | `75037` |
 | `eps_glue_foam` | Клей-пена для ЭППС | `8.0` | `8.0` | `баллон` | `materials_consumables` | `3920.0` | `3920` | `0.0` | `0` | `3920.0` | `3920` |
-| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `15513.978466` | `15514` | `0.0` | `0` | `15513.978466` | `15514` |
-| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `46541.935398` | `46542` | `0.0` | `0` | `46541.935398` | `46542` |
+| `logistics_and_supply` | Логистика, и снабжение | `1.0` | `1.0` | `-` | `materials_overhead_percent` | `15518.53039` | `15519` | `0.0` | `0` | `15518.53039` | `15519` |
+| `consumables_tool_depreciation` | Расходные материалы, амортизация инструмента | `1.0` | `1.0` | `комплект` | `materials_overhead_percent` | `46555.59117` | `46556` | `0.0` | `0` | `46555.59117` | `46556` |
 | `technical_supervision` | Технический надзор | `1.0` | `1.0` | `-` | `manual_fixed_work` | `0.0` | `0` | `5000.0` | `5000` | `5000.0` | `5000` |
 | `procurement_warehouse_costs` | Заготовительно-складские расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |
 | `overhead_general_business_costs` | Накладные и общехозяйственные расходы | `1.0` | `1.0` | `-` | `client_only_zero_internal_line` | `0.0` | `0` | `0.0` | `0` | `0.0` | `0` |

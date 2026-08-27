@@ -2,9 +2,9 @@
   "calculation_blocks": {
     "concrete": {
       "total_project_concrete_volume_m3": 40.53,
-      "concrete_volume_with_waste_m3_raw": 42.5565,
-      "order_concrete_volume_m3": 43,
-      "concrete_delivery_trips": 5
+      "concrete_volume_with_waste_m3_raw": 45.86904,
+      "order_concrete_volume_m3": 46,
+      "concrete_delivery_trips": 6
     },
     "slab_zones": {
       "used": true,
@@ -12,9 +12,9 @@
     }
   },
   "totals": {
-    "internal_materials_total": 1176087,
+    "internal_materials_total": 1204060,
     "internal_works_total": 624099,
-    "internal_section_total": 1800186
+    "internal_section_total": 1828159
   },
   "estimate_lines": {
     "beam_concreting_work_tall": {

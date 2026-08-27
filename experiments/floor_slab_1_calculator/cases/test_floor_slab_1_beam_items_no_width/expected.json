@@ -116,7 +116,7 @@
       "overhang_sheet_equivalent": 24.193478,
       "base_timber_volume_m3": 3.465,
       "additional_timber_volume_m3": 0.211269,
-      "timber_volume_m3_raw": 3.676269
+      "timber_volume_m3_raw": 3.7
     },
     "rebar": {
       "rebar_calc_method": "legacy_weight_parts",
@@ -490,14 +490,14 @@
       "price_code": "plywood_1520x1520_18mm_sheet"
     },
     "formwork_timber_gost": {
-      "quantity_raw": 3.676269,
-      "quantity_display": 3.68,
-      "material_total_raw": 79039.790445,
-      "material_total": 79040,
+      "quantity_raw": 3.7,
+      "quantity_display": 3.7,
+      "material_total_raw": 79550.0,
+      "material_total": 79550,
       "work_total_raw": 0.0,
       "work_total": 0,
-      "line_total_raw": 79039.790445,
-      "line_total": 79040,
+      "line_total_raw": 79550.0,
+      "line_total": 79550,
       "price_code": "timber_m3"
     },
     "floor_slab_rebar_frame_assembly_control": {
