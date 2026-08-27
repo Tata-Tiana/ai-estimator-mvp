@@ -415,7 +415,13 @@ def calculate_trench_routes(
 # "K2_K3_P10", while printed PDF/smeta names use Cyrillic, e.g. "К2, К3"). Order matters:
 # checked top to bottom, first match wins.
 _TRENCH_NETWORK_TYPE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("water", re.compile(r"(?:[ВV]1|\bВК\b|водопровод)", re.IGNORECASE)),
+    # 2026-08-26: a real route came through with route_code="water"/name="Вода" (the extraction's
+    # own normalized label for this network, not the raw "В1"/"ВК" abbreviation) - matched none of
+    # the original patterns, silently fell through to "other" (coeff 0.5 instead of the correct
+    # water coeff 1.6), understating trench_manual_portion_m3 by ~5.5 m3 on a real ЮСВ run and
+    # cascading into both the manual-excavation and sand-backfill totals. \bwater\b/\bвода\b added
+    # as additional recognized synonyms for this network type.
+    ("water", re.compile(r"(?:[ВV]1|\bВК\b|водопровод|\bwater\b|\bвод[аы]\b)", re.IGNORECASE)),
     # \bЭО\b alone misses real labels like "ЭО1"/"ЭО4" - Cyrillic letters and digits are both
     # \w, so there is no \b between "О" and "1" for \bЭО\b to match on. \bЭО\d* (leading
     # boundary only, digits optional after) covers "ЭО", "ЭО1", "ЭО1; ЭО2; ЭО3", etc.
