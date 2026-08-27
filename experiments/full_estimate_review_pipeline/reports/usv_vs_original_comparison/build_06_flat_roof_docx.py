@@ -1,23 +1,14 @@
-"""One-off builder for 06_flat_roof_sources_for_elena.docx - same style/format as
-build_05_floor_slabs_docx.py (see feedback_sources_for_elena_docx_workflow memory: Table Grid,
-bold header only, Excel-style qty formatting via format_qty()). No zone subheaders here - unlike
-floor_slabs/walls, the flat_roof section's own real smeta prints ONE combined line per material/
-work (both roof zones +3.480/+4.680 summed together), not separate per-zone rows, so there's no
-natural split point to insert headers at. Numbers sourced from
-output/usv_build/section_results_live/flat_roof_result.json (rebuilt 2026-08-27, second fresh
-Sheet download after Elena's own abutment-length correction on sheet 01: parapet_length_m/
-wall_abutment_length_m now hold HER OWN drawing-derived numbers (131.4+7.22=138.62), replacing
-the earlier fill from the PDF spec's two abutment-length rows (103.35+24.65=128), which turned
-out to be the coarser number - same pattern as the roof-area fix, see 06_flat_roof.md findings
-№1-2. Also corrected: Заготовительно-складские/Накладные/Сметная прибыль are NOT all "always 0,
-no client markup" - checked Elena's real formulas directly, Накладные/Прибыль genuinely have no
-formula at all in the grey/internal columns K-O (blank = 0, the large visible numbers there are
-client-markup in the white columns), but ЗСР has a real internal amount for this project (15000₽)
-that our calculator's own default (0) doesn't reproduce - see finding №7. Not the same mechanism
-as technical_supervision_amount (a plain universal default) - ЗСР's own override field has been
-hidden from sheet 01 since 2026-08-03, so the fix isn't "fill it in on sheet 01"; per user
-decision (2026-08-27) this is left as-is, fillable by hand directly in the finished estimate
-when a project needs it."""
+"""One-off builder for 06_flat_roof_sources_for_elena.docx - a client-facing doc for the estimator
+(Elena), not an internal review report. Same style/format as build_05_floor_slabs_docx.py (see
+feedback_sources_for_elena_docx_workflow memory: Table Grid, bold header only, Excel-style qty
+formatting via format_qty()). No zone subheaders here - unlike floor_slabs/walls, the flat_roof
+section's own real smeta prints ONE combined line per material/work (both roof zones
++3.480/+4.680 summed together), not separate per-zone rows, so there's no natural split point to
+insert headers at. Do NOT reference internal report filenames or numbered findings anywhere in
+this doc's text - Elena never sees those, keep every explanation self-contained. Numbers sourced
+from output/usv_build/section_results_live/flat_roof_result.json (rebuilt 2026-08-27, fresh Sheet
+download after Elena's own abutment-length correction on sheet 01: parapet_length_m/
+wall_abutment_length_m hold her own drawing-derived numbers, 131.4+7.22=138.62 мп)."""
 
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
@@ -41,8 +32,7 @@ def format_qty(value: float, unit: str) -> str:
 _RAW_ROWS: list[tuple[str, float, str, str]] = [
     ("Подготовка основания под укладку пароизоляционного слоя, очистка поверхности", 248.92, "м2",
      "Посчитано. Сумма площадей обеих зон кровли: +3.480 (177.52 м2) + +4.680 (71.4 м2) = 248.92 "
-     "м2 - исправлено на листе 01 под собственный расчёт Елены по чертежу (была готовая площадь "
-     "спецификации 212.35+82=294.35, см. отчёт 06_flat_roof.md находка №1)."),
+     "м2 - площадь по собственному расчёту Елены по чертежу."),
     ("Пароизоляция основания плёнкой ПВХ", 248.92, "м2", "То же значение, что и площадь основания (см. выше)."),
     ("Плёнка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул", 300, "м2",
      "Посчитано. Площадь (248.92 м2) с запасом на нахлёст, округлено вверх до кратности рулона "
@@ -65,11 +55,9 @@ _RAW_ROWS: list[tuple[str, float, str, str]] = [
      "Ручное поле по расчёту разуклонки поставщика, аналогично плитам A."),
     ("Укладка ПВХ Мембраны", 248.92, "м2", "То же значение, что и площадь основания."),
     ("Монтаж примыкания кровли из ПВХ мембраны", 138.62, "мп",
-     "Из проекта напрямую - её собственный расчёт по чертежу отдельно на каждый этаж (парапет 1 "
-     "этаж 96 + парапет 2 этаж 35.4 + примыкания к ВК/стенам 1 этаж 4.68 + 2 этаж 2.54 = 138.62 "
-     "мп), вписан на листе 01 вместо готовых строк спецификации (103.35+24.65=128 мп), которые "
-     "оказались более грубым числом - тот же паттерн, что и с площадью кровли, см. отчёт "
-     "06_flat_roof.md находки №1-2. Точное совпадение с Еленой."),
+     "Из проекта напрямую - собственный расчёт Елены по чертежу отдельно на каждый этаж (парапет "
+     "1 этаж 96 + парапет 2 этаж 35.4 + примыкания к ВК/стенам 1 этаж 4.68 + 2 этаж 2.54 = "
+     "138.62 мп)."),
     ("Монтаж планки примыкания", 138.62, "мп",
      "Техническая сумма для отображения (цена строки всегда 0) - то же значение, что и монтаж "
      "примыкания выше."),
@@ -96,9 +84,7 @@ _RAW_ROWS: list[tuple[str, float, str, str]] = [
     ("Вывоз мусора с объекта", 3, "маш", "Ручное поле, по умолчанию 3."),
     ("Технический надзор", 1, "-", "Ручное поле."),
     ("Заготовительно-складские расходы", 1, "-",
-     "По умолчанию 0 (legacy-поле, скрыто с листа 01). У Елены реально 15 000₽ во внутренней "
-     "себестоимости (не наценка) - см. отчёт 06_flat_roof.md находка №7. Не баг, при "
-     "необходимости можно вписать вручную прямо в готовую смету."),
+     "По умолчанию 0. При необходимости сумму можно вписать вручную прямо в готовую смету."),
     ("Накладные и общехозяйственные расходы", 1, "-",
      "Строка есть для структуры сметы, у нас всегда 0. У Елены тоже реально 0 во внутренней "
      "себестоимости - видимое в её смете крупное число это клиентская наценка по коэффициенту НР, "
@@ -142,15 +128,12 @@ summary_items = [
     ("Ручные поля (по умолчанию, можно менять под проект): ",
      "объёмы SLOPE-плит разуклонки (по расчёту поставщика/расчётной организации, не из "
      "архитектурного PDF), ЭППС 50мм, количество аэраторов/воронок, высота водостока на воронку "
-     "(3.75м), подъём краном, вывоз мусора, технический надзор (универсальный дефолт 10000₽). "
-     "Заготовительно-складские расходы по умолчанию 0 (см. находку №7) - при необходимости "
-     "вписываются вручную прямо в готовую смету, не через лист 01."),
+     "(3.75м), подъём краном, вывоз мусора, технический надзор (10000₽ по умолчанию), "
+     "заготовительно-складские расходы (0 по умолчанию, вписывается вручную при необходимости)."),
     ("Вручную поправлено конкретно по этому проекту (лист 01, поверх найденного): ",
-     "площадь обеих зон кровли (+3.480: 212.35→177.52 м2, +4.680: 82→71.4 м2), длина примыканий "
-     "(готовые строки спецификации 103.35+24.65=128 мп → её собственный расчёт по чертежу 131.4 мп "
-     "парапетов + 7.22 мп примыканий к стенам/ВК = 138.62 мп) - в обоих случаях собственный расчёт "
-     "Елены по чертежу оказался точнее готовой строки спецификации, см. отчёт 06_flat_roof.md "
-     "находки №1-2."),
+     "площадь обеих зон кровли (+3.480: 212.35→177.52 м2, +4.680: 82→71.4 м2) и длина примыканий "
+     "(131.4 мп парапетов + 7.22 мп примыканий к стенам/ВК = 138.62 мп) - в обоих случаях под "
+     "собственный расчёт Елены по чертежу."),
 ]
 
 for lead, rest in summary_items:
