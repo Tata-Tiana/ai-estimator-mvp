@@ -401,6 +401,16 @@ defaults:
     allow_override_later: true
     notes: "Calculates a final estimate line from the primary waterproofing subtotal."
 
+  - key: technical_supervision_amount
+    label_ru: "Технический надзор"
+    source_class: DEFAULT
+    value: 0
+    unit: "руб."
+    calculator_input_path: "technical_supervision_amount"
+    source_note: "Row confirmed present in all 3 real projects' delivered smetas, but always blank/0 in every one checked so far (unlike foundation_slab/walls/floor_slabs/roof, where it is a real nonzero cost) - default 0 matches every real value seen."
+    allow_override_later: true
+    notes: "2026-08-26: this section's estimate line was missing entirely until now (a 2026-08-15 note wrongly claimed the row never appears at all in waterproofing - it does, just always at 0). Same gap TRC's own build of this section had and missed too."
+
 auto_calculated:
   - key: eps100_wall_insulation_area_m2
     label_ru: "Площадь работ по ЭППС 100 мм торца"

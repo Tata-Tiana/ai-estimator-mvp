@@ -83,6 +83,14 @@ class WaterproofingInput:
     slab_formwork_perimeter_m: float | None = None
     slab_edge_height_m: float | None = None
     non_insulated_edge_lengths_m: list[float] = field(default_factory=list)
+    # 2026-08-26: real ЮСВ smeta ("Сметный расчет _ЮСВ_28.04.2026.xlsx", row 85) DOES print a
+    # "Технический надзор" row for this section - the 2026-08-15 note below this field's estimate
+    # line, claiming the row never appears in any of 3 real projects, was wrong (the row is always
+    # there, just always blank/0 in every project checked so far - same "structural placeholder,
+    # zero value" pattern every other section already uses). Same class of gap TRC's own version of
+    # this section had and missed too. Default 0.0 matches every real value seen; override per
+    # project if a real cost ever shows up here.
+    technical_supervision_amount: float = 0.0
     pricing: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
@@ -132,6 +140,7 @@ class WaterproofingInput:
             "glue_foam_unit_price",
             "waterproofing_logistics_coeff",
             "waterproofing_consumables_coeff",
+            "technical_supervision_amount",
         ]
         for field_name in non_negative_fields:
             _require_non_negative(field_name, getattr(self, field_name))
@@ -641,9 +650,18 @@ def calculate_internal_estimate_lines(
         # this pipeline only ever computes Elena's own internal cost, never the client-facing
         # markup these rows represent in her real smeta.
         #
-        # Технический надзор deliberately has NO line here at all (not even zero) - checked 3 real
-        # projects' delivered smetas 2026-08-15: waterproofing/cutoff-waterproofing never carries
-        # this row in any of them, unlike walls/foundation/floor slabs/roof where it's a real cost.
+        # Технический надзор: 2026-08-15 note here previously claimed this row never appears in
+        # waterproofing at all - wrong, see the field's own docstring on WaterproofingInput. The
+        # row is always present (just always blank/0 in every real smeta checked), same as
+        # Заготовительно-складские/Накладные/Сметная прибыль below - added here 2026-08-26.
+        calculate_line(
+            code="technical_supervision",
+            name="Технический надзор",
+            unit="-",
+            quantity=1,
+            work_unit_price=data.technical_supervision_amount,
+            price_code="technical_supervision_fixed",
+        ),
         calculate_line(code="procurement_warehouse_costs", name="Заготовительно-складские расходы", unit="-", quantity=1),
         calculate_line(code="overhead_general_business_costs", name="Накладные и общехозяйственные расходы", unit="-", quantity=1),
         calculate_line(code="estimated_profit", name="Сметная прибыль", unit="-", quantity=1),
