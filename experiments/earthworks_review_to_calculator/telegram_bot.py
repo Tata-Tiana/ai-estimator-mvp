@@ -1104,11 +1104,12 @@ def cmd_start(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/start"):
         return
     bot.reply_to(message,
-        "1. Пришлите extraction JSON файлом (из ChatGPT-чата).\n"
-        "2. Бот пришлёт отчёт работы над ошибками — отправьте его в тот же ChatGPT-чат.\n"
-        "3. Пришлите сюда исправленный JSON — бот сам соберёт и опубликует Google-таблицу.\n"
-        "4. Проверьте и заполните таблицу, затем — /build <job_id>.\n\n"
-        "Все команды: /help"
+        "Работа начинается с JSON из ChatGPT-чата.\n\n"
+        "1. Пришлите первый JSON файлом.\n"
+        "2. Бот пришлёт отчёт для проверки — отдайте его в тот же ChatGPT-чат.\n"
+        "3. Пришлите сюда исправленный JSON.\n"
+        "4. Бот соберёт Google-таблицу. Проверьте её и затем отправьте /build <job_id>.\n\n"
+        "Подробная инструкция: /help"
     )
 
 
@@ -1117,17 +1118,19 @@ def cmd_help(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/help"):
         return
     text = (
-        "Основной способ — extraction JSON из ChatGPT-чата:\n"
-        "пришлите .json файлом — 1-я загрузка прогона запускает отчёт работы над ошибками, "
-        "любая следующая (в течение 2 часов) считается исправленной версией и сама собирает "
-        "и публикует Google-таблицу\n"
-        "/new_project — явно начать новый прогон, не дожидаясь истечения 2 часов\n"
-        "/build <job_id> — собрать Excel после проверки Google-таблицы\n\n"
-        "Старый способ (PDF напрямую, без ChatGPT):\n"
-        "/done — запустить создание Google Sheet после загрузки PDF\n"
-        "/cancel — отменить текущую загрузку до запуска обработки\n"
-        "/recreate <job_id> — создать новую Google Sheet по уже найденным данным\n"
-        "/rerun <job_id> — запросить повторное чтение PDF; бот попросит подтверждение"
+        "Как работать с ботом:\n\n"
+        "1. Пришлите первый JSON из ChatGPT-чата.\n"
+        "Бот сохранит проект и пришлёт файл с замечаниями для проверки.\n\n"
+        "2. Отправьте файл с замечаниями обратно в тот же ChatGPT-чат.\n"
+        "Когда ChatGPT выдаст исправленный JSON, пришлите его сюда.\n\n"
+        "3. Бот соберёт Google-таблицу и пришлёт ссылку.\n"
+        "Проверьте таблицу и заполните нужные поля.\n\n"
+        "4. Когда таблица проверена, отправьте:\n"
+        "/build <job_id>\n\n"
+        "Команды:\n"
+        "/new_project — начать новый проект\n"
+        "/recreate <job_id> — пересобрать Google-таблицу из последнего JSON\n"
+        "/build <job_id> — собрать итоговую смету"
     )
     if _admin_allowed(message.chat.id):
         text += "\n\nАдминские команды: /admin_help"
@@ -1264,7 +1267,7 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
     )
 
 
-# ── документы: JSON или PDF ──────────────────────────────────────────────────
+# ── документы: основной JSON-flow; PDF-flow оставлен как legacy ─────────────
 @bot.message_handler(content_types=["document"])
 def handle_document(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "document"):
@@ -1278,7 +1281,11 @@ def handle_document(message: telebot.types.Message) -> None:
         return
 
     if not name_lower.endswith(".pdf"):
-        bot.reply_to(message, "Пожалуйста, отправьте PDF-файл (проект) или JSON-файл (extraction).")
+        bot.reply_to(message,
+            "Пожалуйста, отправьте JSON-файл из ChatGPT-чата.\n\n"
+            "Если это новый проект — просто пришлите первый JSON. "
+            "Если это исправленная версия — пришлите исправленный JSON в тот же чат бота."
+        )
         return
 
     # Download PDF before taking the lock
@@ -1838,16 +1845,19 @@ def cmd_admin_help(message: telebot.types.Message) -> None:
         "/admin_status — состояние процесса бота\n"
         "/sessions — сводка по чатам пользователей\n"
         "/sessions <chat_id> — подробности по конкретному чату\n"
-        "/active_sessions — только активные загрузки PDF\n"
+        "/active_sessions — активные legacy-сессии загрузки\n"
         "/reset_session <chat_id> — аварийно архивировать и сбросить session\n"
         "/recover_sessions — вручную запустить recovery старых sessions\n"
         "/logs — последние события\n"
         "/tail_errors — последние ошибки\n"
         "/job_status <job_id> — статус конкретного job\n"
         "/export_logs [today|yesterday|7d|all] — Excel-диагностика\n"
-        "/recreate <job_id> — пересоздать Google Sheet, пользователь может только свой job\n"
-        "/rerun <job_id> — запросить перепарсинг, пользователь может только свой job\n"
-        "/confirm_rerun <job_id> — подтвердить перепарсинг"
+        "/recreate <job_id> — пересобрать Google Sheet из последнего JSON\n\n"
+        "Legacy PDF-команды, не основной сценарий:\n"
+        "/done — запустить старую обработку после загрузки PDF\n"
+        "/cancel — отменить старую PDF-загрузку\n"
+        "/rerun <job_id> — legacy-перепарсинг PDF\n"
+        "/confirm_rerun <job_id> — подтвердить legacy-перепарсинг PDF"
     )
     _admin_completed(message, "/admin_help")
 
