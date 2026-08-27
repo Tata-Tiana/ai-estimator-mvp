@@ -984,22 +984,44 @@ def calculate_eps_block(
 
 
 def calculate_rebar_line(
-    item: RebarItemInput,
+    items: list[RebarItemInput],
     rebar_waste_coeff: float,
     rebar_calc_method: str = "legacy_weight_to_length",
 ) -> tuple[EstimateLineResult, dict[str, Any]]:
+    """Pools every spec-position item sharing the same (steel_class, diameter_mm) into ONE
+    order-length calculation, rounding to whole rods once for the pooled raw length - not once
+    per position. Elena's real smetas confirm this: she prints exactly one row per diameter/class
+    (e.g. "Арматура класса А500 диаметром 12 мм"), never a breakdown by лягушка/хомут/выпуск/etc,
+    and rounding each position's own length up to a whole 11.7m rod independently (as this used
+    to do) wastes up to just-under-one-rod PER position - confirmed against real project data: 5
+    separate ф12 positions produced 3896.1m here vs Elena's 3861.0m; pooling raw length first
+    reproduces her number exactly (same for ф10: 1146.6 vs 1134.9). Diameters with only one
+    position (ф20, ф6) were never affected, since there's nothing to compound."""
+    representative = items[0]
+    if any(i.rod_length_m != representative.rod_length_m for i in items):
+        raise ValueError(
+            f"rebar_items sharing diameter {representative.diameter_mm}mm/"
+            f"{representative.steel_class} have inconsistent rod_length_m - cannot pool"
+        )
+
     if rebar_calc_method == "spec_length_m":
-        source_length_m = item.source_length_from_spec_m()
+        source_length_m = _round_decimal(
+            sum(_to_decimal(i.source_length_from_spec_m()) for i in items),
+            "0.0001",
+        )
         design_weight_kg = _round_decimal(
-            _to_decimal(source_length_m) * _to_decimal(item.kg_per_meter),
+            _to_decimal(source_length_m) * _to_decimal(representative.kg_per_meter),
             "0.0001",
         )
         rebar_raw_length_m = source_length_m
         rebar_total_weight_kg = design_weight_kg
     else:
-        rebar_total_weight_kg = _round_decimal(sum(item.weight_parts_kg), "0.0001")
+        rebar_total_weight_kg = _round_decimal(
+            sum(_to_decimal(w) for i in items for w in i.weight_parts_kg),
+            "0.0001",
+        )
         rebar_raw_length_m = _round_decimal(
-            _to_decimal(rebar_total_weight_kg) / _to_decimal(item.kg_per_meter),
+            _to_decimal(rebar_total_weight_kg) / _to_decimal(representative.kg_per_meter),
             "0.0001",
         )
         source_length_m = rebar_raw_length_m
@@ -1010,36 +1032,47 @@ def calculate_rebar_line(
         "0.0001",
     )
     rebar_raw_rods = _round_decimal(
-        _to_decimal(rebar_length_with_waste_m) / _to_decimal(item.rod_length_m),
+        _to_decimal(rebar_length_with_waste_m) / _to_decimal(representative.rod_length_m),
         "0.0001",
     )
     rebar_rods = int(ceil(rebar_raw_rods))
     rebar_order_length_m = _round_decimal(
-        _to_decimal(rebar_rods) * _to_decimal(item.rod_length_m),
+        _to_decimal(rebar_rods) * _to_decimal(representative.rod_length_m),
         "0.0001",
     )
     rebar_control_weight_kg = _round_decimal(
-        _to_decimal(rebar_length_with_waste_m) * _to_decimal(item.kg_per_meter),
+        _to_decimal(rebar_length_with_waste_m) * _to_decimal(representative.kg_per_meter),
         "0.0001",
     )
     delivery_weight_kg = _round_decimal(
-        _to_decimal(rebar_order_length_m) * _to_decimal(item.kg_per_meter),
+        _to_decimal(rebar_order_length_m) * _to_decimal(representative.kg_per_meter),
         "0.0001",
     )
 
+    price_code = rebar_price_code(representative.steel_class, representative.diameter_mm)
+    # Single-item groups (the common case, and every pre-existing test fixture) keep the item's
+    # own code/name exactly as before - only genuine multi-position pooling gets a synthetic
+    # "_pooled" code, matching the export layer's own naming convention for pooled rebar rows.
+    if len(items) == 1:
+        line_code = representative.code
+        line_name = representative.name
+    else:
+        line_code = f"{price_code}_pooled"
+        line_name = f"Арматура класса {representative.steel_class} диаметром {representative.diameter_mm} мм"
     line = calculate_line(
-        code=item.code,
-        name=item.name,
+        code=line_code,
+        name=line_name,
         unit="мп",
         quantity=rebar_order_length_m,
-        material_unit_price=item.unit_price_per_m,
-        price_code=rebar_price_code(item.steel_class, item.diameter_mm),
+        material_unit_price=representative.unit_price_per_m,
+        price_code=price_code,
     )
     control = {
-        "name": item.name,
-        "steel_class": item.steel_class,
-        "diameter_mm": item.diameter_mm,
+        "name": line_name,
+        "steel_class": representative.steel_class,
+        "diameter_mm": representative.diameter_mm,
         "calculation_method": rebar_calc_method,
+        "pooled_item_codes": [i.code for i in items],
         "total_weight_kg": rebar_total_weight_kg,
         "raw_length_m": rebar_raw_length_m,
         "source_length_m": source_length_m,
@@ -1047,17 +1080,19 @@ def calculate_rebar_line(
         "raw_rods": rebar_raw_rods,
         "rods": rebar_rods,
         "order_length_m": rebar_order_length_m,
-        "kg_per_meter": item.kg_per_meter,
-        "rod_length_m": item.rod_length_m,
-        "unit_price_per_m": item.unit_price_per_m,
+        "kg_per_meter": representative.kg_per_meter,
+        "rod_length_m": representative.rod_length_m,
+        "unit_price_per_m": representative.unit_price_per_m,
         "design_weight_kg": design_weight_kg,
         "delivery_weight_kg": delivery_weight_kg,
         "control_weight_kg": rebar_control_weight_kg,
     }
-    if item.weight_parts_kg:
-        control["weight_parts_kg"] = item.weight_parts_kg
-    if item.length_parts_m:
-        control["length_parts_m"] = item.length_parts_m
+    combined_weight_parts = [w for i in items for w in i.weight_parts_kg]
+    if combined_weight_parts:
+        control["weight_parts_kg"] = combined_weight_parts
+    combined_length_parts = [p for i in items for p in i.length_parts_m]
+    if combined_length_parts:
+        control["length_parts_m"] = combined_length_parts
     return line, control
 
 
@@ -1067,14 +1102,24 @@ def calculate_rebar_block(
     rebar_lines = []
     items: dict[str, Any] = {}
 
+    # Group by (steel_class, diameter_mm) - same key as rebar_price_code() and as Elena's own
+    # real smetas, which print one row per diameter/class regardless of how many spec-table
+    # positions (лягушка/хомут/выпуск/etc) contribute to it. See calculate_rebar_line()'s
+    # docstring for why pooling has to happen before rod rounding, not after.
+    groups: dict[str, list[RebarItemInput]] = {}
     for item in data.rebar_items:
+        groups.setdefault(rebar_price_code(item.steel_class, item.diameter_mm), []).append(item)
+
+    for price_code, group_items in groups.items():
         line, control = calculate_rebar_line(
-            item,
+            group_items,
             data.rebar_waste_coeff,
             data.rebar_calc_method,
         )
         rebar_lines.append(line)
-        items[item.code] = control
+        # Same code the emitted line uses (item's own code for single-item groups, so this dict's
+        # keys stay stable for any existing consumer keyed by the pre-pooling item code).
+        items[line.code] = control
 
     rebar_frame_assembly_quantity_m = _round_decimal(
         sum(line.quantity for line in rebar_lines),

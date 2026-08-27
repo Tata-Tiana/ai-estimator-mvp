@@ -149,6 +149,7 @@
 | `rebar.items.rebar_a500_d16.steel_class` | `A500` |
 | `rebar.items.rebar_a500_d16.diameter_mm` | `16` |
 | `rebar.items.rebar_a500_d16.calculation_method` | `spec_length_m` |
+| `rebar.items.rebar_a500_d16.pooled_item_codes` | `['rebar_a500_d16']` |
 | `rebar.items.rebar_a500_d16.total_weight_kg` | `316.0` |
 | `rebar.items.rebar_a500_d16.raw_length_m` | `200.0` |
 | `rebar.items.rebar_a500_d16.source_length_m` | `200.0` |
@@ -166,6 +167,7 @@
 | `rebar.items.rebar_a500_d12.steel_class` | `A500` |
 | `rebar.items.rebar_a500_d12.diameter_mm` | `12` |
 | `rebar.items.rebar_a500_d12.calculation_method` | `spec_length_m` |
+| `rebar.items.rebar_a500_d12.pooled_item_codes` | `['rebar_a500_d12']` |
 | `rebar.items.rebar_a500_d12.total_weight_kg` | `5328.0` |
 | `rebar.items.rebar_a500_d12.raw_length_m` | `6000.0` |
 | `rebar.items.rebar_a500_d12.source_length_m` | `6000.0` |
@@ -183,6 +185,7 @@
 | `rebar.items.rebar_a500_d10.steel_class` | `A500` |
 | `rebar.items.rebar_a500_d10.diameter_mm` | `10` |
 | `rebar.items.rebar_a500_d10.calculation_method` | `spec_length_m` |
+| `rebar.items.rebar_a500_d10.pooled_item_codes` | `['rebar_a500_d10']` |
 | `rebar.items.rebar_a500_d10.total_weight_kg` | `1048.9` |
 | `rebar.items.rebar_a500_d10.raw_length_m` | `1700.0` |
 | `rebar.items.rebar_a500_d10.source_length_m` | `1700.0` |
@@ -200,6 +203,7 @@
 | `rebar.items.rebar_a240_d6.steel_class` | `A240` |
 | `rebar.items.rebar_a240_d6.diameter_mm` | `6` |
 | `rebar.items.rebar_a240_d6.calculation_method` | `spec_length_m` |
+| `rebar.items.rebar_a240_d6.pooled_item_codes` | `['rebar_a240_d6']` |
 | `rebar.items.rebar_a240_d6.total_weight_kg` | `35.52` |
 | `rebar.items.rebar_a240_d6.raw_length_m` | `160.0` |
 | `rebar.items.rebar_a240_d6.source_length_m` | `160.0` |

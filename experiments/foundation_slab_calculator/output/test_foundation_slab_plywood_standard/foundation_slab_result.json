@@ -202,6 +202,9 @@
           "steel_class": "A500",
           "diameter_mm": 16,
           "calculation_method": "legacy_weight_to_length",
+          "pooled_item_codes": [
+            "rebar_a500_d16"
+          ],
           "total_weight_kg": 328.0,
           "raw_length_m": 207.5949,
           "source_length_m": 207.5949,
@@ -224,6 +227,9 @@
           "steel_class": "A500",
           "diameter_mm": 12,
           "calculation_method": "legacy_weight_to_length",
+          "pooled_item_codes": [
+            "rebar_a500_d12"
+          ],
           "total_weight_kg": 5398.0,
           "raw_length_m": 6078.8288,
           "source_length_m": 6078.8288,
@@ -247,6 +253,9 @@
           "steel_class": "A500",
           "diameter_mm": 10,
           "calculation_method": "legacy_weight_to_length",
+          "pooled_item_codes": [
+            "rebar_a500_d10"
+          ],
           "total_weight_kg": 1078.0,
           "raw_length_m": 1747.1637,
           "source_length_m": 1747.1637,
@@ -269,6 +278,9 @@
           "steel_class": "A240",
           "diameter_mm": 6,
           "calculation_method": "legacy_weight_to_length",
+          "pooled_item_codes": [
+            "rebar_a240_d6"
+          ],
           "total_weight_kg": 35.0,
           "raw_length_m": 157.6577,
           "source_length_m": 157.6577,
