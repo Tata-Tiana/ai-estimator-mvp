@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from math import ceil
-from typing import Any
+from typing import Any, Callable
 
 from load_bearing_walls_lintels_calculator import (
     EstimateLineResult,
@@ -14,6 +14,57 @@ from load_bearing_walls_lintels_calculator import (
     rebar_price_code,
     totals,
 )
+
+# 2026-08-26: row-order fix. Elena's real smetas (ЮСВ + ТРЦ, both cross-checked line-by-line
+# against the delivered xlsx) never mix line types across zones - every line for a zone (floor_1,
+# floor_2, парапет+вентканалы) is printed together, in this fixed order, before moving to the next
+# zone. This calculator used to compute in that shape but EMIT in a different one (per-zone
+# masonry/blocks loop, then a separate global pass for ALL zones' adhesive, then a separate global
+# pass for ALL zones' rebar, then a separate global pass for ALL batches' delivery/crane) - visually
+# jumping between zones 4 times instead of finishing one zone's block before the next. Rather than
+# restructure the computation (risk of changing actual quantities), every line below is tagged with
+# a (zone_rank, category) sort key at the point it's created, and the whole `lines` list is sorted
+# once at the end - arithmetic is untouched, only final row order changes.
+_RANK_BEFORE_ZONES = -1
+_RANK_AFTER_ZONES = 1_000_000
+
+_CAT_WATERPROOFING = 0
+_CAT_MASONRY = 1
+_CAT_BLOCK_MATERIAL = 2
+_CAT_ADHESIVE = 3
+_CAT_SAND_CONCRETE = 4
+_CAT_LINTEL_CUTTING = 5
+_CAT_CHASING = 6
+_CAT_CHASING_REBAR = 7
+_CAT_DELIVERY = 8
+_CAT_UNLOADING = 9
+_CAT_CRANE = 10
+_CAT_LINTEL_FORMWORK_MONOLITH = 11
+_CAT_LINTEL_FRAME_ASSEMBLY = 12
+_CAT_LINTEL_REBAR = 13
+_CAT_LINTEL_CONCRETING = 14
+_CAT_LINTEL_CONCRETE_MATERIAL = 15
+_CAT_LINTEL_CONCRETE_DELIVERY = 16
+_CAT_LINTEL_CONCRETE_LIFTING = 17
+_CAT_LINTEL_INSULATION = 18
+
+
+def _lintel_line_category(code: str) -> int:
+    if code.endswith("_u_block_lintel_cutting"):
+        return _CAT_LINTEL_CUTTING
+    if code.endswith("_u_block_lintel_concreting_work") or code.endswith("_monolithic_lintel_concreting_work"):
+        return _CAT_LINTEL_CONCRETING
+    if code.endswith(("_lintel_formwork_installation", "_lintel_formwork_plywood_material", "_lintel_formwork_timber_material")):
+        return _CAT_LINTEL_FORMWORK_MONOLITH
+    if code.endswith(("_lintel_edge_insulation_work", "_lintel_edge_insulation_eps_material", "_lintel_edge_insulation_glue_foam")):
+        return _CAT_LINTEL_INSULATION
+    if code.endswith("_lintel_concrete_b22_5_m300_material"):
+        return _CAT_LINTEL_CONCRETE_MATERIAL
+    if code.endswith("_lintel_concrete_delivery"):
+        return _CAT_LINTEL_CONCRETE_DELIVERY
+    if code.endswith("_manual_concrete_lifting"):
+        return _CAT_LINTEL_CONCRETE_LIFTING
+    raise ValueError(f"Unrecognized lintel line code for sort category: {code}")
 
 
 @dataclass(frozen=True)
@@ -298,7 +349,10 @@ def _zone_vent_chimney_cladding_area(zone: P6WallZone, defaults: P6Defaults) -> 
 
 
 def _pool_rebar_by_zone_purpose(
-    zones: list[P6WallZone], defaults: P6Defaults
+    zones: list[P6WallZone],
+    defaults: P6Defaults,
+    rank_of: Callable[[str], int],
+    sort_keys: dict[str, tuple[int, int]],
 ) -> tuple[dict[str, Any], list[EstimateLineResult], Decimal]:
     groups: dict[tuple[str, str, str, int], list[P6RebarItem]] = {}
     order: list[tuple[str, str, str, int]] = []
@@ -378,6 +432,7 @@ def _pool_rebar_by_zone_purpose(
                 price_code=rebar_price_code(steel_class, diameter_mm),
             )
         )
+        sort_keys[code] = (rank_of(zone_id), _CAT_LINTEL_REBAR if purpose == "lintels" else _CAT_CHASING_REBAR)
         if purpose == "lintels":
             lintel_frame_totals[zone_id] = lintel_frame_totals.get(zone_id, Decimal("0")) + order_length
 
@@ -390,15 +445,17 @@ def _pool_rebar_by_zone_purpose(
     # already have the equivalent line for their own rebar; this was the one rebar-bearing
     # calculator missing it.
     for zone_id, total_length in lintel_frame_totals.items():
+        frame_code = f"{zone_id}_lintel_rebar_frame_assembly"
         lines.append(
             line(
-                f"{zone_id}_lintel_rebar_frame_assembly",
+                frame_code,
                 f"Изготовление и монтаж каркаса армирования перемычек из арматуры: {zone_names.get(zone_id, zone_id)}",
                 "мп",
                 q(total_length),
                 notes="Нулевая строка — подтверждено на 3 реальных проектах (себестоимость всегда 0, работа входит в клиентскую наценку, не в себестоимость).",
             )
         )
+        sort_keys[frame_code] = (rank_of(zone_id), _CAT_LINTEL_FRAME_ASSEMBLY)
     return controls, lines, delivery_weight_total
 
 
@@ -627,9 +684,15 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             price_code="timber_m3",
         ),
     ]
+    sort_keys: dict[str, tuple[int, int]] = {
+        "scaffolding_setup_dismantling": (_RANK_BEFORE_ZONES, 0),
+        "scaffolding_timber_material": (_RANK_BEFORE_ZONES, 1),
+    }
     calculation_blocks: dict[str, Any] = {"zones": {}, "delivery_batches": {}, "crane_batches": {}, "rebar": {}}
     delivery_batches: dict[str, Decimal] = {}
     crane_batches: dict[str, Decimal] = {}
+    delivery_batch_rank: dict[str, int] = {}
+    crane_batch_rank: dict[str, int] = {}
 
     # A zone with no masonry work of its own (_zone_has_regular_masonry() - today only
     # vent_chimney_cladding) never buys blocks as its own separate delivery - real project data
@@ -648,13 +711,28 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
         adhesive_pool_target[zone.zone_id] = last_real_zone_id if last_real_zone_id is not None else zone.zone_id
     adhesive_pools: dict[str, Decimal] = {}
 
+    # Same grouping as adhesive_pool_target above, reused for row order: a satellite zone with no
+    # masonry of its own (vent_chimney_cladding) is visually part of the preceding real zone's
+    # block in Elena's real smetas too (её "Обкладка дымохода" печатается ВНУТРИ парапетного блока,
+    # не отдельным блоком после него) - give it the same sort rank as that zone.
+    _group_rank_order: list[str] = []
+    for zone in wall_zones:
+        owner = adhesive_pool_target[zone.zone_id]
+        if owner not in _group_rank_order:
+            _group_rank_order.append(owner)
+    _zone_group_rank = {owner: idx for idx, owner in enumerate(_group_rank_order)}
+
+    def rank_of(zone_id: str) -> int:
+        return _zone_group_rank[adhesive_pool_target[zone_id]]
+
     for zone in wall_zones:
         block_spec_total = sum(d(item.volume_m3) for item in zone.block_items)
         regular_masonry = _zone_has_regular_masonry(zone)
         if regular_masonry and block_spec_total > 0:
+            masonry_code = f"{zone.zone_id}_masonry_work"
             lines.append(
                 line(
-                    f"{zone.zone_id}_masonry_work",
+                    masonry_code,
                     zone.display_name,
                     "м3",
                     q(block_spec_total),
@@ -663,11 +741,13 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code="gas_block_masonry_work_m3",
                 )
             )
+            sort_keys[masonry_code] = (rank_of(zone.zone_id), _CAT_MASONRY)
         vent_chimney_cladding_area = _zone_vent_chimney_cladding_area(zone, defaults)
         if vent_chimney_cladding_area > 0:
+            cladding_code = f"{zone.zone_id}_gas_block_cladding_work"
             lines.append(
                 line(
-                    f"{zone.zone_id}_gas_block_cladding_work",
+                    cladding_code,
                     "Обкладка дымохода и вентканалов 150 мм",
                     "м2",
                     q(vent_chimney_cladding_area),
@@ -676,10 +756,12 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code="gas_block_cladding_work_m2",
                 )
             )
+            sort_keys[cladding_code] = (rank_of(zone.zone_id), _CAT_MASONRY)
         if zone.cutoff_waterproofing_area_m2 > 0:
+            waterproofing_code = f"{zone.zone_id}_cutoff_waterproofing_under_first_row_blocks"
             lines.append(
                 line(
-                    f"{zone.zone_id}_cutoff_waterproofing_under_first_row_blocks",
+                    waterproofing_code,
                     f"Гидроизоляция поверхности под первый ряд блоков: {zone.display_name}",
                     "м2",
                     zone.cutoff_waterproofing_area_m2,
@@ -688,6 +770,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code="cutoff_waterproofing_under_blocks_m2",
                 )
             )
+            sort_keys[waterproofing_code] = (rank_of(zone.zone_id), _CAT_WATERPROOFING)
 
         zone_order_volume = Decimal("0")
         zone_block_controls: dict[str, Any] = {}
@@ -732,11 +815,14 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code=_block_price_code(first),
                 )
             )
+            sort_keys[code] = (rank_of(zone.zone_id), _CAT_BLOCK_MATERIAL)
         if zone_order_volume > 0:
             batch_id = _delivery_batch_id(zone)
             delivery_batches[batch_id] = delivery_batches.get(batch_id, Decimal("0")) + zone_order_volume
+            delivery_batch_rank.setdefault(batch_id, rank_of(zone.zone_id))
             crane_batch_id = _crane_batch_id(zone)
             crane_batches[crane_batch_id] = crane_batches.get(crane_batch_id, Decimal("0")) + zone_order_volume
+            crane_batch_rank.setdefault(crane_batch_id, rank_of(zone.zone_id))
             adhesive_target = adhesive_pool_target[zone.zone_id]
             adhesive_pools[adhesive_target] = adhesive_pools.get(adhesive_target, Decimal("0")) + block_spec_total
         if zone.cutoff_waterproofing_area_m2 > 0:
@@ -746,9 +832,10 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 * d(defaults.sand_concrete_thickness_factor)
                 / d(defaults.sand_concrete_bag_weight_kg)
             )
+            sand_code = f"{zone.zone_id}_sand_concrete_m300_first_row"
             lines.append(
                 line(
-                    f"{zone.zone_id}_sand_concrete_m300_first_row",
+                    sand_code,
                     f"Пескобетон М300 40 кг: {zone.display_name}",
                     "шт",
                     int(ceil(sand_raw)),
@@ -756,19 +843,24 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code="sand_concrete_bag",
                 )
             )
+            sort_keys[sand_code] = (rank_of(zone.zone_id), _CAT_SAND_CONCRETE)
         if zone.chasing_rebar_items:
             chasing_length = sum(d(item.spec_length_m) for item in zone.chasing_rebar_items)
+            chasing_code = f"{zone.zone_id}_chasing_for_reinforcement"
             lines.append(
                 line(
-                    f"{zone.zone_id}_chasing_for_reinforcement",
+                    chasing_code,
                     f"Штробление блоков под дополнительное усиление: {zone.display_name}",
                     "мп",
                     q(chasing_length),
                     notes="Нулевая строка — работа входит в ставку кладки. База для арматуры.",
                 )
             )
+            sort_keys[chasing_code] = (rank_of(zone.zone_id), _CAT_CHASING)
         lintel_blocks, lintel_lines = _calculate_lintel_blocks(zone, data)
         lines.extend(lintel_lines)
+        for lintel_line in lintel_lines:
+            sort_keys[lintel_line.code] = (rank_of(zone.zone_id), _lintel_line_category(lintel_line.code))
         calculation_blocks["zones"][zone.zone_id] = {
             "display_name": zone.display_name,
             "zone_kind": zone.zone_kind,
@@ -781,9 +873,10 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
 
     for target_zone_id, pooled_block_spec_total in adhesive_pools.items():
         adhesive_raw = pooled_block_spec_total * d(defaults.adhesive_consumption_bag_per_m3) * d(defaults.adhesive_waste_coeff)
+        adhesive_code = f"{target_zone_id}_block_adhesive"
         lines.append(
             line(
-                f"{target_zone_id}_block_adhesive",
+                adhesive_code,
                 f"Монтажный клей для блоков 25 кг: {zone_names.get(target_zone_id, target_zone_id)}",
                 "мешок",
                 int(ceil(adhesive_raw)),
@@ -791,8 +884,11 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 price_code="block_adhesive_bag",
             )
         )
+        sort_keys[adhesive_code] = (rank_of(target_zone_id), _CAT_ADHESIVE)
 
-    rebar_controls, rebar_lines, rebar_delivery_weight = _pool_rebar_by_zone_purpose(wall_zones, defaults)
+    rebar_controls, rebar_lines, rebar_delivery_weight = _pool_rebar_by_zone_purpose(
+        wall_zones, defaults, rank_of, sort_keys
+    )
     lines.extend(rebar_lines)
     calculation_blocks["rebar"] = {
         "items": rebar_controls,
@@ -810,6 +906,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 price_code="metal_delivery_truck",
             )
         )
+        sort_keys["rebar_metal_delivery"] = (_RANK_AFTER_ZONES, -1)
 
     for batch_id, order_volume in delivery_batches.items():
         trucks = int(ceil(order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)))
@@ -818,10 +915,12 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             "raw_trucks": q(order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)),
             "trucks": trucks,
         }
+        delivery_code = f"{batch_id}_blocks_delivery"
+        unloading_code = f"{batch_id}_blocks_unloading_manipulator"
         lines.extend(
             [
                 line(
-                    f"{batch_id}_blocks_delivery",
+                    delivery_code,
                     "Доставка блоков, смеси",
                     "маш",
                     trucks,
@@ -830,7 +929,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     price_code="block_delivery_truck",
                 ),
                 line(
-                    f"{batch_id}_blocks_unloading_manipulator",
+                    unloading_code,
                     "Разгрузка блоков, смеси манипулятором",
                     "маш",
                     trucks,
@@ -839,6 +938,8 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 ),
             ]
         )
+        sort_keys[delivery_code] = (delivery_batch_rank[batch_id], _CAT_DELIVERY)
+        sort_keys[unloading_code] = (delivery_batch_rank[batch_id], _CAT_UNLOADING)
 
     for crane_batch_id, crane_order_volume in crane_batches.items():
         crane_trucks = int(ceil(crane_order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)))
@@ -850,9 +951,10 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             "raw_trucks": q(crane_order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)),
             "crane_shifts": crane_shifts,
         }
+        crane_code = f"{crane_batch_id}_blocks_crane_moving"
         lines.append(
             line(
-                f"{crane_batch_id}_blocks_crane_moving",
+                crane_code,
                 "Перемещение блоков, смеси автокраном 25 т",
                 "смена",
                 crane_shifts,
@@ -861,6 +963,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 price_code="crane_shift",
             )
         )
+        sort_keys[crane_code] = (crane_batch_rank[crane_batch_id], _CAT_CRANE)
 
     direct_cost_base_raw = sum(d(item.line_total_raw) for item in lines)
     consumables_amount_raw = direct_cost_base_raw * d(defaults.walls_consumables_rate)
@@ -897,6 +1000,21 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             line("estimated_profit", "Сметная прибыль", "-", 1),
         ]
     )
+    sort_keys.update(
+        {
+            "walls_consumables_tool_amortization": (_RANK_AFTER_ZONES, 0),
+            "construction_waste_removal": (_RANK_AFTER_ZONES, 1),
+            "walls_technical_supervision": (_RANK_AFTER_ZONES, 2),
+            "procurement_warehouse_costs": (_RANK_AFTER_ZONES, 3),
+            "overhead_general_business_costs": (_RANK_AFTER_ZONES, 4),
+            "estimated_profit": (_RANK_AFTER_ZONES, 5),
+        }
+    )
+    # Row-order fix (2026-08-26): every line above carries a (zone_rank, category) sort key
+    # matching Elena's real per-zone row order (see the module-level comment near the category
+    # constants). Stable sort - lines with equal keys keep their original relative order, which is
+    # what keeps парапет's own lines ahead of vent_chimney_cladding's tied-rank lines below.
+    lines.sort(key=lambda item: sort_keys[item.code])
     return {
         "inputs": data.to_dict(),
         "calculation_blocks": calculation_blocks,
