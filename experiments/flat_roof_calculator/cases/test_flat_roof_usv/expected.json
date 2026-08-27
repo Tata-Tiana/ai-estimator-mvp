@@ -1,14 +1,14 @@
 {
   "totals": {
-    "internal_materials_total_raw": "1420807.508576",
-    "internal_materials_total": 1420808,
+    "internal_materials_total_raw": "1374411.508576",
+    "internal_materials_total": 1374412,
     "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "2038878",
-    "internal_section_total": 2038878,
-    "sum_of_displayed_line_material_totals": 1420808,
+    "internal_section_total_raw": "1992482",
+    "internal_section_total": 1992482,
+    "sum_of_displayed_line_material_totals": 1374412,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 2038878
+    "sum_of_displayed_line_totals": 1992482
   },
   "estimate_lines": [
     {
@@ -209,46 +209,6 @@
       }
     },
     {
-      "code": "geotextile_prof_300_flat",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "300",
-      "quantity_display": "300",
-      "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-      "price_code": "roof_geotextile_technonikol_prof_300_m2",
-      "internal_cost": {
-        "material_unit_price": "111.76",
-        "material_total_raw": "33528",
-        "material_total": 33528,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "33528",
-        "line_total": 33528
-      }
-    },
-    {
-      "code": "geotextile_prof_150_parapet",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "200",
-      "quantity_display": "200",
-      "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-      "price_code": "roof_geotextile_technonikol_prof_150_m2",
-      "internal_cost": {
-        "material_unit_price": "64.34",
-        "material_total_raw": "12868",
-        "material_total": 12868,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "12868",
-        "line_total": 12868
-      }
-    },
-    {
       "code": "pvc_membrane_flat_installation",
       "name": "Укладка ПВХ Мембраны",
       "unit": "м2",
@@ -352,7 +312,7 @@
       "line_type": "materials",
       "quantity_raw": "11",
       "quantity_display": "11",
-      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
+      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
       "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
       "internal_cost": {
         "material_unit_price": "51431",

@@ -126,8 +126,8 @@
       "rolls_ordered": 0
     },
     "overheads": {
-      "direct_cost_base_raw": "1860431.958576",
-      "direct_material_base_raw": "1277861.918576",
+      "direct_cost_base_raw": "1814035.958576",
+      "direct_material_base_raw": "1231465.918576",
       "direct_work_base_raw": "582570.04",
       "roof_consumables_calc_method": "legacy_fixed_amount",
       "roof_consumables_rate": "0",
@@ -458,68 +458,6 @@
       "price_warning": null
     },
     {
-      "code": "geotextile_prof_300_flat",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "300",
-      "quantity_display": "300",
-      "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-      "internal_cost": {
-        "material_unit_price": "111.76",
-        "material_total_raw": "33528",
-        "material_total": 33528,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "33528",
-        "line_total": 33528
-      },
-      "formula": {
-        "required_area_m2": "273.812",
-        "roll_area_m2": "100",
-        "rolls_ordered": 3,
-        "ordered_area_m2": "300"
-      },
-      "notes": [],
-      "price_code": "roof_geotextile_technonikol_prof_300_m2",
-      "unit_price_source": "price_registry",
-      "unit_price_original": "111.76",
-      "unit_price_used": "111.76",
-      "price_warning": null
-    },
-    {
-      "code": "geotextile_prof_150_parapet",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "200",
-      "quantity_display": "200",
-      "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-      "internal_cost": {
-        "material_unit_price": "57.56",
-        "material_total_raw": "11512",
-        "material_total": 11512,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "11512",
-        "line_total": 11512
-      },
-      "formula": {
-        "required_area_m2": "152.482",
-        "roll_area_m2": "100",
-        "rolls_ordered": 2,
-        "ordered_area_m2": "200"
-      },
-      "notes": [],
-      "price_code": "roof_geotextile_technonikol_prof_150_m2",
-      "unit_price_source": "price_registry",
-      "unit_price_original": "64.34",
-      "unit_price_used": "57.56",
-      "price_warning": null
-    },
-    {
       "code": "pvc_membrane_flat_installation",
       "name": "Укладка ПВХ Мембраны",
       "unit": "м2",
@@ -567,6 +505,34 @@
       "unit_price_source": "locked_case_prices",
       "unit_price_original": "700",
       "unit_price_used": "700",
+      "price_warning": null
+    },
+    {
+      "code": "roof_abutment_strip_installation_control",
+      "name": "Монтаж планки примыкания",
+      "unit": "мп",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "138.62",
+      "quantity_display": "138.62",
+      "quantity_source": "parapet_and_abutment_total_length_m",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      },
+      "formula": {},
+      "notes": [
+        "Строка сохранена для структуры Excel.",
+        "В текущем scope серая внутренняя себестоимость равна 0."
+      ],
+      "unit_price_source": "locked_case_prices",
+      "unit_price_original": null,
+      "unit_price_used": null,
       "price_warning": null
     },
     {
@@ -659,7 +625,7 @@
       "line_type": "materials",
       "quantity_raw": "11",
       "quantity_display": "11",
-      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
+      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
       "internal_cost": {
         "material_unit_price": "1146.91",
         "material_total_raw": "12616.01",
@@ -674,6 +640,7 @@
         "flat_area_m2": "286.258",
         "abutment_area_m2": "152.482",
         "required_area_m2": "438.74",
+        "required_area_source": "calculated_from_roof_zones",
         "roll_area_m2": "42",
         "rolls_ordered": 11
       },
@@ -1034,15 +1001,15 @@
     }
   ],
   "totals": {
-    "internal_materials_total_raw": "852561.5015792",
-    "internal_materials_total": 852562,
+    "internal_materials_total_raw": "807521.5015792",
+    "internal_materials_total": 807522,
     "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "1470631.5415792",
-    "internal_section_total": 1470632,
-    "sum_of_displayed_line_material_totals": 852562,
+    "internal_section_total_raw": "1425591.5415792",
+    "internal_section_total": 1425592,
+    "sum_of_displayed_line_material_totals": 807522,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 1470632
+    "sum_of_displayed_line_totals": 1425592
   },
   "warnings": [
     "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
@@ -1052,7 +1019,7 @@
   "pricing_summary": {
     "mode": "price_registry_with_fallback",
     "registry_path": "/Users/tatanamedzidova/Desktop/ai_estimator/ai_estimator_mvp/output/price_registry_filled_v3.xlsx",
-    "prices_from_price_registry": 17,
+    "prices_from_price_registry": 15,
     "prices_from_project_overrides": 0,
     "prices_from_fallback_input": 0,
     "warnings_count": 0

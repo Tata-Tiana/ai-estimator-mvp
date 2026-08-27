@@ -241,49 +241,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `17886.8736` / `17 887`
 - Примечание: Объем SLOPE берется из проектной спецификации кровли; имя поля сохранено для совместимости.
 
-### 11. Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м
-
-- Код: `geotextile_prof_300_flat`
-- Тип строки: `materials`
-- Ед. изм.: `м2`
-- Количество raw: `300`
-- Количество display: `300`
-- Источник количества: `roof_area_total_m2 * geotextile_flat_coeff rounded to rolls`
-- price_code: `roof_geotextile_technonikol_prof_300_m2`
-
-Формула:
-- required_area_m2: `273.812`
-- roll_area_m2: `100`
-- rolls_ordered: `3`
-- ordered_area_m2: `300`
-
-Округление и итог:
-- Материалы raw/display: `33528` / `33 528`
-- Работы raw/display: `0` / `0`
-- Итого raw/display: `33528` / `33 528`
-
-### 12. Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м
-
-- Код: `geotextile_prof_150_parapet`
-- Тип строки: `materials`
-- Ед. изм.: `м2`
-- Количество raw: `200`
-- Количество display: `200`
-- Источник количества: `parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls`
-- price_code: `roof_geotextile_technonikol_prof_150_m2`
-
-Формула:
-- required_area_m2: `152.482`
-- roll_area_m2: `100`
-- rolls_ordered: `2`
-- ordered_area_m2: `200`
-
-Округление и итог:
-- Материалы raw/display: `12868` / `12 868`
-- Работы raw/display: `0` / `0`
-- Итого raw/display: `12868` / `12 868`
-
-### 13. Укладка ПВХ Мембраны
+### 11. Укладка ПВХ Мембраны
 
 - Код: `pvc_membrane_flat_installation`
 - Тип строки: `work`
@@ -297,7 +255,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `184200.8` / `184 201`
 - Итого raw/display: `184200.8` / `184 201`
 
-### 14. Монтаж примыкания кровли из ПВХ мембраны
+### 12. Монтаж примыкания кровли из ПВХ мембраны
 
 - Код: `pvc_membrane_abutment_installation`
 - Тип строки: `work`
@@ -311,7 +269,23 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `97034` / `97 034`
 - Итого raw/display: `97034` / `97 034`
 
-### 15. Монтаж примыкания к вентшахтам
+### 13. Монтаж планки примыкания
+
+- Код: `roof_abutment_strip_installation_control`
+- Тип строки: `zero_excel_structure_line`
+- Ед. изм.: `мп`
+- Количество raw: `138.62`
+- Количество display: `138.62`
+- Источник количества: `parapet_and_abutment_total_length_m`
+
+Округление и итог:
+- Материалы raw/display: `0` / `0`
+- Работы raw/display: `0` / `0`
+- Итого raw/display: `0` / `0`
+- Примечание: Строка сохранена для структуры Excel.
+- Примечание: В текущем scope серая внутренняя себестоимость равна 0.
+
+### 14. Монтаж примыкания к вентшахтам
 
 - Код: `vent_shaft_abutment_installation`
 - Тип строки: `work`
@@ -325,7 +299,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `15000` / `15 000`
 - Итого raw/display: `15000` / `15 000`
 
-### 16. Рейка прижимная алюминиевая 3м
+### 15. Рейка прижимная алюминиевая 3м
 
 - Код: `aluminum_pressure_rail_3m`
 - Тип строки: `materials`
@@ -344,7 +318,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `13395` / `13 395`
 
-### 17. Рейка краевая алюминиевая 3м
+### 16. Рейка краевая алюминиевая 3м
 
 - Код: `aluminum_edge_rail_3m`
 - Тип строки: `materials`
@@ -363,20 +337,21 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `13818` / `13 818`
 
-### 18. Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20
+### 17. Полимерная мембрана ПВХ Logicroof V-RP 1,5 мм мембрана серая, 2,10х20
 
 - Код: `pvc_membrane_logicroof_vrp_1_5mm_gray`
 - Тип строки: `materials`
 - Ед. изм.: `рул`
 - Количество raw: `11`
 - Количество display: `11`
-- Источник количества: `non-exploitable flat and abutment membrane areas rounded to rolls`
+- Источник количества: `non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)`
 - price_code: `roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll`
 
 Формула:
 - flat_area_m2: `286.258`
 - abutment_area_m2: `152.482`
 - required_area_m2: `438.74`
+- required_area_source: `calculated_from_roof_zones`
 - roll_area_m2: `42`
 - rolls_ordered: `11`
 
@@ -385,7 +360,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `565741` / `565 741`
 
-### 19. Аэратор кровельный PVC, 75х375 (без пробивки отверстий)
+### 18. Аэратор кровельный PVC, 75х375 (без пробивки отверстий)
 
 - Код: `roof_pvc_aerator_75x375`
 - Тип строки: `material_and_work`
@@ -400,7 +375,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `8250` / `8 250`
 - Итого raw/display: `10011` / `10 011`
 
-### 20. Установка воронки парапетной (без пробивки отверстий)
+### 19. Установка воронки парапетной (без пробивки отверстий)
 
 - Код: `parapet_roof_drain_installation`
 - Тип строки: `material_and_work`
@@ -415,7 +390,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `11000` / `11 000`
 - Итого raw/display: `21000` / `21 000`
 
-### 21. Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)
+### 20. Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)
 
 - Код: `internal_roof_drain_with_heating`
 - Тип строки: `material_and_work`
@@ -430,7 +405,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `16500` / `16 500`
 - Итого raw/display: `31500` / `31 500`
 
-### 22. Пробивка отверстий в стенах из газоблока толщ.400мм
+### 21. Пробивка отверстий в стенах из газоблока толщ.400мм
 
 - Код: `gas_block_wall_hole_drilling`
 - Тип строки: `work`
@@ -445,7 +420,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `6000` / `6 000`
 - Примечание: Special-case only: Elena 2026-07-30 confirmed this is not a standard roof work item.
 
-### 23. Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)
+### 22. Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)
 
 - Код: `internal_drain_pvc_110mm`
 - Тип строки: `material_and_work`
@@ -461,7 +436,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `61875` / `61 875`
 - Примечание: internal_drain_height_per_drain_m = 3.75 is a project input, not a permanent constant.
 
-### 24. Подъем материалов автокраном
+### 23. Подъем материалов автокраном
 
 - Код: `roof_crane_lifting`
 - Тип строки: `fixed_manual_machinery`
@@ -476,7 +451,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `0` / `0`
 - Итого raw/display: `30000` / `30 000`
 
-### 25. Логистика, и снабжение
+### 24. Логистика, и снабжение
 
 - Код: `roof_logistics_and_supply`
 - Тип строки: `manual_fixed_material`
@@ -491,7 +466,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `37648.53` / `37 649`
 - Примечание: Строка включена по уточнению: это серая внутренняя себестоимость текущего раздела.
 
-### 26. Расходные материалы, амортизация инструмента
+### 25. Расходные материалы, амортизация инструмента
 
 - Код: `roof_consumables_tool_depreciation`
 - Тип строки: `manual_percentage_addon`
@@ -506,7 +481,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `75297.06` / `75 297`
 - Примечание: Uses provided legacy raw total.
 
-### 27. Вывоз мусора с объекта
+### 26. Вывоз мусора с объекта
 
 - Код: `roof_waste_removal`
 - Тип строки: `material_and_work`
@@ -520,7 +495,7 @@ AI не используется для расчёта. Калькулятор �
 - Работы raw/display: `10500` / `10 500`
 - Итого raw/display: `40500` / `40 500`
 
-### 28. Технический надзор
+### 27. Технический надзор
 
 - Код: `technical_supervision`
 - Тип строки: `manual_fixed_work`
@@ -535,7 +510,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `10000` / `10 000`
 - Примечание: Строка включена по уточнению: это серая внутренняя работа текущего раздела.
 
-### 29. Заготовительно-складские расходы
+### 28. Заготовительно-складские расходы
 
 - Код: `procurement_storage`
 - Тип строки: `manual_fixed_work`
@@ -550,7 +525,7 @@ AI не используется для расчёта. Калькулятор �
 - Итого raw/display: `15000` / `15 000`
 - Примечание: Строка включена по сверке с серой зоной: это внутренняя себестоимость.
 
-### 30. Накладные и общехозяйственные расходы
+### 29. Накладные и общехозяйственные расходы
 
 - Код: `overhead_zero`
 - Тип строки: `zero_excel_structure_line`
@@ -566,7 +541,7 @@ AI не используется для расчёта. Калькулятор �
 - Примечание: Строка сохранена для структуры Excel.
 - Примечание: В текущем scope серая внутренняя себестоимость равна 0.
 
-### 31. Сметная прибыль
+### 30. Сметная прибыль
 
 - Код: `profit_zero`
 - Тип строки: `zero_excel_structure_line`
@@ -590,30 +565,30 @@ AI не используется для расчёта. Калькулятор �
 
 ## Итоги
 
-- Материалы raw/display: `1420807.508576` / `1 420 808`
+- Материалы raw/display: `1374411.508576` / `1 374 412`
 - Работы raw/display: `618070.04` / `618 070`
-- Итого raw/display: `2038878` / `2 038 878`
-- Сумма отображённых материалов по строкам: `1 420 808`
+- Итого raw/display: `1992482` / `1 992 482`
+- Сумма отображённых материалов по строкам: `1 374 412`
 - Сумма отображённых работ по строкам: `618 070`
-- Сумма отображённых итогов по строкам: `2 038 878`
+- Сумма отображённых итогов по строкам: `1 992 482`
 
 ## Проверка
 
 - status: `ok`
-- ok: `460`
+- ok: `430`
 - mismatch: `0`
 
 | scope | code | field | expected | actual | status |
 | --- | --- | --- | ---: | ---: | --- |
-| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 1420807.508576 | 1420807.508576 | ok |
-| totals | `internal_materials_total` | `internal_materials_total` | 1420808 | 1420808 | ok |
+| totals | `internal_materials_total_raw` | `internal_materials_total_raw` | 1374411.508576 | 1374411.508576 | ok |
+| totals | `internal_materials_total` | `internal_materials_total` | 1374412 | 1374412 | ok |
 | totals | `internal_works_total_raw` | `internal_works_total_raw` | 618070.04 | 618070.04 | ok |
 | totals | `internal_works_total` | `internal_works_total` | 618070 | 618070 | ok |
-| totals | `internal_section_total_raw` | `internal_section_total_raw` | 2038878 | 2038878 | ok |
-| totals | `internal_section_total` | `internal_section_total` | 2038878 | 2038878 | ok |
-| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 1420808 | 1420808 | ok |
+| totals | `internal_section_total_raw` | `internal_section_total_raw` | 1992482 | 1992482 | ok |
+| totals | `internal_section_total` | `internal_section_total` | 1992482 | 1992482 | ok |
+| totals | `sum_of_displayed_line_material_totals` | `sum_of_displayed_line_material_totals` | 1374412 | 1374412 | ok |
 | totals | `sum_of_displayed_line_work_totals` | `sum_of_displayed_line_work_totals` | 618070 | 618070 | ok |
-| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 2038878 | 2038878 | ok |
+| totals | `sum_of_displayed_line_totals` | `sum_of_displayed_line_totals` | 1992482 | 1992482 | ok |
 | estimate_lines | `roof_base_preparation_control` | `name` | Подготовка основания под укладку пароизоляционного слоя, очистка поверхности | Подготовка основания под укладку пароизоляционного слоя, очистка поверхности | ok |
 | estimate_lines | `roof_base_preparation_control` | `unit` | м2 | м2 | ok |
 | estimate_lines | `roof_base_preparation_control` | `line_type` | zero_excel_structure_line | zero_excel_structure_line | ok |
@@ -761,36 +736,6 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `eps_slope_4_2_plate_k` | `internal_cost.work_total` | 0 | 0 | ok |
 | estimate_lines | `eps_slope_4_2_plate_k` | `internal_cost.line_total_raw` | 17886.8736 | 17886.8736 | ok |
 | estimate_lines | `eps_slope_4_2_plate_k` | `internal_cost.line_total` | 17887 | 17887 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `name` | Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м | Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `unit` | м2 | м2 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `line_type` | materials | materials | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `quantity_raw` | 300 | 300 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `quantity_display` | 300 | 300 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `quantity_source` | roof_area_total_m2 * geotextile_flat_coeff rounded to rolls | roof_area_total_m2 * geotextile_flat_coeff rounded to rolls | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `price_code` | roof_geotextile_technonikol_prof_300_m2 | roof_geotextile_technonikol_prof_300_m2 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.material_unit_price` | 111.76 | 111.76 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.material_total_raw` | 33528 | 33528 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.material_total` | 33528 | 33528 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.work_unit_price` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.work_total_raw` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.work_total` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.line_total_raw` | 33528 | 33528 | ok |
-| estimate_lines | `geotextile_prof_300_flat` | `internal_cost.line_total` | 33528 | 33528 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `name` | Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м | Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `unit` | м2 | м2 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `line_type` | materials | materials | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `quantity_raw` | 200 | 200 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `quantity_display` | 200 | 200 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `quantity_source` | parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls | parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `price_code` | roof_geotextile_technonikol_prof_150_m2 | roof_geotextile_technonikol_prof_150_m2 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.material_unit_price` | 64.34 | 64.34 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.material_total_raw` | 12868 | 12868 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.material_total` | 12868 | 12868 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.work_unit_price` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.work_total_raw` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.work_total` | 0 | 0 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.line_total_raw` | 12868 | 12868 | ok |
-| estimate_lines | `geotextile_prof_150_parapet` | `internal_cost.line_total` | 12868 | 12868 | ok |
 | estimate_lines | `pvc_membrane_flat_installation` | `name` | Укладка ПВХ Мембраны | Укладка ПВХ Мембраны | ok |
 | estimate_lines | `pvc_membrane_flat_installation` | `unit` | м2 | м2 | ok |
 | estimate_lines | `pvc_membrane_flat_installation` | `line_type` | work | work | ok |
@@ -868,7 +813,7 @@ AI не используется для расчёта. Калькулятор �
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `line_type` | materials | materials | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_raw` | 11 | 11 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_display` | 11 | 11 | ok |
-| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_source` | non-exploitable flat and abutment membrane areas rounded to rolls | non-exploitable flat and abutment membrane areas rounded to rolls | ok |
+| estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `quantity_source` | non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones) | non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones) | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `price_code` | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_unit_price` | 51431 | 51431 | ok |
 | estimate_lines | `pvc_membrane_logicroof_vrp_1_5mm_gray` | `internal_cost.material_total_raw` | 565741 | 565741 | ok |

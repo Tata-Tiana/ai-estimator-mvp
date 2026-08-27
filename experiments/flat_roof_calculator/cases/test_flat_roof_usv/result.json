@@ -122,8 +122,8 @@
       "rolls_ordered": 0
     },
     "overheads": {
-      "direct_cost_base_raw": "1860431.958576",
-      "direct_material_base_raw": "1277861.918576",
+      "direct_cost_base_raw": "1814035.958576",
+      "direct_material_base_raw": "1231465.918576",
       "direct_work_base_raw": "582570.04",
       "roof_consumables_calc_method": "legacy_fixed_amount",
       "roof_consumables_rate": "0",
@@ -414,60 +414,6 @@
       "price_code": "roof_eps_slope_4_2_plate_k_m3"
     },
     {
-      "code": "geotextile_prof_300_flat",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "300",
-      "quantity_display": "300",
-      "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-      "internal_cost": {
-        "material_unit_price": "111.76",
-        "material_total_raw": "33528",
-        "material_total": 33528,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "33528",
-        "line_total": 33528
-      },
-      "formula": {
-        "required_area_m2": "273.812",
-        "roll_area_m2": "100",
-        "rolls_ordered": 3,
-        "ordered_area_m2": "300"
-      },
-      "notes": [],
-      "price_code": "roof_geotextile_technonikol_prof_300_m2"
-    },
-    {
-      "code": "geotextile_prof_150_parapet",
-      "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-      "unit": "м2",
-      "line_type": "materials",
-      "quantity_raw": "200",
-      "quantity_display": "200",
-      "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-      "internal_cost": {
-        "material_unit_price": "64.34",
-        "material_total_raw": "12868",
-        "material_total": 12868,
-        "work_unit_price": "0",
-        "work_total_raw": "0",
-        "work_total": 0,
-        "line_total_raw": "12868",
-        "line_total": 12868
-      },
-      "formula": {
-        "required_area_m2": "152.482",
-        "roll_area_m2": "100",
-        "rolls_ordered": 2,
-        "ordered_area_m2": "200"
-      },
-      "notes": [],
-      "price_code": "roof_geotextile_technonikol_prof_150_m2"
-    },
-    {
       "code": "pvc_membrane_flat_installation",
       "name": "Укладка ПВХ Мембраны",
       "unit": "м2",
@@ -508,6 +454,30 @@
       },
       "formula": {},
       "notes": []
+    },
+    {
+      "code": "roof_abutment_strip_installation_control",
+      "name": "Монтаж планки примыкания",
+      "unit": "мп",
+      "line_type": "zero_excel_structure_line",
+      "quantity_raw": "138.62",
+      "quantity_display": "138.62",
+      "quantity_source": "parapet_and_abutment_total_length_m",
+      "internal_cost": {
+        "material_unit_price": "0",
+        "material_total_raw": "0",
+        "material_total": 0,
+        "work_unit_price": "0",
+        "work_total_raw": "0",
+        "work_total": 0,
+        "line_total_raw": "0",
+        "line_total": 0
+      },
+      "formula": {},
+      "notes": [
+        "Строка сохранена для структуры Excel.",
+        "В текущем scope серая внутренняя себестоимость равна 0."
+      ]
     },
     {
       "code": "vent_shaft_abutment_installation",
@@ -587,7 +557,7 @@
       "line_type": "materials",
       "quantity_raw": "11",
       "quantity_display": "11",
-      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
+      "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
       "internal_cost": {
         "material_unit_price": "51431",
         "material_total_raw": "565741",
@@ -602,6 +572,7 @@
         "flat_area_m2": "286.258",
         "abutment_area_m2": "152.482",
         "required_area_m2": "438.74",
+        "required_area_source": "calculated_from_roof_zones",
         "roll_area_m2": "42",
         "rolls_ordered": 11
       },
@@ -906,15 +877,15 @@
     }
   ],
   "totals": {
-    "internal_materials_total_raw": "1420807.508576",
-    "internal_materials_total": 1420808,
+    "internal_materials_total_raw": "1374411.508576",
+    "internal_materials_total": 1374412,
     "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "2038878",
-    "internal_section_total": 2038878,
-    "sum_of_displayed_line_material_totals": 1420808,
+    "internal_section_total_raw": "1992482",
+    "internal_section_total": 1992482,
+    "sum_of_displayed_line_material_totals": 1374412,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 2038878
+    "sum_of_displayed_line_totals": 1992482
   },
   "warnings": [
     "project_spec_roof_area_m2 is not used without human review; current calculation uses roof geometry totals.",
@@ -923,15 +894,15 @@
   ],
   "expected": {
     "totals": {
-      "internal_materials_total_raw": "1420807.508576",
-      "internal_materials_total": 1420808,
+      "internal_materials_total_raw": "1374411.508576",
+      "internal_materials_total": 1374412,
       "internal_works_total_raw": "618070.04",
       "internal_works_total": 618070,
-      "internal_section_total_raw": "2038878",
-      "internal_section_total": 2038878,
-      "sum_of_displayed_line_material_totals": 1420808,
+      "internal_section_total_raw": "1992482",
+      "internal_section_total": 1992482,
+      "sum_of_displayed_line_material_totals": 1374412,
       "sum_of_displayed_line_work_totals": 618070,
-      "sum_of_displayed_line_totals": 2038878
+      "sum_of_displayed_line_totals": 1992482
     },
     "estimate_lines": [
       {
@@ -1132,46 +1103,6 @@
         }
       },
       {
-        "code": "geotextile_prof_300_flat",
-        "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-        "unit": "м2",
-        "line_type": "materials",
-        "quantity_raw": "300",
-        "quantity_display": "300",
-        "quantity_source": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-        "price_code": "roof_geotextile_technonikol_prof_300_m2",
-        "internal_cost": {
-          "material_unit_price": "111.76",
-          "material_total_raw": "33528",
-          "material_total": 33528,
-          "work_unit_price": "0",
-          "work_total_raw": "0",
-          "work_total": 0,
-          "line_total_raw": "33528",
-          "line_total": 33528
-        }
-      },
-      {
-        "code": "geotextile_prof_150_parapet",
-        "name": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-        "unit": "м2",
-        "line_type": "materials",
-        "quantity_raw": "200",
-        "quantity_display": "200",
-        "quantity_source": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-        "price_code": "roof_geotextile_technonikol_prof_150_m2",
-        "internal_cost": {
-          "material_unit_price": "64.34",
-          "material_total_raw": "12868",
-          "material_total": 12868,
-          "work_unit_price": "0",
-          "work_total_raw": "0",
-          "work_total": 0,
-          "line_total_raw": "12868",
-          "line_total": 12868
-        }
-      },
-      {
         "code": "pvc_membrane_flat_installation",
         "name": "Укладка ПВХ Мембраны",
         "unit": "м2",
@@ -1275,7 +1206,7 @@
         "line_type": "materials",
         "quantity_raw": "11",
         "quantity_display": "11",
-        "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls",
+        "quantity_source": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
         "price_code": "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
         "internal_cost": {
           "material_unit_price": "51431",
@@ -1544,23 +1475,23 @@
   },
   "comparison": {
     "status": "ok",
-    "ok_count": 460,
+    "ok_count": 430,
     "mismatch_count": 0,
     "checks": [
       {
         "scope": "totals",
         "code": "internal_materials_total_raw",
         "field": "internal_materials_total_raw",
-        "expected": "1420807.508576",
-        "actual": "1420807.508576",
+        "expected": "1374411.508576",
+        "actual": "1374411.508576",
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "internal_materials_total",
         "field": "internal_materials_total",
-        "expected": 1420808,
-        "actual": 1420808,
+        "expected": 1374412,
+        "actual": 1374412,
         "status": "ok"
       },
       {
@@ -1583,24 +1514,24 @@
         "scope": "totals",
         "code": "internal_section_total_raw",
         "field": "internal_section_total_raw",
-        "expected": "2038878",
-        "actual": "2038878",
+        "expected": "1992482",
+        "actual": "1992482",
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "internal_section_total",
         "field": "internal_section_total",
-        "expected": 2038878,
-        "actual": 2038878,
+        "expected": 1992482,
+        "actual": 1992482,
         "status": "ok"
       },
       {
         "scope": "totals",
         "code": "sum_of_displayed_line_material_totals",
         "field": "sum_of_displayed_line_material_totals",
-        "expected": 1420808,
-        "actual": 1420808,
+        "expected": 1374412,
+        "actual": 1374412,
         "status": "ok"
       },
       {
@@ -1615,8 +1546,8 @@
         "scope": "totals",
         "code": "sum_of_displayed_line_totals",
         "field": "sum_of_displayed_line_totals",
-        "expected": 2038878,
-        "actual": 2038878,
+        "expected": 1992482,
+        "actual": 1992482,
         "status": "ok"
       },
       {
@@ -2797,246 +2728,6 @@
       },
       {
         "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "name",
-        "expected": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-        "actual": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "unit",
-        "expected": "м2",
-        "actual": "м2",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "line_type",
-        "expected": "materials",
-        "actual": "materials",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "quantity_raw",
-        "expected": "300",
-        "actual": "300",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "quantity_display",
-        "expected": "300",
-        "actual": "300",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "quantity_source",
-        "expected": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-        "actual": "roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "price_code",
-        "expected": "roof_geotextile_technonikol_prof_300_m2",
-        "actual": "roof_geotextile_technonikol_prof_300_m2",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.material_unit_price",
-        "expected": "111.76",
-        "actual": "111.76",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.material_total_raw",
-        "expected": "33528",
-        "actual": "33528",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.material_total",
-        "expected": 33528,
-        "actual": 33528,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.work_unit_price",
-        "expected": "0",
-        "actual": "0",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.work_total_raw",
-        "expected": "0",
-        "actual": "0",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.work_total",
-        "expected": 0,
-        "actual": 0,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.line_total_raw",
-        "expected": "33528",
-        "actual": "33528",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_300_flat",
-        "field": "internal_cost.line_total",
-        "expected": 33528,
-        "actual": 33528,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "name",
-        "expected": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-        "actual": "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "unit",
-        "expected": "м2",
-        "actual": "м2",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "line_type",
-        "expected": "materials",
-        "actual": "materials",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "quantity_raw",
-        "expected": "200",
-        "actual": "200",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "quantity_display",
-        "expected": "200",
-        "actual": "200",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "quantity_source",
-        "expected": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-        "actual": "parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "price_code",
-        "expected": "roof_geotextile_technonikol_prof_150_m2",
-        "actual": "roof_geotextile_technonikol_prof_150_m2",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.material_unit_price",
-        "expected": "64.34",
-        "actual": "64.34",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.material_total_raw",
-        "expected": "12868",
-        "actual": "12868",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.material_total",
-        "expected": 12868,
-        "actual": 12868,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.work_unit_price",
-        "expected": "0",
-        "actual": "0",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.work_total_raw",
-        "expected": "0",
-        "actual": "0",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.work_total",
-        "expected": 0,
-        "actual": 0,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.line_total_raw",
-        "expected": "12868",
-        "actual": "12868",
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
-        "code": "geotextile_prof_150_parapet",
-        "field": "internal_cost.line_total",
-        "expected": 12868,
-        "actual": 12868,
-        "status": "ok"
-      },
-      {
-        "scope": "estimate_lines",
         "code": "pvc_membrane_flat_installation",
         "field": "name",
         "expected": "Укладка ПВХ Мембраны",
@@ -3655,8 +3346,8 @@
         "scope": "estimate_lines",
         "code": "pvc_membrane_logicroof_vrp_1_5mm_gray",
         "field": "quantity_source",
-        "expected": "non-exploitable flat and abutment membrane areas rounded to rolls",
-        "actual": "non-exploitable flat and abutment membrane areas rounded to rolls",
+        "expected": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
+        "actual": "non-exploitable flat and abutment membrane areas rounded to rolls (calculated_from_roof_zones)",
         "status": "ok"
       },
       {

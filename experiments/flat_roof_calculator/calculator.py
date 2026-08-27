@@ -137,6 +137,22 @@ def material_roll_line(
     )
 
 
+def spec_table_area_m2(spec_rows: list[dict[str, Any]] | None, name_token: str) -> Decimal | None:
+    # roof_raw_material_spec_rows carries ready quantities straight off the project's own
+    # "СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА НА УСТРОЙСТВО КРОВЛИ" table - real supplier/installer
+    # numbers (rows explicitly flagged "Уточнить у монтажной организации" in the PDF), not a
+    # simple area+perimeter formula. Used 2026-08-24 to give the ready V-GR/V-RP membrane area
+    # priority over calculate_roof_geometry's zone-based estimate (see module docstring).
+    for row in spec_rows or []:
+        name = str(row.get("name") or "")
+        unit = str(row.get("unit") or "").strip().lower()
+        if name_token in name and unit in ("м2", "m2", "м²"):
+            qty = row.get("quantity")
+            if qty is not None and d(qty) > D0:
+                return d(qty)
+    return None
+
+
 def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
     # `key not in input_data` alone doesn't catch the far more common real shape of
     # extraction-derived input: the key IS present, just with value None (parser didn't find
@@ -430,28 +446,119 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             )
         )
 
-    lines.append(
-        material_roll_line(
-            code="geotextile_prof_300_flat",
-            name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м",
-            price_code="roof_geotextile_technonikol_prof_300_m2",
-            required_area=roof_area * d(input_data["geotextile_flat_coeff"]),
-            roll_area=d(input_data["geotextile_flat_roll_area_m2"]),
-            unit_price_per_m2=d(input_data["geotextile_flat_unit_price_per_m2"]),
-            quantity_source="roof_area_total_m2 * geotextile_flat_coeff rounded to rolls",
+    # roof_screed_items[]: optional, top-level list (same convention as roof_zones - not nested,
+    # since it's its own set of review-workbook rows), one row per physical screed area on this
+    # roof. Real project data (2026-08-24, Elena): only some projects have an exploitable roof
+    # zone that needs a walkable ЦСП (screed board) build-up - confirmed on 3 real projects, only
+    # 1 of 3 (ТРЦ) had it at all, but Elena says it's a common, real, recurring case across her
+    # projects generally, not a one-off. Absent -> 0 lines added at all (same "optional, never
+    # crashes" shape as lintel_items[] on P6 walls or the V-GR membrane block above, gated on
+    # vgr_membrane_required_area > 0), not a zero-value line - a project with no screed shouldn't
+    # show a phantom ЦСП row. Real ТРЦ formula (КР2 spec, page with «Сборная стяжка из 2 листов
+    # ЦСП (21.28м² × 2шт)» and «Геотекстиль термообработанный, 21.28 м2»): work is priced by the
+    # zone's own area (1 layer, the rate already covers 2-layer installation as one job); the
+    # board material is priced by area×layers_count(2) rounded up to whole sheets; fiberglass mat
+    # and geotextile-under-screed are both priced by the same 1-layer area, each rounded up to
+    # whole rolls of their own product. Geotextile-under-screed reuses the exact same product/price
+    # as geotextile_prof_150_parapet (both literally "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150" in
+    # every real project checked) - a separate line/code here because it has a different area
+    # source (screed area, not parapet length), not a different product.
+    spec_rows = input_data.get("roof_raw_material_spec_rows") or []
+    screed_items_in = input_data.get("roof_screed_items") or []
+    screed_total_area = sum((d(item["area_m2"]) for item in screed_items_in), D0)
+    if screed_total_area > D0:
+        screed_work_raw = screed_total_area * d(input_data["roof_screed_installation_work_rate_per_m2"])
+        lines.append(
+            estimate_line(
+                code="roof_screed_installation",
+                name="Укладка ЦСП в 2 слоя (24мм)",
+                unit="м2",
+                line_type="work",
+                quantity_raw=screed_total_area,
+                quantity_source="sum(roof_screed_items[].area_m2)",
+                work_unit_price=input_data["roof_screed_installation_work_rate_per_m2"],
+                work_total_raw=screed_work_raw,
+                formula={"screed_total_area_m2": decimal_str(screed_total_area)},
+            )
         )
-    )
-    lines.append(
-        material_roll_line(
-            code="geotextile_prof_150_parapet",
-            name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-            price_code="roof_geotextile_technonikol_prof_150_m2",
-            required_area=parapet_and_abutment * d(input_data["geotextile_parapet_coeff"]),
-            roll_area=d(input_data["geotextile_parapet_roll_area_m2"]),
-            unit_price_per_m2=d(input_data["geotextile_parapet_unit_price_per_m2"]),
-            quantity_source="parapet_and_abutment_total_length_m * geotextile_parapet_coeff rounded to rolls",
+        screed_board_required_area = screed_total_area * d(input_data["roof_screed_layers_count"])
+        screed_board_sheet_area = d(input_data["roof_screed_board_sheet_area_m2"])
+        screed_boards = ceil_decimal(screed_board_required_area / screed_board_sheet_area)
+        lines.append(
+            estimate_line(
+                code="roof_screed_board_material",
+                name="Цементно-стружечная плита (ЦСП) толщина 12 мм 3200х1200",
+                unit="шт",
+                line_type="materials",
+                quantity_raw=screed_boards,
+                quantity_source="sum(roof_screed_items[].area_m2) * roof_screed_layers_count / roof_screed_board_sheet_area_m2, rounded to sheets",
+                price_code="roof_screed_board_cementitious_particle_board_12mm",
+                material_unit_price=input_data["roof_screed_board_unit_price"],
+                material_total_raw=d(screed_boards) * d(input_data["roof_screed_board_unit_price"]),
+                formula={
+                    "screed_total_area_m2": decimal_str(screed_total_area),
+                    "layers_count": input_data["roof_screed_layers_count"],
+                    "required_area_m2": decimal_str(screed_board_required_area),
+                    "sheet_area_m2": decimal_str(screed_board_sheet_area),
+                    "sheets_ordered": screed_boards,
+                },
+            )
         )
-    )
+        # Order matches Elena's real smeta row order (checked 2026-08-24): geotextile row comes
+        # before the fiberglass mat row (ГЕОТЕКСТИЛЬ then СТЕКЛОХОЛСТ), not the reverse.
+        lines.append(
+            material_roll_line(
+                code="roof_screed_geotextile",
+                name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м (под стяжку ЦСП)",
+                price_code="roof_geotextile_technonikol_prof_150_m2",
+                required_area=screed_total_area,
+                roll_area=d(input_data["geotextile_parapet_roll_area_m2"]),
+                unit_price_per_m2=d(input_data["geotextile_parapet_unit_price_per_m2"]),
+                quantity_source="sum(roof_screed_items[].area_m2) rounded to rolls",
+            )
+        )
+        lines.append(
+            material_roll_line(
+                code="roof_screed_fiberglass_mat",
+                name="Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)",
+                price_code="roof_fiberglass_mat_technonikol_100gr_m2",
+                required_area=screed_total_area,
+                roll_area=d(input_data["roof_fiberglass_mat_roll_area_m2"]),
+                unit_price_per_m2=d(input_data["roof_fiberglass_mat_unit_price_per_m2"]),
+                quantity_source="sum(roof_screed_items[].area_m2) rounded to rolls",
+            )
+        )
+
+    # 2026-08-24: geotextile_prof_300_flat/150_parapet used to be unconditional geometric
+    # estimates (roof_area/parapet_length x a hand-picked coefficient), added to every project
+    # regardless of whether the project's own PDF ever mentions this material. Checked all 3
+    # real projects' own "СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА"/"Спецификация к плану кровли" tables:
+    # ТРЦ has exactly one geotextile row (21.28m2, the same area as its ЦСП screed zone - already
+    # fully covered by roof_screed_geotextile above); АРК and ЮСВ have NO geotextile row at all
+    # in their spec tables (even though ЮСВ's own узел drawing shows a geotextile detail note at
+    # a parapet-flashing узел - that's a construction note, never a priced/quantified spec-table
+    # row). Per user decision 2026-08-24: this calculator must not invent a quantity for a
+    # material the project's own spec table doesn't mention - if roof_raw_material_spec_rows has
+    # a "Геотекстиль" row beyond what roof_screed_geotextile already consumed, use that
+    # (real/ready number); otherwise 0 lines, no crash. This deliberately means projects like the
+    # real ЮСВ one (which historically had a hand-added 300m2+200m2 geotextile cost with no PDF
+    # backing) will no longer reproduce that cost automatically - matches the existing SLOPE-plate
+    # precedent (no PDF signal -> not an extraction/formula target).
+    spec_geotextile_total = spec_table_area_m2(spec_rows, "еотекстил")
+    if spec_geotextile_total is not None:
+        remaining_geotextile_area = spec_geotextile_total - screed_total_area
+        if remaining_geotextile_area > D0:
+            lines.append(
+                material_roll_line(
+                    code="geotextile_prof_150_parapet",
+                    name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+                    price_code="roof_geotextile_technonikol_prof_150_m2",
+                    required_area=remaining_geotextile_area,
+                    roll_area=d(input_data["geotextile_parapet_roll_area_m2"]),
+                    unit_price_per_m2=d(input_data["geotextile_parapet_unit_price_per_m2"]),
+                    quantity_source="roof_raw_material_spec_rows geotextile row, minus area already covered by roof_screed_geotextile, rounded to rolls",
+                )
+            )
 
     lines.extend(
         [
@@ -474,6 +581,17 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 quantity_source="parapet_and_abutment_total_length_m",
                 work_unit_price=input_data["pvc_membrane_abutment_work_rate_per_m"],
                 work_total_raw=parapet_and_abutment * d(input_data["pvc_membrane_abutment_work_rate_per_m"]),
+            ),
+            # 2026-08-24: real structure-only line (0₽ rate) confirmed on TRC's own smeta right
+            # after "Монтаж примыкания кровли из ПВХ мембраны" - same shape as
+            # roof_base_preparation_control above (present for reference, never priced). Length
+            # is the same parapet_and_abutment_total_length_m as the line above.
+            zero_line(
+                "roof_abutment_strip_installation_control",
+                "Монтаж планки примыкания",
+                parapet_and_abutment,
+                "parapet_and_abutment_total_length_m",
+                unit="мп",
             ),
         ]
     )
@@ -530,9 +648,17 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     # since exploitable_roof_area is then always 0), V-GR covers only the exploitable
     # portion. Installation WORK above stays one combined line regardless of brand (same
     # physical laying operation) — only material purchase splits.
+    # V-RP does NOT get the spec-table override below (unlike V-GR) - real TRC data checked
+    # 2026-08-24: the project's own spec-table V-RP total (169.48m2) rounds to 5 rolls, but
+    # Elena's real smeta orders 6, matching this geometric formula exactly. The spec number is
+    # itself an installer-facing raw quantity ("Уточнить у монтажной организации"), not the
+    # final order - for V-RP our geometric approximation already reproduces the real order; for
+    # V-GR (small exploitable zone, see below) it doesn't. Left as two different behaviors on
+    # purpose, not an oversight.
     membrane_flat_area = non_exploitable_roof_area * d(input_data["pvc_membrane_flat_coeff"])
     membrane_abutment_area = non_exploitable_parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
     membrane_required_area = membrane_flat_area + membrane_abutment_area
+    membrane_area_source = "calculated_from_roof_zones"
     membrane_roll_area = d(input_data["pvc_membrane_roll_width_m"]) * d(input_data["pvc_membrane_roll_length_m"])
     membrane_rolls = 0
     if membrane_required_area > D0:
@@ -544,7 +670,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 unit="рул",
                 line_type="materials",
                 quantity_raw=membrane_rolls,
-                quantity_source="non-exploitable flat and abutment membrane areas rounded to rolls",
+                quantity_source=f"non-exploitable flat and abutment membrane areas rounded to rolls ({membrane_area_source})",
                 price_code="roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll",
                 material_unit_price=input_data["pvc_membrane_unit_price_per_roll_display"],
                 material_total_raw=d(membrane_rolls) * d(input_data["pvc_membrane_unit_price_per_roll_display"]),
@@ -552,6 +678,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                     "flat_area_m2": decimal_str(membrane_flat_area),
                     "abutment_area_m2": decimal_str(membrane_abutment_area),
                     "required_area_m2": decimal_str(membrane_required_area),
+                    "required_area_source": membrane_area_source,
                     "roll_area_m2": decimal_str(membrane_roll_area),
                     "rolls_ordered": membrane_rolls,
                 },
@@ -561,6 +688,11 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     vgr_membrane_flat_area = exploitable_roof_area * d(input_data["pvc_membrane_flat_coeff"])
     vgr_membrane_abutment_area = exploitable_parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
     vgr_membrane_required_area = vgr_membrane_flat_area + vgr_membrane_abutment_area
+    vgr_membrane_area_source = "calculated_from_roof_zones"
+    spec_vgr_area = spec_table_area_m2(spec_rows, "V-GR")
+    if spec_vgr_area is not None:
+        vgr_membrane_required_area = spec_vgr_area
+        vgr_membrane_area_source = "roof_raw_material_spec_rows"
     vgr_membrane_roll_area = D0
     vgr_membrane_rolls = 0
     if vgr_membrane_required_area > D0:
@@ -577,7 +709,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 unit="рул",
                 line_type="materials",
                 quantity_raw=vgr_membrane_rolls,
-                quantity_source="exploitable flat and abutment membrane areas rounded to rolls",
+                quantity_source=f"exploitable flat and abutment membrane areas rounded to rolls ({vgr_membrane_area_source})",
                 price_code="roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll",
                 material_unit_price=input_data["pvc_membrane_vgr_unit_price_per_roll_display"],
                 material_total_raw=d(vgr_membrane_rolls) * d(input_data["pvc_membrane_vgr_unit_price_per_roll_display"]),
@@ -585,6 +717,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                     "flat_area_m2": decimal_str(vgr_membrane_flat_area),
                     "abutment_area_m2": decimal_str(vgr_membrane_abutment_area),
                     "required_area_m2": decimal_str(vgr_membrane_required_area),
+                    "required_area_source": vgr_membrane_area_source,
                     "roll_area_m2": decimal_str(vgr_membrane_roll_area),
                     "rolls_ordered": vgr_membrane_rolls,
                 },
