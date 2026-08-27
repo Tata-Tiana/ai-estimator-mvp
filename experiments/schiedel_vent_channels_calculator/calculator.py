@@ -452,9 +452,13 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 "material_total_raw": decimal_str(consumables_total_raw),
             },
         ),
-        # No Технический надзор line at all here (not even zero) - checked 3 real projects'
-        # delivered smetas 2026-08-15: Schiedel vent channels never carries this row in any of
-        # them, unlike walls/foundation/floor slabs/roof where it's a real cost.
+        # Технический надзор: 2026-08-15 note here previously claimed this row never appears in
+        # Schiedel vent channels at all - wrong, same false conclusion already found and fixed in
+        # waterproofing_calculator.py (same date). Real ЮСВ smeta has the row (blank/0, same as
+        # Заготовительно-складские/Накладные/Сметная прибыль below) - added 2026-08-27. The
+        # section_contract.yaml already expected this exact code
+        # (estimate_lines[code=technical_supervision_zero]), so this was a pure calculator gap.
+        zero_structure_line("technical_supervision_zero", "Технический надзор"),
         zero_structure_line("procurement_storage_zero", "Заготовительно-складские расходы"),
         zero_structure_line("overhead_zero", "Накладные и общехозяйственные расходы"),
         zero_structure_line("profit_zero", "Сметная прибыль"),
