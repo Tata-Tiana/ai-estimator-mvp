@@ -12,8 +12,12 @@ out to be the coarser number - same pattern as the roof-area fix, see 06_flat_ro
 №1-2. Also corrected: Заготовительно-складские/Накладные/Сметная прибыль are NOT all "always 0,
 no client markup" - checked Elena's real formulas directly, Накладные/Прибыль genuinely have no
 formula at all in the grey/internal columns K-O (blank = 0, the large visible numbers there are
-client-markup in the white columns), but ЗСР is a real manual per-project field (same mechanism
-as technical_supervision_amount) that just isn't filled in for this project - see finding №7."""
+client-markup in the white columns), but ЗСР has a real internal amount for this project (15000₽)
+that our calculator's own default (0) doesn't reproduce - see finding №7. Not the same mechanism
+as technical_supervision_amount (a plain universal default) - ЗСР's own override field has been
+hidden from sheet 01 since 2026-08-03, so the fix isn't "fill it in on sheet 01"; per user
+decision (2026-08-27) this is left as-is, fillable by hand directly in the finished estimate
+when a project needs it."""
 
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
@@ -92,9 +96,9 @@ _RAW_ROWS: list[tuple[str, float, str, str]] = [
     ("Вывоз мусора с объекта", 3, "маш", "Ручное поле, по умолчанию 3."),
     ("Технический надзор", 1, "-", "Ручное поле."),
     ("Заготовительно-складские расходы", 1, "-",
-     "Ручное поле (тот же механизм, что технический надзор) - по умолчанию 0, для этого проекта "
-     "не заполнено. У Елены реально 15 000₽ во внутренней себестоимости (не наценка) - см. отчёт "
-     "06_flat_roof.md находка №7, стоит вписать."),
+     "По умолчанию 0 (legacy-поле, скрыто с листа 01). У Елены реально 15 000₽ во внутренней "
+     "себестоимости (не наценка) - см. отчёт 06_flat_roof.md находка №7. Не баг, при "
+     "необходимости можно вписать вручную прямо в готовую смету."),
     ("Накладные и общехозяйственные расходы", 1, "-",
      "Строка есть для структуры сметы, у нас всегда 0. У Елены тоже реально 0 во внутренней "
      "себестоимости - видимое в её смете крупное число это клиентская наценка по коэффициенту НР, "
@@ -138,8 +142,9 @@ summary_items = [
     ("Ручные поля (по умолчанию, можно менять под проект): ",
      "объёмы SLOPE-плит разуклонки (по расчёту поставщика/расчётной организации, не из "
      "архитектурного PDF), ЭППС 50мм, количество аэраторов/воронок, высота водостока на воронку "
-     "(3.75м), подъём краном, вывоз мусора, технический надзор, заготовительно-складские расходы "
-     "(для этого проекта пока не заполнено, см. находку №7)."),
+     "(3.75м), подъём краном, вывоз мусора, технический надзор (универсальный дефолт 10000₽). "
+     "Заготовительно-складские расходы по умолчанию 0 (см. находку №7) - при необходимости "
+     "вписываются вручную прямо в готовую смету, не через лист 01."),
     ("Вручную поправлено конкретно по этому проекту (лист 01, поверх найденного): ",
      "площадь обеих зон кровли (+3.480: 212.35→177.52 м2, +4.680: 82→71.4 м2), длина примыканий "
      "(готовые строки спецификации 103.35+24.65=128 мп → её собственный расчёт по чертежу 131.4 мп "
