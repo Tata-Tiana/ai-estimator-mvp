@@ -105,6 +105,7 @@
       "slab_edge_perimeter_m": "number|null - slab's own outer edge length in m.p., control-geometry only",
       "concrete_slab_volume_m3": "number|null - slab concrete only, not beams",
       "concrete_total_with_beams_m3": "number|null - diagnostic/control only when PDF prints an explicit combined total",
+      "beams_concrete_volume_m3": "number|null - REAL input, not diagnostic. Fill this from a ready spec-table row like 'Бетон B-22,5 (балки в теле плиты перекрытия)' whenever the PDF prints one - this ready total ALWAYS wins over summing floor_slab_beam_items' own length*width*height, even if the two disagree. Individual beam cross-sections on a crowded plan/isometric drawing are easy to misread (confirmed real case: one project's per-beam sum came out 3x the spec-table total because a beam height was misread off the drawing) - never silently keep the calculated sum instead when a ready spec total exists, and never average/reconcile the two. Leave null only when the PDF genuinely has no such ready row.",
       "formwork_under_slab_area_m2": "number|null",
       "formwork_edge_area_m2": "number|null",
       "formwork_edge_and_beam_combined_area_m2": "number|null - only when PDF gives inseparable slab edge + beam formwork",
