@@ -47,6 +47,7 @@ Field sourcing:
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from core.contract_loader import default_by_key, load_contract, price_keys as contract_price_keys
@@ -54,14 +55,26 @@ from core.contract_loader import default_by_key, load_contract, price_keys as co
 REQUIRED_SCALARS = ("schiedel_masonry_total_length_m", "schiedel_delivery_trips")
 PRODUCTION_ITEM_GROUPS = ("schiedel_channel_items", "schiedel_masonry_gas_block_items")
 
+# Matches "Schiedel VENT 2 (360x250 мм)"/"VENT 2"/"2 хода" style full product names - the
+# extraction prompt (target_aliases_ru.yaml's schiedel_channel_items notes) already tells the
+# model to return the bare code directly, but a real run still returned the full descriptive PDF
+# text instead (confirmed 2026-08-26, real ЮСВ data: "Вентиляционный канал Schiedel VENT 2
+# (360х250 мм)" - a plain "1x"/"2x"/... exact/prefix/substring match never fires on that, so a
+# valid quantity silently blocked the whole section's build). Checked BEFORE the plain-code match
+# below only matters for readability, not correctness - both branches agree on 1x-4x.
+_VENT_NUMBER_RE = re.compile(r"vent\s*([1-4])\b")
+
 
 def _normalize_channel_product_type(value: Any) -> str:
     text = str(value or "").strip().lower().replace("х", "x")
+    if "cvent" in text or "сvent" in text or "сивент" in text:
+        return "cvent"
     for product_type in ("1x", "2x", "3x", "4x"):
         if text == product_type or text.startswith(product_type) or f" {product_type}" in text:
             return product_type
-    if "cvent" in text or "сvent" in text or "сивент" in text:
-        return "cvent"
+    match = _VENT_NUMBER_RE.search(text)
+    if match:
+        return f"{match.group(1)}x"
     return str(value or "").strip()
 
 
