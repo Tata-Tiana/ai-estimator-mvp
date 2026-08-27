@@ -22,7 +22,14 @@ def parse_price(value: Any) -> float | None:
     if value in {None, ""}:
         return None
     try:
-        return float(str(value).replace(",", "."))
+        # Some raw price rows were typed/stored as text with a space thousands-separator
+        # ("3 500", regular or non-breaking space) rather than a real Excel number - float()
+        # rejects the space and this silently became a missing price after the registry moved
+        # to Google Sheets (2026-08-26: 5 real prices, incl. excavator_jcb_shift, went blank on
+        # sheet 02 this way). Strip all whitespace before parsing so text-formatted prices behave
+        # the same as numeric-formatted ones.
+        cleaned = "".join(str(value).split())
+        return float(cleaned.replace(",", "."))
     except ValueError:
         return None
 

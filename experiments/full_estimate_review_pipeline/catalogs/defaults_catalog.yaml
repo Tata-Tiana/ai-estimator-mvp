@@ -1262,15 +1262,22 @@ sections:
         notes: "Working sheet area used by calculator formula."
 
       reserve_plywood_sheets:
-        value: 10.0
+        value: 0.0
         unit: "sheets"
         source_class: BUSINESS_DEFAULT
         calculator_input_path: "rates.reserve_plywood_sheets"
         used_by_estimate_lines: ["floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"]
-        source_note: "Floor slab 1 section contract."
+        source_note: "Was a flat 10 - checked against real ТРЦ/АРК/ЮСВ smetas (2026-08-22): Elena's
+          own plywood formula never adds a fixed reserve at all on ТРЦ, and on АРК/ЮСВ it varies
+          per pour (0/5/10, no formula) - a flat business default is wrong exactly as often as it's
+          right. Reserve is now a real per-pour manual field (manual_plywood_reserve_sheets on
+          floor_slab_zones) that overrides this default when Elena fills it in; 0 is the correct
+          default when she doesn't."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "Reserve sheets rule for non-multiple places and edges."
+        notes: "Reserve sheets rule for non-multiple places and edges. Overridden per pour by
+          manual_plywood_reserve_sheets when given - see
+          review_to_calculator/sections/floor_slabs/build_input.py."
 
       non_multiple_places_coeff:
         value: 0.2
@@ -1636,12 +1643,14 @@ sections:
         notes: "Working sheet area used by calculator formula."
 
       plywood_reserve_sheets:
-        value: 10.0
+        value: 0.0
         unit: "sheets"
         source_class: BUSINESS_DEFAULT
         calculator_input_path: "plywood_reserve_sheets"
         used_by_estimate_lines: ["floor_slab_2.plywood_for_edges"]
-        source_note: "Floor slab 2 section contract."
+        source_note: "floor_slab_2 is legacy/unused in production (P5 unified floor_slabs section
+          calls floor_slab_1_calculator.py directly for every pour) - fixed to match the
+          reserve_plywood_sheets change there for consistency. See that entry's source_note."
         confidence: confirmed_from_contract
         allow_override: true
         notes: "Reserve sheets rule for non-multiple places and edges."

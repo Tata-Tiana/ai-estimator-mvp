@@ -56,7 +56,7 @@ from build_review_workbook_from_contracts import (  # noqa: E402
     diagnostic_repeated_row_params,
     hide_diagnostic_sheets,
     load_manual_values_registry,
-    load_price_registry,
+    load_price_registry_google_first,
     load_yaml_contract,
     merge_row_full_width,
     production_repeated_row_params,
@@ -190,7 +190,15 @@ def sum_communications_pipe_items(found_groups: dict[str, list[Any]]) -> float |
     found_any = False
     for item in group_items(found_groups, "communications_pipe_items"):
         value = item.get("value") or {}
-        if not value.get("include_in_communications", True):
+        # 2026-08-25: real ЮСВ extraction carries include_in_communications=None (key present,
+        # value None - "not specified", not "explicitly excluded") on every single row. The old
+        # `value.get("include_in_communications", True)` only applies the True default when the
+        # KEY IS ABSENT - a present-but-None value bypasses the default entirely and returns
+        # None, so `not None` was True and every row got skipped, found_any stayed False, and
+        # the whole communications_length_m alternative-scalar silently came back None on a
+        # project that has 115m of real, fully summable pipe data. Skip only on an EXPLICIT
+        # False; None/absent both mean "no exclusion stated" and should be included.
+        if value.get("include_in_communications") is False:
             continue
         explicit_total = value.get("total_length_m")
         if explicit_total is not None:
@@ -230,7 +238,9 @@ def project_group_items_for_review(extraction: dict[str, Any], sec_code: str) ->
     """
     section = (extraction.get("sections") or {}).get(sec_code) or {}
     groups: dict[str, list[Any]] = {}
-    seen: dict[str, set[str]] = {}
+    # Maps group_code -> {value_key -> index into groups[group_code]}, so a duplicate seen later
+    # can still upgrade the row already kept, instead of being silently dropped.
+    seen: dict[str, dict[str, int]] = {}
     for bucket_name in ("found", "needs_review"):
         for item in section.get(bucket_name) or []:
             if not isinstance(item, dict):
@@ -239,15 +249,32 @@ def project_group_items_for_review(extraction: dict[str, Any], sec_code: str) ->
             if not group_code:
                 continue
             # Some correction-pass JSONs keep the same repeated item in both found and
-            # needs_review. Sheet 01 should show one project row, not a duplicate physical item.
+            # needs_review (the schema's own found/needs_review mirroring - not a genuine
+            # duplicate). Sheet 01 should show one project row, not a duplicate physical item -
+            # but if EITHER copy is the needs_review one, the merged row must end up
+            # needs_review=True. A real, confirmed case (TRC 2026-08-18, floor_slabs "ребро 50мм в
+            # теле плиты перекрытия"): the model put the same row in both found (needs_review:
+            # false baked into the item) and needs_review (explaining an unresolved assumption -
+            # "другие размеры не додумывались"). Since found is iterated first, the old code kept
+            # that first-seen copy and just `continue`d past the needs_review copy, so the
+            # needs_review=True override on line ~249 never ran - the row rendered as a normal,
+            # non-critical found row with two blank fields (length_m/width_m) and no red
+            # highlight, even though the model was explicitly unsure and no calculator fallback
+            # exists for those fields (build_input.py routes it into beam_only_concrete_items
+            # instead, material-only, no length-priced line - a real, silent scope loss vs
+            # Elena's own smeta, not a bug in that reroute itself).
             value_key = json.dumps(item.get("value") or {}, ensure_ascii=False, sort_keys=True)
-            if value_key in seen.setdefault(group_code, set()):
+            group_seen = seen.setdefault(group_code, {})
+            existing_index = group_seen.get(value_key)
+            if existing_index is not None:
+                if bucket_name == "needs_review":
+                    groups[group_code][existing_index]["needs_review"] = True
                 continue
-            seen[group_code].add(value_key)
             item_for_sheet = dict(item)
             if bucket_name == "needs_review":
                 item_for_sheet["needs_review"] = True
             groups.setdefault(group_code, []).append(item_for_sheet)
+            group_seen[value_key] = len(groups[group_code]) - 1
     return groups
 
 
@@ -305,6 +332,13 @@ def earthworks_alternative_scalar(
         )
     if target_code == "communications_length_m" and group_items(found_groups, "communications_pipe_items"):
         total = sum_communications_pipe_items(found_groups)
+        if total is None:
+            # Real 2026-08-25 case (ЮСВ): rows exist in communications_pipe_items, but none of
+            # them carry a summable length (all fittings/elbows with include_in_communications
+            # false, or missing total_length_m/pipe_length_m+quantity) - sum_communications_
+            # pipe_items() returns None for exactly this "found rows, nothing to add" case. Fall
+            # through to the normal scalar path instead of crashing on `f"{None:g}"` below.
+            return None
         has_review = group_has_needs_review(found_groups, "communications_pipe_items")
         return (
             total,
@@ -1130,6 +1164,7 @@ FLOOR_SLAB_FIELD_LABELS = {
     "manual_rebar_metal_delivery_trucks": "Доставка арматуры/металла",
     "manual_technical_supervision_amount": "Технадзор",
     "manual_formwork_rental_supplier_quote_total": "КП поставщика на аренду опалубки",
+    "manual_plywood_reserve_sheets": "Запас листов фанеры сверх расчёта",
     "volume_m3": "Объем материала",
     "area_m2": "Площадь",
     "length_m": "Длина работ",
@@ -1148,6 +1183,7 @@ def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str])
         return [
             "concrete_slab_volume_m3",
             "concrete_total_with_beams_m3",
+            "beams_concrete_volume_m3",
             "slab_thickness_m",
             "slab_edge_perimeter_m",
             "formwork_under_slab_area_m2",
@@ -1160,6 +1196,7 @@ def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str])
             "manual_rebar_metal_delivery_trucks",
             "manual_technical_supervision_amount",
             "manual_formwork_rental_supplier_quote_total",
+            "manual_plywood_reserve_sheets",
         ]
     if group_key == EPS_ITEMS_GROUP_KEY:
         return ["volume_m3", "area_m2", "length_m", "height_m"]
@@ -1338,6 +1375,10 @@ FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
     ("communications_pipe_items", "pipe_length_m"): "group never read for money (earthworks uses the reviewed communications_length_m scalar instead)",
     ("communications_pipe_items", "quantity"): "group never read for money (same as pipe_length_m)",
     ("communications_pipe_items", "total_length_m"): "group never read for money (same as pipe_length_m)",
+    ("communications_pipe_items", "diameter_mm"): "group never read for money (same as pipe_length_m) - purely descriptive even in the group's own cross-check sum",
+    # earthworks_calculator.py's calculate_trench_routes() always uses the flat trench_width_m
+    # scalar for every route (never route.get("width_m")) - the per-route field is display-only.
+    ("trench_routes", "width_m"): "never read - calculate_trench_routes() always uses the flat trench_width_m scalar for every route, not this per-route field",
     # Per-beam fields with a safe fallback or zero downstream consumer (floor_slabs/build_input.py
     # + floor_slab_calculator.py, verified 2026-08-15).
     ("floor_slab_beam_items", "count"): "defaults to 1 in _beam_formwork_area_m2 when absent",
@@ -1354,17 +1395,33 @@ FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
     ("floor_slab_zones", "formwork_edge_and_beam_combined_area_m2"): "alternate field - safe when formwork_edge_area_m2 is given instead",
     ("floor_slab_zones", "formwork_beams_side_area_m2"): "not read anywhere in build_input.py/calculator.py",
     ("floor_slab_zones", "slab_mark"): "descriptive label only, never a money input",
-    # The 5 manual_* fields all now have a code-level default (2026-08-15 session: crane/pump/
-    # metal-delivery default to 0, technical_supervision_amount defaults to 5000) - a blank cell
-    # here no longer means the money is lost, just that nobody typed an override.
-    ("floor_slab_zones", "manual_formwork_rebar_crane_shifts"): "defaults to 0 in build_input.py when absent",
-    ("floor_slab_zones", "manual_concrete_pump_shifts"): "defaults to 0 in build_input.py when absent",
+    # 2026-08-17 correction: crane/pump were wrongly added here 2026-08-15 on the reasoning "has
+    # a code-level default, so blank isn't lost money" - that reasoning only holds if the default
+    # is actually a safe stand-in. Checked real per-pour data across all 3 projects (8 real
+    # pours: TRC x4, ARK x2, USV x2): crane is 1 on 4 pours and 2 on the other 4 (no formula,
+    # confirmed - a hardcoded default would be wrong exactly as often as the 0 it replaces), so 0
+    # silently drops a real ~30-60k₽/pour line every time it's blank - which was every pour on
+    # every project checked, since the row never rendered at all.
+    # manual_rebar_metal_delivery_trucks stays hidden - genuinely AUTO_CALCULATED via a real
+    # formula (box-calculator running weight total), not a guessed default.
+    # manual_formwork_rental_supplier_quote_total stays hidden - confirmed never read by
+    # build_input.py at all (service/reference-only field, label literally says "служебное").
+    # manual_technical_supervision_amount stays hidden - out of scope for this fix (not asked).
     ("floor_slab_zones", "manual_rebar_metal_delivery_trucks"): "defaults to 0 in build_input.py when absent (or box-calculator auto-fill)",
-    ("floor_slab_zones", "manual_formwork_rental_supplier_quote_total"): "defaults to 0 in build_input.py when absent",
-    ("floor_slab_zones", "manual_technical_supervision_amount"): "defaults to 5000 in build_input.py when absent (2026-08-15)",
+    ("floor_slab_zones", "manual_formwork_rental_supplier_quote_total"): "never read by build_input.py at all - service/reference-only field",
+    ("floor_slab_zones", "manual_technical_supervision_amount"): "defaults to 5000 in build_input.py when absent",
     # EPS area/height: build_input.py derives area_m2 from volume_m3/thickness_mm automatically
     # when area is absent; height_m is never read at all.
     ("floor_slab_eps_items", "area_m2"): "auto-derived from volume_m3/thickness_mm in _resolve_insulation when absent",
+    ("floor_slab_eps_items", "material_name"): "purely descriptive - never read by _resolve_insulation or build_input.py",
+    ("floor_slab_beam_items", "mark"): "purely descriptive identifier - never read for money by build_input.py/calculator.py",
+    ("floor_slab_additional_items", "item_type"): "never read - _resolve_additional_concrete_items() only checks unit/quantity, item_type is descriptive only",
+    # calculator_input_path is "" for this whole group (flat_roof section_contract.yaml) -
+    # confirmed never referenced anywhere in flat_roof/build_input.py. Genuinely diagnostic-only
+    # despite production_input: true (that flag only controls sheet-01 styling, not whether the
+    # calculator reads it).
+    ("roof_raw_material_spec_rows", "quantity"): "group has calculator_input_path=\"\" - never fed to calculate_flat_roof() at all, diagnostic-only",
+    ("roof_raw_material_spec_rows", "unit"): "group has calculator_input_path=\"\" - never fed to calculate_flat_roof() at all, diagnostic-only",
     ("floor_slab_eps_items", "height_m"): "not read anywhere in build_input.py/calculator.py",
     # Rebar catalog-fallback fields (foundation_slab/floor_slabs/P6 walls - all 3 adapters,
     # verified 2026-08-15): code auto-generated if absent, kg_per_meter/rod_length_m filled from
@@ -1667,6 +1724,169 @@ def _render_repeated_row_block(
                 )
                 row_source = ""
                 row_fragment = item.get("_metal_delivery_detail") or item.get("notes") or ""
+            elif field_key == "manual_concrete_pump_shifts" and (field_value is None or field_value == ""):
+                # No formula (confirmed - depends on pump-parking distance/site height, not
+                # volume), but 8/8 real pours checked across all 3 projects (TRC/АРК/ЮСВ) are
+                # exactly 1 shift, never 0, never 2 - a strong enough pattern to hint, not to
+                # silently assume. Critical (red): a blank here used to compute as 0, dropping a
+                # real ~37-42k₽/pour line every time.
+                critical_row_indices.add(len(rows))
+                action_text = (
+                    "⚠️ОБЯЗАТЕЛЬНО заполнить. Формулы нет, но на всех проверенных плитах "
+                    "(ТРЦ/АРК/ЮСВ, 8 из 8) — ровно 1 смена. Впишите 1, если нет других данных, "
+                    "или поправьте под реальный проект."
+                )
+            elif field_key == "manual_formwork_rebar_crane_shifts" and (field_value is None or field_value == ""):
+                # No formula at all - checked real per-pour data across 3 projects: crane is 1
+                # on 4 of 8 real pours and 2 on the other 4, no correlation with slab volume
+                # (ARK's crane tracks volume 2->1 as volume drops 3x, but USV's stays 2->2 while
+                # volume drops nearly 2x on the same kind of pour) - a hardcoded default would be
+                # wrong exactly as often as the 0 it replaces, so no hint number is given here.
+                critical_row_indices.add(len(rows))
+                action_text = (
+                    "⚠️ОБЯЗАТЕЛЬНО заполнить. Формулы нет (проверено на 3 проектах: 1 или 2 "
+                    "смены без видимой зависимости от объёма плиты) — впишите вручную под "
+                    "реальный проект."
+                )
+            elif (
+                group_key == ZONES_GROUP_KEY
+                and field_key == "beams_concrete_volume_m3"
+                and (field_value is None or field_value == "")
+            ):
+                # Real, working fallback confirmed 2026-08-17 (build_input.py: only sets this key
+                # when a real override is given; absent -> floor_slab_calculator.py sums
+                # floor_slab_beam_items[same zone].concrete_volume_m3 instead, same as before this
+                # field existed). Blank here is the NORMAL case (most projects have no ready
+                # spec-table beam-concrete row) - critical/red was wrong.
+                action_text = (
+                    "Не обязательно — при пустом значении калькулятор сам возьмёт сумму объёма "
+                    "по отдельным балкам зоны. Впишите число только если в спецификации плиты "
+                    "есть готовая строка «Бетон... (балки в теле плиты)»."
+                )
+            elif (
+                group_key == ZONES_GROUP_KEY
+                and field_key == "manual_plywood_reserve_sheets"
+                and (field_value is None or field_value == "")
+            ):
+                # Real fallback confirmed in build_input.py (2026-08-22): overrides rates.
+                # reserve_plywood_sheets only when given; absent -> catalog default 0 (checked
+                # against real ТРЦ/АРК/ЮСВ plywood formulas - Elena's own reserve is a genuine
+                # per-pour judgment call, 0/5/10 with no formula, not something to guess a
+                # universal number for). Never a silent money loss - unlike crane/pump, blank here
+                # has an actually-safe default.
+                action_text = (
+                    "Не обязательно — при пустом значении запас не добавляется (0 листов сверх "
+                    "расчёта). Впишите число, только если по факту на этой плите нужен доп. запас "
+                    "фанеры сверх формулы (некратные места, торцы сложной формы и т.п.)."
+                )
+            elif (
+                group_key == P6_WALL_ZONES_GROUP_KEY
+                and field_key in ("display_name", "zone_kind")
+                and (field_value is None or field_value == "")
+            ):
+                # Real fallback confirmed in load_bearing_walls_lintels_p6/build_input.py:
+                # cleaned_zone.setdefault("display_name", zone_id) / .setdefault("zone_kind",
+                # "other") - both always end up with a usable value even when blank on sheet 01.
+                action_text = (
+                    "Не обязательно — при пустом значении калькулятор возьмёт zone_id как "
+                    "название/тип зоны."
+                )
+            elif (
+                group_key == "floor_slab_eps_items"
+                and field_key == "thickness_mm"
+                and (field_value is None or field_value == "")
+            ):
+                # Real fallback confirmed in build_input.py's _resolve_insulation():
+                # thickness_mm = _num(row.get("thickness_mm")) or 100.0 - always has a usable
+                # value, defaults to the standard 100mm EPS thickness.
+                action_text = (
+                    "Не обязательно — при пустом значении берётся стандартная толщина 100мм."
+                )
+            elif (
+                group_key == "floor_slab_beam_items"
+                and field_key in ("concrete_volume_m3", "formwork_area_m2")
+                and (field_value is None or field_value == "")
+                and value.get("width_m") not in (None, "")
+            ):
+                # Real fallback confirmed in floor_slab_calculator.py: when width_m IS given but
+                # this field isn't, concrete_volume recomputes as length*width*height*count and
+                # formwork_area as length*(width+2*height)*count - both safe, not silent money
+                # loss. Only critical when width_m is ALSO missing (that's a hard crash -
+                # "needs either width_m or concrete_volume_m3" - left as the generic critical
+                # branch below handles that case correctly already).
+                action_text = (
+                    "Не обязательно — при пустом значении (и заполненной ширине балки) "
+                    "калькулятор сам посчитает объём/площадь по длине×ширине×высоте."
+                )
+            elif (
+                group_key == "trench_routes"
+                and field_key == "volume_m3"
+                and (field_value is None or field_value == "")
+            ):
+                # Real fallback confirmed in earthworks_calculator.py's calculate_trench_routes():
+                # route.get("volume_m3") - when absent, computed as length_m*depth_m*trench_width_m
+                # instead (never blocked, real value only logged as a warning if it later
+                # disagrees). length_m/depth_m stay critical - route["length_m"]/["depth_m"] are
+                # plain dict access with no fallback at all, genuinely required.
+                action_text = (
+                    "Не обязательно — при пустом значении калькулятор сам посчитает объём как "
+                    "длина×глубина×ширина траншеи. Впишите число только если в PDF есть готовый "
+                    "объём именно для этого маршрута."
+                )
+            elif (
+                group_key == "roof_zones"
+                and field_key == "operability"
+                and (field_value is None or field_value == "")
+            ):
+                # Documented fallback (section_contract.yaml roof_zones notes): "If operability
+                # is absent, adapter/calculator treat the zone as non_exploitable." Safe default,
+                # not a silent money loss.
+                action_text = (
+                    "Не обязательно — при пустом значении зона считается неэксплуатируемой "
+                    "(non_exploitable) по умолчанию. Впишите «exploitable», только если зона "
+                    "реально эксплуатируемая (выход на кровлю и т.п.)."
+                )
+            elif (
+                group_key == ZONES_GROUP_KEY
+                and field_key in ("formwork_beams_bottom_area_m2", "formwork_beams_side_area_m2")
+                and (field_value is None or field_value == "")
+            ):
+                # These 2 are optional overrides with a real, working calculator fallback (sums
+                # floor_slab_beam_items[same zone].bottom_formwork_area_m2/formwork_area_m2 when
+                # this zone-level field is absent - see section_contract.yaml's own notes). The
+                # generic needs_review branch below used to mark this critical/red purely because
+                # the ZONE item happened to be needs_review for an unrelated field (e.g. a beam
+                # concrete-volume spec conflict) - confusing, since this specific field has no
+                # conflict of its own and isn't actually going to silently lose money (the
+                # fallback runs regardless, even if that fallback sums to 0 when no beam gives a
+                # value either). Not critical; still shown so it's not fully invisible.
+                action_text = (
+                    "Не обязательно — при пустом значении калькулятор сам возьмёт сумму "
+                    "нижней/боковой площади по отдельным балкам зоны (если и там пусто — 0). "
+                    "Впишите число только если у Елены есть отдельная готовая цифра из PDF."
+                )
+            elif (
+                group_key == "floor_slab_beam_items"
+                and field_key == "length_m"
+                and (field_value is None or field_value == "")
+                and value.get("concrete_volume_m3") not in (None, "")
+            ):
+                # Real, confirmed silent-scope gap (TRC 2026-08-18, "ребро 50мм в теле плиты
+                # перекрытия"): build_input.py reroutes any beam row with length_m absent but
+                # concrete_volume_m3 given into beam_only_concrete_items - material/delivery-trip
+                # accounting only, no formwork/concreting line, regardless of needs_review (the
+                # item here had needs_review=false and confidence 0.99 - the model wasn't unsure,
+                # the PDF genuinely has no printed length for this element). needs_review alone
+                # can't be the only trigger for critical/red: this field has zero calculator
+                # fallback (unlike every other case in this function), so it must be flagged
+                # independent of that flag, same reasoning as the crane/pump fix.
+                critical_row_indices.add(len(rows))
+                action_text = (
+                    "⚠️Обязательно проверить — без длины эта позиция уйдёт только в учёт "
+                    "материала (объём бетона), БЕЗ строки бетонирования по длине в смете. Если "
+                    "в проекте есть способ определить длину/ширину — впишите; если данных "
+                    "действительно нет — оставьте пустым осознанно."
+                )
             elif needs_review and (field_value is None or field_value == ""):
                 critical_row_indices.add(len(rows))
                 action_text = (
@@ -2669,8 +2889,8 @@ def build_workbook_from_extraction(
     extraction = json.loads(extraction_path.read_text(encoding="utf-8"))
 
     price_registry = None
-    if price_registry_path is not None and price_registry_path.exists():
-        price_registry = load_price_registry(price_registry_path)
+    if price_registry_path is not None:
+        price_registry = load_price_registry_google_first(price_registry_path)
     manual_values_registry = None
     if manual_values_registry_path is not None and manual_values_registry_path.exists():
         manual_values_registry = load_manual_values_registry(manual_values_registry_path)

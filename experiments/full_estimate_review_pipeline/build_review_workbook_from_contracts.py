@@ -5,6 +5,7 @@ import json
 import math
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -368,6 +369,47 @@ def load_price_registry(path: Path) -> dict[str, dict[str, Any]]:
             "comment": row.get("Комментарий") or "",
         }
     return registry
+
+
+GOOGLE_STAGE1_DIR = ROOT / "experiments" / "earthworks_parser_google_stage1"
+
+
+def load_price_registry_google_first(local_fallback_path: Path) -> dict[str, dict[str, Any]]:
+    """Prices now live in one place in production: the Google Sheet configured via
+    GOOGLE_PRICE_REGISTRY_SPREADSHEET_ID (see experiments/earthworks_parser_google_stage1/.env).
+    A manually-added price (e.g. a code confirmed only from real reference smetas, with nothing
+    in Elena's raw price list to regenerate it from) used to get silently wiped every time
+    output/price_registry_filled_v4.xlsx was rebuilt from scratch - see
+    cutoff_waterproofing_material_price_added memory. Reading the Sheet directly removes that
+    regeneration step entirely for anything downstream of this function; local_fallback_path is
+    only used if the Sheet is unreachable/unconfigured (no credentials, no network, no ID set)."""
+    if str(GOOGLE_STAGE1_DIR) not in sys.path:
+        sys.path.insert(0, str(GOOGLE_STAGE1_DIR))
+    try:
+        from pricing.google_price_registry_reader import read_google_registry_rows
+
+        rows, warnings = read_google_registry_rows()
+        for warning in warnings:
+            print(f"WARNING: {warning}", file=sys.stderr)
+        if rows:
+            registry: dict[str, dict[str, Any]] = {}
+            for row in rows:
+                code = row.get("price_code")
+                if not code:
+                    continue
+                registry[str(code).strip()] = {
+                    "section": row.get("Раздел") or "",
+                    "name": row.get("Наименование") or "",
+                    "unit": row.get("Ед. изм.") or "",
+                    "price": row.get("Цена"),
+                    "comment": row.get("Комментарий") or "",
+                }
+            return registry
+    except Exception as exc:
+        print(f"WARNING: could not read Google price_registry, falling back to local file: {exc}", file=sys.stderr)
+    if local_fallback_path.exists():
+        return load_price_registry(local_fallback_path)
+    return {}
 
 
 def load_manual_values_registry(path: Path) -> dict[tuple[str, str], dict[str, Any]]:

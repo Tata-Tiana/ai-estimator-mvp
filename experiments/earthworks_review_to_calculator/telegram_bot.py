@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -36,8 +37,9 @@ EVENTS_DIR   = LOGS_DIR / "events"
 SESSION_BACKUPS_DIR = BASE_DIR / "backups" / "telegram_sessions"
 ADMIN_EXPORTS_DIR   = DATA_DIR / "admin_exports"
 USER_JOBS_DIR       = DATA_DIR / "telegram_user_jobs"
+EXTRACTION_SESSIONS_DIR = DATA_DIR / "telegram_extraction_sessions"
 
-for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR, ADMIN_EXPORTS_DIR, USER_JOBS_DIR):
+for _d in (UPLOADS_DIR, LOGS_DIR, SESSIONS_DIR, EVENTS_DIR, SESSION_BACKUPS_DIR, ADMIN_EXPORTS_DIR, USER_JOBS_DIR, EXTRACTION_SESSIONS_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 CREATE_JOB  = BASE_DIR / "create_job_from_pdf.py"
@@ -46,12 +48,36 @@ RERUN       = BASE_DIR / "rerun_parser.py"
 BUILD_JOB   = BASE_DIR / "build_job.py"
 SHOW_STATUS = BASE_DIR / "show_job_status.py"
 
+# ── новый (2026-08-25) JSON-приёмник: extraction JSON от внешнего ChatGPT-чата,
+# отдельный от старого PDF/session-flow выше — repetition plan, фаза 1-4.
+FULL_PIPELINE_DIR = REPO_ROOT / "experiments" / "full_estimate_review_pipeline"
+CHAT_EXTRACTION_OUTPUTS_DIR = REPO_ROOT / "experiments" / "chat_extraction_poc" / "outputs"
+NOTES_REPORT_SCRIPT = FULL_PIPELINE_DIR / "build_extraction_notes_report.py"
+POPULATE_WORKBOOK_SCRIPT = FULL_PIPELINE_DIR / "populate_review_workbook_from_extraction.py"
+# 2026-08-26: the JSON-flow's final-build step. build_job.py/build_from_google_sheet.py (used by
+# the PDF-flow's /build below) are the OLD single-section earthworks-only pipeline - hardcoded row
+# positions, hardcoded old job layout - and structurally cannot run the new 7-section review
+# workbook. These two are the actual new-pipeline equivalent (see build_all_section_results.py's
+# own docstring for why it exists as a separate driver).
+BUILD_ALL_SECTIONS_SCRIPT = FULL_PIPELINE_DIR / "build_all_section_results.py"
+EXPORT_ESTIMATE_SCRIPT = FULL_PIPELINE_DIR / "export_calculator_results_to_estimate_workbook.py"
+EXTRACTION_SESSION_MAX_AGE_HOURS = 2  # после этого новый JSON от того же чата считается новым проектом
+
+GOOGLE_STAGE1_DIR = REPO_ROOT / "experiments" / "earthworks_parser_google_stage1"
+GOOGLE_SHEET_SHARING = "anyone_writer"  # тот же режим, что уже используется в остальном боте
+
 TIMEOUTS = {
-    "create_job": 1200,
-    "rerun":      1200,
-    "recreate":    600,
-    "build":       600,
-    "status":      120,
+    "create_job":        1200,
+    "rerun":             1200,
+    "recreate":           600,
+    "build":              600,
+    "status":             120,
+    "notes_report":       120,
+    "populate_workbook":  300,
+    "publish_sheet":      120,
+    "download_sheet":     120,
+    "build_all_sections": 300,
+    "export_estimate":    180,
 }
 
 # Seconds of silence after last PDF before parser fires
@@ -473,6 +499,225 @@ def _unique_upload_path(upload_dir: Path, filename: str) -> Path:
         index += 1
 
 
+# ── extraction JSON intake (2026-08-25, repetition plan фаза 1-3) ───────────
+
+_CYRILLIC_TO_LATIN = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "i", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "h", "ц": "c", "ч": "ch", "ш": "sh", "щ": "sch", "ъ": "",
+    "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+}
+
+
+def _slugify_project_name(raw: str, max_len: int = 40) -> str:
+    """Транслитерация/санитайз произвольного текста (имени файла или адреса) в
+    безопасное имя папки: только [a-z0-9_], без ведущих/повторных подчёркиваний.
+    Пустой/нечитаемый ввод -> "project"."""
+    text = (raw or "").strip().lower()
+    out = []
+    for ch in text:
+        if ch in _CYRILLIC_TO_LATIN:
+            out.append(_CYRILLIC_TO_LATIN[ch])
+        elif ch.isalnum() and ch.isascii():
+            out.append(ch)
+        else:
+            out.append("_")
+    slug = re.sub(r"_+", "_", "".join(out)).strip("_")
+    return (slug[:max_len].rstrip("_") or "project")
+
+
+def _extraction_session_path(chat_id: int) -> Path:
+    return EXTRACTION_SESSIONS_DIR / f"{chat_id}.json"
+
+
+def _load_extraction_session(chat_id: int) -> dict | None:
+    path = _extraction_session_path(chat_id)
+    if not path.exists():
+        return None
+    try:
+        session = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    started_at = _parse_dt(session.get("started_at"))
+    if started_at and datetime.now() - started_at > timedelta(hours=EXTRACTION_SESSION_MAX_AGE_HOURS):
+        return None
+    return session
+
+
+def _save_extraction_session(chat_id: int, session: dict) -> None:
+    path = _extraction_session_path(chat_id)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(session, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _extraction_project_dir(chat_id: int, source_filename: str) -> tuple[Path, str, bool]:
+    """Возвращает (папка проекта, job_id, is_new_run).
+
+    job_id = "<slug из имени загруженного файла>_<YYYYMMDD_HHMMSS>" - та же схема,
+    что уже используется в старом пайплайне (earthworks_parser_google_stage1.make_job_id,
+    create_job_from_pdf._make_job_id): имя проекта берётся из имени файла, дата/время
+    вшиты прямо в job_id, каждый новый прогон получает свою папку.
+
+    "Один прогон" = первый JSON + его же исправленная версия: пока в сессии этого чата
+    есть активный (не старше EXTRACTION_SESSION_MAX_AGE_HOURS) job_id, следующая JSON-
+    загрузка попадает в ТУ ЖЕ папку, а не создаёт новую - иначе исправленный JSON
+    полностью новый прогон, значит новая папка."""
+    session = _load_extraction_session(chat_id)
+    if session and session.get("job_id"):
+        job_id = session["job_id"]
+        out_dir = CHAT_EXTRACTION_OUTPUTS_DIR / job_id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return out_dir, job_id, False
+
+    slug = _slugify_project_name(Path(source_filename).stem)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    job_id = f"{slug}_{stamp}"
+    out_dir = CHAT_EXTRACTION_OUTPUTS_DIR / job_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _save_extraction_session(chat_id, {
+        "chat_id": chat_id,
+        "job_id": job_id,
+        "source_filename": source_filename,
+        "started_at": _now(),
+        "uploads": [],
+    })
+    return out_dir, job_id, True
+
+
+def _record_extraction_upload(chat_id: int, filename: str, notes_report_path: str | None) -> None:
+    session = _load_extraction_session(chat_id) or {}
+    uploads = session.setdefault("uploads", [])
+    uploads.append({
+        "filename": filename,
+        "uploaded_at": _now(),
+        "notes_report_path": notes_report_path,
+    })
+    _save_extraction_session(chat_id, session)
+
+
+def _run_notes_report(input_json_path: Path, output_path: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        _python(), str(NOTES_REPORT_SCRIPT),
+        "--input", str(input_json_path),
+        "--output", str(output_path),
+    ]
+    return _run(cmd, TIMEOUTS["notes_report"])
+
+
+def _run_populate_workbook(input_json_path: Path, output_path: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        _python(), str(POPULATE_WORKBOOK_SCRIPT),
+        str(input_json_path),
+        "--output", str(output_path),
+    ]
+    return _run(cmd, TIMEOUTS["populate_workbook"])
+
+
+def _resolve_json_job_dir(job_id: str) -> tuple[Path | None, str | None]:
+    """Resolves a job_id to its CHAT_EXTRACTION_OUTPUTS_DIR folder, tolerating the common typo of
+    dropping the "extraction_output_" prefix the bot itself adds (see _extraction_project_dir/
+    _slugify_project_name) - confirmed 2026-08-26 as a real user mistake, not hypothetical.
+    Returns (resolved_dir, error_message); error_message is set (and resolved_dir is None) only
+    for the ambiguous multi-candidate case - a plain "no such job" is just (None, None), same as
+    before this helper existed, since callers already have their own not-a-JSON-flow-job fallback."""
+    exact = CHAT_EXTRACTION_OUTPUTS_DIR / job_id
+    if exact.is_dir():
+        return exact, None
+    candidates = [d for d in CHAT_EXTRACTION_OUTPUTS_DIR.iterdir() if d.is_dir() and d.name.endswith(job_id)]
+    if len(candidates) == 1:
+        return candidates[0], None
+    if len(candidates) > 1:
+        return None, (
+            "Не могу однозначно определить job_id — под это окончание подходит несколько папок:\n"
+            + "\n".join(f"- {c.name}" for c in candidates)
+            + "\n\nУкажите job_id полностью."
+        )
+    return None, None
+
+
+def _json_flow_job_spreadsheet_url(chat_id: int, job_id: str) -> str | None:
+    """The JSON-flow's Google Sheet URL per job lives in the per-chat user_jobs registry
+    (_register_user_job/_update_user_job_url) - the JSON-flow has never used state.json/
+    resolve_stage1_job_dir (that is _find_spreadsheet_url's PDF-flow-only lookup)."""
+    path = _user_jobs_path(chat_id)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    for job in data.get("jobs", []):
+        if job.get("job_id") == job_id:
+            return job.get("spreadsheet_url") or None
+    return None
+
+
+def _publish_review_workbook(workbook_path: Path, title: str) -> dict:
+    """Публикует review workbook в Google Drive - переиспользует уже рабочий
+    google_sheet_publisher.py из earthworks_parser_google_stage1 (проверено
+    2026-08-25, реальная публикация прошла). Импорт лениво, внутри функции, чтобы
+    не тянуть google-* зависимости при обычном PDF-flow бота, если их вдруг снова
+    не будет в окружении - в этом случае публикация просто скипается, как и
+    задумано в самом publish_workbook_if_configured."""
+    if str(GOOGLE_STAGE1_DIR) not in sys.path:
+        sys.path.insert(0, str(GOOGLE_STAGE1_DIR))
+    from google_sheets.google_sheet_publisher import publish_workbook_if_configured
+    return publish_workbook_if_configured(workbook_path, title, sharing=GOOGLE_SHEET_SHARING)
+
+
+def _download_review_workbook(spreadsheet_url: str, output_path: Path) -> dict:
+    """Reverse of _publish_review_workbook - pulls the CURRENT state of the Sheet (Elena's/the
+    user's edits) back down as .xlsx so /build works on what's actually in the Sheet, not a stale
+    local snapshot from before publishing."""
+    if str(GOOGLE_STAGE1_DIR) not in sys.path:
+        sys.path.insert(0, str(GOOGLE_STAGE1_DIR))
+    from google_sheets.google_sheet_publisher import download_spreadsheet_as_xlsx
+    return download_spreadsheet_as_xlsx(spreadsheet_url, output_path)
+
+
+def _run_build_all_sections(workbook_path: Path, results_dir: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        _python(), str(BUILD_ALL_SECTIONS_SCRIPT),
+        "--workbook", str(workbook_path),
+        "--results-dir", str(results_dir),
+    ]
+    return _run(cmd, TIMEOUTS["build_all_sections"])
+
+
+def _run_export_estimate(results_dir: Path, review_workbook_path: Path, output_path: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        _python(), str(EXPORT_ESTIMATE_SCRIPT),
+        "--results-dir", str(results_dir),
+        "--review-workbook", str(review_workbook_path),
+        "--out", str(output_path),
+    ]
+    return _run(cmd, TIMEOUTS["export_estimate"])
+
+
+def _format_section_failures(stdout: str) -> str:
+    """build_all_section_results.py prints one clear 'CODE: first error line' per failed section
+    to stdout - reuse that instead of dumping the whole raw output at the user."""
+    lines = []
+    in_failed = False
+    for line in stdout.splitlines():
+        if line.startswith("FAILED ("):
+            in_failed = True
+            continue
+        if in_failed:
+            stripped = line.strip()
+            if not stripped:
+                break
+            if stripped.startswith("- "):
+                lines.append(stripped[2:])
+    return "\n".join(f"⚠️ {line}" for line in lines) if lines else short_text(stdout, 800)
+
+
+def short_text(value: str, limit: int) -> str:
+    return value if len(value) <= limit else value[: limit - 1].rstrip() + "..."
+
+
 # ── helpers ────────────────────────────────────────────────────────────────
 
 def _python() -> str:
@@ -859,10 +1104,10 @@ def cmd_start(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/start"):
         return
     bot.reply_to(message,
-        "1. Пришлите PDF проекта.\n"
-        "2. Когда все PDF отправлены — /done.\n"
-        "3. Проверьте Google Sheet.\n"
-        "4. После проверки — /build <job_id>.\n\n"
+        "1. Пришлите extraction JSON файлом (из ChatGPT-чата).\n"
+        "2. Бот пришлёт отчёт работы над ошибками — отправьте его в тот же ChatGPT-чат.\n"
+        "3. Пришлите сюда исправленный JSON — бот сам соберёт и опубликует Google-таблицу.\n"
+        "4. Проверьте и заполните таблицу, затем — /build <job_id>.\n\n"
         "Все команды: /help"
     )
 
@@ -872,11 +1117,15 @@ def cmd_help(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "/help"):
         return
     text = (
-        "Основные команды:\n"
+        "Основной способ — extraction JSON из ChatGPT-чата:\n"
+        "пришлите .json файлом — 1-я загрузка прогона запускает отчёт работы над ошибками, "
+        "любая следующая (в течение 2 часов) считается исправленной версией и сама собирает "
+        "и публикует Google-таблицу\n"
+        "/new_project — явно начать новый прогон, не дожидаясь истечения 2 часов\n"
+        "/build <job_id> — собрать Excel после проверки Google-таблицы\n\n"
+        "Старый способ (PDF напрямую, без ChatGPT):\n"
         "/done — запустить создание Google Sheet после загрузки PDF\n"
         "/cancel — отменить текущую загрузку до запуска обработки\n"
-        "/build <job_id> — собрать Excel после проверки Google Sheet\n\n"
-        "Если что-то пошло не так:\n"
         "/recreate <job_id> — создать новую Google Sheet по уже найденным данным\n"
         "/rerun <job_id> — запросить повторное чтение PDF; бот попросит подтверждение"
     )
@@ -885,15 +1134,151 @@ def cmd_help(message: telebot.types.Message) -> None:
     bot.reply_to(message, text)
 
 
-# ── PDF ────────────────────────────────────────────────────────────────────
+# ── extraction JSON (2026-08-25, repetition plan фаза 1-3) ──────────────────
+def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.types.Document) -> None:
+    chat_id = message.chat.id
+
+    file_info = bot.get_file(doc.file_id)
+    raw = bot.download_file(file_info.file_path)
+
+    try:
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        bot.reply_to(message, f"Это не читается как JSON ⚠️\n\n{exc}")
+        _log_event("extraction_json_invalid", chat_id=chat_id, safe_message="Uploaded file is not valid JSON",
+                    filename=doc.file_name, error=str(exc))
+        return
+
+    if not isinstance(data, dict) or "sections" not in data:
+        bot.reply_to(message,
+            "Файл — валидный JSON, но не похож на extraction_output "
+            "(нет ключа \"sections\") ⚠️\n\nПроверьте файл и пришлите заново."
+        )
+        _log_event("extraction_json_wrong_shape", chat_id=chat_id, filename=doc.file_name,
+                    safe_message="Uploaded JSON lacks expected 'sections' key")
+        return
+
+    project_name = str(data.get("project_name") or "")
+    out_dir, job_id, is_new_run = _extraction_project_dir(chat_id, doc.file_name or "project")
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    json_path = out_dir / f"extraction_output_bot_{ts}.json"
+    json_path.write_bytes(raw)
+
+    section_count = len(data.get("sections") or {})
+    warnings_count = len(data.get("extraction_warnings") or [])
+
+    bot.reply_to(message,
+        f"JSON принят ✅ ({'новый прогон' if is_new_run else 'исправленный JSON, этот же прогон'})\n\n"
+        f"Job: {job_id}\n"
+        f"Проект (из JSON): {project_name or '(без имени)'}\n"
+        f"Разделов в JSON: {section_count}\n"
+        f"Общих предупреждений парсера: {warnings_count}"
+    )
+
+    if is_new_run:
+        # Первая загрузка прогона - собрать отчёт работы над ошибками и ждать исправленный JSON.
+        # Google-таблицу на этом шаге НЕ собираем (2026-08-25: раньше собирали отчёт на КАЖДОЙ
+        # загрузке, включая уже исправленную - пользователь получал повторную просьбу "отправьте
+        # в ChatGPT" даже когда уже прислал исправленный файл; реальная путаница, см. чат).
+        bot.send_message(chat_id, "Собираю приложение к служебной записке (работа над ошибками)…")
+
+        report_path = out_dir / f"code_notes_report_bot_{ts}.txt"
+        result = _run_notes_report(json_path, report_path)
+        _log(chat_id, "notes_report", result.returncode, result.stdout, result.stderr)
+
+        if result.returncode != 0 or not report_path.exists():
+            bot.reply_to(message,
+                "JSON сохранён, но отчёт работы над ошибками собрать не удалось ⚠️\n\n"
+                f"{(result.stderr or result.stdout)[-1500:]}"
+            )
+            _record_extraction_upload(chat_id, json_path.name, None)
+            _log_event("notes_report_failed", chat_id=chat_id, safe_message="build_extraction_notes_report.py failed",
+                        filename=json_path.name, job_id=job_id, returncode=result.returncode)
+            return
+
+        _record_extraction_upload(chat_id, json_path.name, str(report_path))
+        _log_event("extraction_json_processed", chat_id=chat_id, safe_message="Extraction JSON saved and notes report built",
+                    filename=json_path.name, job_id=job_id, section_count=section_count)
+
+        with open(report_path, "rb") as f:
+            bot.send_document(chat_id, f,
+                caption=(
+                    f"Отчёт готов ✅ (Job: {job_id})\n\n"
+                    "Отправьте этот файл вместе с "
+                    "prompts/notes_report_correction_prompt.md в тот же ChatGPT-чат, "
+                    "где делали извлечение — и пришлите сюда исправленный JSON, "
+                    "когда будет готов (попадёт в тот же прогон, без повторного отчёта - "
+                    "сразу соберу таблицу)."
+                )
+            )
+        return
+
+    # Это уже не первая загрузка этого прогона -> считаем её исправленным JSON, отчёт над
+    # ошибками не повторяем, сразу собираем review workbook и публикуем в Google (фаза 4).
+    _record_extraction_upload(chat_id, json_path.name, None)
+    _log_event("extraction_json_processed", chat_id=chat_id, safe_message="Corrected extraction JSON received",
+                filename=json_path.name, job_id=job_id, section_count=section_count)
+    bot.send_message(chat_id, "Это исправленный JSON — собираю Google-таблицу для проверки…")
+
+    workbook_target = out_dir / "review_workbook.xlsx"
+    wb_result = _run_populate_workbook(json_path, workbook_target)
+    _log(chat_id, "populate_workbook", wb_result.returncode, wb_result.stdout, wb_result.stderr)
+
+    wb_info = _parse_json(wb_result.stdout)
+    workbook_path = Path(wb_info["output_path"]) if wb_info and wb_info.get("output_path") else None
+    if wb_result.returncode != 0 or not workbook_path or not workbook_path.exists():
+        bot.reply_to(message,
+            "Google-таблицу собрать не удалось ⚠️\n\n"
+            f"{(wb_result.stderr or wb_result.stdout)[-1500:]}"
+        )
+        _log_event("populate_workbook_failed", chat_id=chat_id, job_id=job_id,
+                    safe_message="populate_review_workbook_from_extraction.py failed",
+                    returncode=wb_result.returncode)
+        return
+
+    try:
+        publish_result = _publish_review_workbook(workbook_path, title=f"Review — {job_id}")
+    except Exception as exc:
+        bot.reply_to(message, f"Таблица собрана локально, но публикация в Google упала ⚠️\n\n{exc}")
+        _log_event("publish_sheet_exception", chat_id=chat_id, job_id=job_id,
+                    safe_message="publish_workbook_if_configured raised", error=str(exc))
+        return
+
+    _log_event("publish_sheet_result", chat_id=chat_id, job_id=job_id,
+                safe_message="publish_workbook_if_configured finished", result=publish_result)
+
+    if publish_result.get("status") != "published":
+        reason = publish_result.get("reason") or publish_result.get("status")
+        bot.reply_to(message,
+            f"Таблица собрана локально ({workbook_path.name}), но не опубликована в Google ⚠️\n\n"
+            f"Причина: {reason}"
+        )
+        return
+
+    url = publish_result.get("url", "")
+    _register_user_job(chat_id, job_id, project_name, url, pdf_count=0)
+    bot.reply_to(message,
+        f"Google-таблица готова ✅\n\n{url}\n\n"
+        "Проверьте и заполните лист «01_Проверка проекта», затем можно собирать смету."
+    )
+
+
+# ── документы: JSON или PDF ──────────────────────────────────────────────────
 @bot.message_handler(content_types=["document"])
 def handle_document(message: telebot.types.Message) -> None:
     if not _require_user_access(message, "document"):
         return
 
     doc = message.document
-    if not (doc.file_name or "").lower().endswith(".pdf"):
-        bot.reply_to(message, "Пожалуйста, отправьте PDF-файл.")
+    name_lower = (doc.file_name or "").lower()
+
+    if name_lower.endswith(".json"):
+        _handle_extraction_json_upload(message, doc)
+        return
+
+    if not name_lower.endswith(".pdf"):
+        bot.reply_to(message, "Пожалуйста, отправьте PDF-файл (проект) или JSON-файл (extraction).")
         return
 
     # Download PDF before taking the lock
@@ -1091,6 +1476,31 @@ def cmd_cancel(message: telebot.types.Message) -> None:
     bot.reply_to(message, "Текущая загрузка отменена. Можете отправить PDF заново.")
 
 
+# ── /new_project ───────────────────────────────────────────────────────────
+@bot.message_handler(commands=["new_project"])
+def cmd_new_project(message: telebot.types.Message) -> None:
+    """Явно закрывает текущий JSON-прогон этого чата (repetition plan фаза 1-4), не дожидаясь
+    истечения EXTRACTION_SESSION_MAX_AGE_HOURS - следующий загруженный JSON начнёт новый job_id/
+    новую папку, а не попадёт "исправленным" в старый прогон."""
+    if not _require_user_access(message, "/new_project"):
+        return
+    path = _extraction_session_path(message.chat.id)
+    had_session = path.exists()
+    if had_session:
+        path.unlink(missing_ok=True)
+    _log_event(
+        "extraction_session_reset",
+        chat_id=message.chat.id,
+        safe_message="Extraction JSON session manually reset via /new_project",
+        had_active_session=had_session,
+    )
+    bot.reply_to(message,
+        "Готово ✅ Следующий загруженный JSON начнёт новый прогон (новая папка, новый job_id)."
+        if had_session else
+        "Активного прогона и так не было — следующий JSON и так начнёт новый прогон."
+    )
+
+
 # ── /build ─────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["build"])
 def cmd_build(message: telebot.types.Message) -> None:
@@ -1107,6 +1517,69 @@ def cmd_build(message: telebot.types.Message) -> None:
         return
 
     bot.reply_to(message, "Собираю смету... Это может занять несколько минут.")
+
+    # JSON-flow jobs: build_job.py/build_from_google_sheet.py below are the OLD single-section
+    # earthworks-only pipeline (hardcoded old job layout + hardcoded row positions matching that
+    # workbook's shape) - structurally incompatible with the new 7-section review workbook, not
+    # just a wrong path (confirmed 2026-08-26: fails with the same "Job directory not found" as
+    # the old /recreate did, for an unrelated reason - the whole script is the wrong pipeline).
+    # The real new-pipeline equivalent is download the Sheet's current state -> run every section's
+    # calculator (build_all_section_results.py) -> assemble the final priced smeta
+    # (export_calculator_results_to_estimate_workbook.py) - wired here for the first time.
+    json_job_dir, resolve_error = _resolve_json_job_dir(job_id)
+    if resolve_error:
+        bot.reply_to(message, resolve_error)
+        return
+    if json_job_dir is not None:
+        job_id = json_job_dir.name  # see cmd_recreate's identical comment - registry keys on the full name
+        spreadsheet_url = _json_flow_job_spreadsheet_url(message.chat.id, job_id)
+        if not spreadsheet_url:
+            bot.reply_to(message, "Не нашла ссылку на Google-таблицу для этого job — соберите таблицу через /recreate сначала.")
+            _log_event("build_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Build (json flow) no spreadsheet url", job_id=job_id)
+            return
+
+        downloaded_path = json_job_dir / "review_workbook_downloaded.xlsx"
+        download_result = _download_review_workbook(spreadsheet_url, downloaded_path)
+        _log_event("build_download_sheet", chat_id=message.chat.id,
+                   safe_message="Build (json flow) sheet download", job_id=job_id,
+                   status=download_result.get("status"))
+        if download_result.get("status") != "downloaded":
+            bot.reply_to(message, f"Не смогла скачать таблицу ⚠️\n\n{download_result.get('reason', 'неизвестная причина')}")
+            _log_event("build_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Build (json flow) download failed", job_id=job_id,
+                       reason=download_result.get("reason"))
+            return
+
+        results_dir = json_job_dir / "section_results"
+        sections_result = _run_build_all_sections(downloaded_path, results_dir)
+        _log(message.chat.id, "build_all_sections", sections_result.returncode, sections_result.stdout, sections_result.stderr)
+        if sections_result.returncode != 0:
+            bot.reply_to(
+                message,
+                "Смету пока нельзя собрать ⚠️\n\n"
+                f"{_format_section_failures(sections_result.stdout)}\n\n"
+                f"Исправьте в таблице:\n{spreadsheet_url}\n\n"
+                f"После исправлений повторите:\n/build {job_id}",
+            )
+            _log_event("build_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Build (json flow) section build failed", job_id=job_id)
+            return
+
+        final_path = json_job_dir / f"estimate_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        export_result = _run_export_estimate(results_dir, downloaded_path, final_path)
+        _log(message.chat.id, "build_export_estimate", export_result.returncode, export_result.stdout, export_result.stderr)
+        if export_result.returncode != 0 or not final_path.exists():
+            bot.reply_to(message, f"Все разделы посчитались, но сборка итоговой сметы упала ⚠️\n\n{short_text((export_result.stderr or export_result.stdout), 500)}")
+            _log_event("build_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Build (json flow) export_estimate failed", job_id=job_id)
+            return
+
+        with open(final_path, "rb") as f:
+            bot.send_document(message.chat.id, f, caption=f"Смета готова ✅\nJob: {job_id}")
+        _log_event("build_completed", chat_id=message.chat.id,
+                   safe_message="Build (json flow) completed", job_id=job_id)
+        return
 
     today = datetime.now().strftime("%d.%m.%Y")
     cmd = [
@@ -1864,6 +2337,63 @@ def cmd_recreate(message: telebot.types.Message) -> None:
                safe_message="Recreate started", job_id=job_id)
     bot.reply_to(message, "Пересоздаю Google Sheet...")
 
+    # JSON-flow jobs (job_id/extraction_output_bot_*.json under CHAT_EXTRACTION_OUTPUTS_DIR)
+    # never went through recreate_review_sheet.py (that script only knows the PDF-flow's
+    # earthworks_parser_google_stage1/data/jobs/<job_id> layout - it fails with "Job directory
+    # not found" for every JSON-flow job, confirmed 2026-08-26 on a real /recreate attempt).
+    # Handle those here directly with the same populate+publish helpers the upload handler uses,
+    # instead of shelling out to a script that structurally cannot find them.
+    json_job_dir, resolve_error = _resolve_json_job_dir(job_id)
+    if resolve_error:
+        bot.reply_to(message, resolve_error)
+        _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                   safe_message="Recreate suffix match ambiguous", job_id=job_id)
+        return
+    if json_job_dir is not None:
+        # Use the resolved directory name from here on, not the (possibly suffix-typed) input -
+        # _update_user_job_url below keys on an exact job_id match against the registry, which
+        # was populated with the full name at upload time; passing the truncated typed value
+        # silently failed to find a row to update (confirmed 2026-08-26: the registry kept
+        # pointing at the pre-recreate Sheet URL after a "successful" /recreate for this reason).
+        job_id = json_job_dir.name
+        extraction_files = sorted(json_job_dir.glob("extraction_output_bot_*.json"))
+        if not extraction_files:
+            bot.reply_to(message, f"В папке job {job_id} нет extraction JSON (extraction_output_bot_*.json).")
+            _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Recreate found job dir but no extraction JSON", job_id=job_id)
+            return
+        latest_json = extraction_files[-1]
+        workbook_target = json_job_dir / "review_workbook.xlsx"
+        wb_result = _run_populate_workbook(latest_json, workbook_target)
+        _log(message.chat.id, "recreate_populate_workbook", wb_result.returncode, wb_result.stdout, wb_result.stderr)
+        wb_info = _parse_json(wb_result.stdout)
+        workbook_path = Path(wb_info["output_path"]) if wb_info and wb_info.get("output_path") else None
+        if wb_result.returncode != 0 or not workbook_path or not workbook_path.exists():
+            bot.reply_to(message, f"Не удалось собрать таблицу ⚠️\n\n{(wb_result.stderr or wb_result.stdout)[-500:]}")
+            _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Recreate (json flow) populate_workbook failed", job_id=job_id,
+                       returncode=wb_result.returncode)
+            return
+        try:
+            publish_result = _publish_review_workbook(workbook_path, title=f"Review — {job_id}")
+        except Exception as exc:
+            bot.reply_to(message, f"Таблица собрана локально, но публикация в Google упала ⚠️\n\n{exc}")
+            _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Recreate (json flow) publish raised", job_id=job_id, error=str(exc))
+            return
+        if publish_result.get("status") != "published":
+            bot.reply_to(message, f"Публикация не удалась: {publish_result.get('reason', 'неизвестная причина')}")
+            _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
+                       safe_message="Recreate (json flow) publish status not published", job_id=job_id,
+                       reason=publish_result.get("reason"))
+            return
+        url = publish_result.get("url", "")
+        bot.reply_to(message, f"Новая Google Sheet создана ✅\n{url}\n\nПарсер не запускался заново.")
+        _update_user_job_url(message.chat.id, job_id, url)
+        _log_event("recreate_completed", chat_id=message.chat.id,
+                   safe_message="Recreate (json flow) completed", job_id=job_id)
+        return
+
     cmd = [
         _python(), str(RECREATE),
         "--job-id", job_id,
@@ -2166,4 +2696,39 @@ if __name__ == "__main__":
         print(f"Allowed chat IDs: {ALLOWED_CHAT_IDS}")
     if ADMIN_CHAT_IDS:
         print(f"Admin chat IDs: {ADMIN_CHAT_IDS}")
-    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+
+    # 2026-08-25 (repetition plan фаза 6): telebot's own infinity_polling() already retries
+    # `Exception`s raised inside its request loop (see telebot/__init__.py, try/except around
+    # self.polling() with a 3s sleep) - most of the network ConnectionErrors seen in production
+    # logs today were already handled that way, no process restart. But real logs from today
+    # still show a handful of full process deaths (launchd had to relaunch, "Bot started"
+    # printed fresh each time) - something occasionally escapes even that inner retry (a
+    # BaseException, or an exception raised outside self.polling()'s own try, e.g. during
+    # startup/session recovery or inside a handler callback thread). Wrap the whole call in one
+    # more outer retry loop so an ordinary network hiccup never needs the OS-level launchd
+    # restart (which loses in-memory retry state and looks like a crash in the logs even when
+    # nothing was actually broken) - only a deliberate Ctrl-C/SIGTERM should end the process.
+    consecutive_failures = 0
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+            break  # infinity_polling only returns on bot.stop_polling(), a deliberate stop
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except BaseException as exc:  # noqa: BLE001 - this is the last line of defense, by design
+            consecutive_failures += 1
+            backoff = min(60, 3 * consecutive_failures)
+            print(
+                f"ERROR: infinity_polling escaped with {type(exc).__name__}: {exc} "
+                f"- restarting polling in-process in {backoff}s (attempt {consecutive_failures})",
+                file=sys.stderr,
+            )
+            _log_event(
+                "polling_escaped_exception",
+                level="ERROR",
+                safe_message="infinity_polling raised past its own internal retry loop",
+                exception_type=type(exc).__name__,
+                error=str(exc),
+                consecutive_failures=consecutive_failures,
+            )
+            time.sleep(backoff)

@@ -713,6 +713,53 @@ def rebar_duplicate_code_diagnostics(section: dict[str, Any]) -> list[dict[str, 
         by_group.setdefault(group_code, []).append(item)
 
     for group_code, items in by_group.items():
+        if group_code in ("foundation_rebar_items", "floor_slab_rebar_items"):
+            # These 2 groups have no item_id/code field in the extraction schema at all (unlike
+            # wall_chasing_rebar_items/lintel_rebar_items, confirmed 2026-08-17 against
+            # claude_extraction_output_schema.json's group_value_shapes) - the generic branch
+            # below used to ask the model to fabricate one here regardless, which produced
+            # schema-invalid output in a real correction pass (56 structural errors, all from
+            # exactly this). Their own real distinguishing field is `name` (a spec-table position
+            # label, e.g. "поз.1 А500С ф-10..."). Flag a row only when name AND
+            # steel_class/diameter_mm/length ALL match another row too - that combination means
+            # the same PDF spec-table row got extracted twice, not just two different real
+            # positions that happen to share a diameter/length.
+            exact_counts: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+            for item in items:
+                value = item.get("value") if isinstance(item.get("value"), dict) else {}
+                length_key = "spec_length_m" if group_code == "floor_slab_rebar_items" else "source_length_m"
+                key = (
+                    value.get("name"),
+                    value.get("steel_class"),
+                    value.get("diameter_mm"),
+                    value.get(length_key),
+                )
+                exact_counts.setdefault(key, []).append(item)
+            for key, dup_items in exact_counts.items():
+                if len(dup_items) < 2:
+                    continue
+                example = dup_items[0]
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": f"{group_code}: {len(dup_items)} rows are byte-identical (name={key[0]!r})",
+                        "confidence": confidence_text(example),
+                        "value": short(example.get("value"), 220),
+                        "source": source_text(example),
+                        "raw_text": short(example.get("raw_text"), 320),
+                        "notes": (
+                            f"Строка {key[0]!r} (⌀{key[2]}мм, {key[3]}м) встречается {len(dup_items)} раза "
+                            "с одинаковыми name/steel_class/diameter_mm/length - похоже на одну и ту же "
+                            "позицию спецификации, продублированную при извлечении. У этой группы нет "
+                            "поля item_id/code в схеме - не добавляйте его. Если это правда одна и та "
+                            "же позиция - удалите лишние копии. Если это разные физические позиции - "
+                            "дайте им разные `name` (например, с номером/местоположением по PDF)."
+                        ),
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
+            continue
         tuple_counts: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
         seen_codes: dict[str, int] = {}
         for item in items:
@@ -879,6 +926,106 @@ def forbidden_source_diagnostics(section: dict[str, Any]) -> list[dict[str, str]
                 "candidates": "",
             }
         )
+    return diagnostics
+
+
+def cross_section_duplicate_source_diagnostics(extraction: dict[str, Any]) -> list[dict[str, str]]:
+    """Flags the same PDF row (same source_pdf + page_number + raw_text) mapped into two DIFFERENT
+    target_code/group_code buckets in two different sections. Each priced section's calculator
+    prices its own inputs independently - the pipeline never checks across sections whether two
+    calculators just charged for the same physical material twice. This is a real, recurring bug
+    class (see waterproofing_eps_double_count_fixed and thermal_insert_combined_length_shipped
+    memories - both were exactly this, found by hand, one section/target pair at a time). This
+    check generalizes the pattern instead of only re-checking the one pair that triggered it
+    (2026-08-26: wall_block_items[vent_chimney_cladding] vs schiedel_masonry_gas_block_items, same
+    "обкладка вентканалов" PDF row, ЮСВ - the parser's own negative_context instruction for
+    schiedel_masonry_gas_block_items already told it not to do this and it did it anyway).
+
+    Rebar groups are excluded entirely: a "СПРАВОЧНО" per-item rebar breakdown legitimately repeats
+    the same raw row that also feeds a separate pooled/summed total elsewhere by design (see
+    populate_review_workbook_from_extraction.py's reference_only=is_rebar_group(...) convention) -
+    that duplication is intentional display, not a pricing collision, and already has its own
+    dedicated check (rebar_duplicate_code_diagnostics).
+
+    Matching key is (source_pdf, page_number, shared non-trivial numeric leaves of `value`) rather
+    than an exact raw_text match: the model phrases the same PDF fact slightly differently for two
+    different target_codes (different decimal separator, trimmed/extended context text) often enough
+    that exact-string matching missed the very case this check was built for (confirmed on a real
+    run - see this function's own history, and do not "fix" this back to exact-text matching).
+    Only bare 0 and 1 are excluded from the overlap test (near-universal flags/counts that would
+    pair up unrelated rows on the same page purely by coincidence) - this intentionally still flags
+    same-page/same-number coincidences that turn out to be two genuinely different materials sharing
+    one measurement (e.g. geotextile and membrane both covering the same pit footprint area). That
+    is an acceptable false-positive rate for a human-reviewed report - the two raw_text snippets are
+    both printed so a reviewer can dismiss a coincidence in seconds; silently narrowing the filter to
+    avoid it is what caused this check to miss its own target case the first time."""
+    sections = extraction.get("sections") or {}
+    # (source_pdf, page_number) -> [(section_code, item_code, item, numeric_leaves)]
+    by_page: dict[tuple[str, Any], list[tuple[str, str, dict[str, Any], set[Decimal]]]] = {}
+    for section_code, section in sections.items():
+        if not isinstance(section, dict):
+            continue
+        for item in iter_unique_items(section, ("found", "needs_review")):
+            code = item_code(item)
+            if "rebar" in code.lower():
+                continue
+            if not item.get("raw_text") or not str(item["raw_text"]).strip():
+                continue
+            leaves: list[Decimal] = []
+            _numeric_leaves(item.get("value"), leaves)
+            significant = {leaf for leaf in leaves if leaf not in (Decimal("0"), Decimal("1"))}
+            if not significant:
+                continue
+            page_key = (str(item.get("source_pdf") or ""), item.get("page_number"))
+            by_page.setdefault(page_key, []).append((section_code, code, item, significant))
+
+    diagnostics: list[dict[str, str]] = []
+    seen_pairs: set[tuple[str, str]] = set()
+    for entries in by_page.values():
+        for i in range(len(entries)):
+            section_a, code_a, item_a, numbers_a = entries[i]
+            for j in range(i + 1, len(entries)):
+                section_b, code_b, item_b, numbers_b = entries[j]
+                if (section_a, code_a) == (section_b, code_b):
+                    continue
+                if section_a == section_b:
+                    # Same-section material/work pairs (e.g. geotextile_area_m2 "material" +
+                    # geotextile_laying_area_m2 "install" both = earthworks) are supposed to share
+                    # one quantity by design - a material and its own install work always cover the
+                    # same measured area, that is not a double material charge. Confirmed 2026-08-26
+                    # (real ЮСВ run, via the correction workflow): flagging this pair was a false
+                    # positive the reviewer had to dismiss by hand. The genuine bug class this check
+                    # targets - two independently PRICED calculator sections both charging for the
+                    # same material - only happens across section boundaries, so restrict to that.
+                    continue
+                if not (numbers_a & numbers_b):
+                    continue
+                pair_key = tuple(sorted([f"{section_a}.{code_a}", f"{section_b}.{code_b}"]))
+                if pair_key in seen_pairs:
+                    continue
+                seen_pairs.add(pair_key)
+                where = "; ".join(
+                    f"{SECTION_NAMES.get(sc, sc)} → `{c}`" for sc, c in sorted({(section_a, code_a), (section_b, code_b)})
+                )
+                diagnostics.append(
+                    {
+                        "status": "semantic_error",
+                        "title": "Похоже, одна и та же строка PDF попала в несколько разделов сметы",
+                        "confidence": confidence_text(item_a),
+                        "value": short(item_a.get("value"), 220),
+                        "source": source_text(item_a),
+                        "raw_text": short(item_a.get("raw_text"), 320),
+                        "notes": (
+                            f"Найдена в: {where} (общее число: {sorted(numbers_a & numbers_b)}). "
+                            "Если оба поля реально ценятся в своих разделах, это задвоение по деньгам - "
+                            "один физический материал/работа оплачены дважды. Проверьте, не должна ли "
+                            "эта строка остаться только в одном разделе. Второй raw_text для сверки: "
+                            f"{short(item_b.get('raw_text'), 320)}"
+                        ),
+                        "auto_sum": "",
+                        "candidates": "",
+                    }
+                )
     return diagnostics
 
 
@@ -1817,6 +1964,13 @@ def render_report(extraction: dict[str, Any], input_path: Path, confidence_thres
         if missing_codes:
             status_counts["missing_code"] = status_counts.get("missing_code", 0) + len(missing_codes)
 
+    duplicate_source_items = cross_section_duplicate_source_diagnostics(extraction)
+    if duplicate_source_items:
+        total_items += len(duplicate_source_items)
+        status_counts["cross_section_duplicate"] = status_counts.get("cross_section_duplicate", 0) + len(
+            duplicate_source_items
+        )
+
     warnings = extraction.get("extraction_warnings") or []
     lines = [
         "# Приложение к служебной записке: все notes из extraction JSON",
@@ -1850,6 +2004,28 @@ def render_report(extraction: dict[str, Any], input_path: Path, confidence_thres
         for warning in warnings:
             lines.append(f"- {short(warning, 500)}")
         lines.append("")
+
+    if duplicate_source_items:
+        lines.extend(["## Возможные задвоения между разделами", ""])
+        lines.append(
+            "Одна и та же строка PDF (тот же файл, страница и текст) найдена под разными "
+            "target_code/group_code в разных разделах - каждый раздел считается независимо, "
+            "поэтому если оба поля реально идут в цену, материал/работа оплачены дважды."
+        )
+        lines.append("")
+        for index, item in enumerate(duplicate_source_items, start=1):
+            lines.append(f"### {index}. {item['title']}")
+            if item["confidence"]:
+                lines.append(f"- Уверенность: {item['confidence']}")
+            if item["value"]:
+                lines.append(f"- Значение: {item['value']}")
+            if item["source"]:
+                lines.append(f"- Источник: {item['source']}")
+            if item["raw_text"]:
+                lines.append(f"- Строка PDF: {item['raw_text']}")
+            if item["notes"]:
+                lines.append(f"- Notes: {item['notes']}")
+            lines.append("")
 
     for section_code, section_items, missing_codes in section_reports:
         section_name = SECTION_NAMES.get(section_code, section_code)
