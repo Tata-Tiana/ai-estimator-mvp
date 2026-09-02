@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from decimal import Decimal
+from decimal import ROUND_CEILING, Decimal
 from math import ceil
 from typing import Any, Callable
 
@@ -459,6 +459,13 @@ def _pool_rebar_by_zone_purpose(
     return controls, lines, delivery_weight_total
 
 
+def _ceil_to_step_decimal(value: Decimal, step: str) -> Decimal:
+    # Same helper as floor_slab_1_calculator.py's ceil_to_step_decimal() - not shared via import
+    # since the two calculators don't otherwise depend on each other, just duplicated here.
+    step_dec = Decimal(step)
+    return (value / step_dec).to_integral_value(rounding=ROUND_CEILING) * step_dec
+
+
 def _calculate_lintel_blocks(
     zone: P6WallZone, data: P6LoadBearingWallsLintelsInput
 ) -> tuple[dict[str, Any], list[EstimateLineResult]]:
@@ -504,7 +511,14 @@ def _calculate_lintel_blocks(
             if item.lintel_kind == "monolithic"
         )
         plywood_qty = Decimal(ceil(total_formwork_area / d(defaults.lintel_formwork_plywood_sheet_area_m2)))
-        timber_volume = total_formwork_area * d(defaults.lintel_formwork_board_thickness_m)
+        # Elena confirmed 2026-08-28 (real ТРЦ example): timber is bought in whole 0.1 m3
+        # increments, rounded UP - a raw area*thickness volume (e.g. 0.112 m3) must become 0.2 m3,
+        # not the unrounded figure this used to emit. Same rounding shape as
+        # floor_slab_1_calculator.py's ceil_to_step_decimal() for its own timber volume.
+        timber_volume_raw = total_formwork_area * d(defaults.lintel_formwork_board_thickness_m)
+        timber_volume = (
+            _ceil_to_step_decimal(timber_volume_raw, "0.1") if timber_volume_raw > 0 else timber_volume_raw
+        )
         insulation_length = sum(d(item.insulation_length_m) for item in zone.lintel_items if item.lintel_kind == "monolithic")
         eps_spec = sum(d(item.insulation_eps_spec_volume_m3) for item in zone.lintel_items if item.lintel_kind == "monolithic")
         eps_required = eps_spec * d(defaults.lintel_insulation_eps_waste_coeff)
