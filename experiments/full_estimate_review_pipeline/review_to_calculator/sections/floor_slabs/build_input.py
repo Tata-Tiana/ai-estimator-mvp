@@ -141,6 +141,13 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
             if area is not None:
                 edge_area += area
                 edge_area_present = True
+                if volume is None:
+                    # area_m2 given directly (no volume_m3) - same gap as the slab_bottom fix
+                    # below: total_volume (the field that drives the ordered pack quantity, not
+                    # the work quantity) only picked up contributions from a literal volume_m3,
+                    # so a project giving area_m2 directly here would silently under-order too.
+                    # Not hit by any real project yet, but the same bug shape - close it here too.
+                    total_volume += area * thickness_m
             elif volume is not None and thickness_m > 0:
                 edge_area += volume / thickness_m
                 edge_area_present = True
@@ -164,6 +171,17 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
             if area is not None:
                 bottom_area += area
                 bottom_area_present = True
+                if volume is None:
+                    # ARK real case (2026-09-03): bottom-of-slab EPS is given as a ready area_m2
+                    # ("Площадь горизонтального утепления плиты ПМ1 слоем ЭППС 100мм - 55,3м2"),
+                    # no volume_m3. This correctly drove the work quantity (bottom_slab_eps_work_area
+                    # already matched Elena's real number almost exactly), but total_volume - the
+                    # field that actually drives the ordered pack quantity, not the area-based
+                    # cross-check value - never got this area's contribution, same gap shape as the
+                    # slab_edge fix above. This is the dominant term in Elena's own real material
+                    # formula (bottom area is ~72% of her total EPS volume on this project) - fixing
+                    # only slab_edge left most of the real gap untouched.
+                    total_volume += area * thickness_m
             elif volume is not None and thickness_m > 0:
                 bottom_area += volume / thickness_m
                 bottom_area_present = True
