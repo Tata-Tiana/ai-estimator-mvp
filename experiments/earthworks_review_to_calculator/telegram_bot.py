@@ -1129,6 +1129,7 @@ def cmd_help(message: telebot.types.Message) -> None:
         "/build <job_id>\n\n"
         "Команды:\n"
         "/new_project — начать новый проект\n"
+        "/update_json <job_id> — загрузить новый исправленный JSON в старый проект\n"
         "/recreate <job_id> — пересобрать Google-таблицу из последнего JSON\n"
         "/build <job_id> — собрать итоговую смету"
     )
@@ -1505,6 +1506,57 @@ def cmd_new_project(message: telebot.types.Message) -> None:
         "Готово ✅ Следующий загруженный JSON начнёт новый прогон (новая папка, новый job_id)."
         if had_session else
         "Активного прогона и так не было — следующий JSON и так начнёт новый прогон."
+    )
+
+
+# ── /update_json ───────────────────────────────────────────────────────────
+@bot.message_handler(commands=["update_json"])
+def cmd_update_json(message: telebot.types.Message) -> None:
+    """Attach the next uploaded extraction JSON to an existing JSON-flow job.
+
+    This covers the normal production case where the estimator asked ChatGPT to correct the JSON
+    in words after the original 2-hour upload window expired. The next JSON should update the same
+    job and rebuild the Google review workbook, not create a fresh project folder.
+    """
+    if not _require_user_access(message, "/update_json"):
+        return
+    parts = message.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        bot.reply_to(message, "Укажите job_id: /update_json <job_id>")
+        return
+
+    requested_job_id = parts[1].strip()
+    json_job_dir, resolve_error = _resolve_json_job_dir(requested_job_id)
+    if resolve_error:
+        bot.reply_to(message, resolve_error)
+        return
+    if json_job_dir is None:
+        bot.reply_to(message, f"Не нашла такой JSON-проект: {requested_job_id}")
+        return
+
+    job_id = json_job_dir.name
+    if not _user_can_access_job(message.chat.id, job_id):
+        _deny_job_access(message, job_id)
+        return
+
+    _save_extraction_session(message.chat.id, {
+        "chat_id": message.chat.id,
+        "job_id": job_id,
+        "source_filename": "",
+        "started_at": _now(),
+        "uploads": [],
+        "mode": "update_existing_json_job",
+    })
+    _log_event(
+        "extraction_session_update_requested",
+        chat_id=message.chat.id,
+        safe_message="Next JSON upload will update existing JSON-flow job",
+        job_id=job_id,
+    )
+    bot.reply_to(message,
+        f"Готово ✅\n\n"
+        f"Следующий JSON-файл попадёт в этот же проект:\n{job_id}\n\n"
+        "После загрузки бот сразу пересоберёт и опубликует Google-таблицу."
     )
 
 

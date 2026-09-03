@@ -103,10 +103,14 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         items = production_items.get(key)
         if items:
             if key == "schiedel_channel_items":
-                result[key] = [
-                    {**item, "product_type": _normalize_channel_product_type(item.get("product_type"))}
-                    for item in items
-                ]
+                prepared_items = []
+                for item in items:
+                    product_type = _normalize_channel_product_type(item.get("product_type"))
+                    if not product_type:
+                        continue
+                    prepared_items.append({**item, "product_type": product_type})
+                if prepared_items:
+                    result[key] = prepared_items
             else:
                 result[key] = items
 

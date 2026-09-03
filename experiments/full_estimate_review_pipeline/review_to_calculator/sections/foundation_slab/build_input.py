@@ -90,6 +90,7 @@ REBAR_GROUP_KEY = "foundation_rebar_items"
 REBAR_TEMPLATE_PRICE_KEY = "rebar_unit_price_by_item"
 THERMAL_INSERT_ITEMS_KEY = "thermal_insert_items"
 THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY = "thermal_insert_item_material_unit_price"
+THERMAL_INSERT_ITEM_PACK_MULTIPLE_DEFAULT = 0.2776
 
 
 def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
@@ -156,10 +157,12 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
                 f"'{THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY}' has no resolved value"
             )
         result["thermal_insert_mode"] = "items"
-        result["thermal_insert_items"] = [
-            {**item, "material_unit_price": thermal_item_material_price}
-            for item in thermal_items
-        ]
+        result["thermal_insert_items"] = []
+        for item in thermal_items:
+            prepared_item = {**item, "material_unit_price": thermal_item_material_price}
+            if prepared_item.get("pack_multiple_qty") in (None, ""):
+                prepared_item["pack_multiple_qty"] = THERMAL_INSERT_ITEM_PACK_MULTIPLE_DEFAULT
+            result["thermal_insert_items"].append(prepared_item)
     else:
         result["thermal_insert_mode"] = defaults["thermal_insert_mode"]["value"]
         for key in OPTIONAL_STANDARD_5010_SCALARS:

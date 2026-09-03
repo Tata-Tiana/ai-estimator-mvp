@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from decimal import ROUND_CEILING, Decimal
 from math import ceil
+import re
 from typing import Any, Callable
 
 from load_bearing_walls_lintels_calculator import (
@@ -259,6 +260,7 @@ class P6LoadBearingWallsLintelsInput:
 
 def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
     normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
+    normalized_size = re.sub(r"\([^)]*\)", "", normalized_size)
     normalized_density = item.block_density.upper().replace("-", "").replace(" ", "")
     return (normalized_density, normalized_size)
 

@@ -15,6 +15,9 @@ com.aiestimator.earthworks.telegrambot.plist`, `RunAtLoad` + `KeepAlive`, то �
    `Conflict: terminated by other getUpdates request`, и обе копии перестают отвечать.
 3. Реальная синтаксическая/импортная ошибка в коде (см. п.3) — это на самом деле редкий случай,
    проверяется быстрее всего, но чаще всего НЕ он.
+4. Процесс запущен из ограниченной среды Codex/sandbox без нормального DNS/сети (см. п.6). В этом
+   случае сам код исправен, `curl` снаружи может видеть Telegram, а бот внутри процесса падает на
+   `Failed to resolve 'api.telegram.org'`.
 
 ## 1. Проверить, загружен ли штатный launchd-сервис
 
@@ -91,3 +94,34 @@ launchctl print gui/$(id -u)/com.aiestimator.earthworks.telegrambot | grep -E "p
 ```
 
 `state = running` и стабильный `pid` (не сменился) — можно считать поднятым.
+
+## 6. Важно про Codex/sandbox и сетевой доступ
+
+Если бот запускается из Codex обычной командой, процесс может унаследовать ограниченную среду без
+нормального DNS. Типичный симптом в логе:
+
+```text
+Failed to resolve 'api.telegram.org'
+NameResolutionError / nodename nor servname provided
+```
+
+При этом снаружи sandbox Telegram может быть доступен. Проверка:
+
+```bash
+dscacheutil -q host -a name api.telegram.org
+curl -I --max-time 10 https://api.telegram.org
+```
+
+Если эти команды с внешними правами проходят, а бот из обычного запуска падает по DNS, проблема не в
+коде. Нужно запускать/перезапускать штатный сервис как внешний процесс, чтобы он унаследовал нормальный
+сетевой доступ:
+
+```bash
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.aiestimator.earthworks.telegrambot.plist 2>/dev/null || true
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.aiestimator.earthworks.telegrambot.plist
+```
+
+В Codex для этих команд нужно использовать запуск вне sandbox / escalated permissions. Не поднимай
+`telegram_bot.py` напрямую как постоянную копию: это быстро приводит к двум poller-процессам на одном
+токене и ошибке `409 Conflict`. Прямой запуск допустим только на несколько секунд для проверки сети,
+после чего его надо остановить и оставить одну launchd-копию.
