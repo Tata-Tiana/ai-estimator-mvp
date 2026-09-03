@@ -130,6 +130,7 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
         volume = _num(row.get("volume_m3"))
         area = _num(row.get("area_m2"))
         length = _num(row.get("length_m"))
+        height = _num(row.get("height_m"))
         if volume is not None:
             total_volume += volume
 
@@ -143,6 +144,22 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
             elif volume is not None and thickness_m > 0:
                 edge_area += volume / thickness_m
                 edge_area_present = True
+            elif volume is None and length is not None and height is not None:
+                # ARK real case (2026-09-03): unlike ТРЦ/ЮСВ, this project's PDF never gives a
+                # ready area_m2/volume_m3 for slab-edge EPS at all - only length_m + height_m
+                # ("...под устройство утепления из ЭППС 100мм (н=180мм) - 73,2м.пог"). The work
+                # quantity (edge_length) already derives fine from length_m alone, but material
+                # area/volume silently stayed 0 with no length*height fallback, even though both
+                # numbers are right here in the same row - a real material-cost line (Elena's real
+                # smeta: 72 615₽ on this exact project) was computing to 0₽. volume_m3 was never
+                # populated for this row, so it never reached total_volume via the branch above
+                # either - add the derived volume here too, since total_volume (not the area-based
+                # calculated_clean_eps_volume) is what actually drives the ordered pack quantity
+                # downstream in floor_slab_calculator.py.
+                derived_area = length * height
+                edge_area += derived_area
+                edge_area_present = True
+                total_volume += derived_area * thickness_m
         elif role == "slab_bottom":
             if area is not None:
                 bottom_area += area
