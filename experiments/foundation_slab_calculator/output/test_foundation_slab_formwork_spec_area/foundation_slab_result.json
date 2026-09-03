@@ -157,7 +157,7 @@
       "plywood_sheet_working_area_m2": 2.25,
       "plywood_raw_sheets": 10.8,
       "plywood_sheets": 11,
-      "timber_raw_volume_m3": 1.215
+      "timber_raw_volume_m3": 1.3
     },
     "eps": {
       "mode": "standard_50_100",
@@ -390,13 +390,13 @@
       "code": "formwork_timber",
       "name": "Пиломатериал обрезной хвойных пород ГОСТ",
       "unit": "м3",
-      "quantity": 1.215,
+      "quantity": 1.3,
       "material_unit_price": 21500,
-      "material_total": 26123,
+      "material_total": 27950,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 26123,
-      "display_quantity": 1.22,
+      "line_total": 27950,
+      "display_quantity": 1.3,
       "price_code": "timber_m3"
     },
     {
@@ -712,9 +712,9 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 1462836,
+    "internal_materials_total": 1464663,
     "internal_works_total": 1084000,
-    "internal_section_total": 2546836
+    "internal_section_total": 2548663
   },
   "expected": {
     "calculation_blocks": {
@@ -725,7 +725,7 @@
         "plywood_calc_method": "working_area",
         "plywood_sheet_working_area_m2": 2.25,
         "plywood_sheets": 11,
-        "timber_raw_volume_m3": 1.215
+        "timber_raw_volume_m3": 1.3
       }
     },
     "estimate_lines": {
@@ -742,10 +742,10 @@
       },
       "formwork_timber": {
         "unit": "м3",
-        "quantity": 1.215,
-        "display_quantity": 1.22,
-        "material_total": 26123,
-        "line_total": 26123
+        "quantity": 1.3,
+        "display_quantity": 1.3,
+        "material_total": 27950,
+        "line_total": 27950
       },
       "formwork_dismantling": {
         "unit": "м2",
@@ -754,9 +754,9 @@
       }
     },
     "internal_totals": {
-      "internal_materials_total": 1462836,
+      "internal_materials_total": 1464663,
       "internal_works_total": 1084000,
-      "internal_section_total": 2546836
+      "internal_section_total": 2548663
     }
   },
   "comparison": [
@@ -804,8 +804,8 @@
     },
     {
       "key": "calculation_blocks.formwork.timber_raw_volume_m3",
-      "expected": 1.215,
-      "actual": 1.215,
+      "expected": 1.3,
+      "actual": 1.3,
       "diff": 0.0,
       "status": "ok"
     },
@@ -867,29 +867,29 @@
     },
     {
       "key": "estimate_lines.formwork_timber.quantity",
-      "expected": 1.215,
-      "actual": 1.215,
+      "expected": 1.3,
+      "actual": 1.3,
       "diff": 0.0,
       "status": "ok"
     },
     {
       "key": "estimate_lines.formwork_timber.display_quantity",
-      "expected": 1.22,
-      "actual": 1.22,
+      "expected": 1.3,
+      "actual": 1.3,
       "diff": 0.0,
       "status": "ok"
     },
     {
       "key": "estimate_lines.formwork_timber.material_total",
-      "expected": 26123,
-      "actual": 26123,
+      "expected": 27950,
+      "actual": 27950,
       "diff": 0,
       "status": "ok"
     },
     {
       "key": "estimate_lines.formwork_timber.line_total",
-      "expected": 26123,
-      "actual": 26123,
+      "expected": 27950,
+      "actual": 27950,
       "diff": 0,
       "status": "ok"
     },
@@ -916,8 +916,8 @@
     },
     {
       "key": "internal_totals.internal_materials_total",
-      "expected": 1462836,
-      "actual": 1462836,
+      "expected": 1464663,
+      "actual": 1464663,
       "diff": 0,
       "status": "ok"
     },
@@ -930,8 +930,8 @@
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 2546836,
-      "actual": 2546836,
+      "expected": 2548663,
+      "actual": 2548663,
       "diff": 0,
       "status": "ok"
     }

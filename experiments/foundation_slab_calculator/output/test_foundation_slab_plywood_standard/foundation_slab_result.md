@@ -118,7 +118,7 @@
 | `formwork.plywood_waste_coeff` | `1.05` |
 | `formwork.plywood_raw_sheets` | `11.0435` |
 | `formwork.plywood_sheets` | `12` |
-| `formwork.timber_raw_volume_m3` | `1.215` |
+| `formwork.timber_raw_volume_m3` | `1.3` |
 | `eps.mode` | `standard_50_100` |
 | `eps.eps50_laying_area_m2` | `270.0` |
 | `eps.eps50_under_slab_required_volume_m3` | `14.175` |
@@ -290,7 +290,7 @@
 | --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `12.0` | `` | `шт` | `1450` | `17400` | `0.0` | `0` | `17400` |
-| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.3` | `1.3` | `м3` | `21500` | `27950` | `0.0` | `0` | `27950` |
 | `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
 | `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
 | `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
@@ -321,9 +321,9 @@
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1464286` |
+| `internal_materials_total` | `1466113` |
 | `internal_works_total` | `1084000` |
-| `internal_section_total` | `2548286` |
+| `internal_section_total` | `2550113` |
 
 ## Проверка с расчётом Елены
 | Показатель | Ожидание | Получено | Разница | Статус |
@@ -338,11 +338,11 @@
 | `calculation_blocks.formwork.plywood_waste_coeff` | `1.05` | `1.05` | `0.0` | `ok` |
 | `calculation_blocks.formwork.plywood_raw_sheets` | `11.0435` | `11.0435` | `0.0` | `ok` |
 | `calculation_blocks.formwork.plywood_sheets` | `12` | `12` | `0` | `ok` |
-| `calculation_blocks.formwork.timber_raw_volume_m3` | `1.215` | `1.215` | `0.0` | `ok` |
+| `calculation_blocks.formwork.timber_raw_volume_m3` | `1.3` | `1.3` | `0.0` | `ok` |
 | `estimate_lines.formwork_plywood.unit` | `шт` | `шт` | `` | `ok` |
 | `estimate_lines.formwork_plywood.quantity` | `12` | `12.0` | `0.0` | `ok` |
 | `estimate_lines.formwork_plywood.material_total` | `17400` | `17400` | `0` | `ok` |
 | `estimate_lines.formwork_plywood.line_total` | `17400` | `17400` | `0` | `ok` |
-| `internal_totals.internal_materials_total` | `1464286` | `1464286` | `0` | `ok` |
+| `internal_totals.internal_materials_total` | `1466113` | `1466113` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2548286` | `2548286` | `0` | `ok` |
+| `internal_totals.internal_section_total` | `2550113` | `2550113` | `0` | `ok` |

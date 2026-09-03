@@ -156,7 +156,7 @@
       "plywood_sheet_working_area_m2": 2.25,
       "plywood_raw_sheets": 10.8,
       "plywood_sheets": 11,
-      "timber_raw_volume_m3": 1.215
+      "timber_raw_volume_m3": 1.3
     },
     "eps": {
       "mode": "legacy",
@@ -398,16 +398,16 @@
       "code": "formwork_timber",
       "name": "Пиломатериал обрезной хвойных пород ГОСТ",
       "unit": "м3",
-      "quantity": 1.215,
+      "quantity": 1.3,
       "material_unit_price": 21499.997319,
-      "material_total": 26122,
+      "material_total": 27950,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 26122,
-      "display_quantity": 1.22,
+      "line_total": 27950,
+      "display_quantity": 1.3,
       "price_code": "timber_m3",
-      "material_total_raw": 26122.496742585,
-      "line_total_raw": 26122.496742585,
+      "material_total_raw": 27949.9965147,
+      "line_total_raw": 27949.9965147,
       "unit_price_source": "price_registry",
       "unit_price_original": "21500",
       "unit_price_used": "21499.997319",
@@ -850,12 +850,12 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 1365655,
+    "internal_materials_total": 1367483,
     "internal_works_total": 1078650,
-    "internal_section_total": 2444305,
-    "internal_materials_total_raw": "1365655.180742585",
+    "internal_section_total": 2446133,
+    "internal_materials_total_raw": "1367482.6805147",
     "internal_works_total_raw": "1078650",
-    "internal_section_total_raw": "2444305.180742585"
+    "internal_section_total_raw": "2446132.6805147"
   },
   "expected": {},
   "comparison": [],

@@ -11,7 +11,7 @@
       "plywood_waste_coeff": 1.05,
       "plywood_raw_sheets": 11.0435,
       "plywood_sheets": 12,
-      "timber_raw_volume_m3": 1.215
+      "timber_raw_volume_m3": 1.3
     }
   },
   "estimate_lines": {
@@ -23,8 +23,8 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total": 1464286,
+    "internal_materials_total": 1466113,
     "internal_works_total": 1084000,
-    "internal_section_total": 2548286
+    "internal_section_total": 2550113
   }
 }

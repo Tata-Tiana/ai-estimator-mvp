@@ -698,8 +698,17 @@ def calculate_formwork_block(data: FoundationSlabInput) -> dict[str, Any]:
         )
 
     plywood_sheets = int(ceil(plywood_raw_sheets))
-    timber_raw_volume_m3 = _round_decimal(
-        _to_decimal(formwork_area_m2) * _to_decimal(data.timber_thickness_m)
+    # Elena confirmed 2026-09-03: cut formwork timber is bought in whole 0.1 m3 increments,
+    # rounded up - a universal purchasing rule she'd only applied in her own TRC formula
+    # (explicit CEILING(...,0.1)); her USV/ARK cells looked rounded only from 1-decimal cell
+    # display formatting, not a real formula - she'd simply forgotten to apply the rule there.
+    # Same rounding shape as load_bearing_walls_lintels_p6_calculator.py's lintel formwork
+    # timber (round_up_to_step already exists in this module, used by concrete_order_volume_m3).
+    timber_raw_volume_m3 = round_up_to_step(
+        _round_decimal(
+            _to_decimal(formwork_area_m2) * _to_decimal(data.timber_thickness_m)
+        ),
+        0.1,
     )
 
     formwork_block.update(

@@ -116,7 +116,7 @@
 | `formwork.plywood_sheet_working_area_m2` | `2.25` |
 | `formwork.plywood_raw_sheets` | `10.8` |
 | `formwork.plywood_sheets` | `11` |
-| `formwork.timber_raw_volume_m3` | `1.215` |
+| `formwork.timber_raw_volume_m3` | `1.3` |
 | `eps.mode` | `standard_50_100` |
 | `eps.eps50_laying_area_m2` | `270.0` |
 | `eps.eps50_under_slab_required_volume_m3` | `14.175` |
@@ -288,7 +288,7 @@
 | --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | `formwork_installation` | Монтаж опалубки из пиломатериалов для отбортовки плиты | `` | `24.3` | `` | `м2` | `0.0` | `0` | `0` | `0` | `0` |
 | `formwork_plywood` | Фанера ФК 1,52 * 1,52 толщиной 18 мм | `` | `11.0` | `` | `шт` | `1450` | `15950` | `0.0` | `0` | `15950` |
-| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.215` | `1.22` | `м3` | `21500` | `26123` | `0.0` | `0` | `26123` |
+| `formwork_timber` | Пиломатериал обрезной хвойных пород ГОСТ | `` | `1.3` | `1.3` | `м3` | `21500` | `27950` | `0.0` | `0` | `27950` |
 | `planter_membrane_installation` | Монтаж мембраны PLANTER стандарт | `` | `320.0` | `` | `м2` | `0.0` | `0` | `100` | `32000` | `32000` |
 | `planter_standard_material` | Planter Standard Технониколь | `` | `9.0` | `` | `рул` | `5166` | `46494` | `0.0` | `0` | `46494` |
 | `planterband_material` | PLANTERBAND 10м х 10см | `` | `36.0` | `` | `шт` | `790` | `28440` | `0.0` | `0` | `28440` |
@@ -319,9 +319,9 @@
 ## Итоги серой внутренней сметы
 | Показатель | Значение |
 | --- | ---: |
-| `internal_materials_total` | `1462836` |
+| `internal_materials_total` | `1464663` |
 | `internal_works_total` | `1084000` |
-| `internal_section_total` | `2546836` |
+| `internal_section_total` | `2548663` |
 
 ## Проверка с расчётом Елены
 | Показатель | Ожидание | Получено | Разница | Статус |
@@ -358,6 +358,6 @@
 | `estimate_lines.thermal_insert_100_material.material_unit_price` | `10000` | `10000` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.material_total` | `5552` | `5552` | `0` | `ok` |
 | `estimate_lines.thermal_insert_100_material.line_total` | `5552` | `5552` | `0` | `ok` |
-| `internal_totals.internal_materials_total` | `1462836` | `1462836` | `0` | `ok` |
+| `internal_totals.internal_materials_total` | `1464663` | `1464663` | `0` | `ok` |
 | `internal_totals.internal_works_total` | `1084000` | `1084000` | `0` | `ok` |
-| `internal_totals.internal_section_total` | `2546836` | `2546836` | `0` | `ok` |
+| `internal_totals.internal_section_total` | `2548663` | `2548663` | `0` | `ok` |

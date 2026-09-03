@@ -162,7 +162,7 @@
       "plywood_waste_coeff": 1.05,
       "plywood_raw_sheets": 11.0435,
       "plywood_sheets": 12,
-      "timber_raw_volume_m3": 1.215
+      "timber_raw_volume_m3": 1.3
     },
     "eps": {
       "mode": "standard_50_100",
@@ -395,13 +395,13 @@
       "code": "formwork_timber",
       "name": "Пиломатериал обрезной хвойных пород ГОСТ",
       "unit": "м3",
-      "quantity": 1.215,
+      "quantity": 1.3,
       "material_unit_price": 21500,
-      "material_total": 26123,
+      "material_total": 27950,
       "work_unit_price": 0.0,
       "work_total": 0,
-      "line_total": 26123,
-      "display_quantity": 1.22,
+      "line_total": 27950,
+      "display_quantity": 1.3,
       "price_code": "timber_m3"
     },
     {
@@ -717,9 +717,9 @@
     }
   ],
   "internal_totals": {
-    "internal_materials_total": 1464286,
+    "internal_materials_total": 1466113,
     "internal_works_total": 1084000,
-    "internal_section_total": 2548286
+    "internal_section_total": 2550113
   },
   "expected": {
     "calculation_blocks": {
@@ -734,7 +734,7 @@
         "plywood_waste_coeff": 1.05,
         "plywood_raw_sheets": 11.0435,
         "plywood_sheets": 12,
-        "timber_raw_volume_m3": 1.215
+        "timber_raw_volume_m3": 1.3
       }
     },
     "estimate_lines": {
@@ -746,9 +746,9 @@
       }
     },
     "internal_totals": {
-      "internal_materials_total": 1464286,
+      "internal_materials_total": 1466113,
       "internal_works_total": 1084000,
-      "internal_section_total": 2548286
+      "internal_section_total": 2550113
     }
   },
   "comparison": [
@@ -824,8 +824,8 @@
     },
     {
       "key": "calculation_blocks.formwork.timber_raw_volume_m3",
-      "expected": 1.215,
-      "actual": 1.215,
+      "expected": 1.3,
+      "actual": 1.3,
       "diff": 0.0,
       "status": "ok"
     },
@@ -859,8 +859,8 @@
     },
     {
       "key": "internal_totals.internal_materials_total",
-      "expected": 1464286,
-      "actual": 1464286,
+      "expected": 1466113,
+      "actual": 1466113,
       "diff": 0,
       "status": "ok"
     },
@@ -873,8 +873,8 @@
     },
     {
       "key": "internal_totals.internal_section_total",
-      "expected": 2548286,
-      "actual": 2548286,
+      "expected": 2550113,
+      "actual": 2550113,
       "diff": 0,
       "status": "ok"
     }

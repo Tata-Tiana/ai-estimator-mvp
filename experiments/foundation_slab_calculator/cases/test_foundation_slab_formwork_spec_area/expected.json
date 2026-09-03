@@ -7,7 +7,7 @@
       "plywood_calc_method": "working_area",
       "plywood_sheet_working_area_m2": 2.25,
       "plywood_sheets": 11,
-      "timber_raw_volume_m3": 1.215
+      "timber_raw_volume_m3": 1.3
     }
   },
   "estimate_lines": {
@@ -24,10 +24,10 @@
     },
     "formwork_timber": {
       "unit": "м3",
-      "quantity": 1.215,
-      "display_quantity": 1.22,
-      "material_total": 26123,
-      "line_total": 26123
+      "quantity": 1.3,
+      "display_quantity": 1.3,
+      "material_total": 27950,
+      "line_total": 27950
     },
     "formwork_dismantling": {
       "unit": "м2",
@@ -36,8 +36,8 @@
     }
   },
   "internal_totals": {
-    "internal_materials_total": 1462836,
+    "internal_materials_total": 1464663,
     "internal_works_total": 1084000,
-    "internal_section_total": 2546836
+    "internal_section_total": 2548663
   }
 }
