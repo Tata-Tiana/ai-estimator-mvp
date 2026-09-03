@@ -109,7 +109,11 @@ def _num(value: Any) -> float | None:
         return None
 
 
-def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _resolve_insulation(
+    zone: dict[str, Any],
+    eps_rows: list[dict[str, Any]],
+    beam_rows: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Builds the spec_work_quantities fields for one zone from its own floor_slab_eps_items rows.
     Raises a clear, zone-named error when material exists but work can't be honestly derived -
     see this module's own docstring for the readiness rule this implements."""
@@ -122,6 +126,20 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
     bottom_area = 0.0
     bottom_area_present = False
     combined_volume = 0.0
+
+    # АРК real case (2026-09-03): floor_slab_beam_items rows can carry their own
+    # insulation_area_m2 (a ready PDF number, e.g. "площадь утепления ж/б балок слоем ЭППС 100мм -
+    # 1,4м2" for one specific beam mark - confirmed against the project's own "Схема утепления
+    # плиты" drawing, not every beam is insulated) - this used to be extracted and sit unused,
+    # never reaching beams_eps_material_area_m2 at all. No beam row currently gives a matching
+    # insulated_length_m (the PDF gives area only here, no length), so beams_eps_work_length_m
+    # stays unset - the "утепление торца" WORK line stays edge-only until a real length source
+    # shows up; this only closes the MATERIAL gap. Thickness defaults to 100mm same as the eps_rows
+    # loop below - every real project's beam insulation seen so far is ЭППС 100мм, same as the rest
+    # of the zone's insulation.
+    beams_eps_area = sum(_num(row.get("insulation_area_m2")) or 0.0 for row in (beam_rows or []))
+    if beams_eps_area > 0:
+        total_volume += beams_eps_area * 0.1
 
     for row in eps_rows:
         role = row.get("role")
@@ -223,13 +241,19 @@ def _resolve_insulation(zone: dict[str, Any], eps_rows: list[dict[str, Any]]) ->
                 "работа по торцу этой плиты не нужна."
             )
 
-    return {
+    result = {
         "insulation_calc_method": "spec_work_quantities",
         "slab_outer_edge_eps_work_length_m": round(edge_length, 6),
         "slab_edge_eps_material_area_m2": round(edge_area, 6),
         "bottom_slab_eps_work_area_m2": round(bottom_area, 6),
         "total_eps_volume_from_spec_m3": round(total_volume, 6),
     }
+    if beams_eps_area > 0:
+        # Cross-check value only (feeds calculated_clean_eps_volume's delta warning in the engine)
+        # - the real order quantity is driven by total_eps_volume_from_spec_m3 above, which already
+        # has this area's volume added in.
+        result["beams_eps_material_area_m2"] = round(beams_eps_area, 6)
+    return result
 
 
 def _resolve_additional_concrete_items(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -472,7 +496,7 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
         if additional_items:
             result["additional_concrete_items"] = additional_items
 
-        result.setdefault("insulation", {}).update(_resolve_insulation(zone, eps_rows))
+        result.setdefault("insulation", {}).update(_resolve_insulation(zone, eps_rows, beam_rows))
 
         rebar_rows = [row for row in rebar_rows_all if row.get("zone_id") == zone_id]
         if not rebar_rows:
