@@ -137,7 +137,20 @@ def _resolve_insulation(
     # shows up; this only closes the MATERIAL gap. Thickness defaults to 100mm same as the eps_rows
     # loop below - every real project's beam insulation seen so far is ЭППС 100мм, same as the rest
     # of the zone's insulation.
-    beams_eps_area = sum(_num(row.get("insulation_area_m2")) or 0.0 for row in (beam_rows or []))
+    #
+    # zone-level beams_eps_material_area_m2 override (2026-09-03, ПМ2 real case): the PDF sometimes
+    # prints one combined insulation area for several beams together (ПМ2: "1,62м2" covering Б1+Б2,
+    # no per-beam split possible off the drawing) - same "combined total, no per-item split" shape
+    # already solved for concrete via beams_concrete_volume_m3 (Prompt rule 25, spec priority). When
+    # present, this zone-level field wins outright over summing individual beam rows' own
+    # insulation_area_m2 (do not add the two together - the zone total already covers every insulated
+    # beam in the zone). When absent, falls back to the per-beam sum, same as before this field
+    # existed.
+    beams_eps_area_override = _num(zone.get("beams_eps_material_area_m2"))
+    if beams_eps_area_override is not None:
+        beams_eps_area = beams_eps_area_override
+    else:
+        beams_eps_area = sum(_num(row.get("insulation_area_m2")) or 0.0 for row in (beam_rows or []))
     if beams_eps_area > 0:
         total_volume += beams_eps_area * 0.1
 
