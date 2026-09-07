@@ -157,6 +157,27 @@ def spec_table_area_m2(spec_rows: list[dict[str, Any]] | None, name_token: str) 
     return total
 
 
+def spec_table_volume_m3(spec_rows: list[dict[str, Any]] | None, name_token: str) -> Decimal | None:
+    # Same spec-priority pattern as spec_table_area_m2 above, for м3-unit rows (main roof EPS
+    # insulation). 2026-09-07, real ARK case: the roof's own "СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА"
+    # table gives a ready volume per roof level (e.g. "CARBON PROF 100+100мм" - 45.2 м3 and
+    # 17.0 м3 on two levels, 62.2 м3 total) which Elena's real smeta (64.06 м3, her own small
+    # margin on top) matches far better than this module's geometric estimate
+    # (roof_area_total_m2 * thickness * waste_coeff, which came out 75.01 м3, +17% - a real
+    # money overcount). The spec number already IS the required volume (Elena's own margin is
+    # on top of it, not baked into ours) - callers should NOT also apply eps_insulation_waste_coeff
+    # to it, only round up to whole packs, same convention as the supplier-quote EPS/SLOPE lines.
+    total: Decimal | None = None
+    for row in spec_rows or []:
+        name = str(row.get("name") or "")
+        unit = str(row.get("unit") or "").strip().lower()
+        if name_token in name and unit in ("м3", "m3", "м³"):
+            qty = row.get("quantity")
+            if qty is not None and d(qty) > D0:
+                total = (total or D0) + d(qty)
+    return total
+
+
 def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
     # `key not in input_data` alone doesn't catch the far more common real shape of
     # extraction-derived input: the key IS present, just with value None (parser didn't find
@@ -406,7 +427,14 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
         )
     )
 
-    eps100_required = roof_area * d(input_data["eps_main_thickness_m"]) * d(input_data["eps_insulation_waste_coeff"])
+    spec_rows = input_data.get("roof_raw_material_spec_rows") or []
+    spec_eps100_volume = spec_table_volume_m3(spec_rows, "100+100")
+    if spec_eps100_volume is not None:
+        eps100_required = spec_eps100_volume
+        eps100_quantity_source = "roof_raw_material_spec_rows (100+100мм row, summed across zones)"
+    else:
+        eps100_required = roof_area * d(input_data["eps_main_thickness_m"]) * d(input_data["eps_insulation_waste_coeff"])
+        eps100_quantity_source = "roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs"
     eps100_packs = ceil_decimal(eps100_required / d(input_data["eps100_pack_volume_m3"]))
     eps100_ordered = d(eps100_packs) * d(input_data["eps100_pack_volume_m3"])
     lines.append(
@@ -417,7 +445,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             line_type="materials",
             quantity_raw=eps100_ordered,
             quantity_display=display_decimal(eps100_ordered),
-            quantity_source="roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff rounded to packs",
+            quantity_source=eps100_quantity_source,
             price_code="roof_eps100_technonikol_carbon_eco_m3",
             material_unit_price=input_data["eps100_unit_price_per_m3"],
             material_total_raw=eps100_ordered * d(input_data["eps100_unit_price_per_m3"]),
@@ -467,7 +495,7 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     # as geotextile_prof_150_parapet (both literally "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150" in
     # every real project checked) - a separate line/code here because it has a different area
     # source (screed area, not parapet length), not a different product.
-    spec_rows = input_data.get("roof_raw_material_spec_rows") or []
+    # (spec_rows already fetched above for the eps100 spec-priority check)
     screed_items_in = input_data.get("roof_screed_items") or []
     screed_total_area = sum((d(item["area_m2"]) for item in screed_items_in), D0)
     if screed_total_area > D0:
