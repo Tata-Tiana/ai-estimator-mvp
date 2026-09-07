@@ -1167,6 +1167,7 @@ FLOOR_SLAB_FIELD_LABELS = {
     "manual_formwork_rental_supplier_quote_total": "КП поставщика на аренду опалубки",
     "manual_plywood_reserve_sheets": "Запас листов фанеры сверх расчёта",
     "manual_concrete_mixer_capacity_m3": "Объём миксера бетона на эту плиту",
+    "thickness_mm": "Толщина материала",
     "volume_m3": "Объем материала",
     "area_m2": "Площадь",
     "length_m": "Длина работ",
@@ -1203,7 +1204,12 @@ def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str])
             "manual_concrete_mixer_capacity_m3",
         ]
     if group_key == EPS_ITEMS_GROUP_KEY:
-        return ["volume_m3", "area_m2", "length_m", "height_m"]
+        # "height_m" removed 2026-09-07 - dead reference, floor_slab_eps_items has never had a
+        # height_m column (checked section_contract.yaml's own columns list), so it could never
+        # have rendered anything. thickness_mm added same day - a real, correction_columns-listed
+        # numeric field that was missing here since this group's hardcoded list was first written,
+        # same class of gap as beams_eps_material_area_m2/manual_concrete_mixer_capacity_m3 above.
+        return ["thickness_mm", "volume_m3", "area_m2", "length_m"]
     return correction_columns
 
 
