@@ -1165,6 +1165,7 @@ FLOOR_SLAB_FIELD_LABELS = {
     "manual_technical_supervision_amount": "Технадзор",
     "manual_formwork_rental_supplier_quote_total": "КП поставщика на аренду опалубки",
     "manual_plywood_reserve_sheets": "Запас листов фанеры сверх расчёта",
+    "manual_concrete_mixer_capacity_m3": "Объём миксера бетона на эту плиту",
     "volume_m3": "Объем материала",
     "area_m2": "Площадь",
     "length_m": "Длина работ",
@@ -1197,6 +1198,7 @@ def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str])
             "manual_technical_supervision_amount",
             "manual_formwork_rental_supplier_quote_total",
             "manual_plywood_reserve_sheets",
+            "manual_concrete_mixer_capacity_m3",
         ]
     if group_key == EPS_ITEMS_GROUP_KEY:
         return ["volume_m3", "area_m2", "length_m", "height_m"]
@@ -1778,6 +1780,20 @@ def _render_repeated_row_block(
                     "Не обязательно — при пустом значении запас не добавляется (0 листов сверх "
                     "расчёта). Впишите число, только если по факту на этой плите нужен доп. запас "
                     "фанеры сверх формулы (некратные места, торцы сложной формы и т.п.)."
+                )
+            elif (
+                group_key == ZONES_GROUP_KEY
+                and field_key == "manual_concrete_mixer_capacity_m3"
+                and (field_value is None or field_value == "")
+            ):
+                # Real fallback confirmed in build_input.py (2026-09-07): overrides rates.
+                # mixer_capacity_m3 only when given; absent -> catalog default 9 м3 (checked
+                # against real ТРЦ/ЮСВ/АРК formulas - 9 м3 matches ТРЦ and ЮСВ exactly, only real
+                # АРК deviates at 7 м3 with no documented reason - site access/supplier fleet).
+                action_text = (
+                    "Не обязательно — при пустом значении используется 9 м3 (подтверждено на "
+                    "большинстве реальных проектов). Впишите число, только если известна реальная "
+                    "вместимость миксера/бетоновоза именно на этом объекте (например, 7 м3)."
                 )
             elif (
                 group_key == P6_WALL_ZONES_GROUP_KEY

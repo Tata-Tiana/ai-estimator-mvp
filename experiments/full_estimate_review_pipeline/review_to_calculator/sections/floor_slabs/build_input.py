@@ -446,6 +446,14 @@ def build_calculator_inputs(normalized_review: dict[str, Any]) -> list[dict[str,
         for path, value in shared_rates.items():
             _set_nested(result, path, dict(value) if isinstance(value, dict) else value)
 
+        # manual_concrete_mixer_capacity_m3: real ARK case (2026-09-07) - Elena's own concrete-
+        # delivery-trips formula divides by 7 for this project's floor slabs, not the usual 9 (matches
+        # TRC/USV exactly). Same one-off-project shape already handled for foundation_slab's
+        # concrete_mixer_volume_m3 - override the shared default for this pour only when filled in.
+        mixer_capacity_override = _num(zone.get("manual_concrete_mixer_capacity_m3"))
+        if mixer_capacity_override is not None:
+            _set_nested(result, "rates.mixer_capacity_m3", mixer_capacity_override)
+
         # geometry.slab_thickness_m is required unconditionally by the engine regardless of
         # slab_zones[]. geometry.total_concrete_volume_from_spec_m3/slab_edge_perimeter_m/
         # main_formwork_area_m2/edge_formwork_area_m2 below are effectively superseded by
