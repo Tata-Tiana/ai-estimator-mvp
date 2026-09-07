@@ -592,6 +592,32 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
                 )
             )
 
+    # 2026-09-07: real ARK case - fiberglass mat (стеклохолст) used to be coded as screed-exclusive
+    # (roof_screed_fiberglass_mat above, only fires when roof_screed_items is non-empty), on the
+    # assumption it's only ever laid under a ЦСП screed build-up. Real ARK spec table proved that
+    # wrong: it gives ready стеклохолст areas per roof zone (295/77.3/115 m2) matching the PVC
+    # membrane area at each zone exactly, with zero screed anywhere on this project - it's a
+    # standalone roof-buildup layer, not screed-exclusive. Same "don't invent a quantity the
+    # project's own spec table doesn't mention" rule as geotextile above: only added when the spec
+    # table actually has a row, and its area (minus whatever roof_screed_fiberglass_mat above
+    # already covers, so a project with both a screed zone AND additional stand-alone area isn't
+    # double-counted) drives the quantity - never a geometric guess.
+    spec_fiberglass_mat_total = spec_table_area_m2(spec_rows, "теклохолст")
+    if spec_fiberglass_mat_total is not None:
+        remaining_fiberglass_mat_area = spec_fiberglass_mat_total - screed_total_area
+        if remaining_fiberglass_mat_area > D0:
+            lines.append(
+                material_roll_line(
+                    code="fiberglass_mat_technonikol_100gr",
+                    name="Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)",
+                    price_code="roof_fiberglass_mat_technonikol_100gr_m2",
+                    required_area=remaining_fiberglass_mat_area,
+                    roll_area=d(input_data["roof_fiberglass_mat_roll_area_m2"]),
+                    unit_price_per_m2=d(input_data["roof_fiberglass_mat_unit_price_per_m2"]),
+                    quantity_source="roof_raw_material_spec_rows fiberglass mat row, minus area already covered by roof_screed_fiberglass_mat, rounded to rolls",
+                )
+            )
+
     lines.extend(
         [
             estimate_line(
