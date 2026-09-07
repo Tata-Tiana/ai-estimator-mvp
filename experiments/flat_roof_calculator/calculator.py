@@ -143,14 +143,18 @@ def spec_table_area_m2(spec_rows: list[dict[str, Any]] | None, name_token: str) 
     # numbers (rows explicitly flagged "Уточнить у монтажной организации" in the PDF), not a
     # simple area+perimeter formula. Used 2026-08-24 to give the ready V-GR/V-RP membrane area
     # priority over calculate_roof_geometry's zone-based estimate (see module docstring).
+    # 2026-09-07: real ARK case found multiple zones each printing their own matching row
+    # (e.g. three separate "V-GR" rows, one per roof level) - returning only the first match
+    # silently dropped the other zones' area. Sum every matching row instead.
+    total: Decimal | None = None
     for row in spec_rows or []:
         name = str(row.get("name") or "")
         unit = str(row.get("unit") or "").strip().lower()
         if name_token in name and unit in ("м2", "m2", "м²"):
             qty = row.get("quantity")
             if qty is not None and d(qty) > D0:
-                return d(qty)
-    return None
+                total = (total or D0) + d(qty)
+    return total
 
 
 def require_non_negative(input_data: dict[str, Any], key: str) -> Decimal:
@@ -689,10 +693,20 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
     vgr_membrane_abutment_area = exploitable_parapet_and_abutment * d(input_data["pvc_membrane_parapet_coeff"])
     vgr_membrane_required_area = vgr_membrane_flat_area + vgr_membrane_abutment_area
     vgr_membrane_area_source = "calculated_from_roof_zones"
-    spec_vgr_area = spec_table_area_m2(spec_rows, "V-GR")
-    if spec_vgr_area is not None:
-        vgr_membrane_required_area = spec_vgr_area
-        vgr_membrane_area_source = "roof_raw_material_spec_rows"
+    # 2026-09-07: real ARK case - the project's own spec table labeled the membrane "V-GR" on
+    # every zone even though roof_zones marks all of them non_exploitable (a PDF
+    # inconsistency: general description says non-exploitable, material spec table just
+    # carries a template's V-GR wording). Without this guard, the override below fired purely
+    # because a "V-GR" row existed, creating a whole extra membrane material line (real money,
+    # ~385k on this project) on top of the V-RP line that already covers the same physical
+    # area - double-billing the same roof twice under two different membrane codes. The spec
+    # table may only ever REFINE the area of an exploitable zone that genuinely exists; it must
+    # never be the sole reason a V-GR zone/line appears.
+    if exploitable_roof_area > D0:
+        spec_vgr_area = spec_table_area_m2(spec_rows, "V-GR")
+        if spec_vgr_area is not None:
+            vgr_membrane_required_area = spec_vgr_area
+            vgr_membrane_area_source = "roof_raw_material_spec_rows"
     vgr_membrane_roll_area = D0
     vgr_membrane_rolls = 0
     if vgr_membrane_required_area > D0:
