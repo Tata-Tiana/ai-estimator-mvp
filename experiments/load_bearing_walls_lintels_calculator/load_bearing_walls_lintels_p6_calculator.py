@@ -258,13 +258,6 @@ class P6LoadBearingWallsLintelsInput:
         return asdict(self)
 
 
-def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
-    normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
-    normalized_size = re.sub(r"\([^)]*\)", "", normalized_size)
-    normalized_density = item.block_density.upper().replace("-", "").replace(" ", "")
-    return (normalized_density, normalized_size)
-
-
 def _block_size_parts(size: str) -> tuple[int, ...]:
     try:
         return tuple(sorted(int(float(part)) for part in size.split("x")))
@@ -272,8 +265,39 @@ def _block_size_parts(size: str) -> tuple[int, ...]:
         return ()
 
 
+def _block_cross_section(size: str) -> tuple[int, int] | None:
+    """Gas-block price and pallet volume are set by density + cross-section (thickness x height),
+    not by piece length - the longest of the three printed dimensions is always the length, a
+    cut-lot detail that varies from batch to batch and never changes the per-m3 price or pallet
+    size (confirmed 2026-09-08 on a real project: a block printed as 150x250x650, not the catalog
+    150x250x600, still IS the standard 150mm-thick D500 family - same price, same 1.8 m3 pallet).
+    Drop the largest of the three parsed dimensions and compare only the other two."""
+    parts = _block_size_parts(size)
+    if len(parts) != 3:
+        return None
+    return (parts[0], parts[1])
+
+
 def _same_block_size(size: str, expected: tuple[int, int, int]) -> bool:
-    return _block_size_parts(size) == tuple(sorted(expected))
+    cross_section = _block_cross_section(size)
+    if cross_section is None:
+        return False
+    expected_cross_section = _block_size_parts("x".join(str(p) for p in expected))[:2]
+    return cross_section == expected_cross_section
+
+
+def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
+    normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
+    normalized_size = re.sub(r"\([^)]*\)", "", normalized_size)
+    normalized_density = item.block_density.upper().replace("-", "").replace(" ", "")
+    if normalized_density == "D400" and _block_cross_section(normalized_size) == (150, 250):
+        # A 150mm-thick gas block is only ever manufactured as D500 - a printed "D400" label on
+        # this cross-section is a confirmed real-world PDF typo (Elena, 2026-09-03: "в проекте
+        # опечатка по марке блока Д400 - такого нет в природе, правильно Д500"), not a genuinely
+        # different product. Correct it here so price/pallet resolve from the registry without a
+        # manual override on every project that repeats this same PDF mistake.
+        normalized_density = "D500"
+    return (normalized_density, normalized_size)
 
 
 def _block_unit_price(item: P6BlockItem, rates: P6Rates) -> float:
