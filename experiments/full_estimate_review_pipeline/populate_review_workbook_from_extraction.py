@@ -1450,14 +1450,49 @@ FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
     # 2026-08-15: iterated and priced at load_bearing_walls_lintels_p6_calculator.py line ~312).
     ("lintel_rebar_items", "lintel_id"): "still priced via zone.unassigned_lintel_rebar_items when absent",
     ("lintel_rebar_items", "lintel_kind"): "still priced via zone.unassigned_lintel_rebar_items when absent",
-    # Price/catalog fields removed from the extraction schema entirely 2026-08-15 (see
-    # UNIVERSALIZATION_PLAN.md) - price always comes from the price registry regardless.
-    ("wall_block_items", "material_unit_price"): "price always comes from price_registry, not this field",
-    ("wall_block_items", "pallet_volume_m3"): "pallet volume always comes from price_registry, not this field",
+    # wall_block_items material_unit_price/pallet_volume_m3: NOT unconditionally hidden - see the
+    # conditional case below. Only genuinely irrelevant when block_density+block_size matches one
+    # of the calculator's recognized standard combos (price/pallet then come from price_registry
+    # regardless); for a non-standard size (load_bearing_walls_lintels_p6_calculator.py's
+    # _block_unit_price()/_block_pallet_volume() raise ValueError without an explicit override)
+    # these two fields are the ONLY way to make the row price at all - real case found 2026-09-08,
+    # a non-standard-length vent-chimney-cladding block blocked the whole estimate build because
+    # both fields were wrongly hidden as blank on sheet 01 with nowhere to fill them in.
     # Calculator-computed, never read from JSON at all (load_bearing_walls_lintels_p6_calculator.py
     # _delivery_batch_id()/_crane_batch_id() compute their own grouping from zone_kind).
     ("wall_zones", "block_delivery_batch_id"): "batch grouping is computed by the calculator from zone_kind, never read from JSON",
 }
+
+
+_WALL_BLOCK_STANDARD_SIZES: dict[str, tuple[int, int, int]] = {
+    "D400": (600, 400, 250),
+    "D500_250": (600, 250, 250),
+    "D500_150": (600, 150, 250),
+}
+
+
+def _wall_block_item_is_standard_size(value: dict[str, Any]) -> bool:
+    """Mirrors load_bearing_walls_lintels_p6_calculator.py's own
+    _block_material_key()/_same_block_size() normalization exactly, so this hiding logic never
+    drifts out of sync with what the calculator can actually resolve on its own."""
+    size = value.get("block_size")
+    density = value.get("block_density")
+    if not size or not density:
+        return False
+    normalized_size = re.sub(r"\([^)]*\)", "", str(size).replace(" ", "").lower().replace("х", "x"))
+    normalized_density = str(density).upper().replace("-", "").replace(" ", "")
+    try:
+        parts = tuple(sorted(int(float(part)) for part in normalized_size.split("x")))
+    except (TypeError, ValueError):
+        return False
+    if normalized_density == "D400" and parts == tuple(sorted(_WALL_BLOCK_STANDARD_SIZES["D400"])):
+        return True
+    if normalized_density == "D500" and parts in (
+        tuple(sorted(_WALL_BLOCK_STANDARD_SIZES["D500_250"])),
+        tuple(sorted(_WALL_BLOCK_STANDARD_SIZES["D500_150"])),
+    ):
+        return True
+    return False
 
 
 def _field_never_money_relevant_when_empty(
@@ -1476,6 +1511,12 @@ def _field_never_money_relevant_when_empty(
         return True
     # Conditional cases: relevance depends on a SIBLING field of the same item, not just the
     # group/field pair alone.
+    if group_key == "wall_block_items" and key in ("material_unit_price", "pallet_volume_m3"):
+        # Standard density+size resolves price/pallet from price_registry regardless (safe to
+        # hide when blank). A non-standard combo makes these the ONLY way to price the row at
+        # all - _block_unit_price()/_block_pallet_volume() raise ValueError without them - so
+        # they must show whenever the size isn't one the calculator recognizes on its own.
+        return _wall_block_item_is_standard_size(value)
     if group_key == "lintel_items" and key in (
         "formwork_horizontal_area_m2",
         "formwork_vertical_area_m2",
