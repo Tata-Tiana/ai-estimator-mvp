@@ -482,14 +482,14 @@ wall_zones:
 wall_block_items:
   section_code: load_bearing_walls_lintels_p6
   ru_label: "Газобетонные блоки по зонам"
-  pdf_aliases: ["спецификация стенового блока", "спецификация газобетонных блоков", "газобетонный блок", "ГБ блок", "блок D400", "блок D500", "600х400х250", "600x400x250", "600х250х250", "600x250x250", "600х150х250", "600x150x250"]
+  pdf_aliases: ["спецификация стенового блока", "спецификация газобетонных блоков", "газобетонный блок", "ГБ блок", "блок D400", "блок D500", "600х400х250", "600x400x250", "600х250х250", "600x250x250", "600х150х250", "600x150x250", "150х250х650", "150x250x650", "газобетон 150мм", "обкладка вентканал", "обкладка дымохода"]
   expected_unit: m3
-  table_hints: ["Спецификация стенового блока", "Спецификация газобетонных блоков", "Кладочный план", "План парапета", "Разрез по вентканалам"]
+  table_hints: ["Спецификация стенового блока", "Спецификация газобетонных блоков", "Кладочный план", "План парапета", "Разрез по вентканалам", "Схема расположения шахт вентканалов"]
   required_context: ["газобетон|ГБ|блок", "м3|м³|объем|объём|кол-во|количество"]
   negative_context: ["перегородк", "Schiedel", "VENT", "вентиляционный канал 2x", "вентиляционный канал 3x", "вентиляционный канал 4x", "арматур", "бетон В", "перемычк"]
   value_column_hint: ["объем", "объём", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "Every item must have zone_id matching wall_zones. Keep every PDF block row separately: do not merge D400+D500 or floor/parapet levels into one row. block_density and block_size are copied literally when visible. Other sizes/densities are allowed and must be preserved. If price/pallet for a non-standard block is unknown, set needs_review; do not remap it to D400/D500. Exclude partition rows from this section. A 600x150x250 gas-block row used as chimney/vent cladding goes to zone_kind vent_chimney_cladding even if visually near parapet."
+  notes: "Every item must have zone_id matching wall_zones. Keep every PDF block row separately: do not merge D400+D500 or floor/parapet levels into one row. block_density and block_size are copied literally when visible. Other sizes/densities are allowed and must be preserved. If price/pallet for a non-standard block is unknown, set needs_review; do not remap it to D400/D500. Exclude partition rows from this section. Any gas-block row that clads/wraps a vent-channel or chimney shaft goes to zone_kind vent_chimney_cladding, even if visually near parapet — this is true regardless of the printed block_size text. Confirmed on 3 real project smetas: the estimator always books this material under Стены→Парапет, never as its own line elsewhere, even when the block's cut length is non-standard (e.g. one real case: printed size '150х250х650', not the usual '600х150х250' — same 150mm-thick D500 product family, just a different length; still zone_kind vent_chimney_cladding, not schiedel_masonry_gas_block_items). Do not use the printed length as a reason to route this elsewhere."
 
 wall_chasing_rebar_items:
   section_code: load_bearing_walls_lintels_p6
@@ -727,12 +727,12 @@ schiedel_channel_items:
 
 schiedel_masonry_gas_block_items:
   section_code: schiedel_vent_channels
-  ru_label: "Газобетонный блок кладки шахты вентканала"
-  pdf_aliases: ["блок 150х250х650", "газобетон 150х250х650", "Схема расположения шахт вентканалов"]
+  ru_label: "Газобетонный блок кладки шахты вентканала (редкий, отдельный от обкладки случай)"
+  pdf_aliases: ["Схема расположения шахт вентканалов"]
   expected_unit: null
   table_hints: ["Схема расположения шахт вентканалов", "СПЕЦИФИКАЦИЯ МАТЕРИАЛОВ НА УСТРОЙСТВО ВЕНТКАНАЛОВ"]
   required_context: ["вентканал|шахт", "газобетон|блок"]
-  negative_context: ["600х150х250", "обкладка дымохода", "несущие стены", "парапет"]
+  negative_context: ["600х150х250", "150х250х650", "обкладка дымохода", "несущие стены", "парапет"]
   value_column_hint: ["объем", "кол-во", "количество"]
   unit_column_hint: ["м3", "м³", "куб.м"]
-  notes: "This is an active field. density — take exactly as printed in the PDF (D400, D500, or anything else) — this shaft block is different from gas-block chimney/vent cladding 600x150x250. volume_m3 — the spec volume. Do NOT confuse or duplicate with chimney/vent-channel cladding: the shaft masonry belongs here in schiedel_vent_channels, the gas-block cladding belongs in the P6 walls zone vent_chimney_cladding — never record the same PDF row under both."
+  notes: "Almost never the right target: gas block near a vent-channel/chimney shaft defaults to wall_block_items with zone_kind vent_chimney_cladding (P6 walls section, booked under Стены→Парапет), not here — confirmed on 3 real project smetas, including one real case where the printed size was '150х250х650' (not the usual '600х150х250') and it still belonged in vent_chimney_cladding, not this code. The printed block_size/length is NOT a valid reason to route here instead. Use this code only for a genuinely separate, additional shaft-masonry volume the PDF gives on top of an already-separately-found vent_chimney_cladding value — this case has not been observed on any real project yet, so treat it as a rare fallback, not the default."

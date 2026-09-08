@@ -314,7 +314,7 @@
             "context"
           ],
           "grounded": true,
-          "notes": "Every row must have zone_id matching wall_zones. block_density and block_size are copied from PDF literally when visible, not guessed. context is human PDF text: keep Russian wording/marks as printed, do not translate or transliterate. Typical values: D400 600x400x250, D500 600x250x250, D500 600x150x250 for vent/chimney cladding. Other sizes/densities are allowed: keep them literal, set needs_review if no price/pallet mapping is available. Do not aggregate D400+D500 into one row. Do not route partitions here. Vent/chimney cladding is zone_kind vent_chimney_cladding, not parapet, even if located near parapet."
+          "notes": "Every row must have zone_id matching wall_zones. block_density and block_size are copied from PDF literally when visible, not guessed. context is human PDF text: keep Russian wording/marks as printed, do not translate or transliterate. Typical values: D400 600x400x250, D500 600x250x250, D500 600x150x250 for vent/chimney cladding. Other sizes/densities are allowed: keep them literal, set needs_review if no price/pallet mapping is available. Do not aggregate D400+D500 into one row. Do not route partitions here. Vent/chimney cladding is zone_kind vent_chimney_cladding, not parapet, even if located near parapet — this applies REGARDLESS of the exact printed block_size text: confirmed on 3 real project smetas that gas block cladding a vent-channel/chimney shaft always belongs here even when its cut length isn't the usual 600x150x250 (one real case: printed '150х250х650' — same 150mm-thick D500 product family, just a different length, still vent_chimney_cladding, never schiedel_masonry_gas_block_items)."
         },
         {
           "group_code": "wall_chasing_rebar_items",
@@ -587,13 +587,13 @@
         },
         {
           "group_code": "schiedel_masonry_gas_block_items",
-          "description": "Газобетонный блок кладки самой шахты вентканала (не обкладка дымохода/вентканала газоблоком 600x150x250 — это отдельная зона `vent_chimney_cladding` в разделе стен P6, другой размер блока) — плотность и объём по спецификации, каждая строка отдельно.",
+          "description": "Редкий резервный код: используется, только если PDF даёт ОТДЕЛЬНУЮ, дополнительную кладку самой шахты вентканала вдобавок к уже отдельно найденной обкладке газоблоком (vent_chimney_cladding). По умолчанию газоблок вокруг шахты/дымохода НЕ сюда — см. wall_block_items/vent_chimney_cladding.",
           "fields": [
             "density",
             "volume_m3"
           ],
           "grounded": true,
-          "notes": "Активное поле. density — бери ровно как написано в PDF (D400, D500 или что-то ещё) — плотность этого блока НЕ подчиняется правилу обкладки дымохода/вентканала газоблоком 600x150x250, это другой блок, другой размер, другое правило. volume_m3 — объём по спецификации. НЕ путай и не дублируй с обкладкой дымохода/вентканала: кладка шахты (этот код) относится сюда, в schiedel_vent_channels, обкладка газоблоком 600x150x250 относится в P6-зону стен `vent_chimney_cladding`; не заноси одну и ту же строку PDF в оба места."
+          "notes": "Почти никогда не используется. Газоблок кладки/обкладки вокруг шахты вентканала или дымохода по умолчанию идёт в wall_block_items с zone_kind='vent_chimney_cladding' (раздел стен P6, у сметчицы это строка под Стены→Парапет) — подтверждено на 3 реальных сметах, даже когда размер блока нестандартный (реальный случай: напечатано '150х250х650', не обычные '600х150х250' — тот же продукт D500 150мм, просто другая длина реза). Размер блока НЕ повод направить сюда вместо vent_chimney_cladding. Используй этот код только если в PDF реально есть вторая, явно дополнительная кладка шахты сверх уже отдельно найденной обкладки — такого случая пока не было ни на одном реальном проекте."
         }
       ]
     }
