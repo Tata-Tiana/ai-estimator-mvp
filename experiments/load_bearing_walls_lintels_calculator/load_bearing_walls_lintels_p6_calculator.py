@@ -516,7 +516,10 @@ def _calculate_lintel_blocks(
                     f"{zone.zone_id}_u_block_lintel_cutting",
                     f"Резка блока под перемычку (U-блок): {zone.display_name}",
                     "шт",
-                    q(ublock_length / d(defaults.gas_block_length_m)),
+                    # Whole blocks, rounded up - you cut and buy blocks one at a time, never a
+                    # fraction (Elena, 2026-09-10: "округлять до целого блока"; her real TRC smeta
+                    # has 38 for a 22.62 m run = ceil(37.7), USV has 39 for 23.4 m = ceil(39.0)).
+                    Decimal(ceil(ublock_length / d(defaults.gas_block_length_m))),
                     work_unit_price=rates.u_block_cutting_work_unit_price,
                     price_code="u_block_lintel_cutting_item",
                 ),
