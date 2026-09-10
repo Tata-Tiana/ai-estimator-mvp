@@ -67,14 +67,15 @@ review_parameters:
     row_key_field: product_type
     production_input: true
     item_label_columns: [product_type]
-    correction_columns: [quantity_pcs]
+    correction_columns: [quantity_pcs, linear_length_m]
     columns:
       - {key: product_type, label_ru: "Тип модуля", unit: "", value_kind: string}
       - {key: quantity_pcs, label_ru: "Количество", unit: "шт", value_kind: number}
+      - {key: linear_length_m, label_ru: "Длина в спецификации (если дано в м.пог)", unit: "м.пог", value_kind: number}
     parser_mapping:
       group_codes: ["schiedel_channel_items"]
       expected_context: ["вентканал", "Schiedel"]
-      notes: "product_type must be exactly one of 1x/2x/3x/4x/cvent. quantity_pcs is the piece/module count from the specification, never the shaft/node count shown on the plan. If the PDF only gives linear meters per channel type (not a piece count), leave this group empty and flag an explicit needs_review entry instead of guessing a conversion - see target_aliases_ru.yaml, 2026-07-28 rule."
+      notes: "product_type must be exactly one of 1x/2x/3x/4x/cvent, one row per type. The count comes from the specification, never the shaft/node count on the plan. Fill EITHER quantity_pcs (spec gives pieces) OR linear_length_m (spec gives running meters per channel type, e.g. '2,0 м.пог') - not both. When linear_length_m is set the calculator converts it: pcs = ceil(linear_length_m / schiedel_channel_module_height_m), default module height 0.33 m (Elena 2026-09-10: always 33 cm, every type). Flag needs_review on meter-derived rows."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
@@ -302,6 +303,16 @@ defaults:
     source_note: "Business coefficient from calculator method; not extracted from project PDF."
     allow_override_later: true
     notes: "Applied to direct Schiedel cost base before consumables."
+
+  - key: schiedel_channel_module_height_m
+    label_ru: "Высота модуля вентканала Schiedel"
+    source_class: DEFAULT
+    value: 0.33
+    unit: "м"
+    calculator_input_path: "schiedel_channel_module_height_m"
+    source_note: "Elena, 2026-09-10: Schiedel VENT module is always 33 cm tall, every channel type including CVENT."
+    allow_override_later: true
+    notes: "Used only when a schiedel_channel_items row gives linear_length_m instead of quantity_pcs: pcs = ceil(linear_length_m / this)."
 
 supplier_inputs:
   - key: schiedel_delivery_trips

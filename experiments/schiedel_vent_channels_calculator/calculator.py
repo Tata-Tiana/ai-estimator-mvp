@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_CEILING, ROUND_HALF_UP
 from pathlib import Path
 import sys
 from typing import Any
@@ -20,6 +20,11 @@ from price_reader import (  # noqa: E402
 
 D0 = Decimal("0")
 D1 = Decimal("1")
+
+# Schiedel VENT modules are built from blocks with a fixed course height - Elena, 2026-09-10:
+# "всегда 33 см", no exception for any channel type including CVENT. When a project's spec gives
+# a channel row in running meters instead of a piece count, pieces = ceil(linear_length_m / this).
+DEFAULT_CHANNEL_MODULE_HEIGHT_M = Decimal("0.33")
 
 
 def d(value: Any) -> Decimal:
@@ -307,7 +312,15 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
     # types can appear; a project with only 1x and 2x or only 3x and 4x (both real project
     # cases) needs no code change either way.
     channel_items_in = input_data.get("schiedel_channel_items") or []
+    module_height_m = d(
+        input_data.get("schiedel_channel_module_height_m") or DEFAULT_CHANNEL_MODULE_HEIGHT_M
+    )
+    if module_height_m <= D0:
+        raise ValueError("schiedel_channel_module_height_m must be > 0")
     channel_totals: dict[str, Decimal] = {product_type: D0 for product_type in CHANNEL_TYPE_SPECS}
+    # Per product_type: True if any row's piece count came from a linear-meter conversion rather
+    # than a ready spec count - drives the quantity_source text so the sheet shows how it was got.
+    channel_from_linear: dict[str, bool] = {product_type: False for product_type in CHANNEL_TYPE_SPECS}
     for item in channel_items_in:
         product_type = item.get("product_type")
         if product_type not in CHANNEL_TYPE_SPECS:
@@ -319,6 +332,15 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
         quantity_pcs = d(item.get("quantity_pcs") or 0)
         if quantity_pcs < D0:
             raise ValueError("schiedel_channel_items[].quantity_pcs must be >= 0")
+        linear_length_m = d(item.get("linear_length_m") or 0)
+        if linear_length_m < D0:
+            raise ValueError("schiedel_channel_items[].linear_length_m must be >= 0")
+        if quantity_pcs <= D0 and linear_length_m > D0:
+            # Some specs give a channel type in running meters, not a piece count. Elena,
+            # 2026-09-10: pieces = ceil(running meters / module height 0.33 m), always 33 cm.
+            # Per-row ceil (matches her own worked example), then rows are summed like any other.
+            quantity_pcs = (linear_length_m / module_height_m).to_integral_value(rounding=ROUND_CEILING)
+            channel_from_linear[product_type] = True
         channel_totals[product_type] += quantity_pcs
 
     channel_lines: list[dict[str, Any]] = []
@@ -332,6 +354,12 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
         unit_price = d(input_data[spec["price_field"]])
         total_raw = quantity_pcs * unit_price
         channel_material_raw_total += total_raw
+        quantity_source = "sum of schiedel_channel_items rows with this product_type"
+        if channel_from_linear[product_type]:
+            quantity_source += (
+                f" (some/all rows converted from running meters: ceil(м.пог / "
+                f"{decimal_str(module_height_m)} м module height))"
+            )
         channel_lines.append(
             estimate_line(
                 code=f"schiedel_vent_channel_{product_type}",
@@ -339,7 +367,7 @@ def calculate_schiedel_vent_channels(input_data: dict[str, Any]) -> dict[str, An
                 unit="шт",
                 line_type="materials",
                 quantity_raw=quantity_pcs,
-                quantity_source="sum of schiedel_channel_items rows with this product_type",
+                quantity_source=quantity_source,
                 price_code=spec["price_code"],
                 material_unit_price=unit_price,
                 material_total_raw=total_raw,
