@@ -33,14 +33,70 @@ Confirmed user decisions:
 - Record quantities derived by manual drawing interpretation and propose explicit specification
   additions. Do not make unreliable model reconstruction of drawings a production dependency.
 
-Current checkpoint: scenario and reference-sheet inventory saved; ARK grillage grey formulas,
-helpers and native comments inspected. PDF-to-row mapping, questions to Elena, contract and
-calculator implementation are still pending. No new section is implemented by this checkpoint.
+Current checkpoint: user approved proceeding from step 2 PDF analysis to step 3 questions.
+Step 3 is ready for user review, not yet accepted or sent to Elena. This does not approve
+conflicting quantities or method defaults. Read
+[report 16](reports/ark_vs_original_comparison/16_grillage_sources_for_elena.md) for all 31
+ARK grillage rows, grey formulas, right helpers, comments, independent numeric verification
+and the new PDF-to-row mapping. KR1 sheets 10-11 confirm concrete 34.6 m3 and all six source
+rebar lengths. Specification PLANTER is 139.5 m2 versus Excel 145.52 (4 versus 5 rolls using
+Elena's procurement method); formwork totals are 169.9 versus 171.91 m2. Rebar detail sketches
+also conflict with the specification in several labels. Preserve these unresolved discrepancies.
+Cost basis is 1,315,415 RUB; this is the reference workbook result, not a new calculator run.
+Local diagnostic snapshot: `output/grillage_step1_20260918/excel_audit.json`.
+Read [report 17](reports/ark_vs_original_comparison/17_grillage_questions_and_spec_additions.md):
+7 primary questions Q1-Q7, helper notes, specification additions S1-S6 and procurement checks P1-P4.
+Wait for user review before sending the questions; do not send them yourself. Step 4 records
+actual answers and consequences, not inferred approvals. Answers, contract and calculator
+implementation are still pending. No new section is implemented by this checkpoint.
+Final price-source clarification 2026-09-18: use ONLY the first price_registry sheet in "Цены".
+The procurement department owns its completeness and currency. Do not read "Металл (Алексей)"
+or other tabs as production sources or fallbacks. Missing required prices must be flagged
+for procurement to fill on the first sheet, not replaced
+with neighboring-tab prices, historical estimate prices or zero. Report 16 retains the read-only
+comparison of supplied workbook `1n1Q_46QymeIRZhd5a3yGf_fA_wTXpTXSrFRCXc-UGp4` as evidence,
+not a direct production metal-tab source. The original configured workbook remains the working
+price source; the new link is only for the explicitly permitted one-off sync and comparison.
+Price step 6 is not complete, configuration and calculators have not changed.
+Keep price, rod length and weight as distinct parameters.
+Subsequent explicit user exception: perform a ONE-OFF synchronization of ALL 12 rebar rows
+from the new workbook's "Металл (Алексей)" into OUR ORIGINAL WORKBOOK's first price_registry sheet, updating
+existing prices/minimum purchase and adding missing normalized price_codes without duplicates.
+Do not include wire or change the price reader/configuration. No persistent metal-tab fallback.
+Completed after user renewed Google authorization: 7 existing rows updated, 5 added at 223-227.
+Read-back matched all expected cells and preserved unrelated target cells/formulas; source metal
+sheet unchanged. Report 16 contains the result and backup directory
+`output/rebar_registry_sync_20260918_183754_297987/`. The supplied first sheet has 192 rows
+of positions, all represented in ours (226 after sync); no missing positions found. Fourteen
+other differences in prices/units/blanks were recorded, NOT copied. In particular, do not restore
+the obsolete 9759.08 formwork-consumables placeholder over the verified 47 RUB/m2 rate.
+Existing review/estimate artifacts have not been refreshed or recalculated. Minimum purchase
+updated in the registry is not automatically consumed as calculator rod length by the current reader.
 User decision 2026-09-18: exclude USV's individual polycarbonate terrace cover from the scope.
 Do not add it to canopies, metal structures, flat roof or any other calculator. The coverage
 decision is closed; do not reopen it merely because the source workbook/PDF contains this cover.
 
-## Current Goal
+## Separate Waterproofing Workstream: Step 31
+
+User requested a separate plan while grillage answers are pending. Read
+[step 31](reports/step_31_universal_foundation_waterproofing_plan.md).
+Extend existing waterproofing with optional foundation-wall/footing scope, not another
+calculator/estimate section. Preserve confirmed-absent versus missing-data semantics,
+sum identical materials before packaging round-up, and keep work areas separate from
+specification material volumes. Do not feed horizontal under-footing EPS50 into the legacy
+second-layer edge field or double-buy PLANTER. ARK coating-area and EPS-scope conflicts
+remain unresolved; the plan does not approve their quantities.
+
+The documentation checkpoint includes reports 16/17, steps 30/31 and this handoff;
+identify it with git log ("Checkpoint grillage audits and plan universal waterproofing").
+Next capture reproducible before inputs/results/prices for ARK/TRC/USV. Those captures
+are still pending. Implementation is NOT started by this plan.
+Future waterproofing code/parser/review/export changes must be accepted and committed as
+one separate scoped change so it can be reverted without reverting unrelated grillage work.
+Review subsequent dependencies/conflicts before a future revert. Git does not revert Google
+edits, credentials or ignored generated artifacts. Previous rebar price sync is outside this scope.
+
+## Historical Goal
 
 Build a Google review workbook for all 8 estimate sections, then make it flow into calculators and final estimate export the same way the earthworks flow already does.
 
