@@ -1,5 +1,13 @@
 # Universalization Plan — making the 8 section contracts project-agnostic
 
+## Актуальный Охват 2026-09-18
+
+План полной коробки расширен: отдельный армопояс и группа скатной кровли из пяти
+расчётных модулей, визуально отдельных разделов сметы. Полный перечень и правила:
+[шаг 30](reports/step_30_grillage_full_box_scenario.md). Это будущая реализация,
+не часть уже работающих восьми исторических контрактов. Текущий этап: ростверк.
+Старые ограничения охвата ниже заменены решениями шага 30 для включённых в него разделов.
+
 ## 2026-08-15: extraction schema asked the model for fields no PDF can ever contain — FIXED
 
 Найдено (через прямой построчный аудит `schemas/claude_extraction_output_schema.json` +

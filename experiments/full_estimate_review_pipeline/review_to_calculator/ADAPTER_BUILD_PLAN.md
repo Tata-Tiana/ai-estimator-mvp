@@ -1,5 +1,13 @@
 # Adapter build plan — review_workbook.xlsx → calculator input, all 8 sections
 
+## Future Scope 2026-09-18
+
+The full-box roadmap now includes a separate armopoyas section and a pitched-roof group
+with five calculation modules, visually exported as separate estimate sections.
+See [step 30](../reports/step_30_grillage_full_box_scenario.md) for the canonical names and rules.
+These require their own reviewed data/contracts/adapters when implemented; they are not
+implicitly supported by the existing slab or flat-roof adapters. Grillage remains the active task.
+
 Дата создания: 2026-07-12.
 
 **Если контекст сессии прервался/сжался — читай этот файл первым, прежде чем начинать

@@ -12,6 +12,13 @@ This scenario supersedes earlier statements that grillage, above-grade columns, 
 partitions and monolithic stairs are permanently outside scope. Older step status/counts below
 are historical; do not interpret the original eight-section goal as the complete box scope.
 
+Future scope also includes a separate armopoyas (reinforced-concrete ring beam) section and
+a pitched-roof group with five calculation modules, visually exported as separate estimate sections:
+pitched-roof floor structure; rafter system; pitched-roof insulation; pitched-roof covering;
+pitched-roof floor insulation. The canonical Russian names are in step 30. These are planned,
+not implemented; they do not belong to the existing flat-roof calculator. Grillage remains the
+active task; references and implementation order for these future modules are still to be agreed.
+
 Confirmed user decisions:
 
 - Work only on the right-hand grey cost-basis section, not the white client calculations.
