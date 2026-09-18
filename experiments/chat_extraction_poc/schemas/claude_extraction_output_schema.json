@@ -110,7 +110,8 @@
       "formwork_edge_area_m2": "number|null",
       "formwork_edge_and_beam_combined_area_m2": "number|null - only when PDF gives inseparable slab edge + beam formwork",
       "formwork_beams_side_area_m2": "number|null",
-      "formwork_beams_bottom_area_m2": "number|null"
+      "formwork_beams_bottom_area_m2": "number|null",
+      "eps_material_spec_volume_m3": "number|null - ready EPS 100 mm material volume in m3 for this physical slab/pour. Includes beams when covered by the spec total. Real material input with priority over derived parts; never leave a ready total only in raw_table_rows. Work remains separate in floor_slab_eps_items/beam items; do not derive work from this total or add its parts again. Null when no ready spec volume exists; never mix products/thicknesses/pours."
     },
     "floor_slab_eps_items": {
       "zone_id": "string - must match floor_slab_zones.zone_id",

@@ -637,8 +637,8 @@
     },
     "formwork_dismantling_zero_internal": {
       "line_type": "client_only_zero_internal_line",
-      "quantity_raw": 207.694444,
-      "quantity_display": 207.69,
+      "quantity_raw": 253.334444,
+      "quantity_display": 253.33,
       "material_total_raw": 0.0,
       "material_total": 0,
       "work_total_raw": 0.0,

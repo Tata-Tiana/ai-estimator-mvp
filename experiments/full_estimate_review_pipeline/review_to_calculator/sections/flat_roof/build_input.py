@@ -207,6 +207,16 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
             continue
         result[key] = entry["value"]
 
+    roof_area = sum((row.get("area_m2") or 0) for row in zone_rows)
+    screed_area = sum((row.get("area_m2") or 0) for row in result[ROOF_SCREED_ITEMS_GROUP_KEY])
+    if roof_area > result["roof_geotextile_max_area_m2"] and roof_area > screed_area:
+        key = "roof_fiberglass_mat_unit_price_per_m2"
+        if key not in resolved_prices:
+            raise ValueError(
+                f"flat_roof: total roof area requires fiberglass mat, but price '{key}' "
+                "has no resolved value on sheet 02"
+            )
+
     for price_key in contract_price_keys(contract):
         key = price_key["key"]
         if key == SLOPE_PLATE_TEMPLATE_PRICE_KEY:

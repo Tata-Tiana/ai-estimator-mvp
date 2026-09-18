@@ -887,7 +887,7 @@ def calculate_floor_slab_2(input_data: dict[str, Any]) -> dict[str, Any]:
             "Демонтаж опалубки после завершения бетонирования",
             "м2",
             "zero_excel_structure_line",
-            main_formwork_area,
+            d(pour_lines["formwork_dismantling_zero_internal"]["quantity_raw"]),
         ),
         estimate_line(
             "edge_insulation_work",

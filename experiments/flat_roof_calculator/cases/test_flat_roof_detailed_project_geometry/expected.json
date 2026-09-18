@@ -1,14 +1,14 @@
 {
   "totals": {
-    "internal_materials_total_raw": "1374411.508576",
-    "internal_materials_total": 1374412,
+    "internal_materials_total_raw": "1420807.508576",
+    "internal_materials_total": 1420808,
     "internal_works_total_raw": "618070.04",
     "internal_works_total": 618070,
-    "internal_section_total_raw": "1992482",
-    "internal_section_total": 1992482,
-    "sum_of_displayed_line_material_totals": 1374412,
+    "internal_section_total_raw": "2038878",
+    "internal_section_total": 2038878,
+    "sum_of_displayed_line_material_totals": 1420808,
     "sum_of_displayed_line_work_totals": 618070,
-    "sum_of_displayed_line_totals": 1992482
+    "sum_of_displayed_line_totals": 2038878
   },
   "calculation_blocks": {
     "geometry": {
@@ -32,6 +32,21 @@
     }
   },
   "estimate_lines": [
+    {
+      "code": "geotextile_prof_150_parapet",
+      "quantity_raw": "200",
+      "price_code": "roof_geotextile_technonikol_prof_150_m2",
+      "internal_cost": {
+        "material_total": 12868,
+        "work_total": 0
+      }
+    },
+    {
+      "code": "geotextile_prof_300_flat",
+      "quantity_raw": "300",
+      "price_code": "roof_geotextile_technonikol_prof_300_m2",
+      "internal_cost": {"material_total": 33528, "work_total": 0}
+    },
     {
       "code": "roof_base_preparation_control",
       "name": "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности",

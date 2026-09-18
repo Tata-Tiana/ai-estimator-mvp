@@ -4,6 +4,35 @@ Use this file when a new chat starts.
 
 If the user says "прочитай инструкцию и продолжай", read this file first, then read the current step report in `reports/`.
 
+## Active Scenario 2026-09-18: Full Box, Starting With Grillage
+
+Read [step_30_grillage_full_box_scenario.md](reports/step_30_grillage_full_box_scenario.md)
+first for the current scope, accepted rules, reference priority and next unfinished action.
+This scenario supersedes earlier statements that grillage, above-grade columns, canopies,
+partitions and monolithic stairs are permanently outside scope. Older step status/counts below
+are historical; do not interpret the original eight-section goal as the complete box scope.
+
+Confirmed user decisions:
+
+- Work only on the right-hand grey cost-basis section, not the white client calculations.
+  Even right-hand cells can reference client margins/totals: exclude those dependencies.
+- Use ARK first, then TRC for new sections. USV is not needed to expand this scope;
+  retain its existing regression coverage. Keep Elena's section rows and their order, including zeros.
+- Specifications take priority for project inputs. If Elena uses a different quantity despite
+  an available specification value, preserve both sources and ask her why; do not match her total
+  through a hidden override or silently dismiss the discrepancy as a designer error.
+- New sections must ship with working quantity/cost Excel formulas and right-hand helpers following
+  Elena's existing scheme. Retrofitting the previous seven section groups is not part of this step.
+- Record quantities derived by manual drawing interpretation and propose explicit specification
+  additions. Do not make unreliable model reconstruction of drawings a production dependency.
+
+Current checkpoint: scenario and reference-sheet inventory saved; ARK grillage grey formulas,
+helpers and native comments inspected. PDF-to-row mapping, questions to Elena, contract and
+calculator implementation are still pending. No new section is implemented by this checkpoint.
+User decision 2026-09-18: exclude USV's individual polycarbonate terrace cover from the scope.
+Do not add it to canopies, metal structures, flat roof or any other calculator. The coverage
+decision is closed; do not reopen it merely because the source workbook/PDF contains this cover.
+
 ## Current Goal
 
 Build a Google review workbook for all 8 estimate sections, then make it flow into calculators and final estimate export the same way the earthworks flow already does.

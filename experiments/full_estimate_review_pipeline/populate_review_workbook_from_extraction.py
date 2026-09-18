@@ -1160,6 +1160,7 @@ FLOOR_SLAB_FIELD_LABELS = {
     "formwork_beams_side_area_m2": "Опалубка балок, боковая площадь",
     "formwork_beams_bottom_area_m2": "Опалубка балок, нижняя площадь",
     "beams_eps_material_area_m2": "Утепление балок ЭППС, площадь по спецификации",
+    "eps_material_spec_volume_m3": "ЭППС 100 мм, готовый объем материала по спецификации",
     "manual_concrete_pump_shifts": "Бетононасос",
     "manual_formwork_rebar_crane_shifts": "Кран для опалубки/арматуры",
     "manual_rebar_metal_delivery_trucks": "Доставка арматуры/металла",
@@ -1195,6 +1196,7 @@ def floor_slab_visible_field_keys(group_key: str, correction_columns: list[str])
             "formwork_beams_side_area_m2",
             "formwork_beams_bottom_area_m2",
             "beams_eps_material_area_m2",
+            "eps_material_spec_volume_m3",
             "manual_concrete_pump_shifts",
             "manual_formwork_rebar_crane_shifts",
             "manual_rebar_metal_delivery_trucks",
@@ -1379,6 +1381,7 @@ def repeated_item_sheet_id(sec_code: str, group_key: str, value: dict[str, Any],
 # "always show" can tell those two cases apart; only checking what the calculator actually reads
 # for money can.
 FIELD_NEVER_MONEY_RELEVANT_WHEN_EMPTY: dict[tuple[str, str], str] = {
+    ("floor_slab_zones", "eps_material_spec_volume_m3"): "optional spec-total override; absent keeps the existing derived-parts calculation",
     # Whole group never read for money in production mode (earthworks/build_input.py's own
     # docstring: "communications_pipe_items - never read here; not needed by the fixed
     # production calc_methods" - communications_length_m, a reviewed scalar, is the real source).

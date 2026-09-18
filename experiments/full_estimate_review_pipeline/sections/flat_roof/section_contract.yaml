@@ -374,7 +374,7 @@ price_keys:
   - {key: pvc_membrane_vgr_unit_price_per_roll_display, estimate_line_code: pvc_membrane_logicroof_vgr_1_5mm_gray, label_ru: "ПВХ мембрана Logicroof V-GR 1,5 мм (эксплуатируемая кровля)", price_kind: material, unit: "рул", required: false, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll", fallback_key: "pvc_membrane_vgr_unit_price_per_roll_display", allow_manual_override: true, notes: "Added 2026-08-06: no prior real project had an exploitable roof_zones row (operability=exploitable), so this V-GR-specific price/roll-size trio was never wired - only the non-exploitable V-RP membrane (pvc_membrane_unit_price_per_roll_display) had a contract entry. required:false because the calculator only touches these 3 fields when vgr_membrane_required_area > 0 (see calculate_flat_roof - gated on at least one exploitable zone with real area); the adapter mirrors that same gate rather than requiring this price on every flat_roof project."}
   - {key: roof_screed_installation_work_rate_per_m2, estimate_line_code: roof_screed_installation, label_ru: "Укладка ЦСП в 2 слоя, работа", price_kind: work, unit: "м2", required: false, default_source: price_registry_with_fallback, registry_code: "roof_screed_installation_work_m2", fallback_key: "roof_screed_installation_work_rate_per_m2", allow_manual_override: true, notes: "Added 2026-08-24: roof_screed_items[] is optional (only some real projects have a walkable ЦСП build-up, confirmed Elena/real project data) - required:false so ordinary flat_roof projects without a screed never need this price. Only read by the calculator when roof_screed_items[] is non-empty."}
   - {key: roof_screed_board_unit_price, estimate_line_code: roof_screed_board_material, label_ru: "Цементно-стружечная плита (ЦСП) 12мм 3200х1200", price_kind: material, unit: "шт", required: false, default_source: price_registry_with_fallback, registry_code: "roof_screed_board_cementitious_particle_board_12mm", fallback_key: "roof_screed_board_unit_price", allow_manual_override: true, notes: "Added 2026-08-24, same optionality as roof_screed_installation_work_rate_per_m2 above."}
-  - {key: roof_fiberglass_mat_unit_price_per_m2, estimate_line_code: roof_screed_fiberglass_mat, label_ru: "Стеклохолст ТехноНИКОЛЬ 100 г/м2 (400м/рул)", price_kind: material, unit: "м2", required: false, default_source: price_registry_with_fallback, registry_code: "roof_fiberglass_mat_technonikol_100gr_m2", fallback_key: "roof_fiberglass_mat_unit_price_per_m2", allow_manual_override: true, notes: "Added 2026-08-24, same optionality as roof_screed_installation_work_rate_per_m2 above. roof_screed_geotextile (the 4th screed-block line) needs no new price key - it reuses geotextile_parapet_unit_price_per_m2/geotextile_parapet_roll_area_m2 as-is, same real product (Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150) as geotextile_prof_150_parapet, confirmed on real ТРЦ data."}
+  - {key: roof_fiberglass_mat_unit_price_per_m2, estimate_line_code: fiberglass_mat_technonikol_100gr, label_ru: "Стеклохолст ТехноНИКОЛЬ 100 г/м2 (400м/рул)", price_kind: material, unit: "м2", required: false, default_source: price_registry_with_fallback, registry_code: "roof_fiberglass_mat_technonikol_100gr_m2", fallback_key: "roof_fiberglass_mat_unit_price_per_m2", allow_manual_override: true, notes: "Required by adapter for roof_screed_items or the main fiberglass layer on roofs over 300 m2. Shared price with roof_screed_fiberglass_mat. Geo150 under screed remains a separate product/layer."}
 
 defaults:
   - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Filled from job metadata.", allow_override_later: false, notes: ""}
@@ -384,6 +384,9 @@ defaults:
   - {key: eps_main_thickness_m, label_ru: "Основная толщина ЭППС кровли", source_class: DEFAULT, value: 0.2, unit: "м", calculator_input_path: "eps_main_thickness_m", source_note: "Formula/default for two 100 mm layers.", allow_override_later: true, notes: ""}
   - {key: eps_insulation_waste_coeff, label_ru: "Коэффициент запаса ЭППС кровли", source_class: DEFAULT, value: 1.03, unit: "", calculator_input_path: "eps_insulation_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
   - {key: geotextile_flat_coeff, label_ru: "Коэффициент геотекстиля по плоскости", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_flat_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: roof_geotextile_max_area_m2, label_ru: "Максимальная площадь кровли для геотекстиля 300", source_class: DEFAULT, value: 300, unit: "м2", calculator_input_path: "roof_geotextile_max_area_m2", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: false, notes: "Inclusive threshold on total flat-roof area before overlap; zones are summed first."}
+  - {key: roof_fiberglass_one_roll_max_area_m2, label_ru: "Максимальная площадь кровли для одного рулона стеклохолста", source_class: DEFAULT, value: 430, unit: "м2", calculator_input_path: "roof_fiberglass_one_roll_max_area_m2", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: false, notes: "Inclusive threshold on roof area BEFORE multiplying by 1.1. Coverage warning when one roll is less than non-screed roof area."}
+  - {key: roof_fiberglass_mat_overlap_coeff, label_ru: "Коэффициент стеклохолста по плоскости", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "roof_fiberglass_mat_overlap_coeff", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: true, notes: "Main separation layer only; screed fiberglass calculation remains unchanged."}
   - {key: geotextile_parapet_coeff, label_ru: "Коэффициент геотекстиля по парапетам", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_parapet_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
   - {key: geotextile_flat_roll_area_m2, label_ru: "Рулон геотекстиля PROF 300", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_flat_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
   - {key: geotextile_parapet_roll_area_m2, label_ru: "Рулон геотекстиля PROF 150", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_parapet_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
@@ -578,14 +581,34 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=geotextile_prof_300_flat]"
     quantity:
-      formula: "ceil(roof_area_total_m2 * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2"
+      formula: "if 0 < roof_area_total_m2 <= roof_geotextile_max_area_m2: ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2; omit when non-screed area is zero"
       leaf_inputs:
         - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
         - {ref: "defaults.geotextile_flat_coeff", source_class: DEFAULT}
         - {ref: "defaults.geotextile_flat_roll_area_m2", source_class: DEFAULT}
     prices: {material_unit_price_key: geotextile_flat_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: ""
+    notes: "Main separation layer on small roofs, replaces standalone fiberglass; independent of Geo150 parapet and screed layers. No raw material spec row is required."
+
+  - code: fiberglass_mat_technonikol_100gr
+    name_ru: "Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=fiberglass_mat_technonikol_100gr]"
+    quantity:
+      formula: "if roof_area_total_m2 > roof_geotextile_max_area_m2 and non-screed area > 0: roof_fiberglass_mat_roll_area_m2 if roof_area_total_m2 <= roof_fiberglass_one_roll_max_area_m2 else ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * roof_fiberglass_mat_overlap_coeff / roof_fiberglass_mat_roll_area_m2) * roof_fiberglass_mat_roll_area_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_one_roll_max_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_mat_overlap_coeff", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_mat_roll_area_m2", source_class: DEFAULT}
+    prices: {material_unit_price_key: roof_fiberglass_mat_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Thresholds use total flat-roof area before overlap and after zone aggregation. Raw fiberglass spec areas do not drive this purchasing row. Screed layers remain separate."
 
   - code: geotextile_prof_150_parapet
     name_ru: "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м"
@@ -600,7 +623,7 @@ estimate_lines:
         - {ref: "defaults.geotextile_parapet_roll_area_m2", source_class: DEFAULT}
     prices: {material_unit_price_key: geotextile_parapet_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: ""
+    notes: "Always emitted for positive parapet + wall abutment installation length. Total length * 1.1 rounded up to 100 m2 rolls, independent of raw spec and roof area. Separate from Geo300 flat layer and Geo150 under screed. Confirmed by Elena 2026-09-18."
 
   - code: pvc_membrane_flat_installation
     name_ru: "Укладка ПВХ Мембраны"

@@ -670,8 +670,215 @@ sections:
         allow_override: true
         notes: "Consumables/tool amortization amount is calculated from the primary waterproofing subtotal."
 
+  load_bearing_walls_lintels_p6:
+    status: verified_against_current_calculator
+    active_in_full_estimate_export: true
+    verified_on: "2026-09-18"
+    source_refs:
+      - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
+      - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels_p6/section_contract.yaml"
+      - "experiments/full_estimate_review_pipeline/review_to_calculator/sections/load_bearing_walls_lintels_p6/build_input.py"
+    notes: >
+      These are current P6 formula/package defaults, not project quantities. Contract defaults
+      populate the adapter input; fields absent from that contract use P6Defaults dataclass values.
+      Scaffolding quantities are manual review inputs, listed under not_defaults. Technical
+      supervision is a reusable monetary business amount in the contract, not a unit-price lookup;
+      its monetary value is not duplicated here because this catalog excludes prices/amounts.
+    defaults:
+      gas_block_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.gas_block_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material", "load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Applied to cumulative material demand before pallet rounding. Crane workload also includes demand covered by earlier stock."
+      gas_block_d400_pallet_volume_m3:
+        value: 2.16
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d400_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Elena 2026-09-18: D400 and D500 250x400 cross-section (600x400x250 block), 2.16 m3. Historical key retained for input compatibility; applies to both densities. Length/dimension order does not change lookup."
+      gas_block_d500_250_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d500_250_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+      gas_block_d500_150_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d500_150_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+      gas_block_other_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_other_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Elena 2026-09-18: every other thickness, regardless of density. Known D500 150/250 keys remain compatible configurable aliases; explicit item overrides take priority."
+      adhesive_consumption_bag_per_m3:
+        value: 1.2
+        unit: "мешок/м3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.adhesive_consumption_bag_per_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_adhesive"]
+        confidence: confirmed_from_code_and_contract
+      adhesive_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.adhesive_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_adhesive"]
+        confidence: confirmed_from_code_and_contract
+      sand_concrete_consumption_kg_per_m2_per_10mm:
+        value: 19.0
+        unit: "кг/м2/10мм"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_consumption_kg_per_m2_per_10mm"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults, so dataclass supplies this value."
+      sand_concrete_thickness_factor:
+        value: 2.0
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_thickness_factor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      sand_concrete_bag_weight_kg:
+        value: 40.0
+        unit: "кг"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_bag_weight_kg"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      gas_block_length_m:
+        value: 0.6
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_length_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.u_block_lintel_cutting"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults. Used for U-block cutting, not block price lookup."
+      gas_block_delivery_truck_capacity_m3:
+        value: 32.0
+        unit: "м3/маш"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.gas_block_delivery_truck_capacity_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.blocks_delivery", "load_bearing_walls_lintels_p6.blocks_unloading_manipulator", "load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+      vent_chimney_block_thickness_m:
+        value: 0.15
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.vent_chimney_block_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.gas_block_cladding_work"]
+        confidence: confirmed_from_code_and_contract
+      crane_trucks_per_shift:
+        value: 3.0
+        unit: "маш/смена"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.crane_trucks_per_shift"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.rebar_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.rebar_material", "load_bearing_walls_lintels_p6.lintel_rebar_frame_assembly"]
+        confidence: confirmed_from_code_and_contract
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.concrete_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_concrete_b22_5_m300_material", "load_bearing_walls_lintels_p6.manual_concrete_lifting"]
+        confidence: confirmed_from_code_and_contract
+        notes: "P6 applies waste before whole-m3 order rounding; legacy spec_volume behavior differs."
+      lintel_concrete_min_order_volume_m3:
+        value: 1.0
+        unit: "м3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_concrete_min_order_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_concrete_b22_5_m300_material", "load_bearing_walls_lintels_p6.manual_concrete_lifting"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Applied once per zone to combined U-block + monolithic concrete, only when required volume > 0."
+      lintel_formwork_plywood_sheet_area_m2:
+        value: 2.3
+        unit: "м2/шт"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_formwork_plywood_sheet_area_m2"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_formwork_plywood_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_formwork_board_thickness_m:
+        value: 0.05
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_formwork_board_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_formwork_timber_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Raw area * thickness is subsequently rounded upward to 0.1 m3."
+      lintel_insulation_eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_insulation_eps_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_eps_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_insulation_eps_pack_volume_m3:
+        value: 0.2773
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_insulation_eps_pack_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_eps_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_glue_foam_coverage_m_per_can:
+        value: 12.0
+        unit: "м/баллон"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_glue_foam_coverage_m_per_can"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_glue_foam"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      lintel_glue_foam_min_units:
+        value: 1.0
+        unit: "баллон"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_glue_foam_min_units"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_glue_foam"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      waste_removal_trucks:
+        value: 3.0
+        unit: "маш"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.waste_removal_trucks"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.construction_waste_removal"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Current P6 uses a contract default, unlike the old scalar contract's supplier input."
+      walls_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.walls_consumables_rate"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.walls_consumables_tool_amortization"]
+        confidence: confirmed_from_code_and_contract
+
   load_bearing_walls_lintels:
-    status: draft_cataloged
+    status: legacy_reference_only
+    active_in_full_estimate_export: false
+    replaced_by: load_bearing_walls_lintels_p6
+    notes: "Historical scalar defaults. P6 uses nested defaults and zone-shaped project inputs instead."
     source_refs:
       - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels/section_contract.yaml"
       - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py"
@@ -1792,6 +1999,50 @@ sections:
         allow_override: true
         notes: "Ordering coefficient for flat geotextile layer."
 
+      roof_geotextile_max_area_m2:
+        value: 300
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_geotextile_max_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat", "flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: false
+        notes: "Inclusive threshold on total roof area before overlap, after zone aggregation."
+
+      roof_fiberglass_one_roll_max_area_m2:
+        value: 430
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_fiberglass_one_roll_max_area_m2"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: false
+        notes: "One fiberglass roll on roofs over 300 and up to 430 m2 BEFORE overlap; coverage warning if ordered area is less than actual area."
+
+      roof_fiberglass_mat_overlap_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_fiberglass_mat_overlap_coeff"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: true
+        notes: "Main flat-roof layer; fiberglass under screed remains unchanged."
+
+      roof_fiberglass_mat_roll_area_m2:
+        value: 400
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "roof_fiberglass_mat_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr", "flat_roof.roof_screed_fiberglass_mat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Fiberglass roll area, shared by main and screed layers."
+
       geotextile_parapet_coeff:
         value: 1.1
         unit: "ratio"
@@ -1801,7 +2052,7 @@ sections:
         source_note: "Flat roof section contract."
         confidence: confirmed_from_contract
         allow_override: true
-        notes: "Ordering coefficient for parapet/abutment geotextile."
+        notes: "Always order Geo150 on parapets and wall abutments: installation work length in m * 1.1, rounded to 100 m2 rolls. No spec row required; confirmed by Elena 2026-09-18."
 
       geotextile_flat_roll_area_m2:
         value: 100.0
@@ -2070,6 +2321,26 @@ sections:
         notes: "Applied to direct Schiedel cost base before consumables."
 
 not_defaults:
+  load_bearing_walls_lintels_p6:
+    wall_zones:
+      reason: "Project zones with nested block/rebar/lintel quantities, not reusable defaults."
+      belongs_to: "PDF extraction / review sheets / calculator input wall_zones[]"
+    scaffolding_setup_quantity:
+      reason: "Manual project quantity. Adapter reads review input and falls back to 2 if unset; not calculated from floor count."
+      belongs_to: "review sheet 01-1 / supplier_inputs"
+      estimate_line_code: "load_bearing_walls_lintels_p6.scaffolding_setup_dismantling"
+    scaffolding_timber_quantity_m3:
+      reason: "Manual project quantity. Adapter reads review input and falls back to 2 m3 if unset."
+      belongs_to: "review sheet 01-1 / supplier_inputs"
+      estimate_line_code: "load_bearing_walls_lintels_p6.scaffolding_timber_material"
+    technical_supervision_amount:
+      reason: "Monetary business default, excluded here by the no_prices rule. Current P6 does NOT resolve it from the price registry."
+      belongs_to: "P6 section_contract.defaults -> defaults.technical_supervision_amount"
+      estimate_line_code: "load_bearing_walls_lintels_p6.walls_technical_supervision"
+    rebar_metal_delivery_trucks:
+      reason: "Quantity supplied at box-estimate level; adapter starts with 0. Not a local wall-weight default/formula."
+      belongs_to: "box-estimate metal logistics / calculator top-level input"
+      estimate_line_code: "load_bearing_walls_lintels_p6.rebar_metal_delivery"
   earthworks:
     consumables_amount:
       reason: "Legacy fixed estimate-line amount. Production earthworks calculates this amount from direct section cost and consumables_rate."

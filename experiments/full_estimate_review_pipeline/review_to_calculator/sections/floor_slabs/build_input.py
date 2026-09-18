@@ -23,10 +23,14 @@ material (EPS volume to order) and work (the priced мп/м2 lines) are independ
   (spec_work_quantities would otherwise silently compute 0 work while still ordering full material -
   exactly the silent money-loss shape this pipeline avoids everywhere else).
 - No floor_slab_eps_items rows at all for a zone is a normal "not insulated" outcome, not an error.
+Ready eps_material_spec_volume_m3 overrides material volume only, including covered beams.
+Derived parts remain control/work data and are never added to that total. A ready positive
+volume alone does not provide missing work quantities; the existing readiness check remains.
 """
 
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
@@ -118,6 +122,12 @@ def _resolve_insulation(
     Raises a clear, zone-named error when material exists but work can't be honestly derived -
     see this module's own docstring for the readiness rule this implements."""
     zone_label = _zone_label(zone)
+    raw_spec_volume = zone.get("eps_material_spec_volume_m3")
+    spec_volume = _num(raw_spec_volume)
+    if raw_spec_volume not in (None, "") and (spec_volume is None or isinstance(raw_spec_volume, bool)):
+        raise ValueError(f"floor_slabs: zone '{zone_label}' eps_material_spec_volume_m3 must be a number")
+    if spec_volume is not None and (not math.isfinite(spec_volume) or spec_volume < 0):
+        raise ValueError(f"floor_slabs: zone '{zone_label}' eps_material_spec_volume_m3 must be finite and >= 0")
     total_volume = 0.0
     edge_length = 0.0
     edge_length_present = False
@@ -222,10 +232,12 @@ def _resolve_insulation(
         # role == "unknown"/None: already counted into total_volume above (material-only,
         # same as combined_bottom_and_edge), never contributes to a work quantity.
 
-    if combined_volume > 0 and not (edge_length_present or bottom_area_present):
+    if (combined_volume > 0 or (spec_volume is not None and spec_volume > 0)) and not (
+        edge_length_present or bottom_area_present
+    ):
         raise ValueError(
             f"floor_slabs: zone '{zone_label}' has only a combined torец+низ EPS volume "
-            f"({combined_volume:g} м3) with no separately-given edge length or bottom area - "
+            f"({spec_volume if spec_volume is not None else combined_volume:g} м3) with no separately-given edge length or bottom area - "
             "work quantities cannot be honestly split from one combined number. Разнесите объём "
             "по торцу/низу вручную на листе 01 (floor_slab_eps_items) или подтвердите методику, "
             "прежде чем эта плита сможет посчитаться автоматически."
@@ -259,7 +271,9 @@ def _resolve_insulation(
         "slab_outer_edge_eps_work_length_m": round(edge_length, 6),
         "slab_edge_eps_material_area_m2": round(edge_area, 6),
         "bottom_slab_eps_work_area_m2": round(bottom_area, 6),
-        "total_eps_volume_from_spec_m3": round(total_volume, 6),
+        "total_eps_volume_from_spec_m3": spec_volume if spec_volume is not None else round(total_volume, 6),
+        "eps_material_volume_source": "spec_total" if spec_volume is not None else "derived_parts",
+        "eps_material_derived_volume_m3": round(total_volume, 6),
     }
     if beams_eps_area > 0:
         # Cross-check value only (feeds calculated_clean_eps_volume's delta warning in the engine)

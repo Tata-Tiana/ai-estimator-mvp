@@ -51,7 +51,7 @@ review_parameters:
     # row_data_json directly on the rare project where the auto box-calculator number is wrong.
     # Every other field beyond slot 4 is still fully visible in "Найдено в проекте" and row_data_json
     # - only direct one-cell correction is limited, not visibility.
-    correction_columns: [concrete_slab_volume_m3, formwork_under_slab_area_m2, manual_concrete_pump_shifts, manual_formwork_rebar_crane_shifts, display_name, source_level, slab_mark, slab_kind, concrete_total_with_beams_m3, beams_concrete_volume_m3, slab_thickness_m, slab_edge_perimeter_m, formwork_edge_area_m2, formwork_edge_and_beam_combined_area_m2, formwork_beams_side_area_m2, formwork_beams_bottom_area_m2, beams_eps_material_area_m2, manual_rebar_metal_delivery_trucks, manual_technical_supervision_amount, manual_formwork_rental_supplier_quote_total, manual_plywood_reserve_sheets, manual_concrete_mixer_capacity_m3, include_in_estimate]
+    correction_columns: [concrete_slab_volume_m3, formwork_under_slab_area_m2, manual_concrete_pump_shifts, manual_formwork_rebar_crane_shifts, display_name, source_level, slab_mark, slab_kind, concrete_total_with_beams_m3, beams_concrete_volume_m3, slab_thickness_m, slab_edge_perimeter_m, formwork_edge_area_m2, formwork_edge_and_beam_combined_area_m2, formwork_beams_side_area_m2, formwork_beams_bottom_area_m2, beams_eps_material_area_m2, eps_material_spec_volume_m3, manual_rebar_metal_delivery_trucks, manual_technical_supervision_amount, manual_formwork_rental_supplier_quote_total, manual_plywood_reserve_sheets, manual_concrete_mixer_capacity_m3, include_in_estimate]
     columns:
       - {key: zone_id, label_ru: "Идентификатор плиты (внутренний)", unit: "", value_kind: string}
       - {key: display_name, label_ru: "Название плиты (по PDF)", unit: "", value_kind: string}
@@ -69,6 +69,7 @@ review_parameters:
       - {key: formwork_beams_side_area_m2, label_ru: "Опалубка балок, боковая (override; иначе сумма из floor_slab_beam_items)", unit: "м2", value_kind: number}
       - {key: formwork_beams_bottom_area_m2, label_ru: "Опалубка балок, нижняя (override; иначе сумма из floor_slab_beam_items)", unit: "м2", value_kind: number}
       - {key: beams_eps_material_area_m2, label_ru: "Утепление балок ЭППС, площадь по спецификации (override; иначе сумма из floor_slab_beam_items[].insulation_area_m2)", unit: "м2", value_kind: number}
+      - {key: eps_material_spec_volume_m3, label_ru: "ЭППС 100 мм, готовый общий объем материала плиты и балок по спецификации", unit: "м3", value_kind: number}
       - {key: manual_formwork_rebar_crane_shifts, label_ru: "Смены крана на эту плиту", unit: "смена", value_kind: number}
       - {key: manual_rebar_metal_delivery_trucks, label_ru: "Доставка арматуры/металла на эту плиту", unit: "маш", value_kind: number}
       - {key: manual_concrete_pump_shifts, label_ru: "Смены бетононасоса на эту плиту", unit: "смена", value_kind: number}
@@ -522,7 +523,7 @@ estimate_lines:
         - {ref: "review_parameters.floor_slab_zones", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: slab_concreting_work_rate_per_m3, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "P5 change from the old floor_slab_1 behavior: the old contract's total_concrete_volume_from_spec_m3 was a combined figure the calculator subtracted beam volume from internally. The new floor_slab_zones.concrete_slab_volume_m3 is defined as slab-only from the start (P5_SLAB_DATA_CONTRACT.md's Бетон section: 'бетон плиты и бетон балок не смешивать'), so no subtraction happens in the adapter - verify this matches the calculator's actual internal handling when build_input.py is written (calculate_floor_slab_pour() may still expect a combined figure and do its own subtraction; if so the adapter must pass concrete_slab_volume_m3 + sum(beam concrete) as geometry.total_concrete_volume_from_spec_m3 instead of concrete_slab_volume_m3 alone - check before shipping the adapter, do not assume)."
+    notes: "The adapter passes slab-only concrete through slab_zones[].concrete_volume_m3. The shared engine uses it directly for slab concreting work and main formwork area, without subtracting beams. Concrete ordering adds beams separately before waste and rounding. The legacy scalar total_concrete_volume_from_spec_m3 remains combined slab+beams and retains subtraction only when slab_zones[] is absent. Never add beams to the active adapter's slab volume: ordering would count them twice."
 
   - code: beam_concreting_work
     name_ru: "Бетонирование балок высотой до 250мм бетоном В22,5 (М300)"
@@ -603,12 +604,13 @@ estimate_lines:
     line_role: client_only_zero_internal_line
     calculator_result_path: "estimate_lines[code=formwork_dismantling_zero_internal]"
     quantity:
-      formula: "zone.formwork_under_slab_area_m2"
+      formula: "slab_formwork_installation_control.quantity_raw + edge_beam_formwork_installation_control.quantity_raw"
       leaf_inputs:
         - {ref: "review_parameters.floor_slab_zones", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_slab_beam_items", source_class: AUTO_PROJECT}
     prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Zero/internal display line; not a production paid quantity."
+    notes: "Dismantling area equals both installation rows combined: under-slab plus slab-edge/beam formwork. Use resolved installation areas, not the raw PDF under-slab area. Combined edge+beam area is counted once. Zero internal amount policy is unchanged."
 
   - code: edge_beam_insulation_work
     name_ru: "Устройство утепления по наружной стороне торцов плиты, балок"
@@ -643,14 +645,16 @@ estimate_lines:
     enabled_by_default: true
     calculator_result_path: "estimate_lines[code=eps_penoplex_osnova_100mm]"
     quantity:
-      formula: "ceil(zone_total_eps_volume_m3 * eps_waste_coeff / eps_pack_volume_m3) * eps_pack_volume_m3  # zone_total_eps_volume_m3 = sum of ALL that zone's floor_slab_eps_items.volume_m3, every role including combined_bottom_and_edge - material is never blocked by the work-readiness rule"
+      formula: "ceil(zone_total_eps_volume_m3 * eps_waste_coeff / eps_pack_volume_m3) * eps_pack_volume_m3  # zone_total_eps_volume_m3 = zone.eps_material_spec_volume_m3 when not null, otherwise derived parts; never add parts to a ready spec total"
       leaf_inputs:
+        - {ref: "review_parameters.floor_slab_zones", source_class: AUTO_PROJECT}
         - {ref: "review_parameters.floor_slab_eps_items", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.floor_slab_beam_items", source_class: AUTO_PROJECT}
         - {ref: "defaults.eps_waste_coeff", source_class: DEFAULT}
         - {ref: "defaults.eps_pack_volume_m3", source_class: DEFAULT}
     prices: {material_unit_price_key: eps_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
     validation: {formula_ready_required: true, excel_formula_exportable: true}
-    notes: "Material ordering uses the honest total volume regardless of whether edge/bottom work could be split - see the readiness rule on floor_slab_eps_items above."
+    notes: "Ready EPS 100 mm spec volume for this physical slab/pour wins over derived parts and includes any beams covered by that total. Parts remain work/control data only; never add them to the ready volume. Work quantities are independent and retain their own readiness checks. Apply waste and pack rounding once. Absent spec volume keeps the existing derived-parts fallback."
 
   - code: eps_glue_foam
     name_ru: "Клей-пена для ЭППС"

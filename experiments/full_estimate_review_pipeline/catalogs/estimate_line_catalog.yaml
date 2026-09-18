@@ -1223,8 +1223,611 @@ sections:
         source_note: "Visible in the final estimate screenshot/template, but not returned by waterproofing_calculator.py."
         action_needed: "Keep as final-estimate structure unless business rules later make it payable."
 
+  load_bearing_walls_lintels_p6:
+    status: verified_against_current_calculator
+    active_in_full_estimate_export: true
+    verified_on: "2026-09-18"
+    section_title_ru: "ВНЕШНИЕ И ВНУТРЕННИЕ НЕСУЩИЕ СТЕНЫ, ПЕРЕМЫЧКИ НАД ПРОЕМАМИ"
+    source_refs:
+      - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
+      - "experiments/full_estimate_review_pipeline/review_to_calculator/sections/load_bearing_walls_lintels_p6/build_input.py"
+      - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels_p6/section_contract.yaml"
+      - "experiments/full_estimate_review_pipeline/export_calculator_results_to_estimate_workbook.py"
+      - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    calculator_estimate_line_count: null
+    formula_ready_row_count: null
+    notes: >
+      Row count is dynamic. Each entry below is a row family; code is the actual calculator
+      code template, not the descriptive code in section_contract. Parser groups are nested
+      under wall_zones by the adapter. No legacy main_wall_*/floor_1_lintel_*/floor_2_lintel_*
+      scalar inputs are used. Project quantities and prices stay in extraction/review/results.
+      Catalog formulas describe the calculator; this YAML is not a runtime formula engine.
+    parser_group_mapping:
+      wall_zones: "wall_zones[]"
+      wall_block_items: "wall_zones[].block_items[]"
+      wall_chasing_rebar_items: "wall_zones[].chasing_rebar_items[]"
+      lintel_items: "wall_zones[].lintel_items[]"
+      lintel_rebar_items: "wall_zones[].lintel_items[].rebar_items[] or wall_zones[].unassigned_lintel_rebar_items[] when lintel_id is absent"
+    calculation_rules:
+      zones: >
+        If more than one parapet zone exists, merge all into zone_id=parapet before calculation:
+        concatenate block/rebar/lintel items and sum cutoff area. A single parapet retains its id.
+        Regular masonry excludes vent_chimney_cladding and partitions. Parser must exclude partitions.
+      block_groups: >
+        Pool blocks by normalized density and all three dimensions across all zones in input
+        order, after parapet merging. Preserve one existing purchase row per material per zone.
+        Each row buys only the increment of the cumulative whole-pallet order; earlier stock
+        covers the rest. The sum of stage pallets equals ceil(total required volume / pallet volume).
+        All items in a material pool must have the same resolved price and pallet volume or fail.
+        Use the first item's id for the existing zone row; add no common procurement estimate rows.
+        Density normalization removes spaces/hyphens, uppercases and maps Cyrillic Д to D;
+        size removes spaces and parenthetical annotations, normalizes dimension separators
+        to x and sorts the three dimensions.
+        Different piece lengths remain different purchase materials. D400 with 150x250 cross-section
+        is corrected to D500 for price/pallet lookup; the visible row still uses the original label.
+        calculation_blocks.block_purchase_pools stores common totals for audit, not payable rows.
+      block_price_and_pallet: >
+        Prices still match standard density + cross-section: D400 250x400, D500 250x250,
+        D500 150x250; unknown families need an explicit material_unit_price.
+        Elena 2026-09-18 pallet rule: D400/D500 250x400 cross-section uses 2.16 m3;
+        every other thickness uses 1.8 m3 regardless of density, without a manual pallet input.
+        Printed block length/dimension order does not change family lookup, but all dimensions
+        still determine which material can share stock. Item material_unit_price/pallet_volume_m3
+        override standard mapping. Historical D400 pallet default key also applies to D500 400mm.
+      adhesive_pools: >
+        A zone without regular masonry shares adhesive with the preceding regular zone in input
+        order, or itself if none precedes it. Sum specification volumes before bag rounding;
+        only zones with positive specification volume contribute, even when stock covers their
+        entire purchase. This pool is NOT a delivery batch.
+      rebar_groups: >
+        Pool chasing_rebar_items, unassigned_lintel_rebar_items and each lintel's rebar_items by
+        zone_id + purpose + steel_class + diameter_mm. Sum raw lengths before rod rounding.
+        kg_per_meter, rod_length_m and unit_price_per_m must agree within each group or fail.
+        Missing lintel_id in parsed lintel rebar goes to the zone's unassigned pool; do not invent ids.
+        Adapter supplies rod/weight catalog values and resolved price by steel/diameter.
+      delivery_batches: >
+        Explicit block_delivery_batch_id wins; otherwise floor_2, second_light, parapet and
+        vent_chimney_cladding share upper_parapet_vent; other zones use their zone_id.
+        Sum new purchased block volumes AFTER cumulative material-pool allocation to stages.
+        Keep existing batch delivery/unloading rows with quantity zero if earlier stock covers
+        the entire batch's demand; do not create an extra delivery for stock.
+      crane_batches: >
+        Parapet always uses crane batch parapet; other zones use their delivery batch id.
+        Thus shared block delivery does not imply shared crane for parapet and upper-floor masonry.
+        For each positive-demand zone, lift volume is max(new purchase volume, specification
+        volume * waste coefficient), so earlier stock still gets lifted. Batch lift volumes
+        determine truck equivalents and shifts; block_order_volume_m3 records only new purchases,
+        block_lift_volume_m3 records the lift basis. A stock-only stage retains its crane row.
+      metal_delivery: >
+        Adapter initially sets rebar_metal_delivery_trucks=0. A positive value can be supplied
+        at box-estimate level from cross-section metal logistics; do not infer it locally from wall weight.
+      precision: >
+        q means the shared calculator quantity rounding (0.0001 unless stated otherwise).
+        ceil means round upward to a whole unit; ceil_to_step(x, 0.1) rounds upward in 0.1 m3 steps.
+      row_order: >
+        Scaffolding first, then zone blocks in input order. Satellite cladding shares the preceding
+        regular zone's rank. Within each block: cutoff, masonry/cladding, blocks, adhesive, sand
+        concrete, U-cutting, chasing/rebar, delivery/unloading/crane, monolithic formwork/materials,
+        lintel frame/rebar, concreting, concrete/delivery/lifting, dismantling, insulation.
+        Metal delivery and section costs follow all zones. Excel exporter regroups by zones,
+        sorts rebar by diameter descending and applies its own role ranks for final Excel order.
+    lines:
+      scaffolding_setup_dismantling:
+        code: "scaffolding_setup_dismantling"
+        row_id: "load_bearing_walls_lintels_p6.scaffolding_setup_dismantling"
+        name_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов"
+        unit: "компл"
+        line_kind: normal
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity:
+          formula: "defaults.scaffolding_setup_quantity"
+          leaf_inputs: [{ref: "supplier_inputs.scaffolding_setup_quantity", source_class: MANUAL_REVIEW}]
+        prices: {work_unit_price_key: scaffolding_setup_work_unit_price, price_registry_code: scaffolding_setup_dismantling_work_set}
+        zero_policy: requires_review_if_zero
+        notes: "Adapter reads sheet 01-1; if unset, falls back to 2. Not floors_count * units_per_floor."
+      scaffolding_timber_material:
+        code: "scaffolding_timber_material"
+        row_id: "load_bearing_walls_lintels_p6.scaffolding_timber_material"
+        name_ru: "Пиломатериал для устройства лесов"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity:
+          formula: "defaults.scaffolding_timber_quantity_m3"
+          leaf_inputs: [{ref: "supplier_inputs.scaffolding_timber_quantity_m3", source_class: MANUAL_REVIEW}]
+        prices: {material_unit_price_key: scaffolding_timber_unit_price, price_registry_code: timber_m3}
+        zero_policy: requires_review_if_zero
+        notes: "Adapter reads sheet 01-1; if unset, falls back to 2 m3. Not a universal project quantity."
+      masonry_work:
+        code: "{zone_id}_masonry_work"
+        row_id: "load_bearing_walls_lintels_p6.masonry_work"
+        name_ru: "{display_name}"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "regular masonry zone and sum(block_items.volume_m3) > 0"
+        quantity:
+          formula: "q(sum(zone.block_items.volume_m3))"
+          leaf_inputs: [{ref: "wall_zones[].block_items[].volume_m3", source_class: AUTO_PROJECT}]
+        prices: {work_unit_price_key: masonry_work_unit_price, price_registry_code: gas_block_masonry_work_m3}
+        zero_policy: not_expected
+        notes: "Work uses specification volume, without purchase waste or pallets."
+      gas_block_cladding_work:
+        code: "{zone_id}_gas_block_cladding_work"
+        row_id: "load_bearing_walls_lintels_p6.gas_block_cladding_work"
+        name_ru: "Обкладка дымохода и вентканалов 150 мм"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone_kind == vent_chimney_cladding and sum(block_items.volume_m3) > 0"
+        quantity:
+          formula: "q(sum(zone.block_items.volume_m3) / defaults.vent_chimney_block_thickness_m)"
+          leaf_inputs:
+            - {ref: "wall_zones[].block_items[].volume_m3", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.vent_chimney_block_thickness_m", source_class: DEFAULT}
+        prices: {work_unit_price_key: vent_chimney_cladding_work_unit_price, price_registry_code: gas_block_cladding_work_m2}
+        zero_policy: not_expected
+      cutoff_waterproofing_under_first_row_blocks:
+        code: "{zone_id}_cutoff_waterproofing_under_first_row_blocks"
+        row_id: "load_bearing_walls_lintels_p6.cutoff_waterproofing_under_first_row_blocks"
+        name_ru: "Гидроизоляция поверхности под первый ряд блоков: {display_name}"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone.cutoff_waterproofing_area_m2 > 0"
+        quantity:
+          formula: "zone.cutoff_waterproofing_area_m2"
+          leaf_inputs: [{ref: "wall_zones[].cutoff_waterproofing_area_m2", source_class: AUTO_PROJECT}]
+        prices:
+          material_unit_price_key: cutoff_waterproofing_material_unit_price
+          work_unit_price_key: cutoff_waterproofing_work_unit_price
+          price_registry_code: cutoff_waterproofing_under_blocks_m2
+          material_price_registry_code: cutoff_waterproofing_material_m2
+        zero_policy: not_expected
+      block_material:
+        code: "{zone_id}_block_{first_item_id}"
+        row_id: "load_bearing_walls_lintels_p6.block_material"
+        name_ru: "Газобетонный блок {block_density} {block_size}: {display_name}"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "one row per normalized density+full-size group in each zone, including zero-volume groups"
+        quantity:
+          formula: "q((ceil(cumulative material specification volume through this zone * defaults.gas_block_waste_coeff / pallet_volume_m3) - previously ordered material pallets) * pallet_volume_m3)"
+          leaf_inputs:
+            - {ref: "wall_zones[].block_items[]", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_waste_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_d400_pallet_volume_m3", source_class: CATALOG_DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_d500_250_pallet_volume_m3", source_class: CATALOG_DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_d500_150_pallet_volume_m3", source_class: CATALOG_DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_other_pallet_volume_m3", source_class: CATALOG_DEFAULT}
+        prices:
+          material_unit_price_key: "first.material_unit_price when not null, otherwise standard block rate"
+          price_registry_code: "gas_block_d400_m3 / gas_block_d500_m3 / gas_block_d500_150_m3; null for nonstandard"
+        zero_policy: allowed
+        notes: "A zero stage purchase is valid when previous stock covers demand. Work uses this zone's raw specification volume; do not replace it with purchase volume."
+      block_adhesive:
+        code: "{target_zone_id}_block_adhesive"
+        row_id: "load_bearing_walls_lintels_p6.block_adhesive"
+        name_ru: "Монтажный клей для блоков 25 кг: {display_name}"
+        unit: "мешок"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "one row per populated adhesive pool"
+        quantity:
+          formula: "ceil(sum(pool.block_spec_volume_m3) * defaults.adhesive_consumption_bag_per_m3 * defaults.adhesive_waste_coeff)"
+          leaf_inputs:
+            - {ref: "wall_zones[].block_items[].volume_m3", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.adhesive_consumption_bag_per_m3", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.adhesive_waste_coeff", source_class: DEFAULT}
+        prices: {material_unit_price_key: adhesive_unit_price, price_registry_code: block_adhesive_bag}
+        zero_policy: not_expected
+      sand_concrete_m300_first_row:
+        code: "{zone_id}_sand_concrete_m300_first_row"
+        row_id: "load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"
+        name_ru: "Пескобетон М300 40 кг: {display_name}"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone.cutoff_waterproofing_area_m2 > 0"
+        quantity:
+          formula: "ceil(zone.cutoff_waterproofing_area_m2 * defaults.sand_concrete_consumption_kg_per_m2_per_10mm * defaults.sand_concrete_thickness_factor / defaults.sand_concrete_bag_weight_kg)"
+          leaf_inputs:
+            - {ref: "wall_zones[].cutoff_waterproofing_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.sand_concrete_consumption_kg_per_m2_per_10mm", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.sand_concrete_thickness_factor", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.sand_concrete_bag_weight_kg", source_class: CATALOG_DEFAULT}
+        prices: {material_unit_price_key: sand_concrete_unit_price, price_registry_code: sand_concrete_bag}
+        zero_policy: not_expected
+      chasing_for_reinforcement:
+        code: "{zone_id}_chasing_for_reinforcement"
+        row_id: "load_bearing_walls_lintels_p6.chasing_for_reinforcement"
+        name_ru: "Штробление блоков под дополнительное усиление: {display_name}"
+        unit: "мп"
+        line_kind: control
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone.chasing_rebar_items is nonempty, even if summed length is zero"
+        quantity:
+          formula: "q(sum(zone.chasing_rebar_items.spec_length_m))"
+          leaf_inputs: [{ref: "wall_zones[].chasing_rebar_items[].spec_length_m", source_class: AUTO_PROJECT}]
+        prices: {}
+        zero_policy: allowed
+        notes: "No internal work rate; included in masonry. Uses specification length, not purchased rod length."
+      rebar_material:
+        code: "{zone_id}_{purpose}_rebar_{steel_class_lower}_d{diameter_mm}"
+        row_id: "load_bearing_walls_lintels_p6.rebar_material"
+        name_ru: "Арматура {steel_class} Ø{diameter_mm} для {purpose_label}: {display_name}"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "one row per zone+purpose+steel_class+diameter group, including zero-length groups"
+        quantity:
+          formula: "q(ceil(sum(group.spec_length_m) * defaults.rebar_waste_coeff / group.rod_length_m) * group.rod_length_m)"
+          leaf_inputs:
+            - {ref: "wall_zones[].chasing_rebar_items[]", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].unassigned_lintel_rebar_items[]", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].lintel_items[].rebar_items[]", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.rebar_waste_coeff", source_class: DEFAULT}
+            - {ref: "review_to_calculator.core.rebar_item_defaults", source_class: CATALOG_DEFAULT}
+        prices: {material_unit_price_key: "group.unit_price_per_m", price_registry_code: "rebar_a<class_digits>_d<diameter>_m"}
+        zero_policy: requires_review_if_zero
+        notes: "Code uses steel_class.lower() literally, including Cyrillic; price registry code uses normalized class digits."
+      lintel_rebar_frame_assembly:
+        code: "{zone_id}_lintel_rebar_frame_assembly"
+        row_id: "load_bearing_walls_lintels_p6.lintel_rebar_frame_assembly"
+        name_ru: "Изготовление и монтаж каркаса армирования перемычек из арматуры: {display_name}"
+        unit: "мп"
+        line_kind: control
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone has a rebar group with purpose == lintels"
+        quantity:
+          formula: "q(sum(zone lintels-purpose rebar group order_length_m BEFORE q))"
+          leaf_inputs: [{ref: "calculation_rules.rebar_groups", source_class: AUTO_CALCULATED}]
+        prices: {}
+        zero_policy: allowed
+        notes: "No internal rate. Frame uses purchased lengths, not raw specification lengths; does not require a lintel_items row."
+      u_block_lintel_cutting:
+        code: "{zone_id}_u_block_lintel_cutting"
+        row_id: "load_bearing_walls_lintels_p6.u_block_lintel_cutting"
+        name_ru: "Резка блока под перемычку (U-блок): {display_name}"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(u_block.total_length_m) > 0"
+        quantity:
+          formula: "ceil(sum(zone u_block lintel lengths) / defaults.gas_block_length_m)"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].total_length_m", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_length_m", source_class: DEFAULT}
+        prices: {work_unit_price_key: u_block_cutting_work_unit_price, price_registry_code: u_block_lintel_cutting_item}
+        zero_policy: not_expected
+      u_block_lintel_concreting_work:
+        code: "{zone_id}_u_block_lintel_concreting_work"
+        row_id: "load_bearing_walls_lintels_p6.u_block_lintel_concreting_work"
+        name_ru: "Бетонирование перемычек в U-блоке: {display_name}"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(u_block.total_length_m) > 0"
+        quantity:
+          formula: "q(sum(zone u_block lintel lengths))"
+          leaf_inputs: [{ref: "wall_zones[].lintel_items[].total_length_m", source_class: AUTO_PROJECT}]
+        prices: {work_unit_price_key: lintel_concreting_work_unit_price, price_registry_code: lintel_concreting_work_m}
+        zero_policy: not_expected
+      monolithic_lintel_concreting_work:
+        code: "{zone_id}_monolithic_lintel_concreting_work"
+        row_id: "load_bearing_walls_lintels_p6.monolithic_lintel_concreting_work"
+        name_ru: "Бетонирование монолитных перемычек: {display_name}"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0"
+        quantity:
+          formula: "q(sum(zone monolithic lintel lengths))"
+          leaf_inputs: [{ref: "wall_zones[].lintel_items[].total_length_m", source_class: AUTO_PROJECT}]
+        prices: {work_unit_price_key: lintel_monolithic_concreting_work_unit_price, price_registry_code: lintel_monolithic_concreting_work_m}
+        zero_policy: not_expected
+      lintel_formwork_installation:
+        code: "{zone_id}_lintel_formwork_installation"
+        row_id: "load_bearing_walls_lintels_p6.lintel_formwork_installation"
+        name_ru: "Монтаж опалубки из доски для заливки перемычек: {display_name}"
+        unit: "м2"
+        line_kind: control
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0; zero formwork area does not suppress the row"
+        quantity:
+          formula: "q(sum(monolithic.formwork_horizontal_area_m2 + monolithic.formwork_vertical_area_m2))"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].formwork_horizontal_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].lintel_items[].formwork_vertical_area_m2", source_class: AUTO_PROJECT}
+        prices: {}
+        zero_policy: allowed
+        notes: "No internal rate; included in concreting. The same raw area drives plywood, timber and dismantling."
+      lintel_formwork_plywood_material:
+        code: "{zone_id}_lintel_formwork_plywood_material"
+        row_id: "load_bearing_walls_lintels_p6.lintel_formwork_plywood_material"
+        name_ru: "Фанера для опалубки монолитных перемычек: {display_name}"
+        unit: "шт"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0"
+        quantity:
+          formula: "q(ceil(sum(monolithic horizontal+vertical formwork area) / defaults.lintel_formwork_plywood_sheet_area_m2))"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].formwork_horizontal_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].lintel_items[].formwork_vertical_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_formwork_plywood_sheet_area_m2", source_class: CATALOG_DEFAULT}
+        prices: {material_unit_price_key: lintel_formwork_plywood_unit_price, price_registry_code: lintel_formwork_plywood_sheet}
+        zero_policy: requires_review_if_zero
+      lintel_formwork_timber_material:
+        code: "{zone_id}_lintel_formwork_timber_material"
+        row_id: "load_bearing_walls_lintels_p6.lintel_formwork_timber_material"
+        name_ru: "Пиломатериал обрезной для опалубки монолитных перемычек: {display_name}"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0"
+        quantity:
+          formula: "q(ceil_to_step(sum(monolithic horizontal+vertical formwork area) * defaults.lintel_formwork_board_thickness_m, 0.1)) if raw volume > 0 else q(raw volume)"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].formwork_horizontal_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].lintel_items[].formwork_vertical_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_formwork_board_thickness_m", source_class: DEFAULT}
+        prices: {material_unit_price_key: lintel_formwork_timber_unit_price, price_registry_code: lintel_formwork_timber_m3}
+        zero_policy: requires_review_if_zero
+      lintel_formwork_dismantling:
+        code: "{zone_id}_lintel_formwork_dismantling"
+        row_id: "load_bearing_walls_lintels_p6.lintel_formwork_dismantling"
+        name_ru: "Демонтаж опалубки после завершения бетонирования: {display_name}"
+        unit: "м2"
+        line_kind: control
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0; zero formwork area does not suppress the row"
+        quantity:
+          formula: "q(sum(monolithic.formwork_horizontal_area_m2 + monolithic.formwork_vertical_area_m2))"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].formwork_horizontal_area_m2", source_class: AUTO_PROJECT}
+            - {ref: "wall_zones[].lintel_items[].formwork_vertical_area_m2", source_class: AUTO_PROJECT}
+        prices: {}
+        zero_policy: allowed
+        notes: "Added after the ARK comparison. No internal material/work rate; quantity equals formwork installation."
+      lintel_edge_insulation_work:
+        code: "{zone_id}_lintel_edge_insulation_work"
+        row_id: "load_bearing_walls_lintels_p6.lintel_edge_insulation_work"
+        name_ru: "Устройство утепления по наружной стороне монолитной перемычки: {display_name}"
+        unit: "мп"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0 and sum(monolithic.insulation_length_m) > 0"
+        quantity:
+          formula: "q(sum(monolithic.insulation_length_m))"
+          leaf_inputs: [{ref: "wall_zones[].lintel_items[].insulation_length_m", source_class: AUTO_PROJECT}]
+        prices: {work_unit_price_key: lintel_insulation_work_unit_price, price_registry_code: lintel_edge_insulation_work_m}
+        zero_policy: not_expected
+        notes: "Only actually insulated portions; never substitute total monolithic length."
+      lintel_edge_insulation_eps_material:
+        code: "{zone_id}_lintel_edge_insulation_eps_material"
+        row_id: "load_bearing_walls_lintels_p6.lintel_edge_insulation_eps_material"
+        name_ru: "Экструдированный пенополистирол Пеноплэкс Основа: {display_name}"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0 and sum(monolithic.insulation_length_m) > 0"
+        quantity:
+          formula: "q(ceil(sum(monolithic.insulation_eps_spec_volume_m3) * defaults.lintel_insulation_eps_waste_coeff / defaults.lintel_insulation_eps_pack_volume_m3) * defaults.lintel_insulation_eps_pack_volume_m3) if required volume > 0 else 0"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].insulation_eps_spec_volume_m3", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_insulation_eps_waste_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_insulation_eps_pack_volume_m3", source_class: CATALOG_DEFAULT}
+        prices: {material_unit_price_key: lintel_insulation_eps_unit_price, price_registry_code: eps_penoplex_osnova_100_m3}
+        zero_policy: requires_review_if_zero
+        notes: "Quantity uses pack volume with q=0.0001; display_quantity separately rounds to 0.01 m3."
+      lintel_edge_insulation_glue_foam:
+        code: "{zone_id}_lintel_edge_insulation_glue_foam"
+        row_id: "load_bearing_walls_lintels_p6.lintel_edge_insulation_glue_foam"
+        name_ru: "Клей-пена для ЭППС: {display_name}"
+        unit: "баллон"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "sum(monolithic.total_length_m) > 0 and sum(monolithic.insulation_length_m) > 0"
+        quantity:
+          formula: "max(int(defaults.lintel_glue_foam_min_units), ceil(sum(monolithic.insulation_length_m) / defaults.lintel_glue_foam_coverage_m_per_can))"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].insulation_length_m", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_glue_foam_min_units", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_glue_foam_coverage_m_per_can", source_class: DEFAULT}
+        prices: {material_unit_price_key: lintel_glue_foam_unit_price, price_registry_code: eps_foam_glue_can}
+        zero_policy: not_expected
+      lintel_concrete_b22_5_m300_material:
+        code: "{zone_id}_lintel_concrete_b22_5_m300_material"
+        row_id: "load_bearing_walls_lintels_p6.lintel_concrete_b22_5_m300_material"
+        name_ru: "Бетон марки В22,5 (М300): {display_name}"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "(sum(u_block.concrete_volume_m3) + sum(monolithic.concrete_volume_m3)) * defaults.concrete_waste_coeff > 0"
+        quantity:
+          formula: "q(max(defaults.lintel_concrete_min_order_volume_m3, ceil((sum(u_block concrete) + sum(monolithic concrete)) * defaults.concrete_waste_coeff)))"
+          leaf_inputs:
+            - {ref: "wall_zones[].lintel_items[].concrete_volume_m3", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.concrete_waste_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.lintel_concrete_min_order_volume_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: concrete_m300_unit_price, price_registry_code: concrete_b22_5_m3}
+        zero_policy: not_expected
+        notes: "One purchase per zone for BOTH kinds of lintels. P6 applies waste and ceil to whole m3; legacy spec_volume formula does not. Independent of the lintel-length gates."
+      lintel_concrete_delivery:
+        code: "{zone_id}_lintel_concrete_delivery"
+        row_id: "load_bearing_walls_lintels_p6.lintel_concrete_delivery"
+        name_ru: "Доставка бетона до объекта"
+        unit: "рейс"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone concrete_order_volume_m3 > 0"
+        quantity:
+          formula: "1"
+          leaf_inputs: [{ref: "lines.lintel_concrete_b22_5_m300_material.quantity", source_class: AUTO_CALCULATED}]
+        prices: {material_unit_price_key: concrete_delivery_unit_price, price_registry_code: concrete_delivery_trip}
+        zero_policy: not_expected
+      manual_concrete_lifting:
+        code: "{zone_id}_manual_concrete_lifting"
+        row_id: "load_bearing_walls_lintels_p6.manual_concrete_lifting"
+        name_ru: "Перенос, подъем бетона вручную"
+        unit: "м3"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "zone concrete_order_volume_m3 > 0"
+        quantity:
+          formula: "q(zone concrete_order_volume_m3 BEFORE q)"
+          leaf_inputs: [{ref: "lines.lintel_concrete_b22_5_m300_material.quantity", source_class: AUTO_CALCULATED}]
+        prices: {work_unit_price_key: manual_concrete_lifting_work_unit_price, price_registry_code: manual_concrete_lifting_m3}
+        zero_policy: not_expected
+      blocks_delivery:
+        code: "{batch_id}_blocks_delivery"
+        row_id: "load_bearing_walls_lintels_p6.blocks_delivery"
+        name_ru: "Доставка блоков, смеси"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "delivery batch contains a zone with positive specification volume; retain zero-quantity stock-only batch"
+        quantity:
+          formula: "ceil(sum(batch block_order_volume_m3) / defaults.gas_block_delivery_truck_capacity_m3)"
+          leaf_inputs:
+            - {ref: "lines.block_material.quantity", source_class: AUTO_CALCULATED}
+            - {ref: "wall_zones[].block_delivery_batch_id", source_class: MANUAL_REVIEW}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_delivery_truck_capacity_m3", source_class: DEFAULT}
+        prices: {material_unit_price_key: block_delivery_unit_price, price_registry_code: block_delivery_truck}
+        zero_policy: allowed
+      blocks_unloading_manipulator:
+        code: "{batch_id}_blocks_unloading_manipulator"
+        row_id: "load_bearing_walls_lintels_p6.blocks_unloading_manipulator"
+        name_ru: "Разгрузка блоков, смеси манипулятором"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "delivery batch contains a zone with positive specification volume; retain zero-quantity stock-only batch"
+        quantity:
+          formula: "ceil(sum(batch block_order_volume_m3) / defaults.gas_block_delivery_truck_capacity_m3)"
+          leaf_inputs: [{ref: "lines.blocks_delivery.quantity", source_class: AUTO_CALCULATED}]
+        prices: {material_unit_price_key: block_unloading_manipulator_unit_price, price_registry_code: block_unloading_manipulator_truck}
+        zero_policy: allowed
+      blocks_crane_moving:
+        code: "{crane_batch_id}_blocks_crane_moving"
+        row_id: "load_bearing_walls_lintels_p6.blocks_crane_moving"
+        name_ru: "Перемещение блоков, смеси автокраном 25 т"
+        unit: "смена"
+        line_kind: normal
+        current_calculator_status: dynamic_rows_returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "crane batch has positive block lift volume, including previously purchased stock"
+        quantity:
+          formula: "max(1, ceil(ceil(sum(crane batch zone max(new purchase volume, specification volume * defaults.gas_block_waste_coeff)) / defaults.gas_block_delivery_truck_capacity_m3) / defaults.crane_trucks_per_shift))"
+          leaf_inputs:
+            - {ref: "lines.block_material.quantity", source_class: AUTO_CALCULATED}
+            - {ref: "wall_zones[].block_items[].volume_m3", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_waste_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.gas_block_delivery_truck_capacity_m3", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.crane_trucks_per_shift", source_class: DEFAULT}
+        prices: {material_unit_price_key: crane_25t_unit_price, price_registry_code: crane_shift}
+        zero_policy: not_expected
+      rebar_metal_delivery:
+        code: "rebar_metal_delivery"
+        row_id: "load_bearing_walls_lintels_p6.rebar_metal_delivery"
+        name_ru: "Доставка арматуры, металла"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: returned_conditionally_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "rebar_metal_delivery_trucks > 0"
+        quantity:
+          formula: "rebar_metal_delivery_trucks"
+          leaf_inputs: [{ref: "rebar_metal_delivery_trucks", source_class: AUTO_CALCULATED}]
+        prices: {material_unit_price_key: rebar_metal_delivery_unit_price, price_registry_code: metal_delivery_truck}
+        zero_policy: disabled_if_zero
+      walls_consumables_tool_amortization:
+        code: "walls_consumables_tool_amortization"
+        row_id: "load_bearing_walls_lintels_p6.walls_consumables_tool_amortization"
+        name_ru: "Расходные материалы, амортизация инструмента"
+        unit: "комплект"
+        line_kind: calculated_amount
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity: {formula: "1", leaf_inputs: []}
+        amount:
+          formula: "q(sum(previous lines.line_total_raw) * defaults.walls_consumables_rate, 0.000001)"
+          leaf_inputs: [{ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.walls_consumables_rate", source_class: DEFAULT}]
+        prices: {}
+        zero_policy: requires_review_if_zero
+        notes: "Calculated amount occupies material_unit_price with raw material total override. Base includes metal delivery if emitted, excludes waste removal, technical supervision and trailing zero rows."
+      construction_waste_removal:
+        code: "construction_waste_removal"
+        row_id: "load_bearing_walls_lintels_p6.construction_waste_removal"
+        name_ru: "Вывоз мусора с объекта"
+        unit: "маш"
+        line_kind: normal
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity:
+          formula: "defaults.waste_removal_trucks"
+          leaf_inputs: [{ref: "defaults_catalog.sections.load_bearing_walls_lintels_p6.defaults.waste_removal_trucks", source_class: DEFAULT}]
+        prices:
+          material_unit_price_key: waste_removal_truck_unit_price
+          work_unit_price_key: waste_removal_work_unit_price
+          price_registry_code: waste_removal_truck
+          material_price_registry_code: waste_removal_container_truck
+          work_price_registry_code: waste_removal_loading_work_truck
+        zero_policy: allowed
+        notes: "Calculator row price_code differs from the two component registry codes in the contract."
+      walls_technical_supervision:
+        code: "walls_technical_supervision"
+        row_id: "load_bearing_walls_lintels_p6.walls_technical_supervision"
+        name_ru: "Технический надзор"
+        unit: "-"
+        line_kind: fixed_amount
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity: {formula: "1", leaf_inputs: []}
+        prices: {fixed_amount_key: "defaults.technical_supervision_amount", price_registry_code: technical_supervision_walls_lintels}
+        zero_policy: allowed
+        notes: "Reusable business amount comes from the P6 contract defaults, NOT price registry. Stored in work_unit_price; monetary value is intentionally not duplicated in this catalog."
+      procurement_warehouse_costs:
+        code: "procurement_warehouse_costs"
+        row_id: "load_bearing_walls_lintels_p6.procurement_warehouse_costs"
+        name_ru: "Заготовительно-складские расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity: {formula: "1", leaf_inputs: []}
+        prices: {}
+        zero_policy: structural_zero
+      overhead_general_business_costs:
+        code: "overhead_general_business_costs"
+        row_id: "load_bearing_walls_lintels_p6.overhead_general_business_costs"
+        name_ru: "Накладные и общехозяйственные расходы"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity: {formula: "1", leaf_inputs: []}
+        prices: {}
+        zero_policy: structural_zero
+      estimated_profit:
+        code: "estimated_profit"
+        row_id: "load_bearing_walls_lintels_p6.estimated_profit"
+        name_ru: "Сметная прибыль"
+        unit: "-"
+        line_kind: structural_zero
+        current_calculator_status: returned_by_load_bearing_walls_lintels_p6_calculator
+        emitted_when: "always"
+        quantity: {formula: "1", leaf_inputs: []}
+        prices: {}
+        zero_policy: structural_zero
+
   load_bearing_walls_lintels:
-    status: draft_cataloged
+    status: legacy_reference_only
+    active_in_full_estimate_export: false
+    replaced_by: load_bearing_walls_lintels_p6
+    notes: "Historical scalar calculator reference. Do not use these codes/formulas as the current P6 row dictionary."
     section_title_ru: "ВНЕШНИЕ И ВНУТРЕННИЕ НЕСУЩИЕ СТЕНЫ, ПЕРЕМЫЧКИ НАД ПРОЕМАМИ"
     source_refs:
       - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels/section_contract.yaml"
@@ -1232,7 +1835,7 @@ sections:
       - "experiments/load_bearing_walls_lintels_calculator/README.md"
       - "docs/report_load_bearing_walls_lintels_calculator.md"
       - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
-    calculator_estimate_line_count: 27
+    calculator_estimate_line_count: null
     formula_ready_row_count: null
     lines:
       scaffolding_setup_dismantling:
@@ -2815,9 +3418,17 @@ sections:
         line_kind: control
         current_calculator_status: returned_by_floor_slab_1_calculator
         quantity:
-          formula: "main_formwork_area_m2"
+          formula: "slab_formwork_installation_control.quantity_raw + edge_beam_formwork_installation_control.quantity_raw"
           leaf_inputs:
             - ref: "review_parameters.main_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.edge_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.beams_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.edge_and_beam_formwork_area_combined_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.beams_bottom_formwork_area_m2"
               source_class: AUTO_PROJECT
         prices:
           material_unit_price_key: null
@@ -2825,7 +3436,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: null
         zero_policy: allowed
-        notes: "Zero/internal line; do not treat as paid dismantling work unless business rules change."
+        notes: "Area equals both resolved installation rows combined: under-slab plus slab-edge/beam formwork. Combined edge+beam input replaces the split areas, not adds to them. Zero internal amount policy is unchanged."
 
       edge_beam_insulation_work:
         code: "edge_beam_insulation_work"
@@ -2891,7 +3502,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: "eps_penoplex_osnova_100_m3"
         zero_policy: not_expected
-        notes: "Material volume in m3. Do not mix with m2 bottom work area or edge work length."
+        notes: "Material volume in m3. Active floor_slabs adapter uses zone.eps_material_spec_volume_m3 when available, including beams covered by that total; never add derived parts again. Missing total retains derived-parts fallback. Source is reported in eps_material_volume_source. Waste and pack rounding occur once. Work area/length remain independent."
 
       eps_glue_foam:
         code: "eps_glue_foam"
@@ -3405,9 +4016,17 @@ sections:
         line_kind: control
         current_calculator_status: returned_by_floor_slab_2_calculator
         quantity:
-          formula: "main_formwork_area_m2"
+          formula: "floor_slab_2_formwork_installation_control.quantity_raw + edge_formwork_installation_control.quantity_raw"
           leaf_inputs:
             - ref: "review_parameters.main_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.edge_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.beams_formwork_area_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.edge_and_beam_formwork_area_combined_m2"
+              source_class: AUTO_PROJECT
+            - ref: "review_parameters.beams_bottom_formwork_area_m2"
               source_class: AUTO_PROJECT
         prices:
           material_unit_price_key: null
@@ -3415,7 +4034,7 @@ sections:
           fixed_amount_key: null
           price_registry_code: null
         zero_policy: allowed
-        notes: "Zero/internal line; do not treat as paid dismantling work unless business rules change."
+        notes: "Area equals both resolved installation rows combined: under-slab plus slab-edge/beam formwork. Combined edge+beam input replaces the split areas, not adds to them. Zero internal amount policy is unchanged."
 
       edge_insulation_work:
         code: "edge_insulation_work"
@@ -3832,14 +4451,36 @@ sections:
         line_kind: normal
         current_calculator_status: returned_by_flat_roof_calculator
         quantity:
-          formula: "ceil(roof_area_total_m2 * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2"
+          formula: "if 0 < roof_area_total_m2 <= roof_geotextile_max_area_m2 and non-screed area > 0: ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2"
           leaf_inputs:
             - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+            - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_coeff", source_class: DEFAULT}
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_flat_roll_area_m2", source_class: DEFAULT}
         prices: {material_unit_price_key: "geotextile_flat_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_technonikol_prof_300_m2"}
         zero_policy: not_expected
-        notes: "Flat roof layer."
+        notes: "Main separation layer on roofs up to 300 m2, replaces standalone fiberglass. Total roof geometry selects material before overlap. Geo150 and screed layers remain separate."
+
+      fiberglass_mat_technonikol_100gr:
+        code: "fiberglass_mat_technonikol_100gr"
+        row_id: "flat_roof.fiberglass_mat_technonikol_100gr"
+        name_ru: "Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)"
+        unit: "м2"
+        line_kind: normal
+        current_calculator_status: returned_by_flat_roof_calculator
+        quantity:
+          formula: "if roof_area_total_m2 > roof_geotextile_max_area_m2 and non-screed area > 0: roof_fiberglass_mat_roll_area_m2 if roof_area_total_m2 <= roof_fiberglass_one_roll_max_area_m2 else ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * roof_fiberglass_mat_overlap_coeff / roof_fiberglass_mat_roll_area_m2) * roof_fiberglass_mat_roll_area_m2"
+          leaf_inputs:
+            - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+            - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_fiberglass_one_roll_max_area_m2", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_fiberglass_mat_overlap_coeff", source_class: DEFAULT}
+            - {ref: "defaults_catalog.sections.flat_roof.defaults.roof_fiberglass_mat_roll_area_m2", source_class: DEFAULT}
+        prices: {material_unit_price_key: "roof_fiberglass_mat_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_fiberglass_mat_technonikol_100gr_m2"}
+        zero_policy: not_expected
+        notes: "Main separation layer on roofs over 300 m2. One roll through 430 m2 of roof BEFORE overlap; above 430 use area * 1.1 rounded to 400 m2 rolls. Raw spec fiberglass area does not drive purchasing."
 
       geotextile_prof_150_parapet:
         code: "geotextile_prof_150_parapet"
@@ -3856,7 +4497,7 @@ sections:
             - {ref: "defaults_catalog.sections.flat_roof.defaults.geotextile_parapet_roll_area_m2", source_class: DEFAULT}
         prices: {material_unit_price_key: "geotextile_parapet_unit_price_per_m2", work_unit_price_key: null, fixed_amount_key: null, price_registry_code: "roof_geotextile_technonikol_prof_150_m2"}
         zero_policy: not_expected
-        notes: "Parapet and abutment layer."
+        notes: "Always on positive parapet + wall abutment work length: total length * 1.1 rounded to 100 m2 rolls. No raw spec row required. Separate from main layer and Geo150 under screed; confirmed by Elena 2026-09-18."
 
       pvc_membrane_flat_installation:
         code: "pvc_membrane_flat_installation"

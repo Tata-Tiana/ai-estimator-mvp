@@ -114,8 +114,9 @@ def material_roll_line(
     unit_price_per_m2: Decimal,
     quantity_source: str,
     notes: list[str] | None = None,
+    rolls_override: int | None = None,
 ) -> dict[str, Any]:
-    rolls = ceil_decimal(required_area / roll_area)
+    rolls = ceil_decimal(required_area / roll_area) if rolls_override is None else rolls_override
     ordered_area = d(rolls) * roll_area
     return estimate_line(
         code=code,
@@ -561,62 +562,66 @@ def calculate_flat_roof(input_data: dict[str, Any]) -> dict[str, Any]:
             )
         )
 
-    # 2026-08-24: geotextile_prof_300_flat/150_parapet used to be unconditional geometric
-    # estimates (roof_area/parapet_length x a hand-picked coefficient), added to every project
-    # regardless of whether the project's own PDF ever mentions this material. Checked all 3
-    # real projects' own "СПЕЦИФИКАЦИЯ РАСХОДА МАТЕРИАЛА"/"Спецификация к плану кровли" tables:
-    # ТРЦ has exactly one geotextile row (21.28m2, the same area as its ЦСП screed zone - already
-    # fully covered by roof_screed_geotextile above); АРК and ЮСВ have NO geotextile row at all
-    # in their spec tables (even though ЮСВ's own узел drawing shows a geotextile detail note at
-    # a parapet-flashing узел - that's a construction note, never a priced/quantified spec-table
-    # row). Per user decision 2026-08-24: this calculator must not invent a quantity for a
-    # material the project's own spec table doesn't mention - if roof_raw_material_spec_rows has
-    # a "Геотекстиль" row beyond what roof_screed_geotextile already consumed, use that
-    # (real/ready number); otherwise 0 lines, no crash. This deliberately means projects like the
-    # real ЮСВ one (which historically had a hand-added 300m2+200m2 geotextile cost with no PDF
-    # backing) will no longer reproduce that cost automatically - matches the existing SLOPE-plate
-    # precedent (no PDF signal -> not an extraction/formula target).
-    spec_geotextile_total = spec_table_area_m2(spec_rows, "еотекстил")
-    if spec_geotextile_total is not None:
-        remaining_geotextile_area = spec_geotextile_total - screed_total_area
-        if remaining_geotextile_area > D0:
-            lines.append(
-                material_roll_line(
-                    code="geotextile_prof_150_parapet",
-                    name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
-                    price_code="roof_geotextile_technonikol_prof_150_m2",
-                    required_area=remaining_geotextile_area,
-                    roll_area=d(input_data["geotextile_parapet_roll_area_m2"]),
-                    unit_price_per_m2=d(input_data["geotextile_parapet_unit_price_per_m2"]),
-                    quantity_source="roof_raw_material_spec_rows geotextile row, minus area already covered by roof_screed_geotextile, rounded to rolls",
-                )
-            )
+    # Elena's 2026-09-18 purchasing rule uses total flat-roof geometry, not membrane/spec
+    # areas including upstands. Screed layers above remain separate and are not counted twice.
+    separation_area = roof_area - screed_total_area
+    if separation_area < D0:
+        raise ValueError("roof_screed_items total area exceeds total roof area")
+    if separation_area > D0:
+        geotextile_limit = d(input_data.get("roof_geotextile_max_area_m2", 300))
+        fiberglass_one_roll_limit = d(input_data.get("roof_fiberglass_one_roll_max_area_m2", 430))
+        use_geotextile = roof_area <= geotextile_limit
+        coeff = d(input_data["geotextile_flat_coeff"] if use_geotextile else
+                  input_data.get("roof_fiberglass_mat_overlap_coeff", "1.1"))
+        required_area = separation_area * coeff
+        one_fiberglass_roll = not use_geotextile and roof_area <= fiberglass_one_roll_limit
+        line = material_roll_line(
+            code="geotextile_prof_300_flat" if use_geotextile else "fiberglass_mat_technonikol_100gr",
+            name=("Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м" if use_geotextile else
+                  "Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)"),
+            price_code=("roof_geotextile_technonikol_prof_300_m2" if use_geotextile else
+                        "roof_fiberglass_mat_technonikol_100gr_m2"),
+            required_area=required_area,
+            roll_area=d(input_data["geotextile_flat_roll_area_m2"] if use_geotextile else
+                        input_data["roof_fiberglass_mat_roll_area_m2"]),
+            unit_price_per_m2=d(input_data["geotextile_flat_unit_price_per_m2"] if use_geotextile else
+                                input_data["roof_fiberglass_mat_unit_price_per_m2"]),
+            quantity_source="total flat-roof area selects material and one-roll exception before overlap; non-screed area * overlap rounded to rolls",
+            rolls_override=1 if one_fiberglass_roll else None,
+        )
+        line["formula"].update({
+            "roof_area_total_m2": decimal_str(roof_area),
+            "screed_total_area_m2": decimal_str(screed_total_area),
+            "separation_area_m2": decimal_str(separation_area),
+            "overlap_coeff": decimal_str(coeff),
+            "geotextile_max_roof_area_m2": decimal_str(geotextile_limit),
+            "fiberglass_one_roll_max_roof_area_m2": decimal_str(fiberglass_one_roll_limit),
+            "one_roll_exception_applied": one_fiberglass_roll,
+        })
+        if d(line["quantity_raw"]) < separation_area:
+            warning = "Fiberglass one-roll exception orders less than the flat-roof area; confirm coverage with the installer."
+            warnings.append(warning)
+            line["notes"].append(warning)
+        lines.append(line)
 
-    # 2026-09-07: real ARK case - fiberglass mat (стеклохолст) used to be coded as screed-exclusive
-    # (roof_screed_fiberglass_mat above, only fires when roof_screed_items is non-empty), on the
-    # assumption it's only ever laid under a ЦСП screed build-up. Real ARK spec table proved that
-    # wrong: it gives ready стеклохолст areas per roof zone (295/77.3/115 m2) matching the PVC
-    # membrane area at each zone exactly, with zero screed anywhere on this project - it's a
-    # standalone roof-buildup layer, not screed-exclusive. Same "don't invent a quantity the
-    # project's own spec table doesn't mention" rule as geotextile above: only added when the spec
-    # table actually has a row, and its area (minus whatever roof_screed_fiberglass_mat above
-    # already covers, so a project with both a screed zone AND additional stand-alone area isn't
-    # double-counted) drives the quantity - never a geometric guess.
-    spec_fiberglass_mat_total = spec_table_area_m2(spec_rows, "теклохолст")
-    if spec_fiberglass_mat_total is not None:
-        remaining_fiberglass_mat_area = spec_fiberglass_mat_total - screed_total_area
-        if remaining_fiberglass_mat_area > D0:
-            lines.append(
-                material_roll_line(
-                    code="fiberglass_mat_technonikol_100gr",
-                    name="Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)",
-                    price_code="roof_fiberglass_mat_technonikol_100gr_m2",
-                    required_area=remaining_fiberglass_mat_area,
-                    roll_area=d(input_data["roof_fiberglass_mat_roll_area_m2"]),
-                    unit_price_per_m2=d(input_data["roof_fiberglass_mat_unit_price_per_m2"]),
-                    quantity_source="roof_raw_material_spec_rows fiberglass mat row, minus area already covered by roof_screed_fiberglass_mat, rounded to rolls",
-                )
-            )
+    # Geo150 covers parapet/wall upstands in every project. Its basis is exactly the
+    # abutment installation work length, independent of raw spec and separate screed layers.
+    if parapet_and_abutment > D0:
+        geotextile_parapet_coeff = d(input_data["geotextile_parapet_coeff"])
+        line = material_roll_line(
+            code="geotextile_prof_150_parapet",
+            name="Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м",
+            price_code="roof_geotextile_technonikol_prof_150_m2",
+            required_area=parapet_and_abutment * geotextile_parapet_coeff,
+            roll_area=d(input_data["geotextile_parapet_roll_area_m2"]),
+            unit_price_per_m2=d(input_data["geotextile_parapet_unit_price_per_m2"]),
+            quantity_source="parapet_and_abutment_total_length_m * geotextile_parapet_coeff, rounded to rolls",
+        )
+        line["formula"].update({
+            "parapet_and_abutment_total_length_m": decimal_str(parapet_and_abutment),
+            "overlap_coeff": decimal_str(geotextile_parapet_coeff),
+        })
+        lines.append(line)
 
     lines.extend(
         [

@@ -95,7 +95,7 @@ def _line_value(line: dict[str, Any], key: str) -> Any:
 
 
 def _quantity(line: dict[str, Any]) -> float:
-    for key in ("quantity", "quantity_display", "quantity_raw"):
+    for key in ("quantity_raw", "quantity", "quantity_display"):
         if line.get(key) not in (None, ""):
             return _num(line.get(key))
     return 0.0
@@ -114,9 +114,11 @@ def _cost_parts(line: dict[str, Any]) -> tuple[float, float, float, float, float
     # meaningful unit price. The Excel estimate should still keep live row formulas,
     # so represent such rows as quantity * derived unit price.
     if quantity and material_total and not material_unit_price:
-        material_unit_price = material_total / quantity
+        raw_total = _num(_line_value(line, "material_total_raw"))
+        material_unit_price = (raw_total or material_total) / quantity
     if quantity and work_total and not work_unit_price:
-        work_unit_price = work_total / quantity
+        raw_total = _num(_line_value(line, "work_total_raw"))
+        work_unit_price = (raw_total or work_total) / quantity
 
     return quantity, material_unit_price, material_total, work_unit_price, work_total, row_total
 
@@ -324,6 +326,7 @@ _P6_LINE_ROLE_RANK: list[tuple[re.Pattern[str], int]] = [
     (re.compile(r"_lintel_concrete_b22_5_m300_material$"), 160),
     (re.compile(r"_lintel_concrete_delivery$"), 170),
     (re.compile(r"_manual_concrete_lifting$"), 180),
+    (re.compile(r"_lintel_formwork_dismantling$"), 185),
     (re.compile(r"_lintel_edge_insulation_work$"), 190),
     (re.compile(r"_lintel_edge_insulation_eps_material$"), 200),
     (re.compile(r"_lintel_edge_insulation_glue_foam$"), 210),
@@ -687,9 +690,9 @@ def _write_data_row(ws: Any, row_num: int, line: dict[str, Any]) -> None:
     values = {
         "J": quantity,
         "K": material_unit,
-        "L": f"=J{row_num}*K{row_num}",
+        "L": f"=ROUND(J{row_num}*K{row_num},0)",
         "M": work_unit,
-        "N": f"=J{row_num}*M{row_num}",
+        "N": f"=ROUND(J{row_num}*M{row_num},0)",
         "O": f"=L{row_num}+N{row_num}",
     }
     for col, value in values.items():

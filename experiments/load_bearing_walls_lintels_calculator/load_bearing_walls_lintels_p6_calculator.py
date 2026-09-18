@@ -47,7 +47,8 @@ _CAT_LINTEL_CONCRETING = 14
 _CAT_LINTEL_CONCRETE_MATERIAL = 15
 _CAT_LINTEL_CONCRETE_DELIVERY = 16
 _CAT_LINTEL_CONCRETE_LIFTING = 17
-_CAT_LINTEL_INSULATION = 18
+_CAT_LINTEL_FORMWORK_DISMANTLING = 18
+_CAT_LINTEL_INSULATION = 19
 
 
 def _lintel_line_category(code: str) -> int:
@@ -59,6 +60,8 @@ def _lintel_line_category(code: str) -> int:
         return _CAT_LINTEL_FORMWORK_MONOLITH
     if code.endswith(("_lintel_edge_insulation_work", "_lintel_edge_insulation_eps_material", "_lintel_edge_insulation_glue_foam")):
         return _CAT_LINTEL_INSULATION
+    if code.endswith("_lintel_formwork_dismantling"):
+        return _CAT_LINTEL_FORMWORK_DISMANTLING
     if code.endswith("_lintel_concrete_b22_5_m300_material"):
         return _CAT_LINTEL_CONCRETE_MATERIAL
     if code.endswith("_lintel_concrete_delivery"):
@@ -199,9 +202,11 @@ class P6Rates:
 @dataclass(frozen=True)
 class P6Defaults:
     gas_block_waste_coeff: float = 1.05
-    gas_block_d400_pallet_volume_m3: float = 2.15
+    # Historical key also covers D500 of the same 400mm thickness.
+    gas_block_d400_pallet_volume_m3: float = 2.16
     gas_block_d500_250_pallet_volume_m3: float = 1.8
     gas_block_d500_150_pallet_volume_m3: float = 1.8
+    gas_block_other_pallet_volume_m3: float = 1.8
     adhesive_consumption_bag_per_m3: float = 1.2
     adhesive_waste_coeff: float = 1.05
     sand_concrete_consumption_kg_per_m2_per_10mm: float = 19.0
@@ -266,7 +271,7 @@ def _block_size_parts(size: str) -> tuple[int, ...]:
 
 
 def _block_cross_section(size: str) -> tuple[int, int] | None:
-    """Gas-block price and pallet volume are set by density + cross-section (thickness x height),
+    """Gas-block families are matched by cross-section (thickness x height),
     not by piece length - the longest of the three printed dimensions is always the length, a
     cut-lot detail that varies from batch to batch and never changes the per-m3 price or pallet
     size (confirmed 2026-09-08 on a real project: a block printed as 150x250x650, not the catalog
@@ -287,9 +292,9 @@ def _same_block_size(size: str, expected: tuple[int, int, int]) -> bool:
 
 
 def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
-    normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x")
+    normalized_size = item.block_size.replace(" ", "").lower().replace("х", "x").replace("×", "x")
     normalized_size = re.sub(r"\([^)]*\)", "", normalized_size)
-    normalized_density = item.block_density.upper().replace("-", "").replace(" ", "")
+    normalized_density = item.block_density.upper().replace("Д", "D").replace("-", "").replace(" ", "")
     if normalized_density == "D400" and _block_cross_section(normalized_size) == (150, 250):
         # A 150mm-thick gas block is only ever manufactured as D500 - a printed "D400" label on
         # this cross-section is a confirmed real-world PDF typo (Elena, 2026-09-03: "в проекте
@@ -297,6 +302,9 @@ def _block_material_key(item: P6BlockItem) -> tuple[str, str]:
         # different product. Correct it here so price/pallet resolve from the registry without a
         # manual override on every project that repeats this same PDF mistake.
         normalized_density = "D500"
+    size_parts = _block_size_parts(normalized_size)
+    if len(size_parts) == 3:
+        normalized_size = "x".join(str(part) for part in size_parts)
     return (normalized_density, normalized_size)
 
 
@@ -317,13 +325,15 @@ def _block_pallet_volume(item: P6BlockItem, defaults: P6Defaults) -> float:
     if item.pallet_volume_m3 is not None:
         return item.pallet_volume_m3
     density, size = _block_material_key(item)
-    if density == "D400" and _same_block_size(size, (600, 400, 250)):
+    if density in {"D400", "D500"} and _same_block_size(size, (600, 400, 250)):
         return defaults.gas_block_d400_pallet_volume_m3
     if density == "D500" and _same_block_size(size, (600, 250, 250)):
         return defaults.gas_block_d500_250_pallet_volume_m3
     if density == "D500" and _same_block_size(size, (600, 150, 250)):
         return defaults.gas_block_d500_150_pallet_volume_m3
-    raise ValueError(f"Unsupported block material without explicit pallet_volume_m3: {item.block_density} {item.block_size}")
+    if _block_cross_section(size) is None:
+        raise ValueError(f"Invalid block dimensions without explicit pallet_volume_m3: {item.block_size}")
+    return defaults.gas_block_other_pallet_volume_m3
 
 
 def _block_price_code(item: P6BlockItem) -> str | None:
@@ -335,6 +345,69 @@ def _block_price_code(item: P6BlockItem) -> str | None:
     if density == "D500" and _same_block_size(size, (600, 150, 250)):
         return "gas_block_d500_150_m3"
     return None
+
+
+def _block_purchase_order(
+    items: list[P6BlockItem],
+    zone_id: str,
+    data: P6LoadBearingWallsLintelsInput,
+    pools: dict[tuple[str, str], dict[str, Any]],
+) -> dict[str, Any]:
+    first = items[0]
+    key = _block_material_key(first)
+    pallet_volume = _block_pallet_volume(first, data.defaults)
+    unit_price = _block_unit_price(first, data.rates)
+    if data.defaults.gas_block_waste_coeff <= 0:
+        raise ValueError("Block waste coefficient must be positive")
+    if pallet_volume <= 0:
+        raise ValueError(f"Block pallet volume must be positive for material {key}")
+    for item in items:
+        if item.volume_m3 < 0:
+            raise ValueError(f"Block specification volume must be nonnegative: {item.item_id}")
+        if (
+            _block_pallet_volume(item, data.defaults) != pallet_volume
+            or _block_unit_price(item, data.rates) != unit_price
+        ):
+            raise ValueError(f"Cannot pool block material {key}: price or pallet volume differs within zone {zone_id}")
+    pool = pools.setdefault(
+        key,
+        {
+            "spec_volume": Decimal("0"),
+            "pallets": 0,
+            "pallet_volume_m3": pallet_volume,
+            "material_unit_price": unit_price,
+            "zone_ids": [],
+        },
+    )
+    if pool["pallet_volume_m3"] != pallet_volume or pool["material_unit_price"] != unit_price:
+        raise ValueError(f"Cannot pool block material {key}: price or pallet volume differs between zones")
+
+    spec_volume = sum(d(item.volume_m3) for item in items)
+    required = spec_volume * d(data.defaults.gas_block_waste_coeff)
+    previous_spec_volume = pool["spec_volume"]
+    previous_pallets = pool["pallets"]
+    cumulative_spec_volume = previous_spec_volume + spec_volume
+    # Purchase only the increment of the cumulative whole-pallet order, reusing earlier stock.
+    cumulative_order = gas_block_order(cumulative_spec_volume, data.defaults.gas_block_waste_coeff, pallet_volume)
+    stage_pallets = cumulative_order["pallets"] - previous_pallets
+    available_before = d(previous_pallets) * d(pallet_volume) - previous_spec_volume * d(data.defaults.gas_block_waste_coeff)
+    remaining_after = d(cumulative_order["pallets"]) * d(pallet_volume) - cumulative_spec_volume * d(data.defaults.gas_block_waste_coeff)
+    pool["spec_volume"] = cumulative_spec_volume
+    pool["pallets"] = cumulative_order["pallets"]
+    pool["zone_ids"].append(zone_id)
+    return {
+        "spec_volume_m3": q(spec_volume),
+        "required_volume_m3": q(required),
+        "raw_pallets": q(required / d(pallet_volume)),
+        "pallets": stage_pallets,
+        "pallet_volume_m3": pallet_volume,
+        "order_volume_m3": q(d(stage_pallets) * d(pallet_volume)),
+        "available_before_m3": q(available_before),
+        "remaining_after_m3": q(remaining_after),
+        "cumulative_spec_volume_m3": q(cumulative_spec_volume),
+        "cumulative_pallets": cumulative_order["pallets"],
+        "cumulative_order_volume_m3": cumulative_order["order_volume_m3"],
+    }
 
 
 def _delivery_batch_id(zone: P6WallZone) -> str:
@@ -654,6 +727,16 @@ def _calculate_lintel_blocks(
                 ),
             ]
         )
+    if monolithic_length > 0:
+        lines.append(
+            line(
+                f"{zone.zone_id}_lintel_formwork_dismantling",
+                f"Демонтаж опалубки после завершения бетонирования: {zone.display_name}",
+                "м2",
+                q(total_formwork_area),
+                notes="Нулевая контрольная строка по эталонной смете Елены: количество равно площади монтажа опалубки монолитных перемычек.",
+            )
+        )
     blocks[zone.zone_id] = {
         "ublock_length_m": q(ublock_length),
         "monolithic_length_m": q(monolithic_length),
@@ -734,6 +817,8 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
     calculation_blocks: dict[str, Any] = {"zones": {}, "delivery_batches": {}, "crane_batches": {}, "rebar": {}}
     delivery_batches: dict[str, Decimal] = {}
     crane_batches: dict[str, Decimal] = {}
+    crane_batch_order_volumes: dict[str, Decimal] = {}
+    block_purchase_pools: dict[tuple[str, str], dict[str, Any]] = {}
     delivery_batch_rank: dict[str, int] = {}
     crane_batch_rank: dict[str, int] = {}
 
@@ -817,14 +902,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
 
         zone_order_volume = Decimal("0")
         zone_block_controls: dict[str, Any] = {}
-        # Pool raw volume by material (density+size) BEFORE pallet-rounding, same principle
-        # already proven for rebar (rebar_from_spec_length_items_pooled's own docstring, and the
-        # 2026-08-14 parapet-zone merge above): rounding each raw row to its own pallet
-        # independently can waste a partial pallet that pooling-then-rounding-once would not. Real
-        # zones sometimes carry more than one raw block_item of the same material (e.g. a merged
-        # parapet zone combining two spec sub-zones) - group them into one purchase line instead
-        # of one line per raw item, matching Elena's real smetas (one block-material line per
-        # zone, not one per spec row).
+        # Keep the existing per-zone rows, but share whole-pallet rounding across all zones.
         block_groups: dict[tuple[str, str], list[P6BlockItem]] = {}
         block_group_order: list[tuple[str, str]] = []
         for block in zone.block_items:
@@ -836,17 +914,14 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
         for key in block_group_order:
             group_items = block_groups[key]
             first = group_items[0]
-            spec_volume_total = sum(d(item.volume_m3) for item in group_items)
-            order = gas_block_order(
-                spec_volume_total, defaults.gas_block_waste_coeff, _block_pallet_volume(first, defaults)
-            )
+            order = _block_purchase_order(group_items, zone.zone_id, data, block_purchase_pools)
             zone_order_volume += d(order["order_volume_m3"])
             code = f"{zone.zone_id}_block_{first.item_id}"
             for item in group_items:
                 zone_block_controls[item.item_id] = {
-                    "spec_volume_m3": q(item.volume_m3),
                     "pooled_with": [i.item_id for i in group_items if i.item_id != item.item_id],
                     **order,
+                    "spec_volume_m3": q(item.volume_m3),
                 }
             lines.append(
                 line(
@@ -856,15 +931,19 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                     order["order_volume_m3"],
                     material_unit_price=_block_unit_price(first, rates),
                     price_code=_block_price_code(first),
+                    notes="Закупка на этап с учётом остатка ранее заказанных поддонов того же материала.",
                 )
             )
             sort_keys[code] = (rank_of(zone.zone_id), _CAT_BLOCK_MATERIAL)
-        if zone_order_volume > 0:
+        if block_spec_total > 0:
             batch_id = _delivery_batch_id(zone)
             delivery_batches[batch_id] = delivery_batches.get(batch_id, Decimal("0")) + zone_order_volume
             delivery_batch_rank.setdefault(batch_id, rank_of(zone.zone_id))
             crane_batch_id = _crane_batch_id(zone)
-            crane_batches[crane_batch_id] = crane_batches.get(crane_batch_id, Decimal("0")) + zone_order_volume
+            # Earlier stock still needs lifting; a zero new purchase must not erase a crane stage.
+            zone_lift_volume = max(zone_order_volume, block_spec_total * d(defaults.gas_block_waste_coeff))
+            crane_batches[crane_batch_id] = crane_batches.get(crane_batch_id, Decimal("0")) + zone_lift_volume
+            crane_batch_order_volumes[crane_batch_id] = crane_batch_order_volumes.get(crane_batch_id, Decimal("0")) + zone_order_volume
             crane_batch_rank.setdefault(crane_batch_id, rank_of(zone.zone_id))
             adhesive_target = adhesive_pool_target[zone.zone_id]
             adhesive_pools[adhesive_target] = adhesive_pools.get(adhesive_target, Decimal("0")) + block_spec_total
@@ -913,6 +992,20 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             "block_items": zone_block_controls,
             "lintels": lintel_blocks.get(zone.zone_id, {}),
         }
+
+    calculation_blocks["block_purchase_pools"] = {
+        f"{density}:{size}": {
+            "block_density": density,
+            "block_size": size,
+            "zone_ids": pool["zone_ids"],
+            "spec_volume_m3": q(pool["spec_volume"]),
+            "required_volume_m3": q(pool["spec_volume"] * d(defaults.gas_block_waste_coeff)),
+            "pallet_volume_m3": pool["pallet_volume_m3"],
+            "pallets": pool["pallets"],
+            "order_volume_m3": q(d(pool["pallets"]) * d(pool["pallet_volume_m3"])),
+        }
+        for (density, size), pool in block_purchase_pools.items()
+    }
 
     for target_zone_id, pooled_block_spec_total in adhesive_pools.items():
         adhesive_raw = pooled_block_spec_total * d(defaults.adhesive_consumption_bag_per_m3) * d(defaults.adhesive_waste_coeff)
@@ -990,7 +1083,8 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
             max(1, int(ceil(Decimal(crane_trucks) / d(defaults.crane_trucks_per_shift)))) if crane_trucks > 0 else 0
         )
         calculation_blocks["crane_batches"][crane_batch_id] = {
-            "block_order_volume_m3": q(crane_order_volume),
+            "block_order_volume_m3": q(crane_batch_order_volumes[crane_batch_id]),
+            "block_lift_volume_m3": q(crane_order_volume),
             "raw_trucks": q(crane_order_volume / d(defaults.gas_block_delivery_truck_capacity_m3)),
             "crane_shifts": crane_shifts,
         }
@@ -1002,7 +1096,7 @@ def calculate_load_bearing_walls_lintels_p6(data: P6LoadBearingWallsLintelsInput
                 "смена",
                 crane_shifts,
                 material_unit_price=rates.crane_25t_unit_price,
-                notes="Кран считается отдельно от партии доставки — минимум 1 смена на каждый реальный подъём, далее ceil(эквивалент машин/3).",
+                notes="Кран считается отдельно от партии доставки, включая подъём блока из остатков: минимум 1 смена на каждый реальный подъём, далее ceil(эквивалент машин/3).",
                 price_code="crane_shift",
             )
         )

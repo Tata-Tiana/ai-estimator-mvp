@@ -762,6 +762,8 @@ def calculate_insulation_context(
         "total_insulation_area_m2": round_decimal(foam_base_area),
         "foam_base_area_m2": round_decimal(foam_base_area),
         "total_eps_volume_from_spec_m3": round_decimal(total_eps_volume_from_spec),
+        "eps_material_volume_source": insulation.get("eps_material_volume_source", "legacy_input"),
+        "eps_material_derived_volume_m3": insulation.get("eps_material_derived_volume_m3"),
         "calculated_clean_eps_volume_m3": round_decimal(calculated_clean_eps_volume),
         "eps_volume_delta_m3": round_decimal(eps_volume_delta),
         "eps_thickness_m": round_decimal(eps_thickness),
@@ -1174,7 +1176,10 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
     else:
         total_concrete_volume = d(geometry_in["total_concrete_volume_from_spec_m3"])
     slab_thickness = d(geometry_in["slab_thickness_m"])
-    slab_concrete_volume = total_concrete_volume - beams_concrete_volume
+    # Active slab_zones contain slab-only concrete; only the legacy scalar includes beams.
+    slab_concrete_volume = (
+        total_concrete_volume if slab_zones_in else total_concrete_volume - beams_concrete_volume
+    )
     calculated_main_formwork_area = slab_concrete_volume / slab_thickness
 
     # slab_zones[]-level formwork (2026-08-05, Elena's idea): purely additive alternative to the
@@ -1568,8 +1573,8 @@ def calculate_floor_slab_pour(input_data: dict[str, Any]) -> dict[str, Any]:
                 "Демонтаж опалубки после завершения бетонирования",
                 "м2",
                 "client_only_zero_internal_line",
-                slab_formwork_area,
-                display_decimal(slab_formwork_area),
+                slab_formwork_area + edge_beam_formwork_area_for_materials,
+                display_decimal(slab_formwork_area + edge_beam_formwork_area_for_materials),
             ),
             estimate_line(
                 "edge_beam_insulation_work",

@@ -196,8 +196,8 @@
       "name": "Демонтаж опалубки после завершения бетонирования",
       "unit": "м2",
       "line_type": "zero_excel_structure_line",
-      "quantity_raw": 81.9,
-      "quantity_display": 81.9,
+      "quantity_raw": 89.14,
+      "quantity_display": 89.14,
       "material_total": 0,
       "work_total": 0,
       "line_total": 0
