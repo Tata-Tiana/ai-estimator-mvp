@@ -89,8 +89,23 @@ remain unresolved; the plan does not approve their quantities.
 
 The documentation checkpoint includes reports 16/17, steps 30/31 and this handoff;
 identify it with git log ("Checkpoint grillage audits and plan universal waterproofing").
-Next capture reproducible before inputs/results/prices for ARK/TRC/USV. Those captures
-are still pending. Implementation is NOT started by this plan.
+Before inputs/results/prices for ARK/TRC/USV captured and recomputed on 2026-09-18.
+Read [baseline report](reports/step_31_waterproofing_before_baseline_2026-09-18.md).
+Local manifest/archive: `output/waterproofing_step31/`; totals ARK 53962, TRC 41440, USV 48874 RUB.
+ARK/USV match historical runs exactly. TRC has the previously added zero technical-supervision
+row; all old lines/totals match. TRC's saved review omits explicit insulation area, producing
+13.41 m2 rather than the 17.355 m2 of its older report. Preserve and audit this discrepancy,
+do not silently change baseline. Next stage after user review is plan point 2: scope/questions.
+Implementation is NOT started by capturing these baselines.
+Step 31 point 2 audit now ready: read
+[report 19](reports/ark_vs_original_comparison/19_waterproofing_scope_and_questions.md).
+All 12 ARK grey rows and helpers mapped; W1-W5 prepared, not sent or answered.
+Spec coating total 221.4 versus Elena 187.4088 is specifically the FP2 39.3 versus
+manual 5.3088 substitution. EPS100 spec cubes 4.8 with 5% need 19 packs, not Elena's
+18 from area. Under-wall EPS50 (20.2 m2 / 1 m3) is not found in checked estimate
+formulas; ownership remains unresolved. Under-slab EPS50 already belongs to foundation_slab;
+do not duplicate it or thermal inserts in waterproofing. Point 2 ownership checkbox remains
+open pending answers. Next review questions and obtain decisions, not code implementation.
 Future waterproofing code/parser/review/export changes must be accepted and committed as
 one separate scoped change so it can be reverted without reverting unrelated grillage work.
 Review subsequent dependencies/conflicts before a future revert. Git does not revert Google
