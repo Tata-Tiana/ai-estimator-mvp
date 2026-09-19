@@ -111,6 +111,18 @@ one separate scoped change so it can be reverted without reverting unrelated gri
 Review subsequent dependencies/conflicts before a future revert. Git does not revert Google
 edits, credentials or ignored generated artifacts. Previous rebar price sync is outside this scope.
 
+## Separate Columns Workstream: Step 32
+
+User requested work one checkpoint at a time while grillage/waterproofing answers are pending.
+Waterproofing docs are protected by checkpoint `0577e49`. Read
+[step 32](reports/step_32_monolithic_columns_plan.md). ARK has the reference section
+`КОЛОННЫ К-1` at rows 117-135. Separate column sections were not found in current TRC/USV
+estimate sheets during planning; verify source applicability, do not invent sections.
+No columns contract/calculator exists. The plan is accepted and protected by the documentation
+checkpoint `Checkpoint monolithic columns plan`; no source, parser, price or code changes were made.
+Next is step 32 point 1:
+archive the ARK reference rows/PDF/allowed price snapshot and produce report 21.
+
 ## Historical Goal
 
 Build a Google review workbook for all 8 estimate sections, then make it flow into calculators and final estimate export the same way the earthworks flow already does.
