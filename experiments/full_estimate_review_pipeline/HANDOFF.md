@@ -118,10 +118,30 @@ Waterproofing docs are protected by checkpoint `0577e49`. Read
 [step 32](reports/step_32_monolithic_columns_plan.md). ARK has the reference section
 `КОЛОННЫ К-1` at rows 117-135. Separate column sections were not found in current TRC/USV
 estimate sheets during planning; verify source applicability, do not invent sections.
-No columns contract/calculator exists. The plan is accepted and protected by the documentation
-checkpoint `Checkpoint monolithic columns plan`; no source, parser, price or code changes were made.
-Next is step 32 point 1:
-archive the ARK reference rows/PDF/allowed price snapshot and produce report 21.
+No columns contract/calculator exists. The plan is protected by checkpoint `e52cf5c`.
+Step 32 point 1 is complete: read
+[report 21](reports/ark_vs_original_comparison/21_columns_excel_reference.md).
+Local reference/manifest/archive: `output/columns_step32/`. All 17 positions 118-134,
+grey formulas and right helpers were captured; no native comments were present. Independent
+arithmetic reproduces O135 = 71573.63215 RUB. A normalized read-only snapshot of ONLY the
+first Google price sheet has 125 coded rows with no fallback/warnings; no Google writes occurred.
+Historical prices differ from the current registry, and no coded column-concreting work price
+was found; do not refresh the reference total. Next after user review is point 2 PDF audit,
+especially B25/0.75 m3 project data versus B22.5/0.747 m3 estimate geometry.
+Step 32 point 2 is now complete: read
+[report 22](reports/ark_vs_original_comparison/22_columns_pdf_sources.md).
+ARK KR2/08 gives 2 K1 columns, 300x300, 4.15 m each, B25 0.75 m3 total, and complete
+source rebar lengths. Excel geometry 0.747 m3 explains the rounded 0.75; the real unresolved
+conflict is B25 project versus B22.5 estimate. TRC is NOT a confirmed negative fixture:
+KR1 mentions first-floor columns/releases but supplied PDFs have no column detail/spec and
+the estimate has no separate section. USV has no positive column detail in the checked set.
+Next is point 3 questions/spec additions; no contract or calculator work yet.
+Step 32 point 3 is ready for user review: read
+[report 23](reports/ark_vs_original_comparison/23_columns_questions_and_spec_additions.md).
+C1-C10 are not sent/answered. CS1-CS9 propose project-spec fixes; CP1-CP9 separate
+procurement tasks. Current first-sheet gaps include coded B25 material and column-concreting
+work prices; do not write Google or use historical fallback. Next review the wording with the
+user, then record actual answers in point 4. Do not start contract implementation automatically.
 
 ## Historical Goal
 
