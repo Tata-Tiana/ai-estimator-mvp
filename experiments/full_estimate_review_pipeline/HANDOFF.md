@@ -126,22 +126,89 @@ grey formulas and right helpers were captured; no native comments were present. 
 arithmetic reproduces O135 = 71573.63215 RUB. A normalized read-only snapshot of ONLY the
 first Google price sheet has 125 coded rows with no fallback/warnings; no Google writes occurred.
 Historical prices differ from the current registry, and no coded column-concreting work price
-was found; do not refresh the reference total. Next after user review is point 2 PDF audit,
-especially B25/0.75 m3 project data versus B22.5/0.747 m3 estimate geometry.
+was found; do not refresh the reference total.
 Step 32 point 2 is now complete: read
 [report 22](reports/ark_vs_original_comparison/22_columns_pdf_sources.md).
-ARK KR2/08 gives 2 K1 columns, 300x300, 4.15 m each, B25 0.75 m3 total, and complete
-source rebar lengths. Excel geometry 0.747 m3 explains the rounded 0.75; the real unresolved
-conflict is B25 project versus B22.5 estimate. TRC is NOT a confirmed negative fixture:
-KR1 mentions first-floor columns/releases but supplied PDFs have no column detail/spec and
-the estimate has no separate section. USV has no positive column detail in the checked set.
-Next is point 3 questions/spec additions; no contract or calculator work yet.
-Step 32 point 3 is ready for user review: read
+ARK KR2/08 gives 2 K1 columns, 300x300, 4.15 m each and complete source rebar lengths.
+Elena confirmed that B25 is a specification typo to be corrected to B22.5. Concreting work
+uses the ready project quantity 0.75 m3 without 5% work allowance; 0.747 m3 is a geometry
+check. Ready formwork area will be added to the specification. `Km-1` will be corrected to
+`K1`. TRC is a confirmed negative fixture: it has no columns, and the former release note was
+an already corrected typo. USV has no positive column detail in the checked set.
+Read the updated questions/spec additions:
 [report 23](reports/ark_vs_original_comparison/23_columns_questions_and_spec_additions.md).
-C1-C10 are not sent/answered. CS1-CS9 propose project-spec fixes; CP1-CP9 separate
-procurement tasks. Current first-sheet gaps include coded B25 material and column-concreting
-work prices; do not write Google or use historical fallback. Next review the wording with the
-user, then record actual answers in point 4. Do not start contract implementation automatically.
+C1/C3/C4/C7/C10 are confirmed; C2/C6 are partial. The parser must extract count and cross-section
+and choose timber formwork only up to 300x300 and 4 columns inclusive; otherwise use supplier
+inventory formwork. Timber uses 2.3104 m2 per plywood sheet and 100 mm boards. More than 3 m3
+of concrete adds one 36 m pump shift. More than 8 columns adds a crane row, but crane shifts and
+manual concrete lifting remain manual inputs on `01-1`. Straight rebar may have no position and
+must survive as running length. Open items are concrete procurement rounding, armocage work basis,
+trip count and financial rows. No contract or calculator work has started.
+
+## Separate Monolithic Staircases Workstream: Step 33
+
+After the columns source audit was protected by checkpoint `d53e69a`, the user requested
+starting monolithic staircases by the same staged scheme. Read
+[step 33](reports/step_33_monolithic_staircases_plan.md). TRC is the primary reference and has
+two new visual estimate blocks: L-1 rows 332-352 and L-2 rows 353-369 on sheet `НС 29.06.26`.
+The staircase floor slab rows 240-264 are already implemented and audited as the fourth physical
+pour in the universal `floor_slabs` section. Explicitly exclude that slab from the new staircase
+contract/calculator, preserve its current rows and total, and test that L-1/L-2 do not duplicate it.
+ARK/USV reference estimates have no matching staircase row names in the preliminary inventory.
+Existing extraction reports preserve TRC KR2/24 and 25 data for L-1/L-2 only as out-of-target raw
+rows; no contract/calculator exists for those two blocks. Expanded clay and brick belong to the
+finishing stage and are excluded from this estimate section; Elena will remove them from the
+structural staircase specification. The plan does not approve unresolved price rules or shared procurement.
+Steps 1-3 are now ready for user review. Read
+[report 24](reports/trc_vs_original_comparison/24_staircases_excel_reference.md),
+[report 25](reports/trc_vs_original_comparison/25_staircases_pdf_sources.md), and
+[report 26](reports/trc_vs_original_comparison/26_staircases_questions_and_spec_additions.md).
+The archived reference/manifest/PDF audit is under `output/staircases_step33/` and reproduces
+grey totals 291351.768576 RUB for L-1 and 55886.7758544 RUB for L-2. The price snapshot is
+first-sheet-only and dated 2026-09-19; no Google read/write happened during this audit.
+The recommended architecture is dynamic `staircase_zones[]`: one confirmed stair mark/physical
+scope per estimate block, conditional Elena-ordered rows, linked rebar/additional-material items,
+and strict guards against staircase slab/roof/release false positives. Elena confirmed that ready
+formwork area, step count, landing count and chasing length will all be present in specifications.
+The parser must not replace missing values with manual drawing measurements; an included block
+with a missing value gets `missing_spec_data`. ST2-ST4 and ST10 are closed; the remaining questions
+stay in report 26. No parser/calculator/export implementation has started.
+
+## Separate Partitions Workstream: Step 34
+
+On 2026-09-24 the user clarified the key scope rule: the parser must extract partitions whenever
+they are present in the project and cannot infer the construction contract. The estimator later
+chooses whether to include the section in the estimate. Therefore keep two independent states:
+`found_in_project` and `included_in_estimate`. Review data survives either choice; only final
+section export and totals are filtered. The existing constructor workbook already displays an
+include/exclude dropdown, but the downstream calculator/export does not consume it yet. Step 34
+must implement real filtering instead of treating the dropdown as decorative.
+
+Read [step 34](reports/step_34_partitions_plan.md) and its completed stages 1-3:
+[Excel reference](reports/ark_vs_original_comparison/24_partitions_excel_reference.md),
+[PDF/source audit](reports/ark_vs_original_comparison/25_partitions_pdf_sources.md), and
+[questions/spec/price gaps](reports/ark_vs_original_comparison/26_partitions_questions_and_spec_additions.md).
+ARK rows 321-337 and TRC rows 315-331 are the two positive estimate references with the same
+Elena row order. USV has no separate partition block in the current reference estimate, but its
+PDF has a first-floor partition specification (D500 600x150x250 16.81 m3 and A500 d10 258 m).
+The user explained that the USV customer omitted partitions from the contracted box, so USV is
+the required regression for `found_in_project=true`, `included_in_estimate=false`, not a parser
+negative case.
+
+The current ARK/TRC extraction outputs preserve useful partition values mostly in raw rows and
+review notes; there is no active standalone `partitions` target/calculator yet. Do not claim that
+historical `wall_role=partitions` capture is production support. Keep the existing hard guard that
+prevents partition rebar from entering `load_bearing_walls_lintels`. The proposed future module
+aggregates matching block SKUs and rebar across floors before one waste/package/rod rounding, while
+preserving floor provenance in review and right-side hints. For 150 mm block, use the confirmed
+1.8 m3 pallet capacity; 2.16 m3 applies only to D400/D500 600x400x250.
+
+Open Elena questions are PRT1-PRT9: specification priority, work area, ARK 125/150 mm conflict,
+glue basis, chasing work, rebar rods, missing partition-lintel d12 totals, manual movement basis,
+and the ARK 2% versus TRC 10% consumables conflict. The first price-registry sheet has most material
+codes, but lacks exact coded prices for partition masonry work in m2 and manual block moving in m3.
+No parser/calculator/export implementation has started. Next: user reviews the question wording,
+then actual answers are recorded before the contract is designed.
 
 ## Historical Goal
 
