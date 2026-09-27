@@ -4,6 +4,28 @@ Use this file when a new chat starts.
 
 If the user says "прочитай инструкцию и продолжай", read this file first, then read the current step report in `reports/`.
 
+## Final Estimate Output Decision 2026-09-27
+
+The production workflow has two different artifacts and they must not be confused:
+
+1. Google Sheets is the intermediate cost-basis review table. The estimator corrects and
+   confirms extracted inputs and the right-hand cost data there.
+2. After confirmation, the bot reads those inputs and directly generates the final `.xlsx`.
+   Do not build the final workbook by converting Google Sheets to Excel.
+3. The final Excel workbook contains `A:I` client calculations, `J:O` grey cost basis, and
+   helper/control columns to the right. All dependent cells use native Excel formulas.
+4. The main sheet print area is `A:I`; page orientation, fit-to-width, repeated headings,
+   margins and page breaks must be written into the workbook.
+5. The estimator makes any final price, coefficient or formula correction in the `.xlsx`,
+   and Excel recalculates both parts. Preserve the previous workbook before regeneration.
+6. The full internal workbook must not be sent to a client merely with cost columns hidden.
+   Client delivery is a PDF rendered from `A:I` or a separate client-only Excel copy.
+7. A final `.xlsx` may be uploaded to Google Drive as an ordinary file without converting it
+   into Google Sheets. The converted view is not the source of the print layout.
+
+Canonical plans: `reports/step_35_client_side_full_estimate_plan.md` and
+`reports/step_36_estimate_formulas_and_hints_completion.md`.
+
 ## Active Scenario 2026-09-18: Full Box, Starting With Grillage
 
 Read [step_30_grillage_full_box_scenario.md](reports/step_30_grillage_full_box_scenario.md)
