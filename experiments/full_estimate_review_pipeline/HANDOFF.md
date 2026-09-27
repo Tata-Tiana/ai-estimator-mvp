@@ -38,6 +38,20 @@ slab and emit `needs_review` / `calculation_module_missing`. Never auto-route by
 The existing foundation-slab formulas may later be reused behind an explicit
 `ground_floor_slab` mode with strict volume/material ownership and no double counting.
 
+## Estimate Section Title Source Policy 2026-09-27
+
+The model maps project data to technical `section_code` values but must not invent visible
+estimate-section titles. Default title priority is: verbatim specification/register heading;
+otherwise verbatim construction/sheet/page title or printed mark; otherwise deterministic
+`section_contract` fallback; confirmed manual title wins. Preserve title text, provenance and
+PDF evidence separately; competing titles require `needs_review`, never model-written merging.
+
+Current implementation is mixed: the extraction prompt already requires visible names to be
+copied verbatim and dynamic `floor_slabs` use parsed `display_name` as the final block title,
+but fixed review headings come from `section.name_ru` and fixed final-Excel headings come from
+hardcoded `SECTION_ORDER`. Read `reports/section_title_source_audit_2026-09-27.md` before
+changing title generation.
+
 ## Active Scenario 2026-09-18: Full Box, Starting With Grillage
 
 Read [step_30_grillage_full_box_scenario.md](reports/step_30_grillage_full_box_scenario.md)
