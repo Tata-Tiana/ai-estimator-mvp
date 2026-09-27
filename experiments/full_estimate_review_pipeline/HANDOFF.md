@@ -26,6 +26,18 @@ The production workflow has two different artifacts and they must not be confuse
 Canonical plans: `reports/step_35_client_side_full_estimate_plan.md` and
 `reports/step_36_estimate_formulas_and_hints_completion.md`.
 
+## Ground Floor Slab Classification Guard 2026-09-27
+
+LVP has one `Бетонная плита основания пола дома 160 мм`, ARH has separate house and
+garage floor-base slabs, and YRV has `Устройство плит основания пола 300 мм, 250 мм`.
+These are `ground_floor_slab` (slab-on-grade/base-floor slabs), not grillage/strip/rib and
+not above-grade `floor_slabs`. The current `foundation_slab` adapter is singular and its
+`slab_zones` only combines concrete zones; it cannot produce ARH's two independent estimate
+blocks. Until a dedicated dynamic adapter/mode exists, preserve one detected object per physical
+slab and emit `needs_review` / `calculation_module_missing`. Never auto-route by the word `плита`.
+The existing foundation-slab formulas may later be reused behind an explicit
+`ground_floor_slab` mode with strict volume/material ownership and no double counting.
+
 ## Active Scenario 2026-09-18: Full Box, Starting With Grillage
 
 Read [step_30_grillage_full_box_scenario.md](reports/step_30_grillage_full_box_scenario.md)
