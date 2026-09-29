@@ -36,6 +36,21 @@ def test_proxy_credentials_are_url_encoded() -> None:
     assert proxy == {"http": expected, "https": expected}
 
 
+def test_http_proxy_is_supported() -> None:
+    proxy = telegram_proxy.build_telegram_proxy(
+        {
+            "TELEGRAM_PROXY_SCHEME": "http",
+            "TELEGRAM_PROXY_HOST": "proxy.example",
+            "TELEGRAM_PROXY_PORT": "8080",
+            "TELEGRAM_PROXY_USERNAME": "user",
+            "TELEGRAM_PROXY_PASSWORD": "secret",
+        }
+    )
+
+    expected = "http://user:secret@proxy.example:8080"
+    assert proxy == {"http": expected, "https": expected}
+
+
 @pytest.mark.parametrize(
     "config",
     [
@@ -48,6 +63,13 @@ def test_proxy_credentials_are_url_encoded() -> None:
         },
         {
             "TELEGRAM_PROXY_HOST": "https://82.117.86.224",
+            "TELEGRAM_PROXY_PORT": "63475",
+            "TELEGRAM_PROXY_USERNAME": "user",
+            "TELEGRAM_PROXY_PASSWORD": "secret",
+        },
+        {
+            "TELEGRAM_PROXY_SCHEME": "mtp",
+            "TELEGRAM_PROXY_HOST": "82.117.86.224",
             "TELEGRAM_PROXY_PORT": "63475",
             "TELEGRAM_PROXY_USERNAME": "user",
             "TELEGRAM_PROXY_PASSWORD": "secret",

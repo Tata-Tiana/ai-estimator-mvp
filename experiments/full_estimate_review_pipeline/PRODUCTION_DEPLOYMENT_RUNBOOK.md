@@ -10,7 +10,8 @@
 
 На 2026-09-24 выполнено первичное чтение состояния сервера. На 2026-09-29 завершена
 локальная подготовка релиза и выполнена установка приложения на сервер. Серверный
-Telegram poller пока намеренно не запущен: блокирует неработающий SOCKS5-прокси.
+Telegram poller пока намеренно не запущен до контролируемого переключения с локального
+экземпляра на серверный.
 
 Подтверждено:
 
@@ -25,8 +26,8 @@ Telegram poller пока намеренно не запущен: блокиру�
 - На момент обследования свободно около 9,8 ГБ диска, оперативной памяти около
   957 МиБ, swap отсутствует. Поэтому нельзя копировать локальные логи, загрузки,
   тестовые PDF и весь рабочий каталог без фильтрации.
-- `calc.service` установлен и включён (`enabled`), но остаётся `inactive` до успешной
-  проверки SOCKS5.
+- `calc.service` установлен и включён (`enabled`), но остаётся `inactive` до первого
+  контролируемого запуска через подтверждённый Telegram-прокси.
 - Локальная копия калькулятора сейчас запущена на Mac через LaunchAgent
   `com.aiestimator.earthworks.telegrambot`. Перед первым запуском на сервере её
   обязательно остановить.
@@ -43,8 +44,8 @@ Telegram poller пока намеренно не запущен: блокиру�
 - серверный smoke-test собрал семь разделов и итоговый Excel с 2631 формулой и
   печатной областью `A:I`;
 - `snab_bot` и `photo_bot` остались активны и не перезапускались;
-- свежий proxy endpoint из закрытого файла недоступен и с сервера, и с Mac по TCP;
-  прежний endpoint принимает TCP, но не отвечает корректным SOCKS5 handshake;
+- техподдержка подтвердила, что для Telegram из РФ нужно использовать HTTP или MTP;
+  выданный HTTP endpoint успешно прошёл серверный `curl getMe`;
 - локальный LaunchAgent остаётся единственным работающим Telegram poller.
 
 Google OAuth:
@@ -81,8 +82,10 @@ Google OAuth:
    RestartSec=10
    ```
 
-8. Telegram API с сервера доступен только через SOCKS5-прокси. Endpoint, логин и
-   пароль хранить как секреты; в Git и в эту памятку их не записывать.
+8. Telegram API с сервера доступен только через прокси. Первоначально был указан
+   SOCKS5, но техподдержка подтвердила использование HTTP или MTP для Telegram из РФ.
+   Рабочий HTTP endpoint проверен через `getMe`. Endpoint, логин и пароль хранить как
+   секреты; в Git и в эту памятку их не записывать.
 9. До первого запуска бота на сервере остановить локальную копию, включая любой
    ручной тест на сервере. Одновременно должен работать только один poller с данным
    Telegram-токеном.
@@ -132,13 +135,14 @@ Google OAuth:
 Наличие Linux wheels для всего списка зависимостей отдельно проверено под серверный
 Python 3.10; несовместимый локальный пин Pillow заменён на совместимый `12.2.0`.
 
-### 2. Добавить поддержку Telegram SOCKS5
+### 2. Добавить поддержку Telegram-прокси
 
-`telegram_bot.py` теперь настраивает отдельный SOCKS5 только для Telegram. Выполнено:
+`telegram_bot.py` теперь настраивает отдельный HTTP или SOCKS5-прокси только для
+Telegram. Выполнено:
 
 - добавить `PySocks` в production-зависимости;
-- читать отдельные переменные `TELEGRAM_PROXY_HOST`, `TELEGRAM_PROXY_PORT`,
-  `TELEGRAM_PROXY_USERNAME`, `TELEGRAM_PROXY_PASSWORD`;
+- читать отдельные переменные `TELEGRAM_PROXY_SCHEME`, `TELEGRAM_PROXY_HOST`,
+  `TELEGRAM_PROXY_PORT`, `TELEGRAM_PROXY_USERNAME`, `TELEGRAM_PROXY_PASSWORD`;
 - настроить proxy в `telebot.apihelper` до создания `TeleBot`;
 - применять прокси только к Telegram, а не задавать общий `HTTPS_PROXY`, иначе через
   него могут случайно пойти Google API и другие запросы;
@@ -188,6 +192,7 @@ TELEGRAM_BOT_TOKEN=
 ALLOW_ALL_USERS=true
 TELEGRAM_ADMIN_CHAT_IDS=
 
+TELEGRAM_PROXY_SCHEME=http
 TELEGRAM_PROXY_HOST=
 TELEGRAM_PROXY_PORT=
 TELEGRAM_PROXY_USERNAME=
@@ -218,7 +223,7 @@ chown -R calc:calc /home/calc/.config/ai-estimator
 
 ### Этап A. Локальная подготовка
 
-- [x] Реализована и протестирована локальная поддержка SOCKS5.
+- [x] Реализована и протестирована локальная поддержка HTTP и SOCKS5.
 - [x] Создан и проверен production manifest.
 - [x] Создан `requirements-prod.txt`.
 - [x] Все тесты семи разделов проходят из чистого production-пакета.
@@ -259,7 +264,7 @@ sudo -u calc bash -lc '
   source /home/calc/.config/ai-estimator/calc.env
   set +a
   curl --fail --silent --show-error \
-    --proxy "socks5h://${TELEGRAM_PROXY_HOST}:${TELEGRAM_PROXY_PORT}" \
+    --proxy "${TELEGRAM_PROXY_SCHEME}://${TELEGRAM_PROXY_HOST}:${TELEGRAM_PROXY_PORT}" \
     --proxy-user "${TELEGRAM_PROXY_USERNAME}:${TELEGRAM_PROXY_PASSWORD}" \
     "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe"
 '
@@ -426,7 +431,7 @@ launchctl bootstrap gui/$(id -u) \
 
 Локальные задачи выполнены:
 
-1. поддержка SOCKS5 только для Telegram;
+1. поддержка HTTP/SOCKS5 только для Telegram;
 2. production manifest + `requirements-prod.txt`;
 3. завершение Google OAuth и локальный end-to-end smoke-test семи разделов.
 

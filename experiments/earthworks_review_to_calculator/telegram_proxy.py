@@ -34,9 +34,13 @@ def build_telegram_proxy(environ: Mapping[str, str] | None = None) -> dict[str, 
     if not 1 <= port <= 65535:
         raise ValueError("TELEGRAM_PROXY_PORT must be between 1 and 65535")
 
+    scheme = values.get("TELEGRAM_PROXY_SCHEME", "socks5h").strip().lower() or "socks5h"
+    if scheme not in {"http", "socks5h"}:
+        raise ValueError("TELEGRAM_PROXY_SCHEME must be 'http' or 'socks5h'")
+
     username = quote(config["TELEGRAM_PROXY_USERNAME"], safe="")
     password = quote(config["TELEGRAM_PROXY_PASSWORD"], safe="")
-    proxy_url = f"socks5h://{username}:{password}@{host}:{port}"
+    proxy_url = f"{scheme}://{username}:{password}@{host}:{port}"
     return {"http": proxy_url, "https": proxy_url}
 
 

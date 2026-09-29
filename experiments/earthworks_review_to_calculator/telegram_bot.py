@@ -2741,7 +2741,7 @@ if __name__ == "__main__":
         sys.exit(1)
     print("Bot started. Polling...")
     if TELEGRAM_PROXY_ENABLED:
-        print("Telegram SOCKS5 proxy enabled.")
+        print("Telegram proxy enabled.")
     _log_event("bot_started", safe_message="Telegram bot process started")
     if ALLOW_ALL_USERS:
         print("WARNING: ALLOW_ALL_USERS=true — all users can access the bot.", file=sys.stderr)
