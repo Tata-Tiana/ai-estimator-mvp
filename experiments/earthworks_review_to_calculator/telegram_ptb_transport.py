@@ -191,11 +191,14 @@ class TeleBot:
             handler.addFilter(secret_filter)
 
     def _build_application(self) -> Application:
+        # The production bots share one HTTPXRequest between Bot API calls and
+        # getUpdates. Keep the same transport/pool layout for proxy parity.
+        request = self._request()
         builder = (
             ApplicationBuilder()
             .token(self.token)
-            .request(self._request())
-            .get_updates_request(self._request())
+            .request(request)
+            .get_updates_request(request)
             .post_init(self._post_init)
         )
         application = builder.build()

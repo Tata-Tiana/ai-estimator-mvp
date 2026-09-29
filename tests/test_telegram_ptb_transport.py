@@ -40,6 +40,14 @@ def test_registers_command_and_document_handlers() -> None:
     assert sum(isinstance(handler, MessageHandler) for handler in handlers) == 1
 
 
+def test_bot_api_and_updates_share_one_httpx_request() -> None:
+    bot = transport_module.TeleBot("123456:TEST_TOKEN", proxy_url="socks5://user:pass@proxy:1080")
+
+    application = bot._build_application()
+
+    assert application.bot._request[0] is application.bot._request[1]
+
+
 def test_sync_api_bridge_sends_replies_and_documents() -> None:
     async def scenario() -> None:
         bot = transport_module.TeleBot("123456:TEST_TOKEN")
