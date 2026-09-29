@@ -26,17 +26,22 @@ The production workflow has two different artifacts and they must not be confuse
 Canonical plans: `reports/step_35_client_side_full_estimate_plan.md` and
 `reports/step_36_estimate_formulas_and_hints_completion.md`.
 
-## Ground Floor Slab Classification Guard 2026-09-27
+## Foundation Slab Variant Classification Guard 2026-09-29
 
-LVP has one `Бетонная плита основания пола дома 160 мм`, ARH has separate house and
-garage floor-base slabs, and YRV has `Устройство плит основания пола 300 мм, 250 мм`.
-These are `ground_floor_slab` (slab-on-grade/base-floor slabs), not grillage/strip/rib and
-not above-grade `floor_slabs`. The current `foundation_slab` adapter is singular and its
-`slab_zones` only combines concrete zones; it cannot produce ARH's two independent estimate
-blocks. Until a dedicated dynamic adapter/mode exists, preserve one detected object per physical
-slab and emit `needs_review` / `calculation_module_missing`. Never auto-route by the word `плита`.
-The existing foundation-slab formulas may later be reused behind an explicit
-`ground_floor_slab` mode with strict volume/material ownership and no double counting.
+The slab classification was corrected after a line-by-line check of TRC, MKP-1, LVP, ARH,
+YRV, GFK-11, SHLK-10, NVD3 and RVR estimates. Sections titled `плита
+основания пола` use the same line grammar as confirmed foundation slabs and even name their
+reinforcement as `каркас фундаментной плиты`. Route them to the `foundation_slab` calculation
+family while preserving the source title verbatim. Do not route them to above-grade
+`floor_slabs` or to grillage/strip work.
+
+No separate top-level parser/calculator is needed. Extend `foundation_slab` with dynamic
+estimate blocks and component/work rows. Current `slab_zones` only aggregates concrete volume
+and emits one concreting line, so it does not yet cover ARH's independent house/garage blocks,
+NVD3's separate slab/rib work rows, RVR's house/garage/rib rows, or SHLK-10's EPS permanent
+rib formwork. Keep strict ownership to prevent rib quantities being counted in both
+`foundation_slab` and the grillage/strip/rib module. Canonical analysis:
+`reports/foundation_slab_variants_classification_2026-09-29.md`.
 
 ## Estimate Section Title Source Policy 2026-09-27
 
