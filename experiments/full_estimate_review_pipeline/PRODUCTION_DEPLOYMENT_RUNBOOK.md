@@ -135,18 +135,38 @@ Python 3.10; несовместимый локальный пин Pillow зам�
 
 ### 2. Добавить поддержку Telegram-прокси
 
-`telegram_bot.py` теперь настраивает отдельный HTTP или SOCKS5-прокси только для
-Telegram. Выполнено:
+После commit `d24d3e2` Telegram-транспорт переведён на тот же стек, что у двух
+действующих серверных ботов. Выполнено:
 
-- добавить `PySocks` в production-зависимости;
+- заменить `pyTelegramBotAPI/PySocks` на `python-telegram-bot[socks]==22.7`;
 - читать отдельные переменные `TELEGRAM_PROXY_SCHEME`, `TELEGRAM_PROXY_HOST`,
   `TELEGRAM_PROXY_PORT`, `TELEGRAM_PROXY_USERNAME`, `TELEGRAM_PROXY_PASSWORD`;
-- настроить proxy в `telebot.apihelper` до создания `TeleBot`;
+- создать штатные `HTTPXRequest` отдельно для Bot API и `getUpdates`;
+- выполнять синхронные обработчики в рабочих потоках, не блокируя asyncio polling;
 - применять прокси только к Telegram, а не задавать общий `HTTPS_PROXY`, иначе через
   него могут случайно пойти Google API и другие запросы;
-- не печатать URL с логином и паролем в stdout, journal и диагностические экспорты;
-- добавлены тесты разбора настроек без вывода реквизитов;
+- подавить HTTPX request-логи и фильтровать токен/полный proxy URL;
+- добавлены тесты транспорта, файлов и настроек прокси; основной набор: 19 passed;
 - smoke-проверка через серверный прокси остаётся серверным этапом C.
+
+Повторная проверка SOCKS5 29.09.2026:
+
+- `snab_bot` и `photo_bot` проверены только на чтение; оба действительно работают
+  через один SOCKS5 endpoint и `HTTPX/socksio`;
+- одиночный `getMe` для `calc` через тот же endpoint вернул `ok=true`;
+- при запуске постоянного polling `calc` получил `socksio ProtocolError: Malformed reply`;
+- эксперимент откачен из резервной копии. Текущий production-режим `calc` — HTTP,
+  `active`, `enabled`, `NRestarts=0`; два других бота не менялись и не перезапускались.
+
+После решения директора использовать SOCKS5 выполнена полноценная PTB-миграция.
+Код установлен и запущен на HTTP: `Application started`, `NRestarts=0`. SOCKS URL и
+версии библиотек побайтно совпадают с существующими ботами, однако отдельный PTB
+`getMe` всё равно получает `Malformed reply` во время SOCKS-аутентификации.
+
+На endpoint уже установлены три TCP-соединения: `photo_bot.service`,
+`snab_bot.service` и отдельный `/root/photobot/bot.py` из `cron.service` (PID 578).
+Этот процесс не изменялся. До подтверждения лимита соединений или выдачи отдельного
+endpoint `calc` временно остаётся на HTTP.
 
 ### 3. Google OAuth
 
@@ -429,7 +449,7 @@ launchctl bootstrap gui/$(id -u) \
 
 Локальные задачи выполнены:
 
-1. поддержка HTTP/SOCKS5 только для Telegram;
+1. PTB/HTTPX-транспорт с поддержкой HTTP/SOCKS5 только для Telegram;
 2. production manifest + `requirements-prod.txt`;
 3. завершение Google OAuth и локальный end-to-end smoke-test семи разделов.
 

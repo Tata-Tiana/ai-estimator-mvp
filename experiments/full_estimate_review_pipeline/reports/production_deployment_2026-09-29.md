@@ -15,6 +15,7 @@ HTTP-прокси, серверный `getMe` через него вернул `
 - commit: `1dcefa9`;
 - HTTP proxy update: `cf80c93`;
 - project Drive folders and server instruction: `742a374`;
+- PTB transport migration: `d24d3e2`;
 - tag: `first-part-production-2026-09-29`;
 - production archive: 116 runtime-файлов, около 664 КБ;
 - архив прошёл SHA-256 и проверку на отсутствие `.env`, токенов, OAuth JSON,
@@ -75,6 +76,38 @@ Google выводит предупреждение о скором оконча�
 
 Production-конфигурация содержит `TELEGRAM_PROXY_SCHEME=http`; реквизиты находятся
 только в закрытом `calc.env`. Ручной параллельный запуск запрещён.
+
+### Повторная проверка SOCKS5
+
+29.09.2026 настройки `snab_bot` и `photo_bot` были проверены только на чтение. Оба бота
+действительно используют одинаковый SOCKS5 URL через `python-telegram-bot` и
+`HTTPX/socksio`. Их файлы, конфигурация, PID и сервисы не изменялись.
+
+Для `calc` был подготовлен такой же HTTPX SOCKS-транспорт. Изолированный `getMe`
+вернул `HTTP 200` и `ok=true`, но постоянный polling при старте получил
+`socksio ProtocolError: Malformed reply`. Оставлять такую конфигурацию в production было нельзя.
+
+Созданные перед опытом резервные копии восстановлены. Экспериментальные пакеты из
+`.venv` удалены. Итоговое состояние: `TELEGRAM_PROXY_SCHEME=http`, `calc.service`
+`active`, `enabled`, `NRestarts=0`, в журнале нового HTTP-процесса traceback нет.
+
+### Миграция на `python-telegram-bot`
+
+После решения директора использовать SOCKS5 Telegram-оболочка `calc` полноценно
+переведена на `python-telegram-bot 22.7`, `HTTPX 0.28.1` и `socksio 1.0.0`, как у
+двух действующих ботов. Commit `d24d3e2`; локально прошло 19 тестов. Новый код
+установлен на сервер с backup `/home/calc/deploy-backups/ptb_20260929_174606`.
+
+SOCKS URL трёх конфигураций совпадает побайтно, но PTB `getMe` для `calc` получает
+`Malformed reply` уже при SOCKS-аутентификации. На endpoint одновременно обнаружены
+три существующих соединения: `photo_bot.service`, `snab_bot.service` и отдельный
+процесс `/root/photobot/bot.py` из `cron.service` (PID 578). Ничего из этого не
+останавливалось и не изменялось. Вероятный лимит сессий должен подтвердить директор
+или поставщик прокси.
+
+Чтобы сохранить доступность, новый PTB-код запущен через текущий HTTP endpoint:
+`calc.service` active, `NRestarts=0`, журнал содержит `Application started`. PID
+`snab_bot`, `photo_bot` и cron-процесса не изменились.
 
 ## Оставшаяся пользовательская проверка
 
