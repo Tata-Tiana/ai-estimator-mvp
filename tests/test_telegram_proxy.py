@@ -20,6 +20,7 @@ SPEC.loader.exec_module(telegram_proxy)
 
 def test_proxy_is_optional() -> None:
     assert telegram_proxy.build_telegram_proxy({}) is None
+    assert telegram_proxy.build_telegram_proxy_url({}) is None
 
 
 def test_proxy_credentials_are_url_encoded() -> None:
@@ -32,8 +33,16 @@ def test_proxy_credentials_are_url_encoded() -> None:
         }
     )
 
-    expected = "socks5h://user%2Bname:p%40ss%3Aword@82.117.86.224:63475"
+    expected = "socks5://user%2Bname:p%40ss%3Aword@82.117.86.224:63475"
     assert proxy == {"http": expected, "https": expected}
+    assert telegram_proxy.build_telegram_proxy_url(
+        {
+            "TELEGRAM_PROXY_HOST": "82.117.86.224",
+            "TELEGRAM_PROXY_PORT": "63475",
+            "TELEGRAM_PROXY_USERNAME": "user+name",
+            "TELEGRAM_PROXY_PASSWORD": "p@ss:word",
+        }
+    ) == expected
 
 
 def test_http_proxy_is_supported() -> None:
@@ -81,14 +90,10 @@ def test_invalid_proxy_configuration_is_rejected(config: dict[str, str]) -> None
         telegram_proxy.build_telegram_proxy(config)
 
 
-def test_configure_applies_proxy_without_logging_credentials() -> None:
-    class ApiHelper:
-        proxy = None
-
-    helper = ApiHelper()
-    enabled = telegram_proxy.configure_telegram_proxy(
-        helper,
+def test_socks5h_alias_is_normalized_for_httpx() -> None:
+    proxy_url = telegram_proxy.build_telegram_proxy_url(
         {
+            "TELEGRAM_PROXY_SCHEME": "socks5h",
             "TELEGRAM_PROXY_HOST": "proxy.example",
             "TELEGRAM_PROXY_PORT": "1080",
             "TELEGRAM_PROXY_USERNAME": "user",
@@ -96,5 +101,4 @@ def test_configure_applies_proxy_without_logging_credentials() -> None:
         },
     )
 
-    assert enabled is True
-    assert helper.proxy["https"].startswith("socks5h://")
+    assert proxy_url == "socks5://user:secret@proxy.example:1080"

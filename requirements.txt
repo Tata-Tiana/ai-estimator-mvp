@@ -7,8 +7,7 @@ pdfplumber
 pytest
 openai
 streamlit
-pyTelegramBotAPI>=4.34.0
-PySocks>=1.7.1
+python-telegram-bot[socks]>=22.7,<23
 google-auth
 google-auth-oauthlib
 google-api-python-client

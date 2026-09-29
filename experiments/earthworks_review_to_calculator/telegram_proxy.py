@@ -13,7 +13,7 @@ _PROXY_KEYS = (
 )
 
 
-def build_telegram_proxy(environ: Mapping[str, str] | None = None) -> dict[str, str] | None:
+def build_telegram_proxy_url(environ: Mapping[str, str] | None = None) -> str | None:
     values = environ if environ is not None else os.environ
     config = {key: values.get(key, "").strip() for key in _PROXY_KEYS}
     if not any(config.values()):
@@ -34,19 +34,20 @@ def build_telegram_proxy(environ: Mapping[str, str] | None = None) -> dict[str, 
     if not 1 <= port <= 65535:
         raise ValueError("TELEGRAM_PROXY_PORT must be between 1 and 65535")
 
-    scheme = values.get("TELEGRAM_PROXY_SCHEME", "socks5h").strip().lower() or "socks5h"
-    if scheme not in {"http", "socks5h"}:
-        raise ValueError("TELEGRAM_PROXY_SCHEME must be 'http' or 'socks5h'")
+    scheme = values.get("TELEGRAM_PROXY_SCHEME", "socks5").strip().lower() or "socks5"
+    if scheme == "socks5h":
+        scheme = "socks5"
+    if scheme not in {"http", "socks5"}:
+        raise ValueError("TELEGRAM_PROXY_SCHEME must be 'http', 'socks5', or 'socks5h'")
 
     username = quote(config["TELEGRAM_PROXY_USERNAME"], safe="")
     password = quote(config["TELEGRAM_PROXY_PASSWORD"], safe="")
-    proxy_url = f"{scheme}://{username}:{password}@{host}:{port}"
+    return f"{scheme}://{username}:{password}@{host}:{port}"
+
+
+def build_telegram_proxy(environ: Mapping[str, str] | None = None) -> dict[str, str] | None:
+    """Compatibility helper for non-PTB callers."""
+    proxy_url = build_telegram_proxy_url(environ)
+    if proxy_url is None:
+        return None
     return {"http": proxy_url, "https": proxy_url}
-
-
-def configure_telegram_proxy(apihelper, environ: Mapping[str, str] | None = None) -> bool:
-    proxy = build_telegram_proxy(environ)
-    if proxy is None:
-        return False
-    apihelper.proxy = proxy
-    return True

@@ -20,15 +20,14 @@ try:
 except ImportError:
     _HAS_DOTENV = False
 
-import telebot
-from telebot import apihelper
+import telegram_ptb_transport as ptb_transport
 
 # ── paths ──────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
 sys.path.insert(0, str(BASE_DIR))
 from project_job_naming import project_drive_folder_name, project_label_from_extraction, review_sheet_title
-from telegram_proxy import configure_telegram_proxy
+from telegram_proxy import build_telegram_proxy_url
 
 if _HAS_DOTENV:
     load_dotenv(REPO_ROOT / ".env")
@@ -129,12 +128,13 @@ ADMIN_CHAT_IDS: set[int] = _parse_chat_ids(_raw_admin_ids)
 ALLOW_ALL_USERS = os.environ.get("ALLOW_ALL_USERS", "").strip().lower() in ("true", "1", "yes")
 
 try:
-    TELEGRAM_PROXY_ENABLED = configure_telegram_proxy(apihelper)
+    TELEGRAM_PROXY_URL = build_telegram_proxy_url()
 except ValueError as exc:
     print(f"ERROR: invalid Telegram proxy configuration: {exc}", file=sys.stderr)
     sys.exit(1)
+TELEGRAM_PROXY_ENABLED = TELEGRAM_PROXY_URL is not None
 
-bot = telebot.TeleBot(TOKEN, parse_mode=None)
+bot = ptb_transport.TeleBot(TOKEN, parse_mode=None, proxy_url=TELEGRAM_PROXY_URL)
 
 
 # ── per-chat locks ─────────────────────────────────────────────────────────
@@ -442,7 +442,7 @@ def _user_can_access_job(chat_id: int, job_id: str) -> bool:
     return any(j.get("job_id") == job_id for j in data.get("jobs", []))
 
 
-def _deny_job_access(message: telebot.types.Message, job_id: str) -> None:
+def _deny_job_access(message: ptb_transport.types.Message, job_id: str) -> None:
     bot.reply_to(message, "У вас нет доступа к этому заказу.")
     _log_event(
         "job_access_denied",
@@ -779,7 +779,7 @@ def _admin_allowed(chat_id: int) -> bool:
     return chat_id in ADMIN_CHAT_IDS
 
 
-def _deny_access(message: telebot.types.Message, command_name: str, admin_required: bool = False) -> None:
+def _deny_access(message: ptb_transport.types.Message, command_name: str, admin_required: bool = False) -> None:
     _log_event(
         "access_denied",
         chat_id=message.chat.id,
@@ -791,14 +791,14 @@ def _deny_access(message: telebot.types.Message, command_name: str, admin_requir
     bot.reply_to(message, "У вас нет доступа к этой команде.")
 
 
-def _require_user_access(message: telebot.types.Message, command_name: str) -> bool:
+def _require_user_access(message: ptb_transport.types.Message, command_name: str) -> bool:
     if _allowed(message.chat.id):
         return True
     _deny_access(message, command_name)
     return False
 
 
-def _require_admin_access(message: telebot.types.Message, command_name: str) -> bool:
+def _require_admin_access(message: ptb_transport.types.Message, command_name: str) -> bool:
     if _admin_allowed(message.chat.id):
         return True
     _deny_access(message, command_name, admin_required=True)
@@ -1147,7 +1147,7 @@ def _format_session_status(session: dict | None) -> str:
 
 # ── /start ─────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["start"])
-def cmd_start(message: telebot.types.Message) -> None:
+def cmd_start(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/start"):
         return
     bot.reply_to(message,
@@ -1161,7 +1161,7 @@ def cmd_start(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["help"])
-def cmd_help(message: telebot.types.Message) -> None:
+def cmd_help(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/help"):
         return
     text = (
@@ -1186,7 +1186,7 @@ def cmd_help(message: telebot.types.Message) -> None:
 
 
 # ── extraction JSON (2026-08-25, repetition plan фаза 1-3) ──────────────────
-def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.types.Document) -> None:
+def _handle_extraction_json_upload(message: ptb_transport.types.Message, doc: ptb_transport.types.Document) -> None:
     chat_id = message.chat.id
 
     file_info = bot.get_file(doc.file_id)
@@ -1342,7 +1342,7 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
 
 # ── документы: основной JSON-flow; PDF-flow оставлен как legacy ─────────────
 @bot.message_handler(content_types=["document"])
-def handle_document(message: telebot.types.Message) -> None:
+def handle_document(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "document"):
         return
 
@@ -1453,7 +1453,7 @@ def handle_document(message: telebot.types.Message) -> None:
 
 # ── /done ──────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["done"])
-def cmd_done(message: telebot.types.Message) -> None:
+def cmd_done(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/done"):
         return
 
@@ -1519,7 +1519,7 @@ def cmd_done(message: telebot.types.Message) -> None:
 # ── /status ────────────────────────────────────────────────────────────────
 # ── /cancel ────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["cancel"])
-def cmd_cancel(message: telebot.types.Message) -> None:
+def cmd_cancel(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/cancel"):
         return
     lock = get_chat_lock(message.chat.id)
@@ -1558,7 +1558,7 @@ def cmd_cancel(message: telebot.types.Message) -> None:
 
 # ── /new_project ───────────────────────────────────────────────────────────
 @bot.message_handler(commands=["new_project"])
-def cmd_new_project(message: telebot.types.Message) -> None:
+def cmd_new_project(message: ptb_transport.types.Message) -> None:
     """Явно закрывает текущий JSON-прогон этого чата (repetition plan фаза 1-4), не дожидаясь
     истечения EXTRACTION_SESSION_MAX_AGE_HOURS - следующий загруженный JSON начнёт новый job_id/
     новую папку, а не попадёт "исправленным" в старый прогон."""
@@ -1583,7 +1583,7 @@ def cmd_new_project(message: telebot.types.Message) -> None:
 
 # ── /update_json ───────────────────────────────────────────────────────────
 @bot.message_handler(commands=["update_json"])
-def cmd_update_json(message: telebot.types.Message) -> None:
+def cmd_update_json(message: ptb_transport.types.Message) -> None:
     """Attach the next uploaded extraction JSON to an existing JSON-flow job.
 
     This covers the normal production case where the estimator asked ChatGPT to correct the JSON
@@ -1634,7 +1634,7 @@ def cmd_update_json(message: telebot.types.Message) -> None:
 
 # ── /build ─────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["build"])
-def cmd_build(message: telebot.types.Message) -> None:
+def cmd_build(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/build"):
         return
     parts = message.text.strip().split(maxsplit=1)
@@ -1747,7 +1747,7 @@ def cmd_build(message: telebot.types.Message) -> None:
 
 # ── admin helpers ──────────────────────────────────────────────────────────
 
-def _admin_started(message: telebot.types.Message, command: str, **payload) -> None:
+def _admin_started(message: ptb_transport.types.Message, command: str, **payload) -> None:
     _log_event(
         "admin_command_started",
         chat_id=message.chat.id,
@@ -1758,7 +1758,7 @@ def _admin_started(message: telebot.types.Message, command: str, **payload) -> N
     )
 
 
-def _admin_completed(message: telebot.types.Message, command: str, **payload) -> None:
+def _admin_completed(message: ptb_transport.types.Message, command: str, **payload) -> None:
     _log_event(
         "admin_command_completed",
         chat_id=message.chat.id,
@@ -1769,7 +1769,7 @@ def _admin_completed(message: telebot.types.Message, command: str, **payload) ->
     )
 
 
-def _admin_failed(message: telebot.types.Message, command: str, error: str, **payload) -> None:
+def _admin_failed(message: ptb_transport.types.Message, command: str, error: str, **payload) -> None:
     _log_event(
         "admin_command_failed",
         chat_id=message.chat.id,
@@ -1961,7 +1961,7 @@ def _recover_sessions_admin() -> dict:
 # ── admin commands ─────────────────────────────────────────────────────────
 
 @bot.message_handler(commands=["admin_help"])
-def cmd_admin_help(message: telebot.types.Message) -> None:
+def cmd_admin_help(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/admin_help"):
         return
     _admin_started(message, "/admin_help")
@@ -1987,7 +1987,7 @@ def cmd_admin_help(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["admin_status"])
-def cmd_admin_status(message: telebot.types.Message) -> None:
+def cmd_admin_status(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/admin_status"):
         return
     _admin_started(message, "/admin_status")
@@ -2032,7 +2032,7 @@ def cmd_admin_status(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["active_sessions"])
-def cmd_active_sessions(message: telebot.types.Message) -> None:
+def cmd_active_sessions(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/active_sessions"):
         return
     _admin_started(message, "/active_sessions")
@@ -2259,7 +2259,7 @@ def _format_chat_card(cid: int) -> str:
 
 
 @bot.message_handler(commands=["sessions"])
-def cmd_sessions(message: telebot.types.Message) -> None:
+def cmd_sessions(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/sessions"):
         return
     _admin_started(message, "/sessions")
@@ -2313,7 +2313,7 @@ def cmd_sessions(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["reset_session"])
-def cmd_reset_session(message: telebot.types.Message) -> None:
+def cmd_reset_session(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/reset_session"):
         return
     _admin_started(message, "/reset_session")
@@ -2360,7 +2360,7 @@ def cmd_reset_session(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["recover_sessions"])
-def cmd_recover_sessions(message: telebot.types.Message) -> None:
+def cmd_recover_sessions(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/recover_sessions"):
         return
     _admin_started(message, "/recover_sessions")
@@ -2390,7 +2390,7 @@ def cmd_recover_sessions(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["logs"])
-def cmd_logs(message: telebot.types.Message) -> None:
+def cmd_logs(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/logs"):
         return
     _admin_started(message, "/logs")
@@ -2408,7 +2408,7 @@ def cmd_logs(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["tail_errors"])
-def cmd_tail_errors(message: telebot.types.Message) -> None:
+def cmd_tail_errors(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/tail_errors"):
         return
     _admin_started(message, "/tail_errors")
@@ -2429,7 +2429,7 @@ def cmd_tail_errors(message: telebot.types.Message) -> None:
 
 
 @bot.message_handler(commands=["job_status"])
-def cmd_job_status(message: telebot.types.Message) -> None:
+def cmd_job_status(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/job_status"):
         return
     _admin_started(message, "/job_status")
@@ -2454,7 +2454,7 @@ def cmd_job_status(message: telebot.types.Message) -> None:
 
 # ── /recreate ──────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["recreate"])
-def cmd_recreate(message: telebot.types.Message) -> None:
+def cmd_recreate(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/recreate"):
         return
     parts = message.text.strip().split(maxsplit=1)
@@ -2593,7 +2593,7 @@ def cmd_recreate(message: telebot.types.Message) -> None:
 
 # ── /rerun ─────────────────────────────────────────────────────────────────
 @bot.message_handler(commands=["rerun"])
-def cmd_rerun(message: telebot.types.Message) -> None:
+def cmd_rerun(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/rerun"):
         return
     parts = message.text.strip().split(maxsplit=1)
@@ -2616,7 +2616,7 @@ def cmd_rerun(message: telebot.types.Message) -> None:
 
 # ── /confirm_rerun ──────────────────────────────────────────────────────────
 @bot.message_handler(commands=["confirm_rerun"])
-def cmd_confirm_rerun(message: telebot.types.Message) -> None:
+def cmd_confirm_rerun(message: ptb_transport.types.Message) -> None:
     if not _require_user_access(message, "/confirm_rerun"):
         return
     parts = message.text.strip().split(maxsplit=1)
@@ -2683,7 +2683,7 @@ _EXPORT_LOGS_PERIODS = ("today", "yesterday", "7d", "all")
 
 
 @bot.message_handler(commands=["export_logs"])
-def cmd_export_logs(message: telebot.types.Message) -> None:
+def cmd_export_logs(message: ptb_transport.types.Message) -> None:
     if not _require_admin_access(message, "/export_logs"):
         return
 
@@ -2855,23 +2855,15 @@ if __name__ == "__main__":
             safe_message="Admin chat IDs are allowed through admin list but absent from user allowlist",
             admin_chat_ids=admins_not_allowed,
         )
-    _recover_sessions_on_startup()
+    bot.add_startup_callback(_recover_sessions_on_startup)
     if ALLOWED_CHAT_IDS:
         print(f"Allowed chat IDs: {ALLOWED_CHAT_IDS}")
     if ADMIN_CHAT_IDS:
         print(f"Admin chat IDs: {ADMIN_CHAT_IDS}")
 
-    # 2026-08-25 (repetition plan фаза 6): telebot's own infinity_polling() already retries
-    # `Exception`s raised inside its request loop (see telebot/__init__.py, try/except around
-    # self.polling() with a 3s sleep) - most of the network ConnectionErrors seen in production
-    # logs today were already handled that way, no process restart. But real logs from today
-    # still show a handful of full process deaths (launchd had to relaunch, "Bot started"
-    # printed fresh each time) - something occasionally escapes even that inner retry (a
-    # BaseException, or an exception raised outside self.polling()'s own try, e.g. during
-    # startup/session recovery or inside a handler callback thread). Wrap the whole call in one
-    # more outer retry loop so an ordinary network hiccup never needs the OS-level launchd
-    # restart (which loses in-memory retry state and looks like a crash in the logs even when
-    # nothing was actually broken) - only a deliberate Ctrl-C/SIGTERM should end the process.
+    # PTB handles Telegram I/O on its asyncio loop and dispatches the estimator's existing
+    # synchronous handlers to worker threads. Keep the outer retry as a final guard around
+    # failures that escape PTB's polling/backoff machinery.
     consecutive_failures = 0
     while True:
         try:
