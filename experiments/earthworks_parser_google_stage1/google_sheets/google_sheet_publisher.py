@@ -123,10 +123,28 @@ def download_spreadsheet_as_xlsx(spreadsheet_id_or_url: str, output_path: Path) 
     return {"status": "downloaded", "path": str(output_path)}
 
 
+def _create_drive_folder(drive: Any, folder_name: str, parent_folder_id: str = "") -> dict[str, str]:
+    metadata: dict[str, Any] = {
+        "name": folder_name,
+        "mimeType": "application/vnd.google-apps.folder",
+    }
+    if parent_folder_id:
+        metadata["parents"] = [parent_folder_id]
+    created = drive.files().create(body=metadata, fields="id, webViewLink").execute()
+    folder_id = created["id"]
+    return {
+        "id": folder_id,
+        "name": folder_name,
+        "url": created.get("webViewLink", f"https://drive.google.com/drive/folders/{folder_id}"),
+    }
+
+
 def publish_workbook_if_configured(
     workbook_path: Path,
     title: str,
     sharing: str = "owner_only",
+    folder_id: str = "",
+    folder_name: str = "",
 ) -> dict[str, Any]:
     load_dotenv(EXPERIMENT_DIR / ".env")
     if not os.getenv("GOOGLE_OAUTH_CREDENTIALS_PATH") or not os.getenv("GOOGLE_TOKEN_PATH"):
@@ -148,13 +166,21 @@ def publish_workbook_if_configured(
             "sharing": {"mode": sharing, "type": None, "role": None, "status": "skipped"},
         }
 
+    root_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "").strip()
+    project_folder: dict[str, str] | None = None
+    target_folder_id = folder_id.strip()
+    if not target_folder_id and folder_name.strip():
+        project_folder = _create_drive_folder(drive, folder_name.strip(), root_folder_id)
+        target_folder_id = project_folder["id"]
+
     metadata: dict[str, Any] = {
         "name": title,
         "mimeType": "application/vnd.google-apps.spreadsheet",
     }
-    folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "").strip()
-    if folder_id:
-        metadata["parents"] = [folder_id]
+    if target_folder_id:
+        metadata["parents"] = [target_folder_id]
+    elif root_folder_id:
+        metadata["parents"] = [root_folder_id]
     media = MediaFileUpload(
         str(workbook_path),
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -170,4 +196,10 @@ def publish_workbook_if_configured(
         "spreadsheet_id": spreadsheet_id,
         "url": created.get("webViewLink", f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"),
         "sharing": sharing_info,
+        "drive_folder_id": target_folder_id,
+        "drive_folder_name": (project_folder or {}).get("name", folder_name),
+        "drive_folder_url": (project_folder or {}).get(
+            "url",
+            f"https://drive.google.com/drive/folders/{target_folder_id}" if target_folder_id else "",
+        ),
     }

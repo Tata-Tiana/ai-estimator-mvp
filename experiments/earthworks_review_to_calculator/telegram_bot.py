@@ -27,6 +27,7 @@ from telebot import apihelper
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
 sys.path.insert(0, str(BASE_DIR))
+from project_job_naming import project_drive_folder_name, project_label_from_extraction, review_sheet_title
 from telegram_proxy import configure_telegram_proxy
 
 if _HAS_DOTENV:
@@ -354,6 +355,9 @@ def _register_user_job(
     project_name: str,
     spreadsheet_url: str,
     pdf_count: int,
+    drive_folder_id: str = "",
+    drive_folder_name: str = "",
+    drive_folder_url: str = "",
 ) -> None:
     path = _user_jobs_path(chat_id)
     try:
@@ -366,6 +370,9 @@ def _register_user_job(
         "job_id": job_id,
         "project_name": project_name or "",
         "spreadsheet_url": spreadsheet_url or "",
+        "drive_folder_id": drive_folder_id or "",
+        "drive_folder_name": drive_folder_name or "",
+        "drive_folder_url": drive_folder_url or "",
         "pdf_count": pdf_count,
         "created_at": _now(),
         "last_action_at": _now(),
@@ -377,7 +384,15 @@ def _register_user_job(
     tmp.replace(path)
 
 
-def _update_user_job_url(chat_id: int, job_id: str, spreadsheet_url: str) -> None:
+def _update_user_job_url(
+    chat_id: int,
+    job_id: str,
+    spreadsheet_url: str,
+    *,
+    drive_folder_id: str = "",
+    drive_folder_name: str = "",
+    drive_folder_url: str = "",
+) -> None:
     path = _user_jobs_path(chat_id)
     if not path.exists():
         return
@@ -389,12 +404,29 @@ def _update_user_job_url(chat_id: int, job_id: str, spreadsheet_url: str) -> Non
     for job in jobs:
         if job.get("job_id") == job_id:
             job["spreadsheet_url"] = spreadsheet_url or ""
+            if drive_folder_id:
+                job["drive_folder_id"] = drive_folder_id
+            if drive_folder_name:
+                job["drive_folder_name"] = drive_folder_name
+            if drive_folder_url:
+                job["drive_folder_url"] = drive_folder_url
             job["last_action_at"] = _now()
             break
     data["jobs"] = jobs
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
+
+
+def _user_job_record(chat_id: int, job_id: str) -> dict | None:
+    path = _user_jobs_path(chat_id)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return next((job for job in data.get("jobs", []) if job.get("job_id") == job_id), None)
 
 
 def _user_can_access_job(chat_id: int, job_id: str) -> bool:
@@ -561,10 +593,12 @@ def _save_extraction_session(chat_id: int, session: dict) -> None:
     tmp.replace(path)
 
 
-def _extraction_project_dir(chat_id: int, source_filename: str) -> tuple[Path, str, bool]:
+def _extraction_project_dir(chat_id: int, source_filename: str, project_label: str = "") -> tuple[Path, str, bool]:
     """Возвращает (папка проекта, job_id, is_new_run).
 
-    job_id = "<slug из имени загруженного файла>_<YYYYMMDD_HHMMSS>" - та же схема,
+    job_id = "<slug названия проекта>_<YYYYMMDD_HHMMSS>". Название проекта берётся
+    из имён исходных PDF в `source_files`; имя загруженного JSON используется только
+    как fallback. Это та же временная схема,
     что уже используется в старом пайплайне (earthworks_parser_google_stage1.make_job_id,
     create_job_from_pdf._make_job_id): имя проекта берётся из имени файла, дата/время
     вшиты прямо в job_id, каждый новый прогон получает свою папку.
@@ -580,7 +614,7 @@ def _extraction_project_dir(chat_id: int, source_filename: str) -> tuple[Path, s
         out_dir.mkdir(parents=True, exist_ok=True)
         return out_dir, job_id, False
 
-    slug = _slugify_project_name(Path(source_filename).stem)
+    slug = _slugify_project_name(project_label or Path(source_filename).stem)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     job_id = f"{slug}_{stamp}"
     out_dir = CHAT_EXTRACTION_OUTPUTS_DIR / job_id
@@ -589,6 +623,7 @@ def _extraction_project_dir(chat_id: int, source_filename: str) -> tuple[Path, s
         "chat_id": chat_id,
         "job_id": job_id,
         "source_filename": source_filename,
+        "project_label": project_label,
         "started_at": _now(),
         "uploads": [],
     })
@@ -650,20 +685,17 @@ def _json_flow_job_spreadsheet_url(chat_id: int, job_id: str) -> str | None:
     """The JSON-flow's Google Sheet URL per job lives in the per-chat user_jobs registry
     (_register_user_job/_update_user_job_url) - the JSON-flow has never used state.json/
     resolve_stage1_job_dir (that is _find_spreadsheet_url's PDF-flow-only lookup)."""
-    path = _user_jobs_path(chat_id)
-    if not path.exists():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return None
-    for job in data.get("jobs", []):
-        if job.get("job_id") == job_id:
-            return job.get("spreadsheet_url") or None
-    return None
+    job = _user_job_record(chat_id, job_id)
+    return (job or {}).get("spreadsheet_url") or None
 
 
-def _publish_review_workbook(workbook_path: Path, title: str) -> dict:
+def _publish_review_workbook(
+    workbook_path: Path,
+    title: str,
+    *,
+    folder_id: str = "",
+    folder_name: str = "",
+) -> dict:
     """Публикует review workbook в Google Drive - переиспользует уже рабочий
     google_sheet_publisher.py из earthworks_parser_google_stage1 (проверено
     2026-08-25, реальная публикация прошла). Импорт лениво, внутри функции, чтобы
@@ -673,7 +705,13 @@ def _publish_review_workbook(workbook_path: Path, title: str) -> dict:
     if str(GOOGLE_STAGE1_DIR) not in sys.path:
         sys.path.insert(0, str(GOOGLE_STAGE1_DIR))
     from google_sheets.google_sheet_publisher import publish_workbook_if_configured
-    return publish_workbook_if_configured(workbook_path, title, sharing=GOOGLE_SHEET_SHARING)
+    return publish_workbook_if_configured(
+        workbook_path,
+        title,
+        sharing=GOOGLE_SHEET_SHARING,
+        folder_id=folder_id,
+        folder_name=folder_name,
+    )
 
 
 def _download_review_workbook(spreadsheet_url: str, output_path: Path) -> dict:
@@ -1172,7 +1210,14 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
         return
 
     project_name = str(data.get("project_name") or "")
-    out_dir, job_id, is_new_run = _extraction_project_dir(chat_id, doc.file_name or "project")
+    project_label = project_label_from_extraction(data, doc.file_name or "project")
+    out_dir, job_id, is_new_run = _extraction_project_dir(
+        chat_id,
+        doc.file_name or "project",
+        project_label,
+    )
+    extraction_session = _load_extraction_session(chat_id) or {}
+    created_at = extraction_session.get("started_at") or _now()
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     json_path = out_dir / f"extraction_output_bot_{ts}.json"
@@ -1184,6 +1229,7 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
     bot.reply_to(message,
         f"JSON принят ✅ ({'новый прогон' if is_new_run else 'исправленный JSON, этот же прогон'})\n\n"
         f"Job: {job_id}\n"
+        f"Короткое название: {project_label}\n"
         f"Проект (из JSON): {project_name or '(без имени)'}\n"
         f"Разделов в JSON: {section_count}\n"
         f"Общих предупреждений парсера: {warnings_count}"
@@ -1251,7 +1297,12 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
         return
 
     try:
-        publish_result = _publish_review_workbook(workbook_path, title=f"Review — {job_id}")
+        drive_folder_name = project_drive_folder_name(project_label, created_at)
+        publish_result = _publish_review_workbook(
+            workbook_path,
+            title=review_sheet_title(project_label, created_at),
+            folder_name=drive_folder_name,
+        )
     except Exception as exc:
         bot.reply_to(message, f"Таблица собрана локально, но публикация в Google упала ⚠️\n\n{exc}")
         _log_event("publish_sheet_exception", chat_id=chat_id, job_id=job_id,
@@ -1270,9 +1321,21 @@ def _handle_extraction_json_upload(message: telebot.types.Message, doc: telebot.
         return
 
     url = publish_result.get("url", "")
-    _register_user_job(chat_id, job_id, project_name, url, pdf_count=0)
+    folder_url = publish_result.get("drive_folder_url", "")
+    _register_user_job(
+        chat_id,
+        job_id,
+        project_label,
+        url,
+        pdf_count=0,
+        drive_folder_id=publish_result.get("drive_folder_id", ""),
+        drive_folder_name=publish_result.get("drive_folder_name", ""),
+        drive_folder_url=folder_url,
+    )
+    folder_line = f"\nПапка проекта: {folder_url}\n" if folder_url else ""
     bot.reply_to(message,
-        f"Google-таблица готова ✅\n\n{url}\n\n"
+        f"Google-таблица готова ✅\n\n{url}\n"
+        f"{folder_line}\n"
         "Проверьте и заполните лист «01_Проверка проекта», затем можно собирать смету."
     )
 
@@ -2434,6 +2497,14 @@ def cmd_recreate(message: telebot.types.Message) -> None:
                        safe_message="Recreate found job dir but no extraction JSON", job_id=job_id)
             return
         latest_json = extraction_files[-1]
+        try:
+            latest_extraction = json.loads(latest_json.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            bot.reply_to(message, f"Не удалось прочитать последний extraction JSON: {exc}")
+            return
+        job_record = _user_job_record(message.chat.id, job_id) or {}
+        project_label = project_label_from_extraction(latest_extraction, latest_json.name)
+        created_at = job_record.get("created_at") or _now()
         workbook_target = json_job_dir / "review_workbook.xlsx"
         wb_result = _run_populate_workbook(latest_json, workbook_target)
         _log(message.chat.id, "recreate_populate_workbook", wb_result.returncode, wb_result.stdout, wb_result.stderr)
@@ -2446,7 +2517,15 @@ def cmd_recreate(message: telebot.types.Message) -> None:
                        returncode=wb_result.returncode)
             return
         try:
-            publish_result = _publish_review_workbook(workbook_path, title=f"Review — {job_id}")
+            publish_result = _publish_review_workbook(
+                workbook_path,
+                title=review_sheet_title(project_label, created_at),
+                folder_id=job_record.get("drive_folder_id", ""),
+                folder_name=(
+                    "" if job_record.get("drive_folder_id")
+                    else project_drive_folder_name(project_label, created_at)
+                ),
+            )
         except Exception as exc:
             bot.reply_to(message, f"Таблица собрана локально, но публикация в Google упала ⚠️\n\n{exc}")
             _log_event("recreate_failed", chat_id=message.chat.id, level="ERROR",
@@ -2459,8 +2538,20 @@ def cmd_recreate(message: telebot.types.Message) -> None:
                        reason=publish_result.get("reason"))
             return
         url = publish_result.get("url", "")
-        bot.reply_to(message, f"Новая Google Sheet создана ✅\n{url}\n\nПарсер не запускался заново.")
-        _update_user_job_url(message.chat.id, job_id, url)
+        folder_url = publish_result.get("drive_folder_url", "") or job_record.get("drive_folder_url", "")
+        folder_line = f"\nПапка проекта: {folder_url}\n" if folder_url else ""
+        bot.reply_to(
+            message,
+            f"Новая Google Sheet создана ✅\n{url}\n{folder_line}\nПарсер не запускался заново.",
+        )
+        _update_user_job_url(
+            message.chat.id,
+            job_id,
+            url,
+            drive_folder_id=publish_result.get("drive_folder_id", ""),
+            drive_folder_name=publish_result.get("drive_folder_name", ""),
+            drive_folder_url=folder_url,
+        )
         _log_event("recreate_completed", chat_id=message.chat.id,
                    safe_message="Recreate (json flow) completed", job_id=job_id)
         return
