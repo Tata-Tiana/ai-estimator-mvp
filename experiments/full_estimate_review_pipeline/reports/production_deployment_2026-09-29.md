@@ -123,6 +123,12 @@ production-сервере не закрыт: TCP connect проходит. GeoIP
 поэтому `calc` окончательно оставлен на рабочем HTTP proxy до появления другого
 endpoint или исходящего узла вне РФ.
 
+Позднее в тот же день endpoint перестал принимать и новые HTTP-подключения:
+Telegram, Google и `example.com` через него завершались timeout, причём результат
+повторился с Mac. `calc.service` остался `active`, но активного TCP-соединения
+`calc` с прокси не было. До восстановления endpoint production-связь с Telegram
+нельзя считать подтверждённой только по статусу systemd.
+
 ## Оставшаяся пользовательская проверка
 
 В Telegram проверить `/start`, загрузку проекта, JSON → Google Sheet и `/build` →
