@@ -1,0 +1,34 @@
+# Runtime dependencies
+requirements-prod.txt
+output/price_registry_filled_v4.xlsx
+output/manual_values_registry.xlsx
+
+# Telegram orchestration and legacy PDF review flow
+experiments/earthworks_review_to_calculator/*.py
+experiments/earthworks_review_to_calculator/assets/brick_house_logo.png
+experiments/earthworks_parser_google_stage1/*.py
+experiments/earthworks_parser_google_stage1/google_sheets/*.py
+experiments/earthworks_parser_google_stage1/parser/*.py
+experiments/earthworks_parser_google_stage1/pricing/*.py
+experiments/earthworks_parser_google_stage1/reports/*.py
+experiments/usv_strict_pdf_parser_v3/*.py
+experiments/pricing/price_reader.py
+
+# Seven-section review and estimate pipeline
+experiments/full_estimate_review_pipeline/*.py
+experiments/full_estimate_review_pipeline/catalogs/*.yaml
+experiments/full_estimate_review_pipeline/sections/*/section_contract.yaml
+experiments/full_estimate_review_pipeline/review_to_calculator/core/*.py
+experiments/full_estimate_review_pipeline/review_to_calculator/sections/*/*.py
+
+# Production calculator modules
+experiments/box_calculator/metal_delivery_allocator.py
+experiments/earthworks_calculator/earthworks_calculator.py
+experiments/foundation_slab_calculator/foundation_slab_calculator.py
+experiments/waterproofing_calculator/waterproofing_calculator.py
+experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py
+experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py
+experiments/floor_slab_1_calculator/floor_slab_1_calculator.py
+experiments/floor_slab_1_calculator/floor_slab_calculator.py
+experiments/flat_roof_calculator/calculator.py
+experiments/schiedel_vent_channels_calculator/calculator.py

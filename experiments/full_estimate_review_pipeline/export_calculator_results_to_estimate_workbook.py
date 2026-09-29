@@ -763,6 +763,17 @@ def _write_grand_total(ws: Any, row_num: int, section_total_rows: list[int]) -> 
     ws.row_dimensions[row_num].height = 24
 
 
+def _setup_printing(ws: Any, last_row: int) -> None:
+    # The grey calculation zone J:V remains editable in Excel but must never enter
+    # the client-facing printout.
+    ws.print_area = f"A1:I{last_row}"
+    ws.print_title_rows = f"{GROUP_HEADER_ROW}:{SUBHEADER_ROW}"
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+
+
 def build_workbook(results_dir: Path, review_workbook: Path | None, logo_path: Path) -> Workbook:
     wb = Workbook()
     ws = wb.active
@@ -799,6 +810,7 @@ def build_workbook(results_dir: Path, review_workbook: Path | None, logo_path: P
     row_num += 1
     _write_grand_total(ws, row_num, section_total_rows)
     ws.auto_filter.ref = f"A{GROUP_HEADER_ROW}:O{row_num}"
+    _setup_printing(ws, row_num)
 
     return wb
 

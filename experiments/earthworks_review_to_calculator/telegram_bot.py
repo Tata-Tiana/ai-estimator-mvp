@@ -21,11 +21,14 @@ except ImportError:
     _HAS_DOTENV = False
 
 import telebot
+from telebot import apihelper
 
 # ── paths ──────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[1]
 sys.path.insert(0, str(BASE_DIR))
+from telegram_proxy import configure_telegram_proxy
+
 if _HAS_DOTENV:
     load_dotenv(REPO_ROOT / ".env")
 
@@ -123,6 +126,12 @@ ALLOWED_CHAT_IDS: set[int] = _parse_chat_ids(_raw_ids)
 _raw_admin_ids = os.environ.get("TELEGRAM_ADMIN_CHAT_IDS", "")
 ADMIN_CHAT_IDS: set[int] = _parse_chat_ids(_raw_admin_ids)
 ALLOW_ALL_USERS = os.environ.get("ALLOW_ALL_USERS", "").strip().lower() in ("true", "1", "yes")
+
+try:
+    TELEGRAM_PROXY_ENABLED = configure_telegram_proxy(apihelper)
+except ValueError as exc:
+    print(f"ERROR: invalid Telegram proxy configuration: {exc}", file=sys.stderr)
+    sys.exit(1)
 
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
@@ -2731,6 +2740,8 @@ if __name__ == "__main__":
         )
         sys.exit(1)
     print("Bot started. Polling...")
+    if TELEGRAM_PROXY_ENABLED:
+        print("Telegram SOCKS5 proxy enabled.")
     _log_event("bot_started", safe_message="Telegram bot process started")
     if ALLOW_ALL_USERS:
         print("WARNING: ALLOW_ALL_USERS=true — all users can access the bot.", file=sys.stderr)

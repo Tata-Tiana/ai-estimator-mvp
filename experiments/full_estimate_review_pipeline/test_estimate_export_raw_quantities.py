@@ -4,7 +4,12 @@ import unittest
 
 from openpyxl import Workbook
 
-from export_calculator_results_to_estimate_workbook import _cost_parts, _quantity, _write_data_row
+from export_calculator_results_to_estimate_workbook import (
+    _cost_parts,
+    _quantity,
+    _setup_printing,
+    _write_data_row,
+)
 
 
 class RawQuantityExportTests(unittest.TestCase):
@@ -40,6 +45,15 @@ class RawQuantityExportTests(unittest.TestCase):
         self.assertEqual(sheet["L12"].value, "=ROUND(J12*K12,0)")
         self.assertEqual(sheet["N12"].value, "=ROUND(J12*M12,0)")
         self.assertEqual(sheet["J12"].number_format, "0.00")
+
+    def test_printing_excludes_grey_calculation_zone(self):
+        sheet = Workbook().active
+        _setup_printing(sheet, 42)
+
+        self.assertEqual(str(sheet.print_area), "'Sheet'!$A$1:$I$42")
+        self.assertEqual(sheet.print_title_rows, "$9:$10")
+        self.assertEqual(sheet.page_setup.orientation, "landscape")
+        self.assertEqual(sheet.page_setup.fitToWidth, 1)
 
 
 if __name__ == "__main__":

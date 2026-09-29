@@ -10,7 +10,7 @@ from typing import Any
 from dotenv import load_dotenv
 from openpyxl import load_workbook
 
-from config import EXPERIMENT_DIR
+from config import EXPERIMENT_DIR, REPO_ROOT
 from source_paths import LOCAL_PRICE_REGISTRY_PATH
 
 
@@ -32,6 +32,11 @@ def parse_price(value: Any) -> float | None:
         return float(cleaned.replace(",", "."))
     except ValueError:
         return None
+
+
+def _resolve_env_path(raw: str) -> Path:
+    path = Path(raw).expanduser()
+    return path if path.is_absolute() else REPO_ROOT / path
 
 
 def read_local_registry_rows(path: Path = LOCAL_PRICE_REGISTRY_PATH) -> list[dict[str, Any]]:
@@ -80,10 +85,10 @@ def read_google_registry_rows() -> tuple[list[dict[str, Any]], list[str]]:
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive.file",
     ]
-    credentials_path = os.getenv("GOOGLE_OAUTH_CREDENTIALS_PATH", "credentials.json")
-    token_path = os.getenv("GOOGLE_TOKEN_PATH", "token.json")
+    credentials_path = _resolve_env_path(os.getenv("GOOGLE_OAUTH_CREDENTIALS_PATH", "credentials.json"))
+    token_path = _resolve_env_path(os.getenv("GOOGLE_TOKEN_PATH", "token.json"))
     creds = None
-    if Path(token_path).exists():
+    if token_path.exists():
         creds = Credentials.from_authorized_user_file(token_path, scopes)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -91,7 +96,8 @@ def read_google_registry_rows() -> tuple[list[dict[str, Any]], list[str]]:
         else:
             flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
             creds = flow.run_local_server(port=0)
-        Path(token_path).write_text(creds.to_json(), encoding="utf-8")
+        token_path.parent.mkdir(parents=True, exist_ok=True)
+        token_path.write_text(creds.to_json(), encoding="utf-8")
 
     sheet_name = os.getenv("GOOGLE_PRICE_REGISTRY_SHEET_NAME", "price_registry")
     service = build("sheets", "v4", credentials=creds)
