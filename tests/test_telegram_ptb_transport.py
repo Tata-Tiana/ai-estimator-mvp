@@ -5,8 +5,9 @@ import importlib.util
 import logging
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
+from telegram.error import TimedOut
 from telegram.ext import CommandHandler, MessageHandler
 
 
@@ -98,6 +99,50 @@ def test_sync_api_bridge_downloads_file_bytes() -> None:
         assert payload == b"{}"
         ptb_bot.get_file.assert_awaited_once_with("file-id")
         telegram_file.download_as_bytearray.assert_awaited_once_with()
+
+    asyncio.run(scenario())
+
+
+def test_file_metadata_request_retries_transient_network_error() -> None:
+    async def scenario() -> None:
+        telegram_file = SimpleNamespace(file_path="documents/input.json")
+        ptb_bot = SimpleNamespace(
+            get_file=AsyncMock(side_effect=[TimedOut("temporary"), telegram_file]),
+        )
+        bot = transport_module.TeleBot("123456:TEST_TOKEN")
+        bot._application = SimpleNamespace(bot=ptb_bot)
+        bot._loop = asyncio.get_running_loop()
+
+        with patch.object(transport_module.time, "sleep") as sleep:
+            file_info = await asyncio.to_thread(bot.get_file, "file-id")
+
+        assert file_info is telegram_file
+        assert ptb_bot.get_file.await_count == 2
+        sleep.assert_called_once_with(1.0)
+
+    asyncio.run(scenario())
+
+
+def test_file_download_retries_transient_network_error() -> None:
+    async def scenario() -> None:
+        telegram_file = SimpleNamespace(
+            file_path="documents/input.json",
+            download_as_bytearray=AsyncMock(
+                side_effect=[TimedOut("temporary"), bytearray(b"{}")],
+            ),
+        )
+        ptb_bot = SimpleNamespace(get_file=AsyncMock(return_value=telegram_file))
+        bot = transport_module.TeleBot("123456:TEST_TOKEN")
+        bot._application = SimpleNamespace(bot=ptb_bot)
+        bot._loop = asyncio.get_running_loop()
+
+        file_info = await asyncio.to_thread(bot.get_file, "file-id")
+        with patch.object(transport_module.time, "sleep") as sleep:
+            payload = await asyncio.to_thread(bot.download_file, file_info.file_path)
+
+        assert payload == b"{}"
+        assert telegram_file.download_as_bytearray.await_count == 2
+        sleep.assert_called_once_with(1.0)
 
     asyncio.run(scenario())
 

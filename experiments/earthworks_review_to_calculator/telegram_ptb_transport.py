@@ -3,12 +3,14 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
+import time
 import traceback
 from collections.abc import Callable, Coroutine
 from types import SimpleNamespace
 from typing import Any
 
 from telegram import Document, Message, Update
+from telegram.error import NetworkError
 from telegram.ext import Application, ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 from telegram.request import HTTPXRequest
 
@@ -18,6 +20,7 @@ types = SimpleNamespace(Message=Message, Document=Document)
 _LOGGER = logging.getLogger(__name__)
 _Handler = Callable[[Message], None]
 _StartupCallback = Callable[[], None]
+_DOWNLOAD_RETRY_DELAYS = (1.0, 2.0)
 
 
 class _SecretFilter(logging.Filter):
@@ -98,6 +101,27 @@ class TeleBot:
         future = asyncio.run_coroutine_threadsafe(operation(application), loop)
         return future.result()
 
+    def _submit_download_operation(
+        self,
+        operation: Callable[[Application], Coroutine[Any, Any, Any]],
+        operation_name: str,
+    ) -> Any:
+        for attempt in range(1, len(_DOWNLOAD_RETRY_DELAYS) + 2):
+            try:
+                return self._submit(operation)
+            except NetworkError as exc:
+                if attempt > len(_DOWNLOAD_RETRY_DELAYS):
+                    raise
+                delay = _DOWNLOAD_RETRY_DELAYS[attempt - 1]
+                _LOGGER.warning(
+                    "Telegram %s attempt %s timed out; retrying in %.1fs (%s)",
+                    operation_name,
+                    attempt,
+                    delay,
+                    type(exc).__name__,
+                )
+                time.sleep(delay)
+
     def reply_to(self, message: Message, text: str, **kwargs: Any) -> Message:
         return self._submit(
             lambda application: application.bot.send_message(
@@ -131,7 +155,10 @@ class TeleBot:
         )
 
     def get_file(self, file_id: str) -> Any:
-        telegram_file = self._submit(lambda application: application.bot.get_file(file_id))
+        telegram_file = self._submit_download_operation(
+            lambda application: application.bot.get_file(file_id),
+            "get_file",
+        )
         cache_key = telegram_file.file_path or file_id
         with self._state_lock:
             self._file_cache[cache_key] = telegram_file
@@ -142,7 +169,10 @@ class TeleBot:
             telegram_file = self._file_cache.pop(file_path, None)
         if telegram_file is None:
             raise RuntimeError("Telegram file was not requested with get_file before download_file")
-        data = self._submit(lambda _application: telegram_file.download_as_bytearray())
+        data = self._submit_download_operation(
+            lambda _application: telegram_file.download_as_bytearray(),
+            "download_file",
+        )
         return bytes(data)
 
     async def _dispatch_sync_handler(

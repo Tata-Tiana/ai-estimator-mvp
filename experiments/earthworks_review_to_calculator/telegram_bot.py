@@ -21,6 +21,7 @@ except ImportError:
     _HAS_DOTENV = False
 
 import telegram_ptb_transport as ptb_transport
+from telegram.error import NetworkError
 
 # ── paths ──────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
@@ -541,6 +542,45 @@ def _unique_upload_path(upload_dir: Path, filename: str) -> Path:
 
 
 # ── extraction JSON intake (2026-08-25, repetition plan фаза 1-3) ───────────
+
+def _download_document_bytes(
+    message: ptb_transport.types.Message,
+    doc: ptb_transport.types.Document,
+) -> bytes | None:
+    try:
+        file_info = bot.get_file(doc.file_id)
+        raw = bot.download_file(file_info.file_path)
+    except NetworkError as exc:
+        _log_event(
+            "document_download_failed",
+            chat_id=message.chat.id,
+            level="ERROR",
+            safe_message="Telegram document download failed after retries",
+            filename=doc.file_name,
+            error_type=type(exc).__name__,
+        )
+        try:
+            bot.reply_to(
+                message,
+                "Не удалось скачать файл из Telegram из-за временной сетевой ошибки. "
+                "Пожалуйста, отправьте этот файл ещё раз через несколько секунд.",
+            )
+        except NetworkError:
+            logging.getLogger(__name__).exception(
+                "Could not notify chat %s about a document download failure",
+                message.chat.id,
+            )
+        return None
+
+    _log_event(
+        "document_downloaded",
+        chat_id=message.chat.id,
+        safe_message="Telegram document downloaded",
+        filename=doc.file_name,
+        byte_count=len(raw),
+    )
+    return raw
+
 
 _CYRILLIC_TO_LATIN = {
     "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
@@ -1189,8 +1229,9 @@ def cmd_help(message: ptb_transport.types.Message) -> None:
 def _handle_extraction_json_upload(message: ptb_transport.types.Message, doc: ptb_transport.types.Document) -> None:
     chat_id = message.chat.id
 
-    file_info = bot.get_file(doc.file_id)
-    raw = bot.download_file(file_info.file_path)
+    raw = _download_document_bytes(message, doc)
+    if raw is None:
+        return
 
     try:
         data = json.loads(raw.decode("utf-8"))
@@ -1348,6 +1389,13 @@ def handle_document(message: ptb_transport.types.Message) -> None:
 
     doc = message.document
     name_lower = (doc.file_name or "").lower()
+    _log_event(
+        "document_received",
+        chat_id=message.chat.id,
+        safe_message="Telegram document update received",
+        filename=doc.file_name,
+        file_size=getattr(doc, "file_size", None),
+    )
 
     if name_lower.endswith(".json"):
         _handle_extraction_json_upload(message, doc)
@@ -1362,8 +1410,9 @@ def handle_document(message: ptb_transport.types.Message) -> None:
         return
 
     # Download PDF before taking the lock
-    file_info = bot.get_file(doc.file_id)
-    raw = bot.download_file(file_info.file_path)
+    raw = _download_document_bytes(message, doc)
+    if raw is None:
+        return
     sha256 = hashlib.sha256(raw).hexdigest()
 
     lock = get_chat_lock(message.chat.id)
