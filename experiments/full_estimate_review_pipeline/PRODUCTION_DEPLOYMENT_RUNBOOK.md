@@ -193,6 +193,13 @@ credentials не дала рабочего CONNECT: curl 97 / SOCKS reply code 2
 конфигурацию не менять, пока поставщик не подтвердит полный набор endpoint и
 принадлежность тестовых credentials той же учётной записи.
 
+Финальное рабочее состояние 30.09.2026: для `calc` выдан отдельный новый прокси.
+SOCKS5 нового прокси работает для обычных сайтов, но Telegram с российского сервера
+не пропускает; HTTP endpoint прошёл пять `getMe` из пяти. Production переключён на
+новый HTTP endpoint с backup
+`/home/calc/deploy-backups/proxy_switch_20260930_124542`. `calc.service` имеет
+`active/running`, `NRestarts=0` и установленное proxy-соединение.
+
 ### 3. Google OAuth
 
 Выполнено 2026-09-29:

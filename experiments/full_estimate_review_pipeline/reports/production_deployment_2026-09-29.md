@@ -135,6 +135,15 @@ Telegram, Google и `example.com` через него завершались tim
 production-сервера и SOCKS reply code 2 с Mac через эстонский VPN. Конфигурация
 production не переключалась до подтверждения полного набора реквизитов поставщиком.
 
+30.09.2026 создан и проверен отдельный новый прокси. Его HTTP endpoint с production-
+сервера дал пять успешных `getMe` из пяти; SOCKS5 пропускает обычные сайты, но не
+Telegram с российского исходящего IP. После подтверждения пользователя `calc`
+переключён на новый HTTP endpoint. Backup старого env:
+`/home/calc/deploy-backups/proxy_switch_20260930_124542`. Перезапущен только
+`calc.service`; итог: `active/running`, `NRestarts=0`, `Application started`,
+активное TCP-соединение с новым proxy, свежих ошибок нет. Два действующих чужих
+сервиса не перезапускались.
+
 ## Оставшаяся пользовательская проверка
 
 В Telegram проверить `/start`, загрузку проекта, JSON → Google Sheet и `/build` →
