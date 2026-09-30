@@ -27,11 +27,13 @@ already calculated project used it.
 
 ## 3. Projects Are Tests, Not Architecture
 
-- Previously calculated projects do not define the production schema or calculator structure.
-- Do not preserve obsolete scalar fields, JSON layouts, workbook row positions or calculator
-  quirks solely to keep old artifacts byte-identical.
-- Build one universal typed structure from construction meaning, source evidence and confirmed
-  business rules.
+- Previously calculated projects do not define project-specific branches or constants.
+- Preserve the working pipeline and all semantically valid existing fields. Extend them only
+  where the current contract cannot represent a real construction variant.
+- Do not preserve an obsolete field, workbook position or calculator quirk solely to reproduce
+  an old artifact byte-for-byte, but do not replace working architecture without a concrete need.
+- Evolve the existing typed structure from construction meaning, source evidence and confirmed
+  business rules; do not create a parallel parser, review system or calculator.
 - Reparse source PDFs and rebuild Google-review workbooks and cost estimates with the new
   structure for USV, ARK, TRC and every other available project.
 - Project names and measured project quantities belong only in fixtures, expected results and
@@ -43,6 +45,9 @@ already calculated project used it.
 
 - Keep the existing parser engine, but extend its schema, targets and prompt when the approved
   universal contract requires new structured fields.
+- Keep the existing extraction JSON -> review workbook -> Google Sheets -> workbook reader ->
+  section input -> calculator -> Excel path. Changes for a section must flow through these same
+  stages instead of introducing a second pipeline.
 - Information mentioned only in prose notes is not considered delivered to the calculator.
 - The completed local workflow must remain:
   `PDF -> structured extraction -> intermediate Google review -> confirmed canonical input ->`

@@ -17,10 +17,11 @@ Use the feature branch and small scoped commits. This repository currently has n
 workflow, so a normal push does not deploy from this repository. A future server release is a
 separate explicitly approved task in which approved commits are selected and packaged.
 
-Previously calculated projects are regression scenarios, not architecture contracts. Build
-universal structures, reparse the source PDFs and recalculate all projects locally. Do not retain
-old scalar fields, JSON layouts or calculator quirks solely for byte-identical compatibility.
-Read `LOCAL_DEVELOPMENT_GUARDRAILS.md` for the complete binding rules.
+Previously calculated projects are regression scenarios, not sources of project-specific code.
+Keep the working parser -> Google review -> calculator -> Excel pipeline and extend its existing
+contract minimally where real variants require more structure. Reparse the source PDFs and
+recalculate all projects locally, but do not replace working architecture merely to make it look
+new. Read `LOCAL_DEVELOPMENT_GUARDRAILS.md` for the complete binding rules.
 
 ## Current Development Gate 2026-09-30
 
