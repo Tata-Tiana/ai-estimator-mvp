@@ -2,7 +2,42 @@
 
 Use this file when a new chat starts.
 
-If the user says "прочитай инструкцию и продолжай", read this file first, then read the current step report in `reports/`.
+If the user says "прочитай инструкцию и продолжай", read this file first, then read
+`LOCAL_DEVELOPMENT_GUARDRAILS.md`, then read the current step report in `reports/`.
+
+## Mandatory Local-Only Rule 2026-09-30
+
+Production and the server are frozen until the entire building-shell cost basis is complete and
+verified locally on all available projects. Do not connect to the server, inspect or change
+production files, upload an archive, pull code, restart a service or perform an intermediate
+deployment. The deployed bot is working and remains untouched.
+
+Commits and GitHub pushes are required for development history, but they are not deployment.
+Use the feature branch and small scoped commits. This repository currently has no GitHub Actions
+workflow, so a normal push does not deploy from this repository. A future server release is a
+separate explicitly approved task in which approved commits are selected and packaged.
+
+Previously calculated projects are regression scenarios, not architecture contracts. Build
+universal structures, reparse the source PDFs and recalculate all projects locally. Do not retain
+old scalar fields, JSON layouts or calculator quirks solely for byte-identical compatibility.
+Read `LOCAL_DEVELOPMENT_GUARDRAILS.md` for the complete binding rules.
+
+## Current Development Gate 2026-09-30
+
+The active development scope is the right-hand grey cost-basis only. Build and verify every
+section of the complete building shell, including its parser path, calculator, Google review,
+formulas and helper columns, before implementing the client side.
+
+Do not start or mix in `A:I` client-side implementation yet. Step 35 remains the approved
+future plan, but it begins only after both gates are complete:
+
+1. every planned building-shell section is implemented in the cost-basis workflow;
+2. the complete workflow has been tested on every available project and its universal,
+   non-project-specific behavior has been confirmed.
+
+Until then, final-Excel work means the cost-basis structure/formulas and supporting technical
+columns only. Client-side formulas, margin allocation, print area `A:I` and client delivery are
+deferred as one later phase.
 
 ## Final Estimate Output Decision 2026-09-27
 
@@ -41,7 +76,9 @@ and emits one concreting line, so it does not yet cover ARH's independent house/
 NVD3's separate slab/rib work rows, RVR's house/garage/rib rows, or SHLK-10's EPS permanent
 rib formwork. Keep strict ownership to prevent rib quantities being counted in both
 `foundation_slab` and the grillage/strip/rib module. Canonical analysis:
-`reports/foundation_slab_variants_classification_2026-09-29.md`.
+`reports/foundation_slab_variants_classification_2026-09-29.md`. The implementation sequence,
+canonical data model, no-project-constants rule and test matrix are fixed in
+`reports/step_37_universal_foundation_slab_plan.md`.
 
 ## Estimate Section Title Source Policy 2026-09-27
 
