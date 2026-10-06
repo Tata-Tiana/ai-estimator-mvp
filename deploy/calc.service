@@ -1,0 +1,19 @@
+[Unit]
+Description=AI Estimator Telegram bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=calc
+Group=calc
+WorkingDirectory=/home/calc/ai-estimator-mvp
+EnvironmentFile=/home/calc/.config/ai-estimator/calc.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/calc/ai-estimator-mvp/.venv/bin/python /home/calc/ai-estimator-mvp/experiments/earthworks_review_to_calculator/telegram_bot.py
+Restart=on-failure
+RestartSec=10
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

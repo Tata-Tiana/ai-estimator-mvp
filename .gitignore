@@ -1,0 +1,74 @@
+.env
+.DS_Store
+__pycache__/
+*.pyc
+
+# Session snapshot zips (file handoff between chats/agents) — repo root only
+/*.zip
+
+# Real project source PDFs dropped at repo root (e.g. pasted in for a chat-extraction pass) — never commit these.
+/*.pdf
+
+data/input/
+data/output/
+data/reference/unikma/*.json
+data/reference/unikma/*.xlsx
+
+# Local/generated Excel workbooks at repo root and Excel lock files.
+output/*.xlsx
+output/~$*
+
+# Local project PDF inputs and generated experiment outputs
+experiments/**/input_pdfs/
+experiments/**/output/**/*
+!experiments/**/output/
+!experiments/**/output/.gitkeep
+!experiments/**/output/README.md
+experiments/**/outputs/**/*
+!experiments/**/outputs/
+!experiments/**/outputs/.gitkeep
+!experiments/**/outputs/README.md
+experiments/**/backups/
+experiments/pdf_tests/projects/*/input/*.pdf
+experiments/pdf_tests/projects/*/output/**/*
+experiments/pdf_tests/projects/*/parsed/**/*
+experiments/pdf_tests/projects/*/merged/**/*
+experiments/ai_tests/projects/*/output/**/*
+experiments/demo_usv_app/output/*
+!experiments/demo_usv_app/output/.gitkeep
+experiments/demo_usv_app/assets/brick_house_logo_raw.png
+
+# Telegram bot uploads and logs
+experiments/earthworks_review_to_calculator/data/telegram_uploads/
+experiments/earthworks_review_to_calculator/data/telegram_logs/
+experiments/earthworks_parser_google_stage1/token*.json
+
+# MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
+# Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
+experiments/usv_strict_pdf_parser_v3/data_mkp1/
+experiments/usv_strict_pdf_parser_v3/data_trc/
+experiments/usv_strict_pdf_parser_v3/data/extracted/evidence.json
+
+# A6.0 vision PDF parser POC — page renders + vision extraction of real ЮСВ content.
+experiments/vision_pdf_parser_poc/output/
+experiments/vision_pdf_parser_poc/reports/
+
+# A6.1 Claude chat extraction POC — real project extraction output/reports and the built pack.
+experiments/chat_extraction_poc/input_pdfs/
+experiments/chat_extraction_poc/outputs/*.json
+experiments/chat_extraction_poc/reports/*.md
+experiments/chat_extraction_poc/dist/
+
+# Regenerated per-case result.json/result.md written directly into a case directory (schiedel-style
+# calculators, not the output/ convention above) — refreshed by simply re-running a calculator, not
+# meaningful without an accompanying source/fixture change. Only affects new case directories going
+# forward; already-tracked result.json/result.md files elsewhere in the repo are unaffected.
+experiments/**/cases/*/result.json
+experiments/**/cases/*/result.md
+
+# Local meeting transcripts and screenshots
+experiments/meeting_analysis/input/**/*
+!experiments/meeting_analysis/input/README.md
+!experiments/meeting_analysis/input/**/
+!experiments/meeting_analysis/input/**/README.md
+!experiments/meeting_analysis/input/**/.gitkeep

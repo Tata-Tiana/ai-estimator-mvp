@@ -1,0 +1,891 @@
+contract_version: 0.1
+
+section:
+  code: flat_roof
+  name_ru: "Кровля"
+  calculator_module: "experiments/flat_roof_calculator/calculator.py"
+  status: draft
+  owner_notes: "Production contract: roof_zones project geometry plus supplier/manual inputs; old level scalar fields are compatibility fallback only. No old fixture values or Excel-match overrides."
+
+source_files:
+  calculator: "experiments/flat_roof_calculator/calculator.py"
+  calculator_readme: "experiments/flat_roof_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "docs/report_flat_roof_calculator.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: roof_area_level_1_m2
+    label_ru: "Площадь кровли уровня 1"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_area_level_1"
+    calculator_input_path: "roof_area_level_1_m2"
+    normalized_json_path: "sections.flat_roof.parameters.roof_area_level_1_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_area_level_1", "project_spec_roof_area"]
+      aliases_ru: ["площадь кровли уровень 1", "площадь кровли нижнего уровня", "площадь кровли на отм."]
+      expected_unit: "м2"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[] when the PDF gives roof zones/types."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если в проекте нет отдельной таблицы зон кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present; do not confuse with PVC membrane/geotextile material areas."
+
+  - key: roof_area_level_2_m2
+    label_ru: "Площадь кровли уровня 2"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_area_level_2"
+    calculator_input_path: "roof_area_level_2_m2"
+    normalized_json_path: "sections.flat_roof.parameters.roof_area_level_2_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_area_level_2", "project_spec_roof_area"]
+      aliases_ru: ["площадь кровли уровень 2", "площадь кровли верхнего уровня", "площадь кровли на отм."]
+      expected_unit: "м2"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[] when the PDF gives roof zones/types."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если в проекте нет отдельной таблицы зон кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
+
+  - key: project_spec_roof_area_m2
+    label_ru: "Площадь кровли по спецификации, контроль"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "project_spec_roof_area"
+    calculator_input_path: "project_spec_roof_area_m2"
+    normalized_json_path: "sections.flat_roof.parameters.project_spec_roof_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["project_spec_roof_area"]
+      aliases_ru: ["площадь кровли по спецификации", "площадь кровли", "кровля площадь"]
+      expected_unit: "м2"
+      notes: "Control value only; roof_zones[] are the production source when present."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если есть отдельная итоговая площадь кровли, проверьте ее как контроль."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not use automatically instead of roof_zones[] or reviewed fallback geometry."
+
+  - key: parapet_length_level_1_m
+    label_ru: "Длина парапета уровня 1"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_length_level_1"
+    calculator_input_path: "parapet_length_level_1_m"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_length_level_1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_length_level_1", "roof_parapet_length"]
+      aliases_ru: ["длина парапета уровень 1", "парапет кровли длина", "периметр парапета"]
+      expected_unit: "мп"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[].parapet_length_m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если длина парапета не указана в зонах кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
+
+  - key: parapet_length_level_2_m
+    label_ru: "Длина парапета уровня 2"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_length_level_2"
+    calculator_input_path: "parapet_length_level_2_m"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_length_level_2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_length_level_2", "roof_parapet_length"]
+      aliases_ru: ["длина парапета уровень 2", "парапет кровли длина", "периметр парапета"]
+      expected_unit: "мп"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[].parapet_length_m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если длина парапета не указана в зонах кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
+
+  - key: vent_wall_abutment_level_1_m
+    label_ru: "Длина примыканий к вентшахтам уровня 1"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_vent_wall_abutment_level_1"
+    calculator_input_path: "vent_wall_abutment_level_1_m"
+    normalized_json_path: "sections.flat_roof.parameters.vent_wall_abutment_level_1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_vent_wall_abutment_level_1", "roof_vent_wall_abutment_length"]
+      aliases_ru: ["примыкание к вентшахтам уровень 1", "длина примыканий вентшахт", "вентшахта примыкание"]
+      expected_unit: "мп"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[].wall_abutment_length_m for linear abutments to walls/VK/vent channels."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если длина примыканий не указана в зонах кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
+
+  - key: vent_wall_abutment_level_2_m
+    label_ru: "Длина примыканий к вентшахтам уровня 2"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_vent_wall_abutment_level_2"
+    calculator_input_path: "vent_wall_abutment_level_2_m"
+    normalized_json_path: "sections.flat_roof.parameters.vent_wall_abutment_level_2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_vent_wall_abutment_level_2", "roof_vent_wall_abutment_length"]
+      aliases_ru: ["примыкание к вентшахтам уровень 2", "длина примыканий вентшахт", "вентшахта примыкание"]
+      expected_unit: "мп"
+      notes: "Compatibility fallback for old detailed_project_geometry mode. Prefer roof_zones[].wall_abutment_length_m for linear abutments to walls/VK/vent channels."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте только если длина примыканий не указана в зонах кровли."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Fallback only. Do not treat as missing when roof_zones[] is present."
+
+  - key: parapet_roof_drains_count
+    label_ru: "Парапетные воронки"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_parapet_drains_count"
+    calculator_input_path: "parapet_roof_drains_count"
+    normalized_json_path: "sections.flat_roof.parameters.parapet_roof_drains_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_parapet_drains_count"]
+      aliases_ru: ["парапетная воронка", "воронка парапетная", "парапетный водосток"]
+      expected_unit: "шт"
+      notes: "Parapet drain count; not internal roof drains."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте количество парапетных воронок."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: internal_roof_drains_count
+    label_ru: "Воронки внутреннего водостока"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_internal_drains_count"
+    calculator_input_path: "internal_roof_drains_count"
+    normalized_json_path: "sections.flat_roof.parameters.internal_roof_drains_count.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["roof_internal_drains_count"]
+      aliases_ru: ["воронка внутреннего водостока", "водоприемная воронка", "внутренний водосток"]
+      expected_unit: "шт"
+      notes: "Internal drain count; not parapet drains."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте количество воронок внутреннего водостока."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: roof_zones
+    label_ru: "Зоны кровли"
+    unit: "таблица"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_zones"
+    calculator_input_path: "roof_zones"
+    normalized_json_path: "sections.flat_roof.parameters.roof_zones.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [area_m2, parapet_length_m, wall_abutment_length_m, operability]
+    columns:
+      - {key: context, label_ru: "Зона/тип кровли как в PDF", unit: "", value_kind: string, required: true}
+      - {key: area_m2, label_ru: "Площадь", unit: "м2", value_kind: number, required: true}
+      - {key: parapet_length_m, label_ru: "Длина парапетов", unit: "мп", value_kind: number, required: false}
+      - {key: wall_abutment_length_m, label_ru: "Длина примыканий к стенам/ВК/вентканалам", unit: "мп", value_kind: number, required: false}
+      - {key: operability, label_ru: "Тип эксплуатации", unit: "", value_kind: enum, allowed_values: ["exploitable", "non_exploitable"], required: false}
+    parser_mapping:
+      group_codes: ["roof_zones"]
+      expected_context: ["кровля", "зона", "тип", "эксплуатируемая", "неэксплуатируемая", "примыкание", "парапет"]
+      notes: "Primary production geometry for flat roof. Use when the PDF gives roof by zones/types/floors instead of one or two simple roof levels. Context must come from the roof sheet itself, not from slab labels such as ПМ1/ПМ2. Linear abutments to walls, VK, vent channels, and vent shafts belong in wall_abutment_length_m for the matching zone. If a zone column has separate wall and VK/vent-channel abutment rows, sum those components in wall_abutment_length_m and keep components in notes/raw evidence. Do not use roof_vent_wall_abutment_level_1/2 as parallel live values when roof_zones is present."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Справочно: проверьте площади кровли и примыкания по строкам PDF."
+    mirror_to_details_sheet: true
+    mirror_notes: "Show as a readable detail table so Elena can compare the roof zones with the PDF without opening the drawing."
+    validation:
+      min_rows: 0
+      sum_checks:
+        - {source_ref: "project_spec_roof_area_m2", compare_to: "sum(area_m2)", tolerance: 0.5, severity: warning}
+    notes: "Default production path when present. The calculator sums area_m2 into roof_area_total_m2 and sums parapet_length_m + wall_abutment_length_m into parapet_and_abutment_total_length_m. If operability is absent, adapter/calculator treat the zone as non_exploitable. Old level scalar fields are fallback only when this table is absent."
+
+  - key: roof_screed_items
+    label_ru: "Стяжка ЦСП (эксплуатируемая кровля)"
+    unit: "таблица"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_screed_items"
+    calculator_input_path: "roof_screed_items"
+    normalized_json_path: "sections.flat_roof.parameters.roof_screed_items.rows"
+    value_kind: repeated_rows
+    row_key_field: zone_context
+    production_input: true
+    item_label_columns: [zone_context]
+    correction_columns: [area_m2]
+    columns:
+      - {key: zone_context, label_ru: "Зона кровли (если их несколько)", unit: "", value_kind: string, required: false}
+      - {key: area_m2, label_ru: "Площадь стяжки ЦСП", unit: "м2", value_kind: number, required: true}
+    parser_mapping:
+      group_codes: ["roof_screed_items"]
+      expected_context: ["ЦСП", "стяжка", "стружечная плита", "цементно-стружечная", "эксплуатируемая кровля"]
+      notes: "Optional - only present when the roof has a walkable (exploitable) zone with a ЦСП/screed board build-up. Real, recurring case per Elena, confirmed present on some but not all real projects (e.g. present on ТРЦ, absent on АРК/ЮСВ) - do not treat absence as an extraction error. One row per physical screed area; zone_context ties it to a matching roof_zones[].context on multi-zone projects, leave blank on single-zone ones. When absent, the calculator adds zero screed/fiberglass-mat/screed-geotextile lines - never guess an area, never required."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если на этой кровле есть эксплуатируемая зона со стяжкой ЦСП - впишите площадь. Если стяжки нет - оставьте пустым, эти 4 строки сметы просто не появятся."
+    mirror_to_details_sheet: true
+    mirror_notes: "Show as a readable detail table so Elena can compare against the PDF spec table."
+    validation:
+      min_rows: 0
+    notes: "Optional, real recurring case (not every project) - see calculate_flat_roof()'s roof_screed_items handling (2026-08-24). Work priced by 1x total area (rate covers the full 2-layer installation as one job); board material by area x roof_screed_layers_count(2) rounded up to whole sheets; fiberglass mat and screed-geotextile each by 1x total area rounded up to whole rolls of their own product. Geotextile-under-screed reuses the exact same product/price as geotextile_prof_150_parapet (both literally «Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150» on every real project checked) - a separate estimate line because it has a different area source (screed area, not parapet length), not a different product."
+
+  - key: roof_raw_material_spec_rows
+    label_ru: "Строки спецификации кровли"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "roof_raw_material_spec_rows"
+    calculator_input_path: "roof_raw_material_spec_rows"
+    normalized_json_path: "sections.flat_roof.parameters.roof_raw_material_spec_rows.rows"
+    value_kind: repeated_rows
+    row_key_field: name
+    production_input: true
+    item_label_columns: [name]
+    correction_columns: [quantity, unit]
+    columns:
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: quantity, label_ru: "Количество", unit: "", value_kind: number}
+      - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
+    parser_mapping:
+      group_codes: ["roof_raw_material_spec_rows"]
+      expected_context: ["кровля", "спецификация"]
+      notes: "item_label_columns/correction_columns added 2026-07-29 — this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day); now renders per-row."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Проверьте строки спецификации кровли: количество и единицу измерения."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Reviewed material/specification rows for the flat-roof section. These are shown as real project data, not as a grey reference-only block. 2026-08-24: wired to the calculator (was calculator_input_path: \"\", diagnostic-only) - a row whose name contains \"V-GR\" and unit is м2 now overrides calculate_flat_roof()'s geometric membrane-area estimate for the V-GR line only (real TRC gap: geometric formula overshoots for small exploitable zones). V-RP deliberately does NOT get the same override - checked against real TRC data, the geometric formula already matches Elena's real V-RP roll order exactly, while the spec table's own V-RP total under-orders by 1 roll. Both rows are flagged \"Уточнить у монтажной организации\" in the source PDF - neither is definitively 'the' final order on its own, it's project/brand-specific which approximation lands correctly. See flat_roof_calculator/calculator.py's spec_table_area_m2() and the comment above its V-RP call site."
+
+  - {key: slope_plate_a_supplier_required_volume_m3, label_ru: "SLOPE плиты A, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_a_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_a_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05: confirmed via all 3 real projects' KR2 PDFs and Elena's own delivered estimates that this is always a hand-typed number from the installer's tapered-insulation-layout calc, never PDF-derived — removed as an extraction target. Kept on sheet 01 (not sheet 01-1/manual_values_registry) at Elena's explicit request: this is a real per-project supplier number, not a reusable universal default, so it doesn't belong in the project-independent manual values registry."}
+  - {key: slope_plate_b_supplier_required_volume_m3, label_ru: "SLOPE плиты B, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_b_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_b_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05, same evidence/reasoning as slope_plate_a_supplier_required_volume_m3 above."}
+  - {key: slope_plate_j_supplier_required_volume_m3, label_ru: "SLOPE плиты J, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_j_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_j_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05, same evidence/reasoning as slope_plate_a_supplier_required_volume_m3 above."}
+  - {key: slope_plate_k_supplier_required_volume_m3, label_ru: "SLOPE плиты K, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "slope_plate_k_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.slope_plate_k_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика (расчёт монтажной/расчётной организации, не архитектурный PDF)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05, same evidence/reasoning as slope_plate_a_supplier_required_volume_m3 above."}
+  - {key: eps50_supplier_required_volume_m3, label_ru: "ЭППС 50 мм кровли, объем (по КП поставщика)", unit: "м3", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "eps50_supplier_required_volume_m3", normalized_json_path: "sections.flat_roof.parameters.eps50_supplier_required_volume_m3.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м3", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика; не все проекты вообще имеют этот слой."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05: not a universal roof layer (present in some real projects, absent in others), and even where present the real estimate's number mixes an area-derived term with manually-added constants — not cleanly PDF-extractable. Removed as extraction target, kept on sheet 01 for the same reason as the SLOPE plates above."}
+  - {key: roof_aerators_count, label_ru: "Аэраторы кровельные (по КП поставщика)", unit: "шт", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "roof_aerators_count", normalized_json_path: "sections.flat_roof.parameters.roof_aerators_count.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "шт", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Заполните на основании КП от поставщика; не все проекты используют аэраторы."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05: zero mentions of aerators anywhere in a real project's KR2 PDF (whole-document check); confirmed in real delivered estimates that the count is a hand-typed fixed number, not derived from the architectural PDF. Removed as extraction target, kept on sheet 01 for the same reason as the SLOPE plates above."}
+  - {key: internal_drain_height_per_drain_m, label_ru: "Высота внутреннего водостока на одну воронку (ориентировочно)", unit: "м", source_class: AUTO_PROJECT, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "internal_drain_height_per_drain_m", normalized_json_path: "sections.flat_roof.parameters.internal_drain_height_per_drain_m.value", value_kind: scalar, parser_mapping: {target_codes: [], aliases_ru: [], expected_unit: "м", notes: "No live PDF signal — see field notes. Not searched by extraction."}, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите ориентировочную высоту стояка на одну воронку (по КП поставщика)."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "2026-08-05: Elena's own real estimates label this line '(ориентировочно)' — one real project's delivered estimate uses a flat 3.75*3 rule-of-thumb, not a PDF-given riser height. Removed as extraction target, kept on sheet 01 for the same reason as the SLOPE plates above."}
+
+supplier_inputs:
+  - {key: roof_work_coeff, label_ru: "Коэффициент работ кровли", unit: "", source_class: AUTO_CALCULATED, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_work_coeff", normalized_json_path: "sections.flat_roof.auto_calculated.roof_work_coeff.value", exclude_from_manual_values_registry: true, value_kind: scalar, review_behavior: {show_to_user: false, allow_manual_override: false, status_if_missing: "optional", action_ru: "Legacy only. В production ставка работ кровли приходит готовой ценой из price registry/review."}, notes: "Legacy diagnostic field. Do not ask Elena to fill it manually: the calculator uses reviewed combined work rates, especially eps_insulation_work_rate_per_m2."}
+  - {key: vent_shaft_abutment_count, label_ru: "Примыкания к вентшахтам, количество", unit: "шт", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "vent_shaft_abutment_count", normalized_json_path: "sections.flat_roof.supplier_inputs.vent_shaft_abutment_count.value", exclude_from_manual_values_registry: true, value_kind: scalar, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy/special-case only. В обычном production линейные примыкания к ВК/вентканалам идут в общую длину примыканий кровли."}, notes: "Hidden legacy optional field. Use only if a future special project explicitly prices a separate per-item vent-shaft abutment line. Linear abutments in м.п. are production roof geometry, not this count."}
+  - {key: roof_crane_lifting_shifts, label_ru: "Подъем материалов автокраном", unit: "смена", source_class: SUPPLIER_INPUT, required: true, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_crane_lifting_shifts", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_crane_lifting_shifts.value", value_kind: scalar, review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Укажите смены автокрана для кровли."}, notes: ""}
+  - {key: roof_consumables_total_raw, label_ru: "Расходные материалы кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_consumables_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_consumables_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production расходники кровли считаются коэффициентом от прямой базы раздела."}, notes: "Legacy compatibility only. Production uses roof_consumables_calc_method + roof_consumables_rate."}
+  - {key: roof_logistics_and_supply_total_raw, label_ru: "Логистика и снабжение кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "roof_logistics_and_supply_total_raw", normalized_json_path: "sections.flat_roof.supplier_inputs.roof_logistics_and_supply_total_raw.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production логистика кровли считается коэффициентом от прямой базы раздела."}, notes: "Legacy compatibility only. Production uses roof_logistics_and_supply_calc_method + roof_logistics_and_supply_rate."}
+  - {key: procurement_storage_work_total, label_ru: "Заготовительно-складские расходы кровли, legacy сумма", unit: "руб.", source_class: SUPPLIER_INPUT, required: false, review_sheet: "01_Проверка проекта", calculator_input_path: "procurement_storage_work_total", normalized_json_path: "sections.flat_roof.supplier_inputs.procurement_storage_work_total.value", exclude_from_manual_values_registry: true, value_kind: money, review_behavior: {show_to_user: false, allow_manual_override: true, status_if_missing: "optional", action_ru: "Legacy only: в production ЗСР кровли считается коэффициентом от базы материалов раздела."}, notes: "Legacy compatibility only. Production uses procurement_storage_calc_method + procurement_storage_rate."}
+
+price_keys:
+  - {key: vapor_barrier_work_rate_per_m2, estimate_line_code: vapor_barrier_installation, label_ru: "Пароизоляция основания пленкой ПВХ", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_installation_work_m2", fallback_key: "vapor_barrier_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: vapor_barrier_film_unit_price_per_m2, estimate_line_code: vapor_barrier_film_technonikol_120mk, label_ru: "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_vapor_barrier_film_technonikol_120mk_m2", fallback_key: "vapor_barrier_film_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: eps_insulation_work_rate_per_m2, estimate_line_code: eps_roof_insulation_installation, label_ru: "Утепление кровельного покрытия ЭППС", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps_insulation_installation_work_m2", fallback_key: "eps_insulation_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: eps100_unit_price_per_m3, estimate_line_code: eps100_technonikol_carbon_eco, label_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps100_technonikol_carbon_eco_m3", fallback_key: "eps100_unit_price_per_m3", allow_manual_override: true, notes: ""}
+  - {key: eps50_unit_price_per_m3, estimate_line_code: eps50_technonikol_carbon_eco, label_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 50 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps50_technonikol_carbon_eco_m3", fallback_key: "eps50_unit_price_per_m3", allow_manual_override: true, notes: ""}
+  - {key: slope_plate_unit_price_per_m3, estimate_line_code: eps_slope_plate_items, label_ru: "SLOPE плиты ТехноНИКОЛЬ", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "roof_eps_slope_<type>_m3", fallback_key: "slope_plate_items.unit_price_per_m3", allow_manual_override: true, notes: "The calculator reads 4 separate fixed fields (slope_plate_a/b/j/k_unit_price_per_m3), not dynamic rows — verified 2026-07-10 that all 4 are the same real product/price in every production test case, so one reviewed price is applied to all 4 calculator_input_mapping targets. If a project ever needs different prices per plate type, this key would need to split into 4."}
+  - {key: internal_drain_pvc_110_unit_price_per_m, estimate_line_code: internal_drain_pvc_110mm, label_ru: "Внутренний водосток ПВХ Ф110мм, материал", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_internal_drain_pvc_110mm_m", fallback_key: "internal_drain_pvc_110_unit_price_per_m", allow_manual_override: true, notes: "Found missing 2026-07-10."}
+  - {key: internal_drain_pvc_110_work_rate_per_m, estimate_line_code: internal_drain_pvc_110mm, label_ru: "Внутренний водосток ПВХ Ф110мм, работа", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_internal_drain_pvc_110mm_m", fallback_key: "internal_drain_pvc_110_work_rate_per_m", allow_manual_override: true, notes: "Found missing 2026-07-10."}
+  - {key: internal_roof_drain_installation_rate, estimate_line_code: internal_roof_drain_with_heating, label_ru: "Установка воронки кровельной внутренней с обогревом", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_internal_drain_with_heating_installation_item", fallback_key: "internal_roof_drain_installation_rate", allow_manual_override: true, notes: "Found missing 2026-07-10; distinct from internal_roof_drain_unit_price (material)."}
+  - {key: parapet_roof_drain_installation_rate, estimate_line_code: parapet_roof_drain_installation, label_ru: "Установка воронки парапетной", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_parapet_drain_installation_item", fallback_key: "parapet_roof_drain_installation_rate", allow_manual_override: true, notes: "Found missing 2026-07-10; distinct from parapet_roof_drain_unit_price (material)."}
+  - {key: roof_waste_removal_truck_unit_price, estimate_line_code: roof_waste_removal, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_container_truck", fallback_key: "roof_waste_removal_truck_unit_price", allow_manual_override: true, notes: "Elena 2026-07-30: container/machine cost is material column."}
+  - {key: roof_waste_removal_work_rate_per_truck, estimate_line_code: roof_waste_removal, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "waste_removal_loading_work_truck", fallback_key: "roof_waste_removal_work_rate_per_truck", allow_manual_override: true, notes: "Elena 2026-07-30: work column is loading waste into the same container."}
+  - {key: vent_shaft_abutment_work_rate_per_item, estimate_line_code: vent_shaft_abutment_installation, label_ru: "Монтаж примыкания к вентшахтам", price_kind: work, unit: "шт", required: false, default_source: price_registry_with_fallback, registry_code: "roof_vent_shaft_abutment_installation_item", fallback_key: "vent_shaft_abutment_work_rate_per_item", allow_manual_override: true, notes: "Optional legacy/manual-only. Use only when vent_shaft_abutment_count > 0; linear VK/vent-channel abutments are priced by roof_pvc_membrane_abutment_work_m."}
+  - {key: geotextile_flat_unit_price_per_m2, estimate_line_code: geotextile_prof_300_flat, label_ru: "Геотекстиль PROF 300", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_geotextile_technonikol_prof_300_m2", fallback_key: "geotextile_flat_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: geotextile_parapet_unit_price_per_m2, estimate_line_code: geotextile_prof_150_parapet, label_ru: "Геотекстиль PROF 150", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_geotextile_technonikol_prof_150_m2", fallback_key: "geotextile_parapet_unit_price_per_m2", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_installation_work_rate_per_m2, estimate_line_code: pvc_membrane_flat_installation, label_ru: "Укладка ПВХ мембраны", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_installation_work_m2", fallback_key: "pvc_membrane_installation_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_abutment_work_rate_per_m, estimate_line_code: pvc_membrane_abutment_installation, label_ru: "Монтаж примыкания ПВХ мембраны", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_abutment_work_m", fallback_key: "pvc_membrane_abutment_work_rate_per_m", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_unit_price_per_roll_display, estimate_line_code: pvc_membrane_logicroof_vrp_1_5mm_gray, label_ru: "ПВХ мембрана Logicroof V-RP 1,5 мм", price_kind: material, unit: "рул", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_logicroof_vrp_1_5mm_gray_roll", fallback_key: "pvc_membrane_unit_price_per_roll_display", allow_manual_override: true, notes: ""}
+  - {key: pressure_rail_unit_price_per_m, estimate_line_code: aluminum_pressure_rail_3m, label_ru: "Рейка прижимная алюминиевая", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_aluminum_pressure_rail_m", fallback_key: "pressure_rail_unit_price_per_m", allow_manual_override: true, notes: ""}
+  - {key: edge_rail_unit_price_per_m, estimate_line_code: aluminum_edge_rail_3m, label_ru: "Рейка краевая алюминиевая", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "roof_aluminum_edge_rail_m", fallback_key: "edge_rail_unit_price_per_m", allow_manual_override: true, notes: ""}
+  - {key: roof_aerator_unit_price, estimate_line_code: roof_pvc_aerator_75x375, label_ru: "Аэратор кровельный PVC", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_aerator_75x375_item", fallback_key: "roof_aerator_unit_price", allow_manual_override: true, notes: ""}
+  - {key: roof_aerator_installation_rate, estimate_line_code: roof_pvc_aerator_75x375, label_ru: "Установка аэратора кровельного", price_kind: work, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_pvc_aerator_75x375_installation_item", fallback_key: "roof_aerator_installation_rate", allow_manual_override: true, notes: ""}
+  - {key: parapet_roof_drain_unit_price, estimate_line_code: parapet_roof_drain_installation, label_ru: "Воронка парапетная", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_parapet_drain_item", fallback_key: "parapet_roof_drain_unit_price", allow_manual_override: true, notes: ""}
+  - {key: internal_roof_drain_unit_price, estimate_line_code: internal_roof_drain_with_heating, label_ru: "Воронка кровельная внутренняя с обогревом", price_kind: material, unit: "шт", required: true, default_source: price_registry_with_fallback, registry_code: "roof_internal_drain_with_heating_item", fallback_key: "internal_roof_drain_unit_price", allow_manual_override: true, notes: ""}
+  - {key: roof_crane_lifting_unit_price_per_shift, estimate_line_code: roof_crane_lifting, label_ru: "Подъем материалов автокраном", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "roof_crane_lifting_shift", fallback_key: "roof_crane_lifting_unit_price_per_shift", allow_manual_override: true, notes: ""}
+  - {key: pvc_membrane_vgr_unit_price_per_roll_display, estimate_line_code: pvc_membrane_logicroof_vgr_1_5mm_gray, label_ru: "ПВХ мембрана Logicroof V-GR 1,5 мм (эксплуатируемая кровля)", price_kind: material, unit: "рул", required: false, default_source: price_registry_with_fallback, registry_code: "roof_pvc_membrane_logicroof_vgr_1_5mm_gray_roll", fallback_key: "pvc_membrane_vgr_unit_price_per_roll_display", allow_manual_override: true, notes: "Added 2026-08-06: no prior real project had an exploitable roof_zones row (operability=exploitable), so this V-GR-specific price/roll-size trio was never wired - only the non-exploitable V-RP membrane (pvc_membrane_unit_price_per_roll_display) had a contract entry. required:false because the calculator only touches these 3 fields when vgr_membrane_required_area > 0 (see calculate_flat_roof - gated on at least one exploitable zone with real area); the adapter mirrors that same gate rather than requiring this price on every flat_roof project."}
+  - {key: roof_screed_installation_work_rate_per_m2, estimate_line_code: roof_screed_installation, label_ru: "Укладка ЦСП в 2 слоя, работа", price_kind: work, unit: "м2", required: false, default_source: price_registry_with_fallback, registry_code: "roof_screed_installation_work_m2", fallback_key: "roof_screed_installation_work_rate_per_m2", allow_manual_override: true, notes: "Added 2026-08-24: roof_screed_items[] is optional (only some real projects have a walkable ЦСП build-up, confirmed Elena/real project data) - required:false so ordinary flat_roof projects without a screed never need this price. Only read by the calculator when roof_screed_items[] is non-empty."}
+  - {key: roof_screed_board_unit_price, estimate_line_code: roof_screed_board_material, label_ru: "Цементно-стружечная плита (ЦСП) 12мм 3200х1200", price_kind: material, unit: "шт", required: false, default_source: price_registry_with_fallback, registry_code: "roof_screed_board_cementitious_particle_board_12mm", fallback_key: "roof_screed_board_unit_price", allow_manual_override: true, notes: "Added 2026-08-24, same optionality as roof_screed_installation_work_rate_per_m2 above."}
+  - {key: roof_fiberglass_mat_unit_price_per_m2, estimate_line_code: fiberglass_mat_technonikol_100gr, label_ru: "Стеклохолст ТехноНИКОЛЬ 100 г/м2 (400м/рул)", price_kind: material, unit: "м2", required: false, default_source: price_registry_with_fallback, registry_code: "roof_fiberglass_mat_technonikol_100gr_m2", fallback_key: "roof_fiberglass_mat_unit_price_per_m2", allow_manual_override: true, notes: "Required by adapter for roof_screed_items or the main fiberglass layer on roofs over 300 m2. Shared price with roof_screed_fiberglass_mat. Geo150 under screed remains a separate product/layer."}
+
+defaults:
+  - {key: project_name, label_ru: "Название проекта", source_class: DEFAULT, value: null, unit: "", calculator_input_path: "project_name", source_note: "Filled from job metadata.", allow_override_later: false, notes: ""}
+  - {key: roof_geometry_calc_method, label_ru: "Метод геометрии кровли", source_class: DEFAULT, value: "roof_zones", unit: "", calculator_input_path: "roof_geometry_calc_method", source_note: "Production default after roof_zones support: project zones/types are the primary geometry source.", allow_override_later: false, notes: "Old detailed_project_geometry scalar fields remain compatibility fallback only."}
+  - {key: vapor_barrier_film_overlap_coeff, label_ru: "Коэффициент нахлеста пароизоляции", source_class: DEFAULT, value: 1.15, unit: "", calculator_input_path: "vapor_barrier_film_overlap_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: vapor_barrier_film_roll_area_m2, label_ru: "Площадь рулона пароизоляции", source_class: DEFAULT, value: 150, unit: "м2", calculator_input_path: "vapor_barrier_film_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: eps_main_thickness_m, label_ru: "Основная толщина ЭППС кровли", source_class: DEFAULT, value: 0.2, unit: "м", calculator_input_path: "eps_main_thickness_m", source_note: "Formula/default for two 100 mm layers.", allow_override_later: true, notes: ""}
+  - {key: eps_insulation_waste_coeff, label_ru: "Коэффициент запаса ЭППС кровли", source_class: DEFAULT, value: 1.03, unit: "", calculator_input_path: "eps_insulation_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_flat_coeff, label_ru: "Коэффициент геотекстиля по плоскости", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_flat_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: roof_geotextile_max_area_m2, label_ru: "Максимальная площадь кровли для геотекстиля 300", source_class: DEFAULT, value: 300, unit: "м2", calculator_input_path: "roof_geotextile_max_area_m2", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: false, notes: "Inclusive threshold on total flat-roof area before overlap; zones are summed first."}
+  - {key: roof_fiberglass_one_roll_max_area_m2, label_ru: "Максимальная площадь кровли для одного рулона стеклохолста", source_class: DEFAULT, value: 430, unit: "м2", calculator_input_path: "roof_fiberglass_one_roll_max_area_m2", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: false, notes: "Inclusive threshold on roof area BEFORE multiplying by 1.1. Coverage warning when one roll is less than non-screed roof area."}
+  - {key: roof_fiberglass_mat_overlap_coeff, label_ru: "Коэффициент стеклохолста по плоскости", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "roof_fiberglass_mat_overlap_coeff", source_note: "Elena purchasing rule confirmed 2026-09-18.", allow_override_later: true, notes: "Main separation layer only; screed fiberglass calculation remains unchanged."}
+  - {key: geotextile_parapet_coeff, label_ru: "Коэффициент геотекстиля по парапетам", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "geotextile_parapet_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_flat_roll_area_m2, label_ru: "Рулон геотекстиля PROF 300", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_flat_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: geotextile_parapet_roll_area_m2, label_ru: "Рулон геотекстиля PROF 150", source_class: DEFAULT, value: 100, unit: "м2", calculator_input_path: "geotextile_parapet_roll_area_m2", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: roof_screed_board_sheet_area_m2, label_ru: "Площадь листа ЦСП", source_class: DEFAULT, value: 3.84, unit: "м2", calculator_input_path: "roof_screed_board_sheet_area_m2", source_note: "Catalog/package default - sheet 3200x1200mm, confirmed against real ТРЦ spec (12 sheets ordered for 21.28m2 area x 2 layers).", allow_override_later: true, notes: "Added 2026-08-24."}
+  - {key: roof_screed_layers_count, label_ru: "Количество слоёв ЦСП", source_class: DEFAULT, value: 2, unit: "", calculator_input_path: "roof_screed_layers_count", source_note: "Business/material formula default - real ТРЦ spec: «Сборная стяжка из 2 листов ЦСП».", allow_override_later: true, notes: "Added 2026-08-24."}
+  - {key: roof_fiberglass_mat_roll_area_m2, label_ru: "Рулон стеклохолста", source_class: DEFAULT, value: 400, unit: "м2", calculator_input_path: "roof_fiberglass_mat_roll_area_m2", source_note: "Catalog/package default - «Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)».", allow_override_later: true, notes: "Added 2026-08-24."}
+  - {key: pvc_membrane_flat_coeff, label_ru: "Коэффициент ПВХ мембраны по плоскости", source_class: DEFAULT, value: 1.15, unit: "", calculator_input_path: "pvc_membrane_flat_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_parapet_coeff, label_ru: "Коэффициент ПВХ мембраны по примыканиям", source_class: DEFAULT, value: 1.1, unit: "", calculator_input_path: "pvc_membrane_parapet_coeff", source_note: "Business/material formula default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_roll_width_m, label_ru: "Ширина рулона ПВХ мембраны", source_class: DEFAULT, value: 2.1, unit: "м", calculator_input_path: "pvc_membrane_roll_width_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_roll_length_m, label_ru: "Длина рулона ПВХ мембраны", source_class: DEFAULT, value: 20, unit: "м", calculator_input_path: "pvc_membrane_roll_length_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: pvc_membrane_vgr_roll_width_m, label_ru: "Ширина рулона ПВХ мембраны V-GR (эксплуатируемая кровля)", source_class: DEFAULT, value: 2.1, unit: "м", calculator_input_path: "pvc_membrane_vgr_roll_width_m", source_note: "Same roll size as V-RP (pvc_membrane_roll_width_m) assumed by default - Logicroof V-GR and V-RP are typically sold in the same standard roll dimensions. Not yet confirmed against a real V-GR supplier quote/КП; correct if it turns out different.", allow_override_later: true, notes: "Added 2026-08-06, first real project with an exploitable roof_zones row."}
+  - {key: pvc_membrane_vgr_roll_length_m, label_ru: "Длина рулона ПВХ мембраны V-GR (эксплуатируемая кровля)", source_class: DEFAULT, value: 20, unit: "м", calculator_input_path: "pvc_membrane_vgr_roll_length_m", source_note: "Same roll size as V-RP (pvc_membrane_roll_length_m) assumed by default - see pvc_membrane_vgr_roll_width_m notes.", allow_override_later: true, notes: "Added 2026-08-06, first real project with an exploitable roof_zones row."}
+  - {key: rail_piece_length_m, label_ru: "Длина рейки", source_class: DEFAULT, value: 3, unit: "м", calculator_input_path: "rail_piece_length_m", source_note: "Catalog/package default.", allow_override_later: true, notes: ""}
+  - {key: eps100_pack_volume_m3, label_ru: "Объем упаковки ЭППС 100 мм кровли", source_class: DEFAULT, value: 0.27376, unit: "м3", calculator_input_path: "eps100_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10 — required by the calculator (no dataclass default)."}
+  - {key: eps50_pack_volume_m3, label_ru: "Объем упаковки ЭППС 50 мм кровли", source_class: DEFAULT, value: 0.27376, unit: "м3", calculator_input_path: "eps50_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as eps100_pack_volume_m3."}
+  - {key: slope_plate_a_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит A", source_class: DEFAULT, value: 0.2916, unit: "м3", calculator_input_path: "slope_plate_a_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10 — required by the calculator (no dataclass default)."}
+  - {key: slope_plate_b_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит B", source_class: DEFAULT, value: 0.2736, unit: "м3", calculator_input_path: "slope_plate_b_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
+  - {key: slope_plate_j_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит J", source_class: DEFAULT, value: 0.2916, unit: "м3", calculator_input_path: "slope_plate_j_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
+  - {key: slope_plate_k_pack_volume_m3, label_ru: "Объем упаковки SLOPE плит K", source_class: DEFAULT, value: 0.2736, unit: "м3", calculator_input_path: "slope_plate_k_pack_volume_m3", source_note: "Catalog pack volume, confirmed from production test cases.", allow_override_later: true, notes: "Found missing 2026-07-10, same class of gap as slope_plate_a_pack_volume_m3."}
+  - {key: roof_consumables_calc_method, label_ru: "Метод расчета расходников кровли", source_class: DEFAULT, value: "section_total_rate", unit: "", calculator_input_path: "roof_consumables_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: roof_consumables_rate, label_ru: "Коэффициент расходников кровли", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "roof_consumables_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient, not a project quantity or price."}
+  - {key: roof_logistics_and_supply_calc_method, label_ru: "Метод расчета логистики и снабжения кровли", source_class: DEFAULT, value: "section_total_rate", unit: "", calculator_input_path: "roof_logistics_and_supply_calc_method", source_note: "Production coefficient mode, added 2026-08-03.", allow_override_later: false, notes: "Legacy fixed amount remains supported by calculator only for old cases."}
+  - {key: roof_logistics_and_supply_rate, label_ru: "Коэффициент логистики и снабжения кровли", source_class: DEFAULT, value: 0.02, unit: "", calculator_input_path: "roof_logistics_and_supply_rate", source_note: "Average production default from control estimate checks.", allow_override_later: true, notes: "Business coefficient, not a project quantity or price."}
+  - {key: technical_supervision_amount, label_ru: "Технический надзор кровли", source_class: DEFAULT, value: 10000, unit: "руб.", calculator_input_path: "technical_supervision_amount", source_note: "Confirmed 2 of 3 real projects' delivered smetas (ТРЦ/ЮСВ; АРК was 5000, an outlier) - fixed amount, not scaled by section size (checked: ranged 0.17%-0.78% of section total across all sections, no consistent ratio).", allow_override_later: true, notes: "Business default, not a project quantity from PDF - no longer a % of work base."}
+  - {key: procurement_storage_calc_method, label_ru: "Метод расчета ЗСР кровли", source_class: DEFAULT, value: "legacy_fixed_amount", unit: "", calculator_input_path: "procurement_storage_calc_method", source_note: "Changed 2026-08-24: checked ЗСР across all 3 real projects (~30 section instances total, not just roof) - it is blank/0 everywhere except a handful of flat manual numbers (5000, 15000). No 3%-of-material-base formula exists anywhere in any real delivered smeta. floor_slab_2_calculator and schiedel_vent_channels_calculator already treat this line as a plain zero_excel_structure_line - flat_roof was the only calculator computing a real percentage here, an invented rule with no supporting evidence. Reverted to legacy_fixed_amount, which defaults procurement_storage_work_total to 0 (a real manual override is still possible via that field if a specific project needs one, matching the rare ARK/ЮСВ manual numbers seen).", allow_override_later: false, notes: "section_material_rate mode remains supported by the calculator for backward compatibility, just no longer the production default."}
+  - {key: procurement_storage_rate, label_ru: "Коэффициент ЗСР кровли", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "procurement_storage_rate", source_note: "Only used if procurement_storage_calc_method is manually overridden back to section_material_rate - not the production default since 2026-08-24, see procurement_storage_calc_method notes.", allow_override_later: true, notes: "Business coefficient from material subtotal, not a project quantity or price."}
+  - {key: roof_waste_removal_trucks, label_ru: "Вывоз мусора кровли, машин", source_class: DEFAULT, value: 3, unit: "маш", calculator_input_path: "roof_waste_removal_trucks", source_note: "Confirmed identical (3 машины) across 3 real projects' delivered smetas (ТРЦ/АРК/ЮСВ) - fixed by section type, not scaled by roof area; same default already used by load_bearing_walls_lintels_p6.waste_removal_trucks.", allow_override_later: true, notes: "Business default, not a project quantity from PDF - no longer manual-required."}
+
+auto_calculated:
+  - {key: roof_area_total_m2, label_ru: "Площадь кровли, суммарная", source_class: AUTO_CALCULATED, formula: "sum(roof_zones.area_m2)", leaf_inputs: [{ref: review_parameters.roof_zones, source_class: AUTO_PROJECT}], calculator_input_path: "", notes: "Production roof_zones mode; the calculator/adapter sums every project roof zone. Old formula roof_area_level_1_m2 + roof_area_level_2_m2 is fallback only when roof_zones[] is absent."}
+  - {key: parapet_and_abutment_total_length_m, label_ru: "Длина парапетов и примыканий, суммарная", source_class: AUTO_CALCULATED, formula: "sum(roof_zones.parapet_length_m + roof_zones.wall_abutment_length_m)", leaf_inputs: [{ref: review_parameters.roof_zones, source_class: AUTO_PROJECT}], calculator_input_path: "", notes: "Production roof_zones mode; linear примыкания к стенам/ВК/вентканалам are included in roof_zones[].wall_abutment_length_m. Old level scalar fields are fallback only."}
+  - {key: rail_ordered_length_m, label_ru: "Заказная длина реек", source_class: AUTO_CALCULATED, formula: "ceil(parapet_and_abutment_total_length_m / rail_piece_length_m) * rail_piece_length_m", leaf_inputs: [{ref: auto_calculated.parapet_and_abutment_total_length_m, source_class: AUTO_CALCULATED}, {ref: defaults.rail_piece_length_m, source_class: DEFAULT}], calculator_input_path: "", notes: "Same ordered length feeds both aluminum_pressure_rail_3m and aluminum_edge_rail_3m."}
+  - {key: pvc_membrane_required_area_m2, label_ru: "Требуемая площадь ПВХ мембраны", source_class: AUTO_CALCULATED, formula: "roof_area_total_m2 * pvc_membrane_flat_coeff + parapet_and_abutment_total_length_m * pvc_membrane_parapet_coeff", leaf_inputs: [{ref: auto_calculated.roof_area_total_m2, source_class: AUTO_CALCULATED}, {ref: defaults.pvc_membrane_flat_coeff, source_class: DEFAULT}, {ref: auto_calculated.parapet_and_abutment_total_length_m, source_class: AUTO_CALCULATED}, {ref: defaults.pvc_membrane_parapet_coeff, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+  - {key: pvc_membrane_rolls, label_ru: "Количество рулонов ПВХ мембраны", source_class: AUTO_CALCULATED, formula: "ceil(pvc_membrane_required_area_m2 / (pvc_membrane_roll_width_m * pvc_membrane_roll_length_m))", leaf_inputs: [{ref: auto_calculated.pvc_membrane_required_area_m2, source_class: AUTO_CALCULATED}, {ref: defaults.pvc_membrane_roll_width_m, source_class: DEFAULT}, {ref: defaults.pvc_membrane_roll_length_m, source_class: DEFAULT}], calculator_input_path: "", notes: ""}
+  - {key: internal_drain_total_length_m, label_ru: "Суммарная длина внутреннего водостока", source_class: AUTO_CALCULATED, formula: "internal_roof_drains_count * internal_drain_height_per_drain_m", leaf_inputs: [{ref: review_parameters.internal_roof_drains_count, source_class: AUTO_PROJECT}, {ref: review_parameters.internal_drain_height_per_drain_m, source_class: AUTO_PROJECT}], calculator_input_path: "", notes: ""}
+
+calculator_input_mapping:
+  - input_path: "*"
+    from:
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
+      source_class: MIXED
+    required: true
+    transform: build_flat_roof_input
+    fallback: null
+    notes: "Adapter must fill calculator input without old fixture values or Excel-match overrides. Prefer roof_geometry_calc_method=roof_zones when roof_zones[] has reviewed rows; otherwise explicitly switch to fallback geometry only if fallback scalar fields are present. slope_plate_a/b/j/k_unit_price_per_m3 all resolve from the single slope_plate_unit_price_per_m3 price_key (see that key's notes)."
+
+estimate_lines:
+  - code: roof_base_preparation_control
+    name_ru: "Подготовка основания под укладку пароизоляционного слоя, очистка поверхности"
+    unit: "м2"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=roof_base_preparation_control]"
+    quantity:
+      formula: "roof_area_total_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero control/client line from calculator."
+
+  - code: vapor_barrier_installation
+    name_ru: "Пароизоляция основания пленкой ПВХ"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=vapor_barrier_installation]"
+    quantity:
+      formula: "roof_area_total_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: vapor_barrier_work_rate_per_m2, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: vapor_barrier_film_technonikol_120mk
+    name_ru: "Пленка пароизоляция ТехноНИКОЛЬ 120 мкм, 150 м2/рул"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=vapor_barrier_film_technonikol_120mk]"
+    quantity:
+      formula: "ceil(roof_area_total_m2 * vapor_barrier_film_overlap_coeff / vapor_barrier_film_roll_area_m2) * vapor_barrier_film_roll_area_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.vapor_barrier_film_overlap_coeff", source_class: DEFAULT}
+        - {ref: "defaults.vapor_barrier_film_roll_area_m2", source_class: DEFAULT}
+    prices: {material_unit_price_key: vapor_barrier_film_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Ordered area rounded up to full rolls."
+
+  - code: eps_roof_insulation_installation
+    name_ru: "Утепление кровельного покрытия ЭППС (1 слой -100мм, 2 слой -100мм, 3 слой - разуклонка)"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_roof_insulation_installation]"
+    quantity:
+      formula: "roof_area_total_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: eps_insulation_work_rate_per_m2, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "The calculator takes eps_insulation_work_rate_per_m2 as one reviewed combined work price; legacy roof_work_coeff is not an active manual input."
+
+  - code: eps100_technonikol_carbon_eco
+    name_ru: "ЭППС ТехноНИКОЛЬ CARBON ECO 100 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps100_technonikol_carbon_eco]"
+    quantity:
+      formula: "ceil(roof_area_total_m2 * eps_main_thickness_m * eps_insulation_waste_coeff / eps100_pack_volume_m3) * eps100_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.eps_main_thickness_m", source_class: DEFAULT}
+        - {ref: "defaults.eps_insulation_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.eps100_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: eps100_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Roof EPS volume, not slab/foundation EPS. Fixed 2026-07-10: previously had a hardcoded material_total_override=377080 in the calculator; now computed honestly (see docs/report_flat_roof_calculator.md)."
+
+  - code: eps50_technonikol_carbon_eco
+    name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON ECO (50мм)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps50_technonikol_carbon_eco]"
+    quantity:
+      formula: "ceil(eps50_supplier_required_volume_m3 / eps50_pack_volume_m3) * eps50_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.eps50_supplier_required_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.eps50_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: eps50_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "supplier_required_volume_m3 is a manual/Technonikol supplier input, not geometry-derived."
+
+  - code: eps_slope_2_1_plate_a
+    name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты A)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_slope_2_1_plate_a]"
+    quantity:
+      formula: "ceil(slope_plate_a_supplier_required_volume_m3 / slope_plate_a_pack_volume_m3) * slope_plate_a_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.slope_plate_a_supplier_required_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.slope_plate_a_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Fixed 2026-07-10: previously had a hardcoded expected_total=41304 in the calculator; now computed honestly."
+
+  - code: eps_slope_2_1_plate_b
+    name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 2,1% (плиты B)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_slope_2_1_plate_b]"
+    quantity:
+      formula: "ceil(slope_plate_b_supplier_required_volume_m3 / slope_plate_b_pack_volume_m3) * slope_plate_b_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.slope_plate_b_supplier_required_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.slope_plate_b_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: eps_slope_4_2_plate_j
+    name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты J)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_slope_4_2_plate_j]"
+    quantity:
+      formula: "ceil(slope_plate_j_supplier_required_volume_m3 / slope_plate_j_pack_volume_m3) * slope_plate_j_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.slope_plate_j_supplier_required_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.slope_plate_j_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: eps_slope_4_2_plate_k
+    name_ru: "Утеплитель ЭППС ТЕХНОНИКОЛЬ CARBON PROF SLOPE уклон 4,2% (плиты K)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_slope_4_2_plate_k]"
+    quantity:
+      formula: "ceil(slope_plate_k_supplier_required_volume_m3 / slope_plate_k_pack_volume_m3) * slope_plate_k_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.slope_plate_k_supplier_required_volume_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.slope_plate_k_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: slope_plate_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: geotextile_prof_300_flat
+    name_ru: "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 300, 2х50м"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=geotextile_prof_300_flat]"
+    quantity:
+      formula: "if 0 < roof_area_total_m2 <= roof_geotextile_max_area_m2: ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * geotextile_flat_coeff / geotextile_flat_roll_area_m2) * geotextile_flat_roll_area_m2; omit when non-screed area is zero"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.geotextile_flat_coeff", source_class: DEFAULT}
+        - {ref: "defaults.geotextile_flat_roll_area_m2", source_class: DEFAULT}
+    prices: {material_unit_price_key: geotextile_flat_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Main separation layer on small roofs, replaces standalone fiberglass; independent of Geo150 parapet and screed layers. No raw material spec row is required."
+
+  - code: fiberglass_mat_technonikol_100gr
+    name_ru: "Стеклохолст ТехноНИКОЛЬ 100 гр/м2 (400м/рул)"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=fiberglass_mat_technonikol_100gr]"
+    quantity:
+      formula: "if roof_area_total_m2 > roof_geotextile_max_area_m2 and non-screed area > 0: roof_fiberglass_mat_roll_area_m2 if roof_area_total_m2 <= roof_fiberglass_one_roll_max_area_m2 else ceil((roof_area_total_m2 - sum(roof_screed_items.area_m2)) * roof_fiberglass_mat_overlap_coeff / roof_fiberglass_mat_roll_area_m2) * roof_fiberglass_mat_roll_area_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+        - {ref: "review_parameters.roof_screed_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.roof_geotextile_max_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_one_roll_max_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_mat_overlap_coeff", source_class: DEFAULT}
+        - {ref: "defaults.roof_fiberglass_mat_roll_area_m2", source_class: DEFAULT}
+    prices: {material_unit_price_key: roof_fiberglass_mat_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Thresholds use total flat-roof area before overlap and after zone aggregation. Raw fiberglass spec areas do not drive this purchasing row. Screed layers remain separate."
+
+  - code: geotextile_prof_150_parapet
+    name_ru: "Геотекстиль ТЕХНОНИКОЛЬ ПРОФ Кровля 150, 2х50м"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=geotextile_prof_150_parapet]"
+    quantity:
+      formula: "ceil(parapet_and_abutment_total_length_m * geotextile_parapet_coeff / geotextile_parapet_roll_area_m2) * geotextile_parapet_roll_area_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.geotextile_parapet_coeff", source_class: DEFAULT}
+        - {ref: "defaults.geotextile_parapet_roll_area_m2", source_class: DEFAULT}
+    prices: {material_unit_price_key: geotextile_parapet_unit_price_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Always emitted for positive parapet + wall abutment installation length. Total length * 1.1 rounded up to 100 m2 rolls, independent of raw spec and roof area. Separate from Geo300 flat layer and Geo150 under screed. Confirmed by Elena 2026-09-18."
+
+  - code: pvc_membrane_flat_installation
+    name_ru: "Укладка ПВХ Мембраны"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=pvc_membrane_flat_installation]"
+    quantity:
+      formula: "roof_area_total_m2"
+      leaf_inputs:
+        - {ref: "auto_calculated.roof_area_total_m2", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: pvc_membrane_installation_work_rate_per_m2, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: pvc_membrane_abutment_installation
+    name_ru: "Монтаж примыкания кровли из ПВХ мембраны"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=pvc_membrane_abutment_installation]"
+    quantity:
+      formula: "parapet_and_abutment_total_length_m"
+      leaf_inputs:
+        - {ref: "auto_calculated.parapet_and_abutment_total_length_m", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: null, work_unit_price_key: pvc_membrane_abutment_work_rate_per_m, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: vent_shaft_abutment_installation
+    name_ru: "Монтаж примыкания к вентшахтам"
+    unit: "шт"
+    enabled_by_default: false
+    calculator_result_path: "estimate_lines[code=vent_shaft_abutment_installation]"
+    quantity:
+      formula: "vent_shaft_abutment_count"
+      leaf_inputs:
+        - {ref: "supplier_inputs.vent_shaft_abutment_count", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: null, work_unit_price_key: vent_shaft_abutment_work_rate_per_item, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Optional legacy/manual-only. Production linear abutments to walls/VK/vent channels feed pvc_membrane_abutment_installation by мп; this line is returned only when vent_shaft_abutment_count > 0."
+
+  - code: aluminum_pressure_rail_3m
+    name_ru: "Рейка прижимная алюминиевая 3м"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=aluminum_pressure_rail_3m]"
+    quantity:
+      formula: "rail_ordered_length_m"
+      leaf_inputs:
+        - {ref: "auto_calculated.rail_ordered_length_m", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: pressure_rail_unit_price_per_m, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Same ordered length as aluminum_edge_rail_3m (rounded up to full rail pieces)."
+
+  - code: aluminum_edge_rail_3m
+    name_ru: "Рейка краевая алюминиевая 3м"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=aluminum_edge_rail_3m]"
+    quantity:
+      formula: "rail_ordered_length_m"
+      leaf_inputs:
+        - {ref: "auto_calculated.rail_ordered_length_m", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: edge_rail_unit_price_per_m, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Same ordered length as aluminum_pressure_rail_3m (rounded up to full rail pieces)."
+
+  - code: pvc_membrane_logicroof_vrp_1_5mm_gray
+    name_ru: "ПВХ мембрана Logicroof V-RP 1,5 мм"
+    unit: "рул"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=pvc_membrane_logicroof_vrp_1_5mm_gray]"
+    quantity:
+      formula: "pvc_membrane_rolls"
+      leaf_inputs:
+        - {ref: "auto_calculated.pvc_membrane_rolls", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: pvc_membrane_unit_price_per_roll_display, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Fixed 2026-07-10: previously required an external pvc_membrane_expected_material_total override field instead of computing material_total from quantity * price; now computed honestly (see docs/report_flat_roof_calculator.md)."
+
+  - code: roof_pvc_aerator_75x375
+    name_ru: "Аэратор кровельный PVC, 75х375 (без пробивки отверстий)"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=roof_pvc_aerator_75x375]"
+    quantity:
+      formula: "roof_aerators_count"
+      leaf_inputs:
+        - {ref: "review_parameters.roof_aerators_count", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: roof_aerator_unit_price, work_unit_price_key: roof_aerator_installation_rate, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: parapet_roof_drain_installation
+    name_ru: "Установка воронки парапетной (без пробивки отверстий)"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=parapet_roof_drain_installation]"
+    quantity:
+      formula: "parapet_roof_drains_count"
+      leaf_inputs:
+        - {ref: "review_parameters.parapet_roof_drains_count", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: parapet_roof_drain_unit_price, work_unit_price_key: parapet_roof_drain_installation_rate, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: internal_roof_drain_with_heating
+    name_ru: "Установка воронки кровельной (с обжимным мет. фланцем с обогревом 110х450мм) (без пробивки отверстий)"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=internal_roof_drain_with_heating]"
+    quantity:
+      formula: "internal_roof_drains_count"
+      leaf_inputs:
+        - {ref: "review_parameters.internal_roof_drains_count", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: internal_roof_drain_unit_price, work_unit_price_key: internal_roof_drain_installation_rate, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: internal_drain_pvc_110mm
+    name_ru: "Устройство внутреннего водостока (ПВХ Ф110мм) (ориентировочно)"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=internal_drain_pvc_110mm]"
+    quantity:
+      formula: "internal_roof_drains_count * internal_drain_height_per_drain_m"
+      leaf_inputs:
+        - {ref: "auto_calculated.internal_drain_total_length_m", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: internal_drain_pvc_110_unit_price_per_m, work_unit_price_key: internal_drain_pvc_110_work_rate_per_m, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "internal_drain_height_per_drain_m is a project input, not a permanent constant."
+
+  - code: roof_crane_lifting
+    name_ru: "Подъем материалов автокраном"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=roof_crane_lifting]"
+    quantity:
+      formula: "roof_crane_lifting_shifts"
+      leaf_inputs:
+        - {ref: "supplier_inputs.roof_crane_lifting_shifts", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: roof_crane_lifting_unit_price_per_shift, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: roof_consumables_tool_depreciation
+    name_ru: "Расходные материалы, амортизация инструмента"
+    unit: "комплект"
+    enabled_by_default: true
+    line_kind: calculated_amount
+    calculator_result_path: "estimate_lines[code=roof_consumables_tool_depreciation]"
+    quantity:
+      formula: "1; amount = direct_roof_cost_base * roof_consumables_rate"
+      leaf_inputs:
+        - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.roof_consumables_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Production coefficient row. Legacy fixed amount remains supported by calculator only for old cases."
+
+  - code: roof_waste_removal
+    name_ru: "Вывоз мусора с объекта"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=roof_waste_removal]"
+    quantity:
+      formula: "roof_waste_removal_trucks"
+      leaf_inputs:
+        - {ref: "defaults.roof_waste_removal_trucks", source_class: DEFAULT}
+    prices: {material_unit_price_key: roof_waste_removal_truck_unit_price, work_unit_price_key: roof_waste_removal_work_rate_per_truck, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: roof_logistics_and_supply
+    name_ru: "Логистика, и снабжение"
+    unit: "-"
+    enabled_by_default: true
+    line_kind: calculated_amount
+    calculator_result_path: "estimate_lines[code=roof_logistics_and_supply]"
+    quantity:
+      formula: "1; amount = direct_roof_cost_base * roof_logistics_and_supply_rate"
+      leaf_inputs:
+        - {ref: "auto_calculated.direct_roof_cost_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.roof_logistics_and_supply_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Production coefficient row. Legacy fixed amount remains supported by calculator only for old cases."
+
+  - code: technical_supervision
+    name_ru: "Технический надзор"
+    unit: "-"
+    enabled_by_default: true
+    line_kind: calculated_amount
+    calculator_result_path: "estimate_lines[code=technical_supervision]"
+    quantity:
+      formula: "technical_supervision_amount"
+      leaf_inputs:
+        - {ref: "defaults.technical_supervision_amount", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: technical_supervision_amount, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Fixed business default (10000), not a formula from work subtotal - see technical_supervision_amount's own note."
+
+  - code: procurement_storage
+    name_ru: "Заготовительно-складские расходы"
+    unit: "-"
+    enabled_by_default: true
+    line_kind: calculated_amount
+    calculator_result_path: "estimate_lines[code=procurement_storage]"
+    quantity:
+      formula: "1; amount = direct_roof_material_base * procurement_storage_rate"
+      leaf_inputs:
+        - {ref: "auto_calculated.direct_roof_material_base", source_class: AUTO_CALCULATED}
+        - {ref: "defaults.procurement_storage_rate", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Production coefficient row from material subtotal. Legacy fixed amount remains supported by calculator only for old cases."
+
+  - code: overhead_zero
+    name_ru: "Накладные и общехозяйственные расходы"
+    unit: "-"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=overhead_zero]"
+    quantity:
+      formula: "1"
+      leaf_inputs: []
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero Excel structure line."
+
+  - code: profit_zero
+    name_ru: "Сметная прибыль"
+    unit: "-"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=profit_zero]"
+    quantity:
+      formula: "1"
+      leaf_inputs: []
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero Excel structure line."
+
+checks:
+  required_source_classes: [AUTO_PROJECT, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_review_parameters:
+    - roof_area_level_1_m2
+    - roof_area_level_2_m2
+    - parapet_length_level_1_m
+    - parapet_length_level_2_m
+    - vent_wall_abutment_level_1_m
+    - vent_wall_abutment_level_2_m
+    - parapet_roof_drains_count
+    - internal_roof_drains_count
+  forbidden_production_inputs:
+    - old_fixture_values
+    - old_expected_result_values
+    - display_quantity_overrides
+    - excel_match_total_overrides
+  expected_estimate_line_count: 29
+  optional_estimate_line_count: 2
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "estimate_lines fully built out 2026-07-10 from calculate_flat_roof()'s real line-by-line output (originally 31 lines total — matches docs/report_flat_roof_calculator.md's own count), after removing the calculator's hardcoded Excel-match overrides (explicit user authorization, see docs/report_flat_roof_calculator.md and experiments/flat_roof_calculator/calculator.py history for that fix). Also closed previously-undeclared required calculator input fields (pack-volume defaults, shared slope-plate price key fanned out to 4 fixed calculator fields, work/material price_keys) — without them the adapter could not have constructed a valid calculator input at all. vent_shaft_abutment_count stays a hidden optional legacy/special-case field, so normal production output has 29 lines and can add 1 optional special-case line only when a positive count is explicitly supplied. gas_block_wall_hole_drilling (and its gas_block_wall_holes_count/gas_block_wall_hole_drilling_rate inputs) removed entirely 2026-08-06 — see ADAPTER_BUILD_PLAN.md for the reasoning. forbidden_production_inputs now also lists excel_match_total_overrides, since that was this section's specific contamination pattern. 2026-08-03: SLOPE required volumes (+ EPS50, aerators, internal drain height) were moved from manual/supplier review to AUTO_PROJECT on the assumption they are project specification values found in the PDF. REVERTED 2026-08-05 after direct verification against all 3 real projects' KR2 PDFs and Elena's own delivered estimates — none of the 3 real PDFs print a letter-split SLOPE volume or aerator count as extractable text, and the real estimates show these are hand-typed fixed numbers (SLOPE volumes come from a separate tapered-insulation-layout calculation by the installer/'расчётная организация', not the architectural PDF; drain height is Elena's own rule-of-thumb 3.75 m/drain, explicitly labelled 'ориентировочно'). Back to SUPPLIER_INPUT/manual — a blank template cell on sheet 01, not a parser target. See each field's own notes for the exact evidence."

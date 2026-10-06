@@ -1,0 +1,1120 @@
+contract_version: 0.1
+
+section:
+  code: earthworks
+  name_ru: "Земляные работы"
+  calculator_module: "experiments/earthworks_calculator/earthworks_calculator.py"
+  status: reference_ready
+  owner_notes: "Reference contract from existing earthworks review-to-calculator flow; no project-specific values."
+
+source_files:
+  calculator: "experiments/earthworks_calculator/earthworks_calculator.py"
+  calculator_readme: "experiments/earthworks_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "experiments/full_estimate_review_pipeline/reports/step_01_earthworks_reference.md"
+    - "docs/report_earthworks_parser_google_stage1.md"
+    - "docs/report_earthworks_review_to_calculator.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: pit_area_m2
+    label_ru: "Площадь котлована"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "pit_area_m2"
+    calculator_input_path: "pit_area_m2"
+    normalized_json_path: "sections.earthworks.parameters.pit_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["pit_area_m2"]
+      aliases_ru: ["площадь котлована"]
+      expected_unit: "м2"
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь котлована из проекта."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: ""
+
+  - key: pit_excavation_depth_m
+    label_ru: "Глубина котлована"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: false
+    required_if:
+      absent_group: "pit_items"
+    review_sheet: "01_Проверка проекта"
+    target_code: "pit_excavation_depth_m"
+    calculator_input_path: "pit_excavation_depth_m"
+    normalized_json_path: "sections.earthworks.parameters.pit_excavation_depth_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["pit_excavation_depth_m"]
+      aliases_ru: ["глубина котлована"]
+      expected_unit: "м"
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте глубину котлована только если ниже нет готовых объёмов выемки pit_items."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Conditional input. Required only for area*depth calculation when the project does not provide ready pit_items volumes."
+
+  - key: pit_items
+    label_ru: "Готовые объёмы выемки грунта"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "pit_items"
+    calculator_input_path: "pit_items"
+    normalized_json_path: "sections.earthworks.parameters.pit_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: context, label_ru: "Запись (по PDF)", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём выемки", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["pit_items"]
+      aliases_ru: ["объем выемки грунта котлована", "объем выемки грунта приямков"]
+      expected_unit: ""
+      notes: "Added 2026-07-26 (real project case). Use when the spec gives ready excavation volume totals directly (e.g. main pit + footing pits) instead of area*depth geometry."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Справочно: проверьте объёмы котлована/приямков по строкам PDF."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when empty/absent, calculator behavior (pit_area_m2 * pit_excavation_depth_m) is byte-identical to before. When non-empty, its sum OVERRIDES the area*depth calculation for excavator shifts. production_input: true because this group IS wired into earthworks_calculator.py and must render per-row on sheet 01."
+
+  - key: sand_base_volume_m3
+    label_ru: "Объем песка под основание"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    required_if:
+      absent_group: "sand_items"
+    review_sheet: "01_Проверка проекта"
+    target_code: "sand_base_volume_m3"
+    calculator_input_path: "sand_base_volume_m3"
+    normalized_json_path: "sections.earthworks.parameters.sand_base_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["sand_base_volume_m3"]
+      aliases_ru: ["песок", "объем песка", "песчаная подготовка"]
+      expected_unit: "м3"
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте объем песка из спецификации только если ниже нет готовых объёмов sand_items."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Conditional input. Required only for legacy scalar mode when the project does not provide sand_items."
+
+  - key: sand_items
+    label_ru: "Готовые объёмы песка"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "sand_items"
+    calculator_input_path: "sand_items"
+    normalized_json_path: "sections.earthworks.parameters.sand_items.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [volume_m3]
+    columns:
+      - {key: context, label_ru: "Категория (по PDF)", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["sand_items"]
+      aliases_ru: ["песок засыпки пазух стен и дна траншей", "песок дна котлована подпятников"]
+      expected_unit: ""
+      notes: "Added 2026-07-26 (real project case). Use when the spec gives sand by ready category totals that don't split cleanly into 'under the slab' vs 'under the trenches'."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Справочно: проверьте объёмы песка по строкам PDF."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when empty/absent, calculator behavior (sand_base_volume_m3 + trench-derived sand) is byte-identical to before. When non-empty, its raw sum replaces that pair before the existing compaction coefficient/truck-rounding are applied. production_input: true because this group IS wired into earthworks_calculator.py and must render per-row on sheet 01."
+
+  - key: trench_volume_m3
+    label_ru: "Объем траншей"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "trench_volume_m3"
+    calculator_input_path: "trench_volume_m3"
+    normalized_json_path: "sections.earthworks.parameters.trench_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["trench_volume_m3"]
+      aliases_ru: ["объем траншей", "итого траншеи"]
+      expected_unit: "м3"
+      notes: "Detail routes may be used as source table when available."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте общий объем траншей."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: ""
+
+  - key: geotextile_area_m2
+    label_ru: "Площадь геотекстиля"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "geotextile_area_m2"
+    calculator_input_path: "geotextile_area_m2"
+    normalized_json_path: "sections.earthworks.parameters.geotextile_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["geotextile_area_m2"]
+      aliases_ru: ["геотекстиль"]
+      expected_unit: "м2"
+      notes: "Material area; do not confuse with laying area if both exist."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь материала геотекстиля."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: ""
+
+  - key: geotextile_laying_area_m2
+    label_ru: "Площадь укладки геотекстиля"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "geotextile_laying_area_m2"
+    calculator_input_path: "geotextile_laying_area_m2"
+    normalized_json_path: "sections.earthworks.parameters.geotextile_laying_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["geotextile_laying_area_m2"]
+      aliases_ru: ["площадь укладки геотекстиля"]
+      expected_unit: "м2"
+      notes: "Work laying area; may equal material area only after explicit review/assumption."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь укладки геотекстиля."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: ""
+
+  - key: communications_length_m
+    label_ru: "Длина коммуникаций"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: false
+    required_if:
+      absent_group: "communications_pipe_items"
+    review_sheet: "01_Проверка проекта"
+    target_code: "communications_length_m"
+    calculator_input_path: "communications_length_m"
+    normalized_json_path: "sections.earthworks.parameters.communications_length_m.value"
+    value_kind: scalar
+    cross_check_key: "communications_length_m_cross_check"
+    parser_mapping:
+      target_codes: ["communications_length_m"]
+      aliases_ru: ["длина коммуникаций", "коммуникации"]
+      expected_unit: "м"
+      notes: "This is the legacy scalar calculator input. If communications_pipe_items exists, the calculator can use pipe_items mode instead."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "conditional_manual_required"
+      action_ru: "Проверьте длину коммуникаций; если ниже есть состав труб, сверьте автосумму строк."
+    validation:
+      numeric: true
+      min_value: 0
+      max_value: null
+    notes: "Conditional input. Required only when the project does not provide communications_pipe_items suitable for pipe_items calculation."
+
+  - key: trench_routes
+    label_ru: "Траншеи"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "trench_routes"
+    calculator_input_path: "trench_routes"
+    normalized_json_path: "sections.earthworks.parameters.trench_routes.rows"
+    value_kind: repeated_rows
+    row_key_field: route_code
+    production_input: true
+    item_label_columns: [route_code]
+    correction_columns: [length_m, width_m, depth_m, volume_m3]
+    columns:
+      - key: route_code
+        label_ru: "Код маршрута"
+        unit: ""
+        value_kind: string
+        required: true
+      - key: name
+        label_ru: "Наименование"
+        unit: ""
+        value_kind: string
+        required: true
+      - key: length_m
+        label_ru: "Длина"
+        unit: "м"
+        value_kind: number
+        required: true
+      - key: depth_m
+        label_ru: "Глубина"
+        unit: "м"
+        value_kind: number
+        required: true
+      - key: width_m
+        label_ru: "Ширина"
+        unit: "м"
+        value_kind: number
+        required: false
+      - key: volume_m3
+        label_ru: "Объем"
+        unit: "м3"
+        value_kind: number
+        required: false
+      - key: depth_reference
+        label_ru: "Точка отсчёта глубины (контекст по PDF)"
+        unit: ""
+        value_kind: string
+        required: false
+    parser_mapping:
+      group_codes: ["trench_routes"]
+      expected_context: ["траншеи", "котлован"]
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Справочно: проверьте траншеи по строкам PDF."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. trench_volume_m3 (scalar above) still wins for the TOTAL trench volume when given; these per-route rows are what drive the manual (hand-dig) excavation depth split by network type (see manual_trench_depth_k1/k2/water/eo/other_m)."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "route_code is required so network type (К1/К2/В1-ВК/ЭО/other) can be detected per route. depth_reference added 2026-07-26: free-text context only (e.g. 'от дна котлована' when the PDF prints a second depth row with a different reference point) — never used by the calculator, purely for the service memo so a future arithmetic check doesn't false-positive on a mismatched reference point. item_label_columns/correction_columns added 2026-07-29: this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day) even though real per-route length/depth/width/volume data was already being extracted — now renders per-route so Elena can actually see and correct it, not just trench_volume_m3's total. production_input flipped true 2026-08-09: this group is now passed to the calculator (not diagnostic-only) so the manual_trench_depth_k1/k2/water/eo/other_m coefficients (added 2026-08-09, filled on sheet 01-1) can actually split trench_manual_portion_m3 by network type instead of silently defaulting to 100% of trench_volume_m3 as hand labor. Before this flip the coefficients were correctly wired end-to-end but structurally unreachable — see earthworks_calculator.py's calculate() branch fix same day (trench_routes_result now computed whenever trench_routes is given, independent of whether trench_volume_m3 also wins for the total)."
+
+  - key: communications_pipe_items
+    label_ru: "Коммуникации"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "communications_pipe_items"
+    calculator_input_path: "communications_pipe_items"
+    normalized_json_path: "sections.earthworks.parameters.communications_pipe_items.rows"
+    value_kind: repeated_rows
+    row_key_field: code
+    production_input: true
+    item_label_columns: [name]
+    correction_columns: [diameter_mm, pipe_length_m, quantity, total_length_m]
+    columns:
+      - key: code
+        label_ru: "Код позиции"
+        unit: ""
+        value_kind: string
+        required: true
+      - key: name
+        label_ru: "Наименование"
+        unit: ""
+        value_kind: string
+        required: true
+      - key: diameter_mm
+        label_ru: "Диаметр"
+        unit: "мм"
+        value_kind: number
+        required: false
+      - key: pipe_length_m
+        label_ru: "Длина одной"
+        unit: "м"
+        value_kind: number
+        required: true
+      - key: quantity
+        label_ru: "Количество"
+        unit: "шт"
+        value_kind: number
+        required: true
+      - key: total_length_m
+        label_ru: "Итоговая длина"
+        unit: "м"
+        value_kind: number
+        required: false
+      - key: include_in_communications
+        label_ru: "Включено"
+        unit: ""
+        value_kind: boolean
+        required: true
+    parser_mapping:
+      group_codes: ["communications_pipe_items"]
+      expected_context: ["трубы", "коммуникации"]
+      notes: ""
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Справочно: проверьте трубы/коммуникации по строкам PDF."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. In production this group can feed calculator pipe_items mode when the scalar communications_length_m is absent."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Production repeated rows for communications_length_calc_method=pipe_items. If a project provides one explicit total communications_length_m, that scalar may still be used; otherwise the adapter should pass these rows to the calculator and use the summed included pipe lengths."
+
+price_keys:
+  - key: axis_marking_work_unit_price
+    estimate_line_code: axis_marking
+    label_ru: "Разбивка осей"
+    price_kind: work
+    unit: "смена"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "axis_marking_shift"
+    fallback_key: "axis_marking_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: excavator_material_unit_price
+    estimate_line_code: excavator_jcb
+    label_ru: "Экскаватор JCB, материал/аренда"
+    price_kind: material
+    unit: "смена"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "excavator_jcb_shift_material"
+    fallback_key: "excavator_material_unit_price"
+    allow_manual_override: true
+    notes: "Fixed 2026-08-07: used to share registry_code excavator_jcb_shift with excavator_work_unit_price below, so material silently duplicated the work price (3500) instead of the real rental rate. Real material price 26000 confirmed across 8+ real project smeta snapshots (several reference projects, several months) - see normalize_elena_price_registry.py DERIVED_PRICE_ROWS comment for excavator_jcb_shift_material."
+  - key: excavator_work_unit_price
+    estimate_line_code: excavator_jcb
+    label_ru: "Экскаватор JCB, работа"
+    price_kind: work
+    unit: "смена"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "excavator_jcb_shift"
+    fallback_key: "excavator_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: manual_excavation_work_unit_price
+    estimate_line_code: manual_excavation
+    label_ru: "Доработка грунта вручную"
+    price_kind: work
+    unit: "м3"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "manual_excavation_m3"
+    fallback_key: "manual_excavation_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: geotextile_laying_work_unit_price
+    estimate_line_code: geotextile_laying
+    label_ru: "Укладка геотекстиля"
+    price_kind: work
+    unit: "м2"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "geotextile_laying_m2"
+    fallback_key: "geotextile_laying_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: geotextile_material_unit_price
+    estimate_line_code: geotextile_material
+    label_ru: "Геотекстиль"
+    price_kind: material
+    unit: "м2"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "geotextile_dornit_300_m2"
+    fallback_key: "geotextile_material_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: sand_filling_work_unit_price
+    estimate_line_code: sand_filling
+    label_ru: "Засыпка песком"
+    price_kind: work
+    unit: "м3"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "sand_filling_work_m3"
+    fallback_key: "sand_filling_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: sand_material_unit_price
+    estimate_line_code: sand_material
+    label_ru: "Песок"
+    price_kind: material
+    unit: "м3"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "sand_m3"
+    fallback_key: "sand_material_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: sand_manual_moving_work_unit_price
+    estimate_line_code: sand_manual_moving
+    label_ru: "Перемещение песка вручную"
+    price_kind: work
+    unit: "м3"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "sand_manual_moving_m3"
+    fallback_key: "sand_manual_moving_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: communications_work_unit_price
+    estimate_line_code: communications_work
+    label_ru: "Монтаж коммуникаций"
+    price_kind: work
+    unit: "м"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "communications_installation_m"
+    fallback_key: "communications_work_unit_price"
+    allow_manual_override: true
+    notes: ""
+  - key: communications_material_unit_price
+    estimate_line_code: communications_material
+    label_ru: "Материалы коммуникаций"
+    price_kind: material
+    unit: "м"
+    required: true
+    default_source: price_registry_with_fallback
+    registry_code: "communications_material_m"
+    fallback_key: "communications_material_unit_price"
+    allow_manual_override: true
+    notes: ""
+defaults:
+  - key: excavator_shifts_calc_method
+    label_ru: "Метод расчета смен экскаватора"
+    source_class: DEFAULT
+    value: "standard_volume_productivity"
+    unit: ""
+    calculator_input_path: "excavator_shifts_calc_method"
+    source_note: "Production mode from earthworks review-to-calculator constants."
+    allow_override_later: false
+    notes: ""
+  - key: manual_excavation_calc_method
+    label_ru: "Метод расчета ручной разработки"
+    source_class: DEFAULT
+    value: "standard_routes"
+    unit: ""
+    calculator_input_path: "manual_excavation_calc_method"
+    source_note: "Production mode from earthworks review-to-calculator constants."
+    allow_override_later: false
+    notes: ""
+  - key: communications_length_calc_method
+    label_ru: "Метод расчета длины коммуникаций"
+    source_class: DEFAULT
+    value: "legacy_direct_length"
+    unit: ""
+    calculator_input_path: "communications_length_calc_method"
+    source_note: "Production review mode: calculator uses reviewed scalar communications_length_m. The calculator method name is legacy, but the source is the production review row."
+    allow_override_later: false
+    notes: "Do not switch to pipe_items unless a deliberate adapter mode makes pipe rows the reviewed calculator source."
+  - key: excavator_productivity_m3_per_shift
+    label_ru: "Производительность экскаватора"
+    source_class: DEFAULT
+    value: 80
+    unit: "м3/смена"
+    calculator_input_path: "excavator_productivity_m3_per_shift"
+    source_note: "Formula default from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: trench_width_m
+    label_ru: "Ширина траншеи по умолчанию"
+    source_class: DEFAULT
+    value: 0.4
+    unit: "м"
+    calculator_input_path: "trench_width_m"
+    source_note: "Formula default from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: sand_compaction_coeff
+    label_ru: "Коэффициент уплотнения песка"
+    source_class: DEFAULT
+    value: 1.3
+    unit: ""
+    calculator_input_path: "sand_compaction_coeff"
+    source_note: "Formula default from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: sand_truck_step_m3
+    label_ru: "Кратность машины песка"
+    source_class: DEFAULT
+    value: 20
+    unit: "м3"
+    calculator_input_path: "sand_truck_step_m3"
+    source_note: "Business/default rounding step from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: geotextile_overlap_coeff
+    label_ru: "Коэффициент нахлеста геотекстиля (материал)"
+    source_class: DEFAULT
+    value: 1.1
+    unit: ""
+    calculator_input_path: "geotextile_overlap_coeff"
+    source_note: "Formula default from earthworks constants. Stable 1.1 across all 3 reference projects - kept as a plain default, not exposed for override."
+    allow_override_later: true
+    notes: ""
+  - key: geotextile_roll_area_m2
+    label_ru: "Площадь рулона геотекстиля"
+    source_class: DEFAULT
+    value: 100
+    unit: "м2"
+    calculator_input_path: "geotextile_roll_area_m2"
+    source_note: "Catalog/package default from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: axis_marking_shifts
+    label_ru: "Разбивка осей, смены"
+    source_class: DEFAULT
+    value: 1
+    unit: "смена"
+    calculator_input_path: "axis_marking_shifts"
+    source_note: "Business/default quantity from earthworks constants."
+    allow_override_later: true
+    notes: ""
+  - key: consumables_calc_method
+    label_ru: "Метод расчета расходных материалов"
+    source_class: DEFAULT
+    value: "section_total_rate"
+    unit: ""
+    calculator_input_path: "consumables_calc_method"
+    source_note: "Production earthworks mode: calculate consumables as a percentage of direct earthworks lines before consumables."
+    allow_override_later: false
+    notes: "Legacy calculator mode legacy_fixed_amount is kept only for old review workbooks that still provide consumables_amount from sheet 02."
+  - key: consumables_rate
+    label_ru: "Коэффициент расходников и амортизации"
+    source_class: DEFAULT
+    value: 0.03
+    unit: ""
+    calculator_input_path: "consumables_rate"
+    source_note: "Business coefficient; not extracted from project PDF and not a price registry row."
+    allow_override_later: true
+    notes: "Applied to earthworks direct cost base before the consumables line."
+
+auto_calculated:
+  - key: manual_excavation_quantity_for_estimate_m3
+    label_ru: "Ручная разработка"
+    source_class: AUTO_CALCULATED
+    formula: "pit_area_m2 * manual_refinement_depth_m + trench_manual_portion_m3 (NOT the full trench_volume_m3 - see manual_trench_depth_k1/k2/water/eo/other_m)"
+    leaf_inputs:
+      - ref: review_parameters.pit_area_m2
+        source_class: AUTO_PROJECT
+      - ref: defaults.manual_refinement_depth_m
+        source_class: DEFAULT
+      - ref: review_parameters.trench_volume_m3
+        source_class: AUTO_PROJECT
+    calculator_input_path: "manual_excavation_quantity_for_estimate_m3"
+    notes: "Fixed 2026-08-09: this formula text was stale (whole trench_volume_m3, matching the calculator's old 100%-counted-as-manual behavior). The calculator itself now computes manual_excavation_total_m3 from trench_manual_portion_m3 (per-network hand-dig depth x length x width, see manual_trench_depth_k1/k2/water/eo/other_m in supplier_inputs), not the full excavated trench volume. This AUTO_CALCULATED display field's leaf_inputs weren't updated to list the 5 new coefficients - it remains an approximate cross-check text, not itself wired into the calculator."
+  - key: communications_length_m_cross_check
+    label_ru: "Длина коммуникаций по деталям (сверка)"
+    source_class: AUTO_CALCULATED
+    formula: "sum(included communications_pipe_items.total_length_m)"
+    leaf_inputs:
+      - ref: review_parameters.communications_pipe_items
+        source_class: AUTO_PROJECT
+    calculator_input_path: ""
+    notes: "Cross-check only, shown next to communications_length_m for Elena to compare. Never wired into calculator_input_mapping or an estimate line — the calculator input is the reviewed review_parameters.communications_length_m scalar. See fix note on communications_pipe_items above."
+  - key: earthworks_direct_cost_base_before_consumables
+    label_ru: "База прямых затрат земли до расходников"
+    source_class: AUTO_CALCULATED
+    formula: "sum(axis_marking, excavator_jcb, manual_excavation, geotextile_laying, geotextile_material, sand_filling, sand_material, sand_manual_moving, communications_work, communications_material)"
+    leaf_inputs:
+      - ref: review_parameters
+        source_class: AUTO_PROJECT
+      - ref: defaults
+        source_class: DEFAULT
+      - ref: price_keys
+        source_class: PRICE
+    calculator_input_path: ""
+    notes: "Calculated from earthworks estimate lines before consumables; no project-specific totals stored here."
+  - key: consumables_amount
+    label_ru: "Расходные материалы, амортизация инструмента"
+    source_class: AUTO_CALCULATED
+    formula: "earthworks_direct_cost_base_before_consumables * consumables_rate"
+    leaf_inputs:
+      - ref: auto_calculated.earthworks_direct_cost_base_before_consumables
+        source_class: AUTO_CALCULATED
+      - ref: defaults.consumables_rate
+        source_class: DEFAULT
+    calculator_input_path: ""
+    notes: "Production calculated amount; do not place it on sheet 02 as a price or on sheet 01-1 as manual input."
+
+supplier_inputs:
+  - key: excavator_dig_depth_m
+    label_ru: "Глубина выемки грунта для расчета смен экскаватора"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "excavator_dig_depth_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.excavator_dig_depth_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-12. Deliberately separate from pit_excavation_depth_m (the PDF-spec pit depth, sheet 01) - checked one reference project's real hidden formula (R26=(P4)*0.6/80 in her Excel) and it uses 0.6m, NOT the 0.5m her own spec table prints for 'Глубина котлована'. Same divisor confirmed on another reference project too (Q27=P27/80, though that project's own depth term is more complex - stepped pit floor, see excavator_shifts notes below). Falls back to pit_excavation_depth_m when left blank (calculate_excavator_shifts), so projects where the two happen to coincide need no extra input. Only 1 clean confirmed value so far (0.6) - no typical default set in manual_values_registry, Elena fills in per project when she knows the real number differs from spec."
+  - key: sand_reserve_m3
+    label_ru: "Запас песка"
+    unit: "м3"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "sand_reserve_m3"
+    normalized_json_path: "sections.earthworks.supplier_inputs.sand_reserve_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м3"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-12. Confirmed by exact match on all 3 checked real smetas (3 reference projects): a flat +20 m3 added to the sand order volume before rounding up to the delivery truck step - not derived from project size (compaction/base/trench math already accounts for that separately). Default 20 lives in manual_values_registry.xlsx (section_code=earthworks, key=sand_reserve_m3); Elena can override per project on sheet 01-1. Falls back to the calculator's own 20.0 default if left blank - see sand_order_volume_m3 in earthworks_calculator.py."
+  - key: manual_refinement_depth_m
+    label_ru: "Глубина ручной доработки дна котлована"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_refinement_depth_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_refinement_depth_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Fixed 2026-08-08: was a silent DEFAULT (0.08) with no per-project visibility. Real projects vary - checked real Excel formulas in 3 delivered smetas (3 reference projects): two of them use 0.08, the third uses 0.10. Typical value 0.08 lives in manual_values_registry.xlsx (section_code=earthworks, key=manual_refinement_depth_m); Elena can override per project on sheet 01-1. Falls back to the calculator's own 0.08 default if left blank."
+  - key: geotextile_laying_overlap_coeff
+    label_ru: "Коэффициент нахлеста геотекстиля в работе (укладка)"
+    unit: ""
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "geotextile_laying_overlap_coeff"
+    normalized_json_path: "sections.earthworks.supplier_inputs.geotextile_laying_overlap_coeff.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: ""
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-08. Separate from geotextile_overlap_coeff (material purchase, stable 1.1 across all 3 reference projects) - this one is for the LAYING WORK line's area, and checked real Excel formulas: one reference project uses 1.1, another uses 1.2, the third uses no multiplier at all (1.0/none). NOT a stable system rule - varies by project/estimator judgment (site shape, number of corners/overlaps). Default 1.0 (no markup) matches the calculator's pre-2026-08-08 behavior and that third project's real practice; Elena fills in the real project number on sheet 01-1 when the site needs one. Typical value in manual_values_registry.xlsx (section_code=earthworks, key=geotextile_laying_overlap_coeff)."
+  - key: manual_trench_depth_k1_m
+    label_ru: "Ручная доработка траншеи сверх котлована, К1 (канализация), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_k1_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_k1_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Real formulas confirmed across 3 reference projects: manual excavation is not 100% of every trench's volume - only a hand-dug depth beyond the pit floor, times trench length x width, per network. Checked real coefficients (depth beyond pit, m) on two of those projects: К1=0.6 and К1=0.2 -> average 0.4. The third project has no per-network breakdown (one flat 0.5 for all networks - see manual_trench_depth_other_m). Elena, 2026-08-09: keep this as a manual/reviewable field per project, not a hardcoded constant - real depth depends on soil/design, not just network type. Typical value 0.4 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_k1_m)."
+  - key: manual_trench_depth_k2_m
+    label_ru: "Ручная доработка траншеи сверх котлована, К2 (ливнёвка), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_k2_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_k2_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. Same two reference projects: К2=1.0 and К2=0.2 -> average 0.6. Typical value 0.6 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_k2_m)."
+  - key: manual_trench_depth_water_m
+    label_ru: "Ручная доработка траншеи сверх котлована, водопровод (В1/ВК), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_water_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_water_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. Same two reference projects: В1=1.6 and ВК=1.6 - exact match between both real projects, not just an average. Typical value 1.6 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_water_m)."
+  - key: manual_trench_depth_eo_m
+    label_ru: "Ручная доработка траншеи сверх котлована, ЭО (электроосвещение), м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_eo_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_eo_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Same source/reasoning as manual_trench_depth_k1_m. Same two reference projects: ЭО=0.7 and ЭО=0.6 -> average 0.65. Typical value 0.65 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_eo_m)."
+  - key: manual_trench_depth_other_m
+    label_ru: "Ручная доработка траншеи сверх котлована, прочие/нераспознанные сети, м"
+    unit: "м"
+    source_class: SUPPLIER_INPUT
+    required: false
+    review_sheet: "01-1_Ручные строки (справочник)"
+    calculator_input_path: "manual_trench_depth_other_m"
+    normalized_json_path: "sections.earthworks.supplier_inputs.manual_trench_depth_other_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: []
+      aliases_ru: []
+      expected_unit: "м"
+      notes: "Manual/business input, not a PDF extraction target."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+    notes: "Added 2026-08-09. Fallback coefficient for any trench_routes row whose network type can't be recognized from its name/route_code (see earthworks_calculator.py's detect_trench_network_type - matches К1/К2/В1/ВК/ЭО patterns, anything else falls here). The third reference project had no per-network breakdown at all - one flat 0.5m coefficient for every network in that project - reused here as the general fallback. Typical value 0.5 in manual_values_registry.xlsx (section_code=earthworks, key=manual_trench_depth_other_m)."
+
+calculator_input_mapping:
+  - input_path: "*"
+    from:
+      ref: "review_parameters + defaults + price_keys"
+      source_class: AUTO_PROJECT
+    required: true
+    transform: earthworks_review_to_calculator_adapter
+    fallback: null
+    notes: "Existing earthworks adapter is the reference behavior."
+
+estimate_lines:
+  - code: axis_marking
+    name_ru: "Разбивка осей"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=axis_marking]"
+    quantity:
+      formula: "axis_marking_shifts"
+      leaf_inputs:
+        - ref: defaults.axis_marking_shifts
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: axis_marking_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: excavator_jcb
+    name_ru: "Разработка грунта экскаватором JCB"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=excavator_jcb]"
+    quantity:
+      formula: "ceil(pit_area_m2 * pit_excavation_depth_m / excavator_productivity_m3_per_shift)"
+      leaf_inputs:
+        - ref: review_parameters.pit_area_m2
+          source_class: AUTO_PROJECT
+        - ref: review_parameters.pit_excavation_depth_m
+          source_class: AUTO_PROJECT
+        - ref: defaults.excavator_productivity_m3_per_shift
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: excavator_material_unit_price
+      work_unit_price_key: excavator_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: manual_excavation
+    name_ru: "Доработка грунта вручную"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=manual_excavation]"
+    quantity:
+      formula: "manual_excavation_quantity_for_estimate_m3"
+      leaf_inputs:
+        - ref: auto_calculated.manual_excavation_quantity_for_estimate_m3
+          source_class: AUTO_CALCULATED
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: manual_excavation_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: geotextile_laying
+    name_ru: "Укладка геотекстиля"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=geotextile_laying]"
+    quantity:
+      formula: "geotextile_laying_area_m2"
+      leaf_inputs:
+        - ref: review_parameters.geotextile_laying_area_m2
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: geotextile_laying_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: geotextile_material
+    name_ru: "Геотекстиль"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=geotextile_material]"
+    quantity:
+      formula: "ceil(geotextile_area_m2 * geotextile_overlap_coeff / geotextile_roll_area_m2) * geotextile_roll_area_m2"
+      leaf_inputs:
+        - ref: review_parameters.geotextile_area_m2
+          source_class: AUTO_PROJECT
+        - ref: defaults.geotextile_overlap_coeff
+          source_class: DEFAULT
+        - ref: defaults.geotextile_roll_area_m2
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: geotextile_material_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: sand_filling
+    name_ru: "Засыпка песком"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=sand_filling]"
+    quantity:
+      formula: "sand_base_volume_m3 + trench_volume_m3"
+      leaf_inputs:
+        - ref: review_parameters.sand_base_volume_m3
+          source_class: AUTO_PROJECT
+        - ref: review_parameters.trench_volume_m3
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: sand_filling_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: sand_material
+    name_ru: "Песок"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=sand_material]"
+    quantity:
+      formula: "roundup_to_step((sand_base_volume_m3 + trench_volume_m3) * sand_compaction_coeff, sand_truck_step_m3)"
+      leaf_inputs:
+        - ref: review_parameters.sand_base_volume_m3
+          source_class: AUTO_PROJECT
+        - ref: review_parameters.trench_volume_m3
+          source_class: AUTO_PROJECT
+        - ref: defaults.sand_compaction_coeff
+          source_class: DEFAULT
+        - ref: defaults.sand_truck_step_m3
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: sand_material_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: sand_manual_moving
+    name_ru: "Перемещение песка вручную"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=sand_manual_moving]"
+    quantity:
+      formula: "sand_base_volume_m3 + trench_volume_m3"
+      leaf_inputs:
+        - ref: review_parameters.sand_base_volume_m3
+          source_class: AUTO_PROJECT
+        - ref: review_parameters.trench_volume_m3
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: sand_manual_moving_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: communications_work
+    name_ru: "Монтаж коммуникаций"
+    unit: "м"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=communications_work]"
+    quantity:
+      formula: "communications_length_m"
+      leaf_inputs:
+        - ref: review_parameters.communications_length_m
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: communications_work_unit_price
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: communications_material
+    name_ru: "Материалы коммуникаций"
+    unit: "м"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=communications_material]"
+    quantity:
+      formula: "communications_length_m"
+      leaf_inputs:
+        - ref: review_parameters.communications_length_m
+          source_class: AUTO_PROJECT
+    prices:
+      material_unit_price_key: communications_material_unit_price
+      work_unit_price_key: null
+      fixed_amount_key: null
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: ""
+  - code: consumables
+    name_ru: "Расходные материалы"
+    unit: "комплект"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=consumables]"
+    quantity:
+      formula: "1; amount = earthworks_direct_cost_base_before_consumables * consumables_rate"
+      leaf_inputs:
+        - ref: auto_calculated.earthworks_direct_cost_base_before_consumables
+          source_class: AUTO_CALCULATED
+        - ref: defaults.consumables_rate
+          source_class: DEFAULT
+    prices:
+      material_unit_price_key: null
+      work_unit_price_key: null
+      fixed_amount_key: consumables_amount
+    helper_cells: []
+    validation:
+      formula_ready_required: true
+      excel_formula_exportable: true
+    notes: "Production calculated amount from the section direct-cost base and consumables_rate. Legacy fixed amount is no longer a price_registry row."
+
+workbook_layout:
+  review_workbook:
+    include_on_constructor: true
+    project_sheet: "01_Проверка проекта"
+    price_sheet: "02_Цены себестоимости"
+    details_sheet: "03_Детали объемов"
+    candidates_sheet: "05_Кандидаты parser"
+    raw_sheet: "06_Сырые данные parser"
+
+checks:
+  required_source_classes:
+    - AUTO_PROJECT
+    - DEFAULT
+    - AUTO_CALCULATED
+    - PRICE
+    - SUPPLIER_INPUT
+    - MANUAL_REVIEW
+  fail_if:
+    - "earthworks workbook rows are copied from an old project workbook instead of this contract"
+    - "project quantities or old fixture values are stored as defaults"
+    - "review parameter count differs from 7 without explanation"
+    - "price row count differs from 12 without explanation"
+    - "detail table count differs from 2 without explanation"

@@ -1,0 +1,2759 @@
+catalog_version: 0.1
+purpose: "Shared technical/default/catalog values for the full estimate pipeline. Prices and project quantities are intentionally excluded."
+rules:
+  no_project_quantities: true
+  no_prices: true
+  no_old_project_totals: true
+  uncertain_values_require_status_needs_elena: true
+
+source_classes:
+  DEFAULT: "Formula default, method constant, business coefficient, or catalog/package value."
+  CATALOG_DEFAULT: "Catalog/package value such as roll area, rod length, pallet volume."
+  BUSINESS_DEFAULT: "Company/business assumption confirmed as a reusable default."
+  METHOD_DEFAULT: "Calculator mode/default method, not a project value."
+
+sections:
+  earthworks:
+    status: reference_ready
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/earthworks/section_contract.yaml"
+      - "experiments/earthworks_review_to_calculator/constants.py"
+      - "experiments/earthworks_calculator/earthworks_calculator.py"
+      - "experiments/full_estimate_review_pipeline/reports/step_01_earthworks_reference.md"
+    defaults:
+      excavator_shifts_calc_method:
+        value: "standard_volume_productivity"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "excavator_shifts_calc_method"
+        used_by_estimate_lines: ["earthworks.excavator_jcb"]
+        source_note: "Production mode from earthworks review-to-calculator constants and section contract."
+        confidence: confirmed_from_code
+        allow_override: false
+        notes: "Controls whether excavator shifts are calculated from volume/productivity instead of a legacy manual shift count."
+
+      manual_excavation_calc_method:
+        value: "standard_routes"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "manual_excavation_calc_method"
+        used_by_estimate_lines: ["earthworks.manual_excavation"]
+        source_note: "Production mode from earthworks review-to-calculator constants and section contract."
+        confidence: confirmed_from_code
+        allow_override: false
+        notes: "Manual excavation is calculated from pit refinement plus trench volume in the production path."
+
+      communications_length_calc_method:
+        value: "legacy_direct_length"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "communications_length_calc_method"
+        used_by_estimate_lines: ["earthworks.communications_work", "earthworks.communications_material"]
+        source_note: "Section contract uses reviewed scalar communications_length_m as production source; older earthworks adapter can switch when pipe rows are the deliberate source."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Do not change to pipe_items unless the adapter explicitly makes pipe rows the reviewed source."
+
+      excavator_productivity_m3_per_shift:
+        value: 80.0
+        unit: "m3/shift"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "excavator_productivity_m3_per_shift"
+        used_by_estimate_lines: ["earthworks.excavator_jcb"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Technical productivity default; not extracted from PDF."
+
+      manual_refinement_depth_m:
+        value: 0.08
+        unit: "m"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "manual_refinement_depth_m"
+        used_by_estimate_lines: ["earthworks.manual_excavation"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Depth used for manual pit refinement: pit_area_m2 * manual_refinement_depth_m."
+
+      trench_width_m:
+        value: 0.4
+        unit: "m"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "trench_width_m"
+        used_by_estimate_lines: ["earthworks.manual_excavation"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Fallback trench width for calculator route fallback. Reviewed scalar trench_volume_m3 remains the production source."
+
+      sand_compaction_coeff:
+        value: 1.3
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "sand_compaction_coeff"
+        used_by_estimate_lines: ["earthworks.sand_material"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Sand order volume coefficient. Not a project quantity."
+
+      sand_truck_step_m3:
+        value: 20.0
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "sand_truck_step_m3"
+        used_by_estimate_lines: ["earthworks.sand_material"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Rounding step for sand delivery/order volume."
+
+      geotextile_overlap_coeff:
+        value: 1.10
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "geotextile_overlap_coeff"
+        used_by_estimate_lines: ["earthworks.geotextile_material"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Overlap coefficient for geotextile material quantity."
+
+      geotextile_roll_area_m2:
+        value: 100.0
+        unit: "m2"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "geotextile_roll_area_m2"
+        used_by_estimate_lines: ["earthworks.geotextile_material"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Catalog/package roll area. This is not the project geotextile area."
+
+      axis_marking_shifts:
+        value: 1.0
+        unit: "shift"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "axis_marking_shifts"
+        used_by_estimate_lines: ["earthworks.axis_marking"]
+        source_note: "GENERIC_CALCULATOR_DEFAULTS and earthworks section contract."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Default quantity for axis marking. The work unit price is PRICE and is not stored in this catalog."
+
+      consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "consumables_calc_method"
+        used_by_estimate_lines: ["earthworks.consumables"]
+        source_note: "Production mode from earthworks section contract and calculator."
+        confidence: confirmed_from_code
+        allow_override: false
+        notes: "Legacy fixed amount mode is kept only for old earthworks workbooks that still provide consumables_amount from sheet 02."
+
+      consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_rate"
+        used_by_estimate_lines: ["earthworks.consumables"]
+        source_note: "Earthworks section contract and calculator method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Applied to direct earthworks cost base before the consumables line."
+
+  foundation_slab:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/foundation_slab/section_contract.yaml"
+      - "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
+      - "experiments/foundation_slab_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      formwork_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_calc_method"
+        used_by_estimate_lines:
+          - "foundation_slab.formwork_installation"
+          - "foundation_slab.formwork_plywood"
+          - "foundation_slab.formwork_timber"
+          - "foundation_slab.formwork_dismantling"
+        source_note: "Production mode from foundation slab section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use the PDF/spec side formwork area; do not reconstruct from perimeter and height in production."
+
+      plywood_calc_method:
+        value: "actual_area_with_waste"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "plywood_calc_method"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Production mode from foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Plywood is calculated from the actual side formwork area, sheet dimensions, and waste coefficient."
+
+      thermal_insert_mode:
+        value: "standard_50_100"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "thermal_insert_mode"
+        used_by_estimate_lines:
+          - "foundation_slab.thermal_insert_50_installation"
+          - "foundation_slab.thermal_insert_100_installation"
+          - "foundation_slab.thermal_insert_50_material"
+          - "foundation_slab.thermal_insert_100_material"
+        source_note: "Production mode from foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Separate 50 mm and 100 mm thermal insert work/material rows."
+
+      rebar_calc_method:
+        value: "spec_length_m"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rebar_calc_method"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Production mode from foundation slab section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "PDF primary rebar unit is linear meters; adapter must not use the old weight-to-length mode for production."
+
+      membrane_overlap_coeff:
+        value: 1.10
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "membrane_overlap_coeff"
+        used_by_estimate_lines: ["foundation_slab.planter_standard_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material overlap coefficient; not a project quantity."
+
+      membrane_roll_area_m2:
+        value: 40.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "membrane_roll_area_m2"
+        used_by_estimate_lines: ["foundation_slab.planter_standard_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog roll area for Planter membrane."
+
+      planterband_per_membrane_roll:
+        value: 4.0
+        unit: "pcs/roll"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "planterband_per_membrane_roll"
+        used_by_estimate_lines: ["foundation_slab.planterband_material"]
+        source_note: "Foundation slab section contract, Elena rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Planterband quantity is calculated from purchased membrane rolls."
+
+      plywood_sheet_width_m:
+        value: 1.52
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "plywood_sheet_width_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood sheet catalog dimension."
+
+      plywood_sheet_height_m:
+        value: 1.52
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "plywood_sheet_height_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood sheet catalog dimension."
+
+      plywood_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "plywood_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.formwork_plywood"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Plywood waste coefficient."
+
+      timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "timber_thickness_m"
+        used_by_estimate_lines: ["foundation_slab.formwork_timber"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Timber volume is calculated as side formwork area times this thickness."
+
+      eps50_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_thickness_m"
+        used_by_estimate_lines:
+          - "foundation_slab.eps50_laying_under_slab"
+          - "foundation_slab.eps50_penoplex_geo_material"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used to convert EPS 50 volume from PDF into laying area."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.eps50_penoplex_geo_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS material waste coefficient."
+
+      eps50_pack_volume_m3:
+        value: null
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["foundation_slab.eps50_penoplex_geo_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Package volume, not a project quantity. Keep null until a universal catalog value is confirmed."
+
+      thermal_insert_material_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "thermal_insert_material_waste_coeff"
+        used_by_estimate_lines:
+          - "foundation_slab.thermal_insert_50_material"
+          - "foundation_slab.thermal_insert_100_material"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thermal insert material waste coefficient."
+
+      thermal_insert_50_pack_multiple_qty:
+        value: null
+        unit: "m3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "thermal_insert_50_pack_multiple_qty"
+        used_by_estimate_lines: ["foundation_slab.thermal_insert_50_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Purchase rounding multiple for 50 mm thermal insert material."
+
+      thermal_insert_100_pack_multiple_qty:
+        value: null
+        unit: "m3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "thermal_insert_100_pack_multiple_qty"
+        used_by_estimate_lines: ["foundation_slab.thermal_insert_100_material"]
+        source_note: "Foundation slab section contract; value must be supplied by catalog/price registry before calculator run."
+        confidence: needs_catalog_value
+        allow_override: true
+        notes: "Purchase rounding multiple for 100 mm thermal insert material."
+
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rebar_waste_coeff"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rebar length waste coefficient."
+
+      rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items[*].rod_length_m"
+        used_by_estimate_lines:
+          - "foundation_slab.rebar_frame_assembly"
+          - "foundation_slab.rebar_items"
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Default rebar rod length unless an item-specific catalog value overrides it."
+
+      concrete_waste_coeff:
+        value: 1.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_waste_coeff"
+        used_by_estimate_lines: ["foundation_slab.concrete_b22_5_m300_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete order waste coefficient."
+
+      concrete_round_step_m3:
+        value: 0.5
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_round_step_m3"
+        used_by_estimate_lines: ["foundation_slab.concrete_b22_5_m300_material"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete order rounding step."
+
+      concrete_mixer_volume_m3:
+        value: 7.0
+        unit: "m3/trip"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_mixer_volume_m3"
+        used_by_estimate_lines: ["foundation_slab.concrete_delivery"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used to calculate concrete delivery trips from ordered concrete volume."
+
+      box_metal_delivery_capacity_kg:
+        value: 10000.0
+        unit: "kg/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "box_metal_delivery_capacity_kg"
+        used_by_estimate_lines: ["foundation_slab.rebar_metal_delivery"]
+        source_note: "Foundation slab section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Used only for suggested delivery-truck control; actual delivery line remains manual."
+
+      logistics_and_supply_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "logistics_and_supply_calc_method"
+        used_by_estimate_lines: ["foundation_slab.logistics_and_supply"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates the amount from the direct foundation slab subtotal; legacy fixed amount remains accepted only for old cases."
+
+      logistics_and_supply_rate:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "logistics_and_supply_rate"
+        used_by_estimate_lines: ["foundation_slab.logistics_and_supply"]
+        source_note: "Middle default from old estimate templates: foundation logistics appears as 1.5%-2.5% of the direct section base."
+        confidence: estimated_from_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      consumables_tool_amortization_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "consumables_tool_amortization_calc_method"
+        used_by_estimate_lines: ["foundation_slab.consumables_tool_amortization"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates the amount from the direct foundation slab subtotal; legacy fixed amount remains accepted only for old cases."
+
+      consumables_tool_amortization_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_tool_amortization_rate"
+        used_by_estimate_lines: ["foundation_slab.consumables_tool_amortization"]
+        source_note: "Repeated in checked estimate templates as 3% of the direct section base."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+  waterproofing:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/waterproofing/section_contract.yaml"
+      - "experiments/waterproofing_calculator/waterproofing_calculator.py"
+      - "experiments/waterproofing_calculator/README.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_16_waterproofing_extraction_crosscheck.md"
+    defaults:
+      waterproofing_area_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "waterproofing_area_calc_method"
+        used_by_estimate_lines: ["waterproofing.waterproofing_bitumen_mastic_work"]
+        source_note: "Production mode from waterproofing section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed waterproofing_area_m2; legacy perimeter/height reconstruction is not production."
+
+      eps100_wall_thickness_m:
+        value: 0.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_wall_thickness_m"
+        used_by_estimate_lines:
+          - "waterproofing.eps100_wall_insulation_work"
+          - "waterproofing.eps100_wall_penoplex_geo_material"
+          - "waterproofing.eps_glue_foam"
+        source_note: "Waterproofing section contract and calculator production method for EPS 100 mm."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness used to convert project EPS volume into work area; not a project quantity."
+
+      primer_consumption_l_per_m2:
+        value: 0.3
+        unit: "l/m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "primer_consumption_l_per_m2"
+        used_by_estimate_lines: ["waterproofing.bitumen_primer_aquamast_18l"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption coefficient for primer purchase-unit formula."
+
+      primer_canister_volume_l:
+        value: 18.0
+        unit: "l/canister"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "primer_canister_volume_l"
+        used_by_estimate_lines: ["waterproofing.bitumen_primer_aquamast_18l"]
+        source_note: "AquaMast primer package size from waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size; not a project quantity and not a price."
+
+      mastic_consumption_kg_per_m2_per_layer:
+        value: 1.0
+        unit: "kg/m2/layer"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "mastic_consumption_kg_per_m2_per_layer"
+        used_by_estimate_lines: ["waterproofing.bitumen_mastic_aquamast_18kg"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption coefficient for mastic purchase-unit formula."
+
+      mastic_layers:
+        value: 2.0
+        unit: "layers"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "mastic_layers"
+        used_by_estimate_lines:
+          - "waterproofing.waterproofing_bitumen_mastic_work"
+          - "waterproofing.bitumen_mastic_aquamast_18kg"
+        source_note: "Method default and estimate-line wording: bitumen mastic in 2 layers."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method setting, not extracted from PDF."
+
+      mastic_bucket_weight_kg:
+        value: 18.0
+        unit: "kg/bucket"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "mastic_bucket_weight_kg"
+        used_by_estimate_lines: ["waterproofing.bitumen_mastic_aquamast_18kg"]
+        source_note: "AquaMast mastic package size from waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size; not a project quantity and not a price."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_waste_coeff"
+        used_by_estimate_lines:
+          - "waterproofing.eps100_wall_penoplex_geo_material"
+          - "waterproofing.eps50_wall_penoplex_geo_material"
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Waste coefficient for EPS material purchase volume. Shared by both the 100mm and 50mm edge-insulation layers (added 2026-07-14)."
+
+      eps100_pack_volume_m3:
+        value: 0.2776
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_pack_volume_m3"
+        used_by_estimate_lines: ["waterproofing.eps100_wall_penoplex_geo_material"]
+        source_note: "EPS 100 mm package volume from waterproofing section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for purchase-pack rounding; not a project EPS volume."
+
+      eps50_wall_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_wall_thickness_m"
+        used_by_estimate_lines:
+          - "waterproofing.eps50_wall_insulation_work"
+          - "waterproofing.eps50_wall_penoplex_geo_material"
+          - "waterproofing.eps_glue_foam"
+        source_note: "Waterproofing section contract, added 2026-07-14 for the optional second (thinner) edge-insulation layer."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness used to convert project EPS-50 volume into work area; not a project quantity. Mirrors eps100_wall_thickness_m."
+
+      eps50_pack_volume_m3:
+        value: null
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["waterproofing.eps50_wall_penoplex_geo_material"]
+        source_note: "Package volume, not yet filled from catalog/price registry — same open item as foundation_slab.eps50_pack_volume_m3 (also null)."
+        confidence: needs_catalog_lookup
+        allow_override: true
+        notes: "Must be filled before eps50_wall_penoplex_geo_material can run. Added 2026-07-14."
+
+      glue_foam_coverage_m2_per_can:
+        value: 10.0
+        unit: "m2/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "glue_foam_coverage_m2_per_can"
+        used_by_estimate_lines: ["waterproofing.eps_glue_foam"]
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coverage default for EPS glue foam units."
+
+      glue_foam_min_units:
+        value: 1
+        unit: "can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "glue_foam_min_units"
+        used_by_estimate_lines: ["waterproofing.eps_glue_foam"]
+        source_note: "Waterproofing section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Minimum purchase quantity for glue foam."
+
+      waterproofing_logistics_coeff:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "waterproofing_logistics_coeff"
+        used_by_estimate_lines: ["waterproofing.waterproofing_logistics_and_supply"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Internal logistics/supply amount is calculated from the primary waterproofing subtotal."
+
+      waterproofing_consumables_coeff:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "waterproofing_consumables_coeff"
+        used_by_estimate_lines: ["waterproofing.waterproofing_consumables_tool_amortization"]
+        source_note: "Waterproofing section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumables/tool amortization amount is calculated from the primary waterproofing subtotal."
+
+  load_bearing_walls_lintels_p6:
+    status: verified_against_current_calculator
+    active_in_full_estimate_export: true
+    verified_on: "2026-09-18"
+    source_refs:
+      - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
+      - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels_p6/section_contract.yaml"
+      - "experiments/full_estimate_review_pipeline/review_to_calculator/sections/load_bearing_walls_lintels_p6/build_input.py"
+    notes: >
+      These are current P6 formula/package defaults, not project quantities. Contract defaults
+      populate the adapter input; fields absent from that contract use P6Defaults dataclass values.
+      Scaffolding quantities are manual review inputs, listed under not_defaults. Technical
+      supervision is a reusable monetary business amount in the contract, not a unit-price lookup;
+      its monetary value is not duplicated here because this catalog excludes prices/amounts.
+    defaults:
+      gas_block_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.gas_block_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material", "load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Applied to cumulative material demand before pallet rounding. Crane workload also includes demand covered by earlier stock."
+      gas_block_d400_pallet_volume_m3:
+        value: 2.16
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d400_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Elena 2026-09-18: D400 and D500 250x400 cross-section (600x400x250 block), 2.16 m3. Historical key retained for input compatibility; applies to both densities. Length/dimension order does not change lookup."
+      gas_block_d500_250_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d500_250_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+      gas_block_d500_150_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_d500_150_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+      gas_block_other_pallet_volume_m3:
+        value: 1.8
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_other_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Elena 2026-09-18: every other thickness, regardless of density. Known D500 150/250 keys remain compatible configurable aliases; explicit item overrides take priority."
+      adhesive_consumption_bag_per_m3:
+        value: 1.2
+        unit: "мешок/м3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.adhesive_consumption_bag_per_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_adhesive"]
+        confidence: confirmed_from_code_and_contract
+      adhesive_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.adhesive_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.block_adhesive"]
+        confidence: confirmed_from_code_and_contract
+      sand_concrete_consumption_kg_per_m2_per_10mm:
+        value: 19.0
+        unit: "кг/м2/10мм"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_consumption_kg_per_m2_per_10mm"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults, so dataclass supplies this value."
+      sand_concrete_thickness_factor:
+        value: 2.0
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_thickness_factor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      sand_concrete_bag_weight_kg:
+        value: 40.0
+        unit: "кг"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.sand_concrete_bag_weight_kg"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.sand_concrete_m300_first_row"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      gas_block_length_m:
+        value: 0.6
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.gas_block_length_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.u_block_lintel_cutting"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults. Used for U-block cutting, not block price lookup."
+      gas_block_delivery_truck_capacity_m3:
+        value: 32.0
+        unit: "м3/маш"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.gas_block_delivery_truck_capacity_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.blocks_delivery", "load_bearing_walls_lintels_p6.blocks_unloading_manipulator", "load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+      vent_chimney_block_thickness_m:
+        value: 0.15
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.vent_chimney_block_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.gas_block_cladding_work"]
+        confidence: confirmed_from_code_and_contract
+      crane_trucks_per_shift:
+        value: 3.0
+        unit: "маш/смена"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.crane_trucks_per_shift"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.blocks_crane_moving"]
+        confidence: confirmed_from_code_and_contract
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.rebar_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.rebar_material", "load_bearing_walls_lintels_p6.lintel_rebar_frame_assembly"]
+        confidence: confirmed_from_code_and_contract
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.concrete_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_concrete_b22_5_m300_material", "load_bearing_walls_lintels_p6.manual_concrete_lifting"]
+        confidence: confirmed_from_code_and_contract
+        notes: "P6 applies waste before whole-m3 order rounding; legacy spec_volume behavior differs."
+      lintel_concrete_min_order_volume_m3:
+        value: 1.0
+        unit: "м3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_concrete_min_order_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_concrete_b22_5_m300_material", "load_bearing_walls_lintels_p6.manual_concrete_lifting"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Applied once per zone to combined U-block + monolithic concrete, only when required volume > 0."
+      lintel_formwork_plywood_sheet_area_m2:
+        value: 2.3
+        unit: "м2/шт"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_formwork_plywood_sheet_area_m2"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_formwork_plywood_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_formwork_board_thickness_m:
+        value: 0.05
+        unit: "м"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_formwork_board_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_formwork_timber_material"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Raw area * thickness is subsequently rounded upward to 0.1 m3."
+      lintel_insulation_eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_insulation_eps_waste_coeff"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_eps_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_insulation_eps_pack_volume_m3:
+        value: 0.2773
+        unit: "м3"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_insulation_eps_pack_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_eps_material"]
+        confidence: confirmed_from_code_and_contract
+      lintel_glue_foam_coverage_m_per_can:
+        value: 12.0
+        unit: "м/баллон"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "defaults.lintel_glue_foam_coverage_m_per_can"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_glue_foam"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      lintel_glue_foam_min_units:
+        value: 1.0
+        unit: "баллон"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.lintel_glue_foam_min_units"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.lintel_edge_insulation_glue_foam"]
+        confidence: confirmed_from_code
+        source_note: "P6Defaults; absent from contract defaults."
+      waste_removal_trucks:
+        value: 3.0
+        unit: "маш"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.waste_removal_trucks"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.construction_waste_removal"]
+        confidence: confirmed_from_code_and_contract
+        notes: "Current P6 uses a contract default, unlike the old scalar contract's supplier input."
+      walls_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "defaults.walls_consumables_rate"
+        used_by_estimate_lines: ["load_bearing_walls_lintels_p6.walls_consumables_tool_amortization"]
+        confidence: confirmed_from_code_and_contract
+
+  load_bearing_walls_lintels:
+    status: legacy_reference_only
+    active_in_full_estimate_export: false
+    replaced_by: load_bearing_walls_lintels_p6
+    notes: "Historical scalar defaults. P6 uses nested defaults and zone-shaped project inputs instead."
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/load_bearing_walls_lintels/section_contract.yaml"
+      - "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_calculator.py"
+      - "experiments/load_bearing_walls_lintels_calculator/README.md"
+      - "docs/report_load_bearing_walls_lintels_calculator.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      scaffolding_calc_method:
+        value: "floors_based"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "scaffolding_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.scaffolding_setup_dismantling"
+          - "load_bearing_walls_lintels.scaffolding_timber_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Scaffolding quantities are calculated from floors_count; legacy direct quantities are not production."
+
+      cutoff_waterproofing_calc_method:
+        value: "spec_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "cutoff_waterproofing_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.cutoff_waterproofing_under_first_row_blocks"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed spec area under load-bearing walls only; do not reconstruct from wall lengths in production."
+
+      lintel_length_calc_method:
+        value: "spec_total_length"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_length_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.u_block_lintel_cutting"
+          - "load_bearing_walls_lintels.lintel_concreting_work"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Calculator uses lintel_total_length_m from specification — an explicit total line in the PDF's lintel materials spec table, not a mark-by-mark breakdown."
+
+      lintel_concrete_calc_method:
+        value: "spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_concrete_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use project concrete volume for lintels; legacy section-by-length reconstruction is not production."
+
+      main_wall_rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "main_wall_rebar_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_chasing_for_d10_reinforcement"
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Wall rebar comes from PDF/spec rows in linear meters, grouped by floor/component/class/diameter."
+
+      lintel_rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "lintel_rebar_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_rebar_frame_assembly"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Lintel rebar comes from PDF/spec rows in linear meters; old weight-based rows are legacy only."
+
+      main_walls_crane_calc_method:
+        value: "delivery_trucks_threshold"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "main_walls_crane_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.main_walls_blocks_crane_moving_25t"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Crane shifts are calculated from gas block delivery trucks: up to 3 trucks is 1 shift, 4 or more is 2 shifts."
+
+      upper_floor_calc_method:
+        value: "floor_2_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "upper_floor_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_2_masonry_work"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Current MVP maps the project row 'Кладка над кухней-гостиной' to floor_2_masonry_volume_m3; it does not solve the general full-two-floor case yet."
+
+      parapet_calc_method:
+        value: "flat_roof_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "parapet_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.parapet_masonry_work"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Parapet is enabled by flat_roof_enabled and parapet_masonry_volume_m3."
+
+      vent_chimney_cladding_calc_method:
+        value: "flat_roof_spec_volume"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "vent_chimney_cladding_calc_method"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Vent/chimney cladding is enabled by flat_roof_enabled and vent_chimney_gas_block_spec_volume_m3."
+
+      vent_chimney_geometry_calc_method:
+        value: "spec_volume_thickness"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "vent_chimney_geometry_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"]
+        source_note: "Production mode from load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Work area is calculated as spec volume divided by 150 mm block thickness."
+
+      scaffolding_setup_units_per_floor:
+        value: 1.0
+        unit: "set/floor"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "scaffolding_setup_units_per_floor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.scaffolding_setup_dismantling"]
+        source_note: "Calculator README production scaffolding rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Default quantity per floor; not a project quantity."
+
+      scaffolding_timber_m3_per_floor:
+        value: 1.0
+        unit: "m3/floor"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "scaffolding_timber_m3_per_floor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.scaffolding_timber_material"]
+        source_note: "Calculator README production scaffolding rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Default timber quantity per floor; not a project quantity."
+
+      gas_block_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "gas_block_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+          - "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+          - "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material waste coefficient for gas blocks; prices and project volumes live elsewhere."
+
+      gas_block_d400_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d400_pallet_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+          - "load_bearing_walls_lintels.floor_2_gas_block_d400_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d400_material"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D400 blocks."
+
+      gas_block_d500_250_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d500_250_pallet_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+          - "load_bearing_walls_lintels.parapet_gas_block_d500_250_material"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D500 250 mm blocks. used_by_estimate_lines extended 2026-07-15: parapet can rarely reuse this same D500 SKU (Elena)."
+
+      gas_block_d500_150_pallet_volume_m3:
+        value: 1.8
+        unit: "m3/pallet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_d500_150_pallet_volume_m3"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Catalog pallet volume for D500 150 mm blocks."
+
+      adhesive_consumption_bag_per_m3:
+        value: 1.25
+        unit: "bag/m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "adhesive_consumption_bag_per_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_adhesive"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Glue consumption coefficient; not a project quantity."
+
+      adhesive_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "adhesive_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_gas_block_adhesive"
+          - "load_bearing_walls_lintels.floor_2_masonry_glue"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Glue waste coefficient."
+
+      sand_concrete_consumption_kg_per_m2_per_10mm:
+        value: 18.0
+        unit: "kg/m2/10mm"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "sand_concrete_consumption_kg_per_m2_per_10mm"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Consumption default for sand concrete under first row."
+
+      sand_concrete_thickness_factor:
+        value: 1.0
+        unit: "10mm layers"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "sand_concrete_thickness_factor"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness multiplier for sand concrete consumption."
+
+      sand_concrete_bag_weight_kg:
+        value: 40.0
+        unit: "kg/bag"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "sand_concrete_bag_weight_kg"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.sand_concrete_m300_first_row"]
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package size for sand concrete."
+
+      gas_block_length_m:
+        value: 0.6
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "gas_block_length_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.u_block_lintel_cutting"]
+        source_note: "Load-bearing walls section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Block length used to convert lintel total length into U-block cutting item count."
+
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rebar_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rebar waste coefficient applied to spec_length_m before rod rounding."
+
+      rebar_a500_d10_rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items.rod_length_m"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.main_wall_rebar_items"
+          - "load_bearing_walls_lintels.lintel_rebar_items"
+        source_note: "Load-bearing walls calculator uses rod_length_m per SpecRebarItem; adapter should fill by diameter/class from shared catalog."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Stored as shared default for adapter fill; not a PDF value."
+
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+        source_note: "Load-bearing walls section contract and calculator input."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete waste coefficient before minimum-order rule."
+
+      lintel_concrete_min_order_volume_m3:
+        value: 1.0
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_concrete_min_order_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.manual_concrete_lifting"
+          - "load_bearing_walls_lintels.floor_2_lintel_concrete_b22_5_m300_material"
+          - "load_bearing_walls_lintels.floor_2_manual_concrete_lifting"
+        source_note: "Calculator README production rule."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Minimum concrete order for lintels. used_by_estimate_lines extended 2026-07-15 for floor 2's own combined U-block+monolithic concrete purchase."
+
+      lintel_insulation_eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_insulation_eps_waste_coeff"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_eps_material"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_eps_material"
+        source_note: "Same value as other EPS waste coefficients in the project (e.g. waterproofing.eps_waste_coeff)."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15 for monolithic lintel edge insulation."
+
+      lintel_insulation_eps_pack_volume_m3:
+        value: 0.2773
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "lintel_insulation_eps_pack_volume_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_eps_material"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_eps_material"
+        source_note: "Same pack volume as floor_slab_1's Пеноплэкс Основа 100х585х1185 мм (same physical product)."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
+
+      lintel_glue_foam_coverage_m_per_can:
+        value: 10
+        unit: "m/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_glue_foam_coverage_m_per_can"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_glue_foam"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_glue_foam"
+        source_note: "Coverage per linear meter of insulated lintel edge, not per m2 — lintel edge insulation is a linear run, unlike waterproofing's area-based glue-foam."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
+
+      lintel_glue_foam_min_units:
+        value: 1
+        unit: "can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "lintel_glue_foam_min_units"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.floor_1_lintel_edge_insulation_glue_foam"
+          - "load_bearing_walls_lintels.floor_2_lintel_edge_insulation_glue_foam"
+        source_note: "Business/material minimum purchase default, same pattern as waterproofing.glue_foam_min_units."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Added 2026-07-15."
+
+      gas_block_delivery_truck_capacity_m3:
+        value: 30.0
+        unit: "m3/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "gas_block_delivery_truck_capacity_m3"
+        used_by_estimate_lines:
+          - "load_bearing_walls_lintels.gas_blocks_and_mix_delivery"
+          - "load_bearing_walls_lintels.gas_blocks_unloading_manipulator"
+          - "load_bearing_walls_lintels.main_walls_blocks_crane_moving_25t"
+        source_note: "Load-bearing walls section contract and calculator tests."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Truck capacity used for delivery count and crane threshold; not a project quantity."
+
+      vent_chimney_block_thickness_m:
+        value: 0.15
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "vent_chimney_block_thickness_m"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.vent_chimney_gas_block_cladding_work"]
+        source_note: "Calculator README production rule for 150 mm block."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Thickness used to convert vent/chimney block volume into work area."
+
+      walls_consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "walls_consumables_calc_method"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.walls_consumables_tool_amortization"]
+        source_note: "Added 2026-08-03 after control estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates walls/lintels consumables from direct section cost; legacy fixed amount remains accepted only for old cases."
+
+      walls_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "walls_consumables_rate"
+        used_by_estimate_lines: ["load_bearing_walls_lintels.walls_consumables_tool_amortization"]
+        source_note: "Estimate templates vary by sub-block, but 3% is the reusable default for the section-level production row."
+        confidence: estimated_from_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+  floor_slab_1:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/floor_slab_1/section_contract.yaml"
+      - "experiments/floor_slab_1_calculator/floor_slab_1_calculator.py"
+      - "experiments/floor_slab_1_calculator/README.md"
+      - "docs/report_paid_floor_slab_1_calculator_changes.md"
+      - "docs/report_floor_slab_1_insulation_spec_quantities_refactor.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    defaults:
+      formwork_areas_calc_method:
+        value: "spec_formwork_areas"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_areas_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.formwork_set_rental_material"
+          - "floor_slab_1.edge_beam_formwork_installation_control"
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use three specification areas: main_formwork_area_m2, edge_formwork_area_m2, beams_formwork_area_m2. Geometry reconstruction is legacy/control only."
+
+      formwork_rate_calc_method:
+        value: "direct_section_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.formwork_rate_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.formwork_set_rental_material"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Do not use legacy supplier quote context with slab 2 area in production."
+
+      formwork_delivery_calc_method:
+        value: "area_threshold"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Delivery trucks are calculated from main formwork area threshold; manual override is an explicit exception."
+
+      metal_delivery_calc_method:
+        value: "section_output_only"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rates.metal_delivery_calc_method"
+        used_by_estimate_lines: ["floor_slab_1.rebar_metal_delivery"]
+        source_note: "Production mode from floor slab 1 calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Section returns rebar delivery weight; final metal delivery should be calculated at box level, not with slab 2 legacy context."
+
+      rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rebar_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.floor_slab_rebar_frame_assembly_control"
+          - "floor_slab_1.floor_slab_1_rebar_items"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "PDF primary rebar unit is linear meters; old weight-based input is legacy only."
+
+      insulation_calc_method:
+        value: "spec_work_quantities"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "insulation.insulation_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_1.edge_beam_insulation_work"
+          - "floor_slab_1.bottom_slab_insulation_work"
+          - "floor_slab_1.eps_penoplex_osnova_100mm"
+          - "floor_slab_1.eps_glue_foam"
+        source_note: "Production mode from floor slab 1 section contract and calculator README."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use specification work quantities and EPS volume; old project geometry reconstruction is legacy only."
+
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.concrete_waste_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_1.concrete_b22_5_m300_material"
+          - "floor_slab_1.concrete_delivery"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete material waste coefficient; not a project concrete quantity."
+
+      formwork_delivery_threshold_m2:
+        value: 180.0
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_threshold_m2"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Threshold rule: up to threshold uses 2 trips, above threshold uses 4 trips."
+
+      formwork_delivery_trips_at_or_below_threshold:
+        value: 2.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_trips_at_or_below_threshold"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method value, not a project quantity."
+
+      formwork_delivery_trips_above_threshold:
+        value: 4.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.formwork_delivery_trips_above_threshold"
+        used_by_estimate_lines: ["floor_slab_1.formwork_delivery_return_manipulator"]
+        source_note: "Floor slab 1 calculator README: area threshold production rule."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Method value, not a project quantity."
+
+      plywood_sheet_working_area_m2:
+        value: 2.3
+        unit: "m2/sheet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.plywood_sheet_working_area_m2"
+        used_by_estimate_lines:
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Working sheet area used by calculator formula."
+
+      reserve_plywood_sheets:
+        value: 0.0
+        unit: "sheets"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.reserve_plywood_sheets"
+        used_by_estimate_lines: ["floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"]
+        source_note: "Was a flat 10 - checked against real ТРЦ/АРК/ЮСВ smetas (2026-08-22): Elena's
+          own plywood formula never adds a fixed reserve at all on ТРЦ, and on АРК/ЮСВ it varies
+          per pour (0/5/10, no formula) - a flat business default is wrong exactly as often as it's
+          right. Reserve is now a real per-pour manual field (manual_plywood_reserve_sheets on
+          floor_slab_zones) that overrides this default when Elena fills it in; 0 is the correct
+          default when she doesn't."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Reserve sheets rule for non-multiple places and edges. Overridden per pour by
+          manual_plywood_reserve_sheets when given - see
+          review_to_calculator/sections/floor_slabs/build_input.py."
+
+      non_multiple_places_coeff:
+        value: 0.2
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.non_multiple_places_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_1.plywood_fk_18mm_for_edges_and_non_multiple_places"
+          - "floor_slab_1.formwork_timber_gost"
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coefficient for non-multiple slab areas; not a PDF quantity."
+
+      timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.timber_thickness_m"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Timber thickness for edge and beam formwork calculation."
+
+      additional_timber_coeff:
+        value: 0.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.additional_timber_coeff"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Additional timber coefficient for overhangs and non-multiple places."
+
+      additional_timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rates.additional_timber_thickness_m"
+        used_by_estimate_lines: ["floor_slab_1.formwork_timber_gost"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Thickness for additional timber formula."
+
+      rebar_rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items.rod_length_m"
+        used_by_estimate_lines: ["floor_slab_1.floor_slab_1_rebar_items"]
+        source_note: "Calculator requires rod_length_m per rebar item; adapter may fill this from shared rebar catalog."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Not a PDF quantity; do not ask GPT to infer rod length from project rows."
+
+      eps_thickness_m:
+        value: 0.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "insulation.eps_thickness_m"
+        used_by_estimate_lines:
+          - "floor_slab_1.edge_beam_insulation_work"
+          - "floor_slab_1.bottom_slab_insulation_work"
+          - "floor_slab_1.eps_penoplex_osnova_100mm"
+        source_note: "Floor slab 1 section contract; EPS 100 mm method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS thickness for 100 mm insulation."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "insulation.eps_waste_coeff"
+        used_by_estimate_lines: ["floor_slab_1.eps_penoplex_osnova_100mm"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS material waste coefficient."
+
+      eps_pack_volume_m3:
+        value: 0.2773
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "insulation.eps_pack_volume_m3"
+        used_by_estimate_lines: ["floor_slab_1.eps_penoplex_osnova_100mm"]
+        source_note: "Floor slab 1 section contract and insulation spec quantities report."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume used for full-pack EPS ordering; not a project EPS volume."
+
+      foam_coverage_m2_per_can:
+        value: 10.0
+        unit: "m2/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "insulation.foam_coverage_m2_per_can"
+        used_by_estimate_lines: ["floor_slab_1.eps_glue_foam"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coverage default for EPS glue foam."
+
+      mixer_capacity_m3:
+        value: 9.0
+        unit: "m3/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.mixer_capacity_m3"
+        used_by_estimate_lines: ["floor_slab_1.concrete_delivery"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Mixer capacity for concrete delivery trips."
+
+      max_rebar_delivery_weight_per_truck_kg:
+        value: 10000.0
+        unit: "kg/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rates.max_rebar_delivery_weight_per_truck_kg"
+        used_by_estimate_lines: ["floor_slab_1.rebar_metal_delivery"]
+        source_note: "Floor slab 1 calculator README; box-level metal delivery capacity."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Production section exposes metal weight only; final truck count belongs to box-level calculator."
+
+      logistics_and_supply_percent:
+        value: 0.01
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "overheads.logistics_and_supply_percent"
+        used_by_estimate_lines: ["floor_slab_1.logistics_and_supply"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent overhead line calculated from base subtotal."
+
+      consumables_and_tool_percent:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "overheads.consumables_and_tool_percent"
+        used_by_estimate_lines: ["floor_slab_1.consumables_tool_depreciation"]
+        source_note: "Floor slab 1 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent overhead line calculated from base subtotal."
+
+  floor_slab_2:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/floor_slab_2/section_contract.yaml"
+      - "experiments/floor_slab_2_calculator/calculator.py"
+      - "experiments/floor_slab_2_calculator/README.md"
+      - "docs/report_floor_slab_2_calculator.md"
+      - "docs/elena_parameter_review_pack_audit.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    defaults:
+      formwork_area_calc_method:
+        value: "spec_formwork_area"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_area_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_2.formwork_rental_set"
+          - "floor_slab_2.edge_formwork_installation_control"
+          - "floor_slab_2.plywood_for_edges"
+          - "floor_slab_2.timber_for_formwork"
+        source_note: "Production mode from floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed specification areas; legacy dimension reconstruction is not production."
+
+      formwork_delivery_calc_method:
+        value: "area_threshold"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "formwork_delivery_calc_method"
+        used_by_estimate_lines: ["floor_slab_2.formwork_delivery_manipulator"]
+        source_note: "Production mode from floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Delivery trips are calculated from main formwork area threshold unless an explicit manual override is introduced."
+
+      rebar_calc_method:
+        value: "spec_length_items"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "rebar_calc_method"
+        used_by_estimate_lines:
+          - "floor_slab_2.rebar_frame_assembly_control"
+          - "floor_slab_2.rebar_items_dynamic"
+        source_note: "Production mode from floor slab 2 section contract; calculator now accepts any diameter/class."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "PDF primary rebar unit is linear meters. Old weight-based mode is legacy only."
+
+      formwork_delivery_threshold_m2:
+        value: 180.0
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "formwork_delivery_threshold_m2"
+        used_by_estimate_lines: ["floor_slab_2.formwork_delivery_manipulator"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Threshold rule: at or below threshold uses 2 trips, above threshold uses 4 trips. This is a method threshold, not a project formwork area."
+
+      formwork_delivery_trips_at_or_below_threshold:
+        value: 2.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "derived_from_area_threshold"
+        used_by_estimate_lines: ["floor_slab_2.formwork_delivery_manipulator"]
+        source_note: "Floor slab 2 calculator area_threshold method."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "One delivery plus one pickup."
+
+      formwork_delivery_trips_above_threshold:
+        value: 4.0
+        unit: "trips"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "derived_from_area_threshold"
+        used_by_estimate_lines: ["floor_slab_2.formwork_delivery_manipulator"]
+        source_note: "Floor slab 2 calculator area_threshold method."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Two deliveries plus two pickups."
+
+      eps100_pack_volume_m3:
+        value: 0.2773
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_pack_volume_m3"
+        used_by_estimate_lines: ["floor_slab_2.eps100_penoplex_material"]
+        source_note: "Floor slab 2 section contract; same package convention as floor slab 1."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume used for full-pack EPS ordering; not a project EPS volume."
+
+      rebar_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "rebar_waste_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_2.rebar_frame_assembly_control"
+          - "floor_slab_2.rebar_items_dynamic"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material waste coefficient for rebar order length."
+
+      rebar_rod_length_m:
+        value: 11.7
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rebar_items.rod_length_m"
+        used_by_estimate_lines: ["floor_slab_2.rebar_items_dynamic"]
+        source_note: "Calculator requires rod_length_m per rebar item; adapter may fill this from a shared rebar catalog."
+        confidence: confirmed_from_code
+        allow_override: true
+        notes: "Not a project quantity and not a price. Do not ask GPT to invent it from a PDF row."
+
+      concrete_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_waste_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_2.concrete_b22_5_m300_material"
+          - "floor_slab_2.concrete_delivery"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Concrete material order coefficient; not a project concrete volume."
+
+      concrete_round_step_m3:
+        value: 1.0
+        unit: "m3"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_round_step_m3"
+        used_by_estimate_lines: ["floor_slab_2.concrete_b22_5_m300_material"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Supplier/order rounding step."
+
+      concrete_mixer_volume_m3:
+        value: 9.0
+        unit: "m3/truck"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "concrete_mixer_volume_m3"
+        used_by_estimate_lines: ["floor_slab_2.concrete_delivery"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Mixer capacity for concrete delivery trips."
+
+      eps100_thickness_m:
+        value: 0.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_thickness_m"
+        used_by_estimate_lines:
+          - "floor_slab_2.edge_insulation_work"
+          - "floor_slab_2.eps100_penoplex_material"
+          - "floor_slab_2.eps_foam_glue"
+        source_note: "Floor slab 2 section contract; EPS 100 mm method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS thickness for edge/beam and optional bottom/horizontal slab insulation material calculation."
+
+      eps_waste_coeff:
+        value: 1.05
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_waste_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_2.eps100_penoplex_material"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "EPS material waste coefficient; the work line itself is priced by area, while material order uses this coefficient."
+
+      foam_coverage_area_per_can_m2:
+        value: 10.0
+        unit: "m2/can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "foam_coverage_area_per_can_m2"
+        used_by_estimate_lines:
+          - "floor_slab_2.eps_foam_glue"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coverage default for EPS glue foam across edge/beam and optional bottom/horizontal slab insulation."
+
+      foam_min_cans:
+        value: 1.0
+        unit: "can"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "foam_min_cans"
+        used_by_estimate_lines: ["floor_slab_2.eps_foam_glue"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Minimum foam order count."
+
+      plywood_sheet_working_area_m2:
+        value: 2.3
+        unit: "m2/sheet"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "plywood_sheet_working_area_m2"
+        used_by_estimate_lines:
+          - "floor_slab_2.plywood_for_edges"
+          - "floor_slab_2.timber_for_formwork"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Working sheet area used by calculator formula."
+
+      plywood_reserve_sheets:
+        value: 0.0
+        unit: "sheets"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "plywood_reserve_sheets"
+        used_by_estimate_lines: ["floor_slab_2.plywood_for_edges"]
+        source_note: "floor_slab_2 is legacy/unused in production (P5 unified floor_slabs section
+          calls floor_slab_1_calculator.py directly for every pour) - fixed to match the
+          reserve_plywood_sheets change there for consistency. See that entry's source_note."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Reserve sheets rule for non-multiple places and edges."
+
+      non_multiple_places_coeff:
+        value: 0.2
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "non_multiple_places_coeff"
+        used_by_estimate_lines:
+          - "floor_slab_2.plywood_for_edges"
+          - "floor_slab_2.timber_for_formwork"
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Coefficient for non-multiple slab areas; not a PDF quantity."
+
+      timber_thickness_m:
+        value: 0.05
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "timber_thickness_m"
+        used_by_estimate_lines: ["floor_slab_2.timber_for_formwork"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Timber thickness for edge and beam formwork calculation."
+
+      logistics_rate:
+        value: 0.01
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "logistics_rate"
+        used_by_estimate_lines: ["floor_slab_2.logistics_and_supply"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent overhead line calculated from direct cost base."
+
+      consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_rate"
+        used_by_estimate_lines: ["floor_slab_2.consumables_tool_depreciation"]
+        source_note: "Floor slab 2 section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Percent consumables/tool line calculated from direct cost base."
+
+  flat_roof:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/flat_roof/section_contract.yaml"
+      - "experiments/flat_roof_calculator/calculator.py"
+      - "experiments/flat_roof_calculator/README.md"
+      - "docs/report_flat_roof_calculator.md"
+      - "docs/elena_parameter_review_pack_audit.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    defaults:
+      project_name:
+        value: null
+        unit: ""
+        source_class: JOB_METADATA
+        calculator_input_path: "project_name"
+        used_by_estimate_lines: []
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Filled from job metadata, not from PDF quantities."
+
+      roof_geometry_calc_method:
+        value: "roof_zones"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_geometry_calc_method"
+        used_by_estimate_lines:
+          - "flat_roof.roof_base_preparation_control"
+          - "flat_roof.vapor_barrier_installation"
+          - "flat_roof.eps_roof_insulation_installation"
+        source_note: "Production default from flat roof section contract after roof_zones support."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Use reviewed roof_zones[] as primary geometry. Old roof_area_level_1/2 and level abutment fields are compatibility fallback only; project_spec_roof_area_m2 is control only."
+
+      vapor_barrier_film_overlap_coeff:
+        value: 1.15
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "vapor_barrier_film_overlap_coeff"
+        used_by_estimate_lines: ["flat_roof.vapor_barrier_film_technonikol_120mk"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Overlap coefficient for vapor barrier film ordering."
+
+      vapor_barrier_film_roll_area_m2:
+        value: 150.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "vapor_barrier_film_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.vapor_barrier_film_technonikol_120mk"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll area used for full-roll ordering."
+
+      eps_main_thickness_m:
+        value: 0.2
+        unit: "m"
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "eps_main_thickness_m"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Main flat-roof EPS thickness for two 100 mm layers."
+
+      eps_insulation_waste_coeff:
+        value: 1.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "eps_insulation_waste_coeff"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Material waste coefficient for flat roof EPS."
+
+      geotextile_flat_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "geotextile_flat_coeff"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for flat geotextile layer."
+
+      roof_geotextile_max_area_m2:
+        value: 300
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_geotextile_max_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat", "flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: false
+        notes: "Inclusive threshold on total roof area before overlap, after zone aggregation."
+
+      roof_fiberglass_one_roll_max_area_m2:
+        value: 430
+        unit: "m2"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_fiberglass_one_roll_max_area_m2"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: false
+        notes: "One fiberglass roll on roofs over 300 and up to 430 m2 BEFORE overlap; coverage warning if ordered area is less than actual area."
+
+      roof_fiberglass_mat_overlap_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_fiberglass_mat_overlap_coeff"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr"]
+        source_note: "Elena purchasing rule confirmed 2026-09-18."
+        confidence: confirmed_from_user
+        allow_override: true
+        notes: "Main flat-roof layer; fiberglass under screed remains unchanged."
+
+      roof_fiberglass_mat_roll_area_m2:
+        value: 400
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "roof_fiberglass_mat_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.fiberglass_mat_technonikol_100gr", "flat_roof.roof_screed_fiberglass_mat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Fiberglass roll area, shared by main and screed layers."
+
+      geotextile_parapet_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "geotextile_parapet_coeff"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_150_parapet"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Always order Geo150 on parapets and wall abutments: installation work length in m * 1.1, rounded to 100 m2 rolls. No spec row required; confirmed by Elena 2026-09-18."
+
+      geotextile_flat_roll_area_m2:
+        value: 100.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "geotextile_flat_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_300_flat"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "PROF 300 roll area for full-roll ordering."
+
+      geotextile_parapet_roll_area_m2:
+        value: 100.0
+        unit: "m2/roll"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "geotextile_parapet_roll_area_m2"
+        used_by_estimate_lines: ["flat_roof.geotextile_prof_150_parapet"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "PROF 150 roll area for full-roll ordering."
+
+      pvc_membrane_flat_coeff:
+        value: 1.15
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "pvc_membrane_flat_coeff"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for flat PVC membrane area."
+
+      pvc_membrane_parapet_coeff:
+        value: 1.1
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "pvc_membrane_parapet_coeff"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Ordering coefficient for PVC membrane at parapets and abutments."
+
+      pvc_membrane_roll_width_m:
+        value: 2.1
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "pvc_membrane_roll_width_m"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll width used for roll count."
+
+      pvc_membrane_roll_length_m:
+        value: 20.0
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "pvc_membrane_roll_length_m"
+        used_by_estimate_lines: ["flat_roof.pvc_membrane_logicroof_vrp_1_5mm_gray"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Roll length used for roll count."
+
+      rail_piece_length_m:
+        value: 3.0
+        unit: "m"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "rail_piece_length_m"
+        used_by_estimate_lines:
+          - "flat_roof.aluminum_pressure_rail_3m"
+          - "flat_roof.aluminum_edge_rail_3m"
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Rail piece length for ordered length rounded up to full pieces."
+
+      eps100_pack_volume_m3:
+        value: 0.27376
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps100_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps100_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for EPS 100 mm roof material; not a project EPS volume."
+
+      eps50_pack_volume_m3:
+        value: 0.27376
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "eps50_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps50_technonikol_carbon_eco"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for EPS 50 mm supplier-required volume."
+
+      slope_plate_a_pack_volume_m3:
+        value: 0.2916
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_a_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_2_1_plate_a"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate A."
+
+      slope_plate_b_pack_volume_m3:
+        value: 0.2736
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_b_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_2_1_plate_b"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate B."
+
+      slope_plate_j_pack_volume_m3:
+        value: 0.2916
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_j_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_4_2_plate_j"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate J."
+
+      slope_plate_k_pack_volume_m3:
+        value: 0.2736
+        unit: "m3/pack"
+        source_class: CATALOG_DEFAULT
+        calculator_input_path: "slope_plate_k_pack_volume_m3"
+        used_by_estimate_lines: ["flat_roof.eps_slope_4_2_plate_k"]
+        source_note: "Flat roof section contract."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Package volume for SLOPE plate K."
+
+      roof_consumables_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_consumables_calc_method"
+        used_by_estimate_lines: ["flat_roof.roof_consumables_tool_depreciation"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates roof consumables from direct roof cost base; legacy fixed amount remains accepted only for old cases."
+
+      roof_consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_consumables_rate"
+        used_by_estimate_lines: ["flat_roof.roof_consumables_tool_depreciation"]
+        source_note: "Repeated in checked flat-roof estimate templates as 3%."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      roof_logistics_and_supply_calc_method:
+        value: "section_total_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "roof_logistics_and_supply_calc_method"
+        used_by_estimate_lines: ["flat_roof.roof_logistics_and_supply"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates roof logistics/supply from direct roof cost base; legacy fixed amount remains accepted only for old cases."
+
+      roof_logistics_and_supply_rate:
+        value: 0.02
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "roof_logistics_and_supply_rate"
+        used_by_estimate_lines: ["flat_roof.roof_logistics_and_supply"]
+        source_note: "Repeated in checked flat-roof estimate templates as 2%."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      technical_supervision_calc_method:
+        value: "section_work_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "technical_supervision_calc_method"
+        used_by_estimate_lines: ["flat_roof.technical_supervision"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates technical supervision from the direct roof work subtotal; legacy fixed amount remains accepted only for old cases."
+
+      technical_supervision_rate:
+        value: 0.01
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "technical_supervision_rate"
+        used_by_estimate_lines: ["flat_roof.technical_supervision"]
+        source_note: "Estimate template header coefficient for technical supervision in checked control files."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+      procurement_storage_calc_method:
+        value: "section_material_rate"
+        unit: ""
+        source_class: METHOD_DEFAULT
+        calculator_input_path: "procurement_storage_calc_method"
+        used_by_estimate_lines: ["flat_roof.procurement_storage"]
+        source_note: "Added 2026-08-03 after control flat-roof estimate-template check."
+        confidence: confirmed_from_estimate_templates
+        allow_override: false
+        notes: "Production mode calculates procurement/storage from the direct roof material subtotal; legacy fixed amount remains accepted only for old cases."
+
+      procurement_storage_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "procurement_storage_rate"
+        used_by_estimate_lines: ["flat_roof.procurement_storage"]
+        source_note: "Estimate template header coefficient for procurement/storage in checked control files."
+        confidence: confirmed_from_estimate_templates
+        allow_override: true
+        notes: "Editable business coefficient; not a price and not a project quantity."
+
+  schiedel_vent_channels:
+    status: draft_cataloged
+    source_refs:
+      - "experiments/full_estimate_review_pipeline/sections/schiedel_vent_channels/section_contract.yaml"
+      - "experiments/schiedel_vent_channels_calculator/calculator.py"
+      - "experiments/schiedel_vent_channels_calculator/README.md"
+      - "docs/report_schiedel_vent_channels_calculator.md"
+      - "docs/elena_parameter_review_pack_audit.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+      - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+    defaults:
+      project_name:
+        value: null
+        unit: ""
+        source_class: JOB_METADATA
+        calculator_input_path: "project_name"
+        used_by_estimate_lines: []
+        source_note: "Schiedel section contract."
+        confidence: confirmed_from_contract
+        allow_override: false
+        notes: "Filled from job metadata, not from section PDF quantities."
+
+      consumables_rate:
+        value: 0.03
+        unit: "ratio"
+        source_class: BUSINESS_DEFAULT
+        calculator_input_path: "consumables_rate"
+        used_by_estimate_lines: ["schiedel_vent_channels.schiedel_consumables_tool_depreciation"]
+        source_note: "Schiedel section contract and calculator method."
+        confidence: confirmed_from_contract
+        allow_override: true
+        notes: "Applied to direct Schiedel cost base before consumables."
+
+not_defaults:
+  load_bearing_walls_lintels_p6:
+    wall_zones:
+      reason: "Project zones with nested block/rebar/lintel quantities, not reusable defaults."
+      belongs_to: "PDF extraction / review sheets / calculator input wall_zones[]"
+    scaffolding_setup_quantity:
+      reason: "Manual project quantity. Adapter reads review input and falls back to 2 if unset; not calculated from floor count."
+      belongs_to: "review sheet 01-1 / supplier_inputs"
+      estimate_line_code: "load_bearing_walls_lintels_p6.scaffolding_setup_dismantling"
+    scaffolding_timber_quantity_m3:
+      reason: "Manual project quantity. Adapter reads review input and falls back to 2 m3 if unset."
+      belongs_to: "review sheet 01-1 / supplier_inputs"
+      estimate_line_code: "load_bearing_walls_lintels_p6.scaffolding_timber_material"
+    technical_supervision_amount:
+      reason: "Monetary business default, excluded here by the no_prices rule. Current P6 does NOT resolve it from the price registry."
+      belongs_to: "P6 section_contract.defaults -> defaults.technical_supervision_amount"
+      estimate_line_code: "load_bearing_walls_lintels_p6.walls_technical_supervision"
+    rebar_metal_delivery_trucks:
+      reason: "Quantity supplied at box-estimate level; adapter starts with 0. Not a local wall-weight default/formula."
+      belongs_to: "box-estimate metal logistics / calculator top-level input"
+      estimate_line_code: "load_bearing_walls_lintels_p6.rebar_metal_delivery"
+  earthworks:
+    consumables_amount:
+      reason: "Legacy fixed estimate-line amount. Production earthworks calculates this amount from direct section cost and consumables_rate."
+      belongs_to: "legacy review sheet 02 only; do not use as production price/default/manual value"
+      estimate_line_code: "earthworks.consumables"
+    axis_marking_work_unit_price:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "earthworks.axis_marking"
+    sand_manual_moving_work_unit_price:
+      reason: "Work unit price. A missing/zero price may create a zero estimate line, but it is still PRICE, not DEFAULT."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "earthworks.sand_manual_moving"
+  foundation_slab:
+    logistics_and_supply_amount:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a formula default."
+      belongs_to: "future estimate formula from section subtotal and logistics coefficient"
+      estimate_line_code: "foundation_slab.logistics_and_supply"
+    consumables_tool_amortization_amount:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a formula default."
+      belongs_to: "future estimate formula from section subtotal and consumables/tool coefficient"
+      estimate_line_code: "foundation_slab.consumables_tool_amortization"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key. It may be displayed as a row with quantity 1, but the amount is not a DEFAULT."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "foundation_slab.technical_supervision"
+    rebar_crane_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "foundation_slab.rebar_crane_supply"
+    concrete_pump_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "foundation_slab.concrete_pump_32m"
+  waterproofing:
+    waterproofing_area_m2:
+      reason: "Project quantity from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.waterproofing_bitumen_mastic_work"
+    eps100_wall_volume_m3:
+      reason: "Project EPS volume from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.eps100_wall_penoplex_geo_material"
+    eps100_wall_insulation_area_m2:
+      reason: "Optional project EPS work area from PDF/review, not a default. If absent, calculator falls back to eps100_wall_volume_m3 / eps100_wall_thickness_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "waterproofing.eps100_wall_insulation_work"
+    waterproofing_work_unit_price:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.waterproofing_bitumen_mastic_work"
+    primer_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.bitumen_primer_aquamast_18l"
+    mastic_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.bitumen_mastic_aquamast_18kg"
+    eps100_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.eps100_wall_penoplex_geo_material"
+    glue_foam_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "waterproofing.eps_glue_foam"
+    project_name:
+      reason: "Job metadata, not a formula default for the estimate catalog."
+      belongs_to: "job metadata / adapter context"
+      estimate_line_code: null
+  load_bearing_walls_lintels:
+    floors_count:
+      reason: "Project/review parameter controlling scaffolding and optional upper-floor block, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.scaffolding_setup_dismantling"
+    cutoff_waterproofing_load_bearing_walls_area_m2:
+      reason: "Project quantity from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.cutoff_waterproofing_under_first_row_blocks"
+    main_wall_gas_block_400_spec_volume_m3:
+      reason: "Project specification volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.main_gas_block_d400_600x400x250_material"
+    main_wall_gas_block_250_spec_volume_m3:
+      reason: "Project specification volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.main_gas_block_d500_600x250x250_material"
+    lintel_total_length_m:
+      reason: "Project/spec total length of lintels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.lintel_concreting_work"
+    lintel_concrete_spec_volume_m3:
+      reason: "Project/spec concrete volume for lintels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.lintel_concrete_b22_5_m300_material"
+    floor_2_masonry_volume_m3:
+      reason: "Project-specific masonry volume; in the current template this corresponds to the row 'Кладка над кухней-гостиной'."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.floor_2_masonry_work"
+    parapet_masonry_volume_m3:
+      reason: "Project quantity from flat-roof/parapet spec, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.parapet_masonry_work"
+    vent_chimney_gas_block_spec_volume_m3:
+      reason: "Project quantity for vent/chimney cladding, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "load_bearing_walls_lintels.vent_chimney_gas_block_d500_600x150x250_material"
+    walls_consumables_tool_amortization_amount_raw:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a reusable default."
+      belongs_to: "future estimate formula from section subtotal and consumables/tool coefficient"
+      estimate_line_code: "load_bearing_walls_lintels.walls_consumables_tool_amortization"
+    waste_removal_trucks:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "load_bearing_walls_lintels.construction_waste_removal"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key, not a formula default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "load_bearing_walls_lintels.walls_technical_supervision"
+  floor_slab_1:
+    total_concrete_volume_from_spec_m3:
+      reason: "Project concrete volume from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.concrete_b22_5_m300_material"
+    main_formwork_area_m2:
+      reason: "Project/spec area of under-slab formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    edge_formwork_area_m2:
+      reason: "Project/spec area of slab edge formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_formwork_installation_control"
+    beams_formwork_area_m2:
+      reason: "Project/spec area of beam formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_formwork_installation_control"
+    slab_outer_edge_eps_work_length_m:
+      reason: "Project/spec EPS edge work length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.edge_beam_insulation_work"
+    bottom_slab_eps_work_area_m2:
+      reason: "Project/spec EPS bottom work area, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.bottom_slab_insulation_work"
+    total_eps_volume_from_spec_m3:
+      reason: "Project/spec EPS material volume, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.eps_penoplex_osnova_100mm"
+    beam_items:
+      reason: "Project detail rows for beams, not reusable defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.beam_concreting_work"
+    floor_slab_1_rebar_items:
+      reason: "Project/spec rebar rows in linear meters, not defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_1.floor_slab_1_rebar_items"
+    formwork_supplier_quote_total:
+      reason: "Legacy supplier quote context from an old two-slab scenario, not production default."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    slab_2_formwork_area_for_rate_context_m2:
+      reason: "Legacy slab-2 context. Production floor_slab_1 must not depend on another slab area."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.formwork_set_rental_material"
+    floor_slab_2_rebar_weight_for_delivery_context_kg:
+      reason: "Legacy slab-2 context. Production metal delivery is box-level, not floor_slab_1 section input."
+      belongs_to: "legacy/diagnostic only"
+      estimate_line_code: "floor_slab_1.rebar_metal_delivery"
+    formwork_rebar_crane_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_1.formwork_rebar_crane_supply"
+    concrete_pump_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_1.concrete_pump_32m"
+    overhang_sheet_equivalent:
+      reason: "Hidden legacy compatibility default set to 0. Three-control-estimate check found no universal project/smeta row; ordinary plywood/timber is already calculated from formwork areas."
+      belongs_to: "defaults / legacy compatibility only"
+      estimate_line_code: "floor_slab_1.formwork_timber_gost"
+    technical_supervision_amount:
+      reason: "Fixed amount / price key, not a formula default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "floor_slab_1.technical_supervision"
+  floor_slab_2:
+    main_formwork_area_m2:
+      reason: "Project/spec area of under-slab formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.formwork_rental_set"
+    edge_formwork_area_m2:
+      reason: "Project/spec area of slab edge formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.edge_formwork_installation_control"
+    beams_formwork_area_m2:
+      reason: "Project/spec area of beam formwork, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.edge_formwork_installation_control"
+    beam_items:
+      reason: "Project detail rows for beams, not reusable defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.beam_concreting_work"
+    slab_edge_perimeter_m:
+      reason: "Project/spec slab edge perimeter for insulation work, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.edge_insulation_work"
+    edge_insulation_height_m:
+      reason: "Project/spec edge insulation height, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.eps100_penoplex_material"
+    concrete_placing_volume_m3:
+      reason: "Project concrete volume from PDF/review, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.concrete_b22_5_m300_material"
+    slab_area_m2:
+      reason: "Optional project control area, not a default and not a substitute for main_formwork_area_m2 without review."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    floor_slab_2_rebar_items:
+      reason: "Project/spec rebar rows in linear meters, not defaults."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "floor_slab_2.rebar_items_dynamic"
+    formwork_rental_supplier_quote_total:
+      reason: "Compatibility/control value required by the calculator, not a reusable default and not a manual value."
+      belongs_to: "adapter auto-calculated compatibility field"
+      estimate_line_code: "floor_slab_2.formwork_rental_set"
+    crane_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_2.crane_supply_formwork_rebar"
+    concrete_pump_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / supplier input"
+      estimate_line_code: "floor_slab_2.concrete_pump_32m"
+    formwork_rental_used_rate_per_m2:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "floor_slab_2.formwork_rental_set"
+    concrete_placing_work_unit_price:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "floor_slab_2.concrete_placing_work"
+    eps100_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "floor_slab_2.eps100_penoplex_material"
+  flat_roof:
+    roof_area_level_1_m2:
+      reason: "Compatibility fallback project roof area by level, not a default. Primary production geometry is roof_zones[]."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
+    roof_area_level_2_m2:
+      reason: "Compatibility fallback project roof area by level, not a default. Primary production geometry is roof_zones[]."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
+    project_spec_roof_area_m2:
+      reason: "Optional control value from project/specification, not a default and not a substitute for roof_zones[] or reviewed fallback geometry."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    parapet_length_level_1_m:
+      reason: "Compatibility fallback project parapet length, not a default. Primary production geometry is roof_zones[].parapet_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    parapet_length_level_2_m:
+      reason: "Compatibility fallback project parapet length, not a default. Primary production geometry is roof_zones[].parapet_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    vent_wall_abutment_level_1_m:
+      reason: "Compatibility fallback project abutment length, not a default. Primary production geometry is roof_zones[].wall_abutment_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    vent_wall_abutment_level_2_m:
+      reason: "Compatibility fallback project abutment length, not a default. Primary production geometry is roof_zones[].wall_abutment_length_m."
+      belongs_to: "review sheet 01 / AUTO_PROJECT fallback"
+      estimate_line_code: "flat_roof.pvc_membrane_abutment_installation"
+    roof_zones:
+      reason: "Primary project geometry for flat roof: zones/types/floors with area, parapet length, wall/VK/vent-channel abutment length, and operability. This is not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT repeated_rows"
+      estimate_line_code: "flat_roof.vapor_barrier_installation"
+    roof_aerators_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.roof_pvc_aerator_75x375"
+    parapet_roof_drains_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.parapet_roof_drain_installation"
+    internal_roof_drains_count:
+      reason: "Project/spec count, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.internal_roof_drain_with_heating"
+    internal_drain_height_per_drain_m:
+      reason: "Project-specific drain height/length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.internal_drain_pvc_110mm"
+    roof_raw_material_spec_rows:
+      reason: "Diagnostic/detail rows from the project specification, not calculator defaults."
+      belongs_to: "review sheet 01 / details sheet 03"
+      estimate_line_code: null
+    roof_work_coeff:
+      reason: "Legacy diagnostic field only. Production uses reviewed combined work prices from price registry/review, not a separate manual roof work multiplier."
+      belongs_to: "hidden legacy / not manual input"
+      estimate_line_code: "flat_roof.eps_roof_insulation_installation"
+    eps50_supplier_required_volume_m3:
+      reason: "Project/specification roof EPS 50 mm volume, not a reusable default or manual value."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.eps50_technonikol_carbon_eco"
+    slope_plate_a_supplier_required_volume_m3:
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.eps_slope_2_1_plate_a"
+    slope_plate_b_supplier_required_volume_m3:
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.eps_slope_2_1_plate_b"
+    slope_plate_j_supplier_required_volume_m3:
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.eps_slope_4_2_plate_j"
+    slope_plate_k_supplier_required_volume_m3:
+      reason: "Project/specification SLOPE volume from the roof sheet, not a reusable default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "flat_roof.eps_slope_4_2_plate_k"
+    vent_shaft_abutment_count:
+      reason: "Hidden optional legacy/special-case count, not a default and not a normal manual row. Use only when a future project explicitly prices a separate per-item vent-shaft abutment; linear VK/vent-channel abutments belong to the general roof abutment length."
+      belongs_to: "hidden optional supplier input / not in manual_values_registry"
+      estimate_line_code: "flat_roof.vent_shaft_abutment_installation"
+    gas_block_wall_holes_count:
+      reason: "Hidden optional special-case count. Elena 2026-07-30: this is not a standard work item."
+      belongs_to: "hidden optional supplier input / not in manual_values_registry"
+      estimate_line_code: "flat_roof.gas_block_wall_hole_drilling"
+    roof_crane_lifting_shifts:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_crane_lifting"
+    roof_consumables_total_raw:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from roof subtotal and consumables/tool coefficient"
+      estimate_line_code: "flat_roof.roof_consumables_tool_depreciation"
+    roof_waste_removal_trucks:
+      reason: "Manual/supplier quantity, not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "flat_roof.roof_waste_removal"
+    roof_logistics_and_supply_total_raw:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from roof subtotal and logistics coefficient"
+      estimate_line_code: "flat_roof.roof_logistics_and_supply"
+    technical_supervision_work_total:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from work subtotal and technical-supervision coefficient"
+      estimate_line_code: "flat_roof.technical_supervision"
+    procurement_storage_work_total:
+      reason: "Coefficient-calculated estimate-line amount, not a manual value and not a default."
+      belongs_to: "future estimate formula from selected material subtotal and procurement/storage coefficient"
+      estimate_line_code: "flat_roof.procurement_storage"
+    slope_plate_unit_price_per_m3:
+      reason: "Material unit price shared by SLOPE plate lines, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "flat_roof.eps_slope_plate_items"
+    roof_crane_lifting_unit_price_per_shift:
+      reason: "Material/mechanism unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "flat_roof.roof_crane_lifting"
+  schiedel_vent_channels:
+    schiedel_masonry_total_length_m:
+      reason: "Project/spec total masonry length for Schiedel channels, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_masonry_work"
+    vent_channel_1_height_m:
+      reason: "Optional project control value for masonry length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    vent_channel_2_height_m:
+      reason: "Optional project control value for masonry length, not a default."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    vent_channel_2_count:
+      reason: "Optional project control count for masonry length, not a default and not the same as material purchase count."
+      belongs_to: "review sheet 01 / AUTO_PROJECT"
+      estimate_line_code: null
+    schiedel_vent_chimney_cladding_segments:
+      reason: "Diagnostic/detail rows from the Schiedel specification, not calculator defaults."
+      belongs_to: "review sheet 01 / details sheet 03"
+      estimate_line_code: null
+    schiedel_vent_channel_2x_count:
+      reason: "Specification/manual purchase quantity, not derived automatically and not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_2x_36_25"
+    schiedel_vent_channel_3x_count:
+      reason: "Specification/manual purchase quantity, not derived automatically and not a default."
+      belongs_to: "review sheet 01 / SUPPLIER_INPUT"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_3x_52_25"
+    schiedel_delivery_trips:
+      reason: "Manual logistics quantity, not a default."
+      belongs_to: "review sheet 01 / MANUAL_REVIEW"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"
+    schiedel_masonry_work_rate_per_m:
+      reason: "Work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_masonry_work"
+    schiedel_vent_channel_2x_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_2x_36_25"
+    schiedel_vent_channel_3x_unit_price:
+      reason: "Material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_vent_channel_3x_52_25"
+    schiedel_delivery_truck_price:
+      reason: "Delivery/material unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"
+    schiedel_delivery_work_price:
+      reason: "Delivery work unit price, not a default."
+      belongs_to: "price registry / fallback / review sheet 02"
+      estimate_line_code: "schiedel_vent_channels.schiedel_delivery"

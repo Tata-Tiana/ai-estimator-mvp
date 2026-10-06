@@ -1,0 +1,1117 @@
+contract_version: 0.1
+
+section:
+  code: floor_slab_1
+  name_ru: "Перекрытие 1 этажа"
+  calculator_module: "experiments/floor_slab_1_calculator/floor_slab_1_calculator.py"
+  status: draft
+  owner_notes: "Production contract: spec quantities for concrete, formwork, insulation, beams, and rebar; no old fixture values or Excel-match overrides."
+
+source_files:
+  calculator: "experiments/floor_slab_1_calculator/floor_slab_1_calculator.py"
+  calculator_readme: "experiments/floor_slab_1_calculator/README.md"
+  existing_cases: []
+  related_docs:
+    - "docs/report_floor_slab_1_calculator.md"
+    - "docs/elena_parameter_review_pack_audit.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03_all_sections_quantity_matrix.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_03b_production_contamination_audit.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: total_concrete_volume_from_spec_m3
+    label_ru: "Бетон плиты перекрытия 1-го этажа, общий объем по спецификации"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_concrete_volume"
+    calculator_input_path: "geometry.total_concrete_volume_from_spec_m3"
+    normalized_json_path: "sections.floor_slab_1.parameters.total_concrete_volume_from_spec_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_concrete_volume"]
+      aliases_ru: ["бетон плиты перекрытия 1 этажа", "бетон ж/б плиты перекрытия", "бетон перекрытия"]
+      expected_unit: "м3"
+      notes: "Total concrete from slab specification before beam subtraction inside calculator."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте общий объем бетона плиты перекрытия 1-го этажа по спецификации."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with lintel, foundation, roof, or 2nd floor slab concrete."
+
+  - key: kind
+    label_ru: "Тип плиты — жилое перекрытие или кровельная плита"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_kind"
+    calculator_input_path: ""
+    normalized_json_path: "sections.floor_slab_1.parameters.kind.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_kind"]
+      aliases_ru: ["Плоская Ж/б, неэксплуатируемая", "Плоская Ж/б, эксплуатируемая"]
+      expected_unit: ""
+      notes: "roof_cover_slab when general data describes this slab as part of the roof build-up (e.g. 'Плоская Ж/б, неэксплуатируемая, согласно КР-2'); otherwise residential_floor."
+    review_behavior:
+      show_to_user: false
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Чисто описательное поле, не влияет на расчёт. Укажите, если общие данные явно называют эту плиту частью кровельного пирога (неэксплуатируемая плоская Ж/б и т.п.), а не жилым перекрытием."
+    validation: {numeric: false}
+    notes: "Added 2026-07-26 (real project case). Purely descriptive — calculator_input_path intentionally empty, never gates pricing/calculation. This slab still occupies the floor_slab_1 pipeline slot and is calculated there as usual regardless of this value. Do not confuse this slab's own PDF label (e.g. ПМ1) with roof zone identifiers used in flat_roof's roof_zones — those must come from the roof's own specification sheet, a separate labeling system even when it covers the same physical area."
+
+  - key: slab_zones
+    label_ru: "Объём бетона и опалубка по зонам плиты перекрытия 1-го этажа (альтернатива единым полям)"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "slab_zones"
+    calculator_input_path: "slab_zones"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_zones.rows"
+    value_kind: repeated_rows
+    row_key_field: context
+    production_input: true
+    item_label_columns: [context]
+    correction_columns: [concrete_volume_m3, edge_perimeter_m, under_slab_formwork_area_m2, edge_and_beam_formwork_area_m2, thickness_m, concrete_grade, level, slab_outer_edge_eps_work_length_m, slab_edge_eps_material_area_m2, bottom_slab_eps_work_area_m2, total_eps_volume_from_spec_m3, beams_bottom_formwork_area_m2, concrete_pump_shifts, formwork_rebar_crane_shifts, rebar_metal_delivery_trucks, technical_supervision_amount]
+    columns:
+      - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: edge_perimeter_m, label_ru: "Периметр торца зоны", unit: "мп", value_kind: number}
+      - {key: under_slab_formwork_area_m2, label_ru: "Опалубка под плитой зоны", unit: "м2", value_kind: number}
+      - {key: edge_and_beam_formwork_area_m2, label_ru: "Опалубка торца зоны (+ балок, если PDF даёт вместе)", unit: "м2", value_kind: number}
+      - {key: thickness_m, label_ru: "Толщина плиты этой зоны", unit: "м", value_kind: number}
+      - {key: concrete_grade, label_ru: "Марка бетона", unit: "", value_kind: string}
+      - {key: level, label_ru: "Этаж/отметка", unit: "", value_kind: string}
+      - {key: slab_outer_edge_eps_work_length_m, label_ru: "Утепление торца зоны ЭППС — длина работ", unit: "мп", value_kind: number}
+      - {key: slab_edge_eps_material_area_m2, label_ru: "Утепление торца зоны ЭППС — площадь материала", unit: "м2", value_kind: number}
+      - {key: bottom_slab_eps_work_area_m2, label_ru: "Утепление низа зоны ЭППС — площадь работ", unit: "м2", value_kind: number}
+      - {key: total_eps_volume_from_spec_m3, label_ru: "ЭППС зоны — общий объём материала", unit: "м3", value_kind: number}
+      - {key: beams_bottom_formwork_area_m2, label_ru: "Низ опалубки балок этой зоны", unit: "м2", value_kind: number}
+      - {key: concrete_pump_shifts, label_ru: "Смены бетононасоса на эту плиту", unit: "смена", value_kind: number}
+      - {key: formwork_rebar_crane_shifts, label_ru: "Смены крана на эту плиту", unit: "смена", value_kind: number}
+      - {key: rebar_metal_delivery_trucks, label_ru: "Доставка арматуры/металла на эту плиту", unit: "маш", value_kind: number}
+      - {key: technical_supervision_amount, label_ru: "Технадзор на эту плиту (₽, вручную)", unit: "₽", value_kind: number}
+    parser_mapping:
+      target_codes: ["slab_zones"]
+      aliases_ru: []
+      expected_unit: ""
+      notes: "NOT YET part of the live extraction prompt — added 2026-07-20 only as a calculator-side + contract-side alternative input. Use when the PDF splits the slab's concrete into multiple zones with no combined total (real reference-project case: main slab 25.337 + kitchen/dining slab 5.975 m3, no printed sum). Same shape as foundation_slab's slab_zones. Formwork columns added 2026-08-05 (UNIVERSALIZATION_PLAN.md P1 follow-up) — see their own notes below."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Необязательная альтернатива фиксированным полям объёма/опалубки выше. Используйте, если PDF даёт бетон и/или опалубку плиты несколькими зонами без общего итога — иначе оставьте пустым."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов."
+    validation: {numeric: false}
+    formwork_notes: "Added 2026-08-05 (real reference-project case, Elena's idea): edge_perimeter_m/under_slab_formwork_area_m2/edge_and_beam_formwork_area_m2 are OPTIONAL per zone, but if any zone provides any of the three, ALL zones must provide ALL three (calculator raises otherwise — no silently-dropped zone). edge_and_beam_formwork_area_m2 is per-zone whatever the PDF actually gives for THAT zone's vertical formwork — pure slab edge only (no beams in that zone) for one zone, edge+beam merged-and-unsplittable for another zone, doesn't matter which per zone. Safe to just sum across zones because every downstream estimate line (installation, plywood, timber) already only ever reads the final combined total, never an edge/beam split — see calculate_formwork_areas_context's own note. This is exactly the real reference-project case: main zone gives one merged 36.6 m2 (torец плиты и ж/б балок, can't split), second zone (kitchen/dining) gives its own pure edge-only 5.6 m2 with no beams at all — the old flat scalar fields could only represent ONE of these two situations project-wide (mutual exclusion), not both at once across zones. When zones provide edge_perimeter_m, it REPLACES the flat slab_edge_perimeter_m requirement too (used for the geometry control-check multiplication, not for money)."
+    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all 9 pre-existing floor_slab_1_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES total_concrete_volume_from_spec_m3 above for this run (same convention as foundation_slab's slab_zones and load_bearing_walls_lintels' wall_block_items). Unlike foundation_slab, this calculator has no dataclass/validate() layer — the override and per-zone validation happen as plain checks inside calculate_floor_slab_1() itself. See p1_slab_zones_shipped memory. production_input corrected false -> true 2026-07-29, same class of bug as wall_block_items: floor_slab_1_calculator.py has read this group since the 2026-07-20 ship, the flag was just never updated to match, so it rendered as a dead single row on sheet 01 instead of a real per-item table. foundation_slab's own slab_zones already had production_input: true correctly. thickness_m/concrete_grade/level added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0) — NAMING/DISPLAY fields only, not read by the calculator at all (calc still uses the flat slab_thickness_m below for every zone). Purpose: let each zone/pour carry the identifying info her real smeta uses for section titles (\"Ж/Б МОНОЛИТНАЯ ПЛИТА ПЕРЕКРЫТИЯ (200мм, бетон B-22.5) 1-го этажа\") — needed because context alone can repeat across projects but thickness+grade+level+context together is what a future per-pour section title will be built from. context remains the only field anything currently matches by (rebar_items.zone_context, additional_concrete_items.zone_context) — thickness_m/concrete_grade/level are not matching keys. slab_outer_edge_eps_work_length_m/slab_edge_eps_material_area_m2/bottom_slab_eps_work_area_m2/total_eps_volume_from_spec_m3 added 2026-08-10 (FLOOR_SLAB_UNIFICATION_PLAN.md P1.0, formally flagged as a P1 blocker back on 2026-08-09 but never actually implemented until now, caught mid-P2). UNLIKE thickness_m/concrete_grade/level, these ARE real per-zone overrides the calculator reads (via build_calculator_input_for_zone() in build_input.py, P2) — without them, splitting a section into per-zone pours would either double-count the whole section's insulation on every zone or arbitrarily assign it to one zone, both real money bugs. Optional per zone; when absent on any zone, P2's orchestrator does not attempt to split that section at all (falls back to one combined pour, same as when beam/rebar zone_context is incomplete) rather than guess an allocation. Same field names as the flat insulation scalars below (not prefixed) for consistency with concrete_volume_m3/edge_perimeter_m already following that convention. beams_bottom_formwork_area_m2/concrete_pump_shifts/formwork_rebar_crane_shifts/rebar_metal_delivery_trucks/technical_supervision_amount added same day (2026-08-10), same P1.0 batch, after realizing these are NOT safely droppable-and-recomputable like beams_formwork_area_m2/beams_concrete_volume_m3 (those two ARE safe to drop per zone - the shared engine recomputes them from the zone's own already-filtered beam_items, confirmed mathematically identical on one real reference project: 3.18=3.18, 34.339=34.339). These five are genuinely standalone whole-section numbers with no zone-derivable source. Per Elena's own explicit ruling (2026-08-10, after reviewing real smetas across all slabs with Codex): crane/pump/metal-delivery/tech-supervision are NOT a shared pool split or allocated across a group of pours - each real pour genuinely has its own crane shifts, own pump shifts, own delivery trucks, own tech-supervision line (sum can be 0/blank per pour, filled manually later - same as any other per-pour production data, NOT pre-fillable in the project-independent manual_values_registry.xlsx since the pour count itself is only known once a specific project is parsed). concrete_delivery_trips needs no new field - it's already correctly per-zone automatically once slab_zones has 1 entry (computed from that zone's own concrete_volume_m3)."
+
+  - key: slab_thickness_m
+    label_ru: "Толщина плиты перекрытия 1-го этажа"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_slab_thickness"
+    calculator_input_path: "geometry.slab_thickness_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_thickness_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_slab_thickness"]
+      aliases_ru: ["толщина плиты перекрытия 1 этажа", "плита перекрытия 180 мм", "h плиты перекрытия"]
+      expected_unit: "м"
+      notes: "Normalize mm to m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте толщину плиты перекрытия 1-го этажа."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Used as control/fallback; production formwork areas still come from spec."
+
+  - key: edge_formwork_height_m
+    label_ru: "Высота торцевой опалубки плиты перекрытия 1-го этажа"
+    unit: "м"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_formwork_height"
+    calculator_input_path: "geometry.edge_formwork_height_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.edge_formwork_height_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_slab_thickness"]
+      aliases_ru: ["высота торцевой опалубки", "высота опалубки торца плиты", "толщина плиты перекрытия"]
+      expected_unit: "м"
+      notes: "Control geometry only. Adapter should normally use slab_thickness_m; do not ask GPT for a separate production target and do not hardcode a project value."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "auto_calculated"
+      action_ru: "Проверьте высоту торцевой опалубки; если отдельной строки нет, она принимается равной толщине плиты для контрольного расчета."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Calculator currently requires geometry.edge_formwork_height_m for a control formula even in spec_formwork_areas mode. Production source for paid formwork remains the spec areas."
+
+
+  - key: slab_edge_perimeter_m
+    label_ru: "Периметр торца плиты перекрытия 1-го этажа"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_slab_edge_perimeter"
+    calculator_input_path: "geometry.slab_edge_perimeter_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_edge_perimeter_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_slab_edge_perimeter"]
+      aliases_ru: ["периметр торца плиты 1 этажа", "длина торца плиты перекрытия", "периметр вертикальных поверхностей"]
+      expected_unit: "мп"
+      notes: "Linear perimeter only."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте периметр/длину торца плиты перекрытия 1-го этажа."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not map m2 formwork area here."
+
+  - key: main_formwork_area_m2
+    label_ru: "Площадь опалубки под плитой перекрытия 1-го этажа"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_under_slab_formwork_area"
+    calculator_input_path: "main_formwork_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.main_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_under_slab_formwork_area"]
+      aliases_ru: ["опалубка под плитой", "площадь опалубки под плитой", "горизонтальная опалубка перекрытия"]
+      expected_unit: "м2"
+      notes: "Main deck/under-slab formwork area."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь основной опалубки под плитой."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with EPS 100 mm bottom work area or edge formwork."
+
+  - key: edge_formwork_area_m2
+    label_ru: "Площадь опалубки торца плиты перекрытия 1-го этажа"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_formwork_area"
+    calculator_input_path: "edge_formwork_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.edge_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_formwork_area"]
+      aliases_ru: ["опалубка торца плиты", "вертикальная опалубка плиты перекрытия", "опалубка вертикальных поверхностей"]
+      expected_unit: "м2"
+      notes: "Edge formwork area only."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь опалубки торца плиты."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with EPS 100 mm edge volume in m3. Required unless edge_and_beam_formwork_area_combined_m2 below is used instead (source gives one merged number for edge+beams)."
+
+  - key: edge_and_beam_formwork_area_combined_m2
+    label_ru: "Опалубка торца плиты + балок перекрытия 1-го этажа (объединено, разделить нельзя)"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_and_beam_formwork_area_combined"
+    calculator_input_path: "edge_and_beam_formwork_area_combined_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.edge_and_beam_formwork_area_combined_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_and_beam_formwork_area_combined"]
+      aliases_ru: ["опалубка торца плиты и балок", "вертикальные поверхности плиты и ж/б балок"]
+      expected_unit: "м2"
+      notes: "Use only when the PDF genuinely gives edge and beam vertical formwork as ONE merged number with no way to split it (confirmed real reference-project case, 2026-07-21). Do not use as a shortcut when edge_formwork_area_m2/beams_formwork_area_m2 are actually separable — those remain the default path. Mutually exclusive with edge_formwork_area_m2/beams_formwork_area_m2; calculator raises if both are supplied."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Заполняйте только если PDF даёт торец плиты и балки одной общей строкой, которую нельзя разделить; если есть раздельные поля или slab_zones, это поле не требуется."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Additive alternative shipped 2026-07-21 (calculator.py change, authorized). Special-case fallback only: use when one whole-project merged edge+beam vertical formwork number is present and cannot be split. If split edge_formwork_area_m2/beams_formwork_area_m2 or slab_zones are available, this field should stay empty and must not render as a blocking missing value."
+
+  - key: beams_formwork_area_m2
+    label_ru: "Площадь опалубки балок перекрытия 1-го этажа"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_formwork_area"
+    calculator_input_path: "beams_formwork_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
+      aliases_ru: ["опалубка балок", "площадь опалубки балок", "опалубка ж/б балок"]
+      expected_unit: "м2"
+      notes: "This floor slab may or may not have beams, independently of floor_slab_2. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.formwork_area_m2; production prefers a spec area when the PDF gives one directly."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у этой плиты есть балки, проверьте площадь опалубки балок; иначе оставьте пустым — она посчитается из позиций балок ниже."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: beams_bottom_formwork_area_m2
+    label_ru: "Горизонтальная площадь опалубки под балкой перекрытия 1-го этажа"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_bottom_formwork_area"
+    calculator_input_path: "beams_bottom_formwork_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_bottom_formwork_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_bottom_formwork_area"]
+      aliases_ru: ["горизонтальная площадь опалубки под балкой", "нижняя опалубка балок"]
+      expected_unit: "м2"
+      notes: "Distinct from main_formwork_area_m2 (horizontal under the SLAB) and from edge_and_beam_formwork_area_combined_m2 (vertical slab+beam). This is specifically the beam's own horizontal/bottom formwork, when the PDF gives it as its own separate line."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у балок этой плиты есть отдельная строка нижней (горизонтальной) опалубки, укажите её здесь; иначе оставьте пустым (0)."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Added 2026-07-26 (real project case). Purely additive — when absent, calculator behavior is byte-identical to before (defaults to 0). Feeds both plywood/timber material AND the edge_beam_formwork_installation_control work quantity (corrected 2026-07-26 to include this — see that estimate_line's own notes)."
+
+  - key: beams_concrete_volume_m3
+    label_ru: "Объем бетона балок перекрытия 1-го этажа"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_concrete_volume"
+    calculator_input_path: "beams_concrete_volume_m3"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_concrete_volume_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_concrete_volume", "beam_items"]
+      aliases_ru: ["бетон балок", "объем бетона балок", "бетон в теле плиты (балки)", "бетон в теле плиты перекрытия"]
+      expected_unit: "м3"
+      notes: "Usually a ready 'Итого' line in the beam specification table (see beam_items below), separate from the slab's own concrete volume. If absent, leave null (not 0) so the calculator falls back to the sum of beam_items.concrete_volume_m3. Added 2026-07-12 after confirming both reference projects' КР2 sheets give this as a ready total."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional_default_zero"
+      action_ru: "Если у этой плиты есть балки и в спецификации есть готовый итог по бетону балок, сверьте его; иначе оставьте пустым — он посчитается из позиций балок ниже."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Calculator-code override added 2026-07-12 (exception to the normal never-touch-calculator-code rule, explicit user authorization) — mirrors the existing beams_formwork_area_m2 override pattern. beam_items rows remain required for formwork/concrete fallback and beam work length; insulation has its own optional overrides below because beams are not always insulated along their full length."
+
+  - key: slab_outer_edge_eps_work_length_m
+    label_ru: "Утепление торца плиты ЭППС 100 мм — длина работ"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_eps_work_length"
+    calculator_input_path: "insulation.slab_outer_edge_eps_work_length_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_outer_edge_eps_work_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_eps_work_length", "floor_slab_1_slab_edge_perimeter"]
+      aliases_ru: ["ЭППС торец плиты длина", "утепление торца плиты длина", "длина утепления торца"]
+      expected_unit: "мп"
+      notes: "Work length for the slab outer edge only. Beam insulation must use beams_eps_work_length_m below when it is present, because beams may be insulated only partially."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте длину работ по утеплению наружного торца плиты. Если в PDF есть периметр утепления торца плиты, используется он; балки сюда не входят."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not include beam length here unless the PDF explicitly gives one combined slab+beam insulation length and no split is possible; production prefers a separate beams_eps_work_length_m."
+
+  - key: beams_eps_work_length_m
+    label_ru: "Утепление торца балок 1-го этажа ЭППС 100 мм — длина утепляемой части"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_eps_work_length"
+    calculator_input_path: "insulation.beams_eps_work_length_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_eps_work_length_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_eps_work_length"]
+      aliases_ru: ["утепление балок длина", "утепляемая часть балок", "длина утепления ж/б балок", "ЭППС торец балок длина"]
+      expected_unit: "мп"
+      notes: "Only the length of beam faces actually insulated from outside. Do not substitute total beam length: beams may be L/T-shaped and insulated only on the outside portion."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Заполняется только если проектировщик отдельно указал длину утепляемой части балок. Если балок не утепляют, поставьте 0; если отдельной строки нет, оставьте пустым для ручной проверки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Elena 2026-07-29: beams are not always insulated, and when insulated may cover only part of the beam length."
+
+  - key: beams_eps_material_area_m2
+    label_ru: "Утепление торца балок 1-го этажа ЭППС 100 мм — площадь материала"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_beams_eps_material_area"
+    calculator_input_path: "insulation.beams_eps_material_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.beams_eps_material_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_eps_material_area"]
+      aliases_ru: ["площадь утепления ж/б балок", "ЭППС балки площадь", "утепление балок площадь"]
+      expected_unit: "м2"
+      notes: "Only the EPS area actually used on insulated beam faces. Do not derive from total beam length if the project shows partial insulation."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Заполняется только если проектировщик отдельно указал площадь ЭППС по утепляемым граням балок. Если балок не утепляют, поставьте 0; если отдельной строки нет, оставьте пустым для ручной проверки."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Optional override. If absent, calculator treats beam EPS material area as 0; production extraction should use only the actual insulated area/length from the PDF."
+
+  - key: edge_insulation_height_m
+    label_ru: "Утепление торца плиты ЭППС 100 мм — высота"
+    unit: "м"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_insulation_height"
+    calculator_input_path: "insulation.edge_insulation_height_m"
+    normalized_json_path: "sections.floor_slab_1.parameters.edge_insulation_height_m.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_insulation_height"]
+      aliases_ru: ["высота утепления торца", "торец плиты высота утепления", "ЭППС торца высота"]
+      expected_unit: "м"
+      notes: "Normalize mm to m."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте высоту утепления торца плиты. Если отдельной строки нет, обычно берётся высота/толщина утепляемого торца по сечению."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: ""
+
+  - key: slab_edge_eps_material_area_m2
+    label_ru: "Утепление торца плиты ЭППС 100 мм — площадь материала"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_edge_eps_material_area"
+    calculator_input_path: "insulation.slab_edge_eps_material_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.slab_edge_eps_material_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_edge_eps_material_area"]
+      aliases_ru: ["ЭППС торец плиты площадь", "утепление вертикальных поверхностей плиты", "площадь материала ЭППС торца"]
+      expected_unit: "м2"
+      notes: "Material area for EPS edge; not formwork area."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь ЭППС по торцу плиты. Если PDF даёт только объём ЭППС 100 мм по вертикальным поверхностям, площадь можно получить как объём / 0,1 м."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with edge_formwork_area_m2."
+
+  - key: bottom_slab_eps_work_area_m2
+    label_ru: "Утепление низа плиты ЭППС 100 мм — площадь работ"
+    unit: "м2"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_bottom_eps_work_area"
+    calculator_input_path: "insulation.bottom_slab_eps_work_area_m2"
+    normalized_json_path: "sections.floor_slab_1.parameters.bottom_slab_eps_work_area_m2.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_bottom_eps_work_area"]
+      aliases_ru: ["ЭППС низ плиты площадь", "утепление низа плиты", "утепление под плитой перекрытия"]
+      expected_unit: "м2"
+      notes: "Work area below slab; not formwork."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте площадь работ по утеплению низа плиты. Если PDF даёт только объём ЭППС 100 мм по низу плиты, площадь можно получить как объём / 0,1 м."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with main_formwork_area_m2."
+
+  - key: total_eps_volume_from_spec_m3
+    label_ru: "ЭППС 100 мм для утепления плиты 1-го этажа — общий объём материала"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_eps100_volume"
+    calculator_input_path: "insulation.total_eps_volume_from_spec_m3"
+    normalized_json_path: "sections.floor_slab_1.parameters.total_eps_volume_from_spec_m3.value"
+    value_kind: scalar
+    parser_mapping:
+      target_codes: ["floor_slab_1_eps100_volume"]
+      aliases_ru: ["ЭППС 100 мм торец и низ плиты", "ЭППС 100 мм утепление плиты перекрытия", "пенополистирол 100 мм перекрытие"]
+      expected_unit: "м3"
+      notes: "Total EPS material volume in m3."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте общий объём материала ЭППС 100 мм по спецификации. Это материал, а не площадь работ."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Do not confuse with m2 formwork or m2 work areas."
+
+  - key: floor_slab_1_rebar_items
+    label_ru: "Арматура плиты перекрытия 1-го этажа по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "floor_slab_1_rebar_items"
+    calculator_input_path: "rebar_items"
+    normalized_json_path: "sections.floor_slab_1.parameters.floor_slab_1_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: code
+    production_input: true
+    item_label_columns: [steel_class, diameter_mm]
+    correction_columns: [spec_length_m, kg_per_meter]
+    columns:
+      - {key: floor, label_ru: "Этаж", unit: "", value_kind: integer}
+      - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
+      - {key: zone_context, label_ru: "Зона (slab_zones.context)", unit: "", value_kind: string}
+      - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
+      - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
+      - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
+      - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина прутка", unit: "м", value_kind: number}
+      - {key: unit_price_per_m, label_ru: "Цена за метр", unit: "руб/мп", value_kind: number}
+    parser_mapping:
+      target_codes: ["floor_slab_1_rebar_items"]
+      aliases_ru: ["арматура плиты перекрытия 1 этажа", "спецификация арматуры плиты 1 этажа"]
+      expected_unit: "мп"
+      notes: "Primary PDF unit is m.п.; do not require PDF total kg. rod_length_m is a real PDF/spec/catalog value the calculator requires per row (found 2026-07-10 — was missing from this column list even though the calculator has always read it directly, no fallback). zone_context (added 2026-08-09): required when the project has more than one slab_zones[] entry, optional when there's only one — the calculator pools rod-purchase rounding by (floor, component, zone_context, steel_class, diameter_mm), and rounding main-zone and kitchen-zone rebar together instead of separately gives a different (wrong) number on real reference-project data. Fill with the exact slab_zones[].context string the row's spec table belongs to; do not infer it from a code prefix or the item's name text."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте позиции арматуры плиты перекрытия 1-го этажа по диаметрам, каждая строка спецификации отдельной строкой."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Primary PDF unit is m.п.; do not require PDF total kg. unit_price_per_m is not a PDF value — adapter-filled from rebar_unit_price_by_item (registry_code rebar_<class>_d<diameter>_m), same as floor_slab_2."
+
+  - key: beam_items
+    label_ru: "Ж/Б балки плиты перекрытия 1-го этажа"
+    unit: "шт"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "beam_items"
+    calculator_input_path: "beams.items"
+    normalized_json_path: "sections.floor_slab_1.parameters.beam_items.rows"
+    value_kind: repeated_rows
+    row_key_field: code
+    production_input: true
+    item_label_columns: [name]
+    correction_columns: [length_m, width_m, height_m, count, concrete_volume_m3, formwork_area_m2, zone_context]
+    columns:
+      - {key: code, label_ru: "Код", unit: "", value_kind: string}
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: length_m, label_ru: "Длина", unit: "м", value_kind: number}
+      - {key: width_m, label_ru: "Ширина", unit: "м", value_kind: number}
+      - {key: height_m, label_ru: "Высота", unit: "м", value_kind: number}
+      - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: formwork_area_m2, label_ru: "Опалубка", unit: "м2", value_kind: number}
+      - {key: zone_context, label_ru: "Зона (slab_zones.context)", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["floor_slab_1_beams_formwork_area", "beam_items"]
+      aliases_ru: ["ведомость балок", "спецификация балок", "балки Б-"]
+      expected_unit: ""
+      notes: "This floor slab may have zero, one, or several beams, independently of floor_slab_2. Extract only real beam rows, not the total row of a beam table. If the PDF gives ready concrete/formwork per beam, fill concrete_volume_m3/formwork_area_m2 from the spec. width_m is optional when the row combines different beam cross-sections; do not invent a split."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если у этой плиты перекрытия есть балки, проверьте их построчно; если балок нет, оставьте пустым."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Extract only real beam rows, not the total row of a beam table. Production uses length_m for beam concreting work. Do not assume beam insulation follows the full beam length: use beams_eps_work_length_m/beams_eps_material_area_m2 when the PDF gives the actually insulated portion. width_m is not required when concrete_volume_m3 is already given. For combined rows such as B4/B4-1, keep one combined row with needs_review/manual split note until a separated designer specification is available. zone_context added 2026-08-09 (FLOOR_SLAB_UNIFICATION_PLAN.md P0) — SCHEMA ONLY, not read by the calculator yet (calculate_floor_slab_1() reads beam_items row-by-row into a fresh dict and only pulls the specific keys it knows about, so an extra zone_context column is safely ignored today, not an error). Same convention as rebar_items/additional_concrete_items zone_context: must match a slab_zones[].context string exactly, required when more than one zone exists. Fill it now where known so the data is ready once P1/P2 of the plan wire it in — don't leave it blank purely because nothing reads it yet."
+
+  - key: additional_concrete_items
+    label_ru: "Дополнительный бетон в теле плиты (балки/рёбра, отдельная строка спецификации)"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "additional_concrete_items"
+    calculator_input_path: "additional_concrete_items"
+    normalized_json_path: "sections.floor_slab_1.parameters.additional_concrete_items.rows"
+    value_kind: repeated_rows
+    row_key_field: name
+    production_input: true
+    item_label_columns: [name]
+    correction_columns: [zone_context, concrete_volume_m3]
+    columns:
+      - {key: name, label_ru: "Наименование строки", unit: "", value_kind: string}
+      - {key: zone_context, label_ru: "Зона (slab_zones.context)", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["additional_concrete_items"]
+      aliases_ru: ["балка в теле плиты", "ребро в теле плиты", "балки в теле плиты перекрытия"]
+      expected_unit: "м3"
+      notes: "Added 2026-08-09 (real reference-project case: 'Бетон В-22,5 (балка в теле плиты перекрытия)' / 'Бетон В-22,5 (ребро 50мм в теле плиты)' rows on the material take-off table, separate from both the zone's main slab concrete_volume_m3 AND beam_items[].concrete_volume_m3). Extract EVERY such extra concrete line found for a zone as its own row here (don't lose pieces, same principle as rebar_items/roof_zones) rather than summing them yourself. zone_context must match the exact slab_zones[].context string it belongs to - required when the project has more than one slab_zones[] entry, optional (defaults to the single zone) when there's only one. This ONLY feeds concrete material/delivery-trip ordering (per-zone waste+ceil-then-sum, verified exact on one real reference project) - it does not affect formwork area or the slab-only concreting-work volume, both already correct without it. See floor_slab_1_comparison_findings_2026-08-09 memory."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если в спецификации есть отдельная строка бетона для балки/ребра в теле плиты (кроме основной плиты и кроме beam_items), впишите её сюда с указанием зоны; если такой строки нет, оставьте пустым."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {numeric: true, min_value: 0, max_value: null}
+    notes: "Purely additive (2026-08-09) - when empty/absent, calculator behavior is byte-identical to before (concrete material/delivery computed once on the combined zone total, unchanged). Only affects concrete_b22_5_m300_material/concrete_delivery quantities, never formwork area or slab concreting volume."
+
+  - key: beam_table_controls
+    label_ru: "Контрольные итоги таблицы Ж/Б балок"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "beam_table_controls"
+    calculator_input_path: ""
+    normalized_json_path: "sections.floor_slab_1.parameters.beam_table_controls.rows"
+    value_kind: repeated_rows
+    row_key_field: label
+    production_input: false
+    item_label_columns: [label]
+    correction_columns: [value, unit]
+    columns:
+      - {key: label, label_ru: "Строка итога", unit: "", value_kind: string}
+      - {key: value, label_ru: "Значение", unit: "", value_kind: number}
+      - {key: unit, label_ru: "Ед.", unit: "", value_kind: string}
+    parser_mapping:
+      group_codes: ["beam_table_controls"]
+      expected_context: ["итого", "балки"]
+      notes: "item_label_columns/correction_columns added 2026-07-29 — this group used to render as one permanently-blank scalar row (lookup mismatch, see build_review_workbook_from_contracts fix same day); now renders per-row so Elena can see the actual control totals."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Необязательные контрольные итоги таблицы балок, для справки."
+    mirror_to_details_sheet: true
+    mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it."
+    validation: {min_rows: 0, sum_checks: []}
+    notes: "Diagnostics only. Do not automatically map total row to slab concrete or beam item."
+
+price_keys:
+  - {key: formwork_rate_per_m2, estimate_line_code: formwork_set_rental_material, label_ru: "Комплект опалубки перекрытия", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_rental_m2", fallback_key: "formwork_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: formwork_delivery_rate_per_trip, estimate_line_code: formwork_delivery_return_manipulator, label_ru: "Доставка, вывоз опалубки манипулятором", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_delivery_truck", fallback_key: "formwork_delivery_rate_per_trip", allow_manual_override: true, notes: ""}
+  - {key: crane_shift_rate, estimate_line_code: formwork_rebar_crane_supply, label_ru: "Подача опалубки, арматуры автокраном", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "crane_shift", fallback_key: "crane_shift_rate", allow_manual_override: true, notes: ""}
+  - {key: formwork_consumables_rate_per_m2, estimate_line_code: formwork_consumables, label_ru: "Расходные материалы для установки опалубки", price_kind: material, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "formwork_consumables_m2", fallback_key: "formwork_consumables_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: plywood_unit_price, estimate_line_code: plywood_fk_18mm_for_edges_and_non_multiple_places, label_ru: "Фанера ФК 1,52 x 1,52 толщиной 18 мм", price_kind: material, unit: "лист", required: true, default_source: price_registry_with_fallback, registry_code: "plywood_1520x1520_18mm_sheet", fallback_key: "plywood_unit_price", allow_manual_override: true, notes: ""}
+  - {key: timber_unit_price, estimate_line_code: formwork_timber_gost, label_ru: "Пиломатериал обрезной для устройства опалубки", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "timber_m3", fallback_key: "timber_unit_price", allow_manual_override: true, notes: ""}
+  - {key: rebar_unit_price_by_item, estimate_line_code: rebar_items, label_ru: "Арматура плиты перекрытия по диаметрам", price_kind: material, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "rebar_<class>_d<diameter>_m", fallback_key: "rebar_items.unit_price_per_m", allow_manual_override: true, notes: "Resolved per row of floor_slab_1_rebar_items."}
+  - {key: rebar_metal_delivery_unit_price, estimate_line_code: rebar_metal_delivery, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", required: true, default_source: price_registry_with_fallback, registry_code: "metal_delivery_truck", fallback_key: "rebar_metal_delivery_unit_price", allow_manual_override: true, notes: "Added 2026-07-30, same registry_code as foundation_slab's rebar_metal_delivery_unit_price. Only used in production (metal_delivery_calc_method=section_output_only); dead when the legacy branch is active."}
+  - {key: slab_concreting_work_rate_per_m3, estimate_line_code: floor_slab_concreting_work, label_ru: "Бетонирование плиты перекрытия", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_placing_work_m3", fallback_key: "slab_concreting_work_rate_per_m3", allow_manual_override: true, notes: ""}
+  - {key: beam_concreting_work_rate_per_m, estimate_line_code: beam_concreting_work, label_ru: "Бетонирование балок высотой до 250мм", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "beam_concrete_placing_work_m", fallback_key: "beam_concreting_work_rate_per_m", allow_manual_override: true, notes: "2026-08-09: возвращено деление по высоте (было отменено 2026-07-28 в пользу единой ставки по длине - см. beam_concreting_work_work_rate_per_m3 ниже). Применяется только к балкам с height_m<=0.25."}
+  - {key: beam_concreting_work_rate_per_m3, estimate_line_code: beam_concreting_work_tall, label_ru: "Бетонирование балок высотой более 250мм", price_kind: work, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "beam_concrete_placing_work_m3", fallback_key: "beam_concreting_work_rate_per_m3", allow_manual_override: true, notes: "2026-08-09: строка 29 первого листа нового прайса Елены (25000 руб./м3) существовала, но никогда не была подключена - калькулятор до сих пор считал ВСЕ балки одной ставкой по длине (beam_concreting_work_rate_per_m), независимо от высоты. Реальные сметы (два разных проекта) обе делят балки по высоте с разными ставками и единицами измерения (мп для низких, м3 для высоких) - см. reports/trc_vs_original_comparison/05_floor_slab_1.md. Применяется только к балкам с height_m>0.25."}
+  - {key: concrete_unit_price_per_m3, estimate_line_code: concrete_b22_5_m300_material, label_ru: "Бетон В22,5 М300", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_b22_5_m3", fallback_key: "concrete_unit_price_per_m3", allow_manual_override: true, notes: ""}
+  - {key: concrete_delivery_rate_per_trip, estimate_line_code: concrete_delivery, label_ru: "Доставка бетона до объекта", price_kind: material, unit: "рейс", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_delivery_trip", fallback_key: "concrete_delivery_rate_per_trip", allow_manual_override: true, notes: ""}
+  - {key: concrete_pump_rate, estimate_line_code: concrete_pump_32m, label_ru: "Работа бетононасоса 32 м", price_kind: material, unit: "смена", required: true, default_source: price_registry_with_fallback, registry_code: "concrete_pump_32m_shift_floor_slab_1", fallback_key: "concrete_pump_rate", allow_manual_override: true, notes: "Fixed 2026-08-08: used to share registry_code concrete_pump_32m_shift with foundation_slab and floor_slab_2, making it impossible to price a different pump size/rate per floor. Split into its own registry_code so each section's pump price is independently visible/overridable on sheet 02. UPDATE 2026-08-12: the level-based size pattern this split was originally justified by (two reference projects using a bigger pump on upper floors) turned out to be coincidental, not a rule - Elena confirmed pump size/price depends on pump-parking distance to the far corner of the house and site height, not slab elevation, always a manual per-pour correction. Registry default is now a flat 37000 (mid of her stated 36000-38000 range), same across all 3 pump registry codes - the split by section is kept only so each pour can still be overridden independently on sheet 02, not because level determines price."}
+  - {key: edge_beam_insulation_work_rate_per_m, estimate_line_code: edge_beam_insulation_work, label_ru: "Утепление торцов плиты и балок", price_kind: work, unit: "мп", required: true, default_source: price_registry_with_fallback, registry_code: "edge_insulation_work_m", fallback_key: "edge_beam_insulation_work_rate_per_m", allow_manual_override: true, notes: ""}
+  - {key: bottom_slab_insulation_work_rate_per_m2, estimate_line_code: bottom_slab_insulation_work, label_ru: "Утепление низа плиты", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "eps_bottom_slab_insulation_work_m2", fallback_key: "bottom_slab_insulation_work_rate_per_m2", allow_manual_override: true, notes: ""}
+  - {key: eps_unit_price_per_m3, estimate_line_code: eps_penoplex_osnova_100mm, label_ru: "Пеноплэкс Основа 100 мм", price_kind: material, unit: "м3", required: true, default_source: price_registry_with_fallback, registry_code: "eps_penoplex_osnova_100_m3", fallback_key: "eps_unit_price_per_m3", allow_manual_override: true, calculator_input_path: "insulation.eps_unit_price_per_m3", notes: "Calculator reads this from the insulation sub-dict, not rates like most other prices here (found 2026-07-10) — explicit path needed, same reason as technical_supervision_amount below."}
+  - {key: foam_unit_price_per_can, estimate_line_code: eps_glue_foam, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", required: true, default_source: price_registry_with_fallback, registry_code: "eps_foam_glue_can", fallback_key: "foam_unit_price_per_can", allow_manual_override: true, calculator_input_path: "insulation.foam_unit_price_per_can", notes: "Calculator reads this from the insulation sub-dict, not rates like most other prices here (found 2026-07-10) — explicit path needed, same reason as technical_supervision_amount below."}
+  - {key: technical_supervision_amount, estimate_line_code: technical_supervision, label_ru: "Технический надзор", price_kind: work, unit: "-", required: true, default_source: price_registry_with_fallback, registry_code: "technical_supervision_fixed", fallback_key: "technical_supervision_amount", allow_manual_override: true, calculator_input_path: "manual_lines.technical_supervision_amount", notes: "Price-like manual amount; adapter must place the reviewed value into manual_lines because the current calculator reads it there."}
+
+defaults:
+  - {key: formwork_areas_calc_method, label_ru: "Метод площадей опалубки", source_class: DEFAULT, value: "spec_formwork_areas", unit: "", calculator_input_path: "formwork_areas_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: rebar_calc_method, label_ru: "Метод арматуры", source_class: DEFAULT, value: "spec_length_items", unit: "", calculator_input_path: "rebar_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: rebar_waste_coeff, label_ru: "Коэффициент запаса арматуры", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "rebar_items[*].waste_coeff", source_note: "Business/material waste default, same value as foundation_slab/floor_slab_2's rebar_waste_coeff.", allow_override_later: true, notes: "Added 2026-08-05 (adapter build): calculate_rebar_item() reads item['waste_coeff'] unconditionally with no fallback, but this contract never declared where that value comes from - a real gap, not a PDF/spec field (waste_coeff is not in floor_slab_1_rebar_items' columns, same as every other section's rebar waste coefficient). Per-item, not a flat top-level field - injected into each rebar_items row by build_input.py, same pattern as foundation_slab's rod_length_m default."}
+  - {key: insulation_calc_method, label_ru: "Метод утепления", source_class: DEFAULT, value: "spec_work_quantities", unit: "", calculator_input_path: "insulation.insulation_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: formwork_rate_calc_method, label_ru: "Метод ставки опалубки", source_class: DEFAULT, value: "direct_section_rate", unit: "", calculator_input_path: "rates.formwork_rate_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: formwork_delivery_calc_method, label_ru: "Метод доставки опалубки", source_class: DEFAULT, value: "area_threshold", unit: "", calculator_input_path: "rates.formwork_delivery_calc_method", source_note: "Production mode from calculator README.", allow_override_later: false, notes: ""}
+  - {key: metal_delivery_calc_method, label_ru: "Метод доставки металла", source_class: DEFAULT, value: "section_output_only", unit: "", calculator_input_path: "rates.metal_delivery_calc_method", source_note: "Production mode from calculator README; box calculator should combine metal weights.", allow_override_later: false, notes: ""}
+  - {key: concrete_waste_coeff, label_ru: "Коэффициент запаса бетона", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "rates.concrete_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: eps_thickness_m, label_ru: "Толщина ЭППС", source_class: DEFAULT, value: 0.1, unit: "м", calculator_input_path: "insulation.eps_thickness_m", source_note: "Catalog/formula default for EPS 100 mm.", allow_override_later: true, notes: ""}
+  - {key: eps_waste_coeff, label_ru: "Коэффициент запаса ЭППС", source_class: DEFAULT, value: 1.05, unit: "", calculator_input_path: "insulation.eps_waste_coeff", source_note: "Business/material waste default.", allow_override_later: true, notes: ""}
+  - {key: eps_pack_volume_m3, label_ru: "Объем одной упаковки ЭППС 100 мм", source_class: DEFAULT, value: 0.2773, unit: "м3", calculator_input_path: "insulation.eps_pack_volume_m3", source_note: "Catalog pack volume from floor slab calculator production cases and insulation refactor report.", allow_override_later: true, notes: "Needed to order EPS by full packs."}
+  - {key: foam_coverage_m2_per_can, label_ru: "Покрытие клей-пены", source_class: DEFAULT, value: 10, unit: "м2/баллон", calculator_input_path: "insulation.foam_coverage_m2_per_can", source_note: "Formula/catalog default.", allow_override_later: true, notes: ""}
+  - {key: mixer_capacity_m3, label_ru: "Объем миксера бетона", source_class: DEFAULT, value: 9, unit: "м3", calculator_input_path: "rates.mixer_capacity_m3", source_note: "Supplier/business default.", allow_override_later: true, notes: ""}
+  - {key: max_rebar_delivery_weight_per_truck_kg, label_ru: "Максимальный вес металла на машину", source_class: DEFAULT, value: 10000, unit: "кг", calculator_input_path: "rates.max_rebar_delivery_weight_per_truck_kg", source_note: "Box-level delivery capacity default.", allow_override_later: true, notes: ""}
+  - {key: plywood_sheet_working_area_m2, label_ru: "Рабочая площадь листа фанеры", source_class: DEFAULT, value: 2.3, unit: "м2", calculator_input_path: "rates.plywood_sheet_working_area_m2", source_note: "Catalog/formula default from manual review.", allow_override_later: true, notes: ""}
+  - {key: reserve_plywood_sheets, label_ru: "Резерв листов фанеры", source_class: DEFAULT, value: 0, unit: "лист", calculator_input_path: "rates.reserve_plywood_sheets", source_note: "Legacy/unused in production (floor_slabs unified section calls floor_slab_1_calculator.py directly) - fixed to match sections/floor_slabs/section_contract.yaml's 2026-08-22 change for consistency.", allow_override_later: true, notes: ""}
+  - {key: non_multiple_places_coeff, label_ru: "Коэффициент некратных мест", source_class: DEFAULT, value: 0.2, unit: "", calculator_input_path: "rates.non_multiple_places_coeff", source_note: "Business/formula default from manual review.", allow_override_later: true, notes: ""}
+  - {key: timber_thickness_m, label_ru: "Толщина пиломатериала для опалубки", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "rates.timber_thickness_m", source_note: "Catalog/formula default.", allow_override_later: true, notes: ""}
+  - {key: additional_timber_coeff, label_ru: "Коэффициент дополнительного пиломатериала для доборов", source_class: DEFAULT, value: 0, unit: "", calculator_input_path: "rates.additional_timber_coeff", source_note: "Legacy/unused in production - fixed to match sections/floor_slabs/section_contract.yaml's 2026-08-22 change for consistency.", allow_override_later: true, notes: ""}
+  - {key: additional_timber_thickness_m, label_ru: "Толщина дополнительного пиломатериала для доборов", source_class: DEFAULT, value: 0.05, unit: "м", calculator_input_path: "rates.additional_timber_thickness_m", source_note: "Catalog/formula default from floor slab calculator production cases.", allow_override_later: true, notes: ""}
+  - {key: overhang_sheet_equivalent, label_ru: "Legacy-эквивалент листов фанеры для свесов и доборов", source_class: DEFAULT, value: 0, unit: "лист", calculator_input_path: "rates.overhang_sheet_equivalent", source_note: "Legacy compatibility default. Three-control-estimate check 2026-08-04 found no universal project/smeta row for this field; ordinary plywood/timber is already calculated from formwork areas.", allow_override_later: false, exclude_from_manual_values_registry: true, notes: "Do not show on manual sheet 01-1. If a future universal method for overhang/additional timber is approved, add it symmetrically instead of using the old project-specific fallback."}
+  - {key: logistics_and_supply_percent, label_ru: "Коэффициент логистики и снабжения", source_class: DEFAULT, value: 0.01, unit: "", calculator_input_path: "overheads.logistics_and_supply_percent", source_note: "Business overhead default.", allow_override_later: true, notes: ""}
+  - {key: consumables_and_tool_percent, label_ru: "Коэффициент расходников и амортизации", source_class: DEFAULT, value: 0.03, unit: "", calculator_input_path: "overheads.consumables_and_tool_percent", source_note: "Business overhead default.", allow_override_later: true, notes: ""}
+
+supplier_inputs:
+  - key: formwork_rebar_crane_shifts
+    label_ru: "Подача опалубки и арматуры краном"
+    unit: "смена"
+    source_class: SUPPLIER_INPUT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "manual_lines.formwork_rebar_crane_shifts"
+    normalized_json_path: "sections.floor_slab_1.supplier_inputs.formwork_rebar_crane_shifts.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Укажите смены подачи опалубки и арматуры краном."
+    notes: "source_class AUTO_CALCULATED -> SUPPLIER_INPUT 2026-07-30 (reverted): no real crane-shift-count formula exists anywhere in the codebase. The 2026-07-30 automation wrongly reused the box_calculator's delivery-truck allocation for crane shifts; real smeta data from a reference project disproved the underlying assumption (crane count 2 != delivery count 1 for this same section). Elena's final ruling: crane stays purely manual, no invented formula - box_calculator is repurposed for rebar/metal delivery trucks instead (see foundation_slab.rebar_metal_delivery_trucks)."
+
+  - key: rebar_metal_delivery_trucks
+    label_ru: "Доставка арматуры и металла, машины"
+    unit: "маш"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "manual_lines.rebar_metal_delivery_trucks"
+    normalized_json_path: "sections.floor_slab_1.supplier_inputs.rebar_metal_delivery_trucks.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Автоматически по общему весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    notes: "Added 2026-07-30. Activates the calculator's existing 'section_output_only' box-level-delivery path (metal_delivery_calc_method default in production) - this estimate line existed in the calculator only for the old 'legacy_slab1_slab2_context' mode before; production mode never produced any delivery line for this section at all until this field. Value comes from compute_rebar_metal_delivery_allocation() in populate_review_workbook_from_extraction.py (box_calculator's 10-tonne threshold allocation across all 4 rebar-bearing sections) - naturally 0 for projects where this section doesn't cross a threshold. Still allow_manual_override: true."
+
+  - key: concrete_pump_shifts
+    label_ru: "Работа бетононасоса"
+    unit: "смена"
+    source_class: SUPPLIER_INPUT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    calculator_input_path: "manual_lines.concrete_pump_shifts"
+    normalized_json_path: "sections.floor_slab_1.supplier_inputs.concrete_pump_shifts.value"
+    value_kind: scalar
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Укажите смены бетононасоса."
+    notes: "Fixed/manual line; do not compute from concrete volume."
+
+calculator_input_mapping:
+  - input_path: "*"
+    from:
+      ref: "review_parameters + supplier_inputs + defaults + price_keys"
+      source_class: MIXED
+    required: true
+    transform: build_floor_slab_1_input
+    fallback: null
+    notes: "Adapter must fill nested geometry, beams, rates, rebar_items, insulation, overheads, and manual_lines without old fixture values."
+
+estimate_lines:
+  - code: slab_formwork_installation_control
+    name_ru: "Монтаж опалубки под монолитное перекрытие 1-го этажа"
+    unit: "м2"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=slab_formwork_installation_control]"
+    quantity:
+      formula: "main_formwork_area_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero control/client line from calculator."
+
+  - code: formwork_set_rental_material
+    name_ru: "Комплект опалубки перекрытия"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=formwork_set_rental_material]"
+    quantity:
+      formula: "main_formwork_area_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: formwork_rate_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: formwork_delivery_return_manipulator
+    name_ru: "Доставка, вывоз опалубки манипулятором"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=formwork_delivery_return_manipulator]"
+    quantity:
+      formula: "2 машины if main_formwork_area_m2 <= 180 else 4 машины"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "defaults.formwork_delivery_calc_method", source_class: DEFAULT}
+    prices: {material_unit_price_key: formwork_delivery_rate_per_trip, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Production mode area_threshold. Manual override is only if calculator mode is changed deliberately."
+
+  - code: formwork_rebar_crane_supply
+    name_ru: "Подача опалубки, арматуры автокраном"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=formwork_rebar_crane_supply]"
+    quantity:
+      formula: "formwork_rebar_crane_shifts"
+      leaf_inputs:
+        - {ref: "supplier_inputs.formwork_rebar_crane_shifts", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: crane_shift_rate, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Manual/supplier quantity."
+
+  - code: formwork_consumables
+    name_ru: "Расходные материалы для установки опалубки"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=formwork_consumables]"
+    quantity:
+      formula: "1 fixed line; amount = main_formwork_area_m2 * formwork_consumables_rate_per_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: formwork_consumables_rate_per_m2, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Calculator displays quantity 1 but total is area-based."
+
+  - code: edge_beam_formwork_installation_control
+    name_ru: "Монтаж опалубки из доски 50 мм и фанеры для балок и отбортовки плиты"
+    unit: "м2"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=edge_beam_formwork_installation_control]"
+    quantity:
+      formula: "edge_formwork_area_m2 + beams_formwork_area_m2 + beams_bottom_formwork_area_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.edge_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_bottom_formwork_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Zero control/client line from calculator. Corrected 2026-07-26 (real project case, checked against the real costed smeta): this quantity must include beams_bottom_formwork_area_m2, same as the plywood/timber material calculation — confirmed identical across all three real projects reviewed this session (same work-line name, same combined vertical+beam-bottom quantity, distinct from the separate slab-bottom formwork line)."
+
+  - code: plywood_fk_18mm_for_edges_and_non_multiple_places
+    name_ru: "Фанера ФК 1,52 x 1,52 толщиной 18 мм для некратных мест и торцов"
+    unit: "шт"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=plywood_fk_18mm_for_edges_and_non_multiple_places]"
+    quantity:
+      formula: "ceil((edge_formwork_area_m2 + beams_formwork_area_m2) / plywood_sheet_working_area_m2 + (main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2 + reserve_plywood_sheets)"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.edge_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "defaults.plywood_sheet_working_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.non_multiple_places_coeff", source_class: DEFAULT}
+        - {ref: "defaults.reserve_plywood_sheets", source_class: DEFAULT}
+    prices: {material_unit_price_key: plywood_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: formwork_timber_gost
+    name_ru: "Пиломатериал обрезной для устройства опалубки ГОСТ"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=formwork_timber_gost]"
+    quantity:
+      formula: "(edge_formwork_area_m2 + beams_formwork_area_m2) * timber_thickness_m + (((main_formwork_area_m2 * non_multiple_places_coeff) / plywood_sheet_working_area_m2) + legacy_overhang_sheet_equivalent_0) * additional_timber_coeff * additional_timber_thickness_m"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.edge_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_formwork_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "defaults.timber_thickness_m", source_class: DEFAULT}
+        - {ref: "defaults.non_multiple_places_coeff", source_class: DEFAULT}
+        - {ref: "defaults.plywood_sheet_working_area_m2", source_class: DEFAULT}
+        - {ref: "defaults.overhang_sheet_equivalent", source_class: DEFAULT}
+        - {ref: "defaults.additional_timber_coeff", source_class: DEFAULT}
+        - {ref: "defaults.additional_timber_thickness_m", source_class: DEFAULT}
+    prices: {material_unit_price_key: timber_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "overhang_sheet_equivalent is a hidden legacy compatibility default of 0. Ordinary plywood/timber stays calculated from project formwork areas; no project-specific fallback is used."
+
+  - code: floor_slab_rebar_frame_assembly_control
+    name_ru: "Изготовление и монтаж каркаса армирования перекрытия из арматуры"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: zero_control_line
+    calculator_result_path: "estimate_lines[code=floor_slab_rebar_frame_assembly_control]"
+    quantity:
+      formula: "sum(rebar_item.order_length_m)"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_slab_1_rebar_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Order length is calculated per rebar item from spec_length_m, rod length, waste and rounding."
+
+  - code: rebar_items_dynamic
+    name_ru: "Арматура плиты перекрытия по диаметрам"
+    unit: "мп"
+    enabled_by_default: true
+    line_role: dynamic_material_rows
+    calculator_result_path: "estimate_lines[code=rebar_*]"
+    quantity:
+      formula: "per-row order_length_m from floor_slab_1_rebar_items"
+      leaf_inputs:
+        - {ref: "review_parameters.floor_slab_1_rebar_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: rebar_unit_price_by_item, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "One calculator line per rebar row/diameter; code is generated from steel class and diameter."
+
+  - code: rebar_metal_delivery
+    name_ru: "Доставка арматуры, металла"
+    unit: "маш"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=rebar_metal_delivery]"
+    quantity:
+      formula: "rebar_metal_delivery_trucks (box-level, section_output_only production mode); legacy_slab1_slab2_context is the pre-box-calculator fallback"
+      leaf_inputs:
+        - {ref: "supplier_inputs.rebar_metal_delivery_trucks", source_class: AUTO_CALCULATED}
+    prices: {material_unit_price_key: rebar_metal_delivery_unit_price, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "enabled_by_default flipped false -> true 2026-07-30: this line was legacy_only/dead in production (metal_delivery_calc_method=section_output_only never populated it) until rebar_metal_delivery_trucks above was wired to the box_calculator - same production activation as foundation_slab's own rebar_metal_delivery. Quantity naturally 0 for projects where this section's rebar weight doesn't cross a box-level 10-tonne threshold."
+
+  - code: floor_slab_concreting_work
+    name_ru: "Бетонирование монолитной плиты перекрытия бетоном В22,5 (М300)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=floor_slab_concreting_work]"
+    quantity:
+      formula: "total_concrete_volume_from_spec_m3 - sum(beam.length_m * beam.width_m * beam.height_m * beam.count)"
+      leaf_inputs:
+        - {ref: "review_parameters.total_concrete_volume_from_spec_m3", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: slab_concreting_work_rate_per_m3, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Slab concrete only, separate from beam concrete. total_concrete_volume_from_spec_m3 must be the section total before beam subtraction."
+
+  - code: beam_concreting_work
+    name_ru: "Бетонирование балок высотой до 250мм бетоном В22,5 (М300)"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=beam_concreting_work]"
+    quantity:
+      formula: "sum(beam.length_m * beam.count where beam.height_m <= 0.25)"
+      leaf_inputs:
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: beam_concreting_work_rate_per_m, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "2026-08-09: split by beam height (was one flat rate for all beams regardless of height, reverted - see beam_concreting_work_tall below). Beams with height_m<=0.25 only, priced by length. Beam concrete material remains in m3 on the concrete material line regardless of height."
+
+  - code: beam_concreting_work_tall
+    name_ru: "Бетонирование балок высотой более 250мм бетоном В22,5 (М300)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=beam_concreting_work_tall]"
+    quantity:
+      formula: "sum(beam.concrete_volume_m3 where beam.height_m > 0.25)"
+      leaf_inputs:
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: beam_concreting_work_rate_per_m3, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "2026-08-09: new line - beams with height_m>0.25, priced by concrete volume (taller beams need proportionally more concrete/formwork per meter than a flat length-rate reflects). Real reference-project smetas both price these beams this way, with a real corresponding rate (25000 rub/m3) sitting unused in Elena's own current pricelist row 29 until now."
+
+  - code: concrete_b22_5_m300_material
+    name_ru: "Бетон марки В22,5 (М300)"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=concrete_b22_5_m300_material]"
+    quantity:
+      formula: "ceil(total_concrete_volume_from_spec_m3 * concrete_waste_coeff)"
+      leaf_inputs:
+        - {ref: "review_parameters.total_concrete_volume_from_spec_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.concrete_waste_coeff", source_class: DEFAULT}
+    prices: {material_unit_price_key: concrete_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Material concrete order uses total concrete before beam subtraction."
+
+  - code: concrete_delivery
+    name_ru: "Доставка бетона до объекта"
+    unit: "рейс"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=concrete_delivery]"
+    quantity:
+      formula: "ceil(total_concrete_volume_from_spec_m3 * concrete_waste_coeff / mixer_capacity_m3)"
+      leaf_inputs:
+        - {ref: "review_parameters.total_concrete_volume_from_spec_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.concrete_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.mixer_capacity_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: concrete_delivery_rate_per_trip, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: ""
+
+  - code: concrete_pump_32m
+    name_ru: "Работа бетононасоса 32м + гаситель"
+    unit: "смена"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=concrete_pump_32m]"
+    quantity:
+      formula: "concrete_pump_shifts"
+      leaf_inputs:
+        - {ref: "supplier_inputs.concrete_pump_shifts", source_class: SUPPLIER_INPUT}
+    prices: {material_unit_price_key: concrete_pump_rate, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Manual/supplier quantity; do not compute from concrete volume."
+
+  - code: formwork_dismantling_zero_internal
+    name_ru: "Демонтаж опалубки после завершения бетонирования"
+    unit: "м2"
+    enabled_by_default: true
+    line_role: client_only_zero_internal_line
+    calculator_result_path: "estimate_lines[code=formwork_dismantling_zero_internal]"
+    quantity:
+      formula: "main_formwork_area_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.main_formwork_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Calculator currently has an old display quantity for this zero/internal line; do not use it as a production paid quantity."
+
+  - code: edge_beam_insulation_work
+    name_ru: "Устройство утепления по наружной стороне торцов плиты, балок"
+    unit: "мп"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=edge_beam_insulation_work]"
+    quantity:
+      formula: "slab_outer_edge_eps_work_length_m + beams_eps_work_length_m"
+      leaf_inputs:
+        - {ref: "review_parameters.slab_outer_edge_eps_work_length_m", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beams_eps_work_length_m", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: edge_beam_insulation_work_rate_per_m, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Do not infer beam insulation from all beam length. Elena confirmed beams may be uninsulated or insulated only partially; use only an explicit beams_eps_work_length_m from the project."
+
+  - code: bottom_slab_insulation_work
+    name_ru: "Устройство утепления низа плиты"
+    unit: "м2"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=bottom_slab_insulation_work]"
+    quantity:
+      formula: "bottom_slab_eps_work_area_m2"
+      leaf_inputs:
+        - {ref: "review_parameters.bottom_slab_eps_work_area_m2", source_class: AUTO_PROJECT}
+    prices: {material_unit_price_key: null, work_unit_price_key: bottom_slab_insulation_work_rate_per_m2, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "m2 work area, not EPS volume."
+
+  - code: eps_penoplex_osnova_100mm
+    name_ru: "Экструдированный пенополистирол Пеноплэкс Основа 100 мм"
+    unit: "м3"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_penoplex_osnova_100mm]"
+    quantity:
+      formula: "ceil(total_eps_volume_from_spec_m3 * eps_waste_coeff / eps_pack_volume_m3) * eps_pack_volume_m3"
+      leaf_inputs:
+        - {ref: "review_parameters.total_eps_volume_from_spec_m3", source_class: AUTO_PROJECT}
+        - {ref: "defaults.eps_waste_coeff", source_class: DEFAULT}
+        - {ref: "defaults.eps_pack_volume_m3", source_class: DEFAULT}
+    prices: {material_unit_price_key: eps_unit_price_per_m3, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "EPS material volume in m3, not m2 formwork."
+
+  - code: eps_glue_foam
+    name_ru: "Клей-пена для ЭППС"
+    unit: "баллон"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=eps_glue_foam]"
+    quantity:
+      formula: "ceil((slab_edge_eps_material_area_m2 + beam_edge_eps_material_area_m2 + bottom_slab_eps_work_area_m2) / foam_coverage_m2_per_can)"
+      leaf_inputs:
+        - {ref: "review_parameters.slab_edge_eps_material_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.bottom_slab_eps_work_area_m2", source_class: AUTO_PROJECT}
+        - {ref: "review_parameters.beam_items", source_class: AUTO_PROJECT}
+        - {ref: "defaults.foam_coverage_m2_per_can", source_class: DEFAULT}
+    prices: {material_unit_price_key: foam_unit_price_per_can, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Beam EPS material area is calculated from beam.length_m * beam.height_m * count."
+
+  - code: logistics_and_supply
+    name_ru: "Логистика, и снабжение"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=logistics_and_supply]"
+    quantity:
+      formula: "1; amount = base_subtotal_raw * logistics_and_supply_percent"
+      leaf_inputs:
+        - {ref: "defaults.logistics_and_supply_percent", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Percent overhead line."
+
+  - code: consumables_tool_depreciation
+    name_ru: "Расходные материалы, амортизация инструмента"
+    unit: "комплект"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=consumables_tool_depreciation]"
+    quantity:
+      formula: "1; amount = base_subtotal_raw * consumables_and_tool_percent"
+      leaf_inputs:
+        - {ref: "defaults.consumables_and_tool_percent", source_class: DEFAULT}
+    prices: {material_unit_price_key: null, work_unit_price_key: null, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Percent overhead line."
+
+  - code: technical_supervision
+    name_ru: "Технический надзор"
+    unit: "-"
+    enabled_by_default: true
+    calculator_result_path: "estimate_lines[code=technical_supervision]"
+    quantity:
+      formula: "1 fixed line"
+      leaf_inputs:
+        - {ref: "price_keys.technical_supervision_amount", source_class: PRICE}
+    prices: {material_unit_price_key: null, work_unit_price_key: technical_supervision_amount, fixed_amount_key: null}
+    validation: {formula_ready_required: true, excel_formula_exportable: true}
+    notes: "Current calculator reads the amount from manual_lines. Adapter must map the reviewed value there."
+
+checks:
+  required_source_classes: [AUTO_PROJECT, AUTO_CALCULATED, DEFAULT, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
+  required_review_parameters:
+    - total_concrete_volume_from_spec_m3
+    - slab_thickness_m
+    - edge_formwork_height_m
+    - slab_edge_perimeter_m
+    - main_formwork_area_m2
+    - edge_formwork_area_m2
+    - slab_outer_edge_eps_work_length_m
+    - edge_insulation_height_m
+    - slab_edge_eps_material_area_m2
+    - bottom_slab_eps_work_area_m2
+    - total_eps_volume_from_spec_m3
+    - floor_slab_1_rebar_items
+  forbidden_production_inputs:
+    - old_fixture_values
+    - old_expected_result_values
+    - display_quantity_overrides
+    - legacy_usv_geometry_default
+  expected_estimate_line_count: 24
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "checks block added 2026-07-11 — was missing entirely despite the contract otherwise being complete (beam-optionality, rebar rod_length_m/unit_price_per_m, price_key calculator_input_path gaps all fixed 2026-07-10). expected_estimate_line_count verified against the current 24 declared estimate_lines entries (rebar_items_dynamic represents a variable number of real per-row calculator lines; rebar_metal_delivery flipped from enabled_by_default: false/legacy-only to true/production 2026-07-30, now driven by the box_calculator via rebar_metal_delivery_trucks). forbidden_production_inputs lists legacy_usv_geometry_default — the calculator's insulation/formwork/rebar calc_method fields no longer silently default to legacy modes (fixed 2026-07-10/11), but the adapter must still always set them explicitly, since omitting them now raises instead of silently computing wrong numbers."

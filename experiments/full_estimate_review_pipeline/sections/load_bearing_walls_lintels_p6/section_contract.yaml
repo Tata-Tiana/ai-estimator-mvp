@@ -1,0 +1,386 @@
+contract_version: 0.1
+
+section:
+  code: load_bearing_walls_lintels_p6
+  name_ru: "Стены и перемычки"
+  calculator_module: "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
+  status: draft
+  owner_notes: >
+    P6 clean-slate draft next to the old load_bearing_walls_lintels contract. Do not add this section
+    to CANONICAL_SECTIONS until workbook/adapter/parser are migrated and visually checked against the
+    old readable walls section. No scalar production fallback: all project data comes through
+    wall_zones[] and nested repeated groups.
+
+source_files:
+  calculator: "experiments/load_bearing_walls_lintels_calculator/load_bearing_walls_lintels_p6_calculator.py"
+  runner: "experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_p6_calc.py"
+  first_case: "experiments/load_bearing_walls_lintels_calculator/cases/test_p6_zone_model_basic"
+  related_docs:
+    - "experiments/full_estimate_review_pipeline/P6_WALLS_LINTELS_DATA_CONTRACT.md"
+    - "experiments/full_estimate_review_pipeline/reports/trc_vs_original_comparison/04_load_bearing_walls_lintels.md"
+  extraction_targets:
+    - "experiments/chat_extraction_poc/data/calculator_targets_compact.json"
+    - "experiments/chat_extraction_poc/data/target_aliases_ru.yaml"
+
+review_parameters:
+  - key: wall_zones
+    label_ru: "Зоны кладки стен и парапета"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "wall_zones"
+    calculator_input_path: "wall_zones"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.parameters.wall_zones.rows"
+    value_kind: repeated_rows
+    row_key_field: zone_id
+    production_input: true
+    item_label_columns: [display_name, zone_kind]
+    correction_columns: [display_name, zone_kind, cutoff_waterproofing_area_m2]
+    columns:
+      - {key: zone_id, label_ru: "Идентификатор зоны", unit: "", value_kind: string}
+      - {key: display_name, label_ru: "Название зоны по проекту/смете", unit: "", value_kind: string}
+      - {key: zone_kind, label_ru: "Тип зоны", unit: "", value_kind: string}
+      - {key: cutoff_waterproofing_area_m2, label_ru: "Отсечная гидроизоляция под первый ряд", unit: "м2", value_kind: number}
+      - {key: block_delivery_batch_id, label_ru: "Партия доставки блоков (служебно)", unit: "", value_kind: string}
+    parser_mapping:
+      target_codes: ["wall_zones"]
+      group_codes: ["wall_zones"]
+      aliases_ru:
+        - "кладка стен 1 этажа"
+        - "кладка стен 2 этажа"
+        - "кладка второго света"
+        - "кладка парапета"
+        - "обкладка дымохода и вентканалов"
+        - "отсечная гидроизоляция под первый ряд блоков"
+      expected_unit: ""
+      notes: >
+        One row per billing zone. Parapet is one billing zone even if the PDF has several parapet
+        subzones; keep subzone detail inside nested block_items/rebar rows, not as separate billing
+        zones.
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте зоны кладки: 1-й этаж, 2-й этаж/второй свет, парапет, обкладку вентканалов, если она есть."
+    validation: {numeric: false, min_rows: 1, sum_checks: []}
+    notes: >
+      On sheet 01 this must render as a human section block, not as technical JSON. One value per
+      row. Only armature is grey/reference; other project values are color-coded and editable if they
+      affect calculation.
+
+  - key: wall_block_items
+    label_ru: "Газобетонные блоки по зонам"
+    unit: "м3"
+    source_class: AUTO_PROJECT
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: "wall_block_items"
+    calculator_input_path: "wall_zones[].block_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.parameters.wall_block_items.rows"
+    value_kind: repeated_rows
+    row_key_field: item_id
+    production_input: true
+    item_label_columns: [zone_id, block_density, block_size]
+    correction_columns: [volume_m3, material_unit_price, pallet_volume_m3]
+    columns:
+      - {key: zone_id, label_ru: "Зона кладки", unit: "", value_kind: string}
+      - {key: item_id, label_ru: "Идентификатор строки блока", unit: "", value_kind: string}
+      - {key: block_density, label_ru: "Плотность блока", unit: "", value_kind: string}
+      - {key: block_size, label_ru: "Размер блока", unit: "", value_kind: string}
+      - {key: volume_m3, label_ru: "Объём по спецификации", unit: "м3", value_kind: number}
+      - {key: context, label_ru: "Контекст/подзона из PDF", unit: "", value_kind: string}
+      - {key: material_unit_price, label_ru: "Цена материала для нестандартного блока", unit: "₽/м3", value_kind: number}
+      - {key: pallet_volume_m3, label_ru: "Объём паллеты для нестандартного блока", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["wall_block_items"]
+      group_codes: ["wall_block_items"]
+      aliases_ru:
+        - "спецификация стенового блока"
+        - "газобетонный блок"
+        - "блок D400"
+        - "блок D500"
+        - "блок 600x400x250"
+        - "блок 600x250x250"
+        - "блок 600x150x250"
+      expected_unit: "м3"
+      notes: "Every row must have zone_id. Do not route partitions into load-bearing billing zones."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте каждый блок по зоне, плотности, размеру и объёму."
+    validation: {numeric: false, min_rows: 1, sum_checks: []}
+    notes: >
+      Standard blocks use price/default by density+size. For other sizes, parser may still keep the
+      row, but price/material/pallet may require registry mapping before final estimate.
+
+  - key: wall_chasing_rebar_items
+    label_ru: "СПРАВОЧНО: арматура кладки стен и парапета"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "wall_chasing_rebar_items"
+    calculator_input_path: "wall_zones[].chasing_rebar_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.parameters.wall_chasing_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: item_id
+    production_input: true
+    item_label_columns: [zone_id, purpose, steel_class, diameter_mm]
+    correction_columns: []
+    columns:
+      - {key: zone_id, label_ru: "Зона кладки", unit: "", value_kind: string}
+      - {key: item_id, label_ru: "Идентификатор строки арматуры", unit: "", value_kind: string}
+      - {key: purpose, label_ru: "Назначение", unit: "", value_kind: string}
+      - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
+      - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
+      - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
+      - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина хлыста", unit: "м", value_kind: number}
+    parser_mapping:
+      target_codes: ["wall_chasing_rebar_items"]
+      group_codes: ["wall_chasing_rebar_items"]
+      aliases_ru:
+        - "спецификация расхода арматуры на армирование стен"
+        - "арматура стен"
+        - "армирование стен"
+        - "арматура парапета"
+      expected_unit: "мп"
+      notes: "Grey/reference on sheet 01. Elena does not manually edit rebar; project designer fixes it."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: false
+      status_if_missing: "optional"
+      action_ru: "СПРАВОЧНО: сверьте арматуру с PDF. Если ошибка, нужна правка проекта, не ручная правка сметы."
+    validation: {numeric: false, min_rows: 0, sum_checks: []}
+    notes: >
+      Calculator pools by zone_id + purpose + steel_class + diameter_mm. This is a production input
+      but a grey/reference UI block.
+
+  - key: lintel_items
+    label_ru: "Перемычки по зонам"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "lintel_items"
+    calculator_input_path: "wall_zones[].lintel_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.parameters.lintel_items.rows"
+    value_kind: repeated_rows
+    row_key_field: lintel_id
+    production_input: true
+    item_label_columns: [zone_id, lintel_kind, lintel_id]
+    correction_columns: [total_length_m, concrete_volume_m3, formwork_horizontal_area_m2, formwork_vertical_area_m2, insulation_length_m, insulation_eps_spec_volume_m3]
+    columns:
+      - {key: zone_id, label_ru: "Зона кладки", unit: "", value_kind: string}
+      - {key: lintel_id, label_ru: "Идентификатор/марка перемычки", unit: "", value_kind: string}
+      - {key: lintel_kind, label_ru: "Тип перемычки", unit: "", value_kind: string}
+      - {key: total_length_m, label_ru: "Длина перемычек", unit: "мп", value_kind: number}
+      - {key: concrete_volume_m3, label_ru: "Бетон перемычек", unit: "м3", value_kind: number}
+      - {key: formwork_horizontal_area_m2, label_ru: "Опалубка горизонтальная", unit: "м2", value_kind: number}
+      - {key: formwork_vertical_area_m2, label_ru: "Опалубка вертикальная", unit: "м2", value_kind: number}
+      - {key: insulation_length_m, label_ru: "Длина утепляемой части", unit: "мп", value_kind: number}
+      - {key: insulation_eps_spec_volume_m3, label_ru: "ЭППС перемычек по спецификации", unit: "м3", value_kind: number}
+    parser_mapping:
+      target_codes: ["lintel_items"]
+      group_codes: ["lintel_items"]
+      aliases_ru:
+        - "ведомость материалов перемычек"
+        - "план перемычек"
+        - "перемычки в U-блоке"
+        - "монолитные перемычки"
+        - "бетон перемычек"
+        - "утепление перемычек"
+      expected_unit: ""
+      notes: >
+        lintel_kind enum: u_block, monolithic. Do not infer insulation for all lintels from total
+        lintel length; use only explicitly утепляемая длина/объём/площадь rows.
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "optional"
+      action_ru: "Если в зоне есть перемычки, проверьте длину, бетон, опалубку и утепление построчно."
+    validation: {numeric: false, min_rows: 0, sum_checks: []}
+    notes: >
+      U-block and monolithic lintels may coexist in one zone. Concrete material purchase is combined
+      by zone; work lines stay split by lintel_kind.
+
+  - key: lintel_rebar_items
+    label_ru: "СПРАВОЧНО: арматура перемычек"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "lintel_rebar_items"
+    calculator_input_path: "wall_zones[].lintel_items[].rebar_items"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.parameters.lintel_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: item_id
+    production_input: true
+    item_label_columns: [zone_id, lintel_id, steel_class, diameter_mm]
+    correction_columns: []
+    columns:
+      - {key: zone_id, label_ru: "Зона кладки", unit: "", value_kind: string}
+      - {key: lintel_id, label_ru: "Перемычка", unit: "", value_kind: string}
+      - {key: item_id, label_ru: "Идентификатор строки арматуры", unit: "", value_kind: string}
+      - {key: purpose, label_ru: "Назначение", unit: "", value_kind: string}
+      - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
+      - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
+      - {key: spec_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
+      - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+      - {key: rod_length_m, label_ru: "Длина хлыста", unit: "м", value_kind: number}
+    parser_mapping:
+      target_codes: ["lintel_rebar_items"]
+      group_codes: ["lintel_rebar_items"]
+      aliases_ru:
+        - "спецификация армирования перемычек"
+        - "арматура перемычек"
+        - "каркас армирования перемычек"
+      expected_unit: "мп"
+      notes: "Grey/reference on sheet 01. These rows still feed calculation, but Elena does not edit them manually."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: false
+      status_if_missing: "optional"
+      action_ru: "СПРАВОЧНО: сверьте арматуру перемычек с PDF. Если ошибка, нужна правка проекта."
+    validation: {numeric: false, min_rows: 0, sum_checks: []}
+    notes: "Adapter nests these rows under their lintel_id before calling the P6 calculator."
+
+  - key: rebar_metal_delivery_trucks
+    label_ru: "Доставка арматуры и металла, машины"
+    unit: "маш"
+    source_class: AUTO_CALCULATED
+    required: true
+    review_sheet: "01_Проверка проекта"
+    target_code: ""
+    calculator_input_path: "rebar_metal_delivery_trucks"
+    normalized_json_path: "sections.load_bearing_walls_lintels_p6.auto_calculated.rebar_metal_delivery_trucks.value"
+    value_kind: number
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "manual_required"
+      action_ru: "Автоматически по общему поставочному весу арматуры коробки (box-калькулятор, накопление 10 т) — проверьте и поправьте при необходимости."
+    validation: {numeric: true, min: 0}
+    notes: >
+      Box-calculator allocation across foundation, walls/lintels and slab zones. Quantity may be 0
+      when this section contributes metal weight but does not cross the next 10t delivery threshold.
+
+price_keys:
+  - {key: rebar_unit_price_by_item, label_ru: "Арматура по классу и диаметру", price_kind: material, unit: "мп", registry_code: "rebar_<class>_d<diameter>_m", required: true}
+  - {key: scaffolding_setup_work_unit_price, label_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", price_kind: work, unit: "компл", registry_code: "scaffolding_setup_dismantling_work_set", required: true}
+  - {key: scaffolding_timber_unit_price, label_ru: "Пиломатериал для устройства лесов", price_kind: material, unit: "м3", registry_code: "timber_m3", required: true}
+  - {key: cutoff_waterproofing_material_unit_price, label_ru: "Отсечная гидроизоляция, материал", price_kind: material, unit: "м2", registry_code: "cutoff_waterproofing_material_m2", required: true}
+  - {key: cutoff_waterproofing_work_unit_price, label_ru: "Отсечная гидроизоляция, работа", price_kind: work, unit: "м2", registry_code: "cutoff_waterproofing_under_blocks_m2", required: true}
+  - {key: masonry_work_unit_price, label_ru: "Кладка стен из газобетонных блоков", price_kind: work, unit: "м3", registry_code: "gas_block_masonry_work_m3", required: true}
+  - {key: gas_block_d400_unit_price, label_ru: "Газобетонный блок D400 600x400x250", price_kind: material, unit: "м3", registry_code: "gas_block_d400_m3", required: true}
+  - {key: gas_block_d500_250_unit_price, label_ru: "Газобетонный блок D500 600x250x250", price_kind: material, unit: "м3", registry_code: "gas_block_d500_m3", required: true}
+  - {key: gas_block_d500_150_unit_price, label_ru: "Газобетонный блок D500 600x150x250", price_kind: material, unit: "м3", registry_code: "gas_block_d500_150_m3", required: true}
+  - {key: vent_chimney_cladding_work_unit_price, label_ru: "Обкладка дымохода и вентканалов 150 мм", price_kind: work, unit: "м2", registry_code: "gas_block_cladding_work_m2", required: true}
+  - {key: adhesive_unit_price, label_ru: "Монтажный клей для блоков 25 кг", price_kind: material, unit: "мешок", registry_code: "block_adhesive_bag", required: true}
+  - {key: sand_concrete_unit_price, label_ru: "Пескобетон М300 40 кг", price_kind: material, unit: "шт", registry_code: "sand_concrete_bag", required: true}
+  - {key: block_delivery_unit_price, label_ru: "Доставка блоков, смеси", price_kind: material, unit: "маш", registry_code: "block_delivery_truck", required: true}
+  - {key: block_unloading_manipulator_unit_price, label_ru: "Разгрузка блоков, смеси манипулятором", price_kind: material, unit: "маш", registry_code: "block_unloading_manipulator_truck", required: true}
+  - {key: crane_25t_unit_price, label_ru: "Перемещение блоков, смеси автокраном 25 т", price_kind: material, unit: "смена", registry_code: "crane_shift", required: true}
+  - {key: u_block_cutting_work_unit_price, label_ru: "Резка блока под перемычку (U-блок)", price_kind: work, unit: "шт", registry_code: "u_block_lintel_cutting_item", required: true}
+  - {key: lintel_concreting_work_unit_price, label_ru: "Бетонирование перемычек в U-блоке", price_kind: work, unit: "мп", registry_code: "lintel_concreting_work_m", required: true}
+  - {key: lintel_monolithic_concreting_work_unit_price, label_ru: "Бетонирование монолитных перемычек", price_kind: work, unit: "мп", registry_code: "lintel_monolithic_concreting_work_m", required: true}
+  - {key: concrete_m300_unit_price, label_ru: "Бетон В22,5 (М300)", price_kind: material, unit: "м3", registry_code: "concrete_b22_5_m3", required: true}
+  - {key: concrete_delivery_unit_price, label_ru: "Доставка бетона до объекта", price_kind: material, unit: "рейс", registry_code: "concrete_delivery_trip", required: true}
+  - {key: manual_concrete_lifting_work_unit_price, label_ru: "Перенос, подъем бетона вручную", price_kind: work, unit: "м3", registry_code: "manual_concrete_lifting_m3", required: true}
+  - {key: lintel_formwork_plywood_unit_price, label_ru: "Фанера для опалубки монолитных перемычек", price_kind: material, unit: "шт", registry_code: "lintel_formwork_plywood_sheet", required: true}
+  - {key: lintel_formwork_timber_unit_price, label_ru: "Пиломатериал для опалубки монолитных перемычек", price_kind: material, unit: "м3", registry_code: "lintel_formwork_timber_m3", required: true}
+  - {key: lintel_insulation_work_unit_price, label_ru: "Утепление наружной стороны монолитной перемычки", price_kind: work, unit: "мп", registry_code: "lintel_edge_insulation_work_m", required: true}
+  - {key: lintel_insulation_eps_unit_price, label_ru: "ЭППС для утепления перемычек", price_kind: material, unit: "м3", registry_code: "eps_penoplex_osnova_100_m3", required: true}
+  - {key: lintel_glue_foam_unit_price, label_ru: "Клей-пена для ЭППС", price_kind: material, unit: "баллон", registry_code: "eps_foam_glue_can", required: true}
+  - {key: waste_removal_truck_unit_price, label_ru: "Вывоз мусора с объекта, контейнер/машина", price_kind: material, unit: "маш", registry_code: "waste_removal_container_truck", required: true}
+  - {key: waste_removal_work_unit_price, label_ru: "Вывоз мусора с объекта, работа по погрузке", price_kind: work, unit: "маш", registry_code: "waste_removal_loading_work_truck", required: true}
+  - {key: rebar_metal_delivery_unit_price, label_ru: "Доставка арматуры, металла", price_kind: material, unit: "маш", registry_code: "metal_delivery_truck", required: false}
+
+defaults:
+  - {key: gas_block_waste_coeff, label_ru: "Запас газоблоков", value: 1.05, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_waste_coeff"}
+  - {key: gas_block_d400_pallet_volume_m3, label_ru: "Паллета D400/D500 600x400x250", value: 2.16, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_d400_pallet_volume_m3"}
+  - {key: gas_block_d500_250_pallet_volume_m3, label_ru: "Паллета D500 600x250x250", value: 1.8, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_d500_250_pallet_volume_m3"}
+  - {key: gas_block_d500_150_pallet_volume_m3, label_ru: "Паллета D500 600x150x250", value: 1.8, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_d500_150_pallet_volume_m3"}
+  - {key: gas_block_other_pallet_volume_m3, label_ru: "Паллета блока другой толщины, любая марка", value: 1.8, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_other_pallet_volume_m3"}
+  - {key: adhesive_consumption_bag_per_m3, label_ru: "Расход клея на 1 м3 кладки", value: 1.2, unit: "мешок/м3", source_class: DEFAULT, calculator_input_path: "defaults.adhesive_consumption_bag_per_m3"}
+  - {key: adhesive_waste_coeff, label_ru: "Запас клея", value: 1.05, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.adhesive_waste_coeff"}
+  - {key: gas_block_delivery_truck_capacity_m3, label_ru: "Расчётная вместимость машины блоков", value: 32, unit: "м3/маш", source_class: DEFAULT, calculator_input_path: "defaults.gas_block_delivery_truck_capacity_m3"}
+  - {key: crane_trucks_per_shift, label_ru: "Машин блоков на смену крана", value: 3, unit: "маш/смена", source_class: DEFAULT, calculator_input_path: "defaults.crane_trucks_per_shift"}
+  - {key: vent_chimney_block_thickness_m, label_ru: "Толщина блока обкладки вентканалов", value: 0.15, unit: "м", source_class: DEFAULT, calculator_input_path: "defaults.vent_chimney_block_thickness_m"}
+  - {key: rebar_waste_coeff, label_ru: "Запас арматуры", value: 1.05, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.rebar_waste_coeff"}
+  - {key: concrete_waste_coeff, label_ru: "Запас бетона перемычек", value: 1.05, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.concrete_waste_coeff"}
+  - {key: lintel_concrete_min_order_volume_m3, label_ru: "Минимальный заказ бетона перемычек", value: 1, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.lintel_concrete_min_order_volume_m3"}
+  - {key: lintel_formwork_plywood_sheet_area_m2, label_ru: "Площадь листа фанеры для перемычек", value: 2.3, unit: "м2/шт", source_class: DEFAULT, calculator_input_path: "defaults.lintel_formwork_plywood_sheet_area_m2"}
+  - {key: lintel_formwork_board_thickness_m, label_ru: "Толщина доски опалубки перемычек", value: 0.05, unit: "м", source_class: DEFAULT, calculator_input_path: "defaults.lintel_formwork_board_thickness_m"}
+  - {key: lintel_insulation_eps_waste_coeff, label_ru: "Запас ЭППС перемычек", value: 1.05, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.lintel_insulation_eps_waste_coeff"}
+  - {key: lintel_insulation_eps_pack_volume_m3, label_ru: "Упаковка ЭППС перемычек", value: 0.2773, unit: "м3", source_class: DEFAULT, calculator_input_path: "defaults.lintel_insulation_eps_pack_volume_m3"}
+  - {key: waste_removal_trucks, label_ru: "Вывоз мусора", value: 3, unit: "маш", source_class: DEFAULT, calculator_input_path: "defaults.waste_removal_trucks"}
+  - {key: walls_consumables_rate, label_ru: "Расходники/амортизация инструмента", value: 0.03, unit: "коэф.", source_class: DEFAULT, calculator_input_path: "defaults.walls_consumables_rate"}
+  - {key: technical_supervision_amount, label_ru: "Технический надзор", value: 10000, unit: "руб.", source_class: DEFAULT, calculator_input_path: "defaults.technical_supervision_amount", source_note: "Confirmed identical (10000) across 3 real projects' delivered smetas (ТРЦ/АРК/ЮСВ), no exceptions - no longer routed through price registry."}
+
+supplier_inputs:
+  - {key: scaffolding_setup_quantity, label_ru: "Комплекты лесов/подмостей", unit: "компл", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "defaults.scaffolding_setup_quantity", normalized_json_path: "sections.load_bearing_walls_lintels_p6.supplier_inputs.scaffolding_setup_quantity.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите количество комплектов лесов/подмостей для кладки."}, notes: "2026-08-16: was a hardcoded DEFAULT=2 for every project - real smetas disagree (ТРЦ=2, АРК=1, ЮСВ=1), no formula found (checked project size/wall area/floor count, no clean correlation). Moved to manual review with 2 as the typical/reference value (matches the current active project), not a universal constant."}
+  - {key: scaffolding_timber_quantity_m3, label_ru: "Пиломатериал для лесов", unit: "м3", source_class: MANUAL_REVIEW, required: true, review_sheet: "01_Проверка проекта", target_code: "", calculator_input_path: "defaults.scaffolding_timber_quantity_m3", normalized_json_path: "sections.load_bearing_walls_lintels_p6.supplier_inputs.scaffolding_timber_quantity_m3.value", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "manual_required", action_ru: "Введите или подтвердите объём пиломатериала для лесов/подмостей."}, notes: "2026-08-16: same finding as scaffolding_setup_quantity above - real smetas disagree (ТРЦ=2, АРК=1.5, ЮСВ=1 м3), no formula found. Moved to manual review with 2 м3 as the typical/reference value (matches the current active project)."}
+
+estimate_lines:
+  - {code: scaffolding_setup_dismantling, name_ru: "Устройство лесов, подмостей для кладки, демонтаж лесов", unit: "компл", source: MANUAL_REVIEW, prices: {work_unit_price_key: scaffolding_setup_work_unit_price}}
+  - {code: scaffolding_timber_material, name_ru: "Пиломатериал для устройства лесов", unit: "м3", source: MANUAL_REVIEW, prices: {material_unit_price_key: scaffolding_timber_unit_price}}
+  - {code: zone_masonry_work, name_ru: "Кладка зоны из газобетонных блоков", unit: "м3", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {work_unit_price_key: masonry_work_unit_price}}
+  - {code: zone_cutoff_waterproofing, name_ru: "Гидроизоляция поверхности под первый ряд блоков", unit: "м2", source: AUTO_PROJECT, dynamic_by: wall_zones, prices: {material_unit_price_key: cutoff_waterproofing_material_unit_price, work_unit_price_key: cutoff_waterproofing_work_unit_price}}
+  - {code: zone_block_material, name_ru: "Газобетонный блок", unit: "м3", source: AUTO_CALCULATED, dynamic_by: wall_block_items, prices: {material_unit_price_key: dynamic_block_price}, notes: "2026-09-18 Elena update: preserve zone rows; purchase only the increment of cumulative whole-pallet demand for the same density+all dimensions across all wall/parapet zones, reusing previous stock. Resolved price/pallet volume must agree within the pool. Zero purchase rows remain visible. Standard pallets: D400/D500 400x250 cross-section 2.16 m3; other thicknesses, any density, 1.8 m3. Explicit item pallet overrides remain supported; unknown material prices are not inferred."}
+  - {code: zone_block_adhesive, name_ru: "Монтажный клей для блоков 25 кг", unit: "мешок", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {material_unit_price_key: adhesive_unit_price}}
+  - {code: zone_sand_concrete_first_row, name_ru: "Пескобетон М300 40 кг", unit: "шт", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {material_unit_price_key: sand_concrete_unit_price}}
+  - {code: zone_chasing_for_reinforcement, name_ru: "Штробление блоков под дополнительное усиление", unit: "мп", source: AUTO_PROJECT, dynamic_by: wall_zones, prices: {}}
+  - {code: lintel_u_block_cutting, name_ru: "Резка блока под перемычку (U-блок)", unit: "шт", source: AUTO_PROJECT, dynamic_by: lintel_items, prices: {work_unit_price_key: u_block_cutting_work_unit_price}}
+  - {code: lintel_u_block_concreting_work, name_ru: "Бетонирование перемычек в U-блоке", unit: "мп", source: AUTO_PROJECT, dynamic_by: lintel_items, prices: {work_unit_price_key: lintel_concreting_work_unit_price}}
+  - {code: lintel_monolithic_concreting_work, name_ru: "Бетонирование монолитных перемычек", unit: "мп", source: AUTO_PROJECT, dynamic_by: lintel_items, prices: {work_unit_price_key: lintel_monolithic_concreting_work_unit_price}}
+  - {code: lintel_formwork_plywood_material, name_ru: "Фанера для опалубки монолитных перемычек", unit: "шт", source: AUTO_CALCULATED, dynamic_by: lintel_items, prices: {material_unit_price_key: lintel_formwork_plywood_unit_price}}
+  - {code: lintel_formwork_timber_material, name_ru: "Пиломатериал для опалубки монолитных перемычек", unit: "м3", source: AUTO_CALCULATED, dynamic_by: lintel_items, prices: {material_unit_price_key: lintel_formwork_timber_unit_price}}
+  - {code: lintel_formwork_dismantling, name_ru: "Демонтаж опалубки после завершения бетонирования", unit: "м2", source: AUTO_CALCULATED, dynamic_by: lintel_items, prices: {}, notes: "2026-09-18: added after ARK line-by-line check against Elena's smeta. Quantity equals monolithic-lintel formwork installation area; zero/internal line like slab dismantling rows."}
+  - {code: lintel_edge_insulation_work, name_ru: "Устройство утепления по наружной стороне монолитной перемычки", unit: "мп", source: AUTO_PROJECT, dynamic_by: lintel_items, prices: {work_unit_price_key: lintel_insulation_work_unit_price}}
+  - {code: lintel_edge_insulation_eps_material, name_ru: "ЭППС для утепления перемычек", unit: "м3", source: AUTO_CALCULATED, dynamic_by: lintel_items, prices: {material_unit_price_key: lintel_insulation_eps_unit_price}}
+  - {code: lintel_edge_insulation_glue_foam, name_ru: "Клей-пена для ЭППС", unit: "баллон", source: AUTO_CALCULATED, dynamic_by: lintel_items, prices: {material_unit_price_key: lintel_glue_foam_unit_price}}
+  - {code: lintel_concrete_b22_5_m300_material, name_ru: "Бетон марки В22,5 (М300)", unit: "м3", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {material_unit_price_key: concrete_m300_unit_price}}
+  - {code: lintel_concrete_delivery, name_ru: "Доставка бетона до объекта", unit: "рейс", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {material_unit_price_key: concrete_delivery_unit_price}}
+  - {code: manual_concrete_lifting, name_ru: "Перенос, подъем бетона вручную", unit: "м3", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {work_unit_price_key: manual_concrete_lifting_work_unit_price}}
+  - {code: vent_chimney_gas_block_cladding_work, name_ru: "Обкладка дымохода и вентканалов 150 мм", unit: "м2", source: AUTO_CALCULATED, dynamic_by: wall_zones, prices: {work_unit_price_key: vent_chimney_cladding_work_unit_price}}
+  - {code: rebar_material_by_zone_purpose_diameter, name_ru: "Арматура стен/перемычек/парапета", unit: "мп", source: AUTO_CALCULATED, dynamic_by: rebar_groups, prices: {material_unit_price_key: dynamic_rebar_price}}
+  - {code: block_delivery_batch, name_ru: "Доставка блоков, смеси", unit: "маш", source: AUTO_CALCULATED, dynamic_by: block_delivery_batches, prices: {material_unit_price_key: block_delivery_unit_price}, notes: "Use newly purchased stage volumes after cumulative pallet allocation. Keep existing stock-only batch rows with zero quantity."}
+  - {code: block_unloading_batch, name_ru: "Разгрузка блоков, смеси манипулятором", unit: "маш", source: AUTO_CALCULATED, dynamic_by: block_delivery_batches, prices: {material_unit_price_key: block_unloading_manipulator_unit_price}}
+  - {code: block_crane_batch, name_ru: "Перемещение блоков, смеси автокраном 25 т", unit: "смена", source: AUTO_CALCULATED, dynamic_by: crane_batches, prices: {material_unit_price_key: crane_25t_unit_price}, notes: "Keep existing crane groups; lift basis per zone is max(new purchase, spec volume * waste coefficient), including earlier stock. Minimum one shift per positive-demand crane batch, even if no new pallets are purchased."}
+  - {code: walls_consumables_tool_amortization, name_ru: "Расходные материалы, амортизация инструмента", unit: "комплект", source: AUTO_CALCULATED, prices: {}}
+  - {code: construction_waste_removal, name_ru: "Вывоз мусора с объекта", unit: "маш", source: DEFAULT, prices: {material_unit_price_key: waste_removal_truck_unit_price, work_unit_price_key: waste_removal_work_unit_price}}
+  - {code: walls_technical_supervision, name_ru: "Технический надзор", unit: "-", source: DEFAULT, prices: {work_unit_price_key: technical_supervision_amount}}
+  - {code: procurement_warehouse_costs, name_ru: "Заготовительно-складские расходы", unit: "-", source: ZERO_LINE, prices: {}}
+  - {code: overhead_general_business_costs, name_ru: "Накладные и общехозяйственные расходы", unit: "-", source: ZERO_LINE, prices: {}}
+  - {code: estimated_profit, name_ru: "Сметная прибыль", unit: "-", source: ZERO_LINE, prices: {}}
+
+ui_rules:
+  sheet_01:
+    preserve_old_readable_layout_until_p6_replacement_is_verified: true
+    human_columns_only:
+      - "Что проверяем"
+      - "Найдено в проекте"
+      - "Ед."
+      - "Статус"
+      - "Уверенность"
+      - "Что нужно сделать"
+      - "Источник"
+      - "Фрагмент проекта"
+      - "Комментарий Елены"
+    one_row_one_parameter: true
+    grey_reference_groups_only:
+      - wall_chasing_rebar_items
+      - lintel_rebar_items
+    color_repeated_project_values: true
+    hide_empty_reference_blocks: true
+    hide_conditional_absent_rows: true
+    notes: >
+      Do not repeat the first floor_slabs migration failure: never render a repeated object as one
+      unreadable row with several values inside one cell. If a beam/lintel/block/vent value affects
+      the calculator and can be manually corrected, it is a colored row with one number in column B.
+
+checks:
+  required_source_classes: [AUTO_PROJECT]
