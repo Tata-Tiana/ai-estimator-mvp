@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 from typing import Any
 
@@ -53,15 +54,16 @@ _SCOPES = [
     "https://www.googleapis.com/auth/drive.file",
 ]
 
+SPREADSHEET_LOCALE = "ru_RU"
+SPREADSHEET_TIME_ZONE = "Europe/Moscow"
+SPREADSHEET_PROPERTY_RETRY_DELAYS = (0.0, 0.5, 1.0, 2.0)
 
-def _get_drive_service() -> Any:
-    """Shared OAuth + Drive client bootstrap for publish and download - was duplicated inline in
-    publish_workbook_if_configured until the download path needed the exact same setup (2026-08-26).
-    Raises ImportError if the google-* libraries aren't installed; caller decides how to report that."""
+
+def _get_google_credentials() -> Any:
+    """Loads or refreshes the shared OAuth credentials for Drive and Sheets."""
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
     from google_auth_oauthlib.flow import InstalledAppFlow
-    from googleapiclient.discovery import build
 
     # 2026-08-25: these env values are written relative to REPO_ROOT (see .env), but this
     # function used to pass them straight to Path(...) - which silently resolves against
@@ -83,7 +85,86 @@ def _get_drive_service() -> Any:
             creds = flow.run_local_server(port=0)
         Path(token_path).write_text(creds.to_json(), encoding="utf-8")
 
-    return build("drive", "v3", credentials=creds)
+    return creds
+
+
+def _get_drive_service() -> Any:
+    """Builds the Drive client shared by publication and download."""
+    from googleapiclient.discovery import build
+
+    return build("drive", "v3", credentials=_get_google_credentials())
+
+
+def _get_sheets_service() -> Any:
+    """Builds a Sheets client with the same OAuth configuration as the Drive client."""
+    from googleapiclient.discovery import build
+
+    return build("sheets", "v4", credentials=_get_google_credentials())
+
+
+def _configure_spreadsheet_properties(
+    sheets: Any,
+    spreadsheet_id: str,
+    retry_delays: tuple[float, ...] = SPREADSHEET_PROPERTY_RETRY_DELAYS,
+) -> dict[str, Any]:
+    """Sets and verifies locale immediately after Drive converts the uploaded XLSX.
+
+    A newly converted spreadsheet may briefly return a not-found/transient API error, so the
+    operation is retried. Publication is not considered successful until the values are read
+    back: otherwise decimal commas such as ``27,2125`` are parsed by Google as ``272125``.
+    """
+    request_body = {
+        "requests": [
+            {
+                "updateSpreadsheetProperties": {
+                    "properties": {
+                        "locale": SPREADSHEET_LOCALE,
+                        "timeZone": SPREADSHEET_TIME_ZONE,
+                    },
+                    "fields": "locale,timeZone",
+                }
+            }
+        ]
+    }
+    last_error = "Google Sheets did not confirm spreadsheet properties."
+
+    for attempt, delay in enumerate(retry_delays, start=1):
+        if delay:
+            time.sleep(delay)
+        try:
+            resource = sheets.spreadsheets()
+            resource.batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=request_body,
+            ).execute()
+            metadata = resource.get(
+                spreadsheetId=spreadsheet_id,
+                fields="properties(locale,timeZone)",
+            ).execute()
+            properties = metadata.get("properties", {})
+            locale = properties.get("locale")
+            time_zone = properties.get("timeZone")
+            if locale == SPREADSHEET_LOCALE and time_zone == SPREADSHEET_TIME_ZONE:
+                return {
+                    "status": "configured",
+                    "locale": locale,
+                    "time_zone": time_zone,
+                    "attempts": attempt,
+                }
+            last_error = (
+                "Google Sheets returned unexpected properties: "
+                f"locale={locale!r}, timeZone={time_zone!r}."
+            )
+        except Exception as exc:  # noqa: BLE001 - retry and return a safe diagnostic result
+            last_error = str(exc)
+
+    return {
+        "status": "failed",
+        "locale": None,
+        "time_zone": None,
+        "attempts": len(retry_delays),
+        "error": last_error,
+    }
 
 
 def extract_spreadsheet_id(spreadsheet_id_or_url: str) -> str:
@@ -158,6 +239,7 @@ def publish_workbook_if_configured(
         from googleapiclient.http import MediaFileUpload
 
         drive = _get_drive_service()
+        sheets = _get_sheets_service()
     except ImportError as exc:
         return {
             "status": "skipped",
@@ -188,13 +270,35 @@ def publish_workbook_if_configured(
     )
     created = drive.files().create(body=metadata, media_body=media, fields="id, webViewLink").execute()
     spreadsheet_id = created["id"]
+    spreadsheet_url = created.get(
+        "webViewLink",
+        f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit",
+    )
+
+    spreadsheet_properties = _configure_spreadsheet_properties(sheets, spreadsheet_id)
+    if spreadsheet_properties.get("status") != "configured":
+        return {
+            "status": "failed",
+            "reason": "Google-таблица создана, но русская локаль не была подтверждена.",
+            "spreadsheet_id": spreadsheet_id,
+            "url": spreadsheet_url,
+            "spreadsheet_properties": spreadsheet_properties,
+            "sharing": {"mode": sharing, "type": None, "role": None, "status": "skipped"},
+            "drive_folder_id": target_folder_id,
+            "drive_folder_name": (project_folder or {}).get("name", folder_name),
+            "drive_folder_url": (project_folder or {}).get(
+                "url",
+                f"https://drive.google.com/drive/folders/{target_folder_id}" if target_folder_id else "",
+            ),
+        }
 
     sharing_info = _apply_sharing(drive, spreadsheet_id, sharing)
 
     return {
         "status": "published",
         "spreadsheet_id": spreadsheet_id,
-        "url": created.get("webViewLink", f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"),
+        "url": spreadsheet_url,
+        "spreadsheet_properties": spreadsheet_properties,
         "sharing": sharing_info,
         "drive_folder_id": target_folder_id,
         "drive_folder_name": (project_folder or {}).get("name", folder_name),
