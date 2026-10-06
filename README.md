@@ -1,422 +1,187 @@
-# ai-estimator-mvp
+# ИИ-сметчик
 
-MVP AI-сметчика для частных домов.
+Система подготовки сметы частного дома по проектной документации. Она помогает
+извлечь исходные данные из PDF, проверить их вместе со сметчиком и рассчитать
+себестоимость поддерживаемых разделов по зафиксированным формулам.
 
-Идея проекта: из PDF-проекта дома извлекать проверяемые технические параметры, а затем считать разделы сметы детерминированным Python-кодом. AI в этой архитектуре не считает смету: он может помогать читать документы, транскрипты и вытаскивать входные параметры. Сами формулы, цены, округления, ручные строки и итоги фиксируются явно в коде и в `expected.json`.
+Production-интерфейс системы — Telegram-бот. Промежуточная проверка выполняется
+в Google Sheets, итоговая смета выдаётся в формате Excel.
 
-## Главное правило
+## Что делает система
 
-- `app/` — будущий стабильный код MVP.
-- `experiments/` — рабочая зона экспериментов.
-- Каждый новый раздел сметы сначала делается отдельным калькулятором в `experiments/`, проверяется на кейсах, сравнивается с эталонной серой сметой и только потом может переноситься в `app/estimator/`.
-- Клиентская часть сметы пока не считается: нет рентабельности, НР/СП/ТН и коммерческих коэффициентов.
+Система разделяет работу модели и расчётного кода:
 
-## Где быстро понять состояние проекта
+- AI-модель читает PDF и формирует структурированный JSON с найденными значениями,
+  источниками и замечаниями;
+- Telegram-бот организует прохождение проекта по этапам и хранит отдельный `job`;
+- сметчик проверяет объёмы, ручные параметры и цены в промежуточной Google-таблице;
+- Python-калькуляторы применяют формулы, коэффициенты и правила округления;
+- генератор собирает итоговую смету в `.xlsx`.
 
-Начинать новый чат/сессию лучше с этих файлов:
+AI не рассчитывает итоговую стоимость и не заменяет формулы калькуляторов. Значения,
+которых нет в проекте, не должны выдаваться за найденные моделью.
 
-```text
-docs/assistant_handoff.md
-docs/current_project_state.md
-docs/project_notes.md
-docs/change_log.md
-```
+## Реальный пользовательский процесс
 
-Отчёты для руководства лежат здесь:
+Основной production-маршрут начинается с JSON, полученного во внешнем ChatGPT-чате.
 
-```text
-docs/report_pdf_parser.md
-docs/report_earthworks_parser_google_stage1.md
-docs/report_earthworks_review_to_calculator.md
-docs/report_earthworks_calculator.md
-docs/report_foundation_slab_calculator.md
-docs/report_floor_slab_1_calculator.md
-docs/report_floor_slab_2_calculator.md
-docs/report_flat_roof_calculator.md
-docs/report_schiedel_vent_channels_calculator.md
-docs/report_waterproofing_calculator.md
-docs/report_load_bearing_walls_lintels_calculator.md
-```
-
-## Последняя расчётная контрольная точка
+1. Пользователь загружает PDF проекта и инструкцию по извлечению в ChatGPT.
+2. ChatGPT возвращает первый extraction JSON.
+3. Пользователь отправляет JSON-файл Telegram-боту.
+4. Бот создаёт `job`, сохраняет JSON и возвращает текстовый отчёт с замечаниями.
+5. Пользователь передаёт отчёт и промпт исправления в тот же ChatGPT-чат.
+6. Исправленный JSON снова отправляется боту.
+7. Бот создаёт промежуточную Google-таблицу и присылает ссылку.
+8. Сметчик проверяет исходные значения, ручные параметры и цены.
+9. Команда `/build <job_id>` запускает расчёт разделов.
+10. Бот скачивает проверенную таблицу, запускает калькуляторы и отправляет итоговый
+    Excel-файл в Telegram.
 
 ```text
-branch: feature/foundation-slab-calculator-standards
-commit: 9aee252 Add job id commands for earthworks builds
-date: 2026-06-22
+PDF проекта
+  -> извлечение в ChatGPT
+  -> первый JSON
+  -> Telegram-бот и отчёт замечаний
+  -> исправление JSON в ChatGPT
+  -> исправленный JSON
+  -> промежуточная Google-таблица
+  -> проверка сметчиком
+  -> Python-калькуляторы
+  -> итоговая смета Excel
 ```
 
-Это актуальная зафиксированная расчётная база проекта: полный сквозной контур земляных работ от Google Sheet до Excel-сметы с job_state, sharing и job_id командами сохранён в git.
+Бот не вызывает ChatGPT автоматически: оба обращения к модели выполняет пользователь.
 
-## Что сейчас работает
+## Команды Telegram-бота
 
-### PDF-парсер
+Основные пользовательские команды:
 
-Папка:
+- `/start` — кратко показать порядок работы;
+- `/help` — показать инструкцию и доступные команды;
+- `/new_project` — завершить текущую JSON-сессию и начать новый проект;
+- `/update_json <job_id>` — загрузить исправленный JSON в существующий проект;
+- `/recreate <job_id>` — заново создать Google-таблицу из последнего JSON;
+- `/build <job_id>` — скачать проверенную таблицу и собрать итоговую смету.
+
+PDF-загрузка непосредственно в Telegram сохранена как legacy-маршрут и не является
+основным production-сценарием.
+
+## Промежуточная Google-таблица
+
+Таблица нужна для проверки данных до расчёта. В ней размещаются:
+
+- найденные в проекте значения и ссылки на источники;
+- поля для исправления объёмов;
+- организационные и ручные параметры;
+- цены себестоимости и разрешённые ручные замены;
+- технические сведения, необходимые для диагностики извлечения.
+
+Новые таблицы создаются с локалью `ru_RU` и часовым поясом `Europe/Moscow`, поэтому
+дробные значения можно вводить через запятую, например `27,2125`.
+
+Актуальный прайс компании хранится отдельно в Google Sheets. Локальные файлы цен в
+репозитории и production-пакете являются техническими снимками и не подтверждают
+актуальность цены без проверки рабочего прайса.
+
+## Итоговый Excel
+
+После успешного расчёта бот формирует `.xlsx`:
+
+- `A:I` — клиентская и печатная часть;
+- `J:O` — расчёт себестоимости;
+- `P:V` — техническая зона;
+- количества, стоимости и итоги связаны формулами;
+- область печати ограничена клиентской частью.
+
+На текущем этапе основная разработка сосредоточена на правой части себестоимости.
+Полная логика клиентских цен дорабатывается отдельно после проверки всех разделов
+коробки на тестовых проектах.
+
+## Поддерживаемые расчётные направления
+
+Production-контур первой части включает:
+
+1. Земляные работы.
+2. Фундаментную плиту.
+3. Гидроизоляцию и утепление бортов.
+4. Внешние и внутренние несущие стены и перемычки.
+5. Монолитные плиты перекрытия и покрытия.
+6. Плоскую кровлю.
+7. Вентиляционные каналы Schiedel.
+
+Разделы развиваются на общей схеме «контракт входных данных -> проверочная таблица ->
+детерминированный калькулятор -> Excel». Проектные числа не зашиваются в production-код:
+они допустимы только в тестовых сценариях и отчётах сравнения.
+
+## Структура репозитория
 
 ```text
-experiments/pdf_tests/
+deploy/                                      systemd и состав production-пакета
+docs/                                        пользовательская и администраторская документация
+experiments/earthworks_review_to_calculator/ Telegram-бот и оркестрация job
+experiments/earthworks_parser_google_stage1/ Google Sheets, цены и legacy parser flow
+experiments/full_estimate_review_pipeline/   контракты разделов, адаптеры и сборка сметы
+experiments/*_calculator/                     детерминированные калькуляторы разделов
+tests/                                       автоматические проверки общего контура
+output/                                      технические справочники и снимки данных
 ```
 
-Проверенный проект:
+Название `experiments` историческое: в этих каталогах находится как исследовательский,
+так и используемый production-код. Фактический состав серверной сборки задаётся файлом
+[`deploy/production_manifest.txt`](deploy/production_manifest.txt), а не названием папки.
 
-```text
-experiments/pdf_tests/projects/horoshevka_14/
-```
+## Что попадает на production-сервер
 
-Парсер извлекает:
+GitHub-ветка содержит исходники, тесты, документацию и исследовательские материалы.
+На сервер передаётся только ограниченный набор из `deploy/production_manifest.txt`:
 
-- полный текст;
-- текст по страницам;
-- текстовые блоки с координатами;
-- таблицы в JSON и Excel;
-- `summary.json`.
+- Telegram-бот и orchestration-код;
+- построение и загрузка Google-таблиц;
+- контракты и адаптеры поддерживаемых разделов;
+- production-калькуляторы;
+- необходимые зависимости и технические справочники.
 
-### Калькулятор земляных работ
+Документы, отчёты исследований, тестовые проекты, локальные выгрузки и произвольное
+содержимое репозитория автоматически на сервер не копируются.
 
-Папка:
+Приложение запускается через `systemd` из
+[`deploy/calc.service`](deploy/calc.service). Секреты, Telegram-токен, OAuth-данные и
+учётные данные прокси хранятся вне репозитория в закрытом серверном окружении.
 
-```text
-experiments/earthworks_calculator/
-```
+Публикация коммита или ветки на GitHub не выполняет автоматический деплой. Обновление
+сервера является отдельной контролируемой операцией.
 
-Проверенные кейсы:
+## Ветки
 
-```text
-usv_yusupovo_village -> ok (100/100), итог 805020
-horoshevka_14 -> ok (76/76), итог 559364
-```
+- `production` — зафиксированная версия production-кода для просмотра и проверки;
+- `feature/parser-resolver-layer` — текущая разработка, исследования и новые разделы;
+- `main` — ранняя исходная версия проекта, не соответствующая текущему production.
 
-### Earthworks Parser Google Stage 1
+## Локальная проверка
 
-Папка:
-
-```text
-experiments/earthworks_parser_google_stage1/
-```
-
-Назначение:
-
-- изолированный review-flow для земляных работ;
-- clean-run с `prepare` и `clean`;
-- сборка `review_workbook.xlsx` и публикация Google Sheet через OAuth;
-- листы `01–04` для Елены и `05–06` для технической диагностики;
-- `05_Кандидаты parser` хранит краткие candidates без JSON-простыней;
-- `06_Сырые данные parser` хранит summary, logical sheets, raw evidence и full JSON отдельно.
-
-Важно:
-
-- этот контур не возвращает найденные цены обратно в общий `price_registry`;
-- он не заменяет `parser core`, `price resolver` или Telegram-бот;
-- расчёт сметы здесь не запускается, это только подготовка и проверка входных данных.
-
-### Earthworks Review To Calculator
-
-Папка:
-
-```text
-experiments/earthworks_review_to_calculator/
-```
-
-Назначение:
-
-- скачивать проверенную Google Sheet Елены как xlsx;
-- собирать `review_values_normalized.json` и `earthworks_calculation_input.json`;
-- строить отчёт происхождения данных (`input_lineage_report.*`);
-- запускать существующий `earthworks_calculator` на review input;
-- генерировать Excel-смету с живыми формулами (`earthworks_formula_review.xlsx`);
-- валидировать Excel по layout (section_row / data_start_row);
-- вести `job_state.json` — паспорт заказа с totals и статусом проверки.
-
-Запуск по job_id:
+Требуется Python 3.10+.
 
 ```bash
-python experiments/earthworks_review_to_calculator/build_job.py \
-  --job-id "юсв_earthworks_stage1_20260622_191437" \
-  --section-number 2 \
-  --estimate-date 21.06.2026
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-prod.txt
+pytest -q
 ```
 
-Важно:
-
-- этот слой не меняет stage1 и не меняет `earthworks_calculator`;
-- скачивает Google Sheet через Drive API с восстановлением скрытых колонок;
-- полный локальный контур запускается одной командой через `run_full_review_flow.py`.
-
-Отчёт: `docs/report_earthworks_review_to_calculator.md`.
-
-### Калькулятор фундаментной плиты
-
-Папка:
-
-```text
-experiments/foundation_slab_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_foundation_slab -> ok (205/205), итог 2538325
-```
-
-Считает серую внутреннюю себестоимость раздела "Устройство фундаментной плиты дома, террасы, крыльца (250мм, 300мм)".
-
-### Калькулятор плиты перекрытия 1-го этажа
-
-Папка:
-
-```text
-experiments/floor_slab_1_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_floor_slab_1 -> ok (194/194), итог 1787527
-```
-
-Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 1-го этажа на отм. +3.480 (180 мм) с балками".
-
-Важно:
-
-- балки Б-1, Б-2, Б-3 считаются внутри раздела;
-- клиентская/белая часть не считается;
-- Excel export для этого раздела пока не сделан;
-- raw/display значения хранятся отдельно для строк, где Excel показывает округлённое количество.
-
-### Калькулятор плиты перекрытия 2-го этажа
-
-Папка:
-
-```text
-experiments/floor_slab_2_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_floor_slab_2 -> ok (222/222), итог 717051
-```
-
-Считает серую внутреннюю себестоимость раздела "Ж/Б монолитная плита перекрытия 2-го этажа на отм. +4.680 (200мм)".
-
-Важно:
-
-- балок в расчёте нет;
-- объём бетонирования `16.5 м3` пока manual/project quantity;
-- клиентская/белая часть не считается;
-- Excel export для этого раздела пока не сделан;
-- raw итог `717051.38648`, итог после ROUND_HALF_UP `717051`, сумма округлённых строк `717052`.
-
-### Калькулятор плоской кровли
-
-Папка:
-
-```text
-experiments/flat_roof_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_flat_roof_usv -> ok (460/460), итог 2038872
-```
-
-Считает серую внутреннюю себестоимость раздела "КРОВЕЛЬНОЕ ПОКРЫТИЕ ДОМА / плоская кровля".
-
-Важно:
-
-- итог сходится с серой зоной Excel за минусом временной двери ДН-1;
-- временная дверь не входит в универсальный калькулятор;
-- логистика, технадзор и заготовительно-складские расходы включены как manual fixed строки текущего scope;
-- клиентская/белая часть не считается;
-- уклонные плиты берутся ручным объёмом от поставщика / Технониколь.
-
-### Калькулятор гидроизоляции фундаментной плиты
-
-### Калькулятор вентиляционных каналов Schiedel
-
-Папка:
-
-```text
-experiments/schiedel_vent_channels_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_schiedel_vent_channels_usv -> ok (138/138), итог 117890
-```
-
-Считает серую внутреннюю себестоимость раздела "ВЕНТИЛЯЦИОННЫЕ КАНАЛЫ Schiedel".
-
-Важно:
-
-- кладка считается от raw `15.82 мп`, не от отображаемых `16 мп`;
-- количества материалов `24` и `8` являются manual/specification input;
-- 4 последние строки добавлены как нулевые строки структуры Excel;
-- клиентская/белая часть не считается.
-
-### Калькулятор гидроизоляции фундаментной плиты
-
-Папка:
-
-```text
-experiments/waterproofing_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_waterproofing_foundation_slab -> ok (54/54), итог 51216
-```
-
-Считает блок "Гидроизоляция, утепление бортов плит".
-
-### Калькулятор несущих стен и перемычек
-
-Папка:
-
-```text
-experiments/load_bearing_walls_lintels_calculator/
-```
-
-Проверенный кейс:
-
-```text
-test_load_bearing_walls_lintels -> ok, итог 2672103
-```
-
-Считает серую внутреннюю себестоимость раздела "Внешние и внутренние несущие стены, перемычки".
-
-Важно: в этом разделе Excel показывает округлённые строки, но итог считает от raw-значений. Поэтому результат хранит raw totals и display totals.
-
-### Price registry и слой цен MVP
-
-Папка:
-
-```text
-experiments/pricing/
-```
-
-Подготовленные файлы:
-
-```text
-output/price_registry_filled_v3.xlsx
-output/price_registry_mapping_report_v3.md
-output/required_price_codes_v2.csv
-```
-
-Что сделано:
-
-- в старые калькуляторы добавлено единое поле `price_code` для строк с ценой/ставкой;
-- `material_price_code` и `work_rate_code` не вводились;
-- создан `price_registry_v3` с листом `rows_to_add`;
-- создан безопасный читатель цен с приоритетом `project_price_overrides -> price_registry -> input fallback`;
-- старые калькуляторы пока не переключены на прайс и продолжают работать как раньше.
-
-Покрытие:
-
-```text
-required unique price_code = 81
-found in price_registry = 18
-found in rows_to_add = 63
-missing completely = 0
-```
-
-## Команды проверки
-
-Земляные работы:
-
-```bash
-.venv/bin/python3 experiments/earthworks_calculator/run_all_cases.py
-```
-
-Фундаментная плита:
-
-```bash
-.venv/bin/python3 experiments/foundation_slab_calculator/run_foundation_slab_calc.py experiments/foundation_slab_calculator/cases/test_foundation_slab
-```
-
-Плита перекрытия 1-го этажа:
-
-```bash
-.venv/bin/python3 experiments/floor_slab_1_calculator/run_floor_slab_1_calc.py experiments/floor_slab_1_calculator/cases/test_floor_slab_1
-```
-
-Плита перекрытия 2-го этажа:
-
-```bash
-.venv/bin/python3 experiments/floor_slab_2_calculator/run_case.py experiments/floor_slab_2_calculator/cases/test_floor_slab_2
-```
-
-Плоская кровля:
-
-```bash
-.venv/bin/python3 experiments/flat_roof_calculator/run_case.py experiments/flat_roof_calculator/cases/test_flat_roof_usv
-```
-
-Вентиляционные каналы Schiedel:
-
-```bash
-.venv/bin/python3 experiments/schiedel_vent_channels_calculator/run_case.py experiments/schiedel_vent_channels_calculator/cases/test_schiedel_vent_channels_usv
-```
-
-Pricing-layer:
-
-```bash
-.venv/bin/python3 experiments/pricing/validate_price_registry.py
-.venv/bin/python3 experiments/pricing/check_required_codes_against_registry.py
-.venv/bin/python3 experiments/pricing/test_price_reader_demo.py
-```
-
-Гидроизоляция:
-
-```bash
-.venv/bin/python3 experiments/waterproofing_calculator/run_waterproofing_calc.py experiments/waterproofing_calculator/cases/test_waterproofing_foundation_slab
-```
-
-Несущие стены и перемычки:
-
-```bash
-.venv/bin/python3 experiments/load_bearing_walls_lintels_calculator/run_load_bearing_walls_lintels_calc.py experiments/load_bearing_walls_lintels_calculator/cases/test_load_bearing_walls_lintels
-```
-
-## Текущий git-статус по смыслу
-
-Текущая расчётная контрольная точка обновлена после добавления `price_code` и pricing-layer.
-
-Перед этим были проверены:
-
-```text
-earthworks:
-  horoshevka_14 -> ok (76/76)
-  usv_yusupovo_village -> ok (100/100)
-
-foundation_slab:
-  internal_section_total = 2538325
-
-waterproofing:
-  internal_section_total = 51216
-
-load_bearing_walls_lintels:
-  internal_section_total = 2672103
-
-floor_slab_1:
-  ok (194/194)
-
-floor_slab_2:
-  ok (222/222)
-
-flat_roof:
-  ok (460/460)
-
-schiedel_vent_channels:
-  ok (138/138)
-
-pricing:
-  price_registry validation -> rows=131 filled=18 empty=113 duplicates=0
-  required code coverage -> required=81 registry=18 rows_to_add=63 missing=0
-```
-
-`pytest` на текущий момент собирает `0` тестов; рабочие проверки идут через CLI калькуляторов.
+Для локального запуска интеграций нужны собственные переменные окружения и OAuth-файлы.
+Секреты нельзя добавлять в Git.
+
+## Документация
+
+- [Инструкция пользователя](docs/Инструкция_работы_с_ИИ-сметчиком_на_сервере.md)
+- [Инструкция администратора](docs/Инструкция_администратора_ИИ-сметчика.md)
+- [Манифест production-сборки](deploy/production_manifest.txt)
+
+## Текущие ограничения
+
+- модель запускается пользователем во внешнем ChatGPT-чате;
+- поддерживаются только разделы, для которых реализованы контракт и калькулятор;
+- найденная, но неподдерживаемая конструкция может быть перечислена моделью, однако
+  автоматически рассчитана не будет;
+- перед расчётом требуется проверка промежуточной Google-таблицы сметчиком;
+- клиентская часть итоговой сметы ещё не реализована в полном согласованном объёме.
