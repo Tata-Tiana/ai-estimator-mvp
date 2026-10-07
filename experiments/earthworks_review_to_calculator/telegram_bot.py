@@ -13,6 +13,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 try:
     from dotenv import load_dotenv
@@ -66,6 +67,7 @@ POPULATE_WORKBOOK_SCRIPT = FULL_PIPELINE_DIR / "populate_review_workbook_from_ex
 BUILD_ALL_SECTIONS_SCRIPT = FULL_PIPELINE_DIR / "build_all_section_results.py"
 EXPORT_ESTIMATE_SCRIPT = FULL_PIPELINE_DIR / "export_calculator_results_to_estimate_workbook.py"
 EXTRACTION_SESSION_MAX_AGE_HOURS = 2  # после этого новый JSON от того же чата считается новым проектом
+JSON_JOB_SHEET_METADATA = "review_sheet.json"
 
 GOOGLE_STAGE1_DIR = REPO_ROOT / "experiments" / "earthworks_parser_google_stage1"
 GOOGLE_SHEET_SHARING = "anyone_writer"  # тот же режим, что уже используется в остальном боте
@@ -361,6 +363,7 @@ def _register_user_job(
     drive_folder_url: str = "",
 ) -> None:
     path = _user_jobs_path(chat_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
     try:
         existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     except Exception:
@@ -393,15 +396,26 @@ def _update_user_job_url(
     drive_folder_id: str = "",
     drive_folder_name: str = "",
     drive_folder_url: str = "",
+    project_name: str = "",
+    pdf_count: int = 0,
 ) -> None:
+    """Updates a job URL and recreates the registry row when it is missing.
+
+    Successful ``/recreate`` used to call this function after a failed first workbook build.
+    In that case no registry file/row existed yet, so the function returned silently and
+    ``/build`` lost the freshly created Sheet URL. Upsert here because publication itself is
+    sufficient evidence that the job must be registered.
+    """
     path = _user_jobs_path(chat_id)
-    if not path.exists():
-        return
+    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     except Exception:
-        return
-    jobs: list[dict] = data.get("jobs", [])
+        data = {}
+    jobs = data.get("jobs", [])
+    if not isinstance(jobs, list):
+        jobs = []
+    matched = False
     for job in jobs:
         if job.get("job_id") == job_id:
             job["spreadsheet_url"] = spreadsheet_url or ""
@@ -411,9 +425,24 @@ def _update_user_job_url(
                 job["drive_folder_name"] = drive_folder_name
             if drive_folder_url:
                 job["drive_folder_url"] = drive_folder_url
+            if project_name:
+                job["project_name"] = project_name
             job["last_action_at"] = _now()
+            matched = True
             break
-    data["jobs"] = jobs
+    if not matched:
+        jobs.insert(0, {
+            "job_id": job_id,
+            "project_name": project_name or "",
+            "spreadsheet_url": spreadsheet_url or "",
+            "drive_folder_id": drive_folder_id or "",
+            "drive_folder_name": drive_folder_name or "",
+            "drive_folder_url": drive_folder_url or "",
+            "pdf_count": pdf_count,
+            "created_at": _now(),
+            "last_action_at": _now(),
+        })
+    data = {"chat_id": chat_id, "jobs": jobs[:_MAX_USER_JOBS]}
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
@@ -433,14 +462,16 @@ def _user_job_record(chat_id: int, job_id: str) -> dict | None:
 def _user_can_access_job(chat_id: int, job_id: str) -> bool:
     if chat_id in ADMIN_CHAT_IDS:
         return True
-    path = _user_jobs_path(chat_id)
-    if not path.exists():
+    if _user_job_record(chat_id, job_id) is not None:
+        return True
+    job_dir, resolve_error = _resolve_json_job_dir(job_id)
+    if resolve_error or job_dir is None:
         return False
+    metadata = _load_json_job_sheet_metadata(job_dir)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
+        return int(metadata.get("chat_id")) == chat_id
+    except (TypeError, ValueError):
         return False
-    return any(j.get("job_id") == job_id for j in data.get("jobs", []))
 
 
 def _deny_job_access(message: ptb_transport.types.Message, job_id: str) -> None:
@@ -721,12 +752,73 @@ def _resolve_json_job_dir(job_id: str) -> tuple[Path | None, str | None]:
     return None, None
 
 
-def _json_flow_job_spreadsheet_url(chat_id: int, job_id: str) -> str | None:
-    """The JSON-flow's Google Sheet URL per job lives in the per-chat user_jobs registry
-    (_register_user_job/_update_user_job_url) - the JSON-flow has never used state.json/
-    resolve_stage1_job_dir (that is _find_spreadsheet_url's PDF-flow-only lookup)."""
+def _json_job_sheet_metadata_path(job_dir: Path) -> Path:
+    return job_dir / JSON_JOB_SHEET_METADATA
+
+
+def _save_json_job_sheet_metadata(
+    job_dir: Path,
+    *,
+    chat_id: int,
+    job_id: str,
+    project_name: str,
+    spreadsheet_url: str,
+    drive_folder_id: str = "",
+    drive_folder_name: str = "",
+    drive_folder_url: str = "",
+) -> None:
+    payload = {
+        "chat_id": chat_id,
+        "job_id": job_id,
+        "project_name": project_name or "",
+        "spreadsheet_url": spreadsheet_url or "",
+        "drive_folder_id": drive_folder_id or "",
+        "drive_folder_name": drive_folder_name or "",
+        "drive_folder_url": drive_folder_url or "",
+        "updated_at": _now(),
+    }
+    path = _json_job_sheet_metadata_path(job_dir)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _load_json_job_sheet_metadata(job_dir: Path) -> dict:
+    path = _json_job_sheet_metadata_path(job_dir)
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _json_flow_job_spreadsheet_url(chat_id: int, job_id: str, job_dir: Path | None = None) -> str | None:
+    """Returns the Sheet URL and repairs the per-chat registry from job metadata if needed."""
     job = _user_job_record(chat_id, job_id)
-    return (job or {}).get("spreadsheet_url") or None
+    registry_url = (job or {}).get("spreadsheet_url") or None
+    if registry_url:
+        return registry_url
+    if job_dir is None:
+        return None
+    metadata = _load_json_job_sheet_metadata(job_dir)
+    metadata_url = metadata.get("spreadsheet_url") or None
+    if not metadata_url:
+        return None
+    metadata_chat_id = metadata.get("chat_id")
+    if metadata_chat_id not in (None, "", chat_id) and chat_id not in ADMIN_CHAT_IDS:
+        return None
+    _update_user_job_url(
+        chat_id,
+        job_id,
+        metadata_url,
+        drive_folder_id=metadata.get("drive_folder_id", ""),
+        drive_folder_name=metadata.get("drive_folder_name", ""),
+        drive_folder_url=metadata.get("drive_folder_url", ""),
+        project_name=metadata.get("project_name", ""),
+    )
+    return metadata_url
 
 
 def _publish_review_workbook(
@@ -1373,6 +1465,16 @@ def _handle_extraction_json_upload(message: ptb_transport.types.Message, doc: pt
         drive_folder_name=publish_result.get("drive_folder_name", ""),
         drive_folder_url=folder_url,
     )
+    _save_json_job_sheet_metadata(
+        out_dir,
+        chat_id=chat_id,
+        job_id=job_id,
+        project_name=project_label,
+        spreadsheet_url=url,
+        drive_folder_id=publish_result.get("drive_folder_id", ""),
+        drive_folder_name=publish_result.get("drive_folder_name", ""),
+        drive_folder_url=folder_url,
+    )
     folder_line = f"\nПапка проекта: {folder_url}\n" if folder_url else ""
     bot.reply_to(message,
         f"Google-таблица готова ✅\n\n{url}\n"
@@ -1712,11 +1814,12 @@ def cmd_build(message: ptb_transport.types.Message) -> None:
         return
     if json_job_dir is not None:
         job_id = json_job_dir.name  # see cmd_recreate's identical comment - registry keys on the full name
-        spreadsheet_url = _json_flow_job_spreadsheet_url(message.chat.id, job_id)
+        spreadsheet_url = _json_flow_job_spreadsheet_url(message.chat.id, job_id, json_job_dir)
         if not spreadsheet_url:
             bot.reply_to(message, "Не нашла ссылку на Google-таблицу для этого job — соберите таблицу через /recreate сначала.")
             _log_event("build_failed", chat_id=message.chat.id, level="ERROR",
-                       safe_message="Build (json flow) no spreadsheet url", job_id=job_id)
+                       safe_message="Build could not find the Google Sheet URL", job_id=job_id,
+                       reason="spreadsheet_url_missing")
             return
 
         downloaded_path = json_job_dir / "review_workbook_downloaded.xlsx"
@@ -1854,21 +1957,55 @@ def _read_event_entries(limit: int, levels: set[str] | None = None) -> list[dict
     return entries[-limit:]
 
 
+_LOG_HIDDEN_EVENTS = {"admin_command_started", "admin_command_completed"}
+_LOG_EVENT_LABELS = {
+    "bot_started": "Бот запущен",
+    "access_mode_allow_all": "Бот доступен всем пользователям",
+    "extraction_json_processed": "JSON проекта обработан",
+    "populate_workbook_failed": "Не удалось собрать проверочную таблицу",
+    "publish_sheet_result": "Завершена публикация Google-таблицы",
+    "recreate_started": "Начато пересоздание Google-таблицы",
+    "recreate_completed": "Google-таблица пересоздана",
+    "recreate_failed": "Не удалось пересоздать Google-таблицу",
+    "build_download_sheet": "Google-таблица скачана для расчёта",
+    "build_completed": "Смета успешно собрана",
+    "build_failed": "Смета не собрана",
+    "admin_command_failed": "Административная команда завершилась ошибкой",
+    "access_denied": "Отказано в доступе",
+}
+_LOG_REASON_LABELS = {
+    "spreadsheet_url_missing": "у job не сохранена ссылка на Google-таблицу",
+}
+
+
+def _event_time_moscow(timestamp: str) -> str:
+    try:
+        value = datetime.fromisoformat(timestamp)
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=ZoneInfo("UTC"))
+        return value.astimezone(ZoneInfo("Europe/Moscow")).strftime("%d.%m %H:%M")
+    except (TypeError, ValueError):
+        return "??.?? ??:??"
+
+
 def _format_event_entry(entry: dict) -> str:
     timestamp = str(entry.get("timestamp") or "")
-    time_part = timestamp[11:16] if len(timestamp) >= 16 else "??:??"
-    parts = [
-        time_part,
-        str(entry.get("level") or "INFO"),
-        str(entry.get("event") or "event"),
-    ]
-    for key, label in (("chat_id", "chat_id"), ("session_id", "session"), ("job_id", "job")):
-        value = entry.get(key)
-        if value is not None and value != "":
-            parts.append(f"{label}={value}")
-    message = entry.get("safe_message")
-    if message:
-        parts.append(str(message))
+    level = str(entry.get("level") or "INFO")
+    level_label = {"ERROR": "ОШИБКА", "WARNING": "ВНИМАНИЕ"}.get(level, "OK")
+    event = str(entry.get("event") or "event")
+    event_label = _LOG_EVENT_LABELS.get(event, event)
+    parts = [_event_time_moscow(timestamp), level_label, event_label]
+    job_id = entry.get("job_id")
+    if job_id:
+        parts.append(f"job={job_id}")
+    reason = entry.get("reason")
+    reason_label = _LOG_REASON_LABELS.get(str(reason), "") if reason else ""
+    if not reason_label and entry.get("safe_message") == "Build (json flow) no spreadsheet url":
+        reason_label = _LOG_REASON_LABELS["spreadsheet_url_missing"]
+    if reason_label:
+        parts.append(f"— {reason_label}")
+    elif event not in _LOG_EVENT_LABELS and entry.get("safe_message"):
+        parts.append(str(entry["safe_message"]))
     return " ".join(parts)
 
 
@@ -2450,8 +2587,17 @@ def cmd_logs(message: ptb_transport.types.Message) -> None:
             limit = min(max(int(parts[1].strip()), 1), 50)
         except ValueError:
             pass
-    entries = _read_event_entries(limit)
-    text = "Последние события:\n" + "\n".join(_format_event_entry(entry) for entry in entries) if entries else "Events не найдены."
+    entries = [
+        entry
+        for entry in _read_event_entries(200)
+        if entry.get("event") not in _LOG_HIDDEN_EVENTS
+    ][-limit:]
+    text = (
+        "Последние значимые события (время МСК):\n"
+        + "\n".join(_format_event_entry(entry) for entry in entries)
+        if entries
+        else "Значимых событий за сегодня и вчера нет."
+    )
     bot.reply_to(message, text[:4000])
     _admin_completed(message, "/logs", rows=len(entries))
 
@@ -2589,9 +2735,15 @@ def cmd_recreate(message: ptb_transport.types.Message) -> None:
         url = publish_result.get("url", "")
         folder_url = publish_result.get("drive_folder_url", "") or job_record.get("drive_folder_url", "")
         folder_line = f"\nПапка проекта: {folder_url}\n" if folder_url else ""
-        bot.reply_to(
-            message,
-            f"Новая Google Sheet создана ✅\n{url}\n{folder_line}\nПарсер не запускался заново.",
+        _save_json_job_sheet_metadata(
+            json_job_dir,
+            chat_id=message.chat.id,
+            job_id=job_id,
+            project_name=project_label,
+            spreadsheet_url=url,
+            drive_folder_id=publish_result.get("drive_folder_id", ""),
+            drive_folder_name=publish_result.get("drive_folder_name", ""),
+            drive_folder_url=folder_url,
         )
         _update_user_job_url(
             message.chat.id,
@@ -2600,6 +2752,11 @@ def cmd_recreate(message: ptb_transport.types.Message) -> None:
             drive_folder_id=publish_result.get("drive_folder_id", ""),
             drive_folder_name=publish_result.get("drive_folder_name", ""),
             drive_folder_url=folder_url,
+            project_name=project_label,
+        )
+        bot.reply_to(
+            message,
+            f"Новая Google Sheet создана ✅\n{url}\n{folder_line}\nПарсер не запускался заново.",
         )
         _log_event("recreate_completed", chat_id=message.chat.id,
                    safe_message="Recreate (json flow) completed", job_id=job_id)
