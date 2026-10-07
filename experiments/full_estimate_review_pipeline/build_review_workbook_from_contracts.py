@@ -4,15 +4,26 @@ import argparse
 import json
 import math
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
+
+try:
+    from .review_to_calculator.core.rebar_item_defaults import (
+        REBAR_KG_PER_M_BY_DIAMETER,
+        REBAR_ROD_LENGTH_BY_DIAMETER,
+    )
+except ImportError:  # Direct script execution from the pipeline directory.
+    from review_to_calculator.core.rebar_item_defaults import (
+        REBAR_KG_PER_M_BY_DIAMETER,
+        REBAR_ROD_LENGTH_BY_DIAMETER,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -177,17 +188,10 @@ def hide_diagnostic_sheets(wb: Workbook) -> None:
 
 
 def load_yaml_contract(path: Path) -> dict[str, Any]:
-    ruby = (
-        "require 'yaml'; require 'json'; "
-        "puts JSON.generate(YAML.load_file(ARGV[0]))"
-    )
-    result = subprocess.run(
-        ["ruby", "-e", ruby, str(path)],
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    return json.loads(result.stdout)
+    contract = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(contract, dict):
+        raise ValueError(f"Contract must be a YAML mapping: {path}")
+    return contract
 
 
 def default_contract_paths() -> list[Path]:
@@ -647,25 +651,8 @@ def autofit_row_heights(ws, min_row: int, max_row: int | None = None) -> None:
 # the rounding digit for every item checked. Used only as the fallback rate when an item's own
 # kg_per_meter isn't given (e.g. a third project's PDF gives length only, no mass column at all) - see
 # rebar_weight_standard_gost_table memory/plan entry.
-GOST_REBAR_KG_PER_METER = {
-    6: 0.222,
-    8: 0.395,
-    10: 0.617,
-    12: 0.888,
-    16: 1.58,
-    20: 2.47,
-    25: 3.85,
-}
-
-GOST_REBAR_ROD_LENGTH_M = {
-    6: 6.0,
-    8: 6.0,
-    10: 11.7,
-    12: 11.7,
-    16: 11.7,
-    20: 11.7,
-    25: 11.7,
-}
+GOST_REBAR_KG_PER_METER = REBAR_KG_PER_M_BY_DIAMETER
+GOST_REBAR_ROD_LENGTH_M = REBAR_ROD_LENGTH_BY_DIAMETER
 
 
 def rebar_item_weight_kg(item: dict[str, Any]) -> float | None:
