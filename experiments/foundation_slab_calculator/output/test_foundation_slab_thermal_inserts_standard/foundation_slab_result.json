@@ -37,7 +37,9 @@
           328
         ],
         "source_length_m": null,
-        "length_parts_m": []
+        "length_parts_m": [],
+        "zone_id": null,
+        "component": null
       },
       {
         "code": "rebar_a500_d12",
@@ -52,7 +54,9 @@
           5276
         ],
         "source_length_m": null,
-        "length_parts_m": []
+        "length_parts_m": [],
+        "zone_id": null,
+        "component": null
       },
       {
         "code": "rebar_a500_d10",
@@ -66,7 +70,9 @@
           1078
         ],
         "source_length_m": null,
-        "length_parts_m": []
+        "length_parts_m": [],
+        "zone_id": null,
+        "component": null
       },
       {
         "code": "rebar_a240_d6",
@@ -80,7 +86,9 @@
           35
         ],
         "source_length_m": null,
-        "length_parts_m": []
+        "length_parts_m": [],
+        "zone_id": null,
+        "component": null
       }
     ],
     "rebar_metal_delivery_trucks": 1,
@@ -127,7 +135,8 @@
     "thermal_insert_50_material_unit_price": 9800,
     "thermal_insert_100_material_unit_price": 10000,
     "thermal_insert_items": [],
-    "slab_zones": []
+    "slab_zones": [],
+    "zone_quantity_resolution": {}
   },
   "calculation_blocks": {
     "confirmed_rules": [
@@ -360,6 +369,12 @@
     "slab_zones": {
       "used": false,
       "zone_count": 0,
+      "excluded_zone_count": 0,
+      "zones": [],
+      "quantity_resolution": {},
+      "membrane_area_m2": 320,
+      "slab_side_formwork_area_m2": null,
+      "horizontal_insulation_volume_m3": 13.5,
       "concrete_project_volume_m3": 81
     }
   },

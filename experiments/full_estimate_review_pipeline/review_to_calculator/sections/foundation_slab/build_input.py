@@ -45,10 +45,10 @@ foundation_wall_items / column_footing_items are diagnostic-only
 calculator has no field for them.
 
 Field sourcing for scalars: membrane_area_m2, slab_side_formwork_area_m2,
-eps50_under_slab_volume_m3, concrete_project_volume_m3 (all required - the last one
-already reflects any slab_zones autosum the review-workbook layer applied, and the
-calculator's own __post_init__ additionally re-derives it from slab_zones when that
-group is passed, so both paths agree); supplier_inputs (rebar_crane_shifts,
+eps50_under_slab_volume_m3, concrete_project_volume_m3 remain compatibility totals.
+Each may be blank when every included slab_zones row carries that quantity. The
+calculator reconciles the two representations and rejects conflicting complete totals;
+supplier_inputs (rebar_crane_shifts,
 rebar_metal_delivery_trucks, box_total_metal_weight_kg, concrete_pump_shifts,
 logistics_and_supply_amount, consumables_tool_amortization_amount) are read explicitly
 by key from `scalars` since FoundationSlabInput has no dataclass default for any of
@@ -92,7 +92,26 @@ THERMAL_INSERT_ITEMS_KEY = "thermal_insert_items"
 THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY = "thermal_insert_item_material_unit_price"
 THERMAL_INSERT_ITEM_PACK_MULTIPLE_DEFAULT = 0.2776
 
-CURRENT_CALCULATOR_REBAR_IGNORED_FIELDS = ("weight_kg", "item_id", "zone_id", "component")
+CURRENT_CALCULATOR_REBAR_IGNORED_FIELDS = ("weight_kg", "item_id")
+
+SLAB_ZONE_CALCULATOR_FIELDS = {
+    "zone_id",
+    "display_name",
+    "context",
+    "element_type",
+    "level",
+    "thickness_m",
+    "area_m2",
+    "concrete_grade",
+    "concrete_volume_m3",
+    "membrane_area_m2",
+    "side_formwork_area_m2",
+    "horizontal_insulation_material",
+    "horizontal_insulation_thickness_mm",
+    "horizontal_insulation_area_m2",
+    "horizontal_insulation_volume_m3",
+    "include_in_estimate",
+}
 
 
 def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
@@ -135,28 +154,15 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     for key in REQUIRED_SCALARS:
         row = scalars.get(key)
         value = row["value_number"] if row else None
-        if value is None:
-            raise ValueError(
-                f"foundation_slab: required parameter '{key}' is missing/blank on sheet "
-                "01 (check 'Найдено в проекте' / 'Исправить / ввести значение')"
-            )
         result[key] = value
 
     for key in OPTIONAL_PRODUCTION_ITEM_GROUPS:
         items = production_items.get(key)
         if items:
-            # The contract now preserves the full zone structure for review, while the
-            # existing calculator still accepts only context + concrete_volume_m3. Keep
-            # this compatibility adapter narrow until the zone-aware calculator stage.
-            result[key] = []
-            for item in items:
-                context = item.get("context") or item.get("display_name") or item.get("zone_id")
-                result[key].append(
-                    {
-                        "context": context,
-                        "concrete_volume_m3": item.get("concrete_volume_m3"),
-                    }
-                )
+            result[key] = [
+                {field: value for field, value in item.items() if field in SLAB_ZONE_CALCULATOR_FIELDS}
+                for item in items
+            ]
 
     # thermal_insert_mode: the one dynamically-chosen calc_method in this pipeline - see
     # module docstring. Falls back to the contract's fixed default (standard_50_100) when

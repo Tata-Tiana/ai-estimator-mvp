@@ -29,7 +29,7 @@ review_parameters:
     label_ru: "Площадь мембраны PLANTER под фундаментной плитой"
     unit: "м2"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "membrane_area_m2"
     calculator_input_path: "membrane_area_m2"
@@ -43,8 +43,8 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте площадь мембраны под фундаментной плитой."
+      status_if_missing: "manual_required_if_zones_incomplete"
+      action_ru: "Проверьте общий итог, если площадь PLANTER не заполнена во всех включённых зонах."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: ""
 
@@ -52,7 +52,7 @@ review_parameters:
     label_ru: "Площадь опалубки бортов фундаментной плиты"
     unit: "м2"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "slab_side_formwork_area"
     calculator_input_path: "slab_side_formwork_area_m2"
@@ -66,8 +66,8 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте площадь опалубки бортов по спецификации."
+      status_if_missing: "manual_required_if_zones_incomplete"
+      action_ru: "Проверьте общий итог, если площадь бортов не заполнена во всех включённых зонах."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not confuse with EPS 100 mm edge volume."
 
@@ -75,7 +75,7 @@ review_parameters:
     label_ru: "ЭППС 50 мм под фундаментной плитой, объем"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "eps_50_under_slab_volume"
     calculator_input_path: "eps50_under_slab_volume_m3"
@@ -89,8 +89,8 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте объем ЭППС 50 мм под фундаментной плитой."
+      status_if_missing: "manual_required_if_zones_incomplete"
+      action_ru: "Проверьте общий итог, если горизонтальный ЭППС не заполнен во всех включённых зонах."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not confuse with m2 laying area."
 
@@ -98,7 +98,7 @@ review_parameters:
     label_ru: "Проектный объем бетона фундаментной плиты"
     unit: "м3"
     source_class: AUTO_PROJECT
-    required: true
+    required: false
     review_sheet: "01_Проверка проекта"
     target_code: "concrete_project_volume"
     calculator_input_path: "concrete_project_volume_m3"
@@ -112,8 +112,8 @@ review_parameters:
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "manual_required"
-      action_ru: "Проверьте проектный объем бетона фундаментной плиты."
+      status_if_missing: "manual_required_if_zones_incomplete"
+      action_ru: "Проверьте общий итог, если бетон не заполнен во всех включённых зонах."
     validation: {numeric: true, min_value: 0, max_value: null}
     notes: "Do not merge with floor slab, beam, lintel, or wall concrete."
 
@@ -162,7 +162,7 @@ review_parameters:
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
     validation: {numeric: false, min_rows: 1, unique_by: [zone_id]}
-    notes: "Incremental extension of the existing slab_zones group. The current calculator still consumes context and concrete_volume_m3 only; the adapter deliberately filters the additional fields until the zone-aware calculator stage is implemented. General scalar totals remain available as simple-scenario inputs or control totals and must not be charged together with the same zonal quantity. Empty means that the source has no split, not zero."
+    notes: "The calculator consumes all supported zone quantities. General scalar totals remain compatible simple-scenario inputs and controls: a complete zone breakdown drives calculation, no zone breakdown falls back to the scalar, a partial breakdown requires the scalar, and conflicting complete totals stop calculation. Empty means that the source has no split, not zero."
 
   - key: thermal_insert_50_length_m
     label_ru: "Термовставка 50 мм, длина"
@@ -556,11 +556,8 @@ workbook_layout:
 checks:
   required_source_classes: [AUTO_PROJECT, DEFAULT, AUTO_CALCULATED, PRICE, SUPPLIER_INPUT, MANUAL_REVIEW]
   required_review_parameters:
-    - membrane_area_m2
-    - slab_side_formwork_area_m2
-    - eps50_under_slab_volume_m3
-    - concrete_project_volume_m3
     - slab_zones
+    - foundation_rebar_items
   forbidden_production_inputs:
     - old_fixture_values
     - old_expected_result_values

@@ -24,7 +24,7 @@
 - `rebar_crane_shifts`: `1`
 - `rebar_crane_unit_price`: `30000`
 - `rebar_waste_coeff`: `1.05`
-- `rebar_items`: `[{'code': 'rebar_a500_d16', 'name': 'Арматура класса А500 диаметром 16 мм', 'steel_class': 'A500', 'diameter_mm': 16, 'kg_per_meter': 1.58, 'rod_length_m': 11.7, 'unit_price_per_m': 80.58, 'source_length_m': 200, 'length_parts_m': []}, {'code': 'rebar_a500_d12', 'name': 'Арматура класса А500 диаметром 12 мм', 'steel_class': 'A500', 'diameter_mm': 12, 'kg_per_meter': 0.888, 'rod_length_m': 11.7, 'unit_price_per_m': 45.29, 'source_length_m': 6000, 'length_parts_m': []}, {'code': 'rebar_a500_d10', 'name': 'Арматура класса А500 диаметром 10 мм', 'steel_class': 'A500', 'diameter_mm': 10, 'kg_per_meter': 0.617, 'rod_length_m': 11.7, 'unit_price_per_m': 32.72, 'source_length_m': 1700, 'length_parts_m': []}, {'code': 'rebar_a240_d6', 'name': 'Арматура класса А240 диаметром 6 мм', 'steel_class': 'A240', 'diameter_mm': 6, 'kg_per_meter': 0.222, 'rod_length_m': 6, 'unit_price_per_m': 13.32, 'source_length_m': 160, 'length_parts_m': []}]`
+- `rebar_items`: `[{'code': 'rebar_a500_d16', 'name': 'Арматура класса А500 диаметром 16 мм', 'steel_class': 'A500', 'diameter_mm': 16, 'kg_per_meter': 1.58, 'rod_length_m': 11.7, 'unit_price_per_m': 80.58, 'source_length_m': 200, 'length_parts_m': [], 'zone_id': None, 'component': None}, {'code': 'rebar_a500_d12', 'name': 'Арматура класса А500 диаметром 12 мм', 'steel_class': 'A500', 'diameter_mm': 12, 'kg_per_meter': 0.888, 'rod_length_m': 11.7, 'unit_price_per_m': 45.29, 'source_length_m': 6000, 'length_parts_m': [], 'zone_id': None, 'component': None}, {'code': 'rebar_a500_d10', 'name': 'Арматура класса А500 диаметром 10 мм', 'steel_class': 'A500', 'diameter_mm': 10, 'kg_per_meter': 0.617, 'rod_length_m': 11.7, 'unit_price_per_m': 32.72, 'source_length_m': 1700, 'length_parts_m': [], 'zone_id': None, 'component': None}, {'code': 'rebar_a240_d6', 'name': 'Арматура класса А240 диаметром 6 мм', 'steel_class': 'A240', 'diameter_mm': 6, 'kg_per_meter': 0.222, 'rod_length_m': 6, 'unit_price_per_m': 13.32, 'source_length_m': 160, 'length_parts_m': [], 'zone_id': None, 'component': None}]`
 - `rebar_metal_delivery_trucks`: `1`
 - `rebar_metal_delivery_unit_price`: `22000`
 - `box_total_metal_weight_kg`: `8263`
@@ -68,6 +68,7 @@
 - `thermal_insert_100_material_unit_price`: `10000`
 - `thermal_insert_items`: `[]`
 - `slab_zones`: `[]`
+- `zone_quantity_resolution`: `{}`
 
 ## Формулы
 - Монтаж мембраны: `quantity = membrane_area_m2`.
@@ -262,6 +263,11 @@
 | `manual_lines.technical_supervision.line_type` | `fixed/manual` |
 | `slab_zones.used` | `False` |
 | `slab_zones.zone_count` | `0` |
+| `slab_zones.excluded_zone_count` | `0` |
+| `slab_zones.zones` | `[]` |
+| `slab_zones.membrane_area_m2` | `320` |
+| `slab_zones.slab_side_formwork_area_m2` | `24.3` |
+| `slab_zones.horizontal_insulation_volume_m3` | `13.5` |
 | `slab_zones.concrete_project_volume_m3` | `81` |
 
 ## Контроль армирования

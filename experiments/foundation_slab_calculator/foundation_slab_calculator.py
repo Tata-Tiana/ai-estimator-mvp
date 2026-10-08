@@ -44,6 +44,18 @@ def _optional_non_negative(name: str, value: float | int | None) -> float:
     return float(value)
 
 
+def _uses_configured_concrete_grade(value: str) -> bool:
+    normalized = (
+        str(value)
+        .upper()
+        .replace("В", "B")
+        .replace(",", ".")
+        .replace("-", "")
+        .replace(" ", "")
+    )
+    return "B22.5" in normalized or "M300" in normalized
+
+
 def round_up_to_step(value: float, step: float) -> float:
     _require_non_negative("value", value)
     _require_positive("step", step)
@@ -72,6 +84,8 @@ class RebarItemInput:
     weight_parts_kg: list[float] = field(default_factory=list)
     source_length_m: float | None = None
     length_parts_m: list[float] = field(default_factory=list)
+    zone_id: str | None = None
+    component: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RebarItemInput":
@@ -127,12 +141,30 @@ class RebarItemInput:
 
 @dataclass(frozen=True)
 class SlabZone:
-    context: str
-    concrete_volume_m3: float
+    context: str | None = None
+    zone_id: str | None = None
+    display_name: str | None = None
+    element_type: str = "slab_body"
+    level: str | None = None
+    thickness_m: float | None = None
+    area_m2: float | None = None
+    concrete_grade: str | None = None
+    concrete_volume_m3: float | None = None
+    membrane_area_m2: float | None = None
+    side_formwork_area_m2: float | None = None
+    horizontal_insulation_material: str | None = None
+    horizontal_insulation_thickness_mm: float | None = None
+    horizontal_insulation_area_m2: float | None = None
+    horizontal_insulation_volume_m3: float | None = None
+    include_in_estimate: bool = True
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SlabZone":
         return cls(**data)
+
+    @property
+    def identity(self) -> str:
+        return self.zone_id or self.display_name or self.context or ""
 
 
 @dataclass(frozen=True)
@@ -151,7 +183,7 @@ class ThermalInsertItem:
 @dataclass(frozen=True)
 class FoundationSlabInput:
     project_name: str
-    membrane_area_m2: float
+    membrane_area_m2: float | None
     membrane_installation_work_unit_price: float
     membrane_overlap_coeff: float
     membrane_roll_area_m2: float
@@ -162,7 +194,7 @@ class FoundationSlabInput:
     plywood_unit_price: float
     timber_thickness_m: float
     timber_unit_price: float
-    eps50_under_slab_volume_m3: float
+    eps50_under_slab_volume_m3: float | None
     eps50_thickness_m: float
     eps50_laying_work_unit_price: float
     eps_waste_coeff: float
@@ -175,7 +207,7 @@ class FoundationSlabInput:
     rebar_metal_delivery_trucks: float
     rebar_metal_delivery_unit_price: float
     box_total_metal_weight_kg: float
-    concrete_project_volume_m3: float
+    concrete_project_volume_m3: float | None
     concreting_work_unit_price: float
     concrete_waste_coeff: float
     concrete_round_step_m3: float
@@ -231,6 +263,10 @@ class FoundationSlabInput:
     thermal_insert_items: list[ThermalInsertItem | dict[str, Any]] | None = None
     thermal_insert_items_work_unit_price: float | None = None
     slab_zones: list[SlabZone | dict[str, Any]] | None = None
+    zone_quantity_resolution: dict[str, dict[str, Any]] = field(
+        default_factory=dict,
+        init=False,
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -257,22 +293,129 @@ class FoundationSlabInput:
                 for item in (self.thermal_insert_items or [])
             ],
         )
-        if self.slab_zones:
-            # Purely additive: overriding concrete_project_volume_m3 here means every
-            # downstream usage in this file (rebar density, concrete order volume,
-            # delivery trips, the concreting-work estimate line) gets the correct
-            # summed value with zero other code changes. Empty/absent slab_zones
-            # leaves the originally-supplied scalar untouched.
-            object.__setattr__(
-                self,
-                "concrete_project_volume_m3",
-                _round_decimal(sum(_to_decimal(zone.concrete_volume_m3) for zone in self.slab_zones)),
-            )
+        self._apply_zone_quantities()
         self.validate()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "FoundationSlabInput":
         return cls(**data)
+
+    def _apply_zone_quantities(self) -> None:
+        active_zones = [zone for zone in (self.slab_zones or []) if zone.include_in_estimate]
+        if not active_zones:
+            return
+
+        identities = [zone.identity for zone in active_zones]
+        if any(not identity for identity in identities):
+            raise ValueError("slab_zones.zone_id/display_name/context is required")
+        if len(set(identities)) != len(identities):
+            raise ValueError("slab_zones identities must be unique")
+        for zone in active_zones:
+            if zone.element_type != "slab_body":
+                raise ValueError(
+                    f"slab_zones.{zone.identity}.element_type must be 'slab_body'; "
+                    "ribs, walls, strips, beams, column footings and pads belong to grillage"
+                )
+
+        grades = {
+            str(zone.concrete_grade).strip().lower()
+            for zone in active_zones
+            if zone.concrete_grade not in (None, "")
+        }
+        if len(grades) > 1:
+            raise ValueError(
+                "slab_zones contain different concrete grades; the current section has one "
+                "concrete purchase price and cannot merge them silently"
+            )
+        unsupported_grades = sorted(
+            str(zone.concrete_grade)
+            for zone in active_zones
+            if zone.concrete_grade not in (None, "")
+            and not _uses_configured_concrete_grade(str(zone.concrete_grade))
+        )
+        if unsupported_grades:
+            raise ValueError(
+                "slab_zones contain a concrete grade without a configured price: "
+                f"{unsupported_grades}; the current purchase line supports only B22.5/M300"
+            )
+
+        mappings = [
+            ("concrete_volume_m3", "concrete_project_volume_m3"),
+            ("membrane_area_m2", "membrane_area_m2"),
+            ("horizontal_insulation_volume_m3", "eps50_under_slab_volume_m3"),
+        ]
+        if self.formwork_calc_method == "spec_area":
+            mappings.append(("side_formwork_area_m2", "slab_side_formwork_area_m2"))
+        resolution: dict[str, dict[str, Any]] = {}
+        for zone_field, scalar_field in mappings:
+            values = []
+            for zone in active_zones:
+                value = getattr(zone, zone_field)
+                if (
+                    zone_field == "horizontal_insulation_volume_m3"
+                    and value is None
+                    and zone.horizontal_insulation_area_m2 is not None
+                ):
+                    thickness_mm = zone.horizontal_insulation_thickness_mm or 50
+                    value = _round_decimal(
+                        _to_decimal(zone.horizontal_insulation_area_m2)
+                        * _to_decimal(thickness_mm)
+                        / Decimal("1000")
+                    )
+                values.append(value)
+            populated = [value for value in values if value is not None]
+            scalar_value = getattr(self, scalar_field)
+            if len(populated) == len(active_zones):
+                zone_total = _round_decimal(
+                    sum((_to_decimal(value) for value in populated), Decimal("0"))
+                )
+                legacy_zero_placeholder = (
+                    scalar_value is not None
+                    and float(scalar_value) == 0
+                    and zone_total > 0
+                )
+                if (
+                    scalar_value is not None
+                    and not legacy_zero_placeholder
+                    and abs(float(scalar_value) - zone_total) > 0.001
+                ):
+                    raise ValueError(
+                        f"{scalar_field}={scalar_value} conflicts with the complete "
+                        f"slab_zones sum {zone_total}; review the source totals before calculation"
+                    )
+                object.__setattr__(self, scalar_field, zone_total)
+                resolution[scalar_field] = {
+                    "source": (
+                        "slab_zones_legacy_zero_scalar_ignored"
+                        if legacy_zero_placeholder
+                        else "slab_zones"
+                    ),
+                    "zone_count": len(active_zones),
+                    "value": zone_total,
+                }
+            elif not populated:
+                if scalar_value is None:
+                    raise ValueError(
+                        f"{scalar_field} is missing both as a section total and in slab_zones"
+                    )
+                resolution[scalar_field] = {
+                    "source": "section_total",
+                    "zone_count": len(active_zones),
+                    "value": scalar_value,
+                }
+            else:
+                if scalar_value is None:
+                    raise ValueError(
+                        f"{zone_field} is filled for only {len(populated)} of "
+                        f"{len(active_zones)} included slab_zones and {scalar_field} is blank"
+                    )
+                resolution[scalar_field] = {
+                    "source": "section_total_with_partial_zone_breakdown",
+                    "zone_count": len(active_zones),
+                    "populated_zone_count": len(populated),
+                    "value": scalar_value,
+                }
+        object.__setattr__(self, "zone_quantity_resolution", resolution)
 
     def validate(self) -> None:
         if not self.project_name:
@@ -348,9 +491,56 @@ class FoundationSlabInput:
             )
 
         for zone in self.slab_zones or []:
-            if not zone.context:
-                raise ValueError("slab_zones.context is required")
-            _require_non_negative(f"slab_zones.{zone.context}.concrete_volume_m3", zone.concrete_volume_m3)
+            if not zone.include_in_estimate:
+                continue
+            identity = zone.identity
+            for field_name in (
+                "thickness_m",
+                "area_m2",
+                "concrete_volume_m3",
+                "membrane_area_m2",
+                "side_formwork_area_m2",
+                "horizontal_insulation_thickness_mm",
+                "horizontal_insulation_area_m2",
+                "horizontal_insulation_volume_m3",
+            ):
+                value = getattr(zone, field_name)
+                if value is not None:
+                    _require_non_negative(f"slab_zones.{identity}.{field_name}", value)
+
+            insulation_values = (
+                zone.horizontal_insulation_thickness_mm,
+                zone.horizontal_insulation_area_m2,
+                zone.horizontal_insulation_volume_m3,
+            )
+            if any(value is not None for value in insulation_values):
+                material = (zone.horizontal_insulation_material or "ЭППС").upper()
+                if "ЭППС" not in material and "XPS" not in material:
+                    raise ValueError(
+                        f"slab_zones.{identity}.horizontal_insulation_material={material!r} "
+                        "has no configured price/packaging in the foundation slab calculator"
+                    )
+                thickness = zone.horizontal_insulation_thickness_mm
+                if thickness not in (None, 50, 50.0):
+                    raise ValueError(
+                        f"slab_zones.{identity}.horizontal_insulation_thickness_mm={thickness} "
+                        "cannot use the configured EPS 50 purchase line"
+                    )
+                if (
+                    zone.horizontal_insulation_area_m2 is not None
+                    and zone.horizontal_insulation_volume_m3 is not None
+                ):
+                    expected_volume = _round_decimal(
+                        _to_decimal(zone.horizontal_insulation_area_m2)
+                        * _to_decimal(thickness or 50)
+                        / Decimal("1000")
+                    )
+                    if abs(expected_volume - zone.horizontal_insulation_volume_m3) > 0.001:
+                        raise ValueError(
+                            f"slab_zones.{identity} horizontal insulation area/thickness gives "
+                            f"{expected_volume} m3 but the specified volume is "
+                            f"{zone.horizontal_insulation_volume_m3} m3"
+                        )
 
         if not self.rebar_items:
             raise ValueError("rebar_items is required")
@@ -363,6 +553,22 @@ class FoundationSlabInput:
             )
         for item in self.rebar_items:
             item.validate(self.rebar_calc_method)
+            if item.component not in (None, "", "slab_body", "thermal_insert_reinforcement"):
+                raise ValueError(
+                    f"rebar_items.{item.code}.component={item.component!r} does not belong "
+                    "to foundation_slab"
+                )
+            if item.zone_id:
+                zone_ids = {
+                    zone.zone_id
+                    for zone in (self.slab_zones or [])
+                    if zone.include_in_estimate and zone.zone_id
+                }
+                if item.zone_id not in zone_ids:
+                    raise ValueError(
+                        f"rebar_items.{item.code}.zone_id={item.zone_id!r} does not match "
+                        "an included slab_zones.zone_id"
+                    )
 
         if self.plywood_calc_method not in {"working_area", "actual_area_with_waste"}:
             raise ValueError(
@@ -1752,7 +1958,15 @@ def calculate_foundation_slab(data: FoundationSlabInput) -> dict[str, Any]:
         "manual_lines": manual_lines_block,
         "slab_zones": {
             "used": bool(data.slab_zones),
-            "zone_count": len(data.slab_zones or []),
+            "zone_count": len([zone for zone in (data.slab_zones or []) if zone.include_in_estimate]),
+            "excluded_zone_count": len(
+                [zone for zone in (data.slab_zones or []) if not zone.include_in_estimate]
+            ),
+            "zones": [asdict(zone) for zone in (data.slab_zones or [])],
+            "quantity_resolution": data.zone_quantity_resolution,
+            "membrane_area_m2": data.membrane_area_m2,
+            "slab_side_formwork_area_m2": data.slab_side_formwork_area_m2,
+            "horizontal_insulation_volume_m3": data.eps50_under_slab_volume_m3,
             "concrete_project_volume_m3": data.concrete_project_volume_m3,
         },
     }

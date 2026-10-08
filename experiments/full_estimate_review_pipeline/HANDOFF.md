@@ -98,6 +98,29 @@ never pool EPS or transfer calculated leftovers across `waterproofing`, `foundat
 For YRV analysis and tests use only sheet
 `АЛ 17.12.25 КР1, КР2(ЕЧ)ЮВ`; never use the 16.06.2025 sheet, even as a historical fixture.
 
+### Local Calculator Checkpoint 2026-10-08
+
+The local foundation/grillage calculation layer has advanced, but production remains frozen:
+
+- the existing `foundation_slab` calculator and adapter now consume expanded `slab_zones`
+  for concrete, PLANTER, side formwork and horizontal EPS;
+- complete zone rows drive the quantity, absent zone breakdown falls back to the section total,
+  partial breakdown requires that total, and a conflicting complete total fails explicitly;
+- zone ownership and rebar ownership are validated; excluded zones do not enter totals;
+- `grillage` now has a local contract, adapter and calculator for explicit elements, inventory
+  and timber formwork, pooled rebar, concrete, horizontal EPS and manual pump/transfer inputs;
+- the unconfirmed 10% timber-formwork rule is deliberately absent;
+- all 44 full-estimate-pipeline tests and all nine legacy foundation-slab cases pass locally.
+
+Do not infer that the bot can use this yet. Grillage is still absent from `CANONICAL_SECTIONS`;
+parser schema/prompt, Google review, final Excel formulas/helpers and real-project reruns remain.
+Horizontal insulation currently accepts only the configured EPS 50 purchase family; other
+materials/thicknesses fail instead of borrowing the wrong price. Mixed concrete grades also fail;
+the current concrete purchase line explicitly accepts only B22.5/M300 instead of pricing another
+grade silently. Shared slab+grillage PLANTER demand is accepted by the grillage
+calculator through `planter_purchase_area_m2`, but orchestration of one final purchase row is not
+wired yet. Continue from step 37 stage C-D and step 30's remaining checkpoints.
+
 ## Estimate Section Title Source Policy 2026-09-27
 
 The model maps project data to technical `section_code` values but must not invent visible

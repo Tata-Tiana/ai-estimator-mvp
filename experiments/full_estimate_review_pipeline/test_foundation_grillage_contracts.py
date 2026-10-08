@@ -17,6 +17,9 @@ from foundation_grillage_ownership import (  # noqa: E402
     audit_foundation_grillage_ownership,
 )
 from sections.foundation_slab.build_input import build_calculator_input  # noqa: E402
+from sections.grillage.build_input import (  # noqa: E402
+    build_calculator_input as build_grillage_calculator_input,
+)
 
 
 FIXTURES_DIR = PIPELINE_DIR / "tests" / "fixtures" / "foundation_grillage_ownership"
@@ -60,14 +63,113 @@ class FoundationGrillageContractTests(unittest.TestCase):
         )
         self.assertTrue({"zone_id", "component"}.issubset(rebar_columns))
 
-    def test_grillage_is_contract_only_until_calculator_stage(self) -> None:
+    def test_grillage_contract_points_to_local_calculator_without_registration(self) -> None:
         grillage = load_contract("grillage")
 
-        self.assertEqual(grillage["section"]["status"], "contract_only")
-        self.assertEqual(grillage["section"]["calculator_module"], "")
-        self.assertEqual(grillage["estimate_lines"], [])
+        self.assertEqual(grillage["section"]["status"], "local_calculator")
+        self.assertEqual(
+            grillage["section"]["calculator_module"],
+            "experiments/grillage_calculator/grillage_calculator.py",
+        )
+        self.assertTrue(grillage["estimate_lines"])
 
-    def test_current_adapter_filters_review_only_ownership_fields(self) -> None:
+    def test_grillage_adapter_builds_explicit_elements_and_priced_rebar(self) -> None:
+        contract = load_contract("grillage")
+        resolved_prices = {
+            entry["key"]: 1
+            for entry in contract["price_keys"]
+            if entry["key"] != "rebar_unit_price_by_item"
+        }
+        resolved_prices["rebar_unit_price_by_item"] = {"rebar_a500_d12_m": 42}
+        manual_values = {
+            "concrete_pump_shifts": 0,
+            "manual_concrete_transfer_volume_m3": 0,
+            "inventory_formwork_rental_unit_price": 900,
+            "rebar_metal_delivery_trucks": 1,
+            "technical_supervision_amount": 5000,
+        }
+        normalized_review = {
+            "project_name": "synthetic_grillage_adapter",
+            "scalar_parameters": {
+                key: {"value_number": value} for key, value in manual_values.items()
+            },
+            "production_items": {
+                "grillage_elements": [
+                    {
+                        "element_id": "rib",
+                        "display_name": "Ребро вверх",
+                        "element_type": "rib_up",
+                        "concrete_volume_m3": 5,
+                        "inventory_formwork_area_m2": 10,
+                    }
+                ],
+                "grillage_rebar_items": [
+                    {
+                        "element_id": "rib",
+                        "code": "rib_d12",
+                        "name": "Арматура ребра",
+                        "steel_class": "A500C",
+                        "diameter_mm": 12,
+                        "source_length_m": 100,
+                    }
+                ],
+            },
+            "resolved_prices": resolved_prices,
+        }
+
+        calculator_input = build_grillage_calculator_input(normalized_review)
+
+        self.assertEqual(calculator_input["grillage_elements"][0]["element_type"], "rib_up")
+        self.assertEqual(calculator_input["rebar_items"][0]["element_id"], "rib")
+        self.assertEqual(calculator_input["rebar_items"][0]["unit_price_per_m"], 42)
+        self.assertEqual(calculator_input["rebar_items"][0]["kg_per_meter"], 0.888)
+        self.assertEqual(calculator_input["concrete_pump_shifts"], 0)
+
+        normalized_review["production_items"]["grillage_elements"][0][
+            "inventory_formwork_area_m2"
+        ] = 0
+        del normalized_review["scalar_parameters"]["concrete_pump_shifts"]
+        del normalized_review["scalar_parameters"]["inventory_formwork_rental_unit_price"]
+        calculator_input = build_grillage_calculator_input(normalized_review)
+        self.assertEqual(calculator_input["concrete_pump_shifts"], 1)
+        self.assertEqual(calculator_input["inventory_formwork_rental_unit_price"], 0)
+
+    def test_grillage_adapter_requires_supplier_rate_for_inventory_formwork(self) -> None:
+        contract = load_contract("grillage")
+        resolved_prices = {
+            entry["key"]: 1
+            for entry in contract["price_keys"]
+            if entry["key"] != "rebar_unit_price_by_item"
+        }
+        resolved_prices["rebar_unit_price_by_item"] = {"rebar_a500_d12_m": 42}
+        normalized_review = {
+            "project_name": "inventory_formwork_requires_rate",
+            "scalar_parameters": {},
+            "production_items": {
+                "grillage_elements": [
+                    {
+                        "element_id": "wall",
+                        "element_type": "foundation_wall",
+                        "concrete_volume_m3": 1,
+                        "inventory_formwork_area_m2": 10,
+                    }
+                ],
+                "grillage_rebar_items": [
+                    {
+                        "element_id": "wall",
+                        "steel_class": "A500C",
+                        "diameter_mm": 12,
+                        "source_length_m": 10,
+                    }
+                ],
+            },
+            "resolved_prices": resolved_prices,
+        }
+
+        with self.assertRaisesRegex(ValueError, "supplier rate is required"):
+            build_grillage_calculator_input(normalized_review)
+
+    def test_adapter_passes_extended_zone_and_rebar_ownership_fields(self) -> None:
         contract = load_contract("foundation_slab")
         required_prices = {
             entry["key"]: 1
@@ -128,12 +230,14 @@ class FoundationGrillageContractTests(unittest.TestCase):
 
         calculator_input = build_calculator_input(normalized_review)
 
+        self.assertEqual(calculator_input["slab_zones"][0]["zone_id"], "main")
         self.assertEqual(
-            calculator_input["slab_zones"],
-            [{"context": "Основная плита", "concrete_volume_m3": 10}],
+            calculator_input["slab_zones"][0]["display_name"],
+            "Основная плита",
         )
-        self.assertNotIn("zone_id", calculator_input["rebar_items"][0])
-        self.assertNotIn("component", calculator_input["rebar_items"][0])
+        self.assertEqual(calculator_input["slab_zones"][0]["membrane_area_m2"], 10)
+        self.assertEqual(calculator_input["rebar_items"][0]["zone_id"], "main")
+        self.assertEqual(calculator_input["rebar_items"][0]["component"], "slab_body")
 
     def test_valid_synthetic_cases_have_no_ownership_issues(self) -> None:
         cases = json.loads((FIXTURES_DIR / "valid_cases.json").read_text(encoding="utf-8"))
