@@ -92,6 +92,8 @@ THERMAL_INSERT_ITEMS_KEY = "thermal_insert_items"
 THERMAL_INSERT_ITEM_MATERIAL_PRICE_KEY = "thermal_insert_item_material_unit_price"
 THERMAL_INSERT_ITEM_PACK_MULTIPLE_DEFAULT = 0.2776
 
+CURRENT_CALCULATOR_REBAR_IGNORED_FIELDS = ("weight_kg", "item_id", "zone_id", "component")
+
 
 def _rebar_registry_code(steel_class: Any, diameter_mm: Any) -> str | None:
     """Must match build_review_workbook_from_contracts.py's _rebar_registry_code() exactly -
@@ -143,7 +145,18 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
     for key in OPTIONAL_PRODUCTION_ITEM_GROUPS:
         items = production_items.get(key)
         if items:
-            result[key] = items
+            # The contract now preserves the full zone structure for review, while the
+            # existing calculator still accepts only context + concrete_volume_m3. Keep
+            # this compatibility adapter narrow until the zone-aware calculator stage.
+            result[key] = []
+            for item in items:
+                context = item.get("context") or item.get("display_name") or item.get("zone_id")
+                result[key].append(
+                    {
+                        "context": context,
+                        "concrete_volume_m3": item.get("concrete_volume_m3"),
+                    }
+                )
 
     # thermal_insert_mode: the one dynamically-chosen calc_method in this pipeline - see
     # module docstring. Falls back to the contract's fixed default (standard_50_100) when
@@ -194,7 +207,9 @@ def build_calculator_input(normalized_review: dict[str, Any]) -> dict[str, Any]:
         # weight_kg is raw PDF cross-check data, item_id is an optional descriptive PDF
         # label the model may add for named rebar rows (e.g. "лягушка поз.2") - neither is
         # a RebarItemInput field, and this group's own identity (`code`) is set below.
-        source_item = {k: v for k, v in item.items() if k not in ("weight_kg", "item_id")}
+        source_item = {
+            k: v for k, v in item.items() if k not in CURRENT_CALCULATOR_REBAR_IGNORED_FIELDS
+        }
         source_item["code"] = _rebar_item_code(source_item, index)
         priced_item = fill_rebar_catalog_defaults(
             {**source_item, "unit_price_per_m": price},

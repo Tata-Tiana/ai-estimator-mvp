@@ -1,0 +1,72 @@
+[
+  {
+    "name": "simple_slab_without_grillage",
+    "sections": {
+      "foundation_slab": {"parameters": {
+        "slab_zones": {"rows": [{"zone_id": "slab_main", "display_name": "Основная плита", "element_type": "slab_body", "concrete_volume_m3": 10}]},
+        "foundation_rebar_items": {"rows": [{"code": "s1", "zone_id": "slab_main", "component": "slab_body"}]}
+      }},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "multiple_slab_zones",
+    "sections": {
+      "foundation_slab": {"parameters": {
+        "slab_zones": {"rows": [
+          {"zone_id": "slab_high", "display_name": "Плита верхнего уровня", "element_type": "slab_body", "concrete_volume_m3": 8},
+          {"zone_id": "slab_low", "display_name": "Плита нижнего уровня", "element_type": "slab_body", "concrete_volume_m3": 2}
+        ]},
+        "foundation_rebar_items": {"rows": [{"code": "s2", "component": "thermal_insert_reinforcement"}]}
+      }},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "rib_up_belongs_to_grillage",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "slab", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {
+        "grillage_elements": {"rows": [{"element_id": "rib_up", "element_type": "rib_up", "concrete_volume_m3": 1}]},
+        "grillage_rebar_items": {"rows": [{"code": "g1", "element_id": "rib_up"}]}
+      }}
+    }
+  },
+  {
+    "name": "rib_down_belongs_to_grillage",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "slab", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {
+        "grillage_elements": {"rows": [{"element_id": "rib_down", "element_type": "rib_down", "concrete_volume_m3": 1}]},
+        "grillage_rebar_items": {"rows": [{"code": "g2", "element_id": "rib_down"}]}
+      }}
+    }
+  },
+  {
+    "name": "foundation_wall_and_column_footing",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "slab", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {
+        "grillage_elements": {"rows": [
+          {"element_id": "wall", "element_type": "foundation_wall", "concrete_volume_m3": 4},
+          {"element_id": "footing", "element_type": "column_footing", "concrete_volume_m3": 1}
+        ]},
+        "grillage_rebar_items": {"rows": [{"code": "g3", "element_id": "wall"}, {"code": "g4", "element_id": "footing"}]}
+      }}
+    }
+  },
+  {
+    "name": "planter_work_stays_in_both_sections",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "slab", "element_type": "slab_body", "membrane_area_m2": 10}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": [{"element_id": "strip", "element_type": "strip", "membrane_area_m2": 2}]}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "project_with_no_grillage",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "single", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": []}}}
+    }
+  }
+]

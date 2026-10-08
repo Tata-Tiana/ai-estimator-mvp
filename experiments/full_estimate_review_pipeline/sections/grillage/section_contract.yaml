@@ -1,0 +1,129 @@
+contract_version: 0.1
+
+section:
+  code: grillage
+  name_ru: "Ростверк"
+  calculator_module: ""
+  status: contract_only
+  owner_notes: "Local development contract. It is intentionally absent from CANONICAL_SECTIONS and has no calculator yet."
+  ownership:
+    element_types: [grillage, rib_up, rib_down, foundation_wall, strip, beam, column_footing, pad, other_grillage]
+    notes: "The section owns all foundation ribs, walls, strips, beams, column footings and pads regardless of historical estimate titles or monolithic connection to a slab."
+
+source_files:
+  calculator: null
+  related_docs:
+    - "experiments/full_estimate_review_pipeline/reports/step_30_grillage_full_box_scenario.md"
+    - "experiments/full_estimate_review_pipeline/reports/step_37_universal_foundation_slab_plan.md"
+    - "experiments/full_estimate_review_pipeline/reports/ark_vs_original_comparison/17_grillage_questions_and_spec_additions.md"
+
+review_parameters:
+  - key: grillage_elements
+    label_ru: "Элементы ростверка"
+    unit: ""
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "grillage_elements"
+    calculator_input_path: "grillage_elements"
+    normalized_json_path: "sections.grillage.parameters.grillage_elements.rows"
+    value_kind: repeated_rows
+    row_key_field: element_id
+    production_input: true
+    item_label_columns: [display_name, element_type, level]
+    correction_columns: [concrete_volume_m3, membrane_area_m2, inventory_formwork_area_m2, timber_formwork_area_m2, width_m, height_m, length_m, count, horizontal_insulation_thickness_mm, horizontal_insulation_area_m2, horizontal_insulation_volume_m3, display_name, element_type, level, concrete_grade, horizontal_insulation_material, include_in_estimate]
+    columns:
+      - {key: element_id, label_ru: "Идентификатор элемента", unit: "", value_kind: string}
+      - {key: display_name, label_ru: "Название по проекту", unit: "", value_kind: string}
+      - {key: element_type, label_ru: "Тип элемента", unit: "", value_kind: string}
+      - {key: level, label_ru: "Уровень / отметка", unit: "", value_kind: string}
+      - {key: width_m, label_ru: "Ширина", unit: "м", value_kind: number}
+      - {key: height_m, label_ru: "Высота", unit: "м", value_kind: number}
+      - {key: length_m, label_ru: "Длина", unit: "м", value_kind: number}
+      - {key: count, label_ru: "Количество", unit: "шт", value_kind: number}
+      - {key: concrete_grade, label_ru: "Марка бетона", unit: "", value_kind: string}
+      - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: membrane_area_m2, label_ru: "PLANTER под элементом", unit: "м2", value_kind: number}
+      - {key: inventory_formwork_area_m2, label_ru: "Инвентарная опалубка", unit: "м2", value_kind: number}
+      - {key: timber_formwork_area_m2, label_ru: "Опалубка из фанеры и пиломатериалов", unit: "м2", value_kind: number}
+      - {key: horizontal_insulation_material, label_ru: "Горизонтальный утеплитель", unit: "", value_kind: string}
+      - {key: horizontal_insulation_thickness_mm, label_ru: "Толщина утеплителя", unit: "мм", value_kind: number}
+      - {key: horizontal_insulation_area_m2, label_ru: "Площадь утеплителя", unit: "м2", value_kind: number}
+      - {key: horizontal_insulation_volume_m3, label_ru: "Объём утеплителя", unit: "м3", value_kind: number}
+      - {key: include_in_estimate, label_ru: "Включить элемент", unit: "", value_kind: boolean}
+    parser_mapping:
+      target_codes: ["grillage_elements"]
+      group_codes: ["grillage_elements"]
+      aliases_ru: ["ростверк", "ребро фундаментной плиты", "стена фундамента", "фундаментная лента", "фундаментная балка", "подколонник", "подпятник"]
+      expected_unit: ""
+      notes: "Classify by construction role, not by the title of a historical estimate. element_type enum is defined in section.ownership.element_types."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Проверьте все рёбра, стены, ленты, балки, подколонники и подпятники. Если таких конструкций нет, пустая группа является нормальным результатом."
+    mirror_to_details_sheet: true
+    mirror_notes: "Contract-only stage; the group is not rendered until grillage is added to CANONICAL_SECTIONS."
+    validation: {numeric: false, min_rows: 0, unique_by: [element_id]}
+    notes: "One row per physical construction or compatible project group. Ready specification quantities have priority; missing component breakdown is not reconstructed from drawings by the model."
+
+  - key: grillage_rebar_items
+    label_ru: "Арматура ростверка по диаметрам"
+    unit: "мп"
+    source_class: AUTO_PROJECT
+    required: false
+    review_sheet: "01_Проверка проекта"
+    target_code: "grillage_rebar_items"
+    calculator_input_path: "grillage_rebar_items"
+    normalized_json_path: "sections.grillage.parameters.grillage_rebar_items.rows"
+    value_kind: repeated_rows
+    row_key_field: code
+    production_input: true
+    item_label_columns: [element_id, steel_class, diameter_mm]
+    correction_columns: [source_length_m, kg_per_meter, element_id]
+    columns:
+      - {key: element_id, label_ru: "Элемент (grillage_elements.element_id)", unit: "", value_kind: string}
+      - {key: code, label_ru: "Код позиции", unit: "", value_kind: string}
+      - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
+      - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
+      - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
+      - {key: source_length_m, label_ru: "Длина по спецификации", unit: "мп", value_kind: number}
+      - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
+    parser_mapping:
+      target_codes: ["grillage_rebar_items"]
+      group_codes: ["grillage_rebar_items"]
+      aliases_ru: ["арматура ростверка", "арматура рёбер", "арматура стен фундамента", "арматура лент", "арматура подколонников", "арматура подпятников"]
+      expected_unit: "мп"
+      notes: "Every row belongs to a grillage element when the PDF permits that relationship. Common section reinforcement may leave element_id blank and must be reviewed rather than split by inference."
+    review_behavior:
+      show_to_user: true
+      allow_manual_override: true
+      status_if_missing: "not_required"
+      action_ru: "Проверьте позиции арматуры ростверка и связь с конструктивными элементами."
+    mirror_to_details_sheet: true
+    mirror_notes: "Contract-only stage; the group is not rendered until grillage is added to CANONICAL_SECTIONS."
+    validation: {numeric: false, min_rows: 0}
+    notes: "Primary PDF unit is m.п.; total weight remains source evidence and is not required for calculation."
+
+supplier_inputs:
+  - {key: concrete_pump_shifts, label_ru: "Бетононасос ростверка", source_class: MANUAL_REVIEW, required: false, unit: "смена", review_sheet: "01-1_Ручные значения", calculator_input_path: "concrete_pump_shifts", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "optional", action_ru: "Оставьте действующее значение или установите 0."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Manual input confirmed by Elena."}
+  - {key: manual_concrete_transfer_volume_m3, label_ru: "Ручная подача бетона", source_class: MANUAL_REVIEW, required: false, unit: "м3", review_sheet: "01-1_Ручные значения", calculator_input_path: "manual_concrete_transfer_volume_m3", review_behavior: {show_to_user: true, allow_manual_override: true, status_if_missing: "optional", action_ru: "Заполните только при необходимости ручной подачи."}, validation: {numeric: true, min_value: 0, max_value: null}, notes: "Defaults to zero when the calculator is implemented."}
+
+price_keys: []
+defaults: []
+calculator_input_mapping: []
+estimate_lines: []
+
+checks:
+  required_source_classes: [AUTO_PROJECT, MANUAL_REVIEW]
+  required_review_parameters: []
+  forbidden_production_inputs:
+    - foundation_slab_body
+    - old_fixture_values
+    - old_expected_result_values
+  expected_estimate_line_count: 0
+  contamination_check:
+    old_project_markers_allowed: false
+    fixture_values_allowed: false
+    old_expected_result_values_allowed: false
+  notes: "Contract-only boundary checkpoint. Calculator, prices, estimate lines, workbook registration and prompt/schema changes are intentionally deferred."

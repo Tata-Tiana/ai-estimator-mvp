@@ -1,0 +1,56 @@
+[
+  {
+    "name": "rib_cannot_be_a_slab_zone",
+    "expected_code": "wrong_section_owner",
+    "expected_severity": "error",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "rib", "element_type": "rib_up"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "slab_cannot_be_a_grillage_element",
+    "expected_code": "wrong_section_owner",
+    "expected_severity": "error",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": []}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": [{"element_id": "slab", "element_type": "slab_body"}]}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "same_element_cannot_have_two_owners",
+    "expected_code": "cross_section_id_collision",
+    "expected_severity": "error",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "shared", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": [{"element_id": "shared", "element_type": "strip"}]}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "grillage_rebar_must_reference_an_existing_element",
+    "expected_code": "orphan_rebar_owner",
+    "expected_severity": "error",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": []}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": [{"code": "g", "element_id": "missing"}]}}}
+    }
+  },
+  {
+    "name": "unknown_type_requires_review",
+    "expected_code": "unknown_element_type",
+    "expected_severity": "needs_review",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": []}, "foundation_rebar_items": {"rows": []}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": [{"element_id": "new", "element_type": "new_foundation_part"}]}, "grillage_rebar_items": {"rows": []}}}
+    }
+  },
+  {
+    "name": "slab_rebar_component_requires_review",
+    "expected_code": "missing_rebar_component",
+    "expected_severity": "needs_review",
+    "sections": {
+      "foundation_slab": {"parameters": {"slab_zones": {"rows": [{"zone_id": "slab", "element_type": "slab_body"}]}, "foundation_rebar_items": {"rows": [{"code": "s"}]}}},
+      "grillage": {"parameters": {"grillage_elements": {"rows": []}, "grillage_rebar_items": {"rows": []}}}
+    }
+  }
+]

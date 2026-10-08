@@ -6,6 +6,10 @@ section:
   calculator_module: "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
   status: draft
   owner_notes: "Production contract: spec areas/volumes/lengths only; no old fixture values or Excel-match overrides."
+  ownership:
+    element_types: [slab_body]
+    rebar_component_types: [slab_body, thermal_insert_reinforcement]
+    notes: "The section owns slab bodies and slab/thermal-insert reinforcement only. Ribs, foundation walls, strips, beams, column footings and pads belong to grillage."
 
 source_files:
   calculator: "experiments/foundation_slab_calculator/foundation_slab_calculator.py"
@@ -114,36 +118,51 @@ review_parameters:
     notes: "Do not merge with floor slab, beam, lintel, or wall concrete."
 
   - key: slab_zones
-    label_ru: "Бетон плиты по зонам"
+    label_ru: "Фундаментная плита по зонам"
     unit: ""
     source_class: AUTO_PROJECT
-    required: false
+    required: true
     review_sheet: "01_Проверка проекта"
     target_code: "slab_zones"
     calculator_input_path: "slab_zones"
     normalized_json_path: "sections.foundation_slab.parameters.slab_zones.rows"
     value_kind: repeated_rows
-    row_key_field: context
+    row_key_field: zone_id
     production_input: true
-    item_label_columns: [context]
-    correction_columns: [concrete_volume_m3]
+    item_label_columns: [display_name, level, thickness_m]
+    correction_columns: [concrete_volume_m3, membrane_area_m2, side_formwork_area_m2, horizontal_insulation_volume_m3, thickness_m, area_m2, horizontal_insulation_thickness_mm, horizontal_insulation_area_m2, display_name, level, concrete_grade, horizontal_insulation_material, include_in_estimate]
     columns:
-      - {key: context, label_ru: "Зона плиты (по PDF)", unit: "", value_kind: string}
+      - {key: zone_id, label_ru: "Идентификатор зоны", unit: "", value_kind: string}
+      - {key: display_name, label_ru: "Название по проекту", unit: "", value_kind: string}
+      - {key: context, label_ru: "Контекст (совместимость)", unit: "", value_kind: string}
+      - {key: element_type, label_ru: "Тип элемента", unit: "", value_kind: string}
+      - {key: level, label_ru: "Уровень / отметка", unit: "", value_kind: string}
+      - {key: thickness_m, label_ru: "Толщина плиты", unit: "м", value_kind: number}
+      - {key: area_m2, label_ru: "Площадь плиты", unit: "м2", value_kind: number}
+      - {key: concrete_grade, label_ru: "Марка бетона", unit: "", value_kind: string}
       - {key: concrete_volume_m3, label_ru: "Бетон", unit: "м3", value_kind: number}
+      - {key: membrane_area_m2, label_ru: "PLANTER под зоной", unit: "м2", value_kind: number}
+      - {key: side_formwork_area_m2, label_ru: "Опалубка бортов", unit: "м2", value_kind: number}
+      - {key: horizontal_insulation_material, label_ru: "Горизонтальный утеплитель", unit: "", value_kind: string}
+      - {key: horizontal_insulation_thickness_mm, label_ru: "Толщина утеплителя", unit: "мм", value_kind: number}
+      - {key: horizontal_insulation_area_m2, label_ru: "Площадь утеплителя", unit: "м2", value_kind: number}
+      - {key: horizontal_insulation_volume_m3, label_ru: "Объём утеплителя", unit: "м3", value_kind: number}
+      - {key: include_in_estimate, label_ru: "Включить зону", unit: "", value_kind: boolean}
     parser_mapping:
       target_codes: ["slab_zones"]
-      aliases_ru: []
+      group_codes: ["slab_zones"]
+      aliases_ru: ["фундаментная плита", "плита основания пола", "зона фундаментной плиты"]
       expected_unit: ""
-      notes: "Added 2026-07-20 only as a calculator-side + contract-side alternative input; became a live extraction target 2026-07-24 (see slab_zones_extraction_target_gap memory) — this note previously said 'NOT YET part of the live extraction prompt', corrected 2026-07-28. Use when the PDF splits the slab's concrete into multiple zones with no combined total (e.g. main slab + a lower zone under a porch), same shape as a reference project's step_22 finding. context is a free string describing the zone as printed in the PDF."
+      notes: "One row per physical slab, slab part or thickness/level zone. element_type is always slab_body. Preserve the printed project title in display_name; do not route ribs, walls, strips, beams, column footings or pads here."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
-      status_if_missing: "not_required"
-      action_ru: "Справочно: проверьте объёмы бетона по строкам PDF."
+      status_if_missing: "manual_required"
+      action_ru: "Проверьте каждую плиту или зону: название, уровень, толщину и проектные количества. Рёбра и другие элементы ростверка здесь не указываются."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов."
-    validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1, slab_zones[]). Purely additive — when empty/absent, calculator behavior is byte-identical to before (all pre-existing foundation_slab_calculator regression cases unaffected, verified). When non-empty, its sum OVERRIDES concrete_project_volume_m3 above for this run — that field is still required by the calculator's dataclass but its value is ignored once slab_zones is non-empty (same convention as load_bearing_walls_lintels' wall_block_items). Formwork/PLANTER membrane/thermal inserts deliberately stay as independent scalars, not per-zone — confirmed on real reference-project data that formwork area is given as one combined figure across zones, not per-zone (see step_22 note in UNIVERSALIZATION_PLAN.md), so forcing it into slab_zones would misrepresent the source. See p1_slab_zones_shipped memory. production_input flipped false->true 2026-07-28 (found via a real reference-project review-workbook build: this group was actually wired into foundation_slab_calculator.py and driving the real calculation, but collapsed to a single generic placeholder row on sheet 01 instead of rendering per-zone like thermal_insert_items/pit_items/sand_items — same visibility-gap class as the old wall_block_items bug, but here the group was already live in production, not merely diagnostic, so this was a real fix, not a deferred one."
+    validation: {numeric: false, min_rows: 1, unique_by: [zone_id]}
+    notes: "Incremental extension of the existing slab_zones group. The current calculator still consumes context and concrete_volume_m3 only; the adapter deliberately filters the additional fields until the zone-aware calculator stage is implemented. General scalar totals remain available as simple-scenario inputs or control totals and must not be charged together with the same zonal quantity. Empty means that the source has no split, not zero."
 
   - key: thermal_insert_50_length_m
     label_ru: "Термовставка 50 мм, длина"
@@ -307,9 +326,11 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: code
     production_input: true
-    item_label_columns: [steel_class, diameter_mm]
-    correction_columns: [source_length_m, kg_per_meter]
+    item_label_columns: [zone_id, component, steel_class, diameter_mm]
+    correction_columns: [source_length_m, kg_per_meter, zone_id, component]
     columns:
+      - {key: zone_id, label_ru: "Зона плиты (slab_zones.zone_id)", unit: "", value_kind: string}
+      - {key: component, label_ru: "Компонент", unit: "", value_kind: string}
       - {key: name, label_ru: "Наименование", unit: "", value_kind: string}
       - {key: steel_class, label_ru: "Класс стали", unit: "", value_kind: string}
       - {key: diameter_mm, label_ru: "Диаметр", unit: "мм", value_kind: number}
@@ -317,18 +338,18 @@ review_parameters:
       - {key: kg_per_meter, label_ru: "Масса 1 м", unit: "кг/м", value_kind: number}
     parser_mapping:
       target_codes: ["foundation_rebar_items"]
-      aliases_ru: ["арматура фундаментной плиты", "спецификация арматуры плиты", "сетка фундаментной плиты"]
+      aliases_ru: ["арматура фундаментной плиты", "спецификация арматуры плиты", "сетка фундаментной плиты", "армирование термовставок", "арматурный каркас термовставки"]
       expected_unit: "мп"
-      notes: "One row per rebar position (diameter/class); production primary PDF unit is m.п., do not require PDF total weight."
+      notes: "One row per rebar position (diameter/class). component enum: slab_body, thermal_insert_reinforcement. zone_id is optional only when a specification is common to the entire foundation slab section. Never place reinforcement of ribs, foundation walls, strips, beams, column footings or pads in this group."
     review_behavior:
       show_to_user: true
       allow_manual_override: true
       status_if_missing: "manual_required"
-      action_ru: "Проверьте позиции арматуры фундаментной плиты по диаметрам, каждая строка спецификации отдельной строкой."
+      action_ru: "Проверьте позиции арматуры тела плиты и усиления в местах термовставок. Арматура рёбер, стен, лент, балок, подколонников и подпятников относится к ростверку."
     mirror_to_details_sheet: true
     mirror_notes: "Same rows shown read-only on 03_Детали объемов so Elena can check against the PDF spec table without opening it. Calculator adapter reads sheet 01 (this entry) only, never the mirror."
-    validation: {numeric: true, min_value: 0, max_value: null}
-    notes: "Production primary PDF unit is m.п.; do not require PDF total weight."
+    validation: {numeric: true, min_value: 0, max_value: null, allowed_components: [slab_body, thermal_insert_reinforcement]}
+    notes: "Production primary PDF unit is m.п.; do not require PDF total weight. zone_id/component are review and ownership fields in this stage; the adapter strips them before calling the current calculator."
 
   - key: foundation_wall_items
     label_ru: "Стены фундамента/цоколя"
@@ -342,6 +363,7 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: context
     production_input: false
+    ownership_target: grillage
     item_label_columns: [context]
     correction_columns: [concrete_volume_m3, vertical_formwork_area_m2, planter_membrane_area_m2, waterproofing_coating_area_m2]
     columns:
@@ -360,9 +382,9 @@ review_parameters:
       show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно стены фундамента/цоколя, если они есть на объекте."
+      action_ru: "Переходное диагностическое поле. Стены фундамента принадлежат ростверку и после подключения его schema должны быть перенесены в grillage_elements."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only — calculator_input_path intentionally empty, not yet wired into foundation_slab_calculator.py (needs separate authorization). Captured so real fundament-wall/цоколь geometry isn't silently lost. show_to_user: false set 2026-07-29 — hidden from sheet 01 entirely until a real calculator/rostverk section exists to use it; re-enable when that ships."
+    notes: "Transitional extraction compatibility only. The confirmed owner is grillage; this hidden group remains until schema/prompt migration so existing JSON does not lose foundation-wall evidence. It is never read by the foundation slab calculator."
 
   - key: column_footing_items
     label_ru: "Подколонники"
@@ -376,6 +398,7 @@ review_parameters:
     value_kind: repeated_rows
     row_key_field: context
     production_input: false
+    ownership_target: grillage
     item_label_columns: [context]
     correction_columns: [concrete_volume_m3, vertical_formwork_area_m2, planter_membrane_area_m2, waterproofing_coating_area_m2]
     columns:
@@ -394,9 +417,9 @@ review_parameters:
       show_to_user: false
       allow_manual_override: true
       status_if_missing: "not_required"
-      action_ru: "Диагностическое поле — пока не участвует в смете. Зафиксируйте построчно подколонники, если они есть на объекте."
+      action_ru: "Переходное диагностическое поле. Подколонники принадлежат ростверку и после подключения его schema должны быть перенесены в grillage_elements."
     validation: {numeric: false}
-    notes: "Added 2026-07-20 (UNIVERSALIZATION_PLAN.md P1). Diagnostic-only, same reasoning as foundation_wall_items — kept as a separate group_code (not merged into foundation_wall_items) so a future calculator wiring pass can price/gate them independently. show_to_user: false set 2026-07-29 — hidden from sheet 01 entirely until a real calculator/rostverk section exists to use it; re-enable when that ships."
+    notes: "Transitional extraction compatibility only. The confirmed owner is grillage; this hidden group remains until schema/prompt migration so existing JSON does not lose column-footing evidence. It is never read by the foundation slab calculator."
 
 price_keys:
   - {key: membrane_installation_work_unit_price, estimate_line_code: planter_membrane_installation, label_ru: "Монтаж мембраны PLANTER стандарт", price_kind: work, unit: "м2", required: true, default_source: price_registry_with_fallback, registry_code: "planter_membrane_installation_work_m2", fallback_key: "membrane_installation_work_unit_price", allow_manual_override: true, notes: ""}
@@ -537,6 +560,7 @@ checks:
     - slab_side_formwork_area_m2
     - eps50_under_slab_volume_m3
     - concrete_project_volume_m3
+    - slab_zones
   forbidden_production_inputs:
     - old_fixture_values
     - old_expected_result_values
