@@ -136,6 +136,7 @@ class GrillageInput:
     eps_unit_price: float
 
     technical_supervision_amount: float
+    horizontal_insulation_default_thickness_mm: float = 50
     logistics_and_supply_rate: float = 0.02
     consumables_tool_amortization_rate: float = 0.03
     plywood_sheet_width_m: float = 1.52
@@ -217,7 +218,11 @@ class GrillageInput:
                         f"grillage_elements.{item.element_id} has unsupported horizontal "
                         f"insulation material {material!r}"
                     )
-                if item.horizontal_insulation_thickness_mm not in (None, 50, 50.0):
+                if (
+                    item.horizontal_insulation_thickness_mm is not None
+                    and item.horizontal_insulation_thickness_mm
+                    != self.horizontal_insulation_default_thickness_mm
+                ):
                     raise ValueError(
                         f"grillage_elements.{item.element_id} cannot use the configured EPS 50 line"
                     )
@@ -227,7 +232,10 @@ class GrillageInput:
                 ):
                     expected_volume = q(
                         d(item.horizontal_insulation_area_m2)
-                        * d(item.horizontal_insulation_thickness_mm or 50)
+                        * d(
+                            item.horizontal_insulation_thickness_mm
+                            or self.horizontal_insulation_default_thickness_mm
+                        )
                         / Decimal("1000")
                     )
                     if abs(expected_volume - item.horizontal_insulation_volume_m3) > 0.001:
@@ -268,6 +276,7 @@ class GrillageInput:
             "concrete_mixer_volume_m3",
             "eps_waste_coeff",
             "eps_pack_volume_m3",
+            "horizontal_insulation_default_thickness_mm",
             "plywood_sheet_width_m",
             "plywood_sheet_height_m",
             "plywood_waste_coeff",
@@ -413,7 +422,10 @@ def calculate_grillage(data: GrillageInput) -> dict[str, Any]:
     eps_volume_decimal = Decimal("0")
     eps_area_decimal = Decimal("0")
     for element in elements:
-        thickness_m = d(element.horizontal_insulation_thickness_mm or 50) / Decimal("1000")
+        thickness_m = d(
+            element.horizontal_insulation_thickness_mm
+            or data.horizontal_insulation_default_thickness_mm
+        ) / Decimal("1000")
         element_volume = element.horizontal_insulation_volume_m3
         element_area = element.horizontal_insulation_area_m2
         if element_volume is None and element_area is not None:

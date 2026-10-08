@@ -17,7 +17,6 @@ source_files:
   related_docs:
     - "experiments/full_estimate_review_pipeline/reports/step_30_grillage_full_box_scenario.md"
     - "experiments/full_estimate_review_pipeline/reports/step_37_universal_foundation_slab_plan.md"
-    - "experiments/full_estimate_review_pipeline/reports/ark_vs_original_comparison/17_grillage_questions_and_spec_additions.md"
 
 review_parameters:
   - key: grillage_elements
@@ -156,6 +155,7 @@ defaults:
   - {key: concrete_mixer_volume_m3, value: 7, unit: "м3", calculator_input_path: "concrete_mixer_volume_m3", source_class: DEFAULT}
   - {key: eps_waste_coeff, value: 1.05, unit: "", calculator_input_path: "eps_waste_coeff", source_class: DEFAULT}
   - {key: eps_pack_volume_m3, value: 0.2776, unit: "м3", calculator_input_path: "eps_pack_volume_m3", source_class: DEFAULT}
+  - {key: horizontal_insulation_default_thickness_mm, value: 50, unit: "мм", calculator_input_path: "horizontal_insulation_default_thickness_mm", source_class: DEFAULT, source_note: "Configured horizontal insulation family for the current price and packaging row."}
   - {key: logistics_and_supply_rate, value: 0.02, unit: "", calculator_input_path: "logistics_and_supply_rate", source_class: DEFAULT}
   - {key: consumables_tool_amortization_rate, value: 0.03, unit: "", calculator_input_path: "consumables_tool_amortization_rate", source_class: DEFAULT}
 

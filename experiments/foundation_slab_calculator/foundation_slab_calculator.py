@@ -322,7 +322,10 @@ class FoundationSlabInput:
                     and value is None
                     and zone.horizontal_insulation_area_m2 is not None
                 ):
-                    thickness_mm = zone.horizontal_insulation_thickness_mm or 50
+                    thickness_mm = (
+                        zone.horizontal_insulation_thickness_mm
+                        or self.eps50_thickness_m * 1000
+                    )
                     value = _round_decimal(
                         _to_decimal(zone.horizontal_insulation_area_m2)
                         * _to_decimal(thickness_mm)
@@ -487,7 +490,8 @@ class FoundationSlabInput:
                         "has no configured price/packaging in the foundation slab calculator"
                     )
                 thickness = zone.horizontal_insulation_thickness_mm
-                if thickness not in (None, 50, 50.0):
+                configured_thickness_mm = self.eps50_thickness_m * 1000
+                if thickness is not None and thickness != configured_thickness_mm:
                     raise ValueError(
                         f"slab_zones.{identity}.horizontal_insulation_thickness_mm={thickness} "
                         "cannot use the configured EPS 50 purchase line"
@@ -498,7 +502,7 @@ class FoundationSlabInput:
                 ):
                     expected_volume = _round_decimal(
                         _to_decimal(zone.horizontal_insulation_area_m2)
-                        * _to_decimal(thickness or 50)
+                        * _to_decimal(thickness or configured_thickness_mm)
                         / Decimal("1000")
                     )
                     if abs(expected_volume - zone.horizontal_insulation_volume_m3) > 0.001:
@@ -568,11 +572,8 @@ class FoundationSlabInput:
         if self.thermal_insert_mode == "none":
             pass
         elif self.thermal_insert_mode == "items":
-            # Arbitrary-size thermal inserts (real project case, 2026-07-26): a project can give
-            # a single EPS size (or any number of sizes) instead of the fixed 50mm+100mm pair
-            # standard_50_100 assumes. Material stays per-size (spec qty * waste, rounded to
-            # that size's pack multiple); installation work is one combined line by total
-            # length across all sizes, same convention as thermal_insert_combined_length_m.
+            # Arbitrary-size thermal inserts support one or more sizes instead of the fixed
+            # 50mm+100mm pair. Material stays per size; installation is combined by total length.
             _require_positive(
                 "thermal_insert_material_waste_coeff",
                 self.thermal_insert_material_waste_coeff,
@@ -649,12 +650,8 @@ class FoundationSlabInput:
                     "thermal_insert_100_material_unit_price",
                     self.thermal_insert_100_material_unit_price,
                 )
-            # Combined-length alternative: some projects give one combined installation
-            # length for both 50mm and 100mm layers of the same thermal insert run, with
-            # no way to split it per layer (real project case, Elena 2026-07-25) — material
-            # stays split by thickness regardless, only the installation work length/price
-            # collapses into one line instead of two. Additive: split lengths still work
-            # unchanged when combined length is absent.
+            # A combined installation length may cover both thicknesses when the source does
+            # not split the work. Material remains split by thickness.
             combined_length_given = self.thermal_insert_combined_length_m is not None
             split_length_given = (
                 self.thermal_insert_50_length_m is not None
@@ -870,12 +867,7 @@ def calculate_formwork_block(data: FoundationSlabInput) -> dict[str, Any]:
         )
 
     plywood_sheets = int(ceil(plywood_raw_sheets))
-    # Elena confirmed 2026-09-03: cut formwork timber is bought in whole 0.1 m3 increments,
-    # rounded up - a universal purchasing rule she'd only applied in her own TRC formula
-    # (explicit CEILING(...,0.1)); her USV/ARK cells looked rounded only from 1-decimal cell
-    # display formatting, not a real formula - she'd simply forgotten to apply the rule there.
-    # Same rounding shape as load_bearing_walls_lintels_p6_calculator.py's lintel formwork
-    # timber (round_up_to_step already exists in this module, used by concrete_order_volume_m3).
+    # Formwork timber is purchased in whole increments defined by the business rule.
     timber_raw_volume_m3 = round_up_to_step(
         _round_decimal(
             _to_decimal(formwork_area_m2) * _to_decimal(data.timber_thickness_m)
@@ -1169,15 +1161,11 @@ def calculate_rebar_line(
     rebar_waste_coeff: float,
     rebar_calc_method: str = "legacy_weight_to_length",
 ) -> tuple[EstimateLineResult, dict[str, Any]]:
-    """Pools every spec-position item sharing the same (steel_class, diameter_mm) into ONE
-    order-length calculation, rounding to whole rods once for the pooled raw length - not once
-    per position. Elena's real smetas confirm this: she prints exactly one row per diameter/class
-    (e.g. "Арматура класса А500 диаметром 12 мм"), never a breakdown by лягушка/хомут/выпуск/etc,
-    and rounding each position's own length up to a whole 11.7m rod independently (as this used
-    to do) wastes up to just-under-one-rod PER position - confirmed against real project data: 5
-    separate ф12 positions produced 3896.1m here vs Elena's 3861.0m; pooling raw length first
-    reproduces her number exactly (same for ф10: 1146.6 vs 1134.9). Diameters with only one
-    position (ф20, ф6) were never affected, since there's nothing to compound."""
+    """Pool specification rows by steel class and diameter before whole-rod rounding.
+
+    Rounding each source position separately can add an unnecessary partial rod per position;
+    the estimate therefore contains one purchased-length row for each compatible pool.
+    """
     representative = items[0]
     if any(i.rod_length_m != representative.rod_length_m for i in items):
         raise ValueError(
@@ -1231,9 +1219,7 @@ def calculate_rebar_line(
     )
 
     price_code = rebar_price_code(representative.steel_class, representative.diameter_mm)
-    # Single-item groups (the common case, and every pre-existing test fixture) keep the item's
-    # own code/name exactly as before - only genuine multi-position pooling gets a synthetic
-    # "_pooled" code, matching the export layer's own naming convention for pooled rebar rows.
+    # A single-item pool preserves its source code/name; multi-item pools get a stable code.
     if len(items) == 1:
         line_code = representative.code
         line_name = representative.name
@@ -1675,9 +1661,7 @@ def thermal_insert_estimate_lines(
 
     if data.thermal_insert_mode == "standard_50_100":
         if data.thermal_insert_combined_length_m is not None:
-            # PDF gives one combined installation length for both layers of the same
-            # thermal insert run, with no way to split it per thickness (real project
-            # case, Elena 2026-07-25) — one work line instead of two; material stays split.
+            # One combined work length may cover both layers; material remains split.
             installation_lines = [
                 calculate_line(
                     code="thermal_insert_combined_installation",

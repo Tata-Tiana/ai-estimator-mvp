@@ -21,7 +21,7 @@ fixed default here, because the review-workbook layer itself already treats
 thermal_insert_items[] and the scalar thermal_insert_50/100_length_m pair as mutually
 exclusive alternatives for the same real-world data (see
 populate_review_workbook_from_extraction.py's not_required_alt handling and
-target_aliases_ru.yaml - a real project gives EITHER a fixed 50mm+100mm pair OR
+target_aliases_ru.yaml - the input gives EITHER a fixed 50mm+100mm pair OR
 arbitrary-size items, never both). This adapter picks "items" mode when
 thermal_insert_items has real rows on sheet 01, else falls back to the contract's
 "standard_50_100" default and reads the scalar fields instead.

@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 PIPELINE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = PIPELINE_DIR.parents[1]
 REVIEW_TO_CALCULATOR_DIR = PIPELINE_DIR / "review_to_calculator"
 if str(REVIEW_TO_CALCULATOR_DIR) not in sys.path:
     sys.path.insert(0, str(REVIEW_TO_CALCULATOR_DIR))
@@ -26,6 +27,41 @@ FIXTURES_DIR = PIPELINE_DIR / "tests" / "fixtures" / "foundation_grillage_owners
 
 
 class FoundationGrillageContractTests(unittest.TestCase):
+    def test_active_foundation_implementation_has_no_project_markers(self) -> None:
+        active_files = [
+            REPO_ROOT / "experiments/foundation_slab_calculator/foundation_slab_calculator.py",
+            REPO_ROOT / "experiments/grillage_calculator/grillage_calculator.py",
+            PIPELINE_DIR / "review_to_calculator/sections/foundation_slab/build_input.py",
+            PIPELINE_DIR / "review_to_calculator/sections/grillage/build_input.py",
+            PIPELINE_DIR / "sections/foundation_slab/section_contract.yaml",
+            PIPELINE_DIR / "sections/grillage/section_contract.yaml",
+        ]
+        forbidden_markers = (
+            "ТРЦ",
+            "АРК",
+            "ЮСВ",
+            "НВД3",
+            "МКП-1",
+            "РВР",
+            "ГФК11",
+            "ШЛК-10",
+            "ЮРВ",
+            "ark_vs_original",
+            "trc_vs_original",
+            "usv_vs_original",
+            " TRC ",
+            " ARK ",
+            " USV ",
+        )
+        matches = []
+        for path in active_files:
+            content = path.read_text(encoding="utf-8")
+            for marker in forbidden_markers:
+                if marker in content:
+                    matches.append(f"{path.relative_to(REPO_ROOT)}: {marker}")
+
+        self.assertEqual(matches, [])
+
     def test_contracts_define_complementary_ownership(self) -> None:
         slab = load_contract("foundation_slab")
         grillage = load_contract("grillage")
