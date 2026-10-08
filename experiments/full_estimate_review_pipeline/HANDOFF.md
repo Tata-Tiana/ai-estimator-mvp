@@ -62,7 +62,7 @@ The production workflow has two different artifacts and they must not be confuse
 Canonical plans: `reports/step_35_client_side_full_estimate_plan.md` and
 `reports/step_36_estimate_formulas_and_hints_completion.md`.
 
-## Foundation Slab Variant Classification Guard 2026-09-29
+## Foundation Slab Variant Classification Guard 2026-10-01
 
 The slab classification was corrected after a line-by-line check of TRC, MKP-1, LVP, ARH,
 YRV, GFK-11, SHLK-10, NVD3 and RVR estimates. Sections titled `плита
@@ -71,15 +71,32 @@ reinforcement as `каркас фундаментной плиты`. Route them 
 family while preserving the source title verbatim. Do not route them to above-grade
 `floor_slabs` or to grillage/strip work.
 
-No separate top-level parser/calculator is needed. Extend `foundation_slab` with dynamic
-estimate blocks and component/work rows. Current `slab_zones` only aggregates concrete volume
-and emits one concreting line, so it does not yet cover ARH's independent house/garage blocks,
-NVD3's separate slab/rib work rows, RVR's house/garage/rib rows, or SHLK-10's EPS permanent
-rib formwork. Keep strict ownership to prevent rib quantities being counted in both
-`foundation_slab` and the grillage/strip/rib module. Canonical analysis:
+Elena's 2026-10-01 ruling replaces the preliminary dynamic-block hypothesis. There is exactly
+one `foundation_slab` estimate section per project because all foundation-slab parts are poured
+as one construction stage. The section has one concrete-pump row, but its quantity is manual:
+keep the existing default and allow the estimator to set `0`. Multiple slabs, levels and thicknesses are
+dynamic `slab_zones` inside that one section; do not add `foundation_slab_blocks[]` or
+`estimate_block_id`.
+
+`foundation_slab` owns slab bodies only. Every rib, whether up or down, and all foundation
+walls, strips, beams, column footings and pads belong to `grillage`, regardless of old estimate
+titles or monolithic connection to a slab. Therefore ARH's historical house/garage slab sections
+must become zones of one slab section, while NVD3/RVR/MKP-1/SHLK-10 rib work must be routed to
+grillage. Keep strict ownership to prevent quantities being lost or counted twice. Canonical analysis:
 `reports/foundation_slab_variants_classification_2026-09-29.md`. The implementation sequence,
 canonical data model, no-project-constants rule and test matrix are fixed in
 `reports/step_37_universal_foundation_slab_plan.md`.
+
+Waterproofing and insulation ownership is also closed. PLANTER lies on the lower horizontal
+surface and remains in `foundation_slab` / `grillage`; when both are present, sum their confirmed
+areas before applying waste and rounding once to whole rolls. Coating and vertical EPS belong
+to the single `waterproofing` section. Horizontal EPS under a slab belongs to `foundation_slab`;
+horizontal EPS under a strip/rib/grillage belongs to `grillage`, and is omitted when absent from
+the project. EPS procurement is always rounded independently inside each estimate section:
+never pool EPS or transfer calculated leftovers across `waterproofing`, `foundation_slab` and
+`grillage`. Site leftovers are commonly reused elsewhere, but that is not a cross-section formula.
+For YRV analysis and tests use only sheet
+`АЛ 17.12.25 КР1, КР2(ЕЧ)ЮВ`; never use the 16.06.2025 sheet, even as a historical fixture.
 
 ## Estimate Section Title Source Policy 2026-09-27
 
@@ -124,9 +141,10 @@ Confirmed user decisions:
 - Record quantities derived by manual drawing interpretation and propose explicit specification
   additions. Do not make unreliable model reconstruction of drawings a production dependency.
 
-Current checkpoint: user approved proceeding from step 2 PDF analysis to step 3 questions.
-Step 3 is ready for user review, not yet accepted or sent to Elena. This does not approve
-conflicting quantities or method defaults. Read
+Current checkpoint 2026-10-01: the questions were discussed with Elena and the confirmed
+answers are recorded in report 17. Classification L1-L2 and ownership L5 are closed; L4 is
+partially closed for column footings/pads. L3 and the wall/strip formwork remainder of L4 are
+still open. Read
 [report 16](reports/ark_vs_original_comparison/16_grillage_sources_for_elena.md) for all 31
 ARK grillage rows, grey formulas, right helpers, comments, independent numeric verification
 and the new PDF-to-row mapping. KR1 sheets 10-11 confirm concrete 34.6 m3 and all six source
@@ -136,10 +154,9 @@ also conflict with the specification in several labels. Preserve these unresolve
 Cost basis is 1,315,415 RUB; this is the reference workbook result, not a new calculator run.
 Local diagnostic snapshot: `output/grillage_step1_20260918/excel_audit.json`.
 Read [report 17](reports/ark_vs_original_comparison/17_grillage_questions_and_spec_additions.md):
-7 primary questions Q1-Q7, helper notes, specification additions S1-S6 and procurement checks P1-P4.
-Wait for user review before sending the questions; do not send them yourself. Step 4 records
-actual answers and consequences, not inferred approvals. Answers, contract and calculator
-implementation are still pending. No new section is implemented by this checkpoint.
+it contains Q1-Q7, L1-L5, Elena's dated answers, specification additions and procurement checks.
+Do not reopen closed ownership/classification decisions. Contract and calculator implementation
+are still pending; this checkpoint changes documentation only.
 Final price-source clarification 2026-09-18: use ONLY the first price_registry sheet in "Цены".
 The procurement department owns its completeness and currency. Do not read "Металл (Алексей)"
 or other tabs as production sources or fallbacks. Missing required prices must be flagged
@@ -171,12 +188,14 @@ decision is closed; do not reopen it merely because the source workbook/PDF cont
 
 User requested a separate plan while grillage answers are pending. Read
 [step 31](reports/step_31_universal_foundation_waterproofing_plan.md).
-Extend existing waterproofing with optional foundation-wall/footing scope, not another
-calculator/estimate section. Preserve confirmed-absent versus missing-data semantics,
-sum identical materials before packaging round-up, and keep work areas separate from
-specification material volumes. Do not feed horizontal under-footing EPS50 into the legacy
-second-layer edge field or double-buy PLANTER. ARK coating-area and EPS-scope conflicts
-remain unresolved; the plan does not approve their quantities.
+Extend existing waterproofing, not another calculator/estimate section. Elena confirmed on
+2026-10-01 that coating and vertical EPS are calculated here. PLANTER is excluded because it
+lies on the lower horizontal surface; keep it in slab/grillage and combine those areas only for
+the one roll purchase. Preserve confirmed-absent versus missing-data semantics and keep work
+areas separate from specification material volumes. Vertical EPS groups for slab and grillage
+are combined only as compatible vertical demand inside `waterproofing`. Horizontal EPS is not owned here: under the slab it belongs to
+`foundation_slab`, and under strips/ribs/grillage it belongs to `grillage`. ARK W5 remains a
+project-specific thickness conflict; the ownership boundary itself is closed.
 
 The documentation checkpoint includes reports 16/17, steps 30/31 and this handoff;
 identify it with git log ("Checkpoint grillage audits and plan universal waterproofing").
@@ -188,15 +207,14 @@ row; all old lines/totals match. TRC's saved review omits explicit insulation ar
 13.41 m2 rather than the 17.355 m2 of its older report. Preserve and audit this discrepancy,
 do not silently change baseline. Next stage after user review is plan point 2: scope/questions.
 Implementation is NOT started by capturing these baselines.
-Step 31 point 2 audit now ready: read
+Step 31 audit and ownership decisions: read
 [report 19](reports/ark_vs_original_comparison/19_waterproofing_scope_and_questions.md).
-All 12 ARK grey rows and helpers mapped; W1-W5 prepared, not sent or answered.
+All 12 ARK grey rows and helpers are mapped. W1-W4 are answered; W5 remains open.
 Spec coating total 221.4 versus Elena 187.4088 is specifically the FP2 39.3 versus
 manual 5.3088 substitution. EPS100 spec cubes 4.8 with 5% need 19 packs, not Elena's
-18 from area. Under-wall EPS50 (20.2 m2 / 1 m3) is not found in checked estimate
-formulas; ownership remains unresolved. Under-slab EPS50 already belongs to foundation_slab;
-do not duplicate it or thermal inserts in waterproofing. Point 2 ownership checkbox remains
-open pending answers. Next review questions and obtain decisions, not code implementation.
+18 from area. Under-wall/strip EPS50 (20.2 m2 / 1 m3) belongs to `grillage`; under-slab
+EPS50 belongs to `foundation_slab`; neither is added to `waterproofing`. Do not duplicate
+thermal inserts. Ownership is closed; W5 remains the concrete ARK thickness conflict.
 Future waterproofing code/parser/review/export changes must be accepted and committed as
 one separate scoped change so it can be reverted without reverting unrelated grillage work.
 Review subsequent dependencies/conflicts before a future revert. Git does not revert Google
