@@ -44,18 +44,6 @@ def _optional_non_negative(name: str, value: float | int | None) -> float:
     return float(value)
 
 
-def _uses_configured_concrete_grade(value: str) -> bool:
-    normalized = (
-        str(value)
-        .upper()
-        .replace("В", "B")
-        .replace(",", ".")
-        .replace("-", "")
-        .replace(" ", "")
-    )
-    return "B22.5" in normalized or "M300" in normalized
-
-
 def round_up_to_step(value: float, step: float) -> float:
     _require_non_negative("value", value)
     _require_positive("step", step)
@@ -316,28 +304,6 @@ class FoundationSlabInput:
                     f"slab_zones.{zone.identity}.element_type must be 'slab_body'; "
                     "ribs, walls, strips, beams, column footings and pads belong to grillage"
                 )
-
-        grades = {
-            str(zone.concrete_grade).strip().lower()
-            for zone in active_zones
-            if zone.concrete_grade not in (None, "")
-        }
-        if len(grades) > 1:
-            raise ValueError(
-                "slab_zones contain different concrete grades; the current section has one "
-                "concrete purchase price and cannot merge them silently"
-            )
-        unsupported_grades = sorted(
-            str(zone.concrete_grade)
-            for zone in active_zones
-            if zone.concrete_grade not in (None, "")
-            and not _uses_configured_concrete_grade(str(zone.concrete_grade))
-        )
-        if unsupported_grades:
-            raise ValueError(
-                "slab_zones contain a concrete grade without a configured price: "
-                f"{unsupported_grades}; the current purchase line supports only B22.5/M300"
-            )
 
         mappings = [
             ("concrete_volume_m3", "concrete_project_volume_m3"),

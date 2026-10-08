@@ -109,15 +109,14 @@ The local foundation/grillage calculation layer has advanced, but production rem
 - zone ownership and rebar ownership are validated; excluded zones do not enter totals;
 - `grillage` now has a local contract, adapter and calculator for explicit elements, inventory
   and timber formwork, pooled rebar, concrete, horizontal EPS and manual pump/transfer inputs;
-- the unconfirmed 10% timber-formwork rule is deliberately absent;
+- plywood and timber use only the explicit timber-formwork area from project data;
 - all 44 full-estimate-pipeline tests and all nine legacy foundation-slab cases pass locally.
 
 Do not infer that the bot can use this yet. Grillage is still absent from `CANONICAL_SECTIONS`;
 parser schema/prompt, Google review, final Excel formulas/helpers and real-project reruns remain.
 Horizontal insulation currently accepts only the configured EPS 50 purchase family; other
-materials/thicknesses fail instead of borrowing the wrong price. Mixed concrete grades also fail;
-the current concrete purchase line explicitly accepts only B22.5/M300 instead of pricing another
-grade silently. Shared slab+grillage PLANTER demand is accepted by the grillage
+materials/thicknesses fail instead of borrowing the wrong price. Concrete grade is preserved as
+project metadata but does not yet select a separate price. Shared slab+grillage PLANTER demand is accepted by the grillage
 calculator through `planter_purchase_area_m2`, but orchestration of one final purchase row is not
 wired yet. Continue from step 37 stage C-D and step 30's remaining checkpoints.
 

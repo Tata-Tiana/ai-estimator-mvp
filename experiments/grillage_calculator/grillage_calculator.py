@@ -47,18 +47,6 @@ def require_positive(name: str, value: float | int | None) -> None:
         raise ValueError(f"{name} must be present and > 0")
 
 
-def uses_configured_concrete_grade(value: str) -> bool:
-    normalized = (
-        str(value)
-        .upper()
-        .replace("В", "B")
-        .replace(",", ".")
-        .replace("-", "")
-        .replace(" ", "")
-    )
-    return "B22.5" in normalized or "M300" in normalized
-
-
 @dataclass(frozen=True)
 class GrillageElement:
     element_id: str
@@ -192,7 +180,6 @@ class GrillageInput:
         if any(not item_id for item_id in ids) or len(ids) != len(set(ids)):
             raise ValueError("included grillage_elements.element_id values must be non-empty and unique")
 
-        grades: set[str] = set()
         for item in active:
             if item.element_type not in ALLOWED_ELEMENT_TYPES:
                 raise ValueError(
@@ -215,8 +202,6 @@ class GrillageInput:
                 value = getattr(item, field_name)
                 if value is not None:
                     require_non_negative(f"grillage_elements.{item.element_id}.{field_name}", value)
-            if item.concrete_grade:
-                grades.add(item.concrete_grade.strip().lower())
             insulation_present = any(
                 value is not None
                 for value in (
@@ -251,20 +236,6 @@ class GrillageInput:
                             f"area/thickness gives {expected_volume} m3 but the specified "
                             f"volume is {item.horizontal_insulation_volume_m3} m3"
                         )
-        if len(grades) > 1:
-            raise ValueError("different concrete grades cannot share one grillage purchase line")
-        unsupported_grades = sorted(
-            str(item.concrete_grade)
-            for item in active
-            if item.concrete_grade not in (None, "")
-            and not uses_configured_concrete_grade(str(item.concrete_grade))
-        )
-        if unsupported_grades:
-            raise ValueError(
-                "grillage_elements contain a concrete grade without a configured price: "
-                f"{unsupported_grades}; the current purchase line supports only B22.5/M300"
-            )
-
         active_ids = set(ids)
         if not self.rebar_items:
             raise ValueError("grillage_rebar_items is required")

@@ -182,15 +182,16 @@ class FoundationSlabExtendedZonesTests(unittest.TestCase):
             "slab_zones",
         )
 
-    def test_unsupported_concrete_grade_is_not_priced_as_b22_5(self) -> None:
+    def test_concrete_grade_metadata_does_not_block_quantity_calculation(self) -> None:
         raw = base_input()
         zones = two_complete_zones()
-        for zone in zones:
-            zone["concrete_grade"] = "B25"
+        zones[0]["concrete_grade"] = "B25"
         raw["slab_zones"] = zones
 
-        with self.assertRaisesRegex(ValueError, "supports only B22.5/M300"):
-            FoundationSlabInput.from_dict(raw)
+        data = FoundationSlabInput.from_dict(raw)
+
+        self.assertEqual(data.concrete_project_volume_m3, 81)
+        self.assertEqual(data.slab_zones[0].concrete_grade, "B25")
 
 
 if __name__ == "__main__":

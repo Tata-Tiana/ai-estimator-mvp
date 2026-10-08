@@ -182,7 +182,7 @@ class GrillageCalculatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not belong to grillage"):
             GrillageInput.from_dict(raw)
 
-    def test_unconfirmed_ten_percent_formwork_rule_is_not_applied(self) -> None:
+    def test_timber_formwork_uses_only_explicit_project_area(self) -> None:
         raw = calculator_input()
         raw["grillage_elements"][0]["inventory_formwork_area_m2"] = 300
         raw["grillage_elements"][0]["timber_formwork_area_m2"] = 0
@@ -192,13 +192,17 @@ class GrillageCalculatorTests(unittest.TestCase):
         self.assertEqual(result["calculation_blocks"]["formwork"]["plywood_sheets"], 0)
         self.assertEqual(result["calculation_blocks"]["formwork"]["timber_order_volume_m3"], 0)
 
-    def test_unsupported_concrete_grade_is_not_priced_as_b22_5(self) -> None:
+    def test_concrete_grade_metadata_does_not_block_quantity_calculation(self) -> None:
         raw = calculator_input()
-        for element in raw["grillage_elements"]:
-            element["concrete_grade"] = "B25"
+        raw["grillage_elements"][0]["concrete_grade"] = "B25"
 
-        with self.assertRaisesRegex(ValueError, "supports only B22.5/M300"):
-            GrillageInput.from_dict(raw)
+        result = calculate_grillage(GrillageInput.from_dict(raw))
+
+        self.assertEqual(result["calculation_blocks"]["quantities"]["concrete_project_volume_m3"], 22)
+        self.assertEqual(
+            result["calculation_blocks"]["elements"]["included"][0]["concrete_grade"],
+            "B25",
+        )
 
 
 if __name__ == "__main__":
