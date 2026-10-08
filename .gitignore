@@ -76,3 +76,7 @@ experiments/meeting_analysis/input/**/*
 !experiments/meeting_analysis/input/**/
 !experiments/meeting_analysis/input/**/README.md
 !experiments/meeting_analysis/input/**/.gitkeep
+
+# Private source documents kept locally only
+docs/БС_ИИ-агент для расчета сметы.docx
+docs/Дополнительное_соглашение_к_ТЗ_полуавтоматический_MVP_с_техническими_условиями.docx
