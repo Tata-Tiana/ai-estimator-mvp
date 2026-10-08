@@ -39,9 +39,13 @@ experiments/demo_usv_app/output/*
 experiments/demo_usv_app/assets/brick_house_logo_raw.png
 
 # Telegram bot uploads and logs
+experiments/earthworks_review_to_calculator/data/
 experiments/earthworks_review_to_calculator/data/telegram_uploads/
 experiments/earthworks_review_to_calculator/data/telegram_logs/
 experiments/earthworks_parser_google_stage1/token*.json
+
+# Local full-estimate regression builds
+output/usv_build/
 
 # MKP1 smoke dataset (A4.2.6) — real client PDF/address/cadastral data, kept local only.
 # Unlike USV/TRC this project is not exempted into git; see docs/current_project_state.md 0.12.
